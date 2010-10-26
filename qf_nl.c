@@ -25,6 +25,35 @@
 #include "headers.h"
 #include "nameclass.h"
 
+// List of valid nameclasses
+UCHAR ucNameClassValid [] =
+{0,             //  0 = Available name
+ 1,             //  1 = User label
+ 1,             //  2 = User variable
+ 1,             //  3 = User-defined function   (any valence:  0, 1, or 2)
+ 1,             //  4 = User-defined operator   (either valence:  1 or 2)
+ 1,             //  5 = System variable
+ 1,             //  6 = System function         (any valence:  0, 1, or 2)
+ 0,             //  7 = (Unused)
+ 0,             //  8 = (Unused)
+ 0,             //  9 = (Unused)
+ 0,             // 10 = (Unused)
+ 0,             // 11 = (Unused)
+ 0,             // 12 = (Unused)
+ 0,             // 13 = (Unused)
+ 0,             // 14 = (Unused)
+ 0,             // 15 = (Unused)
+ 0,             // 16 = (Unused)
+ 0,             // 17 = (Unused)
+ 0,             // 18 = (Unused)
+ 0,             // 19 = (Unused)
+ 0,             // 20 = (Unused)
+ 1,             // 21 = System label
+ 0,             // 22 = (Unused)
+ 1,             // 23 = Magic function          (any valence:  0, 1, or 2)
+ 1,             // 24 = Magic operator          (either valence:  1 or 2)
+};
+
 
 //***************************************************************************
 //  $SysFnNL_EM_YY
@@ -215,10 +244,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     // Get the next value
                     aplLongestRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE;
 
-                    if (aplLongestRht EQ 0
-                     || aplLongestRht >= NAMECLASS_LENp1
-                     || (aplLongestRht >= NAMECLASS_UNUSED1
-                      && aplLongestRht <= NAMECLASS_UNUSED2))
+                    if (aplLongestRht >= NAMECLASS_LENp1
+                     || !ucNameClassValid[aplLongestRht])
                         goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
@@ -234,10 +261,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     // Get the next value
                     aplLongestRht = ((LPAPLINT) lpMemRht)[uRht];
 
-                    if (aplLongestRht EQ 0
-                     || aplLongestRht >= NAMECLASS_LENp1
-                     || (aplLongestRht >= NAMECLASS_UNUSED1
-                      && aplLongestRht <= NAMECLASS_UNUSED2))
+                    if (aplLongestRht >= NAMECLASS_LENp1
+                     || !ucNameClassValid[aplLongestRht])
                         goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
@@ -254,10 +279,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     // Attempt to convert the float to an integer using System CT
                     aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
                     if (!bRet
-                     || aplLongestRht EQ 0
                      || aplLongestRht >= NAMECLASS_LENp1
-                     || (aplLongestRht >= NAMECLASS_UNUSED1
-                      && aplLongestRht <= NAMECLASS_UNUSED2))
+                     || !ucNameClassValid[aplLongestRht])
                         goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
@@ -278,10 +301,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     // Get the next value
                     aplLongestRht = apaOffRht + apaMulRht * uRht;
 
-                    if (aplLongestRht EQ 0
-                     || aplLongestRht >= NAMECLASS_LENp1
-                     || (aplLongestRht >= NAMECLASS_UNUSED1
-                      && aplLongestRht <= NAMECLASS_UNUSED2))
+                    if (aplLongestRht >= NAMECLASS_LENp1
+                     || !ucNameClassValid[aplLongestRht])
                         goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
@@ -300,12 +321,9 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         switch (aplTypeRht)
         {
             case ARRAY_BOOL:
-            case ARRAY_APA:
             case ARRAY_INT:
-                if (aplLongestRht EQ 0
-                 || aplLongestRht >= NAMECLASS_LENp1
-                 || (aplLongestRht >= NAMECLASS_UNUSED1
-                  && aplLongestRht <= NAMECLASS_UNUSED2))
+                if (aplLongestRht >= NAMECLASS_LENp1
+                 || !ucNameClassValid[aplLongestRht])
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
@@ -317,10 +335,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                 if (!bRet
-                 || aplLongestRht EQ 0
                  || aplLongestRht >= NAMECLASS_LENp1
-                 || (aplLongestRht >= NAMECLASS_UNUSED1
-                  && aplLongestRht <= NAMECLASS_UNUSED2))
+                 || !ucNameClassValid[aplLongestRht])
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht

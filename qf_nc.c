@@ -422,17 +422,19 @@ UBOOL IsValid2ndCharInName
 //
 //  Calculate the name class of each element
 //
-//  -1 = Invalid name or unknown sysname
-//   0 = Available name
-//   1 = User label
-//   2 = User variable
-//   3 = User-defined function (any valence:  0, 1, or 2)
-//   4 = User-defined operator (either valence:  1 or 2)
-//  21 = System label
-//  22 = System variable
-//  23 = System function       (any valence:  0, 1, or 2)
-//  24 = Magic function        (any valence:  0, 1, or 2)
-//  25 = Magic operator        (either valence:  1 or 2)
+//   -1 = Invalid name or unknown sysname
+//    0 = Available name
+//    1 = User label
+//    2 = User variable
+//    3 = User-defined function (any valence:  0, 1, or 2)
+//    4 = User-defined operator (either valence:  1 or 2)
+//    5 = System variable
+//    6 = System function       (any valence:  0, 1, or 2)
+// 7-20 = (Unused)
+//   21 = System label
+//   22 = (Unused)
+//   23 = Magic function        (any valence:  0, 1, or 2)
+//   24 = Magic operator        (either valence:  1 or 2)
 //
 //  Note that the left shifts (BIT0 <<) in <SysFnDydNL_EM_YY>
 //    assume that the name class values are limited to 63.  If

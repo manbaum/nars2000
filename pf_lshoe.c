@@ -31,6 +31,12 @@
 //  Primitive function for monadic and dyadic LeftShoe ("enclose" and "partitioned enclose")
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnLeftShoe_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimFnLeftShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -43,7 +49,7 @@ LPPL_YYSTYPE PrimFnLeftShoe_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc);
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
@@ -51,6 +57,7 @@ LPPL_YYSTYPE PrimFnLeftShoe_EM_YY
     else
         return PrimFnDydLeftShoe_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnLeftShoe_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

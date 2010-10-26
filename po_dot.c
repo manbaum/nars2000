@@ -109,14 +109,21 @@ LPPL_YYSTYPE PrimOpMonDot_EM_YY
 //  Primitive operator for monadic derived function from Dot ("ERROR")
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimOpMonDotCommon_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,               // Ptr to right arg token
      UBOOL        bPrototyping)             // TRUE iff prototyping
 
 {
-    return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+    return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpMonDotCommon_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

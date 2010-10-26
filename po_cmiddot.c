@@ -32,6 +32,12 @@
 //    monadic operator CircleMiddleDot ("null op" and "null op")
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimOpCircleMiddleDot_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimOpCircleMiddleDot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -42,7 +48,7 @@ LPPL_YYSTYPE PrimOpCircleMiddleDot_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
@@ -53,6 +59,7 @@ LPPL_YYSTYPE PrimOpCircleMiddleDot_EM_YY
                                                lpYYFcnStrOpr,   // Ptr to operator function strand
                                                lptkRhtArg);     // Ptr to right arg token
 } // End PrimOpCircleMiddleDot_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

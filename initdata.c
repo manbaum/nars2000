@@ -553,7 +553,7 @@ LPPL_YYSTYPE PrimProtoFn_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnNonceError_EM (lptkFunc);
+    return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimProtoFn_EM
 #undef  APPEND_NAME
 

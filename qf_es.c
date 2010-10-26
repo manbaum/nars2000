@@ -47,7 +47,7 @@ LPPL_YYSTYPE SysFnES_EM_YY
 {
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc);
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,12 @@
 //    dyadic operator Jot ("composition" and "composition")
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimOpJot_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimOpJot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -42,13 +48,14 @@ LPPL_YYSTYPE PrimOpJot_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
     return PrimOpJotCommon_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
                                   lpYYFcnStrOpr,        // Ptr to operator function strand
                                   lptkRhtArg,           // Ptr to right arg token
                                   FALSE);               // TRUE iff prototyping
 } // End PrimOpJot_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

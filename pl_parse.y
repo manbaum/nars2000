@@ -693,7 +693,7 @@ StmtSing:
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
                                                  // Mark as a SYNTAX ERROR
-                                                 PrimFnSyntaxError_EM (&$1.tkToken);
+                                                 PrimFnSyntaxError_EM (&$1.tkToken APPEND_NAME_ARG);
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -785,7 +785,7 @@ StmtSing:
                                                       && lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOS
                                                       && lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOL)
                                                      {
-                                                         PrimFnSyntaxError_EM (&$2.tkToken);
+                                                         PrimFnSyntaxError_EM (&$2.tkToken APPEND_NAME_ARG);
                                                          YYERROR3
                                                      } else
                                                          YYACCEPT;          // Stop executing this line
@@ -812,7 +812,7 @@ StmtSing:
                                               && lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOS)
                                              {
                                                  if (!lpplLocalVars->bYYERROR)
-                                                     PrimFnSyntaxError_EM (&$1.tkToken);
+                                                     PrimFnSyntaxError_EM (&$1.tkToken APPEND_NAME_ARG);
                                                  YYERROR3
                                              } // End IF
 
@@ -2136,7 +2136,7 @@ ArrValu:
       ArrExpr                           {DbgMsgWP (L"%%ArrValu:  ArrExpr");
                                              if (IsTokenNoValue (&$1.tkToken))
                                              {
-                                                 PrimFnValueError_EM (&$1.tkToken);
+                                                 PrimFnValueError_EM (&$1.tkToken APPEND_NAME_ARG);
                                                  YYERROR3
                                              } // End IF
 
@@ -2630,7 +2630,7 @@ SingVar:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnValueError_EM (&$1.tkToken);
+                                                 PrimFnValueError_EM (&$1.tkToken APPEND_NAME_ARG);
                                              YYERROR3
                                          } // End IF
                                         }
@@ -2790,7 +2790,7 @@ IndexVarBR:
                                          {
                                              if (IsTokenNoValue (&$2.tkToken))
                                              {
-                                                 PrimFnValueError_EM (&$2.tkToken);
+                                                 PrimFnValueError_EM (&$2.tkToken APPEND_NAME_ARG);
                                                  FreeResult (&$1);
                                                  YYERROR3
                                              } // End IF
@@ -3106,7 +3106,7 @@ SimpExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnValueError_EM (&$4.tkToken);
+                                                 PrimFnValueError_EM (&$4.tkToken APPEND_NAME_ARG);
 
                                              FreeResult (&$1);
                                              FreeResult (&$3);
@@ -3272,7 +3272,7 @@ SimpExpr:
                                              lpplLocalVars->bSelSpec = FALSE;
 
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnValueError_EM (&$5.tkToken);
+                                                 PrimFnValueError_EM (&$5.tkToken APPEND_NAME_ARG);
 
                                              FreeResult (&$1);
                                              FreeResult (&$4);
@@ -3993,7 +3993,7 @@ NameVals:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnValueError_EM (&$1.tkToken);
+                                                 PrimFnValueError_EM (&$1.tkToken APPEND_NAME_ARG);
 /////////////////////////////////////////////FreeResult (&$1);                       // Validation only
                                              YYERROR3
                                          } // End IF
@@ -4019,7 +4019,7 @@ NameVals:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnValueError_EM (&$2.tkToken);
+                                                 PrimFnValueError_EM (&$2.tkToken APPEND_NAME_ARG);
                                              FreeResult (&$1);
 /////////////////////////////////////////////FreeResult (&$2);                       // Validation only
                                              YYERROR3
@@ -4034,7 +4034,7 @@ NameVals:
 
 
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnNonceError_EM (&$2.tkToken);
+                                                 PrimFnNonceError_EM (&$2.tkToken APPEND_NAME_ARG);
                                              FreeResult (&$2);
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
                                              YYERROR3
@@ -4053,7 +4053,7 @@ NameVals:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnValueError_EM (&$2.tkToken);
+                                                 PrimFnValueError_EM (&$2.tkToken APPEND_NAME_ARG);
                                              FreeResult (&$2);
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
                                              YYERROR3
@@ -4077,7 +4077,7 @@ NameVals:
 
 
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnNonceError_EM (&$3.tkToken);
+                                                 PrimFnNonceError_EM (&$3.tkToken APPEND_NAME_ARG);
                                              FreeResult (&$1);
                                              FreeResult (&$3);
 /////////////////////////////////////////////FreeResult (&$4);                       // Validation only
@@ -4098,7 +4098,7 @@ NameVals:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnValueError_EM (&$4.tkToken);
+                                                 PrimFnValueError_EM (&$4.tkToken APPEND_NAME_ARG);
                                              FreeResult (&$1);
                                              FreeResult (&$3);
 /////////////////////////////////////////////FreeResult (&$4);                       // Validation only
@@ -4158,7 +4158,7 @@ NameVars:
                                          {
                                              $3.tkToken.tkFlags.TknType = TKT_VARNAMED;
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnNonceError_EM (&$3.tkToken);
+                                                 PrimFnNonceError_EM (&$3.tkToken APPEND_NAME_ARG);
 
 
                                              FreeResult (&$2);
@@ -4178,7 +4178,7 @@ NameVars:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              if (!(CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR))
-                                                 PrimFnValueError_EM (&$3.tkToken);
+                                                 PrimFnValueError_EM (&$3.tkToken APPEND_NAME_ARG);
                                              FreeResult (&$2);
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
                                              YYERROR3

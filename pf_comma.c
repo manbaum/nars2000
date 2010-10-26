@@ -26,10 +26,16 @@
 
 
 //***************************************************************************
-//  $PrimFnComma_EM
+//  $PrimFnComma_EM_YY
 //
 //  Primitive function for monadic and dyadic Comma ("ravel/table" and "catenate/laminate")
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnComma_EM_YY"
+#else
+#define APPEND_NAME
+#endif
 
 LPPL_YYSTYPE PrimFnComma_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -44,7 +50,7 @@ LPPL_YYSTYPE PrimFnComma_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc);
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
@@ -52,6 +58,7 @@ LPPL_YYSTYPE PrimFnComma_EM_YY
     else
         return PrimFnDydComma_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnComma_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

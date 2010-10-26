@@ -297,6 +297,8 @@ default:        \
 
   #define DBGENTER      if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
   #define DBGLEAVE      if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
+
+  #define APPEND_NAME_ARG , APPEND_NAME
 #else
   #define LCLODS
   #define LCLODSDD
@@ -306,6 +308,8 @@ default:        \
 
   #define DBGENTER
   #define DBGLEAVE
+
+  #define APPEND_NAME_ARG
 #endif
 
 

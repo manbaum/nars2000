@@ -83,7 +83,7 @@ LPPL_YYSTYPE SysFnMonTF_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc);
+    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonTF_EM_YY
 #undef  APPEND_NAME
 

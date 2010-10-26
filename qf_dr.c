@@ -309,7 +309,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_LIST32:
         case DR_LIST64:
         default:
-            return PrimFnDomainError_EM (lptkFunc);
+            return PrimFnDomainError_EM (lptkFunc APPEND_NAME_ARG);
 
         case DR_CHAR8:
         case DR_CHAR32:
@@ -321,7 +321,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_OCTONIONS:
         case DR_RATIONAL:
         case DR_EXTPREC:
-            return PrimFnNonceError_EM (lptkFunc);
+            return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
     } // End SWITCH
 
     if (hGlbRes EQ NULL)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ LPPL_YYSTYPE SysFnMonEA_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc);
+    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonEA_EM_YY
 #undef  APPEND_NAME
 
@@ -106,7 +106,7 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnNonceError_EM (lptkFunc);
+    return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
 
 
 

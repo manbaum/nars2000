@@ -31,6 +31,12 @@
 //  Primitive function for monadic and dyadic Squad (ERROR and "rectangular indexing")
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnSquad_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimFnSquad_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -43,7 +49,7 @@ LPPL_YYSTYPE PrimFnSquad_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc);
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
@@ -51,6 +57,7 @@ LPPL_YYSTYPE PrimFnSquad_EM_YY
     else
         return PrimFnDydSquad_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnSquad_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -104,7 +111,7 @@ LPPL_YYSTYPE PrimFnMonSquad_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc);
+    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonSquad_EM_YY
 #undef  APPEND_NAME
 

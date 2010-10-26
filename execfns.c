@@ -464,7 +464,7 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
     {
         if (lptkAxis NE NULL)
             lpYYRes =
-              PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
+              PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken APPEND_NAME_ARG);
         else
             // Execute as Train, skipping over the monadic operator
             lpYYRes =
@@ -993,7 +993,7 @@ LPPL_YYSTYPE ExecOp1_EM_YY
                                       lpYYFcnStrOpr,            // Ptr to operator function strand
                                       lptkRhtArg);              // Ptr to right arg token
         case UTF16_STILETILDE:      // Partition
-            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
             DbgBrk ();              // ***FINISHME*** -- UTF16_STILETILDE
 
@@ -1072,7 +1072,7 @@ LPPL_YYSTYPE ExecOp2_EM_YY
                                                lpYYFcnStrOpr,   // Ptr to operator function strand
                                                lptkRhtArg);     // Ptr to right arg token
         case UTF16_DIERESISDEL:     // Dual
-            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
             DbgBrk ();              // ***FINISHME*** -- UTF16_DIERESISDEL
 
@@ -1088,7 +1088,7 @@ LPPL_YYSTYPE ExecOp2_EM_YY
                                             lpYYFcnStrOpr,  // Ptr to operator function strand
                                             lptkRhtArg);    // Ptr to right arg token
         case UTF16_DIERESISDOWNTACK:// Convolution
-            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
             DbgBrk ();              // ***FINISHME*** -- UTF16_DIERESISDOWNTACK
 
@@ -1100,7 +1100,7 @@ LPPL_YYSTYPE ExecOp2_EM_YY
             return NULL;
 
         case UTF16_DIERESISSTAR:    // Power
-            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
             DbgBrk ();              // ***FINISHME*** -- UTF16_DIERESISSTAR
 

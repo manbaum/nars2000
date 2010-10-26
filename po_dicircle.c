@@ -32,6 +32,12 @@
 //    dyadic operator DieresisCircle (ERROR and "compose")
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimOpDieresisCircle_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -42,7 +48,7 @@ LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
@@ -57,6 +63,7 @@ LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
                                          lptkRhtArg,    // Ptr to right arg token
                                          FALSE);        // TRUE iff prototyping
 } // End PrimOpDieresisCircle_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -121,14 +128,21 @@ AXIS_SYNTAX_EXIT:
 //  Primitive operator for monadic derived function from DieresisCircle (ERROR)
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimOpMonDieresisCircle_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken);
+    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpDieresisCircle_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

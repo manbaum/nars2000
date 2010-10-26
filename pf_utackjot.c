@@ -50,7 +50,7 @@ LPPL_YYSTYPE PrimFnUpTackJot_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc);
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -620,8 +620,9 @@ LPPL_YYSTYPE PrimFnDydUpTackJot_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc);
+    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnDydUpTackJot_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

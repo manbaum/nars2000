@@ -1636,7 +1636,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
         } // End IF
     } else
     {
-        PrimFnNonceError_EM (lptkFunc);
+        PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
 
         goto ERROR_EXIT;
 

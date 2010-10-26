@@ -31,21 +31,30 @@
 //  Primitive function SYNTAX ERROR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnSyntaxError_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnSyntaxError_EM
-    (LPTOKEN lptkFunc)
+    (LPTOKEN lptkFunc
+#ifdef DEBUG
+, LPWCHAR APPEND_NAME
+#endif
+    )
 
 {
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+#ifdef DEBUG
+    static WCHAR wszTemp[1024];
+
+    // Copy the error message to the temp
+    lstrcpyW (wszTemp, ERRMSG_SYNTAX_ERROR);
+
+    // Append the suffix to the temp
+    lstrcatW (wszTemp, APPEND_NAME);
+
+    ErrorMessageIndirectToken (wszTemp, lptkFunc);
+#else
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR,
                                lptkFunc);
+#endif
     return NULL;
 } // End PrimFnSyntaxError_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -54,21 +63,30 @@ LPPL_YYSTYPE PrimFnSyntaxError_EM
 //  Primitive function VALENCE ERROR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnValenceError_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnValenceError_EM
-    (LPTOKEN lptkFunc)
+    (LPTOKEN lptkFunc
+#ifdef DEBUG
+, LPWCHAR APPEND_NAME
+#endif
+    )
 
 {
-    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
+#ifdef DEBUG
+    static WCHAR wszTemp[1024];
+
+    // Copy the error message to the temp
+    lstrcpyW (wszTemp, ERRMSG_VALENCE_ERROR);
+
+    // Append the suffix to the temp
+    lstrcatW (wszTemp, APPEND_NAME);
+
+    ErrorMessageIndirectToken (wszTemp, lptkFunc);
+#else
+    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR,
                                lptkFunc);
+#endif
     return NULL;
 } // End PrimFnValenceError_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -77,21 +95,30 @@ LPPL_YYSTYPE PrimFnValenceError_EM
 //  Primitive function NONCE ERROR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnNonceError_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnNonceError_EM
-    (LPTOKEN lptkFunc)
+    (LPTOKEN lptkFunc
+#ifdef DEBUG
+, LPWCHAR APPEND_NAME
+#endif
+    )
 
 {
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+#ifdef DEBUG
+    static WCHAR wszTemp[1024];
+
+    // Copy the error message to the temp
+    lstrcpyW (wszTemp, ERRMSG_NONCE_ERROR);
+
+    // Append the suffix to the temp
+    lstrcatW (wszTemp, APPEND_NAME);
+
+    ErrorMessageIndirectToken (wszTemp, lptkFunc);
+#else
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR,
                                lptkFunc);
+#endif
     return NULL;
 } // End PrimFnNonceError_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -100,21 +127,30 @@ LPPL_YYSTYPE PrimFnNonceError_EM
 //  Primitive function DOMAIN ERROR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDomainError_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDomainError_EM
-    (LPTOKEN lptkFunc)
+    (LPTOKEN lptkFunc
+#ifdef DEBUG
+, LPWCHAR APPEND_NAME
+#endif
+    )
 
 {
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+#ifdef DEBUG
+    static WCHAR wszTemp[1024];
+
+    // Copy the error message to the temp
+    lstrcpyW (wszTemp, ERRMSG_DOMAIN_ERROR);
+
+    // Append the suffix to the temp
+    lstrcatW (wszTemp, APPEND_NAME);
+
+    ErrorMessageIndirectToken (wszTemp, lptkFunc);
+#else
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR,
                                lptkFunc);
+#endif
     return NULL;
 } // End PrimFnDomainError_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -123,20 +159,30 @@ LPPL_YYSTYPE PrimFnDomainError_EM
 //  Primitive function VALUE ERROR
 //***************************************************************************
 
+LPPL_YYSTYPE PrimFnValueError_EM
+    (LPTOKEN lptkFunc
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnValueError_EM"
-#else
-#define APPEND_NAME
+, LPWCHAR APPEND_NAME
 #endif
-
-void PrimFnValueError_EM
-    (LPTOKEN lptkFunc)
+    )
 
 {
-    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+#ifdef DEBUG
+    static WCHAR wszTemp[1024];
+
+    // Copy the error message to the temp
+    lstrcpyW (wszTemp, ERRMSG_VALUE_ERROR);
+
+    // Append the suffix to the temp
+    lstrcatW (wszTemp, APPEND_NAME);
+
+    ErrorMessageIndirectToken (wszTemp, lptkFunc);
+#else
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR,
                                lptkFunc);
+#endif
+    return NULL;
 } // End PrimFnValueError_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -158,7 +204,7 @@ LPPL_YYSTYPE PrimFnMonValenceError_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return PrimFnValenceError_EM (lptkFunc);
+    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonValenceError_EM
 #undef  APPEND_NAME
 
@@ -385,7 +431,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc);
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -1569,7 +1615,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc);
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args

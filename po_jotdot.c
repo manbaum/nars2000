@@ -32,6 +32,12 @@
 //    monadic operator JotDot (ERROR and "outer product")
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimOpJotDot_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimOpJotDot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -42,7 +48,7 @@ LPPL_YYSTYPE PrimOpJotDot_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
@@ -53,6 +59,7 @@ LPPL_YYSTYPE PrimOpJotDot_EM_YY
                                       lpYYFcnStrOpr,    // Ptr to operator function strand
                                       lptkRhtArg);      // Ptr to right arg token
 } // End PrimOpJotDot_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -113,14 +120,21 @@ LPPL_YYSTYPE PrimOpMonJotDot_EM_YY
 //  Primitive operator for monadic derived function from JotDot (ERROR)
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimOpMonJotDotCommon_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimOpMonJotDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken);
+    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpJotDotCommon_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

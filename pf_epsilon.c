@@ -56,7 +56,7 @@ LPPL_YYSTYPE PrimFnEpsilon_EM_YY
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc);
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

@@ -2679,7 +2679,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 switch ((--lpUndoNxt)->Action)
                 {
                     case undoNone:
-                        lpUndoNxt++;
+                        lpUndoNxt--;
 
                         break;
 

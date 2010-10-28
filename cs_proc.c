@@ -1244,9 +1244,9 @@ UBOOL CS_SELECT_Stmt_EM
                             for (uCnt = 0, bCmp = FALSE; (!bCmp) && uCnt < aplNELMCL; uCnt++)
                             {
                                 // Get the next value from the CASELIST result token into a token
-                                GetNextValueTokenIntoToken (&lpMemPTD->YYCaseExec.tkToken,
-                                                             uCnt,
-                                                            &tkCL);
+                                GetNextValueTokenIntoToken (&lpMemPTD->YYCaseExec.tkToken,      // Ptr to the arg token
+                                                             uCnt,                              // Index to use
+                                                            &tkCL);                             // Ptr to the result token
                                 // Use match to determine equality
                                 lpYYTmp =
                                   PrimFnDydEqualUnderbar_EM_YY (&tkCL,                          // Ptr to left arg token

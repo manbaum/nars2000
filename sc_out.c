@@ -108,7 +108,7 @@ UBOOL CmdOut_EM
     _wmakepath  (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
 
     // Attempt to open the file (in binary mode)
-    fStream = _wfopen (lpwszTail, L"wb");
+    fStream = fopenW (lpwszTail, L"wb");
 
     // If not found, ...
     if (fStream EQ NULL)

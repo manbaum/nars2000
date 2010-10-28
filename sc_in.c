@@ -749,7 +749,7 @@ UBOOL TransferInverseChr1_EM
         lpSymEntry = lpSymEntry->stPrvEntry;
 
     // Get the rank
-    swscanf (lpwData, L"%I64u", &aplRankRes);
+    sscanfW (lpwData, L"%I64u", &aplRankRes);
 
     // Skip past the rank
     lpwData = SkipPastCharW (lpwData, L' ');
@@ -764,7 +764,7 @@ UBOOL TransferInverseChr1_EM
     for (uCnt = 0; uCnt < aplRankRes; uCnt++)
     {
         // Get the next shape value
-        swscanf (lpwData, L"%I64u", &aplTemp);
+        sscanfW (lpwData, L"%I64u", &aplTemp);
 
         // Accumulate into the NELM
         aplNELMRes *= aplTemp;
@@ -818,7 +818,7 @@ UBOOL TransferInverseChr1_EM
         for (uCnt = 0; uCnt < aplRankRes; uCnt++)
         {
             // Get the next shape value
-            swscanf (lpwTemp, L"%I64u", ((LPAPLDIM) lpMemRes)++);
+            sscanfW (lpwTemp, L"%I64u", ((LPAPLDIM) lpMemRes)++);
 
             // Skip past the shape value
             lpwTemp = SkipPastCharW (lpwTemp, L' ');
@@ -1004,7 +1004,7 @@ UBOOL TransferInverseNum1_EM
     *lpwData++ = UTF16_LEFTARROW;
 
     // Get the rank
-    swscanf (lpwData, L"%I64u", &aplRankRes);
+    sscanfW (lpwData, L"%I64u", &aplRankRes);
 
     // Save the ptr to the rank
     lpwTemp = lpwData;
@@ -1026,7 +1026,7 @@ UBOOL TransferInverseNum1_EM
     for (uCnt = 0; uCnt < aplRankRes; uCnt++)
     {
         // Get the next shape value
-        swscanf (lpwData, L"%I64u", &aplTemp);
+        sscanfW (lpwData, L"%I64u", &aplTemp);
 
         // Accumulate into the NELM
         aplNELMRes *= aplTemp;

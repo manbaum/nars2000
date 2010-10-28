@@ -3359,14 +3359,14 @@ UBOOL CALLBACK UpdatesDlgProc
 
 #define lpUpdatesDlgStr     ((LPUPDATESDLGSTR) lParam)
             // Split apart the Web version information
-            swscanf (lpUpdatesDlgStr->lpWebVer,
+            sscanfW (lpUpdatesDlgStr->lpWebVer,
                      L"%u.%u.%u.%u",
                     &uWebVer[0],
                     &uWebVer[1],
                     &uWebVer[2],
                     &uWebVer[3]);
             // Split apart the File version information
-            swscanf (lpUpdatesDlgStr->lpFileVer,
+            sscanfW (lpUpdatesDlgStr->lpFileVer,
                      L"%u.%u.%u.%u",
                     &uFilVer[0],
                     &uFilVer[1],

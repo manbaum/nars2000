@@ -129,7 +129,7 @@ UBOOL CmdSave_EM
         if (iCmp NE 0)
         {
             // Attempt to open the workspace
-            fStream = _wfopen (wszTailDPFE, L"r");
+            fStream = fopenW (wszTailDPFE, L"r");
 
             // If it already exists, display an error
             if (fStream NE NULL)
@@ -240,7 +240,7 @@ UBOOL CmdSave_EM
     //  xxx=<Function Header/Lines>
 
     // Create (or truncate the file)
-    fStream = _wfopen (lpMemSaveWSID, L"w");
+    fStream = fopenW (lpMemSaveWSID, L"w");
     if (!fStream)
         goto NOTSAVED_FILE_EXIT;
 

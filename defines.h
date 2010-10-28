@@ -450,6 +450,12 @@ default:        \
 #define strncmpW        wcsncmp
 #define strpbrkW        wcspbrk
 #define strspnW         wcsspn
+#define strtolW         wcstol
+#define isspaceW        iswspace
+#define atofW           _wtof
+#define sscanfW         swscanf
+#define fgetsW          fgetws
+#define fopenW          _wfopen
 
 
 //***************************************************************************

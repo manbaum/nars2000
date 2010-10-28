@@ -692,7 +692,7 @@ UINT ScanNumberFS
     } else
         bNeg = FALSE;
     // Scan for the number
-    if (iMinCnt > swscanf (&lpfsLocalVars->lpwszCur[bNeg], lpwFmtFmt, lpuVal))
+    if (iMinCnt > sscanfW (&lpfsLocalVars->lpwszCur[bNeg], lpwFmtFmt, lpuVal))
         return 0;
 
     if (bNeg)
@@ -773,7 +773,7 @@ UBOOL fnSetModO
 
     // Scan for the number
     // Split cases based upon the # args
-    switch (swscanf (&lpwCur[bNeg], L"%lf", &lpOChain->aplFltVal))
+    switch (sscanfW (&lpwCur[bNeg], L"%lf", &lpOChain->aplFltVal))
     {
         case 0:             // No fields scanned
             lpOChain->aplIntVal = 0; // Default value for no fields

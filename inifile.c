@@ -853,7 +853,7 @@ void ReadIniFileGlb
         // Check for value
         if (wszTemp[0] NE WC_EOS)
             // Convert the numbers
-            swscanf (wszTemp,
+            sscanfW (wszTemp,
                      FMTSTR_SYNTAXCOLOR,
                     &gSyntaxColorName[uCnt].syntClr.crFore,
                     &gSyntaxColorName[uCnt].syntClr.crBack,
@@ -874,7 +874,7 @@ void ReadIniFileGlb
     // Check for value
     if (wszTemp[0] NE WC_EOS)
         // Convert the numbers
-        swscanf (wszTemp,
+        sscanfW (wszTemp,
                  FMTSTR_CUSTOMCOLORS,
                 &aCustomColors[ 0], &aCustomColors[ 1], &aCustomColors[ 2], &aCustomColors[ 3],
                 &aCustomColors[ 4], &aCustomColors[ 5], &aCustomColors[ 6], &aCustomColors[ 7],
@@ -952,12 +952,12 @@ void GetPrivateProfileLogFontW
     {
         // Note that this works for little-endian formats only as
         //   the .lfItalic and following numeric fields are BYTE
-        //   but there is no way to tell swscanf about that, so it
+        //   but there is no way to tell sscanfW about that, so it
         //   treats them as four-byte ints overwiting the next three
         //   bytes each time it scans a number which is actually
         //   a one-byte int.  As this happens sequentially and the
         //   last field is the FaceName, there is no harm.
-        swscanf (wszTemp,
+        sscanfW (wszTemp,
                  FMTSTR_LOGFONT_INP,
                 &lplfFont->lfHeight,
                 &lplfFont->lfWidth,
@@ -973,7 +973,7 @@ void GetPrivateProfileLogFontW
                 &lplfFont->lfQuality,
                 &lplfFont->lfPitchAndFamily,
                 &lplfFont->lfFaceName);
-        // If the facename contains an embedded blank, swscanf misses
+        // If the facename contains an embedded blank, sscanfW misses
         //   the tail of the name so we do it over again here
         lstrcpyW (lplfFont->lfFaceName, strchrW (wszTemp, WC_SQ) + 1);
         *(strchrW (lplfFont->lfFaceName, WC_SQ)) = WC_EOS;
@@ -1200,7 +1200,7 @@ void CopyConvertDataOfType
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
                 // Convert the next #
-                swscanf (wszTemp,
+                sscanfW (wszTemp,
                          L"%I64d",
                          lpMemRes);
                 // Skip to the next field
@@ -1268,7 +1268,7 @@ APLNELM ScanNELM
 
 {
     APLNELM aplNELMRes;             // Result NELM
-    APLINT  aplIntTemp;             // Temporary integer for swscanf
+    APLINT  aplIntTemp;             // Temporary integer for sscanfW
 
     // Initialize the result NELM
     aplNELMRes = 0;
@@ -1280,7 +1280,7 @@ APLNELM ScanNELM
             // Loop through the arg counting one integer at a time
             while (*wszTemp)
             {
-                if (EOF EQ swscanf (wszTemp,
+                if (EOF EQ sscanfW (wszTemp,
                                     L"%I64d",
                                    &aplIntTemp))
                     break;

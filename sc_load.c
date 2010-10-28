@@ -122,7 +122,7 @@ UBOOL CmdLoadCom_EM
 
         // Handle WS NOT FOUND messages here
         // Attempt to open the workspace
-        fStream = _wfopen (wszTailDPFE, L"r");
+        fStream = fopenW (wszTailDPFE, L"r");
 
         // If the workspace doesn't exist, ...
         if (fStream EQ NULL)
@@ -227,7 +227,7 @@ UBOOL LoadWorkspace_EM
     } // End IF
 
     // Attempt to open the workspace
-    fStream = _wfopen (lpwszDPFE, L"r");
+    fStream = fopenW (lpwszDPFE, L"r");
 
     // If the workspace doesn't exist, ...
     if (fStream EQ NULL)
@@ -362,7 +362,7 @@ UBOOL LoadWorkspace_EM
                     *lpwFcnLine++ = WC_EOS;
 
                     // Get the function line #
-                    swscanf (lpwFcnLine,
+                    sscanfW (lpwFcnLine,
                              L"%u",
                             &uLineNum);
                     // Set the flags for what we're looking up
@@ -1020,7 +1020,7 @@ LPWCHAR ParseSavedWsVar_EM
             case ARRAY_BOOL:        // Boolean
             case ARRAY_INT:         // Integer
                 // Scan in the value
-                swscanf (lpwSrc, SCANFSTR_APLINT, &aplInteger);
+                sscanfW (lpwSrc, SCANFSTR_APLINT, &aplInteger);
 
                 // Skip to the next field
                 lpwSrc = SkipPastCharW (lpwSrc, L' ');
@@ -1225,7 +1225,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             lpwSrc++;
 
             // Get the object NELM
-            swscanf (lpwSrc, SCANFSTR_APLUINT, &aplNELMObj); lpwSrc = SkipBlackW (lpwSrc);
+            sscanfW (lpwSrc, SCANFSTR_APLUINT, &aplNELMObj); lpwSrc = SkipBlackW (lpwSrc);
 
             // Ensure there's a valid separator
             if (*lpwSrc NE L' ')
@@ -1235,7 +1235,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             lpwSrc++;
 
             // Get the object rank
-            swscanf (lpwSrc, SCANFSTR_APLUINT, &aplRankObj); lpwSrc = SkipBlackW (lpwSrc);
+            sscanfW (lpwSrc, SCANFSTR_APLUINT, &aplRankObj); lpwSrc = SkipBlackW (lpwSrc);
 
             // Ensure there's a valid separator
             if (*lpwSrc NE L' ')
@@ -1286,7 +1286,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             for (uObj = 0; uObj < aplRankObj; uObj++)
             {
                 // Scan in the next dimension
-                swscanf (lpwSrc, SCANFSTR_APLUINT, lpMemObj);
+                sscanfW (lpwSrc, SCANFSTR_APLUINT, lpMemObj);
 
                 // Skip to the next field
                 lpwSrc = SkipPastCharW (lpwSrc, L' ');
@@ -1355,7 +1355,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
                     {
                         // Scan in the next value
-                        swscanf (lpwSrc, SCANFSTR_APLUINT, &aplInteger);
+                        sscanfW (lpwSrc, SCANFSTR_APLUINT, &aplInteger);
 
                         // Skip to the next field
                         lpwSrc = SkipPastCharW (lpwSrc, L' ');
@@ -1378,7 +1378,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
                     {
                         // Scan in the next value and skip over it
-                        swscanf (lpwSrc, SCANFSTR_APLINT, ((LPAPLINT) lpMemObj)++);
+                        sscanfW (lpwSrc, SCANFSTR_APLINT, ((LPAPLINT) lpMemObj)++);
 
                         // Skip to the next field
                         lpwSrc = SkipPastCharW (lpwSrc, L' ');
@@ -1443,13 +1443,13 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     // The next two values are the APA offset and multiplier
 
                     // Scan in the next value and skip over it
-                    swscanf (lpwSrc, SCANFSTR_APLINT, ((LPAPLINT) lpMemObj)++);
+                    sscanfW (lpwSrc, SCANFSTR_APLINT, ((LPAPLINT) lpMemObj)++);
 
                     // Skip to the next field
                     lpwSrc = SkipPastCharW (lpwSrc, L' ');
 
                     // Scan in the next value and skip over it
-                    swscanf (lpwSrc, SCANFSTR_APLINT, ((LPAPLINT) lpMemObj)++);
+                    sscanfW (lpwSrc, SCANFSTR_APLINT, ((LPAPLINT) lpMemObj)++);
 
                     // Skip to the next field
                     lpwSrc = SkipPastCharW (lpwSrc, L' ');
@@ -1566,7 +1566,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                (UINT) (uMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart)), // Maximum size of lpwSrc
                                       lpwszDPFE);           // Ptr to the file name
             // Convert the CreationTime string to time
-            swscanf (lpwSrc, SCANFSTR_TIMESTAMP, &ftCreation);
+            sscanfW (lpwSrc, SCANFSTR_TIMESTAMP, &ftCreation);
 
             // Get the LastModTime string
             GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
@@ -1576,7 +1576,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                (UINT) (uMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart)), // Maximum size of lpwSrc
                                       lpwszDPFE);           // Ptr to the file name
             // Convert the LastModTime string to time
-            swscanf (lpwSrc, SCANFSTR_TIMESTAMP, &ftLastMod);
+            sscanfW (lpwSrc, SCANFSTR_TIMESTAMP, &ftLastMod);
 
             // If it's a user-defined function/operator, ...
             if (bUserDefined)
@@ -1663,7 +1663,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         for (uCnt = 0; uCnt < uLineCnt; uCnt++, lpMemMonInfo++)
                         {
                             // Scan in the first field
-                            swscanf (lpMemUndoTxt,
+                            sscanfW (lpMemUndoTxt,
                                      L"%I64u %I64u %u",
                                     &lpMemMonInfo->IncSubFns,
                                     &lpMemMonInfo->ExcSubFns,

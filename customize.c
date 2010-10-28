@@ -1915,7 +1915,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                                     *wp++ = L'-';
 
                                 // Scan the value and one additional field to check for extra chars
-                                swscanf (lpwszGlbTemp, L"%le%1ws", &fQuadVar, wszTemp);
+                                sscanfW (lpwszGlbTemp, L"%le%1ws", &fQuadVar, wszTemp);
 
                                 // Ensure non-negative and no extra chars
                                 if (fQuadVar >= 0

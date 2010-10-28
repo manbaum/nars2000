@@ -385,7 +385,7 @@ void GetModuleFileNames
         LclFileVersionStrW (L"comctl32.dll", wszComctl32FileVer);
 
         // Get the Comctl32.dll major and minor file version #s
-        swscanf (wszComctl32FileVer,
+        sscanfW (wszComctl32FileVer,
                  L"%f",
                 &fComctl32FileVer);
     } // End IF

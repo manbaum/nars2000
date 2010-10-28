@@ -839,14 +839,14 @@ HGLOBAL SF_UndoBufferLW
     WCHAR      wcAction;            // Temporary character
     LPUNDO_BUF lpMemUndoBin;        // Ptr to Undo Buffer in binary format
     UINT       uUndoCount,          // # entries in the Undo Buffer
-               uFields;             // # fields parsed by swscanf
+               uFields;             // # fields parsed by sscanfW
     HGLOBAL    hGlbUndoBuff;        // Undo Buffer global memory handle
 
     // Get parameters
     lpMemUndoTxt = lpLW_Params->lpMemUndoTxt;
 
     // Parse the # entries, and skip over it
-    swscanf (lpMemUndoTxt, L"%d", &uUndoCount);
+    sscanfW (lpMemUndoTxt, L"%d", &uUndoCount);
     lpMemUndoTxt = SkipBlackW (lpMemUndoTxt);
 
     // Check for empty buffer
@@ -880,7 +880,7 @@ HGLOBAL SF_UndoBufferLW
 
         // Parse the Action, CharPosBeg, CharPosEnd, Group
         uFields =
-          swscanf (lpMemUndoTxt,
+          sscanfW (lpMemUndoTxt,
                    L"%c %d %d %d '%c'",
                   &wcAction,
                   &lpMemUndoBin->CharPosBeg,

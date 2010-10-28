@@ -86,7 +86,7 @@ UBOOL CmdCopy_EM
     if (*lpwszTail EQ FMTCHR_LEAD)
     {
         // Scan the command line for the source tab ID
-        iCnt = swscanf (lpwszTail, FMTSTR_GLBCNT, &iSrcTabID);
+        iCnt = sscanfW (lpwszTail, FMTSTR_GLBCNT, &iSrcTabID);
 
         // Ensure we got a value
         if (iCnt NE 1)
@@ -137,7 +137,7 @@ UBOOL CmdCopy_EM
         lstrcatW (wszTailDPFE, WS_WKSEXT);
 
         // Attempt to open the workspace
-        fStream = _wfopen (wszTailDPFE, L"r");
+        fStream = fopenW (wszTailDPFE, L"r");
 
         // If the workspace doesn't exist, ...
         if (fStream EQ NULL)

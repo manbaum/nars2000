@@ -1254,7 +1254,7 @@ UBOOL TransferInverseFcn1_EM
         lpSymEntry = lpSymEntry->stPrvEntry;
 
     // Get the rank
-    swscanf (lpwData, L"%I64u", &aplRankRes);
+    sscanfW (lpwData, L"%I64u", &aplRankRes);
 
     Assert (aplRankRes EQ 2);
 
@@ -1262,13 +1262,13 @@ UBOOL TransferInverseFcn1_EM
     lpwData = SkipPastCharW (lpwData, L' ');
 
     // Get the next shape value
-    swscanf (lpwData, L"%I64u", &TF1_Params.aplRowsRht);
+    sscanfW (lpwData, L"%I64u", &TF1_Params.aplRowsRht);
 
     // Skip past the # rows
     lpwData = SkipPastCharW (lpwData, L' ');
 
     // Get the next shape value
-    swscanf (lpwData, L"%I64u", &TF1_Params.aplColsRht);
+    sscanfW (lpwData, L"%I64u", &TF1_Params.aplColsRht);
 
     // Skip past the # cols
     lpwData = SkipPastCharW (lpwData, L' ');

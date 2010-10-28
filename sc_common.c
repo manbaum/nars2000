@@ -111,7 +111,7 @@ void DisplayWorkspaceStamp
                               sizeof (wszTimeStamp),// Byte size of the output buffer
                               lpwszDPFE);           // Ptr to the file name
     // Convert the CreationTime string to time
-    swscanf (wszTimeStamp, SCANFSTR_TIMESTAMP, &ftCreation);
+    sscanfW (wszTimeStamp, SCANFSTR_TIMESTAMP, &ftCreation);
 
     if (OptionFlags.bUseLocalTime)
         // Convert to local filetime
@@ -205,7 +205,7 @@ void MakeWorkspaceBackup
                 *fBackup;               // Ptr to file stream for the backup file
 
     // Attempt to open the workspace
-    fStream = _wfopen (lpwszDPFE, L"r");
+    fStream = fopenW (lpwszDPFE, L"r");
 
     // If the workspace doesn't exist, ...
     if (fStream EQ NULL)
@@ -229,7 +229,7 @@ void MakeWorkspaceBackup
     // Append new extensions
     lstrcpyW (&lpwszTemp[uLen], lpwExtType);
 
-    fBackup = _wfopen (lpwszTemp, L"wb");
+    fBackup = fopenW (lpwszTemp, L"wb");
     if (fBackup EQ NULL)
         goto NOT_OPENED_EXIT;
 

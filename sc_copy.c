@@ -63,6 +63,7 @@ UBOOL CmdCopy_EM
     HWND         hWndEC;                    // Edit Ctrl window handle
     LPSYMENTRY   lpSymLink = NULL;          // Anchor of SYMENTRY links for [Globals] values
                                             //   so we may delete them easily
+    LPDICTIONARY lpDict = NULL;             // Ptr to workspace dictionary
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -124,6 +125,8 @@ UBOOL CmdCopy_EM
     } else
     // Copy from a workspace file
     {
+        LPWCHAR lpwszProf;          // Ptr to profile string
+
         // Skip over the workspace name
         lpwCmd = SkipToCharDQW (lpwszTail, L' ');
         wcTmp = *lpwCmd; *lpwCmd++ = WC_EOS;
@@ -146,13 +149,20 @@ UBOOL CmdCopy_EM
         // We no longer need this handle
         fclose (fStream); fStream = NULL;
 
+        // Initialize the iniparser
+        lpDict = ProfileLoad_EM (wszTailDPFE, &lpwErrMsg);
+        if (!lpDict)
+            goto ERRMSG_EXIT;
+
         // Get the version #
-        GetPrivateProfileStringW (SECTNAME_GENERAL,         // Ptr to the section name
-                                  KEYNAME_VERSION,          // Ptr to the key name
-                                  L"",                      // Ptr to the default value
-                                  wszVersion,               // Ptr to the output buffer
-                                  countof (wszVersion),     // Byte size of the output buffer
-                                  wszTailDPFE);             // Ptr to the file name
+        lpwszProf =
+          ProfileGetString (SECTNAME_GENERAL,   // Ptr to the section name
+                            KEYNAME_VERSION,    // Ptr to the key name
+                            L"",                // Ptr to the default value
+                            lpDict);            // Ptr to workspace dictinoary
+        // Copy the string to a save area
+        lstrcpyW (wszVersion, lpwszProf);
+
         // Compare the version #s
         if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
         {
@@ -177,7 +187,7 @@ UBOOL CmdCopy_EM
                             TRUE,                   // TRUE iff we should process all names
                            &lpSymLink,              // Ptr to ptr to SYMENTRY link
                             wszVersion,             // Ptr to workspace version text
-                            wszTailDPFE,            // Save area for canonical form of given ws name
+                            lpDict,                 // Ptr to workspace dictionary
                             lpwszTemp,              // Ptr to temporary storage
                             uMaxSize)               // Maximum size of lpwszTemp
                     EQ -1)                          // If it's an error, ...
@@ -191,7 +201,7 @@ UBOOL CmdCopy_EM
                                 TRUE,                   // TRUE iff we should process all names
                                &lpSymLink,              // Ptr to ptr to SYMENTRY link
                                 wszVersion,             // Ptr to workspace version text
-                                wszTailDPFE,            // Save area for canonical form of given ws name
+                                lpDict,                 // Ptr to workspace dictionary
                                 lpwszTemp,              // Ptr to temporary storage
                                 uMaxSize))              // Maximum size of lpwszTemp
             {
@@ -232,7 +242,7 @@ UBOOL CmdCopy_EM
                                     FALSE,          // TRUE iff we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
                                     wszVersion,     // Ptr to workspace version text
-                                    wszTailDPFE,    // Save area for canonical form of given ws name
+                                    lpDict,         // Ptr to workspace dictionary
                                     lpwszTemp,      // Ptr to temporary storage
                                     uMaxSize))      // Maximum size of lpwszTemp
                 {
@@ -260,7 +270,7 @@ UBOOL CmdCopy_EM
                                     FALSE,          // TRUE iff we should process all names
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
                                     wszVersion,     // Ptr to workspace version text
-                                    wszTailDPFE,    // Save area for canonical form of given ws name
+                                    lpDict,         // Ptr to workspace dictionary
                                     lpwszTemp,      // Ptr to temporary storage
                                     uMaxSize))      // Maximum size of lpwszTemp
                 {
@@ -293,7 +303,7 @@ UBOOL CmdCopy_EM
     } // End IF/ELSE
 
     // Display the workspace timestamp
-    DisplayWorkspaceStamp (wszTailDPFE);
+    DisplayWorkspaceStamp (lpDict);
 
     // Check for names not found
     if (lpwNotFound NE lpwszTail)
@@ -333,6 +343,13 @@ ERRMSG_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
+    // If there's a dictionary, ...
+    if (lpDict)
+    {
+        // Free the dictionary
+        ProfileUnload (lpDict); lpDict = NULL;
+    } // End IF
+
     return bRet;
 } // End CmdCopy_EM
 #undef  APPEND_NAME
@@ -378,20 +395,21 @@ void DeleteGlobalLinks
 //***************************************************************************
 
 int CopyWsVars
-    (LPWCHAR     lpwNameInCmd,              // Ptr to name in command line (may be NULL if bAllNames)
-     LPWCHAR     lpwCmd,                    // Ptr to command line
-     HWND        hWndEC,                    // Edit Ctrl for SM window handle
-     LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
-     UBOOL       bAllNames,                 // TRUE if we should process all names
-     LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
-     LPWCHAR     lpwszVersion,              // Ptr to workspace version text
-     WCHAR       wszTailDPFE[],             // Save area for canonical form of given ws name
-     LPWCHAR     lpwszTemp,                 // Ptr to temporary storage
-     UINT        uMaxSize)                  // Maximum size of lpwszTemp
+    (LPWCHAR       lpwNameInCmd,            // Ptr to name in command line (may be NULL if bAllNames)
+     LPWCHAR       lpwCmd,                  // Ptr to command line
+     HWND          hWndEC,                  // Edit Ctrl for SM window handle
+     LPWCHAR      *lplpwErrMsg,             // Ptr to ptr to (constant) error message text
+     UBOOL         bAllNames,               // TRUE if we should process all names
+     LPSYMENTRY   *lplpSymLink,             // Ptr to ptr to SYMENTRY link
+     LPWCHAR       lpwszVersion,            // Ptr to workspace version text
+     LPDICTIONARY  lpDict,                  // Ptr to workspace dictionary
+     LPWCHAR       lpwszTemp,               // Ptr to temporary storage
+     UINT          uMaxSize)                // Maximum size of lpwszTemp
 
 {
     WCHAR        wszCount[8];               // Save area for formatted uSymVar/Fcn counter
     LPWCHAR      lpwNameInWrk,              // Ptr to name in workspace file
+                 lpwszProf,                 // Ptr to profile string
                  lpwDataInWrk;              // Ptr to key data from the saved workspace file
     UINT         uSymVar,                   // Var section counter
                  uCnt;                      // Loop counter
@@ -400,10 +418,10 @@ int CopyWsVars
 
     // Get the [Vars.0] count
     uSymVar =
-      GetPrivateProfileIntW (SECTNAME_VARS L".0",       // Ptr to the section name
-                             KEYNAME_COUNT,             // Ptr to the key name
-                             0,                         // Default value if not found
-                             wszTailDPFE);              // Ptr to the file name
+      ProfileGetInt (SECTNAME_VARS L".0",   // Ptr to the section name
+                     KEYNAME_COUNT,         // Ptr to the key name
+                     0,                     // Default value if not found
+                     lpDict);               // Ptr to workspace dictionary
     // Loop through the [Vars.0] section
     for (uCnt = 0; uCnt < uSymVar; uCnt++)
     {
@@ -414,12 +432,14 @@ int CopyWsVars
         lpwNameInWrk = lpwszTemp;
 
         // Read the next string
-        GetPrivateProfileStringW (SECTNAME_VARS L".0",  // Ptr to the section name
-                                  wszCount,             // Ptr to the key name
-                                  L"",                  // Ptr to the default value
-                                  lpwNameInWrk,         // Ptr to the output buffer
-                                  uMaxSize,             // Byte size of the output buffer
-                                  wszTailDPFE);         // Ptr to the file name
+        lpwszProf =
+          ProfileGetString (SECTNAME_VARS L".0",    // Ptr to the section name
+                            wszCount,               // Ptr to the key name
+                            L"",                    // Ptr to the default value
+                            lpDict);                // Ptr to workspace dictionary
+        // Copy to save area
+        lstrcpyW (lpwNameInWrk, lpwszProf);
+
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
         *lpwDataInWrk++ = WC_EOS;
@@ -490,7 +510,7 @@ int CopyWsVars
                                   hWndEC,           // Edit Ctrl window handle
                                   lplpSymLink,      // Ptr to ptr to SYMENTRY link
                                   lpwszVersion,     // Ptr to workspace version text
-                                  wszTailDPFE,      // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                  lpDict,           // Ptr to workspace eictionary
                                   lplpwErrMsg);     // Ptr to ptr to (constant error message text
             if (lpwDataInWrk EQ NULL)
                 goto ERRMSG_EXIT;
@@ -555,19 +575,20 @@ ERRMSG_EXIT:
 //***************************************************************************
 
 int CopyWsFcns
-    (LPWCHAR     lpwNameInCmd,              // Ptr to name in command line (may be NULL if bAllNames)
-     HWND        hWndEC,                    // Edit Ctrl for SM window handle
-     LPWCHAR    *lplpwErrMsg,               // Ptr to ptr to (constant) error message text
-     UBOOL       bAllNames,                 // TRUE if we should process all names
-     LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
-     LPWCHAR     lpwszVersion,              // Ptr to workspace version text
-     WCHAR       wszTailDPFE[],             // Save area for canonical form of given ws name
-     LPWCHAR     lpwszTemp,                 // Ptr to temporary storage
-     UINT        uMaxSize)                  // Maximum size of lpwszTemp
+    (LPWCHAR       lpwNameInCmd,            // Ptr to name in command line (may be NULL if bAllNames)
+     HWND          hWndEC,                  // Edit Ctrl for SM window handle
+     LPWCHAR      *lplpwErrMsg,             // Ptr to ptr to (constant) error message text
+     UBOOL         bAllNames,               // TRUE if we should process all names
+     LPSYMENTRY   *lplpSymLink,             // Ptr to ptr to SYMENTRY link
+     LPWCHAR       lpwszVersion,            // Ptr to workspace version text
+     LPDICTIONARY  lpDict,                  // Ptr to workspace dictionary
+     LPWCHAR       lpwszTemp,               // Ptr to temporary storage
+     UINT          uMaxSize)                // Maximum size of lpwszTemp
 
 {
     WCHAR        wszCount[8];               // Save area for formatted uSymVar/Fcn counter
     LPWCHAR      lpwNameInWrk,              // Ptr to name in workspace file
+                 lpwszProf,                 // Ptr to profile string
                  lpwDataInWrk;              // Ptr to key data from the saved workspace file
     UINT         uSymFcn,                   // FcnOpr section counter
                  uCnt;                      // Loop counter
@@ -576,10 +597,10 @@ int CopyWsFcns
 
     // Get the [Fcns.0] count
     uSymFcn =
-      GetPrivateProfileIntW (SECTNAME_FCNS L".0",       // Ptr to the section name
-                             KEYNAME_COUNT,             // Ptr to the key name
-                             0,                         // Default value if not found
-                             wszTailDPFE);              // Ptr to the file name
+      ProfileGetInt (SECTNAME_FCNS L".0",   // Ptr to the section name
+                     KEYNAME_COUNT,         // Ptr to the key name
+                     0,                     // Default value if not found
+                     lpDict);               // Ptr to workspace dictionary
     // Loop through the [Fcns.0] section
     for (uCnt = 0; uCnt < uSymFcn; uCnt++)
     {
@@ -592,12 +613,14 @@ int CopyWsFcns
         lpwNameInWrk = lpwszTemp;
 
         // Read the next string
-        GetPrivateProfileStringW (SECTNAME_FCNS L".0",  // Ptr to the section name
-                                  wszCount,             // Ptr to the key name
-                                  L"",                  // Ptr to the default value
-                                  lpwNameInWrk,         // Ptr to the output buffer
-                                  uMaxSize,             // Byte size of the output buffer
-                                  wszTailDPFE);         // Ptr to the file name
+        lpwszProf =
+          ProfileGetString (SECTNAME_FCNS L".0",  // Ptr to the section name
+                            wszCount,             // Ptr to the key name
+                            L"",                  // Ptr to the default value
+                            lpDict);              // Ptr to workspace dictionary
+        // Copy to save area
+        lstrcpyW (lpwNameInWrk, lpwszProf);
+
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
         *lpwDataInWrk++ = WC_EOS;
@@ -645,7 +668,7 @@ int CopyWsFcns
                                      hWndEC,            // Edit Ctrl window handle
                                      lplpSymLink,       // Ptr to ptr to SYMENTRY link
                                      lpwszVersion,      // Ptr to workspace version text
-                                     wszTailDPFE,       // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                     lpDict,            // Ptr to workspace dictionary
                                      lplpwErrMsg))      // Ptr to ptr to (constant) error message text
                 goto ERRMSG_EXIT;
             // If we're copying a single name, ...

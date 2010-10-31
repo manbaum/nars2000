@@ -50,6 +50,7 @@
 #include "fh_parse.h"
 #include "tokenize.h"
 #include "execmfn.h"
+#include "dictionary.h"
 #include "pertab.h"
 #include "threads.h"
 #include "savefcn.h"

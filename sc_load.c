@@ -197,6 +197,8 @@ UBOOL LoadWorkspace_EM
     WCHAR        wszDir  [_MAX_DIR],
                  wszDrive[_MAX_DRIVE],
                  wszDPFE [_MAX_PATH] = {WC_EOS};
+    LPDICTIONARY lpDict = NULL;         // Ptr to workspace dictionary
+    LPWCHAR      lpwszProf;             // Ptr to profile string
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -254,13 +256,20 @@ UBOOL LoadWorkspace_EM
     if (OptionFlags.bBackupOnLoad)
         MakeWorkspaceBackup (wszDPFE, LOADBAK_EXT);
 
+    // Initialize the iniparser
+    lpDict = ProfileLoad_EM (wszDPFE, &lpwErrMsg);
+    if (!lpDict)
+        goto ERRMSG_EXIT;
+
     // Get the version #
-    GetPrivateProfileStringW (SECTNAME_GENERAL,         // Ptr to the section name
-                              KEYNAME_VERSION,          // Ptr to the key name
-                              L"",                      // Ptr to the default value
-                              wszVersion,               // Ptr to the output buffer
-                              countof (wszVersion),     // Byte size of the output buffer
-                              wszDPFE);                 // Ptr to the file name
+    lpwszProf =
+      ProfileGetString (SECTNAME_GENERAL,   // Ptr to the section name
+                        KEYNAME_VERSION,    // Ptr to the key name
+                        L"",                // Ptr to the default value
+                        lpDict);            // Ptr to workspace dictionary
+    // Copy the string to a save area
+    lstrcpyW (wszVersion, lpwszProf);
+
     // Compare the version #s
     if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
     {
@@ -275,10 +284,10 @@ UBOOL LoadWorkspace_EM
 
     // Get the SI Level
     uSILevel =
-      GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
-                             KEYNAME_SILEVEL,           // Ptr to the key name
-                             0,                         // Default value if not found
-                             wszDPFE);                  // Ptr to the file name
+      ProfileGetInt (SECTNAME_GENERAL,      // Ptr to the section name
+                     KEYNAME_SILEVEL,       // Ptr to the key name
+                     0,                     // Default value if not found
+                     lpDict);               // Ptr to workspace dictionary
     __try
     {
         // Mark as suspended to handle the initial case
@@ -292,12 +301,9 @@ UBOOL LoadWorkspace_EM
             //***************************************************************
             if (0 < uSID)
             {
-                LPWCHAR      lpwSrc,                // Ptr to incoming data
-                             lpwSrcStart,           // Ptr to starting point
-                             lpwFcnName,            // Ptr to function name
+                LPWCHAR      lpwFcnName,            // Ptr to function name
                              lpwFcnLine;            // Ptr to function line #
-                UINT         uMaxSize,              // Maximum size of lpwSrc
-                             uLineNum;              // Function line #
+                UINT         uLineNum;              // Function line #
                 UBOOL        bSuspended;            // TRUE iff the function is suspended
                 LPSYMENTRY   lpSymEntry;            // Ptr to function SYMENTRY
                 HGLOBAL      hGlbDfnHdr;            // Defined function global memory handle
@@ -315,24 +321,15 @@ UBOOL LoadWorkspace_EM
                                 FALSE,                  // Suspended
                                 FALSE,                  // Restartable
                                 TRUE);                  // LinkIntoChain
-                // Save ptr & maximum size
-                lpwSrc   = lpMemPTD->lpwszTemp;
-                uMaxSize = lpMemPTD->uTempMaxSize;
-                lpwSrcStart = lpwSrc;
-
                 // Format the counter
                 wsprintfW (wszCount, L"%d", uSID - 1);
 
                 // Read in the SI line
-                GetPrivateProfileStringW (SECTNAME_SI,          // Ptr to the section name
-                                          wszCount,             // Ptr to the key name
-                                          L"",                  // Ptr to the default value
-                                          lpwSrc,               // Ptr to the output buffer
-                                          uMaxSize,             // Byte size of the output buffer
-                                          wszDPFE);             // Ptr to the file name
-                // Copy as ptr to function name or Quad
-                lpwFcnName = lpwSrc;
-
+                lpwFcnName =
+                  ProfileGetString (SECTNAME_SI,        // Ptr to the section name
+                                    wszCount,           // Ptr to the key name
+                                    L"",                // Ptr to the default value
+                                    lpDict);            // Ptr to workspace dictionary
                 // Convert the {name}s and other chars to UTF16_xxx
                 (void) ConvertNameInPlace (lpwFcnName);
 
@@ -425,10 +422,10 @@ UBOOL LoadWorkspace_EM
 
             // Get the [Vars.nnn] count
             uSymVar =
-              GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
-                                     KEYNAME_COUNT,             // Ptr to the key name
-                                     0,                         // Default value if not found
-                                     wszDPFE);                  // Ptr to the file name
+              ProfileGetInt (wszSectName,   // Ptr to the section name
+                             KEYNAME_COUNT, // Ptr to the key name
+                             0,             // Default value if not found
+                             lpDict);       // Ptr to workspace dictionary
             // Loop through the [Vars.sss] section where sss is the SI level
             for (uCnt = 0; uCnt < uSymVar; uCnt++)
             {
@@ -447,12 +444,14 @@ UBOOL LoadWorkspace_EM
                 wsprintfW (wszCount, L"%d", uCnt);
 
                 // Read the next string
-                GetPrivateProfileStringW (wszSectName,          // Ptr to the section name
-                                          wszCount,             // Ptr to the key name
-                                          L"",                  // Ptr to the default value
-                                          lpwSrc,               // Ptr to the output buffer
-                                          uMaxSize,             // Byte size of the output buffer
-                                          wszDPFE);             // Ptr to the file name
+                lpwszProf =
+                  ProfileGetString (wszSectName,    // Ptr to the section name
+                                    wszCount,       // Ptr to the key name
+                                    L"",            // Ptr to the default value
+                                    lpDict);        // Ptr to workspace dictionary
+                // Copy to save area
+                lstrcpyW (lpwSrc, lpwszProf);
+
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
                     continue;
@@ -524,7 +523,7 @@ UBOOL LoadWorkspace_EM
                                           hWndEC,           // Edit Ctrl window handle
                                          &lpSymLink,        // Ptr to ptr to SYMENTRY link
                                           wszVersion,       // Workspace version text
-                                          wszDPFE,          // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                          lpDict,           // Ptr to workspace dictionary
                                          &lpwErrMsg);       // Ptr to ptr to (constant error message text)
                     if (lpwSrc EQ NULL)
                         goto ERRMSG_EXIT;
@@ -578,10 +577,10 @@ UBOOL LoadWorkspace_EM
 
             // Get the [Fcns.nnn] count
             uSymFcn =
-              GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
-                                     KEYNAME_COUNT,             // Ptr to the key name
-                                     0,                         // Default value if not found
-                                     wszDPFE);                  // Ptr to the file name
+              ProfileGetInt (wszSectName,   // Ptr to the section name
+                             KEYNAME_COUNT, // Ptr to the key name
+                             0,             // Default value if not found
+                             lpDict);       // Ptr to workspace dictionary
             // Loop through the [Fcns.sss] section where sss is the SI level
             for (uCnt = 0; uCnt < uSymFcn; uCnt++)
             {
@@ -601,12 +600,14 @@ UBOOL LoadWorkspace_EM
                 wsprintfW (wszCount, L"%d", uCnt);
 
                 // Read the next string
-                GetPrivateProfileStringW (wszSectName,          // Ptr to the section name
-                                          wszCount,             // Ptr to the key name
-                                          L"",                  // Ptr to the default value
-                                          lpwSrc,               // Ptr to the output buffer
-                                          uMaxSize,             // Byte size of the output buffer
-                                          wszDPFE);             // Ptr to the file name
+                lpwszProf =
+                  ProfileGetString (wszSectName,    // Ptr to the section name
+                                    wszCount,       // Ptr to the key name
+                                    L"",            // Ptr to the default value
+                                    lpDict);        // Ptr to workspace dictionary
+                // Copy to save area
+                lstrcpyW (lpwSrc, lpwszProf);
+
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
                     continue;
@@ -666,7 +667,7 @@ UBOOL LoadWorkspace_EM
                                              hWndEC,        // Edit Ctrl window handle
                                             &lpSymLink,     // Ptr to ptr to SYMENTRY link
                                              wszVersion,    // Workspace version text
-                                             wszDPFE,       // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                             lpDict,        // Ptr to workspace dictionary
                                             &lpwErrMsg))    // Ptr to ptr to (constant) error message text
                         goto ERRMSG_EXIT;
             } // End FOR
@@ -680,15 +681,15 @@ UBOOL LoadWorkspace_EM
 
     // Get [Globals] count
     uGlbCnt =
-      GetPrivateProfileIntW (SECTNAME_GLOBALS,          // Ptr to the section name
-                             KEYNAME_COUNT,             // Ptr to the key name
-                             0,                         // Default value if not found
-                             wszDPFE);                  // Ptr to the file name
+      ProfileGetInt (SECTNAME_GLOBALS,  // Ptr to the section name
+                     KEYNAME_COUNT,     // Ptr to the key name
+                     0,                 // Default value if not found
+                     lpDict);           // Ptr to workspace dictionary
     // Delete the symbol table entries for vars/fcns we allocated of the form FMTSTR_GLBCNT
     DeleteGlobalLinks (lpSymLink);
 
     // Display the workspace timestamp
-    DisplayWorkspaceStamp (wszDPFE);
+    DisplayWorkspaceStamp (lpDict);
 WSID_EXIT:
     // Set the value of the new []WSID as wszDPFE
     bRet = SaveNewWsid_EM (wszDPFE);
@@ -715,6 +716,13 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
     } // End IF
 
+    // If there's a dictionary, ...
+    if (lpDict)
+    {
+        // Free the dictionary
+        ProfileUnload (lpDict); lpDict = NULL;
+    } // End IF
+
     return bRet;
 } // End LoadWorkspace_EM
 #undef  APPEND_NAME
@@ -733,15 +741,15 @@ NORMAL_EXIT:
 #endif
 
 UBOOL ParseSavedWsFcn_EM
-    (LPWCHAR     lpwSrc,                // Ptr to input buffer
-     APLU3264    uMaxSize,              // Maximum size of lpwSrc
-     LPSYMENTRY  lpSymObj,              // Ptr to STE for the object
-     NAME_TYPES  nameType,              // Function name type (see NAME_TYPES)
-     HWND        hWndEC,                // Edit Ctrl window handle
-     LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
-     LPWCHAR     lpwszVersion,          // Ptr to workspace version text
-     LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-     LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant) error message text
+    (LPWCHAR       lpwSrc,              // Ptr to input buffer
+     APLU3264      uMaxSize,            // Maximum size of lpwSrc
+     LPSYMENTRY    lpSymObj,            // Ptr to STE for the object
+     NAME_TYPES    nameType,            // Function name type (see NAME_TYPES)
+     HWND          hWndEC,              // Edit Ctrl window handle
+     LPSYMENTRY   *lplpSymLink,         // Ptr to ptr to SYMENTRY link
+     LPWCHAR       lpwszVersion,        // Ptr to workspace version text
+     LPDICTIONARY  lpDict,              // Ptr to workspace dictionary
+     LPWCHAR      *lplpwErrMsg)         // Ptr to ptr to (constant) error message text
 
 {
     WCHAR wcTmp;                        // Temporary char
@@ -791,7 +799,7 @@ UBOOL ParseSavedWsFcn_EM
                                       hWndEC,       // Edit Ctrl window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszVersion, // Ptr to workspace version text
-                                      lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                      lpDict,       // Ptr to workspace dictionary
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
         else
             hGlbObj = lpSymEntry->stData.stGlbData;
@@ -875,17 +883,17 @@ CORRUPTWS_EXIT:
 #endif
 
 LPWCHAR ParseSavedWsVar_EM
-    (LPWCHAR     lpwSrc,                // Ptr to input buffer
-     APLU3264    uMaxSize,              // Maximum size of lpwSrc
-     LPVOID     *lplpMemObj,            // Ptr to ptr to output element
-     LPAPLSTYPE  lpaplTypeObj,          // Ptr to storage type (may be NULL)
-     LPUBOOL     lpbImmed,              // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
-     UBOOL       bSymTab,               // TRUE iff to save SymTabAppend values, FALSE to save values directly
-     HWND        hWndEC,                // Edit Ctrl window handle
-     LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
-     LPWCHAR     lpwszVersion,          // Ptr to workspace version text
-     LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-     LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant error message text
+    (LPWCHAR       lpwSrc,              // Ptr to input buffer
+     APLU3264      uMaxSize,            // Maximum size of lpwSrc
+     LPVOID       *lplpMemObj,          // Ptr to ptr to output element
+     LPAPLSTYPE    lpaplTypeObj,        // Ptr to storage type (may be NULL)
+     LPUBOOL       lpbImmed,            // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
+     UBOOL         bSymTab,             // TRUE iff to save SymTabAppend values, FALSE to save values directly
+     HWND          hWndEC,              // Edit Ctrl window handle
+     LPSYMENTRY   *lplpSymLink,         // Ptr to ptr to SYMENTRY link
+     LPWCHAR       lpwszVersion,        // Ptr to workspace version text
+     LPDICTIONARY  lpDict,              // Ptr to workspace dictionary
+     LPWCHAR      *lplpwErrMsg)         // Ptr to ptr to (constant error message text
 
 {
     WCHAR        wcTmp,                 // Temporary char
@@ -936,7 +944,7 @@ LPWCHAR ParseSavedWsVar_EM
                                       hWndEC,       // Edit Ctrl window handle
                                       lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszVersion, // Ptr to workspace version text
-                                      lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                      lpDict,       // Ptr to workspace dictionary
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
             if (hGlbObj EQ NULL)
                 goto ERROR_EXIT;
@@ -1141,14 +1149,14 @@ ERROR_EXIT:
 #endif
 
 HGLOBAL LoadWorkspaceGlobal_EM
-    (LPWCHAR     lpwGlbName,                // Ptr to keyname (FMTSTR_GLBCNT)
-     LPWCHAR     lpwSrc,                    // Ptr to next available byte
-     APLU3264    uMaxSize,                  // Maximum size of
-     HWND        hWndEC,                    // Edit Ctrl window handle
-     LPSYMENTRY *lplpSymLink,               // Ptr to ptr to SYMENTRY link
-     LPWCHAR     lpwszVersion,              // Ptr to workspace version text
-     LPWCHAR     lpwszDPFE,                 // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-     LPWCHAR    *lplpwErrMsg)               // Ptr to ptr to (constant) error message text
+    (LPWCHAR      lpwGlbName,               // Ptr to keyname (FMTSTR_GLBCNT)
+     LPWCHAR      lpwSrc,                   // Ptr to next available byte
+     APLU3264     uMaxSize,                 // Maximum size of
+     HWND         hWndEC,                   // Edit Ctrl window handle
+     LPSYMENTRY  *lplpSymLink,              // Ptr to ptr to SYMENTRY link
+     LPWCHAR      lpwszVersion,             // Ptr to workspace version text
+     LPDICTIONARY lpDict,                   // Ptr to workspace dictionary
+     LPWCHAR     *lplpwErrMsg)              // Ptr to ptr to (constant) error message text
 
 {
     APLSTYPE          aplTypeObj;           // Object storage type
@@ -1180,6 +1188,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     APLINT            aplInteger;           // Temporary integer
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
     LPWCHAR           lpwszFormat,          // Ptr to formatting save area
+                      lpwszProf,            // Ptr to profile string
                       lpwszOldTemp;         // Ptr to temporary save area
     LPVARARRAY_HEADER lpHeader;             // Ptr to the array header
 
@@ -1193,12 +1202,14 @@ HGLOBAL LoadWorkspaceGlobal_EM
     lpwSrcStart = lpwSrc;
 
     // Read the corresponding string from [Globals]
-    GetPrivateProfileStringW (SECTNAME_GLOBALS,     // Ptr to the section name
-                              lpwGlbName,           // Ptr to the key name
-                              L"",                  // Ptr to the default value
-                              lpwSrc,               // Ptr to the output buffer
-                       (UINT) uMaxSize,             // Byte size of the output buffer
-                              lpwszDPFE);           // Ptr to the file name
+    lpwszProf =
+      ProfileGetString (SECTNAME_GLOBALS,   // Ptr to the section name
+                        lpwGlbName,         // Ptr to the key name
+                        L"",                // Ptr to the default value
+                        lpDict);            // Ptr to workspace dictionary
+    // Copy to the save area
+    lstrcpyW (lpwSrc, lpwszProf);
+
     // Parse the array attributes
     // The result in lpwSrc is
     //   V T N R S value    for variables
@@ -1479,7 +1490,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                               hWndEC,       // Edit Ctrl window handle
                                               lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                               lpwszVersion, // Ptr to workspace version text
-                                              lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                              lpDict,       // Ptr to workspace dictionary
                                               lplpwErrMsg); // Ptr to ptr to (constant error message text
                     break;
 
@@ -1535,18 +1546,18 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
             // Get the count for the section name
             uLineCnt =
-              GetPrivateProfileIntW (lpwSectName,               // Ptr to the section name
-                                     KEYNAME_COUNT,             // Ptr to the key name
-                                     0,                         // Default value if not found
-                                     lpwszDPFE);                // Ptr to the file name
+              ProfileGetInt (lpwSectName,   // Ptr to the section name
+                             KEYNAME_COUNT, // Ptr to the key name
+                             0,             // Default value if not found
+                             lpDict);       // Ptr to workspace dictionary
             Assert (uLineCnt > 0);
 
             // Get the UserDefined flag
             bUserDefined =
-              GetPrivateProfileIntW (lpwSectName,               // Ptr to the section name
-                                     KEYNAME_USERDEFINED,       // Ptr to the key name
-                                     0,                         // Default value if not found
-                                     lpwszDPFE);                // Ptr to the file name
+              ProfileGetBoolean (lpwSectName,           // Ptr to the section name
+                                 KEYNAME_USERDEFINED,   // Ptr to the key name
+                                 0,                     // Default value if not found
+                                 lpDict);               // Ptr to workspace dictionary
             // Get the current system (UTC) time
             GetSystemTime (&systemTime);
 
@@ -1559,44 +1570,35 @@ HGLOBAL LoadWorkspaceGlobal_EM
                        ftCreation.dwHighDateTime,
                        ftCreation.dwLowDateTime);
             // Get the CreationTime string
-            GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
-                                      KEYNAME_CREATIONTIME, // Ptr to the key name
-                                      wszTimeStamp,         // Ptr to the default value
-                                      lpwSrc,               // Ptr to the output buffer
-                               (UINT) (uMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart)), // Maximum size of lpwSrc
-                                      lpwszDPFE);           // Ptr to the file name
+            lpwszProf =
+              ProfileGetString (lpwSectName,            // Ptr to the section name
+                                KEYNAME_CREATIONTIME,   // Ptr to the key name
+                                wszTimeStamp,           // Ptr to the default value
+                                lpDict);                // Ptr to workspace dictionary
             // Convert the CreationTime string to time
-            sscanfW (lpwSrc, SCANFSTR_TIMESTAMP, &ftCreation);
+            sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, &ftCreation);
 
             // Get the LastModTime string
-            GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
-                                      KEYNAME_LASTMODTIME,  // Ptr to the key name
-                                      wszTimeStamp,         // Ptr to the default value
-                                      lpwSrc,               // Ptr to the output buffer
-                               (UINT) (uMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart)), // Maximum size of lpwSrc
-                                      lpwszDPFE);           // Ptr to the file name
+            lpwszProf =
+              ProfileGetString (lpwSectName,            // Ptr to the section name
+                                KEYNAME_LASTMODTIME,    // Ptr to the key name
+                                wszTimeStamp,           // Ptr to the default value
+                                lpDict);                // Ptr to workspace dictionary
             // Convert the LastModTime string to time
-            sscanfW (lpwSrc, SCANFSTR_TIMESTAMP, &ftLastMod);
+            sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, &ftLastMod);
 
             // If it's a user-defined function/operator, ...
             if (bUserDefined)
             {
                 SF_FCNS      SF_Fcns = {0};         // Common struc for SaveFunctionCom
                 LW_PARAMS    LW_Params = {0};       // Local  ...
-                LPWCHAR      lpMemUndoTxt;          // Ptr to Undo Buffer in text format
 
-                // Save ptr to undo buffer in text format
-                lpMemUndoTxt = lpwSrc;
-
-                // Get the Undo buffer string, and
-                //   skip over the buffer (including the trailing zero)
-                lpwSrc += 1 +
-                  GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
-                                            KEYNAME_UNDO,       // Ptr to the key name
-                                            L"",                // Ptr to the default value
-                                  (LPWCHAR) lpMemUndoTxt,       // Ptr to the output buffer
-                                     (UINT) (uMaxSize - ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart)), // Maximum size of lpMemUndoTxt
-                                            lpwszDPFE);         // Ptr to the file name
+                // Get the Undo buffer string
+                lpwszProf =
+                  ProfileGetString (lpwSectName,    // Ptr to the section name
+                                    KEYNAME_UNDO,   // Ptr to the key name
+                                    L"",            // Ptr to the default value
+                                    lpDict);        // Ptr to workspace dictionary
                 // Fill in common values
                 SF_Fcns.bDisplayErr     = TRUE;             // Display Errors
 ////////////////SF_Fcns.bRet            =                   // Filled in by SaveFunctionCom
@@ -1613,9 +1615,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                 // Fill in local values
                 LW_Params.lpwSectName   = lpwSectName;      // Ptr to section name
-                LW_Params.lpwszDPFE     = lpwszDPFE;        // Ptr to workspace DPFE
-                LW_Params.lpwBuffer     = lpwSrc;           // Ptr to buffer
-                LW_Params.lpMemUndoTxt  = lpMemUndoTxt;     // Ptr to Undo Buffer in text format
+                LW_Params.lpDict        = lpDict;           // Ptr to workspace dictionary
+                LW_Params.lpwBuffer     = lpwSrc + 1;       // Ptr to buffer
+                LW_Params.lpMemUndoTxt  = lpwszProf;        // Ptr to Undo Buffer in text format
                 LW_Params.uMaxSize      = (UINT) (uMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart)); // Maximum size of lpwSrc
                 LW_Params.ftCreation    = ftCreation;       // Function Creation Time
                 LW_Params.ftLastMod     = ftLastMod;        // Function Last Modification Time
@@ -1629,21 +1631,20 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                L"Error loading function <%s> line <%d> in workspace <%s> -- WORKSPACE MAY BE CORRUPT:  PROCEED WITH CAUTION",
                                lpwFcnName,
                                SF_Fcns.uErrLine,
-                               lpwszDPFE);
+                               lpDict->lpwszDPFE);
                     MBW (lpwszFormat);
 
                     goto CORRUPTWS_EXIT;
                 } // End IF/ELSE
 
                 // Read in and process the monitor info
-                GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
-                                          KEYNAME_MONINFO,    // Ptr to the key name
-                                          L"",                // Ptr to the default value
-                                (LPWCHAR) lpMemUndoTxt,       // Ptr to the output buffer
-                                   (UINT) (uMaxSize - ((LPBYTE) lpMemUndoTxt - (LPBYTE) lpwSrcStart)), // Maximum size of lpMemUndoTxt
-                                          lpwszDPFE);         // Ptr to the file name
+                lpwszProf =
+                  ProfileGetString (lpwSectName,        // Ptr to the section name
+                                    KEYNAME_MONINFO,    // Ptr to the key name
+                                    L"",                // Ptr to the default value
+                                    lpDict);            // Ptr to workspace dictionary
                 // If there's monitor info, ...
-                if (lpMemUndoTxt[0])
+                if (lpwszProf[0])
                 {
                     LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
                     LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
@@ -1663,7 +1664,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         for (uCnt = 0; uCnt < uLineCnt; uCnt++, lpMemMonInfo++)
                         {
                             // Scan in the first field
-                            sscanfW (lpMemUndoTxt,
+                            sscanfW (lpwszProf,
                                      L"%I64u %I64u %u",
                                     &lpMemMonInfo->IncSubFns,
                                     &lpMemMonInfo->ExcSubFns,
@@ -1672,7 +1673,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             lpMemMonInfo->Count = Count;
 
                             // Increment past the input fields
-                            lpMemUndoTxt = SkipPastCharW (lpMemUndoTxt, L',');
+                            lpwszProf = SkipPastCharW (lpwszProf, L',');
                         } // End FOR
 
                         // We no longer need this ptr
@@ -1682,8 +1683,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         lpMemDfnHdr->MonOn = TRUE;
                     } // End IF
 
-                // We no longer need this ptr
-                MyGlobalUnlock (SF_Fcns.hGlbDfnHdr); lpMemDfnHdr = NULL;
+                    // We no longer need this ptr
+                    MyGlobalUnlock (SF_Fcns.hGlbDfnHdr); lpMemDfnHdr = NULL;
                 } // End IF
             } else
             // It's a function array
@@ -1701,12 +1702,14 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 *lpwSrc++ = UTF16_LEFTARROW;
 
                 // Get the one (and only) line
-                GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
-                                          L"0",               // Ptr to the key name
-                                          L"",                // Ptr to the default value
-                                          lpwSrc,             // Ptr to the output buffer
-                                   (UINT) (uMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart)),// Maximum size of lpwSrc
-                                          lpwszDPFE);         // Ptr to the file name
+                lpwszProf =
+                  ProfileGetString (lpwSectName,    // Ptr to the section name
+                                    L"0",           // Ptr to the key name
+                                    L"",            // Ptr to the default value
+                                    lpDict);        // Ptr to workspace dictionary
+                // Copy to the save area
+                lstrcpyW (lpwSrc, lpwszProf);
+
                 // Convert in place
                 lpwSrcStart = lpwSrc;
 
@@ -1719,7 +1722,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LoadWsGlbVarParm.hWndEC        = hWndEC;
                 LoadWsGlbVarParm.lplpSymLink   = lplpSymLink;
                 LoadWsGlbVarParm.lpwszVersion  = lpwszVersion;
-                LoadWsGlbVarParm.lpwszDPFE     = lpwszDPFE;
+                LoadWsGlbVarParm.lpDict        = lpDict;
                 LoadWsGlbVarParm.lplpwErrMsg   = lplpwErrMsg;
 
                 // Get ptr to PerTabData global memory
@@ -1802,7 +1805,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
         lpSymEntry->stSymLink =  lpSymLink;
     } // End IF
 
-    return hGlbObj;
+    goto NORMAL_EXIT;
 
 CORRUPTWS_EXIT:
     *lplpwErrMsg = ERRMSG_CORRUPT_WS APPEND_NAME;
@@ -1815,7 +1818,9 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    return NULL;
+    hGlbObj = NULL;
+NORMAL_EXIT:
+    return hGlbObj;
 } // End LoadWorkspaceGlobal_EM
 #undef  APPEND_NAME
 
@@ -2014,7 +2019,7 @@ HGLOBAL LoadWsGlbVarConv
                                   lpLoadWsGlbVarParm->hWndEC,       // Edit Ctrl window handle
                                   lpLoadWsGlbVarParm->lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                   lpLoadWsGlbVarParm->lpwszVersion, // Ptr to workspace version text
-                                  lpLoadWsGlbVarParm->lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                  lpLoadWsGlbVarParm->lpDict,       // Ptr to workspace dictionary
                                   lpLoadWsGlbVarParm->lplpwErrMsg); // Ptr to ptr to (constant) error message text
     else
         return lpSymEntry->stData.stGlbData;

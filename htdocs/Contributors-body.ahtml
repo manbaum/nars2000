@@ -48,6 +48,11 @@ Contributors</h1>
 
     <li>Bob Bernecky's <a class="linkleft" href="http://www.snakeisland.com/apexup.htm">APEX project</a>
       contributed many test cases of APL code through which numerous bugs in NARS were found.</li>
+
+    <li>Nicolas Devillard's <a class="linkleft" href="http://ndevilla.free.fr/iniparser/">iniparser</a>
+      code was an invaluable resource after I found that the Win32 API has an
+      undocumented limit on the size of a string returned by the GetPrivateProfileString
+      API.</li>
   </ul>
 </div>
 

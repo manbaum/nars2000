@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "headers.h"
 
 
@@ -2130,6 +2131,200 @@ void WritePrivateProfileGlbCharW
     // We no longer need this ptr
     MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
 } // End WritePrivateProfileGlbCharW
+
+
+//***************************************************************************
+//  $ProfileLoad_EM
+//
+//  Load a .ini profile
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ProfileLoad_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPDICTIONARY ProfileLoad_EM
+    (LPWSTR       lpwszDPFE,        // Ptr to workspace DPFE
+     LPWCHAR     *lplpwErrMsg)      // Ptr to ptr to error message text
+
+{
+    FILE        *fStream;           // File ptr
+    ERRCODES     errCode;           // Return error code
+    UINT         lineno;            // Line # in error
+    LPDICTIONARY lpDict;            // Ptr to workspace dictionary
+
+    // Attempt to open the file for reading
+    fStream = fopenW (lpwszDPFE, L"r");
+
+    // If the file doesn't exist, ...
+    if (fStream EQ NULL)
+        return NULL;
+
+    __try
+    {
+        // Load the private .ini file
+        lpDict =
+          iniparser_load (fStream, lpwszDPFE, &errCode, &lineno);
+
+        // Close the file
+        fclose (fStream);
+    } __except (CheckVirtAlloc (GetExceptionInformation (),
+                                L"ProfileLoad"))
+    {
+        // Display message for unhandled exception
+        DisplayException ();
+    } // End __try/__except
+
+    // Check for error
+    if (lpDict EQ NULL)
+    {
+        static WCHAR wszTemp[1024];
+
+        // Point to where we're storing the error message text
+        *lplpwErrMsg = &wszTemp[0];
+
+        // Split cases based upon the error code
+        switch (errCode)
+        {
+            case ERRCODE_BUFFER_OVERFLOW:
+                wsprintfW (*lplpwErrMsg,
+                           ERRMSG_WS_NOT_LOADABLE
+                           L":  Buffer overflow"
+                           APPEND_NAME);
+                break;
+
+            case ERRCODE_SYNTAX_ERROR:
+                wsprintfW (*lplpwErrMsg,
+                           ERRMSG_WS_NOT_LOADABLE
+                           L":  Syntax error in line %u"
+                           APPEND_NAME,
+                           lineno);
+                break;
+
+            case ERRCODE_ALLOC_ERROR:
+                wsprintfW (*lplpwErrMsg,
+                           ERRMSG_WS_NOT_LOADABLE
+                           L":  Allocation in line %u"
+                           APPEND_NAME,
+                           lineno);
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End IF
+
+    return lpDict;
+} // End ProfileLoad_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ProfileGetString
+//
+//  Retrieve a string value from a .ini profile
+//***************************************************************************
+
+LPWSTR ProfileGetString
+    (LPWSTR       lpwAppName,   // Section name containing the key name
+     LPWSTR       lpwKeyName,   // Key name whose associated string is to be retrieved
+     LPWSTR       lpwDefault,   // Ptr to default result if lpwKeyName not found
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
+
+    // Merge the section and key names
+    wsprintfW (wszTemp, L"%s" SECTION_SEP_STR L"%s", lpwAppName, lpwKeyName);
+
+    return iniparser_getstring (lpDict, wszTemp, lpwDefault);
+} // End ProfileGetString
+
+
+//***************************************************************************
+//  $ProfileGetInt
+//
+//  Retrieve an integer value from a .ini profile
+//***************************************************************************
+
+int ProfileGetInt
+    (LPWSTR       lpwAppName,   // Section name containing the key name
+     LPWSTR       lpwKeyName,   // Key name whose associated string is to be retrieved
+     int          iDefault,     // Default result if lpwKeyName not found
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
+
+    // Merge the section and key names
+    wsprintfW (wszTemp, L"%s" SECTION_SEP_STR L"%s", lpwAppName, lpwKeyName);
+
+    // Get the integer
+    return iniparser_getint (lpDict, wszTemp, iDefault);
+} // End ProfileGetInt
+
+
+//***************************************************************************
+//  $ProfileGetBoolean
+//
+//  Retrieve a Boolean value from a .ini profile
+//***************************************************************************
+
+UBOOL ProfileGetBoolean
+    (LPWSTR       lpwAppName,   // Section name containing the key name
+     LPWSTR       lpwKeyName,   // Key name whose associated string is to be retrieved
+     UBOOL        bDefault,     // Default result if lpwKeyName not found
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
+
+    // Merge the section and key names
+    wsprintfW (wszTemp, L"%s" SECTION_SEP_STR L"%s", lpwAppName, lpwKeyName);
+
+    // Get the integer
+    return iniparser_getboolean (lpDict, wszTemp, bDefault);
+} // End ProfileGetBoolean
+
+
+//***************************************************************************
+//  $ProfileGetDouble
+//
+//  Retrieve a floating point value from a .ini profile
+//***************************************************************************
+
+APLFLOAT ProfileGetDouble
+    (LPWSTR       lpwAppName,   // Section name containing the key name
+     LPWSTR       lpwKeyName,   // Key name whose associated string is to be retrieved
+     APLFLOAT     fDefault,     // Default result if lpwKeyName not found
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
+
+    // Merge the section and key names
+    wsprintfW (wszTemp, L"%s" SECTION_SEP_STR L"%s", lpwAppName, lpwKeyName);
+
+    // Get the integer
+    return iniparser_getdouble (lpDict, wszTemp, fDefault);
+} // End ProfileGetDouble
+
+
+//***************************************************************************
+//  $ProfileUnload
+//
+//  Unload a .ini profile
+//***************************************************************************
+
+void ProfileUnload
+    (LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    // Free the dictionary
+    iniparser_freedict (lpDict);
+} // End ProfileUnload
 
 
 //***************************************************************************

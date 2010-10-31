@@ -51,6 +51,7 @@
 #define ERRMSG_NOT_SAVED_WS_FULL                L"NOT SAVED, WS FULL"
 #define ERRMSG_NOT_SAVED_FILE_ERROR             L"NOT SAVED, FILE NAME ERROR"
 #define ERRMSG_WS_NOT_FOUND                     L"WS NOT FOUND"
+#define ERRMSG_WS_NOT_LOADABLE                  L"WS NOT LOADABLE"
 
 #define ERRMSG_FILE_EXISTS                      L"FILE EXISTS"
 #define ERRMSG_FILE_NOT_FOUND                   L"FILE NOT FOUND"

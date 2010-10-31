@@ -456,6 +456,8 @@ default:        \
 #define sscanfW         swscanf
 #define fgetsW          fgetws
 #define fopenW          _wfopen
+#define strlwrW         _wcslwr
+#define strdupW         _wcsdup
 
 
 //***************************************************************************

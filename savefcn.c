@@ -312,18 +312,21 @@ void SF_ReadLineLW
      LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
 
 {
-    WCHAR wszLineNum[8];            // Save area for formatted line #
+    WCHAR   wszLineNum[8];          // Save area for formatted line #
+    LPWCHAR lpwszProf;              // Ptr to profile string
 
     // Format the line #
     wsprintfW (wszLineNum, L"%d", uLineNum);
 
     // Get the one (and only) line
-    GetPrivateProfileStringW (lpLW_Params->lpwSectName,             // Ptr to the section name
-                              wszLineNum,                           // Ptr to the key name
-                              L"",                                  // Ptr to the default value
-                              lpLW_Params->lpwBuffer,               // Ptr to the output buffer
-                              lpLW_Params->uMaxSize,                // Byte size of the output buffer
-                              lpLW_Params->lpwszDPFE);              // Ptr to the file name
+    lpwszProf =
+      ProfileGetString (lpLW_Params->lpwSectName,   // Ptr to the section name
+                        wszLineNum,                 // Ptr to the key name
+                        L"",                        // Ptr to the default value
+                        lpLW_Params->lpDict);       // Ptr to workspace dictionary
+    // Copy the line to a local buffer
+    lstrcpyW (lpLW_Params->lpwBuffer, lpwszProf);
+
     // Convert the {name}s and other chars to UTF16_xxx
     (void) ConvertNameInPlace (lpLW_Params->lpwBuffer);
 
@@ -599,10 +602,10 @@ UINT SF_NumLinesLW
 
 {
     return -1 +
-      GetPrivateProfileIntW (lpLW_Params->lpwSectName,      // Ptr to the section name
-                             KEYNAME_COUNT,                 // Ptr to the key name
-                             0,                             // Default value if not found
-                             lpLW_Params->lpwszDPFE);       // Ptr to the file name
+      ProfileGetInt (lpLW_Params->lpwSectName,  // Ptr to the section name
+                      KEYNAME_COUNT,            // Ptr to the key name
+                      0,                        // Default value if not found
+                      lpLW_Params->lpDict);     // Ptr to workspace dictionary
 } // End SF_NumLinesLW
 
 

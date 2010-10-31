@@ -83,11 +83,11 @@ void MakeWorkspaceNameCanonical
 //***************************************************************************
 
 void DisplayWorkspaceStamp
-    (LPWCHAR lpwszDPFE)                 // Workspace filename
+    (LPDICTIONARY lpDict)               // Ptr to workspace dictionary
 
 {
-    WCHAR      wszTimeStamp[16 + 1],    // Output save area for time stamp
-               wszTimeStamp2[16 + 1];   // Output save area for time stamp
+    WCHAR      wszTimeStamp[16 + 1];    // Output save area for time stamp
+    LPWCHAR    lpwszProf;               // Ptr to profile string
     FILETIME   ftCreation,              // Function creation time in UTC
                ftLocalTime;             // ...                       localtime
     SYSTEMTIME systemTime;              // Current system (UTC) time
@@ -99,19 +99,18 @@ void DisplayWorkspaceStamp
     SystemTimeToFileTime (&systemTime, &ftCreation);
 
     // Format the creation time
-    wsprintfW (wszTimeStamp2,
+    wsprintfW (wszTimeStamp,
                FMTSTR_DATETIME,
                ftCreation.dwHighDateTime,
                ftCreation.dwLowDateTime);
     // Read the creation time
-    GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
-                              KEYNAME_CREATIONTIME, // Ptr to the key name
-                              wszTimeStamp2,        // Ptr to the default value
-                              wszTimeStamp,         // Ptr to the output buffer
-                              sizeof (wszTimeStamp),// Byte size of the output buffer
-                              lpwszDPFE);           // Ptr to the file name
+    lpwszProf =
+      ProfileGetString (SECTNAME_GENERAL,       // Ptr to the section name
+                        KEYNAME_CREATIONTIME,   // Ptr to the key name
+                        wszTimeStamp,           // Ptr to the default value
+                        lpDict);                // Ptr to the file name
     // Convert the CreationTime string to time
-    sscanfW (wszTimeStamp, SCANFSTR_TIMESTAMP, &ftCreation);
+    sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, &ftCreation);
 
     if (OptionFlags.bUseLocalTime)
         // Convert to local filetime

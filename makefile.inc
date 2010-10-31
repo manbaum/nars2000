@@ -45,6 +45,8 @@
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
+
 MV=makever
 
 ## Set the following to 1 to debug linker error 0x460 as in
@@ -326,6 +328,7 @@ $(O)crash.obj:          $(@B).c         $(CRASH_DEP)
 $(O)cs_proc.obj:        $(@B).c         $(CS_PROC_DEP)
 $(O)customize.obj:      $(@B).c         $(CUSTOMIZE_DEP)
 $(O)debug.obj:          $(@B).c         $(DEBUG_DEP)
+$(O)dictionary.obj:     $(@B).c         $(DICTIONARY_DEP)
 $(O)dispdbg.obj:        $(@B).c         $(DISPDBG_DEP)
 $(O)display.obj:        $(@B).c         $(DISPLAY_DEP)
 $(O)editfcn.obj:        $(@B).c         $(EDITFCN_DEP)
@@ -343,6 +346,7 @@ $(O)getfns.obj:         $(@B).c         $(GETFNS_DEP)
 $(O)goto.obj:           $(@B).c         $(GOTO_DEP)
 $(O)immexec.obj:        $(@B).c         $(IMMEXEC_DEP)
 $(O)inifile.obj:        $(@B).c         $(INIFILE_DEP)
+$(O)iniparser.obj:      $(@B).c         $(INIPARSER_DEP)
 $(O)initdata.obj:       $(@B).c         $(INITDATA_DEP)
 $(O)main.obj:           $(@B).c         $(MAIN_DEP)
 $(O)perfmon.obj:        $(@B).c         $(PERFMON_DEP)

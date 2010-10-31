@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -77,14 +77,14 @@ typedef struct tagFX_PARAMS
 
 typedef struct tagLW_PARAMS
 {
-    LPWCHAR    lpwSectName,         // 00:  Ptr to section name [nnn.Name]
-               lpwszDPFE,           // 04:  Ptr to the workspace DPFE
-               lpwBuffer,           // 08:  Ptr to temporary buffer
-               lpMemUndoTxt;        // 0C:  Ptr to Undo Buffer in text format
-    UINT       uMaxSize;            // 10:  Maximum size of lpwBuffer
-    FILETIME   ftCreation,          // 14:  Function Creation Time
-               ftLastMod;           // 18:  Function Last Modification Time
-    LPWCHAR    lpwszVersion;        // 1C:  Ptr to workspace version text
+    LPWCHAR      lpwSectName,       // 00:  Ptr to section name [nnn.Name]
+                 lpwBuffer,         // 04:  Ptr to temporary buffer
+                 lpMemUndoTxt;      // 08:  Ptr to Undo Buffer in text format
+    LPDICTIONARY lpDict;            // 0C:  Ptr to workspace dictionary
+    UINT         uMaxSize;          // 10:  Maximum size of lpwBuffer
+    FILETIME     ftCreation,        // 14:  Function Creation Time
+                 ftLastMod;         // 18:  Function Last Modification Time
+    LPWCHAR      lpwszVersion;      // 1C:  Ptr to workspace version text
                                     // 20:  Length
 } LW_PARAMS, *LPLW_PARAMS;
 

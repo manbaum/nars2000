@@ -485,8 +485,8 @@ void DisplayException
     // Get ptr to PerTabData global memory
     lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-    // If lpMemPTD isn't set, just exit
-    if (lpMemPTD EQ NULL)
+    // If lpMemPTD isn't valid, just exit
+    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
         return;
 
     // Get the saved exception code & address, & text

@@ -824,106 +824,6 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Reset this tab's color index bit
             ResetTabColorIndex (lpMemPTD->crIndex);
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- LclTabCtrlWndProc/TCM_DELETEITEM"
-#else
-#define APPEND_NAME
-#endif
-
-            // Free global storage if the SymTab is valid
-            if (lpMemPTD->htsPTD.lpSymTab)
-            {
-                LPHSHTABSTR  lpHTS;             // Loop var
-                LPSYMENTRY   lpSymEntry;        // ...
-                LPHSHENTRY   lpHshEntry;        // ...
-
-                // Reset the SI stack
-
-                // If there's something suspended, ...
-                if (lpMemPTD->lpSISCur)
-                {
-                    // If the current thread's lpMemPTD is NULL, ...
-                    if (TlsGetValue (dwTlsPerTabData) EQ NULL)
-                        TlsSetValue (dwTlsPerTabData, lpMemPTD);
-
-                    // Create a semaphore for ourselves
-                    lpMemPTD->hExitphore =
-                      CreateSemaphoreW (NULL,           // No security attrs
-                                        0,              // Initial count (non-signalled)
-                                        64*1024,        // Maximum count
-                                        NULL);          // No name
-                    // Call )RESET
-                    CmdReset_EM (L"");
-#ifdef DEBUG
-                    dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
-#endif
-                    // Wait for the semaphore to trigger
-                    WaitForSingleObject (lpMemPTD->hExitphore,  // Ptr to handle to wait for
-                                         INFINITE);             // Timeout value in milliseconds
-#ifdef DEBUG
-                    dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
-#endif
-                    // Close the semaphore handle as it isn't used anymore
-                    CloseHandle (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
-                } // End IF
-
-                // Get a ptr to the HTS
-                lpHTS = &lpMemPTD->htsPTD;
-
-                // Loop through the STEs
-                for (lpSymEntry = lpHTS->lpSymTab;
-                     lpSymEntry < lpHTS->lpSymTabNext;
-                     lpSymEntry++)
-                if (lpSymEntry->stFlags.Inuse
-                 && lpSymEntry->stFlags.Value
-                 && lpSymEntry->stFlags.Imm  EQ FALSE)
-                {
-                    // If it's a Magic Function/Operator, ...
-                    if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO)
-                    {
-                        HGLOBAL      hGlbData;          // User-defined function/operator global memory handle
-                        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator struc
-
-                        // Get the DFN_HEADER global memory ptr, and
-                        //   clear the ptr type bits
-                        hGlbData = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
-
-                        // Lock the memory to get a ptr to it
-                        lpMemDfnHdr = MyGlobalLock (hGlbData);
-
-                        // Free the globals in the struc
-                        FreeResultGlobalDfnStruc (lpMemDfnHdr);
-
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
-
-                        // We no longer need this storage
-                        DbgGlobalFree (hGlbData); hGlbData = NULL;
-                    } else
-                    // Free all global fns and vars in the workspace
-                    if (FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData))
-                        // Erase the Symbol Table Entry
-                        //   even if it's a []var
-                        EraseSTE (lpSymEntry, TRUE);
-                } // End FOR/IF
-
-                // Don't forget []DM
-                if (lpMemPTD->hGlbQuadDM)
-                {
-                    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
-                } // End IF
-
-                // Loop through the HTEs to free the names
-                for (lpHshEntry = lpHTS->lpHshTab;
-                     lpHshEntry NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
-                     lpHshEntry++)
-                if (lpHshEntry->htFlags.Inuse
-                 && lpHshEntry->htGlbName NE NULL)
-                    MyGlobalFree (lpHshEntry->htGlbName);
-            } // End IF
-
-#undef  APPEND_NAME
-
             // Save the outgoing MDI Child window handle
             dwThreadId = lpMemPTD->dwThreadId;
 
@@ -980,6 +880,113 @@ LRESULT WINAPI LclTabCtrlWndProc
                             wParam,
                             lParam); // Pass on down the line
 } // End LclTabCtrlWndProc
+
+
+//***************************************************************************
+//  $FreeGlobalStorage
+//
+//  Free the global storage in the symbol table for a given PerTabData struc
+//***************************************************************************
+
+void FreeGlobalStorage
+    (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    LPHSHTABSTR lpHTS;                  // Loop var
+    LPSYMENTRY  lpSymEntry;             // ...
+    LPHSHENTRY  lpHshEntry;             // ...
+
+    // Free global storage if the SymTab is valid
+    if (lpMemPTD->htsPTD.lpSymTab)
+    {
+        // If there's something suspended, ...
+        if (lpMemPTD->lpSISCur)
+        {
+            // Reset the SI stack
+
+            // If the current thread's lpMemPTD is NULL, ...
+            if (TlsGetValue (dwTlsPerTabData) EQ NULL)
+                TlsSetValue (dwTlsPerTabData, lpMemPTD);
+
+            // Create a semaphore for ourselves
+            lpMemPTD->hExitphore =
+              CreateSemaphoreW (NULL,           // No security attrs
+                                0,              // Initial count (non-signalled)
+                                64*1024,        // Maximum count
+                                NULL);          // No name
+            // Call )RESET
+            CmdReset_EM (L"");
+#ifdef DEBUG
+            dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
+#endif
+            // Wait for the semaphore to trigger
+            WaitForSingleObject (lpMemPTD->hExitphore,  // Ptr to handle to wait for
+                                 INFINITE);             // Timeout value in milliseconds
+#ifdef DEBUG
+            dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
+#endif
+            // Close the semaphore handle as it isn't used anymore
+            CloseHandle (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
+        } // End IF
+
+        // Get a ptr to the HTS
+        lpHTS = &lpMemPTD->htsPTD;
+
+        // Loop through the STEs
+        for (lpSymEntry = lpHTS->lpSymTab;
+             lpSymEntry < lpHTS->lpSymTabNext;
+             lpSymEntry++)
+        if (lpSymEntry->stFlags.Inuse
+         && lpSymEntry->stFlags.Value
+         && lpSymEntry->stFlags.Imm  EQ FALSE)
+        {
+            // If it's a Magic Function/Operator, ...
+            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO)
+            {
+                HGLOBAL      hGlbData;          // User-defined function/operator global memory handle
+                LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator struc
+
+                // Get the DFN_HEADER global memory ptr, and
+                //   clear the ptr type bits
+                hGlbData = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (hGlbData);
+
+                // Free the globals in the struc
+                FreeResultGlobalDfnStruc (lpMemDfnHdr);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+
+                // We no longer need this storage
+                DbgGlobalFree (hGlbData); hGlbData = NULL;
+            } else
+            // Free all global fns and vars in the workspace
+            if (FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData))
+                // Erase the Symbol Table Entry
+                //   even if it's a []var
+                EraseSTE (lpSymEntry, TRUE);
+        } // End FOR/IF
+
+        // Don't forget []DM
+        if (lpMemPTD->hGlbQuadDM)
+        {
+            FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
+        } // End IF
+
+        // Loop through the HTEs to free the names
+        for (lpHshEntry = lpHTS->lpHshTab;
+             lpHshEntry NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+             lpHshEntry++)
+        if (lpHshEntry->htFlags.Inuse
+         && lpHshEntry->htGlbName NE NULL)
+            MyGlobalFree (lpHshEntry->htGlbName);
+
+        // Zap the SymTab ptr so we don't re-execute this code
+        lpMemPTD->htsPTD.lpSymTab = NULL;
+    } // End IF
+} // End FreeGlobalStorage
 
 
 //***************************************************************************

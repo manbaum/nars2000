@@ -1342,6 +1342,8 @@ WM_CREATE_FAIL:
             // Send a constant message to the previous tab
             SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, lpMemPTD);
 LOAD_WORKSPACE_FAIL:
+            // Free global storage
+            FreeGlobalStorage (lpMemPTD);
 NORMAL_EXIT:
             // Free the workspace global
             MyGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE); (*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE = NULL;
@@ -1814,7 +1816,7 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F11:            // DbgBrk ()
                 {
-                    LPSYMENTRY lpSym = NULL;
+                    LPSYMENTRY   lpSym = NULL;
 
                     // Get ptr to PerTabData global memory
                     lpMemPTD = GetMemPTD ();
@@ -1940,6 +1942,9 @@ NORMAL_EXIT:
             return FALSE;           // We handled the msg
 
         case WM_DESTROY:
+            // Free global storage
+            FreeGlobalStorage (lpMemPTD);
+
             // Remove all saved window properties
             EnumPropsW (hWnd, EnumCallbackRemoveProp);
 #ifdef DEBUG

@@ -1,6 +1,20 @@
 Version 0.0.2.18 consists of the following Builds:
 
 
+Build #741 -- Version 0.0.2.18
+------------------------------
+
+* Check For NULL Undo Text Ptr
+
+Directory trunk:
+
+DEFINES.H:
+  Increase the maximum Undo buffer length.
+
+SAVEFCN.C:
+  In <SF_UndoBufferLW>, check for NULL Undo text ptr.
+
+
 Build #740 -- Version 0.0.2.18
 ------------------------------
 

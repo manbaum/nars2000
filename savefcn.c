@@ -848,6 +848,10 @@ HGLOBAL SF_UndoBufferLW
     // Get parameters
     lpMemUndoTxt = lpLW_Params->lpMemUndoTxt;
 
+    // Check for not present
+    if (lpMemUndoTxt EQ NULL)
+        return NULL;
+
     // Parse the # entries, and skip over it
     sscanfW (lpMemUndoTxt, L"%d", &uUndoCount);
     lpMemUndoTxt = SkipBlackW (lpMemUndoTxt);

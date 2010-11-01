@@ -94,6 +94,253 @@ LPPL_YYSTYPE PrimProtoFnSquad_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnSquad_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic Squad
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnSquad_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnSquad_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRht,           // Ptr to right arg
+                 lpYYRes = NULL;    // Ptr to result
+    APLUINT      ByteRes;           // # bytes in the result
+    APLNELM      aplNELMRes;        // Result NELM
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes = NULL;    // Result    ...
+    LPAPLNESTED  lpMemRes = NULL;   // Ptr to result global memory
+    LPAPLUINT    lpMemRht = NULL;   // Ptr to right arg global memory
+    UINT         uRes;              // Loop counter
+    TOKEN        tkRht = {0},       // Right arg token
+                 tkFcn = {0};       // Function token
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    // Setup a token with the {rho} function
+    tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
+    tkFcn.tkData.tkIndex    = UTF16_RHO;
+    tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Compute {rho} R
+    lpYYRht =
+      PrimFnMonRho_EM_YY (&tkFcn,       // Ptr to function token
+                           lptkRhtArg,  // Ptr to right arg token
+                           NULL);       // Ptr to axis token (may be NULL)
+    // If there's an axis operator, ...
+    if (lptkAxis)
+    {
+        APLRANK aplRankRht;         // Right arg rank
+
+        // Get the attributes (Type, NELM, and Rank) of the right arg
+        AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+        // Check the axis values, fill in # elements in axis
+        if (!CheckAxis_EM (lptkAxis,        // The axis token
+                           aplRankRht,      // All values less than this
+                           FALSE,           // TRUE iff scalar or one-element vector only
+                           TRUE,            // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // TRUE iff fractional values allowed
+                           NULL,            // Return last axis value
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto ERROR_EXIT;
+
+        // The (left) identity function for dyadic Squad
+        //   (L {squad}[X] R) ("index w/axis") is
+        //   {iota}{each}({rho} R)[1/X].
+        lpYYRes =
+          ArrayIndexRef_EM_YY (&lpYYRht->tkToken,
+                                lptkAxis);
+        // Free the YYRht
+        FreeResult (lpYYRht); YYFree (lpYYRht); lpYYRht = NULL;
+
+        // Check for error
+        if (lpYYRes EQ NULL)
+            goto ERROR_EXIT;
+
+        // Copy as new right arg
+        lpYYRht = lpYYRes; lpYYRes = NULL;
+    } // End IF
+
+    // The (left) identity function for dyadic Squad
+    //   (L {squad} R) ("index") is
+    //   {iota}{each}{rho} R.
+
+    // Get the attributes (Type, NELM, and Rank) of the result so far
+    AttrsOfToken (&lpYYRht->tkToken, NULL, &aplNELMRes, NULL, NULL);
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRes, 1);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_NESTED;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
+#undef  lpHeader
+
+    // Skip over the header to the dimensions
+    *(VarArrayBaseToDim (lpMemRes)) = aplNELMRes;
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+    // If the right arg is an immediate, ...
+    if (IsTknImmed (&lpYYRht->tkToken))
+        // Point to the immediate value
+        lpMemRht = &lpYYRht->tkToken.tkData.tkInteger;
+    else
+    {
+        // Get the right arg global memory handle
+        hGlbRht = ClrPtrTypeDir (lpYYRht->tkToken.tkData.tkGlbData);
+
+        // Lock the memory to get a ptr to it
+        lpMemRht = MyGlobalLock (hGlbRht);
+
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayBaseToData (lpMemRht, 1);
+    } // End IF
+
+    // Setup the right arg token
+    tkRht.tkFlags.TknType   = TKT_VARIMMED;
+    tkRht.tkFlags.ImmType   = IMMTYPE_INT;
+////tkRht.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+////tkRht.tkData.tkInteger  =                   // To be filled in below
+    tkRht.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Setup a token with the {iota} function
+    tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
+    tkFcn.tkData.tkIndex    = UTF16_IOTA;
+    tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // As the result is nested, we need to be sure we process its prototype
+    if (aplNELMRes EQ 0)
+        // Save in the result
+        *lpMemRes++ = MakePtrTypeGlb (hGlbZilde);
+    else
+    // Loop through the elements of lpYYRht
+    for (uRes = 0; uRes < aplNELMRes; uRes++)
+    {
+        // Get the next integer
+        tkRht.tkData.tkInteger = *lpMemRht++;
+
+        // Execute {iota} on the right arg
+        lpYYRes =
+          PrimFnMonIota_EM_YY (&tkFcn,          // Ptr to function token
+                               &tkRht,          // Ptr to right arg token
+                                NULL);          // Ptr to axis token (may be NULL)
+        // Check for error
+        if (lpYYRes EQ NULL)
+            goto ERROR_EXIT;
+        // It's an HGLOBAL
+        Assert (!IsTknImmed (&lpYYRes->tkToken));
+
+        // Save in the result
+        *lpMemRes++ = lpYYRes->tkToken.tkData.tkGlbData;
+
+        // Free the YYRes (but not the storage)
+        YYFree (lpYYRes); lpYYRes = NULL;
+    } // End FOR
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+
+    if (lpYYRes)
+    {
+        // Free the YYRes
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    if (lpYYRht)
+    {
+        // Free the YYRes
+        FreeResult (lpYYRht); YYFree (lpYYRht); lpYYRht = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End PrimIdentFnSquad_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMonSquad_EM_YY
 //
 //  Primitive function for monadic Squad (ERROR)

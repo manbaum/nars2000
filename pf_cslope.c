@@ -94,6 +94,76 @@ LPPL_YYSTYPE PrimProtoFnCircleSlope_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnCircleSlope_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic CircleSlope
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnCircleSlope_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnCircleSlope_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLRANK aplRankRht;             // Right arg rank
+    TOKEN   tkRht = {0},            // Right arg token
+            tkFcn = {0};            // Function token
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+    // Setup a token with the rank value
+    tkRht.tkFlags.TknType   = TKT_VARIMMED;
+    tkRht.tkFlags.ImmType   = IMMTYPE_INT;
+////tkRht.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
+    tkRht.tkData.tkInteger  = aplRankRht;
+    tkRht.tkCharIndex       = lptkRhtArg->tkCharIndex;
+
+    // Setup a token with the {iota} function
+    tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
+    tkFcn.tkData.tkIndex    = UTF16_IOTA;
+    tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // The (left) identity function for dyadic CircleSlope
+    //   (L {circleslope} R) ("transpose") is
+    //   {iota} {rho} {rho} R.
+    return
+      PrimFnMonIota_EM_YY (&tkFcn,      // Ptr to function token
+                           &tkRht,      // Ptr to right arg token
+                            NULL);      // Ptr to axis token (may be NULL)
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+} // End PrimIdentFnCircleSlope_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMonCircleSlope_EM_YY
 //
 //  Primitive function for monadic CircleSlope ("reverse axes")

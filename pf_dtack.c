@@ -28,7 +28,7 @@
 //***************************************************************************
 //  $PrimFnDownTack_EM_YY
 //
-//  Primitive function for monadic and dyadic DownTack (ERROR and "encode/representation")
+//  Primitive function for monadic and dyadic DownTack ("type" and "encode/representation")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -105,9 +105,69 @@ LPPL_YYSTYPE PrimProtoFnDownTack_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnDownTack_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic DownTack
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnDownTack_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnDownTack_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRes;           // Ptr to result
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // The (left) identity element for dyadic DownTack
+    //   (L {downtack} R) ("encode/representation") is
+    //   0.
+
+    // Fill in the result token
+    lpYYRes->tkToken                   = tkZero;
+////lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;  // Already set by tkZero
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;  // Already set by tkZero
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already set by tkZero
+////lpYYRes->tkToken.tkData.tkBoolean  = FALSE;         // Already set by tkZero
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+} // End PrimIdentFnDownTack_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMonDownTack_EM_YY
 //
-//  Primitive function for monadic DownTack (ERROR)
+//  Primitive function for monadic DownTack ("type")
 //***************************************************************************
 
 #ifdef DEBUG

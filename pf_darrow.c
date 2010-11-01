@@ -94,6 +94,128 @@ LPPL_YYSTYPE PrimProtoFnDownArrow_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnDownArrow_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic DownArrow
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentDownArrow_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnDownArrow_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRes;           // Ptr to result
+    APLNELM      aplNELMRes;        // Result NELM
+    APLUINT      ByteRes;           // # bytes in the result
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to left arg global memory
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    // If there's an axis operator, ...
+    if (lptkAxis)
+    {
+        APLRANK aplRankRht;         // Right arg rank
+
+        // Get the attributes (Type, NELM, and Rank) of the right arg
+        AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+        // Check the axis values, fill in # elements in axis
+        if (!CheckAxis_EM (lptkAxis,        // The axis token
+                           aplRankRht,      // All values less than this
+                           FALSE,           // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // TRUE iff fractional values allowed
+                           NULL,            // Return last axis value
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto ERROR_EXIT;
+
+        // The (left) identity function for dyadic DownArrow
+        //   (L {downarrow}[X] R) ("drop w/axis") is
+        //   ({rho} X){rho} 0.
+
+        // Get the attributes (Type, NELM, and Rank)
+        //   of the right arg
+        AttrsOfToken (lptkAxis, NULL, &aplNELMRes, NULL, NULL);
+    } else
+        // The (left) identity function for dyadic DownArrow
+        //   (L {downarrow} R) ("drop") is
+        //   ({rho} {rho} R){rho} 0.
+
+        // Get the attributes (Type, NELM, and Rank)
+        //   of the right arg
+        AttrsOfToken (lptkRhtArg, NULL, NULL, &aplNELMRes, NULL);
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMRes, 1);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    // Allocate space for the result.
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_BOOL;
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
+#undef  lpHeader
+
+    // Save the dimension
+    * (VarArrayBaseToDim (lpMemRes)) = aplNELMRes;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Allocate a new YYRes;
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+ERROR_EXIT:
+    return NULL;
+} // End PrimIdentFnDownArrow_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMonDownArrow_EM_YY
 //
 //  Primitive function for monadic DownArrow (ERROR)

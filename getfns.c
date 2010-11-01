@@ -1985,6 +1985,74 @@ LPPRIMFNS GetPrototypeFcnPtr
 
 
 //***************************************************************************
+//  $GetIdentityFcnPtr
+//
+//  Return a ptr to the appropriate identity function
+//    corresponding to a give function token type.
+//***************************************************************************
+
+LPIDENTFNS GetIdentityFcnPtr
+    (LPTOKEN lptkFcn)
+
+{
+    HGLOBAL      hGlbFcn;                   // Function array global memory handle
+    LPPL_YYSTYPE lpMemFcn;                  // Ptr to function array global memory
+    LPIDENTFNS   lpIdentFns;                // Ptr to result
+    static IDENTFNS DfnIdentFns =
+    {
+        (LPPRIMOPS) ExecDfnGlbIdent_EM_YY,  // Ptr to PRIMOPS
+        FALSE,                              // LftIdent
+        FALSE,                              // RhtIdent
+    };
+
+    // Split cases based upon the token type of the function strand's first item
+    switch (lptkFcn->tkFlags.TknType)
+    {
+        case TKT_FCNIMMED:
+        case TKT_OP1IMMED:
+        case TKT_OP2IMMED:
+        case TKT_OP3IMMED:
+        case TKT_OPJOTDOT:
+            // Get a ptr to the identity function for the first symbol (a function or operator)
+            return &PrimIdentFnsTab[SymTrans (lptkFcn)];
+
+        case TKT_FCNARRAY:
+            // Split cases based upon the function array signature
+            switch (GetSignatureGlb (lptkFcn->tkData.tkGlbData))
+            {
+                case FCNARRAY_HEADER_SIGNATURE:
+                    // Get the function global memory handle
+                    hGlbFcn = ClrPtrTypeDir (lptkFcn->tkData.tkGlbData);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemFcn = MyGlobalLock (hGlbFcn);
+
+                    // Skip over the header to the data
+                    lpMemFcn = FcnArrayBaseToData (lpMemFcn);
+
+                    // Recurse to get the result
+                    lpIdentFns = GetIdentityFcnPtr (&lpMemFcn->tkToken);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+
+                    return lpIdentFns;
+
+                case DFN_HEADER_SIGNATURE:
+                    // Get a ptr to the prototype function for the user-defined function/operator
+                    return &DfnIdentFns;
+
+                defstop
+                    return NULL;
+            } // End SWITCH
+
+        defstop
+            return NULL;
+    } // End SWITCH
+} // End GetIdentityFcnPtr
+
+
+//***************************************************************************
 //  $GetPrimFlagsPtr
 //
 //  Return a ptr to the PrimFlags entry

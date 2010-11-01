@@ -33,7 +33,6 @@ QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 
 WIN=64
 
-I98=.\;$(SDK)Include;$(MSVC)include;$(GSLINC);$(QDEBUG)
 L98=$(SDK)Lib\x64;$(MSVC)lib\amd64;$(QDEBUG)
 
 LD="$(MSVC)bin\amd64\link.exe"

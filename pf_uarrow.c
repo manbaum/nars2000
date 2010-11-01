@@ -94,6 +94,88 @@ LPPL_YYSTYPE PrimProtoFnUpArrow_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnUpArrow_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic UpArrow
+//***************************************************************************
+
+LPPL_YYSTYPE PrimIdentFnUpArrow_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRes,           // Ptr to result
+                 lpYYRes2;          // Ptr to secondary result
+    TOKEN        tkFcn = {0};       // Function token
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    // Setup a token with the {rho} function
+    tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
+    tkFcn.tkData.tkIndex    = UTF16_RHO;
+    tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Compute {rho} R
+    lpYYRes =
+      PrimFnMonRho_EM_YY (&tkFcn,       // Ptr to function token
+                           lptkRhtArg,  // Ptr to right arg token
+                           NULL);       // Ptr to axis token (may be NULL)
+    // If there's an axis operator, ...
+    if (lptkAxis)
+    {
+        APLRANK aplRankRht;         // Right arg rank
+
+        // Get the attributes (Type, NELM, and Rank) of the right arg
+        AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+        // Check the axis values, fill in # elements in axis
+        if (!CheckAxis_EM (lptkAxis,        // The axis token
+                           aplRankRht,      // All values less than this
+                           FALSE,           // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // TRUE iff fractional values allowed
+                           NULL,            // Return last axis value
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto ERROR_EXIT;
+
+        // The (left) identity function for dyadic UpArrow
+        //   (L {uparrow}[X] R) ("take w/axis") is
+        //   ({rho} R)[X].
+        lpYYRes2 =
+          ArrayIndexRef_EM_YY (&lpYYRes->tkToken,
+                                lptkAxis);
+        // Free the YYRes
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+        return lpYYRes2;
+    } // End IF
+
+    // The (left) identity function for dyadic UpArrow
+    //   (L {uparrow} R) ("take") is
+    //   {rho} R.
+    return lpYYRes;
+
+ERROR_EXIT:
+    // Free the YYRes
+    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+    return NULL;
+} // End PrimIdentFnUpArrow_EM_YY
+
+
+//***************************************************************************
 //  $PrimFnMonUpArrow_EM_YY
 //
 //  Primitive function for monadic UpArrow ("first")

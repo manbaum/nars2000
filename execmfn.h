@@ -33,7 +33,9 @@ typedef enum tagMFO
     MFOE_MonFMT     ,           // 07:  Monadic []FMT
     MFOE_Box        ,           // 08:  Box (for monadic []FMT)
     MFOE_MonVR      ,           // 09:  Monadic []VR
-    MFOE_LENGTH                 // 0A:  # entries in this enum
+    MFOE_IdnDot     ,           // 0A:  Identity function for Inner Product
+    MFOE_IdnJotDot  ,           // 0B:  Identity function for Outer Product
+    MFOE_LENGTH                 // 0C:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -47,15 +49,19 @@ typedef enum tagMFO
 #define MFON_MonFMT         L"#MonFMT"
 #define MFON_Box            L"#Box"
 #define MFON_MonVR          L"#MonVR"
+#define MFON_IdnDot         L"#IdnDot"
+#define MFON_IdnJotDot      L"#IdnJotDot"
 
 // Magic Function/Operator Variables
 #define $COMMABAR       WS_UTF16_COMMABAR
+#define $COMMUTE        WS_UTF16_DIERESISTILDE
 #define $DECODE         WS_UTF16_UPTACK
 #define $DIAMOND        WS_UTF16_DIAMOND
 #define $DROP           WS_UTF16_DOWNARROW
 #define $DEL            WS_UTF16_DEL
 #define $DISCLOSE       WS_UTF16_RIGHTSHOE
 #define $DIVIDE         WS_UTF16_COLONBAR
+#define $DUPLICATE      WS_UTF16_DIERESISTILDE
 #define $EACH           WS_UTF16_DIERESIS
 #define $ENCLOSE        WS_UTF16_LEFTSHOE
 #define $ENCODE         WS_UTF16_DOWNTACK

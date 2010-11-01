@@ -112,6 +112,246 @@ LPPL_YYSTYPE PrimProtoFnDomino_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnDomino_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic Domino
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnDomino_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnDomino_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to identity element result
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes = NULL;    // Result    ...
+    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    LPAPLBOOL    lpMemRes = NULL;   // Ptr to result    ...
+    APLNELM      aplNELMRes;        // Result NELM
+    APLRANK      aplRankRht;        // Right arg rank
+    APLDIM       uNumRows,          // # rows in the right arg
+                 uNumCols;          // # cols ...
+    APLUINT      ByteRes,           // # bytes in the result
+                 uRes;              // Loop counter
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // The (right) identity function for dyadic Domino
+    //   (L {domino} R) ("matrix divide") is
+    //   ({iota}{first}{rho}R){jot}.={iota}{first}{rho}R.
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
+
+    // Check for RANK ERROR
+    if (IsRank3P (aplRankRht))
+        goto RANK_EXIT;
+
+    // Get right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Calculate the # rows & cols in the result
+    switch (aplRankRht)
+    {
+        case 0:                 // 1x1 matrix
+            uNumRows =
+            uNumCols = 1;
+
+            break;
+
+        case 1:                 // 1-col matrix
+            uNumRows = *VarArrayBaseToDim (lpMemRht);
+            uNumCols = 1;
+
+            break;
+
+        case 2:
+            uNumRows = (VarArrayBaseToDim (lpMemRht))[0];
+            uNumCols = (VarArrayBaseToDim (lpMemRht))[1];
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Check for LENGTH ERROR
+    if (IsMatrix (aplRankRht)
+     && uNumRows < uNumCols)
+        goto LENGTH_EXIT;
+
+    // Check for DOMAIN ERROR
+    if (!IsSimpleNum (aplTypeRht))
+        goto DOMAIN_EXIT;
+
+    // If the right arg is a scalar, the result is an immediate
+    if (IsScalar (aplRankRht))
+    {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkBoolean  = 1;
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
+    //***************************************************************
+    // From here on, the right arg (and the result) is a vector or matrix
+    //***************************************************************
+
+    // Calculate the result NELM
+    aplNELMRes = uNumRows * uNumRows;
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMRes, aplRankRht);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_BOOL;
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRht;
+#undef  lpHeader
+
+    // Skip over the header to the dimensions
+    lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemRes);
+
+    // Save the dimension(s)
+    // Split cases based upon the rank of the right arg (same as the result)
+    switch (aplRankRht)
+    {
+        case 1:                                         // Vector
+            *((LPAPLDIM) lpMemRes)++ = uNumRows;        // Length
+
+            break;
+
+        case 2:                                         // Matrix
+            *((LPAPLDIM) lpMemRes)++ = uNumRows;        // # rows
+            *((LPAPLDIM) lpMemRes)++ = uNumRows;        // # cols
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    //***************************************************************
+    // lpMemRes now points to its data
+    //***************************************************************
+
+    // Loop through the result setting the major diagonal bits
+    for (uRes = 0; uRes < aplNELMRes; uRes += (uNumRows + 1))
+        lpMemRes[uRes >> LOG2NBIB] |= BIT0 << (MASKLOG2NBIB & (UINT) uRes);
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End PrimIdentFnDomino_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMonDomino_EM_YY
 //
 //  Primitive function for monadic Domino ("matrix inverse")
@@ -236,6 +476,10 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         goto NORMAL_EXIT;
     } // End IF
 
+    //***************************************************************
+    // From here on, the right arg (and the result) is a vector or matrix
+    //***************************************************************
+
     // The rank of the result is the same as
     //   that of the right arg
     aplRankRes = aplRankRht;
@@ -282,9 +526,12 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     } // End IF/ELSE
 
     // Skip over the header and dimensions to the data
-    if (!IsScalar (aplRankRht))
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+
+    //***************************************************************
+    // lpMemRes and lpMemRht now point to their data
+    //***************************************************************
 
     // Check for no rows as gsl_linalg_SV_decomp doesn't handle it well
     if (uNumRows EQ 0)

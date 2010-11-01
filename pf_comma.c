@@ -95,6 +95,104 @@ LPPL_YYSTYPE PrimProtoFnComma_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnComma_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic Comma
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnComma_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnComma_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    TOKEN        tkLft = tkZero,    // Token for temporary left arg
+                 tkFcn = {0},       // Ptr to function token
+                 tkAxis = {0};      // Ptr to axis token
+    LPPL_YYSTYPE lpYYIdent = NULL;  // Ptr to identity element result
+    APLRANK      aplRankRht;        // Right arg rank
+    APLBOOL      bQuadIO;           // []IO
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+    // Check for axis present
+    if (lptkAxis)
+    {
+        // Catentate allows integer axis values only
+        if (!CheckAxis_EM (lptkAxis,        // The axis token
+                           aplRankRht,      // All values less than this
+                           TRUE,            // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // Return TRUE iff fractional values present
+                           NULL,            // Return last axis value
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto ERROR_EXIT;
+    } // End IF
+
+    // Disallow scalars as they do not have a catenate identity function
+    if (IsScalar (aplRankRht))
+        goto DOMAIN_EXIT;
+
+    // The (left/right) identity function for dyadic comma
+    //   (L,[X] R) ("catenate") is
+    //   0/[X] R.
+
+    // Setup the left arg token
+////tkLft.tkFlags.TknType   = TKT_VARIMMED;     // Already set from tkZero
+////tkLft.tkFlags.ImmType   = IMMTYPE_BOOL;     // Already set from tkZero
+////tkLft.tkFlags.NoDisplay = FALSE;            // Already set from tkZero
+////tkLft.tkData.tkLongest  = 0;                // Already set ftom tkZero
+    tkLft.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Setup the function token
+    tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+    tkFcn.tkData.tkChar     = (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR) ? UTF16_SLASHBAR
+                                                                          : UTF16_SLASH;
+    tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Compute 0/[aplAxis] R
+    lpYYIdent =
+      PrimFnDydSlash_EM_YY (&tkLft,             // Ptr to left arg token
+                            &tkFcn,             // Ptr to function token
+                             lptkRhtArg,        // Ptr to right arg token
+                             lptkAxis);         // Ptr to left operand axis token (may be NULL)
+    return lpYYIdent;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return NULL;
+} // End PrimIdentFnComma_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMonComma_EM_YY
 //
 //  Primitive function for monadic Comma ("ravel/table")

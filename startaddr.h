@@ -342,6 +342,21 @@ typedef struct tagSTART_ADDRESSES
     "PrimFnQuery_EM_YY"         , (LPUCHAR) &PrimFnQuery_EM_YY          ,
     "PrimFnDydQuery_EM_YY"      , (LPUCHAR) &PrimFnDydQuery_EM_YY       ,
 
+    // pf_rcaret.c
+    "PrimFnRightCaret_EM_YY"    , (LPUCHAR) &PrimFnRightCaret_EM_YY     ,
+
+    // pf_rcaretund.c
+    "PrimFnRightCaretUnderbar_EM_YY", (LPUCHAR) &PrimFnRightCaretUnderbar_EM_YY,
+
+    // pf_rho.c
+    "PrimFnRho_EM_YY"           , (LPUCHAR) &PrimFnRho_EM_YY            ,
+
+    // pf_rshoe.c
+    "PrimFnRightShoe_EM_YY"     , (LPUCHAR) &PrimFnRightShoe_EM_YY      ,
+
+    // pf_rtack.c
+    "PrimFnRightTack_EM_YY"     , (LPUCHAR) &PrimFnRightTack_EM_YY      ,
+
     // pf_slash.c
     "PrimFnDydSlash_EM_YY"      , (LPUCHAR) &PrimFnDydSlash_EM_YY       ,
 
@@ -351,6 +366,27 @@ typedef struct tagSTART_ADDRESSES
     "PrimFnMonSquad_EM_YY"      , (LPUCHAR) &PrimFnMonSquad_EM_YY       ,
     "PrimFnDydSquad_EM_YY"      , (LPUCHAR) &PrimFnDydSquad_EM_YY       ,
     "PrimFnDydSquadGlb_EM_YY"   , (LPUCHAR) &PrimFnDydSquadGlb_EM_YY    ,
+
+    // pf_star.c
+    "PrimFnStar_EM_YY"          , (LPUCHAR) &PrimFnStar_EM_YY           ,
+
+    // pf_stile.c
+    "PrimFnStile_EM_YY"         , (LPUCHAR) &PrimFnStile_EM_YY          ,
+
+    // pf_tilde.c
+    "PrimFnTilde_EM_YY"         , (LPUCHAR) &PrimFnTilde_EM_YY          ,
+
+    // pf_times.c
+    "PrimFnTimes_EM_YY"         , (LPUCHAR) &PrimFnTimes_EM_YY          ,
+
+    // pf_uarrow.c
+    "PrimFnUpArrow_EM_YY"       , (LPUCHAR) &PrimFnUpArrow_EM_YY        ,
+
+    // pf_ucaret.c
+    "PrimFnUpCaret_EM_YY"       , (LPUCHAR) &PrimFnUpCaret_EM_YY        ,
+
+    // pf_ustile.c
+    "PrimFnUpStile_EM_YY"       , (LPUCHAR) &PrimFnUpStile_EM_YY        ,
 
     // pf_utack.c
     "PrimFnUpTack_EM_YY"        , (LPUCHAR) &PrimFnUpTack_EM_YY         ,

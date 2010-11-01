@@ -103,6 +103,84 @@ LPPL_YYSTYPE PrimProtoOpDieresisTilde_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentOpDieresisTilde_EM_YY
+//
+//  Generate an identity element for the primitive operator dyadic DieresisTilde
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentOpDieresisTilde_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentOpDieresisTilde_EM_YY
+    (LPTOKEN      lptkRhtOrig,          // Ptr to original right arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxisOpr)          // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
+    LPIDENTFNS   lpPrimIdentLft;        // Ptr to left operand identity function
+    LPTOKEN      lptkAxisLft;           // Ptr to axis operator token (if any)
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig   NE NULL);
+    Assert (lpYYFcnStrOpr NE NULL);
+    Assert (lptkRhtArg    NE NULL);
+
+    //***************************************************************
+    // This operator is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxisOpr NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // The (left/right -- opposite to f) identity function for dyadic DieresisTilde
+    //   (L f {dieresistilde} R) ("commute") is
+    //   ({primops} f) R.
+
+    // Set ptr to left operand,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
+
+    // Check for left operand axis operator
+    lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
+
+    // Get the appropriate identity function ptr
+    lpPrimIdentLft = GetIdentityFcnPtr (&lpYYFcnStrLft->tkToken);
+
+    // Check for error
+    if (!lpPrimIdentLft || !lpPrimIdentLft->lpPrimOps)
+        goto LEFT_DOMAIN_EXIT;
+
+    // Execute the left operand identity function on the right arg
+    return
+      (*lpPrimIdentLft->lpPrimOps)
+                        (lptkRhtOrig,           // Ptr to original right arg token
+                         lpYYFcnStrLft,         // Ptr to function strand
+                         lptkRhtArg,            // Ptr to right arg token
+                         lptkAxisLft);          // Ptr to axis token (may be NULL)
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxisOpr);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return NULL;
+} // End PrimIdentOpDieresisTilde_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimOpMonDieresisTilde_EM_YY
 //
 //  Primitive operator for monadic derived function from DieresisTilde ("duplicate")

@@ -169,8 +169,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bPrimDydScal = FALSE, // TRUE iff the left operand is a Primitive Dyadic Scalar function
                       bNrmIdent = FALSE,    // TRUE iff reducing an empty array with a primitive scalar dyadic function
-                      bUsrDfnOpr = FALSE,   // TRUE iff reducing an empty array with a user-defined function/operator
-                      bCatIdent = FALSE,    // TRUE iff reducing an empty array with catenate
+                      bPrimIdent = FALSE,   // TRUE iff reducing an empty array with a primitive function/operator
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     LPPRIMSPEC        lpPrimSpecLft;        // Ptr to left operand PRIMSPEC
@@ -324,37 +323,48 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     if (!lpPrimFlagsLft)
         lpPrimFlagsLft = &PrimFlags0;
 
-    // If the result is empty or the axis dimension is zero,
-    //   and the function is user-defined, ...
-    if ((IsEmpty (aplNELMRes)
-      || IsZeroDim (uDimAxRht))
-     && IsTknUsrDfn (&lpYYFcnStrLft->tkToken))
+    // If the result is empty or the axis dimension is zero, ...
+    if (IsEmpty (aplNELMRes)
+     || IsZeroDim (uDimAxRht))
     {
         // If we're also prototyping, ...
         if (bPrototyping)
             goto NONCE_EXIT;
 
-        // The result is nested
-        aplTypeRes = ARRAY_NESTED;
+        // If the reduction function is primitive scalar dyadic, ...
+        if (lpPrimFlagsLft->DydScalar)
+        {
+            // If it's not an immediate primitive function,
+            //   or it is, but is without an identity element,
+            //   signal a DOMAIN ERROR
+            if (lpYYFcnStrLft->tkToken.tkFlags.TknType NE TKT_FCNIMMED
+             || !lpPrimFlagsLft->IdentElem)
+                goto DOMAIN_EXIT;
 
-        // Mark as reducing empty array with user-defined function/operator
-        //   to produce its identity element
-        bUsrDfnOpr = TRUE;
-    } else
-    // If the result is empty or the axis dimension is zero,
-    //   and the function is catenate, ...
-    if ((IsEmpty (aplNELMRes)
-      || IsZeroDim (uDimAxRht))
-     && (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-      && (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMA
-       || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMABAR)))
-    {
-        // The result is nested
-        aplTypeRes = ARRAY_NESTED;
+            // Get the identity element
+            aplFloatIdent = lpPrimIdentLft->fIdentElem;
 
-        // Mark as reducing empty array with catenate
-        //   to produce its identity element
-        bCatIdent = TRUE;
+            // If the identity element is Boolean or we're prototyping,
+            //   the result is too
+            if (lpPrimIdentLft->IsBool
+             || lpPrimProtoLft)
+                aplTypeRes = ARRAY_BOOL;
+            else
+                aplTypeRes = ARRAY_FLOAT;
+
+            // Mark as reducing empty array with a primitive scalar dyadic function
+            //   to produce its identity element
+            bNrmIdent = TRUE;
+        } else
+        {
+            // The result is nested
+            aplTypeRes = ARRAY_NESTED;
+
+            // Mark as reducing empty array with a primitive or
+            //   user-defined function/operator
+            //   to produce its identity element
+            bPrimIdent = TRUE;
+        } // End IF
     } else
     // If the axis dimension is zero and the array is simple
     //   get the identity element for the left operand or
@@ -501,42 +511,16 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
     } // End IF
 
-    // If this is catenate identity element, ...
-    if (bCatIdent)
+    // If this is primitive or user-defined function/operator identity element, ...
+    if (bPrimIdent)
     {
-         IMM_TYPES immTypePro;              // Prototype immediate type
-
-        // The prototype of the result is the same as that of the right arg except the
-        //   catenate axis (aplAxis2) is zero.
-        // That is, we need 0/[aplAxis2] {take} R
-
-        // Get the prototype of the right arg ({take} R)
-        GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
-                            NULL,               // Ptr to integer result
-                            NULL,               // Ptr to float ...
-                            NULL,               // Ptr to WCHAR ...
-                            NULL,               // Ptr to longest ...
-                           &hGlbPro,            // Ptr to lpSym/Glb ...
-                           &immTypePro,         // Ptr to ...immediate type ...
-                            NULL);              // Ptr to array type ...
-        // If the catenate reduction identity function fails, ...
-        if (!CatRedIdentFcn_EM (lpMemRes,       // Ptr to result global memory
-                                aplNELMRes,     // Result NELM
-                                lpYYFcnStrLft,  // Ptr to left operand PL_YYSTYPE
-                                lptkAxisLft,    // Ptr to left operand axis token (may be NULL)
-                                hGlbPro,        // Prototype global memory handle (may be NULL)
-                                immTypePro))    // Prototype immediate type
-            goto ERROR_EXIT;
-    } else
-    // If this is user-defined function/operator identity element, ...
-    if (bUsrDfnOpr)
-    {
-        // Handle via subroutine
-        if (!UdfoRedIdentFcn_EM (lpMemRes,          // Ptr to result global memory
-                                 aplNELMRes,        // Result NELM
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lpYYFcnStrLft,     // Ptr to left operand PL_YYSTYPE
-                                 lptkAxisLft))      // Ptr to left operand axis token (may be NULL)
+        if (!FillIdentityElement_EM (lpMemRes,              // Ptr to result global memory
+                                     aplNELMRes,            // Result NELM
+                                     aplTypeRes,            // Result storage type
+                                     lpYYFcnStrLft,         // Ptr to left operand function strand
+                                     NULL,                  // Ptr to left arg token
+                                     NULL,                  // Ptr to right operand function strand
+                                     lptkRhtArg))           // Ptr to right arg token
             goto ERROR_EXIT;
     } else
     // If this is primitive scalar dyadic function identity element, ...
@@ -1177,123 +1161,6 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $UdfoRedIdentFcn_EM
-//
-//  Fill in the UDFO reduction identity function element
-//***************************************************************************
-
-UBOOL UdfoRedIdentFcn_EM
-    (LPVOID       lpMemRes,                 // Ptr to result global memory
-     APLNELM      aplNELMRes,               // Result NELM
-     LPTOKEN      lptkRhtArg,               // Ptr to right arg token
-     LPPL_YYSTYPE lpYYFcnStrLft,            // Ptr to left operand PL_YYSTYPE
-     LPTOKEN      lptkAxisLft)              // Ptr to left operand axis token (may be NULL)
-
-{
-    HGLOBAL      hGlbPro;                   // Prototype global memory handle
-    IMM_TYPES    immTypePro;                // Prototype immediate type
-    TOKEN        tkProto = {0};             // Prototype token
-    HGLOBAL      hGlbIdn;                   // Identity element global memory handle
-    APLLONGEST   aplLongestPro,             // Prototype element immediate value
-                 aplLongestIdn;             // Identity  ...
-    LPVOID       hSymGlbIdn;                // ...               LPSYMENTRY or HGLOBAL
-    APLSTYPE     aplTypeIdn;                // ...               storage type
-    APLUINT      uRes;                      // Loop counter
-    LPPL_YYSTYPE lpYYRes;                   // Ptr to the result
-
-    // Get the prototype of the right arg ({take} R)
-    GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
-                        NULL,               // Ptr to integer result
-                        NULL,               // Ptr to float ...
-                        NULL,               // Ptr to WCHAR ...
-                       &aplLongestPro,      // Ptr to longest ...
-                       &hGlbPro,            // Ptr to lpSym/Glb ...
-                       &immTypePro,         // Ptr to ...immediate type ...
-                        NULL);              // Ptr to array type ...
-    // If the prototype is a global, ...
-    if (hGlbPro)
-    {
-        // Setup a token for the right arg prototype to pass to the function
-        tkProto.tkFlags.TknType   = TKT_VARARRAY;
-////////tkProto.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
-////////tkProto.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-        tkProto.tkData.tkGlbData  = MakePtrTypeGlb (hGlbPro);
-        tkProto.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-    } else
-    {
-        // Setup a token for the right arg prototype to pass to the function
-        tkProto.tkFlags.TknType   = TKT_VARIMMED;
-        tkProto.tkFlags.ImmType   = immTypePro;
-////////tkProto.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-        tkProto.tkData.tkLongest  = aplLongestPro;
-        tkProto.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-    } // End IF/ELSE
-
-    // Get the user-defined function/operator's identity element
-    lpYYRes =
-      ExecFuncStrLine_EM_YY (NULL,              // Ptr to left arg token (may be NULL)
-                             lpYYFcnStrLft,     // Ptr to left operand function strand
-                            &tkProto,           // Ptr to right arg token
-                             lptkAxisLft,       // Ptr to axis token (may be NULL)
-                             LINENUM_ID);       // Starting line # (see LINE_NUMS)
-    // If it failed, ...
-    if (!lpYYRes)
-        goto ERROR_EXIT;
-    // Get identity element's global ptr (if any)
-    aplLongestIdn = GetGlbPtrs (&lpYYRes->tkToken, &hGlbIdn);
-
-    // If the result is global, ...
-    if (hGlbIdn)
-    {
-        // If the result is empty, ...
-        if (IsEmpty (aplNELMRes))
-            // Convert the global into a prototype
-            hSymGlbIdn =
-              MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbIdn),    // Proto arg global memory handle
-                                      &lpYYFcnStrLft->tkToken,      // Ptr to function token
-                                       MP_CHARS);                   // CHARs allowed
-        else
-            hSymGlbIdn = CopySymGlbDirAsGlb (hGlbIdn);
-    } else
-    {
-        // Get the attributes (Type, NELM, and Rank) of the identity element
-        AttrsOfToken (&lpYYRes->tkToken, &aplTypeIdn, NULL, NULL, NULL);
-
-        // If the result is empty, ...
-        if (IsEmpty (aplNELMRes))
-        {
-            // Convert the immediate into a prototype
-            if (IsSimpleChar (aplTypeIdn))
-                aplLongestIdn = L' ';
-            else
-                aplLongestIdn = 0;
-        } // End IF
-
-        // Convert the immediate value to a SYMENTRY
-        hSymGlbIdn =
-          MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeIdn),
-                          &aplLongestIdn,
-                          &lpYYFcnStrLft->tkToken);
-    } // End IF/ELSE
-
-    // Free the YYRes (and the storage)
-    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-
-    if (!hSymGlbIdn)
-        goto ERROR_EXIT;
-
-    // Save the identity element in the result
-    *((LPAPLNESTED) lpMemRes)++ = hSymGlbIdn;
-    for (uRes = 1; uRes < aplNELMRes; uRes++)
-        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hSymGlbIdn);
-
-    return TRUE;
-ERROR_EXIT:
-    return FALSE;
-} // End UdfoRedIdentFcn_EM
-
-
-//***************************************************************************
 //  $PrimOpMonSlashScalar_EM_YY
 //
 //  Handle the case where the right arg is a scalar
@@ -1457,8 +1324,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bNstIdent = FALSE,    // TRUE iff reducing an empty nested array with a primitive scalar dyadic fcn
-                      bUsrDfnOpr = FALSE,   // TRUE iff reducing an empty array with a user-defined function/operator
-                      bCatIdent = FALSE;    // TRUE iff reducing an empty array with catenate
+                      bPrimIdent = FALSE;   // TRUE iff reducing an empty array with a primitive
+                                            //   or user-defined function/operator
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
                       lpYYRes2,             // Ptr to secondary result
                       lpYYFcnStrLft;        // Ptr to the left operand strand
@@ -1635,36 +1502,11 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     if (aplIntegerLft EQ 0
      || aplIntegerLftAbs EQ (APLINT) (uDimAxRht + 1))
     {
-        // If the function is catenate, ...
+        // If it's an immediate primitive function,
+        //   and has an identity element, ...
         if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         && (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMA
-          || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_COMMABAR))
+         && lpPrimFlagsLft->IdentElem)
         {
-            // The result is nested
-            aplTypeRes = ARRAY_NESTED;
-
-            // Mark as reducing empty array with catenate
-            //   to produce its identity element
-            bCatIdent = TRUE;
-        } else
-        // If the function is user-defined, ...
-        if (IsTknUsrDfn (&lpYYFcnStrLft->tkToken))
-        {
-            // The result is nested
-            aplTypeRes = ARRAY_NESTED;
-
-            // Mark as reducing empty array with user-defined function/operator
-            //   to produce its identity element
-            bUsrDfnOpr = TRUE;
-        } else
-        {
-            // If it's not an immediate primitive function,
-            //   or it is, but is without an identity element,
-            //   signal a LEFT DOMAIN ERROR
-            if (!lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-             || !lpPrimFlagsLft->IdentElem)
-                goto LEFT_DOMAIN_EXIT;
-
             // If the right arg is nested, ...
             if (IsNested (aplTypeRht))
             {
@@ -1687,6 +1529,15 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                 else
                     aplTypeRes = ARRAY_FLOAT;
             } // End IF/ELSE
+        } else
+        {
+            // The result is nested
+            aplTypeRes = ARRAY_NESTED;
+
+            // Mark as reducing empty array with a primitive or
+            //   user-defined function/operator
+            //   to produce its identity element
+            bPrimIdent = TRUE;
         } // End IF/ELSE
     } else
     // If the operand is a primitive scalar dyadic function, and
@@ -1764,43 +1615,16 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
         // Fill in the data values (i.e., replicate the identity element)
 
-        // If the function is catenate, ...
-        if (bCatIdent)
+        // If the function is a primitive or user-defined function/operator, ...
+        if (bPrimIdent)
         {
-            HGLOBAL   hGlbPro = NULL;       // Prototype global memory handle
-            IMM_TYPES immTypePro;           // Prototype immediate type
-
-            // The prototype of the result is the same as that of the right arg except the
-            //   catenate axis (aplAxis2) is zero.
-            // That is, we need 0/[aplAxis2] {take} R
-
-            // Get the prototype of the right arg ({take} R)
-            GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
-                                NULL,               // Ptr to integer result
-                                NULL,               // Ptr to float ...
-                                NULL,               // Ptr to WCHAR ...
-                                NULL,               // Ptr to longest ...
-                               &hGlbPro,            // Ptr to lpSym/Glb ...
-                               &immTypePro,         // Ptr to ...immediate type ...
-                                NULL);              // Ptr to array type ...
-            // If the catenate reduction identity function fails, ...
-            if (!CatRedIdentFcn_EM (lpMemRes,       // Ptr to result global memory
-                                    aplNELMRes,     // Result NELM
-                                    lpYYFcnStrLft,  // Ptr to left operand PL_YYSTYPE
-                                    lptkAxisLft,    // Ptr to left operand axis token (may be NULL)
-                                    hGlbPro,        // Prototype global memory handle (may be NULL)
-                                    immTypePro))    // Prototype immediate type
-                goto ERROR_EXIT;
-        } else
-        // If this is user-defined function/operator identity element, ...
-        if (bUsrDfnOpr)
-        {
-            // Handle via subroutine
-            if (!UdfoRedIdentFcn_EM (lpMemRes,          // Ptr to result global memory
-                                     aplNELMRes,        // Result NELM
-                                     lptkRhtArg,        // Ptr to right arg token
-                                     lpYYFcnStrLft,     // Ptr to left operand PL_YYSTYPE
-                                     lptkAxisLft))      // Ptr to left operand axis token (may be NULL)
+            if (!FillIdentityElement_EM (lpMemRes,              // Ptr to result global memory
+                                         aplNELMRes,            // Result NELM
+                                         aplTypeRes,            // Result storage type
+                                         lpYYFcnStrLft,         // Ptr to left operand function strand
+                                         lptkLftArg,            // Ptr to left arg token
+                                         NULL,                  // Ptr to right operand function strand
+                                         lptkRhtArg))           // Ptr to right arg token
                 goto ERROR_EXIT;
         } else
         // If the right arg is nested, ...
@@ -1811,7 +1635,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             LPVOID     hSymGlbIdn;          // ...               LPSYMENTRY or HGLOBAL
             APLSTYPE   aplTypeIdn;          // ...               storage type
 
-            // The result common element is {take} f/[X] 0/[X] R
+            // The result common element is {first} f/[X] 0/[X] R
 
             // Fill in the left arg token
             tkLftArg.tkFlags.TknType   = TKT_VARIMMED;

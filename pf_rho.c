@@ -105,6 +105,54 @@ LPPL_YYSTYPE PrimProtoFnRho_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnRho_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic Rho
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnRho_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnRho_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // The (left) identity function for dyadic Rho
+    //   (L {rho} R) ("reshape") is
+    //   {rho} R.
+    return
+      PrimFnMonRho_EM_YY (lptkFunc,     // Ptr to function token
+                          lptkRhtArg,   // Ptr to right arg token
+                          NULL);        // Ptr to axis token (may be NULL)
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+} // End PrimIdentFnRho_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMonRho_EM_YY
 //
 //  Primitive function for monadic Rho ("shape")
@@ -122,6 +170,13 @@ LPPL_YYSTYPE PrimFnMonRho_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
     {
@@ -157,6 +212,11 @@ LPPL_YYSTYPE PrimFnMonRho_EM_YY
         defstop
             return NULL;
     } // End SWITCH
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnMonRho_EM_YY
 #undef  APPEND_NAME
 

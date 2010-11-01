@@ -135,7 +135,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
         // If it's an immediate, ...
         if (hGlbLst EQ NULL)
         {
-            Assert (lptkLstArg->tkFlags.TknType EQ TKT_LSTIMMED);
+            Assert (lptkLstArg->tkFlags.TknType EQ TKT_LSTIMMED
+                 || lptkLstArg->tkFlags.TknType EQ TKT_AXISIMMED);
 
             // Set the vars for an immediate
             hGlbSub       = NULL;
@@ -145,7 +146,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplLongestSub = lptkLstArg->tkData.tkLongest;
         } else
         {
-            Assert (lptkLstArg->tkFlags.TknType EQ TKT_LSTARRAY);
+            Assert (lptkLstArg->tkFlags.TknType EQ TKT_LSTARRAY
+                 || lptkLstArg->tkFlags.TknType EQ TKT_AXISARRAY);
 
             // Set the vars for an HGLOBAL
             aplTypeSub    = aplTypeLst;

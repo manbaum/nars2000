@@ -88,6 +88,192 @@ LPPL_YYSTYPE PrimProtoFnCircleStile_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnCircleStile_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic CircleStile
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnCircleStile_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
+    APLNELM      aplNELMRht;        // Right arg NELM
+    APLRANK      aplRankRht;        // Right arg rank
+    APLUINT      aplAxis;           // The (one and only) axis value
+    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
+    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, NULL, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for axis present
+    if (lptkAxis NE NULL)
+    {
+        // Rotate allows a single integer axis value only
+        if (!CheckAxis_EM (lptkAxis,        // The axis token
+                           aplRankRht,      // All values less than this
+                           TRUE,            // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // Return TRUE iff fractional values present
+                          &aplAxis,         // Return last axis value
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto ERROR_EXIT;
+    } else
+    {
+        // If CircleStile, use last dimension
+        if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
+            aplAxis = aplRankRht - 1;
+        else
+            // Otherwise, it's CircleBar on the first dimension
+            aplAxis = 0;
+    } // End IF/ELSE
+
+    // The (left) identity element for dyadic CircleStile
+    //   (L {circlestile} R) ("rotate") is
+    //   (({neg}1{drop}{rho}R){rho}0.
+
+    // The (left) identity element for dyadic CircleBar
+    //   (L {circlebar} R) ("rotate first") is
+    //   ((1{drop}{rho}R){rho}0.
+
+    // The (left) identity element for dyadic CircleStile
+    //   (L {circlestile}[X] R) ("rotate w/axis") is
+    //   ((X{ne}{iota}{rho}{rho}R)/{rho}R){rho}0.
+
+    // If the right arg is a scalar, ...
+    if (IsScalar (aplRankRht))
+    {
+        // The result is a scalar zero
+
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+        lpYYRes->tkToken                   = tkZero;
+////////lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;  // Already set by tkZero
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;  // Already set by tkZero
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already set by tkZero
+////////lpYYRes->tkToken.tkData.tkBoolean  = FALSE;         // Already set by tkZero
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    } else
+    {
+        APLNELM  aplNELMRes;            // Result NELM
+        APLUINT  ByteRes;               // # bytes in the result
+        HGLOBAL  hGlbRes = NULL;        // Result global memory handle
+        LPVOID   lpMemRes = NULL;       // Ptr to result global memory
+        LPAPLDIM lpMemDimRes;           // Ptr to result dimensions
+        APLUINT  uRht;                  // Loop counter
+
+        // The result is a rank (aplRankRht - 1) Boolean array of zeros
+
+        // Get the right arg global memory handle
+        hGlbRht = ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData);
+
+        // Lock the memory to get a ptr to it
+        lpMemRht = MyGlobalLock (hGlbRht);
+
+        // Skip over the header to the dimensions
+        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+
+        // The aplNELMRes is aplNELMRht / lpMemDimRht[aplAxis]
+        for (uRht = 0, aplNELMRes = 1; uRht < aplRankRht; uRht++)
+        if (uRht NE aplAxis)
+            aplNELMRes *= lpMemDimRht[uRht];
+
+        // Calculate space needed for the result
+        ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMRes, aplRankRht - 1);
+
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
+        // Allocate storage for the result
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+        if (!hGlbRes)
+            goto WSFULL_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+        // Fill in the header values
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_BOOL;
+////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplNELMRes;
+        lpHeader->Rank       = aplRankRht - 1;
+#undef  lpHeader
+
+        // Skip over the header to the dimensions
+        lpMemDimRes = VarArrayBaseToDim (lpMemRes);
+
+        // Copy the dimensions from the right arg
+        //   omitting the aplAxis dimension
+        for (uRht = 0; uRht < aplRankRht; uRht++)
+        if (uRht NE aplAxis)
+            *lpMemDimRes++ = lpMemDimRht[uRht];
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+        lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already set by tkZero
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    } // End IF/ELSE
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (hGlbRht)
+    {
+        if (lpMemRht)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        } // End IF
+    } // End IF
+
+    return lpYYRes;
+} // End PrimIdentFnCircleStile_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMonCircleStile_EM_YY
 //
 //  Primitive function for monadic CircleStile ("reverse")

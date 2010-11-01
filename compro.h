@@ -54,6 +54,7 @@
   #include "getreent.pro"
   #include "getfns.pro"
   #include "goto.pro"
+  #include "identfns.pro"
   #include "immexec.pro"
   #include "inifile.pro"
   #include "iniparser.pro"

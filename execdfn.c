@@ -28,7 +28,7 @@
 //***************************************************************************
 //  $ExecDfnGlbProto_EM_YY
 //
-//  Execute a user-defined function/operator on a prototype
+//  Execute a user-defined function/operator in a prototype context
 //***************************************************************************
 
 #ifdef DEBUG
@@ -43,18 +43,18 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 {
-    HGLOBAL      hGlbProto;         // Prototype global memory handle
+    HGLOBAL      hGlbUDFO;          // UDFO global memory handle
     LPPL_YYSTYPE lpYYRes,           // Ptr to the result
                  lpYYRes2;          // Ptr to secondary result
 
     // Get the user-defined function/operator global memory handle
-    hGlbProto = lptkFcnStr->tkData.tkGlbData;
+    hGlbUDFO = lptkFcnStr->tkData.tkGlbData;
 
-    Assert (GetSignatureGlb_PTB (hGlbProto) EQ DFN_HEADER_SIGNATURE);
+    Assert (GetSignatureGlb_PTB (hGlbUDFO) EQ DFN_HEADER_SIGNATURE);
 
     // Execute the user-defined function/operator on the arg using the []PRO entry point
     lpYYRes2 =
-      ExecDfnGlb_EM_YY (hGlbProto,              // User-defined function/operator global memory handle
+      ExecDfnGlb_EM_YY (hGlbUDFO,               // User-defined function/operator global memory handle
                         lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
          (LPPL_YYSTYPE) lptkFcnStr,             // Ptr to function strand
                         NULL,                   // Ptr to axis token (may be NULL -- used only if function strand is NULL)
@@ -88,6 +88,63 @@ VALUE_EXIT:
                                lptkFcnStr);
     return lpYYRes2;
 } // End ExecDfnGlbProto_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ExecDfnGlbIdent_EM_YY
+//
+//  Execute a user-defined function/operator in a identity context
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecDfnGlbIdent_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE ExecDfnGlbIdent_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFcnStr,            // Ptr to function strand
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+{
+    HGLOBAL      hGlbUDFO;          // UDFO global memory handle
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+
+    // Get the user-defined function/operator global memory handle
+    hGlbUDFO = lptkFcnStr->tkData.tkGlbData;
+
+    Assert (GetSignatureGlb_PTB (hGlbUDFO) EQ DFN_HEADER_SIGNATURE);
+
+    // Execute the user-defined function/operator on the arg using the []ID entry point
+    lpYYRes =
+      ExecDfnGlb_EM_YY (hGlbUDFO,               // User-defined function/operator global memory handle
+                        lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+         (LPPL_YYSTYPE) lptkFcnStr,             // Ptr to function strand
+                        NULL,                   // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                        lptkRhtArg,             // Ptr to right arg token
+                        LINENUM_ID);            // Starting line # (see LINE_NUMS)
+    // If the result is valid, ...
+    if (lpYYRes)
+    {
+        // Check for NoValue
+        if (IsTokenNoValue (&lpYYRes->tkToken))
+        {
+            // Free the YYRes (but not the storage)
+            YYFree (lpYYRes); lpYYRes = NULL;
+
+            goto VALUE_EXIT;
+        } // End IF
+    } // End IF
+
+    return lpYYRes;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                               lptkFcnStr);
+    return lpYYRes;
+} // End ExecDfnGlbIdent_EM_YY
 #undef  APPEND_NAME
 
 

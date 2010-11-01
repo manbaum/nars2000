@@ -243,6 +243,7 @@ void AttrsOfToken
 
         case TKT_VARIMMED:
         case TKT_LSTIMMED:
+        case TKT_AXISIMMED:
             if (lpaplType)
                 *lpaplType = TranslateImmTypeToArrayType (lpToken->tkFlags.ImmType);
             if (lpaplNELM)
@@ -257,6 +258,7 @@ void AttrsOfToken
         case TKT_VARARRAY:
         case TKT_LISTPAR:
         case TKT_LSTARRAY:
+        case TKT_AXISARRAY:
             // Get the global handle
             hGlbData = lpToken->tkData.tkGlbData;
 

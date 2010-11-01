@@ -426,7 +426,6 @@ typedef struct tagPRIMIDENT
 EXTERN
 PRIMIDENT PrimIdent[PF_INDEX_NEXT];     // Primitive scalar function identity elements
                                         //   in the same order as FBFN_INDS
-
 typedef void (FASTBOOLFCN) (APLSTYPE     aplTypeRht,        // Right arg storage type
                             APLNELM      aplNELMRht,        // Right arg NELM
                             LPVOID       lpMemRht,          // Ptr to right arg global memory
@@ -498,6 +497,42 @@ FASTBOOLTRANS fbtFirst[2]
 = {FBT_FIRST0, FBT_FIRST1};
 #endif
 ;
+
+// Union for either
+//  APLNESTED (HGLOBAL)     (of type PTRTYPE_HGLOBAL)
+//  APLHETERO (LPSYMENTRY)  (of type PTRTYPE_STCONST)
+typedef union tagGLBSYM
+{
+    HGLOBAL    hGlb;        // Result is APLNESTED
+    LPSYMENTRY lpSym;       // Result is APLHETERO
+} GLBSYM, *LPGLBSYM;
+
+typedef struct tagIDENTFNS
+{
+    LPPRIMOPS lpPrimOps;    // 00:  Ptr to PRIMOPS entry of the identity function
+    APLU3264  bLftIdent:1,  // 04:  00000001:  TRUE iff the identity function is a left identity
+              bRhtIdent:1,  //   :  00000002:  ...                                 right ...
+              :30;          //      FFFFFFFC:  Available bits
+} IDENTFNS, *LPIDENTFNS;
+
+// Identity Functions Table
+EXTERN
+IDENTFNS PrimIdentFnsTab[PRIMTAB_LEN];
+
+EXTERN
+const TOKEN tkZero
+#ifdef DEFINE_VALUES
+= {{TKT_VARIMMED, IMMTYPE_BOOL}}
+#endif
+;
+
+EXTERN
+const TOKEN tkBlank
+#ifdef DEFINE_VALUES
+= {{TKT_VARIMMED, IMMTYPE_CHAR}, (LPSYMENTRY) L' '}
+#endif
+;
+
 
 // This array translates a byte index into
 //   [byte][0] = the index of the first 0 in the byte (from right to left)

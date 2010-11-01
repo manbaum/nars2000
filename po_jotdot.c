@@ -98,6 +98,110 @@ LPPL_YYSTYPE PrimProtoOpJotDot_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentOpJotDot_EM_YY
+//
+//  Generate an identity element for the primitive operator dyadic JotDot
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentOpJotDot_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentOpJotDot_EM_YY
+    (LPTOKEN      lptkRhtOrig,      // Ptr to original right arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,    // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LPTOKEN      lptkAxisOpr)      // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYFcnStrRht;     // Ptr to right operand function strand
+    HGLOBAL      hGlbMFO;               // Magic function/operator global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig   NE NULL);
+    Assert (lpYYFcnStrOpr NE NULL);
+    Assert (lptkRhtArg    NE NULL);
+
+    //***************************************************************
+    // This operator is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxisOpr NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // The (left/right -- depends upon f) identity function for dyadic JotDot
+    //   (L {jot}.f R) ("outer product") is
+    //   f/0{rho} R.
+
+    // Set ptr to right operand,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+
+    // Ensure the right operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
+     || IsTknFillJot (&lpYYFcnStrRht->tkToken))
+        goto RIGHT_SYNTAX_EXIT;
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Get the magic function/operator global memory handles
+    hGlbMFO = lpMemPTD->hGlbMFO[MFOE_IdnJotDot];
+
+    return
+      ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token
+                                 &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                  lpYYFcnStrRht,            // Ptr to left operand function strand
+                                  lpYYFcnStrOpr,            // Ptr to function strand
+                                  NULL,                     // Ptr to right operand function strand (may be NULL)
+                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkAxisOpr,              // Ptr to axis token
+                                  hGlbMFO,                  // Magic function/operator global memory handle
+                                  NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                  LINENUM_ID);              // Starting line # type (see LINE_NUMS)
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxisOpr);
+    return NULL;
+
+RIGHT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    return NULL;
+} // End PrimIdentOpJotDot_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  Magic function/operator for identity function from the
+//    outer product operator
+//   f/0{rho} R.
+//***************************************************************************
+
+static APLCHAR IdnHeader[] =
+  L"Z" $IS L"(LO " MFON_IdnJotDot L") R";
+
+static APLCHAR IdnLine1[] =
+  $QUAD_ID L":"
+  L"Z" $IS L"LO/0" $RHO L"R";
+
+static LPAPLCHAR IdnBody[] =
+{IdnLine1,
+};
+
+MAGIC_FCNOPR MFO_IdnJotDot =
+{IdnHeader,
+ IdnBody,
+ countof (IdnBody),
+};
+
+
+//***************************************************************************
 //  $PrimOpMonJotDot_EM_YY
 //
 //  Primitive operator for monadic derived function from JotDot (ERROR)

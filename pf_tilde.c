@@ -147,6 +147,78 @@ LPPL_YYSTYPE PrimProtoFnTilde_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnTilde_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic Tilde
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnTilde_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnTilde_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLRANK      aplRankRht;        // Right arg rank
+    LPPL_YYSTYPE lpYYRes;           // Ptr to result
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // The (left) identity function for dyadic Tilde
+    //   (L~R) ("without") is
+    //   {zilde}.
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+    // Check for RANK ERROR
+    if (IsMultiRank (aplRankRht))
+        goto DOMAIN_EXIT;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbZilde);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimIdentFnTilde_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimSpecTildeStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type

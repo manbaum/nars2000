@@ -98,6 +98,7 @@ void InitPrimTabs
     InitPrimSpecs ();           // ...        table of PRIMSPECs
     InitPrimFlags ();           // ...        table of primitive fcn/opr flags
     InitIdentityElements ();    // ...        identity elements
+    InitIdentityFunctions ();   // ...        identity functions
 } // End InitPrimTabs
 
 
@@ -596,42 +597,42 @@ void InitPrimSpecs
 
 {
     // Initialize the table of PRIMSPECs
-    InitPrimSpec (UTF16_BAR               , &PrimSpecBar               );
-    InitPrimSpec (UTF16_CIRCLE            , &PrimSpecCircle            );
-    InitPrimSpec (UTF16_CIRCLESTAR        , &PrimSpecCircleStar        );
-    InitPrimSpec (UTF16_CIRCUMFLEX        , &PrimSpecUpCaret           );
-    InitPrimSpec (UTF16_COLONBAR          , &PrimSpecColonBar          );
-    InitPrimSpec (UTF16_DOWNCARET         , &PrimSpecDownCaret         );
-    InitPrimSpec (UTF16_DOWNCARETTILDE    , &PrimSpecDownCaretTilde    );
-    InitPrimSpec (UTF16_DOWNSTILE         , &PrimSpecDownStile         );
-    InitPrimSpec (UTF16_EQUAL             , &PrimSpecEqual             );
-    InitPrimSpec (UTF16_LEFTCARET         , &PrimSpecLeftCaret         );
-    InitPrimSpec (UTF16_LEFTCARETUNDERBAR , &PrimSpecLeftCaretUnderbar );
-    InitPrimSpec (UTF16_NOTEQUAL          , &PrimSpecNotEqual          );
-    InitPrimSpec (UTF16_PLUS              , &PrimSpecPlus              );
-    InitPrimSpec (UTF16_QUOTEDOT          , &PrimSpecQuoteDot          );
-    InitPrimSpec (UTF16_QUERY             , &PrimSpecQuery             );
-    InitPrimSpec (UTF16_RIGHTCARET        , &PrimSpecRightCaret        );
-    InitPrimSpec (UTF16_RIGHTCARETUNDERBAR, &PrimSpecRightCaretUnderbar);
-    InitPrimSpec (UTF16_STAR              , &PrimSpecStar              );
-    InitPrimSpec (UTF16_STILE             , &PrimSpecStile             );
-    InitPrimSpec (UTF16_STILE2            , &PrimSpecStile             );
-    InitPrimSpec (UTF16_TILDE             , &PrimSpecTilde             );
-    InitPrimSpec (UTF16_TILDE2            , &PrimSpecTilde             );
-    InitPrimSpec (UTF16_TIMES             , &PrimSpecTimes             );
-    InitPrimSpec (UTF16_UPCARET           , &PrimSpecUpCaret           );
-    InitPrimSpec (UTF16_UPCARETTILDE      , &PrimSpecUpCaretTilde      );
-    InitPrimSpec (UTF16_UPSTILE           , &PrimSpecUpStile           );
+    Init1PrimSpec (UTF16_BAR               , &PrimSpecBar               );
+    Init1PrimSpec (UTF16_CIRCLE            , &PrimSpecCircle            );
+    Init1PrimSpec (UTF16_CIRCLESTAR        , &PrimSpecCircleStar        );
+    Init1PrimSpec (UTF16_CIRCUMFLEX        , &PrimSpecUpCaret           );
+    Init1PrimSpec (UTF16_COLONBAR          , &PrimSpecColonBar          );
+    Init1PrimSpec (UTF16_DOWNCARET         , &PrimSpecDownCaret         );
+    Init1PrimSpec (UTF16_DOWNCARETTILDE    , &PrimSpecDownCaretTilde    );
+    Init1PrimSpec (UTF16_DOWNSTILE         , &PrimSpecDownStile         );
+    Init1PrimSpec (UTF16_EQUAL             , &PrimSpecEqual             );
+    Init1PrimSpec (UTF16_LEFTCARET         , &PrimSpecLeftCaret         );
+    Init1PrimSpec (UTF16_LEFTCARETUNDERBAR , &PrimSpecLeftCaretUnderbar );
+    Init1PrimSpec (UTF16_NOTEQUAL          , &PrimSpecNotEqual          );
+    Init1PrimSpec (UTF16_PLUS              , &PrimSpecPlus              );
+    Init1PrimSpec (UTF16_QUOTEDOT          , &PrimSpecQuoteDot          );
+    Init1PrimSpec (UTF16_QUERY             , &PrimSpecQuery             );
+    Init1PrimSpec (UTF16_RIGHTCARET        , &PrimSpecRightCaret        );
+    Init1PrimSpec (UTF16_RIGHTCARETUNDERBAR, &PrimSpecRightCaretUnderbar);
+    Init1PrimSpec (UTF16_STAR              , &PrimSpecStar              );
+    Init1PrimSpec (UTF16_STILE             , &PrimSpecStile             );
+    Init1PrimSpec (UTF16_STILE2            , &PrimSpecStile             );
+    Init1PrimSpec (UTF16_TILDE             , &PrimSpecTilde             );
+    Init1PrimSpec (UTF16_TILDE2            , &PrimSpecTilde             );
+    Init1PrimSpec (UTF16_TIMES             , &PrimSpecTimes             );
+    Init1PrimSpec (UTF16_UPCARET           , &PrimSpecUpCaret           );
+    Init1PrimSpec (UTF16_UPCARETTILDE      , &PrimSpecUpCaretTilde      );
+    Init1PrimSpec (UTF16_UPSTILE           , &PrimSpecUpStile           );
 } // End InitPrimSpecs
 
 
 //***************************************************************************
-//  $InitPrimSpec
+//  $Init1PrimSpec
 //
 //  Initialize a single lpPrimSpec
 //***************************************************************************
 
-void InitPrimSpec
+void Init1PrimSpec
     (WCHAR      wchFn,
      LPPRIMSPEC lpPrimSpec)
 
@@ -640,7 +641,7 @@ void InitPrimSpec
         DbgStop ();
     else
         PrimSpecTab[PRIMTAB_MASK & wchFn] = lpPrimSpec;
-} // End InitPrimSpec
+} // End Init1PrimSpec
 
 
 //***************************************************************************
@@ -671,48 +672,48 @@ void InitPrimFlags
     *((WORD *) &PrimFlag) = 0; PrimFlag.DydScalar = TRUE; PF_DS = *(WORD *) &PrimFlag;
     *((WORD *) &PrimFlag) = 0; PrimFlag.IdentElem = TRUE; PF_ID = *(WORD *) &PrimFlag;
 
-    InitPrimFlag (UTF16_BAR               , 0                     | PF_AL | PF_MS | PF_DS | PF_ID | PF_INDEX_MINUS   );
-    InitPrimFlag (UTF16_CIRCLE            , 0                             | PF_MS | PF_DS                            );
-    InitPrimFlag (UTF16_CIRCLESTAR        , 0                             | PF_MS | PF_DS                            );
-    InitPrimFlag (UTF16_CIRCUMFLEX        , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
-    InitPrimFlag (UTF16_COLONBAR          , 0                     | PF_AL | PF_MS | PF_DS | PF_ID | PF_INDEX_DIVIDE  );
-    InitPrimFlag (UTF16_DOWNCARET         , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_OR      );
-    InitPrimFlag (UTF16_DOWNCARETTILDE    , PF_FB                         | PF_MS | PF_DS         | PF_INDEX_NOR     );
-    InitPrimFlag (UTF16_DOWNSTILE         , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_MIN     );
-    InitPrimFlag (UTF16_EQUAL             , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_EQUAL   );
-    InitPrimFlag (UTF16_LEFTCARET         , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
-    InitPrimFlag (UTF16_LEFTCARETUNDERBAR , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESSEQ  );
-    InitPrimFlag (UTF16_NOTEQUAL          , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_NOTEQUAL);
-    InitPrimFlag (UTF16_PLUS              , 0     | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_PLUS    );
-    InitPrimFlag (UTF16_QUOTEDOT          , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESSEQ  );
-    InitPrimFlag (UTF16_QUERY             , 0                             | PF_MS                                    );
-    InitPrimFlag (UTF16_RIGHTCARET        , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MORE    );
-    InitPrimFlag (UTF16_RIGHTCARETUNDERBAR, PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MOREEQ  );
-    InitPrimFlag (UTF16_STAR              , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MOREEQ  );
-    InitPrimFlag (UTF16_STILE             , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
-    InitPrimFlag (UTF16_STILE2            , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
-    InitPrimFlag (UTF16_TILDE             , 0                             | PF_MS                                    ); // Identity element:  {enclose}{zilde} ??
-    InitPrimFlag (UTF16_TILDE2            , 0                             | PF_MS                                    ); // Identity element:  {enclose}{zilde} ??
-    InitPrimFlag (UTF16_TIMES             , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
-    InitPrimFlag (UTF16_UPCARET           , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
-    InitPrimFlag (UTF16_UPCARETTILDE      , PF_FB                         | PF_MS | PF_DS         | PF_INDEX_NAND    );
-    InitPrimFlag (UTF16_UPSTILE           , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_MAX     );
+    Init1PrimFlag (UTF16_BAR               , 0                     | PF_AL | PF_MS | PF_DS | PF_ID | PF_INDEX_MINUS   );
+    Init1PrimFlag (UTF16_CIRCLE            , 0                             | PF_MS | PF_DS                            );
+    Init1PrimFlag (UTF16_CIRCLESTAR        , 0                             | PF_MS | PF_DS                            );
+    Init1PrimFlag (UTF16_CIRCUMFLEX        , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
+    Init1PrimFlag (UTF16_COLONBAR          , 0                     | PF_AL | PF_MS | PF_DS | PF_ID | PF_INDEX_DIVIDE  );
+    Init1PrimFlag (UTF16_DOWNCARET         , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_OR      );
+    Init1PrimFlag (UTF16_DOWNCARETTILDE    , PF_FB                         | PF_MS | PF_DS         | PF_INDEX_NOR     );
+    Init1PrimFlag (UTF16_DOWNSTILE         , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_MIN     );
+    Init1PrimFlag (UTF16_EQUAL             , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_EQUAL   );
+    Init1PrimFlag (UTF16_LEFTCARET         , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
+    Init1PrimFlag (UTF16_LEFTCARETUNDERBAR , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESSEQ  );
+    Init1PrimFlag (UTF16_NOTEQUAL          , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_NOTEQUAL);
+    Init1PrimFlag (UTF16_PLUS              , 0     | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_PLUS    );
+    Init1PrimFlag (UTF16_QUOTEDOT          , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESSEQ  );
+    Init1PrimFlag (UTF16_QUERY             , 0                             | PF_MS                                    );
+    Init1PrimFlag (UTF16_RIGHTCARET        , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MORE    );
+    Init1PrimFlag (UTF16_RIGHTCARETUNDERBAR, PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MOREEQ  );
+    Init1PrimFlag (UTF16_STAR              , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MOREEQ  );
+    Init1PrimFlag (UTF16_STILE             , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
+    Init1PrimFlag (UTF16_STILE2            , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
+    Init1PrimFlag (UTF16_TILDE             , 0                             | PF_MS                                    ); // Identity element:  {enclose}{zilde} ??
+    Init1PrimFlag (UTF16_TILDE2            , 0                             | PF_MS                                    ); // Identity element:  {enclose}{zilde} ??
+    Init1PrimFlag (UTF16_TIMES             , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
+    Init1PrimFlag (UTF16_UPCARET           , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
+    Init1PrimFlag (UTF16_UPCARETTILDE      , PF_FB                         | PF_MS | PF_DS         | PF_INDEX_NAND    );
+    Init1PrimFlag (UTF16_UPSTILE           , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_MAX     );
 } // End InitPrimFlags
 
 
 //***************************************************************************
-//  $InitPrimFlag
+//  $Init1PrimFlag
 //
 //  Initialize a single primitive flag
 //***************************************************************************
 
-void InitPrimFlag
+void Init1PrimFlag
     (WCHAR wchFn,
      UINT  uFlag)
 
 {
     *((WORD *) &PrimFlags[PRIMTAB_MASK & wchFn]) |= uFlag;
-} // End InitPrimFlag
+} // End Init1PrimFlag
 
 
 //***************************************************************************
@@ -725,33 +726,33 @@ void InitIdentityElements
     (void)
 
 {
-    InitIdentityElement (PF_INDEX_PLUS    , 0.0);
-    InitIdentityElement (PF_INDEX_MINUS   , 0.0);
-    InitIdentityElement (PF_INDEX_DIVIDE  , 1.0);
+    Init1IdentityElement (PF_INDEX_PLUS    , 0.0);
+    Init1IdentityElement (PF_INDEX_MINUS   , 0.0);
+    Init1IdentityElement (PF_INDEX_DIVIDE  , 1.0);
 
-    InitIdentityElement (PF_INDEX_MIN     , PosInfinity);
-    InitIdentityElement (PF_INDEX_MAX     , NegInfinity);
+    Init1IdentityElement (PF_INDEX_MIN     , PosInfinity);
+    Init1IdentityElement (PF_INDEX_MAX     , NegInfinity);
 
-    InitIdentityElement (PF_INDEX_AND     , 1.0);
-    InitIdentityElement (PF_INDEX_OR      , 0.0);
+    Init1IdentityElement (PF_INDEX_AND     , 1.0);
+    Init1IdentityElement (PF_INDEX_OR      , 0.0);
 
-    InitIdentityElement (PF_INDEX_LESS    , 0.0);
-    InitIdentityElement (PF_INDEX_LESSEQ  , 1.0);
-    InitIdentityElement (PF_INDEX_EQUAL   , 1.0);
-    InitIdentityElement (PF_INDEX_MOREEQ  , 1.0);
-    InitIdentityElement (PF_INDEX_MORE    , 0.0);
+    Init1IdentityElement (PF_INDEX_LESS    , 0.0);
+    Init1IdentityElement (PF_INDEX_LESSEQ  , 1.0);
+    Init1IdentityElement (PF_INDEX_EQUAL   , 1.0);
+    Init1IdentityElement (PF_INDEX_MOREEQ  , 1.0);
+    Init1IdentityElement (PF_INDEX_MORE    , 0.0);
 
-    InitIdentityElement (PF_INDEX_NOTEQUAL, 0.0);
+    Init1IdentityElement (PF_INDEX_NOTEQUAL, 0.0);
 } // End InitIdentityElements
 
 
 //***************************************************************************
-//  $InitIdentityElement
+//  $Init1IdentityElement
 //
 //  Initialize an identity element
 //***************************************************************************
 
-void InitIdentityElement
+void Init1IdentityElement
     (UINT     uIndex,
      APLFLOAT aplFloat)
 
@@ -762,7 +763,63 @@ void InitIdentityElement
 
     // Save if it's float
     PrimIdent[uIndex].fIdentElem = aplFloat;
-} // End InitIdentityElement
+} // End Init1IdentityElement
+
+
+//***************************************************************************
+//  $InitIdentityFunctions
+//
+//  Initialize the table of primitive scalar function identity functions
+//***************************************************************************
+
+void InitIdentityFunctions
+    (void)
+
+{
+    //                     Unicode symbol      Identity Function                              LftIE   RhtIE      Axis?
+    Init1IdentityFunction (UTF16_CIRCLESLOPE   , (LPPRIMOPS) PrimIdentFnCircleSlope_EM_YY   , TRUE  , FALSE );  // N
+    Init1IdentityFunction (UTF16_CIRCLEBAR     , (LPPRIMOPS) PrimIdentFnCircleStile_EM_YY   , TRUE  , FALSE );  // Y
+    Init1IdentityFunction (UTF16_CIRCLESTILE   , (LPPRIMOPS) PrimIdentFnCircleStile_EM_YY   , TRUE  , FALSE );  // Y
+    Init1IdentityFunction (UTF16_COMMA         , (LPPRIMOPS) PrimIdentFnComma_EM_YY         , TRUE  , TRUE  );  // Y
+    Init1IdentityFunction (UTF16_COMMABAR      , (LPPRIMOPS) PrimIdentFnComma_EM_YY         , TRUE  , TRUE  );  // Y
+    Init1IdentityFunction (UTF16_DIERESIS      ,             PrimIdentOpDieresis_EM_YY      , TRUE  , TRUE  );  // Y
+    Init1IdentityFunction (UTF16_DIERESISTILDE ,             PrimIdentOpDieresisTilde_EM_YY , TRUE  , TRUE  );  // N
+    Init1IdentityFunction (UTF16_DOMINO        , (LPPRIMOPS) PrimIdentFnDomino_EM_YY        , FALSE , TRUE  );  // N
+    Init1IdentityFunction (UTF16_DOT           ,             PrimIdentOpDot_EM_YY           , FALSE , TRUE  );  // N
+    Init1IdentityFunction (UTF16_DOWNARROW     , (LPPRIMOPS) PrimIdentFnDownArrow_EM_YY     , TRUE  , FALSE );  // Y
+    Init1IdentityFunction (UTF16_DOWNTACK      , (LPPRIMOPS) PrimIdentFnDownTack_EM_YY      , TRUE  , FALSE );  // N
+    Init1IdentityFunction (INDEX_JOTDOT        ,             PrimIdentOpJotDot_EM_YY        , TRUE  , TRUE  );  // N
+    Init1IdentityFunction (UTF16_RHO           , (LPPRIMOPS) PrimIdentFnRho_EM_YY           , TRUE  , FALSE );  // N
+    Init1IdentityFunction (UTF16_RIGHTSHOE     , (LPPRIMOPS) PrimIdentFnRightShoe_EM_YY     , TRUE  , FALSE );  // N
+    Init1IdentityFunction (UTF16_SQUAD         , (LPPRIMOPS) PrimIdentFnSquad_EM_YY         , TRUE  , FALSE );  // Y
+    Init1IdentityFunction (UTF16_TILDE         , (LPPRIMOPS) PrimIdentFnTilde_EM_YY         , FALSE , TRUE  );  // N
+    Init1IdentityFunction (UTF16_TILDE2        , (LPPRIMOPS) PrimIdentFnTilde_EM_YY         , FALSE , TRUE  );  // N
+    Init1IdentityFunction (UTF16_UPARROW       , (LPPRIMOPS) PrimIdentFnUpArrow_EM_YY       , TRUE  , FALSE );  // Y
+} // End InitIdentityFunctions
+
+
+//***************************************************************************
+//  $Init1IdentityFunction
+//
+//  Initialize an identity function
+//***************************************************************************
+
+void Init1IdentityFunction
+    (WCHAR     wchFn,               // The masked UTF16_xxx value
+     LPPRIMOPS lpPrimOps,           // Ptr to identity function
+     UBOOL     bLftIdent,           // TRUE iff the identity function is a left identity
+     UBOOL     bRhtIdent)           // ...                                 right ...
+
+{
+    if (PrimIdentFnsTab[PRIMTAB_MASK & wchFn].lpPrimOps)
+        DbgStop ();
+    else
+    {
+        PrimIdentFnsTab[PRIMTAB_MASK & wchFn].lpPrimOps = lpPrimOps;
+        PrimIdentFnsTab[PRIMTAB_MASK & wchFn].bLftIdent = bLftIdent;
+        PrimIdentFnsTab[PRIMTAB_MASK & wchFn].bRhtIdent = bRhtIdent;
+    } // End IF/ELSE
+} // End Init1IdentityFunction
 
 
 //***************************************************************************

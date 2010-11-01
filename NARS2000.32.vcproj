@@ -441,6 +441,10 @@
                                 >
                         </File>
                         <File
+                                RelativePath=".\identfns.c"
+                                >
+                        </File>
+                        <File
                                 RelativePath=".\immexec.c"
                                 >
                         </File>

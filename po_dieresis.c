@@ -98,6 +98,235 @@ LPPL_YYSTYPE PrimProtoOpDieresis_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentOpDieresis_EM_YY
+//
+//  Generate an identity element for the primitive operator dyadic Dieresis
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentOpDieresis_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
+    (LPTOKEN      lptkRhtOrig,      // Ptr to original right arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,    // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LPTOKEN      lptkAxisOpr)      // Ptr to axis token (may be NULL)
+
+{
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMRes;        // Result    ...
+    APLRANK      aplRankRht;        // Right arg rank
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLUINT      ByteRes,           // # bytes in the result
+                 uRes;              // Loop counter
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes = NULL;    // Result    ...
+    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    LPAPLNESTED  lpMemRes = NULL;   // Ptr to result    ...
+    LPPL_YYSTYPE lpYYFcnStrRht,     // Ptr to right operand function strand
+                 lpYYRes = NULL,    // Ptr to result
+                 lpYYRes2 = NULL;   // Ptr to secondary result
+    LPIDENTFNS   lpPrimIdentRht;    // Ptr to right operand identity function
+    LPTOKEN      lptkAxisRht;       // Ptr to axis operator token (if any)
+    TOKEN        tkItem;            // Item token
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig   NE NULL);
+    Assert (lpYYFcnStrOpr NE NULL);
+    Assert (lptkRhtArg    NE NULL);
+
+    // The (left) identity function for dyadic Dieresis
+    //   (L f {each} R) ("each") is
+    //   ({primops} f) {each} R.
+
+    // Set ptr to right operand,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+
+    // Ensure the right operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
+     || IsTknFillJot (&lpYYFcnStrRht->tkToken))
+        goto RIGHT_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for right operand axis operator
+    lptkAxisRht = CheckAxisOper (lpYYFcnStrRht);
+
+    // Get the appropriate identity function ptr
+    lpPrimIdentRht = GetIdentityFcnPtr (&lpYYFcnStrRht->tkToken);
+
+    // Check for error
+    if (!lpPrimIdentRht || !lpPrimIdentRht->lpPrimOps)
+        goto RIGHT_DOMAIN_EXIT;
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRht, aplRankRht);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_NESTED;
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRht;
+    lpHeader->Rank       = aplRankRht;
+#undef  lpHeader
+
+    // Get right arg's global ptr
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Copy the dimensions from the right arg to the result
+    CopyMemory (VarArrayBaseToDim (lpMemRes),
+                VarArrayBaseToDim (lpMemRht),
+     (APLU3264) aplRankRht * sizeof (APLDIM));
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);
+
+    // In case the result is empty, we need to process
+    //   its prototype
+    aplNELMRes = max (aplNELMRht, 1);
+
+    // Loop through the items of the right arg
+    //   passing them each to the right operand's
+    //   identity function
+    for (uRes = 0; uRes < aplNELMRes; uRes++)
+    {
+        if (aplNELMRht EQ 0
+         && IsSimple (aplTypeRht))
+        {
+            if (IsSimpleChar (aplTypeRht))
+                tkItem = tkBlank;
+            else
+                tkItem = tkZero;
+        } else
+            // Get the next item from the right arg into a token
+            GetNextValueTokenIntoToken (lptkRhtArg,     // Ptr to the arg token
+                                         uRes,          // Index to use
+                                        &tkItem);       // Ptr to the result token
+        // Execute the right operand identity function on each item of the right arg
+        lpYYRes2 =
+          (*lpPrimIdentRht->lpPrimOps)
+                            (lptkRhtArg,            // Ptr to original right arg token
+                             lpYYFcnStrRht,         // Ptr to function strand
+                            &tkItem,                // Ptr to right arg token
+                             lptkAxisRht);          // Ptr to axis token (may be NULL)
+        // Check for error
+        if (lpYYRes2 EQ NULL)
+            goto ERROR_EXIT;
+
+        // Is the token immediate?
+        if (IsTknImmed (&lpYYRes2->tkToken))
+        {
+            LPSYMENTRY lpSymEntry;
+
+            // Copy the LPSYMENTRY as the result
+            lpSymEntry =
+              MakeSymEntry_EM (lpYYRes2->tkToken.tkFlags.ImmType,   // ImmType to use (see IMM_TYPES)
+                              &lpYYRes2->tkToken.tkData.tkLongest,  // Ptr to value to use
+                              &lpYYFcnStrRht->tkToken);             // Ptr to token to use in case of error
+            // Check for error
+            if (lpSymEntry EQ NULL)
+                goto ERROR_EXIT;
+
+            // Save in the result
+            *lpMemRes++ = lpSymEntry;
+        } else
+            // Copy the HGLOBAL as the result
+            *lpMemRes++ = CopySymGlbDir_PTB (lpYYRes2->tkToken.tkData.tkGlbData);
+
+        // Free the YYRes
+        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
+    } // End FOR
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&lpYYRes->tkToken);
+
+    goto NORMAL_EXIT;
+
+RIGHT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+
+    if (lpYYRes2)
+    {
+        // Free the YYRes
+        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End PrimIdentOpDieresis_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimOpMonDieresis_EM_YY
 //
 //  Primitive operator for monadic derived function from Dieresis ("each")

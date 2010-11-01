@@ -131,7 +131,7 @@ LPPL_YYSTYPE PrimOpMonDieresisJot_EM_YY
     return PrimOpMonDieresisJotCommon_EM_YY (lpYYFcnStrOpr,     // Ptr to operator function strand
                                              lptkRhtArg,        // Ptr to right arg token
                                              FALSE);            // TRUE iff prototyping
-} // End PrimOpDieresisJot_EM_YY
+} // End PrimOpMonDieresisJot_EM_YY
 
 
 //***************************************************************************
@@ -247,18 +247,18 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 
         // Check for RIGHT OPERAND DOMAIN ERROR
         if (!IsSimpleNum (aplTypeOprRht))
-            goto DOMAIN_EXIT;
+            goto RIGHT_OPERAND_DOMAIN_EXIT;
     } else
     // Check for RIGHT OPERAND DOMAIN ERROR
     if (!IsImmNum (lpYYFcnStrRht->tkToken.tkFlags.ImmType))
-        goto DOMAIN_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     lpYYRes =
       ExecuteMagicOperator_EM_YY (lptkLftArg,               // Ptr to left arg token
                                  &lpYYFcnStrOpr->tkToken,   // Ptr to function token
                                   lpYYFcnStrLft,            // Ptr to left operand function strand
                                   lpYYFcnStrOpr,            // Ptr to function strand
-                                  lpYYFcnStrRht,            // Ptr to right operand function strand
+                                  lpYYFcnStrRht,            // Ptr to right operand function strand (may be NULL)
                                   lptkRhtArg,               // Ptr to right arg token
                                   NULL,                     // Ptr to axis token
                                   hGlbMFO1,                 // Magic function/operator global memory handle
@@ -412,7 +412,7 @@ LENGTH_EXIT:
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
-DOMAIN_EXIT:
+RIGHT_OPERAND_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
@@ -485,6 +485,15 @@ MAGIC_FCNOPR MFO_MonRank =
  countof (MonBody),
 };
 
+
+//***************************************************************************
+//  Magic function/operator for the Conform step for monadic/dyadic derived
+//    function from the rank dyadic operator
+//
+//  This function is based upon code found in the paper by J. Philip Benkhard,
+//    "Extending structure, type, and expression in APL2", ACM SIGAPL APL Quote Quad,
+//    v.21 n.4, p.20-38, Aug. 1991.
+//***************************************************************************
 
 static APLCHAR ConHeader[] =
   L"Z" $IS L"L " MFON_Conform L" R";

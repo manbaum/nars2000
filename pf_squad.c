@@ -1040,33 +1040,29 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 aplIndexSet = 0;
         } // End IF
 
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+        // Because this operation changes the named array,
+        //   we need to copy the entire array first.  The
+        //   caller of this code deletes the old array.
+        hGlbRht2 = CopyArray_EM (hGlbRht, lptkSetArg);
+        if (!hGlbRht2)
+            goto ERROR_EXIT;
+
         // If the right arg should be promoted, ...
         if (QueryPromote (aplTypeRht, aplTypeSet, &aplTypePro))
         {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemRht = lpMemDimRht = NULL;
-
             // Promote the right arg
-            if (!TypePromoteGlb_EM (&hGlbRht, aplTypePro, lptkFunc))
+            if (!TypePromoteGlb_EM (&hGlbRht2, aplTypePro, lptkFunc))
                 goto ERROR_EXIT;
 
             // Save the new type
             aplTypeRht = aplTypePro;
-        } else
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        } // End IF
 
-            // Because this operation changes the named array,
-            //   we need to copy the entire array first.  The
-            //   caller of this code deletes the old array.
-            hGlbRht2 = CopyArray_EM (hGlbRht, lptkSetArg);
-            if (!hGlbRht2)
-                goto ERROR_EXIT;
-
-            // Save as new global memory handle
-            *lphGlbRht = hGlbRht = hGlbRht2;
-        } // End IF/ELSE
+        // Save as new global memory handle
+        *lphGlbRht = hGlbRht = hGlbRht2;
 
         // Save the new global memory handle
         if (lphGlbRes)

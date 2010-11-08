@@ -1,6 +1,17 @@
 Version 0.0.2.18 consists of the following Builds:
 
 
+Build #745 -- Version 0.0.2.18
+------------------------------
+
+* Reuse Common Code
+
+Directory trunk:
+
+CUSTOMIZE.C:
+  Reuse common code.
+
+
 Build #744 -- Version 0.0.2.18
 ------------------------------
 

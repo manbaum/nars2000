@@ -106,9 +106,7 @@ APLU3264 CALLBACK CustomizeDlgProc
            LPAPLCHAR    lpMemChr,               // Ptr to global memory
                         lpaplChar;              // ...
            LPAPLINT     lpMemInt;               // ...
-           HGLOBAL      hGlbInt;                // Global memory handle
            APLNELM      aplNELM;                // NELM of object
-           APLUINT      ByteRes;                // # bytes in the result
     static POINT        ptGroupBox;             // X- & Y- coordinates (in pixels) of the upper left corner of the GroupBox
     static SIZE         szGroupBox;             // Size (in pixels) of the GroupBox
     static FONTENUM     lclSameFontAs[FONTENUM_LENGTH];
@@ -1374,7 +1372,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         //***************************************************************
 
                         // Read in and save the new []ALX value
-                        GetCLEARWSValue (hWndProp, IDC_CLEARWS_ALX_EC, &hGlbQuadALX_CWS);
+                        GetClearWsChrValue (hWndProp, IDC_CLEARWS_ALX_EC, &hGlbQuadALX_CWS);
 
                         //***************************************************************
                         // []CT
@@ -1405,14 +1403,14 @@ APLU3264 CALLBACK CustomizeDlgProc
                         //***************************************************************
 
                         // Read in and save the new []ELX value
-                        GetCLEARWSValue (hWndProp, IDC_CLEARWS_ELX_EC, &hGlbQuadELX_CWS);
+                        GetClearWsChrValue (hWndProp, IDC_CLEARWS_ELX_EC, &hGlbQuadELX_CWS);
 
                         //***************************************************************
                         // []FC
                         //***************************************************************
 
                         // Read in and save the new []FC value
-                        GetCLEARWSValue (hWndProp, IDC_CLEARWS_FC_EC, &hGlbQuadFC_CWS);
+                        GetClearWsChrValue (hWndProp, IDC_CLEARWS_FC_EC, &hGlbQuadFC_CWS);
 
                         //***************************************************************
                         // []IO
@@ -1424,53 +1422,15 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // []IC
                         //***************************************************************
 
-                        // Calculate space needed for the result
-                        ByteRes = CalcArraySize (ARRAY_INT, ICNDX_LENGTH, 1);
-
-                        // Allocate space for the data
-                        // Note, we can't use DbgGlobalAlloc here as the
-                        //   PTD has not been allocated as yet
-                        hGlbInt = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
-                        if (hGlbInt)
-                        {
-                            // Free the current value
-                            FreeResultGlobalVar (hGlbQuadIC_CWS); hGlbQuadIC_CWS = NULL;
-
-                            // Save the new global memory handle
-                            hGlbQuadIC_CWS = hGlbInt;
-
-                            // Lock the memory to get a ptr to it
-                            lpMemInt = MyGlobalLock (hGlbInt);
-
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemInt)
-                            // Fill in the header values
-                            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                            lpHeader->ArrType    = ARRAY_INT;
-////////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////////////////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-                            lpHeader->RefCnt     = 1;
-                            lpHeader->NELM       = ICNDX_LENGTH;
-                            lpHeader->Rank       = 1;
-#undef  lpHeader
-                            // Save the dimension
-                            *VarArrayBaseToDim (lpMemInt) = ICNDX_LENGTH;
-
-                            // Skip over the header and dimensions to the data
-                            lpMemInt = VarArrayBaseToData (lpMemInt, 1);
-
-                            // Copy and convert the values to the result
-                            CopyMemory (lpMemInt, icValues, ICNDX_LENGTH * sizeof (icValues[0]));
-
-                            // We no longer need this ptr
-                            MyGlobalUnlock (hGlbInt); lpMemInt = NULL;
-                        } // End IF
+                        // Save the new []IC value
+                        GetClearWsComValue (ARRAY_INT, ICNDX_LENGTH, &hGlbQuadIC_CWS, icValues, sizeof (icValues[0]));
 
                         //***************************************************************
                         // []LX
                         //***************************************************************
 
                         // Read in and save the new []LX value
-                        GetCLEARWSValue (hWndProp, IDC_CLEARWS_LX_EC, &hGlbQuadLX_CWS);
+                        GetClearWsChrValue (hWndProp, IDC_CLEARWS_LX_EC, &hGlbQuadLX_CWS);
 
                         //***************************************************************
                         // []MF
@@ -2832,12 +2792,12 @@ void FillSyntaxColor
 
 
 //***************************************************************************
-//  $GetCLEARWSValue
+//  $GetClearWsChrValue
 //
 //  Read in and save a CLEAR WS value
 //***************************************************************************
 
-void GetCLEARWSValue
+void GetClearWsChrValue
     (HWND     hWndProp,                 // Dialog property page window handle
      UINT     uID,                      // Edit Ctrl ID
      HGLOBAL *lphGlbVal)                // Ptr to global memory handle
@@ -2845,9 +2805,7 @@ void GetCLEARWSValue
 {
     UINT      uLen;                     // Temporary length
     APLNELM   aplNELMVal;               // NELM of object
-    HGLOBAL   hGlbChr;                  // Global memory handle
     LPAPLCHAR lpMemChr;                 // Ptr to global memory
-    APLUINT   ByteRes;                  // # bytes in the result
 
     // Tell the Edit Ctrl how big our buffer is
     lpwszGlbTemp[0] = 1024;
@@ -2864,41 +2822,9 @@ void GetCLEARWSValue
     // If the lengths are the same and the reference count is 1, ...
     if (aplNELMVal EQ uLen
      && GetRefCntGlb (*lphGlbVal) EQ 1)
+    {
         // Lock the memory to get a ptr to it
         lpMemChr = MyGlobalLock (*lphGlbVal);
-    else
-    {
-        // Calculate space needed for the result
-        ByteRes = CalcArraySize (ARRAY_INT, uLen, 1);
-
-        // Allocate space for the data
-        // Note, we can't use DbgGlobalAlloc here as the
-        //   PTD has not been allocated as yet
-        hGlbChr = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (hGlbChr)
-        {
-            // Free the current value
-            FreeResultGlobalVar (*lphGlbVal); *lphGlbVal = NULL;
-
-            // Save the new global memory handle
-            *lphGlbVal = hGlbChr;
-
-            // Lock the memory to get a ptr to it
-            lpMemChr = MyGlobalLock (hGlbChr);
-
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemChr)
-            // Fill in the header values
-            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = ARRAY_CHAR;
-////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-            lpHeader->RefCnt     = 1;
-            lpHeader->NELM       = uLen;
-            lpHeader->Rank       = 1;
-#undef  lpHeader
-            // Save the dimension
-            *VarArrayBaseToDim (lpMemChr) = uLen;
-        } // End IF
 
         // Skip over the header and dimensions to the data
         lpMemChr = VarArrayBaseToData (lpMemChr, 1);
@@ -2907,9 +2833,78 @@ void GetCLEARWSValue
         CopyMemoryW (lpMemChr, lpwszGlbTemp, uLen);
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbChr); lpMemChr = NULL;
+        MyGlobalUnlock (*lphGlbVal); lpMemChr = NULL;
+    } else
+        GetClearWsComValue (ARRAY_CHAR, uLen, lphGlbVal, lpwszGlbTemp, sizeof (APLCHAR));
+} // End GetClearWsChrValue
+
+
+//***************************************************************************
+//  $GetClearWsComValue
+//
+//  Common routine to get a CLEARWS value
+//***************************************************************************
+
+void GetClearWsComValue
+    (APLSTYPE aplTypeCom,               // Common storage type
+     UINT     uLen,                     // Common length
+     HGLOBAL *lphGlbRes,                // Ptr to incoming/outgoing global memory handle
+     LPVOID   lpwszGlbTemp,             // Ptr to common values
+     UINT     uSizeOf)                  // Size of each of the common values
+
+{
+    HGLOBAL hGlbCom;                    // Common global memory handle
+    LPVOID  lpMemCom;                   // Ptr to common global memory
+    APLUINT ByteRes;                    // # bytes in the result
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (aplTypeCom, uLen, 1);
+
+    // Allocate space for the data
+    // Note, we can't use DbgGlobalAlloc here as the
+    //   PTD has not been allocated as yet
+    hGlbCom = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (hGlbCom)
+    {
+        // Free the current value
+        FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+
+        // Save the new global memory handle
+        *lphGlbRes = hGlbCom;
+
+        // Lock the memory to get a ptr to it
+        lpMemCom = MyGlobalLock (hGlbCom);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemCom)
+        // Fill in the header values
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = aplTypeCom;
+////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = uLen;
+        lpHeader->Rank       = 1;
+#undef  lpHeader
+        // Save the dimension
+        *VarArrayBaseToDim (lpMemCom) = uLen;
+
+        // Skip over the header and dimensions to the data
+        lpMemCom = VarArrayBaseToData (lpMemCom, 1);
+
+        // Copy the values to the result
+        CopyMemory (lpMemCom, lpwszGlbTemp, uLen * uSizeOf);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbCom); lpMemCom = NULL;
+    } else
+    {
+        // ***FIXME***
+
+#ifdef DEBUG
+        DbgStop ();
+#endif
     } // End IF/ELSE
-} // End GetCLEARWSValue
+} // End GetClearWsComValue
 
 
 //***************************************************************************

@@ -376,10 +376,10 @@ APLBOOL ExpungeName
         lpMemPTD = GetMemPTD ();
 
         // Out with the old
-        FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
+        FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
 
         // In with the new
-        lpMemPTD->hGlbQuadDM = ClrPtrTypeDir (hGlbV0Char);
+        lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
     } else
     {
         // If the STE is not immediate and has a value, ...

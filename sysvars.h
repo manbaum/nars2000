@@ -45,8 +45,8 @@
 #define DEF_QUADELX_CWS     WS_QUADDM
 #define DEF_QUADALX_CWS_BR  L"{quad}DM"         // The braces form of DEF_QUADALX_CWS
 #define DEF_QUADELX_CWS_BR  L"{quad}DM"         // ...                        ELX
-#define DEF_QUADALX_GLB     hGlbQuadDM
-#define DEF_QUADELX_GLB     hGlbQuadDM
+#define DEF_QUADALX_GLB     hGlbQuadxLX
+#define DEF_QUADELX_GLB     hGlbQuadxLX
 
 #define QUADRL_MODULUS      0x7FFFFFFF          // (2*31)-1 is a prime
 
@@ -110,20 +110,21 @@ typedef enum tagSYS_VARS
     SYSVAR_UNK = 0,             // 00:  Unknown name
     SYSVAR_ALX    ,             // 01:  []ALX
     SYSVAR_CT     ,             // 02:  []CT
-    SYSVAR_ELX    ,             // 03:  []ELX
-    SYSVAR_FC     ,             // 04:  []FC
-    SYSVAR_IC     ,             // 05:  []IC
-    SYSVAR_IO     ,             // 06:  []IO
-    SYSVAR_LX     ,             // 07:  []LX
-    SYSVAR_PP     ,             // 08:  []PP
-    SYSVAR_PR     ,             // 09:  []PR
-    SYSVAR_PW     ,             // 0A:  []PW
-    SYSVAR_RL     ,             // 0B:  []RL
-    SYSVAR_SA     ,             // 0C:  []SA
-    SYSVAR_WSID   ,             // 0D:  []WSID
-    SYSVAR_Z      ,             // 0E:  []Z
-    SYSVAR_LENGTH               // 0F:  # entries in this enum
-                                // 10-1F:  Available entries (5 bits)
+    SYSVAR_DM     ,             // 03:  []DM
+    SYSVAR_ELX    ,             // 04:  []ELX
+    SYSVAR_FC     ,             // 05:  []FC
+    SYSVAR_IC     ,             // 06:  []IC
+    SYSVAR_IO     ,             // 07:  []IO
+    SYSVAR_LX     ,             // 08:  []LX
+    SYSVAR_PP     ,             // 09:  []PP
+    SYSVAR_PR     ,             // 0A:  []PR
+    SYSVAR_PW     ,             // 0B:  []PW
+    SYSVAR_RL     ,             // 0C:  []RL
+    SYSVAR_SA     ,             // 0D:  []SA
+    SYSVAR_WSID   ,             // 0E:  []WSID
+    SYSVAR_Z      ,             // 0F:  []Z
+    SYSVAR_LENGTH               // 10:  # entries in this enum
+                                // 11-1F:  Available entries (5 bits)
 } SYS_VARS, *LPSYS_VARS;
 
 

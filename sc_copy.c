@@ -517,38 +517,19 @@ int CopyWsVars
             if (lpwDataInWrk EQ NULL)
                 goto ERRMSG_EXIT;
 
-            // If it's []DM, handle it specially
-            if (lstrcmpiW (lpwNameInWrk, WS_QUADDM) EQ 0)
+            // Out with the old
+            if (!lpSymEntry->stFlags.Imm && lpSymEntry->stFlags.Value)
             {
-                LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
-
-                Assert (!bImmed);
-                Assert (IsSimpleChar (aplTypeObj));
-
-                // Get ptr to PerTabData global memory
-                lpMemPTD = GetMemPTD ();
-
-                // Out with the old
-                FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
-
-                // In with the new
-                lpMemPTD->hGlbQuadDM = ClrPtrTypeDir ((HGLOBAL) aplLongestObj);
-            } else
-            {
-                // Out with the old
-                if (!lpSymEntry->stFlags.Imm && lpSymEntry->stFlags.Value)
-                {
-                    FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
-                } // End IF
-
-                // Set the stFlags & stData
-                lpSymEntry->stFlags.Imm        = bImmed;
-                lpSymEntry->stFlags.ImmType    = bImmed ? TranslateArrayTypeToImmType (aplTypeObj)
-                                                        : IMMTYPE_ERROR;
-                lpSymEntry->stFlags.Value      = TRUE;
-                lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
-                lpSymEntry->stData.stLongest   = aplLongestObj;
+                FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
             } // End IF
+
+            // Set the stFlags & stData
+            lpSymEntry->stFlags.Imm        = bImmed;
+            lpSymEntry->stFlags.ImmType    = bImmed ? TranslateArrayTypeToImmType (aplTypeObj)
+                                                    : IMMTYPE_ERROR;
+            lpSymEntry->stFlags.Value      = TRUE;
+            lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+            lpSymEntry->stData.stLongest   = aplLongestObj;
 
             // If we're copying a single name, ...
             if (!bAllNames)

@@ -313,18 +313,6 @@ UBOOL CmdSave_EM
 
                 continue;
             } else
-            // Check for []DM
-            if ((!stFlags.Value) && lstrcmpiW (lpwszTemp, L"{quad}dm") EQ 0)
-            {
-                // Mark as having a value
-                stFlags.Value = TRUE;
-
-                // Mark as a variable
-                stFlags.stNameType = NAMETYPE_VAR;
-
-                // Save the GlbData handle
-                stGlbData = MakePtrTypeGlb (lpMemPTD->hGlbQuadDM);
-            } else
                 // Save the GlbData handle
                 stGlbData = lpSymEntry->stData.stGlbData;
 

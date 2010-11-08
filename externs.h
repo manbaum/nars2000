@@ -974,7 +974,7 @@ HWND hWndTC,                            // Global Tab Control window handle
 EXTERN
 HGLOBAL hGlbQuadA,                      // []A
         hGlbQuadAV,                     // []AV
-        hGlbQuadDM,                     // []DM default
+        hGlbQuadxLX,                    // []xLX default
         hGlbQuadEM,                     // []EM default
         hGlbQuadFC,                     // []FC default
         hGlbQuadIC,                     // []IC default
@@ -1001,10 +1001,10 @@ EXTERN
 // Use as in:  (*aSysVarValidSet[SYSVAR_IO]) (lptkNamArg, lptkRhtArg);
 ASYSVARVALIDSET aSysVarValidSet[SYSVAR_LENGTH];
 
-typedef UBOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST, LPIMM_TYPES);
+typedef UBOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST, LPIMM_TYPES, LPTOKEN);
 
 EXTERN
-// Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht, &immTypeRht);
+// Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht, &immTypeRht, lptkFunc);
 ASYSVARVALIDNDX aSysVarValidNdx[SYSVAR_LENGTH];
 
 EXTERN

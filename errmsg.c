@@ -110,10 +110,10 @@ void BreakMessage
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Free the old value
-    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
+    FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
 
     // Save the new value in the STE
-    lpMemPTD->hGlbQuadDM = hGlbRes;
+    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
 
     return;
 
@@ -384,10 +384,10 @@ void ErrorMessageDirect
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Free the old value
-    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
+    FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
 
     // Save the new value in the PTD
-    lpMemPTD->hGlbQuadDM = hGlbRes; hGlbRes = NULL;
+    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbRes); hGlbRes = NULL;
 
     // Also create the corresponding value for []EM
 

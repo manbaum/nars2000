@@ -969,12 +969,6 @@ void FreeGlobalStorage
                 EraseSTE (lpSymEntry, TRUE);
         } // End FOR/IF
 
-        // Don't forget []DM
-        if (lpMemPTD->hGlbQuadDM)
-        {
-            FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
-        } // End IF
-
         // Loop through the HTEs to free the names
         for (lpHshEntry = lpHTS->lpHshTab;
              lpHshEntry NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];

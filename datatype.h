@@ -240,7 +240,7 @@ typedef enum tagPERM_NDX
     PERMNDX_NONE = 0,                   // 00:  Not a permanent array
     PERMNDX_QUADA,                      // 01:  []A
     PERMNDX_QUADAV,                     // 02:  []AV
-    PERMNDX_QUADDM,                     // 03:  []DM default
+    PERMNDX_QUADxLX,                    // 03:  []xLX default
     PERMNDX_QUADEM,                     // 04:  []EM default
     PERMNDX_QUADFC,                     // 05:  []FC default
     PERMNDX_QUADIC,                     // 06:  []IC default

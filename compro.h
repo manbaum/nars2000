@@ -130,7 +130,6 @@
   #include "qf_av.pro"
   #include "qf_cr.pro"
   #include "qf_dl.pro"
-  #include "qf_dm.pro"
   #include "qf_dr.pro"
   #include "qf_ea.pro"
   #include "qf_em.pro"

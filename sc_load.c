@@ -530,40 +530,26 @@ UBOOL LoadWorkspace_EM
                     if (lpwSrc EQ NULL)
                         goto ERRMSG_EXIT;
 
-                    // If it's []DM, handle it specially
-                    if (lstrcmpiW (lpwSrcStart, WS_QUADDM) EQ 0)
+                    // Out with the old
+                    // Release the current value of the STE
+                    //   if it's a global and has a value
+                    if (!lpSymEntry->stFlags.Imm
+                     &&  lpSymEntry->stFlags.Value)
                     {
-                        Assert (!bImmed);
-                        Assert (IsSimpleChar (aplTypeObj));
-
-                        // Out with the old
-                        FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
-
-                        // In with the new
-                        lpMemPTD->hGlbQuadDM = ClrPtrTypeDir ((HGLOBAL) aplLongestObj);
-                    } else
-                    {
-                        // Out with the old
-                        // Release the current value of the STE
-                        //   if it's a global and has a value
-                        if (!lpSymEntry->stFlags.Imm
-                         &&  lpSymEntry->stFlags.Value)
-                        {
-                            FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
-                        } // End IF
-
-                        // In with the new
-                        if (bImmed)
-                            lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
-                        else
-                            lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
-                        // Set the common values
-                        lpSymEntry->stFlags.Imm        = bImmed;
-                        lpSymEntry->stFlags.Value      = TRUE;
-                        lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
-                        lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
-                        lpSymEntry->stData.stLongest   = aplLongestObj;
+                        FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
                     } // End IF
+
+                    // In with the new
+                    if (bImmed)
+                        lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
+                    else
+                        lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
+                    // Set the common values
+                    lpSymEntry->stFlags.Imm        = bImmed;
+                    lpSymEntry->stFlags.Value      = TRUE;
+                    lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
+                    lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+                    lpSymEntry->stData.stLongest   = aplLongestObj;
                 } // End IF
 
                 // Restore the original value
@@ -1859,9 +1845,9 @@ HGLOBAL CheckGlobals
         // Copy the global memory handle
         return CopySymGlbDirAsGlb (hGlbQuadFC_CWS);
     else
-    if (CompareGlobals (hGlbObj, hGlbQuadDM))
+    if (CompareGlobals (hGlbObj, hGlbQuadxLX))
         // Copy the global memory handle
-        return CopySymGlbDirAsGlb (hGlbQuadDM);
+        return CopySymGlbDirAsGlb (hGlbQuadxLX);
     else
     if (CompareGlobals (hGlbObj, hGlbV0Char))
         // Copy the global memory handle

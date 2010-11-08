@@ -31,7 +31,6 @@
 #define SysFnAV_EM_YY       NULL
 #define SysFnCR_EM_YY       NULL
 #define SysFnDL_EM_YY       NULL
-#define SysFnDM_EM_YY       NULL
 #define SysFnDR_EM_YY       NULL
 #define SysFnEA_EM_YY       NULL
 #define SysFnEM_EM_YY       NULL
@@ -71,6 +70,7 @@ SYSNAME aSystemNames[] =
 { // Name                       Valence       Var?   Exec Routine        SYS_VARS
     {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , NULL              , SYSVAR_ALX },  // Attention Latent Expression
     {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , NULL              , SYSVAR_CT  },  // Comparison Tolerance
+    {WS_UTF16_QUAD L"dm"       , SYSVAR,      TRUE , NULL              , SYSVAR_DM  },  // Diagnostic Message
     {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , NULL              , SYSVAR_ELX },  // Error Latent Expression
     {WS_UTF16_QUAD L"fc"       , SYSVAR,      TRUE , NULL              , SYSVAR_FC  },  // Format Control
     {WS_UTF16_QUAD L"ic"       , SYSVAR,      TRUE , NULL              , SYSVAR_IC  },  // Indeterminate Control
@@ -92,7 +92,6 @@ SYSNAME aSystemNames[] =
 // Niladic system functions
     {WS_UTF16_QUAD L"a"        ,      0,      FALSE, SysFnA_EM_YY      , 0          },  // Alphabet
     {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM_YY     , 0          },  // Atomic Vector
-    {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM_YY     , 0          },  // Diagnostic Message
     {WS_UTF16_QUAD L"em"       ,      0,      FALSE, SysFnEM_EM_YY     , 0          },  // Event Message
     {WS_UTF16_QUAD L"et"       ,      0,      FALSE, SysFnET_EM_YY     , 0          },  // Event Type
     {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM_YY     , 0          },  // Line Counter
@@ -268,7 +267,7 @@ void MakePermVars
     //***************************************************************
     // Create various permanent vectors
     //***************************************************************
-    hGlbQuadDM       = MakePermCharVector (WS_QUADDM     , PERMNDX_QUADDM);
+    hGlbQuadxLX      = MakePermCharVector (WS_QUADDM     , PERMNDX_QUADxLX);
     hGlbV0Char       = MakePermCharVector (V0Char        , PERMNDX_V0CHAR);
     hGlbSAEmpty      = hGlbV0Char;
     hGlbSAClear      = MakePermCharVector (SAClear       , PERMNDX_SACLEAR);
@@ -2078,7 +2077,8 @@ UBOOL ValidNdxChar
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
-     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
     // Split cases based upon the right arg storage type
@@ -2136,7 +2136,8 @@ UBOOL ValidNdxCT
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
-     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
     // Split cases based upon the right arg storage type
@@ -2171,6 +2172,61 @@ UBOOL ValidNdxCT
                               DEF_MAX_QUADCT,
                               bRangeLimit.CT);
 } // End ValidNdxCT
+
+
+//***************************************************************************
+//  $ValidSetDM_EM
+//
+//  Validate a value before assigning it to []DM.
+//
+//  We don't allow assignment into []DM.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ValidSetDM_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL ValidSetDM_EM
+    (LPTOKEN lptkNamArg,            // Ptr to name arg token
+     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+
+{
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    return FALSE;
+} // End ValidSetDM_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ValidNdxDM
+//
+//  Validate a single value before assigning it to a position in []DM.
+//
+//  We don't allow indexed assignment into []DM.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ValidNdxDM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL ValidNdxDM
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
+
+{
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
+} // End ValidNdxDM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2297,7 +2353,8 @@ UBOOL ValidNdxIC
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
-     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
     UBOOL bRet;                             // TRUE iff the result is valid
@@ -2373,7 +2430,8 @@ UBOOL ValidNdxIO
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
-     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
     UBOOL bRet;                             // TRUE iff the result is valid
@@ -2466,7 +2524,8 @@ UBOOL ValidNdxPP
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
-     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
     UBOOL bRet;                             // TRUE iff the result is valid
@@ -2726,7 +2785,8 @@ UBOOL ValidNdxPW
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
-     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
     UBOOL bRet;                             // TRUE iff the result is valid
@@ -2801,7 +2861,8 @@ UBOOL ValidNdxRL
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
-     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
     UBOOL bRet;                             // TRUE iff the result is valid
@@ -3117,7 +3178,8 @@ UBOOL ValidNdxAny
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
-     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
     return TRUE;
@@ -3136,6 +3198,7 @@ UBOOL AssignDefaultSysVars
 {
     if (!AssignGlobalCWS     (hGlbQuadALX_CWS   , SYSVAR_ALX , lpSymQuad[SYSVAR_ALX ])) return FALSE;   // Attention Latent Expression
     if (!AssignRealScalarCWS (fQuadCT_CWS       , SYSVAR_CT  , lpSymQuad[SYSVAR_CT  ])) return FALSE;   // Comparison Tolerance
+    if (!AssignGlobalCWS     (hGlbV0Char        , SYSVAR_DM  , lpSymQuad[SYSVAR_DM  ])) return FALSE;   // Diagnostic Message
     if (!AssignGlobalCWS     (hGlbQuadELX_CWS   , SYSVAR_ELX , lpSymQuad[SYSVAR_ELX ])) return FALSE;   // Error Latent Expression
     if (!AssignGlobalCWS     (hGlbQuadFC_CWS    , SYSVAR_FC  , lpSymQuad[SYSVAR_FC  ])) return FALSE;   // Format Control
     if (!AssignGlobalCWS     (hGlbQuadIC_CWS    , SYSVAR_IC  , lpSymQuad[SYSVAR_IC  ])) return FALSE;   // Indeterminate Control
@@ -3179,6 +3242,7 @@ UBOOL InitSystemVars
     // Set the array set validation routines
     aSysVarValidSet[SYSVAR_ALX ] = ValidSetALX_EM ;
     aSysVarValidSet[SYSVAR_CT  ] = ValidSetCT_EM  ;
+    aSysVarValidSet[SYSVAR_DM  ] = ValidSetDM_EM  ;
     aSysVarValidSet[SYSVAR_ELX ] = ValidSetELX_EM ;
     aSysVarValidSet[SYSVAR_FC  ] = ValidSetFC_EM  ;
     aSysVarValidSet[SYSVAR_IC  ] = ValidSetIC_EM  ;
@@ -3195,6 +3259,7 @@ UBOOL InitSystemVars
     // Set the array index validation routine
     aSysVarValidNdx[SYSVAR_ALX ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_CT  ] = ValidNdxCT     ;
+    aSysVarValidNdx[SYSVAR_DM  ] = ValidNdxDM     ;
     aSysVarValidNdx[SYSVAR_ELX ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_FC  ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_IC  ] = ValidNdxIC     ;

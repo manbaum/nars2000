@@ -2050,7 +2050,7 @@ UBOOL ArrayIndexSetNamScalar_EM
             SysVarValid = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
 
             // Validate the one (and only) element in the right arg
-            if (!(*SysVarValid) (0, aplTypeRht, &aplLongestRht, &immTypeRht))
+            if (!(*SysVarValid) (0, aplTypeRht, &aplLongestRht, &immTypeRht, lptkLstArg))
                 goto DOMAIN_EXIT;
         } // End IF
 
@@ -2226,7 +2226,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
                                 &aplLongestRht,     // Ptr to result immediate value (may be NULL)
                                  NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
             // Validate all elements in the right arg
-            if (!(*SysVarValid) (uRht, aplTypeRht, &aplLongestRht, NULL))
+            if (!(*SysVarValid) (uRht, aplTypeRht, &aplLongestRht, NULL, lptkFunc))
                 goto DOMAIN_EXIT;
             // Split cases based upon the name arg storage type
             switch (aplTypeNam)
@@ -2580,7 +2580,7 @@ UBOOL ArrayIndexSetSingLst_EM
         if (bSysVar)
         {
             // Validate the one (and only) item from the right arg
-            if (!(*SysVarValid) (0, aplTypeRht, &aplLongestRht, NULL))
+            if (!(*SysVarValid) (0, aplTypeRht, &aplLongestRht, NULL, lptkLstArg))
                 goto DOMAIN_EXIT;
 
             *lphGlbRes = CopyGlbAsType_EM (hGlbNam, aplTypeNam, lptkNamArg);
@@ -3167,7 +3167,7 @@ UBOOL ArrayIndexSetVector_EM
     if (bSysVar)
     {
         // Validate the one (and only) item from the right arg
-        if (!(*SysVarValid) (aplLongestSubLst, aplTypeRht, &aplLongestRht, &immTypeRht))
+        if (!(*SysVarValid) (aplLongestSubLst, aplTypeRht, &aplLongestRht, &immTypeRht, lptkFunc))
             goto DOMAIN_EXIT;
     } else
         immTypeRht = TranslateArrayTypeToImmType (aplTypeRht);

@@ -395,7 +395,7 @@ LPWCHAR ShortenWSID
 
     // If the workspace is saved into the default location,
     //   omit the leading portion of the text
-    if (wcsncmp (lpwszWorkDir, lpMemWSID, uLen) EQ 0)
+    if (strncmpW (lpwszWorkDir, lpMemWSID, uLen) EQ 0)
         return &lpMemWSID[uLen];
     else
         return lpMemWSID;

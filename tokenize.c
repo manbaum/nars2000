@@ -2371,7 +2371,7 @@ UBOOL fnComDone
         goto NORMAL_EXIT;
     } // End IF
 
-    wp = wcspbrk (&lptkLocalVars->lpwszCur[1], WS_LF);
+    wp = strpbrkW (&lptkLocalVars->lpwszCur[1], WS_LF);
     if (wp)
     {
         int iLen2;

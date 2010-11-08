@@ -273,7 +273,7 @@ UBOOL InAsciiFile_EM
     {
         LPWCHAR lpw, lpw2;
 
-        lpw = wcspbrk (lpwLoop, WS_CRLF);
+        lpw = strpbrkW (lpwLoop, WS_CRLF);
         if (lpw)
         {
             // Account for the line length
@@ -308,7 +308,7 @@ UBOOL InAsciiFile_EM
     } // End FOR
 
     // Check for dynamic functions
-    lpwLoop = wcspbrk (lpwA2AView, WS_UTF16_LAMP L"{");
+    lpwLoop = strpbrkW (lpwA2AView, WS_UTF16_LAMP L"{");
     if (lpwLoop && lpwLoop[0] EQ L'{')
         goto DYNAMIC_EXIT;
 

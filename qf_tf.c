@@ -880,7 +880,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
     //   are distinguished by the first occurrence of either a blank or a left arrow.
     //   If a left arrow occurs first, then it's a var; if a blank occurs first, it's a fcn;
     //   if neither occurs, it's NameToTransferForm2.
-    lpwTemp = wcspbrk (lpwszTemp, WS_UTF16_LEFTARROW L" ");
+    lpwTemp = strpbrkW (lpwszTemp, WS_UTF16_LEFTARROW L" ");
     if (lpwTemp EQ NULL)
     {
         //***************************************************************

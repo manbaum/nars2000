@@ -1630,7 +1630,7 @@ LPWCHAR DisplayTransferGlb2
              aplNELMNst;                    // Arg item NELM if nested
     APLRANK  aplRankArg;                    // Arg item rank
     APLUINT  uCnt;                          // Loop counter
-    UBOOL    bNeedParens;                   // TRUE iff this level needs surrounding parens
+    UBOOL    bNeedParens = FALSE;           // TRUE iff this level needs surrounding parens
 
     // Clear the type bits
     hGlbArg = ClrPtrTypeDir (hGlbArg),
@@ -1649,10 +1649,10 @@ LPWCHAR DisplayTransferGlb2
     if (!bTopLevel)
     {
         // ***FIXME*** -- If the char vector has a non-APL2 char, use []UCS
-        // If the inner item is not a char vector,
+        // If the inner item is not a non-singleton char vector,
         //   and the outer item is not a scalar,
         //   and the outer item is not empty, we need parens
-        bNeedParens = (!(IsSimpleChar (aplTypeArg) && IsVector (aplRankArg))
+        bNeedParens = (!(IsSimpleChar (aplTypeArg) && IsVector (aplRankArg) && !IsSingleton (aplNELMArg))
                     && !IsScalar (aplRankOut)
                     && !IsEmpty (aplNELMOut));
         if (bNeedParens)
@@ -1815,18 +1815,15 @@ LPWCHAR DisplayTransferGlb2
 
     // Delete the last blank in case it matters,
     //   and ensure properly terminated
-    if (lpwszTemp[-1] EQ L' ')
+    if (lpwszTemp[-1] EQ L' '
+     && (bNeedParens || lpwszTemp[-2] NE WC_SQ))
         *--lpwszTemp = WC_EOS;
     else
         *lpwszTemp = WC_EOS;
 
-    // If not at the top level, ...
-    if (!bTopLevel)
-    {
-        // If we need parens, ...
-        if (bNeedParens)
-            *lpwszTemp++ = L')';
-    } // End IF
+    // If we need parens, ...
+    if (bNeedParens)
+        *lpwszTemp++ = L')';
 
     // We no longer this ptr
     MyGlobalUnlock (hGlbArg); lpMemArg = NULL;

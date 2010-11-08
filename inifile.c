@@ -1686,7 +1686,7 @@ void SaveIniFile
     wszTemp[0] = L'0' + OptionFlags.bDefDispFcnLineNums;
     wszTemp[1] = WC_EOS;
 
-    // Write out bViewStatusBar
+    // Write out bDefDispFcnLineNums
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_DEFDISPFCNLINENUMS, // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value

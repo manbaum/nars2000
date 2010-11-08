@@ -29,6 +29,9 @@
 //  $GetIdentityElement_EM
 //
 //  Return the identity element for a give function and array
+//
+//  The idea for Identity Functions was taken from Brown/Jenkins
+//    "APL Identity Crisis"
 //***************************************************************************
 
 #ifdef DEBUG

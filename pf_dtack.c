@@ -168,6 +168,9 @@ AXIS_SYNTAX_EXIT:
 //  $PrimFnMonDownTack_EM_YY
 //
 //  Primitive function for monadic DownTack ("type")
+//
+//  This idea was taken from the APL2 IUP as shown in Brown/Jenkins
+//    "APL Identity Crisis".
 //***************************************************************************
 
 #ifdef DEBUG

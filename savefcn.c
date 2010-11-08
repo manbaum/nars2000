@@ -325,7 +325,8 @@ void SF_ReadLineLW
                         L"",                        // Ptr to the default value
                         lpLW_Params->lpDict);       // Ptr to workspace dictionary
     // Copy the line to a local buffer
-    lstrcpyW (lpLW_Params->lpwBuffer, lpwszProf);
+    // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+    CopyMemoryW (lpLW_Params->lpwBuffer, lpwszProf, lstrlenW (lpwszProf) + 1);
 
     // Convert the {name}s and other chars to UTF16_xxx
     (void) ConvertNameInPlace (lpLW_Params->lpwBuffer);

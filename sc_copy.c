@@ -159,9 +159,10 @@ UBOOL CmdCopy_EM
           ProfileGetString (SECTNAME_GENERAL,   // Ptr to the section name
                             KEYNAME_VERSION,    // Ptr to the key name
                             L"",                // Ptr to the default value
-                            lpDict);            // Ptr to workspace dictinoary
+                            lpDict);            // Ptr to workspace dictionary
         // Copy the string to a save area
-        lstrcpyW (wszVersion, lpwszProf);
+        // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+        CopyMemoryW (wszVersion, lpwszProf, lstrlenW (lpwszProf) + 1);
 
         // Compare the version #s
         if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
@@ -438,7 +439,8 @@ int CopyWsVars
                             L"",                    // Ptr to the default value
                             lpDict);                // Ptr to workspace dictionary
         // Copy to save area
-        lstrcpyW (lpwNameInWrk, lpwszProf);
+        // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+        CopyMemoryW (lpwNameInWrk, lpwszProf, lstrlenW (lpwszProf) + 1);
 
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
@@ -548,7 +550,7 @@ int CopyWsVars
                 lpSymEntry->stData.stLongest   = aplLongestObj;
             } // End IF
 
-            // If we're copying a singla name, ...
+            // If we're copying a single name, ...
             if (!bAllNames)
                 // Mark as successful (we found a match)
                 return 0;
@@ -619,7 +621,8 @@ int CopyWsFcns
                             L"",                  // Ptr to the default value
                             lpDict);              // Ptr to workspace dictionary
         // Copy to save area
-        lstrcpyW (lpwNameInWrk, lpwszProf);
+        // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+        CopyMemoryW (lpwNameInWrk, lpwszProf, lstrlenW (lpwszProf) + 1);
 
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');

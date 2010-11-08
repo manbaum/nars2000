@@ -267,8 +267,9 @@ UBOOL LoadWorkspace_EM
                         KEYNAME_VERSION,    // Ptr to the key name
                         L"",                // Ptr to the default value
                         lpDict);            // Ptr to workspace dictionary
-    // Copy the string to a save area
-    lstrcpyW (wszVersion, lpwszProf);
+    // Copy the string to a save area ("+ 1" to include the trailing zero)
+    // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+    CopyMemoryW (wszVersion, lpwszProf, lstrlenW (lpwszProf) + 1);
 
     // Compare the version #s
     if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
@@ -449,8 +450,9 @@ UBOOL LoadWorkspace_EM
                                     wszCount,       // Ptr to the key name
                                     L"",            // Ptr to the default value
                                     lpDict);        // Ptr to workspace dictionary
-                // Copy to save area
-                lstrcpyW (lpwSrc, lpwszProf);
+                // Copy to save area ("+ 1" to include the trailing zero)
+                // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+                CopyMemoryW (lpwSrc, lpwszProf, lstrlenW (lpwszProf) + 1);
 
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
@@ -501,7 +503,7 @@ UBOOL LoadWorkspace_EM
                     lpSymEntry->stFlags.Imm        = TRUE;
                 } // End IF
 
-                // If the entry has already been loaded and isn't a system name, ...
+                // If the entry has not already been loaded or is a system name, ...
                 // This can happen if a previous Function Array included it as a global (:nnn).
                 if (!lpSymEntry->stFlags.Value
                  || lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
@@ -605,8 +607,9 @@ UBOOL LoadWorkspace_EM
                                     wszCount,       // Ptr to the key name
                                     L"",            // Ptr to the default value
                                     lpDict);        // Ptr to workspace dictionary
-                // Copy to save area
-                lstrcpyW (lpwSrc, lpwszProf);
+                // Copy to save area ("+ 1" to include the trailing zero)
+                // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+                CopyMemoryW (lpwSrc, lpwszProf, lstrlenW (lpwszProf) + 1);
 
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
@@ -1207,8 +1210,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         lpwGlbName,         // Ptr to the key name
                         L"",                // Ptr to the default value
                         lpDict);            // Ptr to workspace dictionary
-    // Copy to the save area
-    lstrcpyW (lpwSrc, lpwszProf);
+    // Copy to the save area ("+ 1" to include trailing zero)
+    // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+    CopyMemoryW (lpwSrc, lpwszProf, lstrlenW (lpwszProf) + 1);
 
     // Parse the array attributes
     // The result in lpwSrc is
@@ -1707,8 +1711,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                     L"0",           // Ptr to the key name
                                     L"",            // Ptr to the default value
                                     lpDict);        // Ptr to workspace dictionary
-                // Copy to the save area
-                lstrcpyW (lpwSrc, lpwszProf);
+                // Copy to the save area ("+ 1" to include the trailing zero)
+                // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+                CopyMemoryW (lpwSrc, lpwszProf, lstrlenW (lpwszProf) + 1);
 
                 // Convert in place
                 lpwSrcStart = lpwSrc;
@@ -1782,7 +1787,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
     // Set the flags for what we're appending
     ZeroMemory (&stFlags, sizeof (stFlags));
-    stFlags.Inuse   = TRUE;
+    stFlags.Inuse   =
+    stFlags.Value   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
 
     // Create a symbol table entry for the )LOAD HGLOBAL

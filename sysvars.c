@@ -68,81 +68,82 @@
 
 SYSNAME aSystemNames[] =
 { // Name                       Valence       Var?   Exec Routine        SYS_VARS
-    {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , NULL              , SYSVAR_ALX },  // Attention Latent Expression
-    {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , NULL              , SYSVAR_CT  },  // Comparison Tolerance
-    {WS_UTF16_QUAD L"dm"       , SYSVAR,      TRUE , NULL              , SYSVAR_DM  },  // Diagnostic Message
-    {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , NULL              , SYSVAR_ELX },  // Error Latent Expression
-    {WS_UTF16_QUAD L"fc"       , SYSVAR,      TRUE , NULL              , SYSVAR_FC  },  // Format Control
-    {WS_UTF16_QUAD L"ic"       , SYSVAR,      TRUE , NULL              , SYSVAR_IC  },  // Indeterminate Control
-    {WS_UTF16_QUAD L"io"       , SYSVAR,      TRUE , NULL              , SYSVAR_IO  },  // Index Origin
-    {WS_UTF16_QUAD L"lx"       , SYSVAR,      TRUE , NULL              , SYSVAR_LX  },  // Latent Expression
-    {WS_UTF16_QUAD L"pp"       , SYSVAR,      TRUE , NULL              , SYSVAR_PP  },  // Print Precision
-    {WS_UTF16_QUAD L"pr"       , SYSVAR,      TRUE , NULL              , SYSVAR_PR  },  // Prompt Replacement
-    {WS_UTF16_QUAD L"pw"       , SYSVAR,      TRUE , NULL              , SYSVAR_PW  },  // Print Width
-    {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , NULL              , SYSVAR_RL  },  // Random Link
-    {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL              , SYSVAR_SA  },  // Stop Action
-    {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL              , SYSVAR_WSID},  // Workspace Identifier
-    {WS_UTF16_QUAD L"z"        , SYSVAR,      TRUE , NULL              , SYSVAR_Z   },  // Temporary result used in 2 []TF
-    {WS_UTF16_QUAD SYSLBL_ID   , SYSLBL,      TRUE , NULL              , 0          },  // User-defined function/operator entry point for []ID  = identity
-    {WS_UTF16_QUAD SYSLBL_INV  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []INV = inverse
-    {WS_UTF16_QUAD SYSLBL_MS   , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []MS  = multiset
-    {WS_UTF16_QUAD SYSLBL_PRO  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []PRO = prototype
-    {WS_UTF16_QUAD SYSLBL_SGL  , SYSLBL,      TRUE , NULL              , 0          },  // ...                                            []SGL = singleton
+    {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , NULL              , SYSVAR_ALX     },  // Attention Latent Expression
+    {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , NULL              , SYSVAR_CT      },  // Comparison Tolerance
+    {WS_UTF16_QUAD L"dm"       , SYSVAR,      TRUE , NULL              , SYSVAR_DM      },  // Diagnostic Message (Read-only)
+    {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , NULL              , SYSVAR_ELX     },  // Error Latent Expression
+    {WS_UTF16_QUAD L"fc"       , SYSVAR,      TRUE , NULL              , SYSVAR_FC      },  // Format Control
+    {WS_UTF16_QUAD L"feature"  , SYSVAR,      TRUE , NULL              , SYSVAR_FEATURE },  // Feature Control
+    {WS_UTF16_QUAD L"ic"       , SYSVAR,      TRUE , NULL              , SYSVAR_IC      },  // Indeterminate Control
+    {WS_UTF16_QUAD L"io"       , SYSVAR,      TRUE , NULL              , SYSVAR_IO      },  // Index Origin
+    {WS_UTF16_QUAD L"lx"       , SYSVAR,      TRUE , NULL              , SYSVAR_LX      },  // Latent Expression
+    {WS_UTF16_QUAD L"pp"       , SYSVAR,      TRUE , NULL              , SYSVAR_PP      },  // Print Precision
+    {WS_UTF16_QUAD L"pr"       , SYSVAR,      TRUE , NULL              , SYSVAR_PR      },  // Prompt Replacement
+    {WS_UTF16_QUAD L"pw"       , SYSVAR,      TRUE , NULL              , SYSVAR_PW      },  // Print Width
+    {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , NULL              , SYSVAR_RL      },  // Random Link
+    {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL              , SYSVAR_SA      },  // Stop Action
+    {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL              , SYSVAR_WSID    },  // Workspace Identifier
+    {WS_UTF16_QUAD L"z"        , SYSVAR,      TRUE , NULL              , SYSVAR_Z       },  // Temporary result used in 2 []TF
+    {WS_UTF16_QUAD SYSLBL_ID   , SYSLBL,      TRUE , NULL              , 0              },  // User-defined function/operator entry point for []ID  = identity
+    {WS_UTF16_QUAD SYSLBL_INV  , SYSLBL,      TRUE , NULL              , 0              },  // ...                                            []INV = inverse
+    {WS_UTF16_QUAD SYSLBL_MS   , SYSLBL,      TRUE , NULL              , 0              },  // ...                                            []MS  = multiset
+    {WS_UTF16_QUAD SYSLBL_PRO  , SYSLBL,      TRUE , NULL              , 0              },  // ...                                            []PRO = prototype
+    {WS_UTF16_QUAD SYSLBL_SGL  , SYSLBL,      TRUE , NULL              , 0              },  // ...                                            []SGL = singleton
 
 // Niladic system functions
-    {WS_UTF16_QUAD L"a"        ,      0,      FALSE, SysFnA_EM_YY      , 0          },  // Alphabet
-    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM_YY     , 0          },  // Atomic Vector
-    {WS_UTF16_QUAD L"em"       ,      0,      FALSE, SysFnEM_EM_YY     , 0          },  // Event Message
-    {WS_UTF16_QUAD L"et"       ,      0,      FALSE, SysFnET_EM_YY     , 0          },  // Event Type
-    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM_YY     , 0          },  // Line Counter
-////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM_YY     , 0          },  // State Indicator
-////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, SysFnSINL_EM_YY   , 0          },  // State Indicator w/Name List
-    {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM_YY  , 0          },  // System Identifier
-    {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, SysFnSYSVER_EM_YY , 0          },  // System Version
-    {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM_YY     , 0          },  // Terminal Control Characters
-    {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, SysFnTCBEL_EM_YY  , 0          },  // Terminal Control Character, Bell
-    {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, SysFnTCBS_EM_YY   , 0          },  // Terminal Control Character, Backspace
-    {WS_UTF16_QUAD L"tcdel"    ,      0,      FALSE, SysFnTCDEL_EM_YY  , 0          },  // Terminal Control Character, Delete
-    {WS_UTF16_QUAD L"tcesc"    ,      0,      FALSE, SysFnTCESC_EM_YY  , 0          },  // Terminal Control Character, Escape
-    {WS_UTF16_QUAD L"tcff"     ,      0,      FALSE, SysFnTCFF_EM_YY   , 0          },  // Terminal Control Character, Form Feed
-    {WS_UTF16_QUAD L"tcht"     ,      0,      FALSE, SysFnTCHT_EM_YY   , 0          },  // Terminal Control Character, Horizontal Tab
-    {WS_UTF16_QUAD L"tclf"     ,      0,      FALSE, SysFnTCLF_EM_YY   , 0          },  // Terminal Control Character, Line Feed
-    {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM_YY   , 0          },  // Terminal Control Character, New Line
-    {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM_YY  , 0          },  // Terminal Control Character, Null
-    {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM_YY     , 0          },  // Time Stamp
-    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
+    {WS_UTF16_QUAD L"a"        ,      0,      FALSE, SysFnA_EM_YY      , 0              },  // Alphabet
+    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM_YY     , 0              },  // Atomic Vector
+    {WS_UTF16_QUAD L"em"       ,      0,      FALSE, SysFnEM_EM_YY     , 0              },  // Event Message
+    {WS_UTF16_QUAD L"et"       ,      0,      FALSE, SysFnET_EM_YY     , 0              },  // Event Type
+    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM_YY     , 0              },  // Line Counter
+////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM_YY     , 0              },  // State Indicator
+////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, SysFnSINL_EM_YY   , 0              },  // State Indicator w/Name List
+    {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM_YY  , 0              },  // System Identifier
+    {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, SysFnSYSVER_EM_YY , 0              },  // System Version
+    {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM_YY     , 0              },  // Terminal Control Characters
+    {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, SysFnTCBEL_EM_YY  , 0              },  // Terminal Control Character, Bell
+    {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, SysFnTCBS_EM_YY   , 0              },  // Terminal Control Character, Backspace
+    {WS_UTF16_QUAD L"tcdel"    ,      0,      FALSE, SysFnTCDEL_EM_YY  , 0              },  // Terminal Control Character, Delete
+    {WS_UTF16_QUAD L"tcesc"    ,      0,      FALSE, SysFnTCESC_EM_YY  , 0              },  // Terminal Control Character, Escape
+    {WS_UTF16_QUAD L"tcff"     ,      0,      FALSE, SysFnTCFF_EM_YY   , 0              },  // Terminal Control Character, Form Feed
+    {WS_UTF16_QUAD L"tcht"     ,      0,      FALSE, SysFnTCHT_EM_YY   , 0              },  // Terminal Control Character, Horizontal Tab
+    {WS_UTF16_QUAD L"tclf"     ,      0,      FALSE, SysFnTCLF_EM_YY   , 0              },  // Terminal Control Character, Line Feed
+    {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM_YY   , 0              },  // Terminal Control Character, New Line
+    {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM_YY  , 0              },  // Terminal Control Character, Null
+    {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM_YY     , 0              },  // Time Stamp
+    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0              },  // Workspace Available
 
 // Monadic or dyadic system functions
-    {WS_UTF16_QUAD L"at"       ,      1,      FALSE, SysFnAT_EM_YY     , 0          },  // Attributes
-////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM_YY   , 0          },  // Call Assembler Code
-    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM_YY     , 0          },  // Canonical Representation
-////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM_YY    , 0          },  // Canonical Representation, Line
-////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, SysFnCRLPC_EM_YY  , 0          },  // Canonical Representation, Public Comment
-////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, SysFnDEF_EM_YY    , 0          },  // Define Function
-////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, SysFnDEFL_EM_YY   , 0          },  // Define Function Line
-    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM_YY     , 0          },  // Delay Execution
-    {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM_YY     , 0          },  // Data Representation
-    {WS_UTF16_QUAD L"ea"       ,      1,      FALSE, SysFnEA_EM_YY     , 0          },  // Execute Alternate
-////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, SysFnERASE_EM_YY  , 0          },  // Erase Names
-    {WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM_YY  , 0          },  // Signal Error
-    {WS_UTF16_QUAD L"es"       ,      1,      FALSE, SysFnES_EM_YY     , 0          },  // Event Simulate
-    {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM_YY     , 0          },  // Expunge Names
-////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM_YY     , 0          },  // Format Items
-    {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM_YY    , 0          },  // Format
-    {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY     , 0          },  // Function Fix
-////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM_YY , 0          },  // Identifier List
-////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM_YY  , 0          },  // Identifier Localization
-    {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY     , 0          },  // Monitor Function
-    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM_YY     , 0          },  // Name Classification
-    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM_YY     , 0          },  // Name List
-    {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM_YY   , 0          },  // Size of an object
-////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, SysFnSS_EM_YY     , 0          },  // Search String
-////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM_YY   , 0          },  // Manage Stop Points
-    {WS_UTF16_QUAD L"tf"       ,      1,      FALSE, SysFnTF_EM_YY     , 0          },  // Transfer Form
-////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, SysFnTRACE_EM_YY  , 0          },  // Manage Trace Points
-    {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, SysFnUCS_EM_YY    , 0          },  // Universal Character Set
-////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, StsFnVI_EM        , 0          },  // Verify Items
-    {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM_YY     , 0          },  // Vector Representation of a Function
+    {WS_UTF16_QUAD L"at"       ,      1,      FALSE, SysFnAT_EM_YY     , 0              },  // Attributes
+////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM_YY   , 0              },  // Call Assembler Code
+    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM_YY     , 0              },  // Canonical Representation
+////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM_YY    , 0              },  // Canonical Representation, Line
+////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, SysFnCRLPC_EM_YY  , 0              },  // Canonical Representation, Public Comment
+////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, SysFnDEF_EM_YY    , 0              },  // Define Function
+////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, SysFnDEFL_EM_YY   , 0              },  // Define Function Line
+    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM_YY     , 0              },  // Delay Execution
+    {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM_YY     , 0              },  // Data Representation
+    {WS_UTF16_QUAD L"ea"       ,      1,      FALSE, SysFnEA_EM_YY     , 0              },  // Execute Alternate
+////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, SysFnERASE_EM_YY  , 0              },  // Erase Names
+    {WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM_YY  , 0              },  // Signal Error
+    {WS_UTF16_QUAD L"es"       ,      1,      FALSE, SysFnES_EM_YY     , 0              },  // Event Simulate
+    {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM_YY     , 0              },  // Expunge Names
+////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM_YY     , 0              },  // Format Items
+    {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM_YY    , 0              },  // Format
+    {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY     , 0              },  // Function Fix
+////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM_YY , 0              },  // Identifier List
+////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM_YY  , 0              },  // Identifier Localization
+    {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY     , 0              },  // Monitor Function
+    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM_YY     , 0              },  // Name Classification
+    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM_YY     , 0              },  // Name List
+    {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM_YY   , 0              },  // Size of an object
+////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, SysFnSS_EM_YY     , 0              },  // Search String
+////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM_YY   , 0              },  // Manage Stop Points
+    {WS_UTF16_QUAD L"tf"       ,      1,      FALSE, SysFnTF_EM_YY     , 0              },  // Transfer Form
+////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, SysFnTRACE_EM_YY  , 0              },  // Manage Trace Points
+    {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, SysFnUCS_EM_YY    , 0              },  // Universal Character Set
+////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, StsFnVI_EM        , 0              },  // Verify Items
+    {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM_YY     , 0              },  // Vector Representation of a Function
 };
 
 // The # rows in the above table
@@ -267,16 +268,17 @@ void MakePermVars
     //***************************************************************
     // Create various permanent vectors
     //***************************************************************
-    hGlbQuadxLX      = MakePermCharVector (WS_QUADDM     , PERMNDX_QUADxLX);
-    hGlbV0Char       = MakePermCharVector (V0Char        , PERMNDX_V0CHAR);
-    hGlbSAEmpty      = hGlbV0Char;
-    hGlbSAClear      = MakePermCharVector (SAClear       , PERMNDX_SACLEAR);
-    hGlbSAError      = MakePermCharVector (SAError       , PERMNDX_SAERROR);
-    hGlbSAExit       = MakePermCharVector (SAExit        , PERMNDX_SAEXIT);
-    hGlbSAOff        = MakePermCharVector (SAOff         , PERMNDX_SAOFF);
-    hGlbQuadWSID_CWS = hGlbV0Char;
-    hGlbQuadFC_SYS   = MakePermCharVector (DEF_QUADFC_CWS, PERMNDX_QUADFC);
-    hGlbQuadIC_SYS   = MakePermIntVector  (DEF_QUADIC_CWS, PERMNDX_QUADIC, ICNDX_LENGTH);
+    hGlbQuadxLX         = MakePermCharVector (WS_QUADDM           , PERMNDX_QUADxLX                      );
+    hGlbV0Char          = MakePermCharVector (V0Char              , PERMNDX_V0CHAR                       );
+    hGlbSAEmpty         = hGlbV0Char;
+    hGlbSAClear         = MakePermCharVector (SAClear             , PERMNDX_SACLEAR                      );
+    hGlbSAError         = MakePermCharVector (SAError             , PERMNDX_SAERROR                      );
+    hGlbSAExit          = MakePermCharVector (SAExit              , PERMNDX_SAEXIT                       );
+    hGlbSAOff           = MakePermCharVector (SAOff               , PERMNDX_SAOFF                        );
+    hGlbQuadWSID_CWS    = hGlbV0Char;
+    hGlbQuadFC_SYS      = MakePermCharVector (DEF_QUADFC_CWS      , PERMNDX_QUADFC                       );
+    hGlbQuadFEATURE_SYS = MakePermIntVector  (DEF_QUADFEATURE_CWS , PERMNDX_QUADFEATURE , FEATURENDX_LENGTH );
+    hGlbQuadIC_SYS      = MakePermIntVector  (DEF_QUADIC_CWS      , PERMNDX_QUADIC      , ICNDX_LENGTH   );
 
     // Create []AV
     MakeQuadAV ();
@@ -2291,6 +2293,186 @@ UBOOL ValidSetFC_EM
 
 
 //***************************************************************************
+//  $ValidSetFEATURE_EM
+//
+//  Validate a value before assigning it to []FEATURE
+//***************************************************************************
+
+UBOOL ValidSetFEATURE_EM
+    (LPTOKEN lptkNamArg,            // Ptr to name arg token
+     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+
+{
+    APLSTYPE aplTypeRht;            // Right arg storage type
+    APLNELM  aplNELMRht;            // ...       NELM
+    APLRANK  aplRankRht;            // ...       rank
+    UBOOL    bRet;                  // TRUE iff the result is valid
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // If the right arg is an empty simple non-heterogeneous vector,
+    //   convert the result to the default values
+    if (IsSimpleNH (aplTypeRht)
+     && IsEmpty (aplNELMRht)
+     && IsVector (aplRankRht))
+    {
+        // Free the named arg
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
+
+        // Save as new value
+        lptkNamArg->tkData.tkSym->stData.stGlbData =
+          CopySymGlbDirAsGlb (MakePtrTypeGlb (bResetVars.FEATURE ? hGlbQuadFEATURE_SYS
+                                                                 : hGlbQuadFEATURE_CWS));
+        // Mark as no need to display
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
+
+        return TRUE;
+    } // End IF
+
+    // Ensure the argument is either an integer scalar (promoted to a vector)
+    //   or an integer vector
+    bRet =
+      ValidateIntegerVector_EM (lptkNamArg,             // Ptr to name token
+                                lptkRhtArg,             // Ptr to right arg token
+                                DEF_MIN_QUADFEATURE,    // Low range value (inclusive)
+                                DEF_MAX_QUADFEATURE,    // High ...
+                                bRangeLimit.FEATURE);   // TRUE iff an incoming value outside
+                                                        //   the given range [uValidLo, uValidHi]
+                                                        //   is adjusted to be the closer range limit
+    // If the result is valid, ...
+    if (bRet)
+    {
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+        HGLOBAL      hGlbRht;           // Right arg global memory handle
+        LPAPLINT     lpMemRht;          // Ptr to right arg global memory
+        APLLONGEST   aplLongestRht;     // Right arg immediate value
+
+        // Get right arg's global ptrs
+        aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // If the right arg is a global, ...
+        if (hGlbRht)
+        {
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        } else
+            // Point to the data
+            lpMemRht = &aplLongestRht;
+
+        // Save the current values for later use
+        CopyMemory (lpMemPTD->aplCurrentFEATURE, lpMemRht, (APLU3264) min (FEATURENDX_LENGTH, aplNELMRht) * sizeof (APLINT));
+
+        // If the right arg is a global, ...
+        if (hGlbRht)
+        {
+            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        } // End IF
+    } // End IF
+
+    return bRet;
+} // End ValidSetFEATURE_EM
+
+
+//***************************************************************************
+//  $ValidNdxFEATURE
+//
+//  Validate a single value before assigning it to a position in []FEATURE.
+//
+//  We allow any number between DEF_MIN_QUADFEATURE and DEF_MAX_QUADFEATURE inclusive.
+//***************************************************************************
+
+UBOOL ValidNdxFEATURE
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     LPTOKEN      lptkFunc)                 // Ptr to function token
+
+{
+    UBOOL bRet;                             // TRUE iff the result is valid
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_FLOAT:
+            // The right arg is float -- convert to integer
+            *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
+            if ((!bRangeLimit.FEATURE) && !bRet)
+                return bRet;
+            // Set the new immediate type
+            if (lpimmTypeRht)
+                *lpimmTypeRht = IMMTYPE_INT;
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Test the value
+    bRet =
+      ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
+                           DEF_MIN_QUADFEATURE,             // Low range value (inclusive)
+                           DEF_MAX_QUADFEATURE,             // High ...
+                           bRangeLimit.FEATURE);            // TRUE iff we're range limiting
+    // If the result is valid, ...
+    if (bRet)
+    {
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // Save the current value for later use
+        lpMemPTD->aplCurrentFEATURE[aplIntegerLst] = *lpaplLongestRht;
+    } // End IF
+
+    return bRet;
+} // End ValidNdxFEATURE
+
+
+//***************************************************************************
+//  $SetCurrentFeatureCWS
+//
+//  Copy the CLEARWS values of []FEATURES to the current copy in PTD
+//***************************************************************************
+
+void SetCurrentFeatureCWS
+    (LPPERTABDATA lpMemPTD)
+
+{
+    LPAPLINT lpMemCWS;
+
+    // Lock the memory to get a ptr to it
+    lpMemCWS = MyGlobalLock (hGlbQuadFEATURE_CWS);
+
+    // Skip over the header and dimensions to the data
+    lpMemCWS = VarArrayBaseToData (lpMemCWS, 1);
+
+    // Save the values in the PTD
+    CopyMemory (lpMemPTD->aplCurrentFEATURE,
+                lpMemCWS,
+                FEATURENDX_LENGTH * sizeof (APLINT));
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadFEATURE_CWS); lpMemCWS = NULL;
+} // End SetCurrentFeatureCWS
+
+
+//***************************************************************************
 //  $ValidSetIC_EM
 //
 //  Validate a value before assigning it to []IC.
@@ -2333,11 +2515,14 @@ UBOOL ValidSetIC_EM
 
     // Ensure the argument is either an integer scalar (promoted to a vector)
     //   or an integer vector
-    return ValidateIntegerVector_EM (lptkNamArg,
-                                     lptkRhtArg,
-                                     DEF_MIN_QUADIC,
-                                     DEF_MAX_QUADIC,
-                                     bRangeLimit.IC);
+    return
+      ValidateIntegerVector_EM (lptkNamArg,         // Ptr to name token
+                                lptkRhtArg,         // Ptr to right arg token
+                                DEF_MIN_QUADIC,     // Low range value (inclusive)
+                                DEF_MAX_QUADIC,     // High ...
+                                bRangeLimit.IC);    // TRUE iff an incoming value outside
+                                                    //   the given range [uValidLo, uValidHi]
+                                                    //   is adjusted to be the closer range limit
 } // End ValidSetIC_EM
 
 
@@ -2387,10 +2572,11 @@ UBOOL ValidNdxIC
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
-                                DEF_MIN_QUADIC,                     // Low range value (inclusive)
-                                DEF_MAX_QUADIC,                     // High ...
-                                bRangeLimit.IC);                    // TRUE iff we're range limiting
+    return
+      ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
+                           DEF_MIN_QUADIC,                  // Low range value (inclusive)
+                           DEF_MAX_QUADIC,                  // High ...
+                           bRangeLimit.IC);                 // TRUE iff we're range limiting
 } // End ValidNdxIC
 
 
@@ -2465,10 +2651,11 @@ UBOOL ValidNdxIO
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
-                                DEF_MIN_QUADIO,                     // Low range value (inclusive)
-                                DEF_MAX_QUADIO,                     // High ...
-                                bRangeLimit.IO);                    // TRUE iff we're range limiting
+    return
+      ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
+                           DEF_MIN_QUADIO,                  // Low range value (inclusive)
+                           DEF_MAX_QUADIO,                  // High ...
+                           bRangeLimit.IO);                 // TRUE iff we're range limiting
 } // End ValidNdxIO
 
 
@@ -2506,7 +2693,8 @@ UBOOL ValidSetPP_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADPP,      // Minimum value
-                bResetVars.PP ? DEF_QUADPP_CWS : (UINT) uQuadPP_CWS, // Default ...
+               bResetVars.PP ? DEF_QUADPP_CWS
+                             : (UINT) uQuadPP_CWS,  // Default ...
                                DEF_MAX_QUADPP,      // Maximum ...
                                bRangeLimit.PP);     // TRUE iff range limiting
 } // End ValidSetPP_EM
@@ -2558,10 +2746,11 @@ UBOOL ValidNdxPP
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
-                                DEF_MIN_QUADPP,                     // Low range value (inclusive)
-                                DEF_MAX_QUADPP,                     // High ...
-                                bRangeLimit.PP);                    // TRUE iff we're range limiting
+    return
+      ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
+                           DEF_MIN_QUADPP,                  // Low range value (inclusive)
+                           DEF_MAX_QUADPP,                  // High ...
+                           bRangeLimit.PP);                 // TRUE iff we're range limiting
 } // End ValidNdxPP
 
 
@@ -2819,10 +3008,11 @@ UBOOL ValidNdxPW
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
-                                DEF_MIN_QUADPW,                     // Low range value (inclusive)
-                                DEF_MAX_QUADPW,                     // High ...
-                                bRangeLimit.PW);                    // TRUE iff we're range limiting
+    return
+      ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
+                           DEF_MIN_QUADPW,                  // Low range value (inclusive)
+                           DEF_MAX_QUADPW,                  // High ...
+                           bRangeLimit.PW);                 // TRUE iff we're range limiting
 } // End ValidNdxPW
 
 
@@ -2895,10 +3085,11 @@ UBOOL ValidNdxRL
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
-                                DEF_MIN_QUADRL,                     // Low range value (inclusive)
-                                DEF_MAX_QUADRL,                     // High ...
-                                bRangeLimit.RL);                    // TRUE iff we're range limiting
+    return
+      ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
+                           DEF_MIN_QUADRL,                  // Low range value (inclusive)
+                           DEF_MAX_QUADRL,                  // High ...
+                           bRangeLimit.RL);                 // TRUE iff we're range limiting
 } // End ValidNdxRL
 
 
@@ -3196,26 +3387,27 @@ UBOOL AssignDefaultSysVars
     (LPSYMENTRY lpSymQuad[SYSVAR_LENGTH])
 
 {
-    if (!AssignGlobalCWS     (hGlbQuadALX_CWS   , SYSVAR_ALX , lpSymQuad[SYSVAR_ALX ])) return FALSE;   // Attention Latent Expression
-    if (!AssignRealScalarCWS (fQuadCT_CWS       , SYSVAR_CT  , lpSymQuad[SYSVAR_CT  ])) return FALSE;   // Comparison Tolerance
-    if (!AssignGlobalCWS     (hGlbV0Char        , SYSVAR_DM  , lpSymQuad[SYSVAR_DM  ])) return FALSE;   // Diagnostic Message
-    if (!AssignGlobalCWS     (hGlbQuadELX_CWS   , SYSVAR_ELX , lpSymQuad[SYSVAR_ELX ])) return FALSE;   // Error Latent Expression
-    if (!AssignGlobalCWS     (hGlbQuadFC_CWS    , SYSVAR_FC  , lpSymQuad[SYSVAR_FC  ])) return FALSE;   // Format Control
-    if (!AssignGlobalCWS     (hGlbQuadIC_CWS    , SYSVAR_IC  , lpSymQuad[SYSVAR_IC  ])) return FALSE;   // Indeterminate Control
-    if (!AssignBoolScalarCWS (bQuadIO_CWS       , SYSVAR_IO  , lpSymQuad[SYSVAR_IO  ])) return FALSE;   // Index Origin
-    if (!AssignGlobalCWS     (hGlbQuadLX_CWS    , SYSVAR_LX  , lpSymQuad[SYSVAR_LX  ])) return FALSE;   // Latent Expression
-    if (!AssignIntScalarCWS  (uQuadPP_CWS       , SYSVAR_PP  , lpSymQuad[SYSVAR_PP  ])) return FALSE;   // Print Precision
+    if (!AssignGlobalCWS     (hGlbQuadALX_CWS     , SYSVAR_ALX     , lpSymQuad[SYSVAR_ALX     ])) return FALSE;   // Attention Latent Expression
+    if (!AssignRealScalarCWS (fQuadCT_CWS         , SYSVAR_CT      , lpSymQuad[SYSVAR_CT      ])) return FALSE;   // Comparison Tolerance
+    if (!AssignGlobalCWS     (hGlbV0Char          , SYSVAR_DM      , lpSymQuad[SYSVAR_DM      ])) return FALSE;   // Diagnostic Message
+    if (!AssignGlobalCWS     (hGlbQuadELX_CWS     , SYSVAR_ELX     , lpSymQuad[SYSVAR_ELX     ])) return FALSE;   // Error Latent Expression
+    if (!AssignGlobalCWS     (hGlbQuadFC_CWS      , SYSVAR_FC      , lpSymQuad[SYSVAR_FC      ])) return FALSE;   // Format Control
+    if (!AssignGlobalCWS     (hGlbQuadFEATURE_CWS , SYSVAR_FEATURE , lpSymQuad[SYSVAR_FEATURE ])) return FALSE;   // Feature Control
+    if (!AssignGlobalCWS     (hGlbQuadIC_CWS      , SYSVAR_IC      , lpSymQuad[SYSVAR_IC      ])) return FALSE;   // Indeterminate Control
+    if (!AssignBoolScalarCWS (bQuadIO_CWS         , SYSVAR_IO      , lpSymQuad[SYSVAR_IO      ])) return FALSE;   // Index Origin
+    if (!AssignGlobalCWS     (hGlbQuadLX_CWS      , SYSVAR_LX      , lpSymQuad[SYSVAR_LX      ])) return FALSE;   // Latent Expression
+    if (!AssignIntScalarCWS  (uQuadPP_CWS         , SYSVAR_PP      , lpSymQuad[SYSVAR_PP      ])) return FALSE;   // Print Precision
     if (cQuadPR_CWS EQ CQUADPR_MT)
     {
-        if (!AssignGlobalCWS (hGlbQuadPR_CWS    , SYSVAR_PR  , lpSymQuad[SYSVAR_PR  ])) return FALSE;   // Prompt Replacement
+        if (!AssignGlobalCWS (hGlbQuadPR_CWS      , SYSVAR_PR      , lpSymQuad[SYSVAR_PR      ])) return FALSE;   // Prompt Replacement
     } else
     {
-        if (!AssignCharScalarCWS (cQuadPR_CWS   , SYSVAR_PR  , lpSymQuad[SYSVAR_PR  ])) return FALSE;   // Prompt Replacement
+        if (!AssignCharScalarCWS (cQuadPR_CWS     , SYSVAR_PR      , lpSymQuad[SYSVAR_PR      ])) return FALSE;   // Prompt Replacement
     } // End IF
-    if (!AssignIntScalarCWS  (uQuadPW_CWS       , SYSVAR_PW  , lpSymQuad[SYSVAR_PW  ])) return FALSE;   // Print Width
-    if (!AssignIntScalarCWS  (uQuadRL_CWS       , SYSVAR_RL  , lpSymQuad[SYSVAR_RL  ])) return FALSE;   // Random Link
-    if (!AssignGlobalCWS     (hGlbQuadSA_CWS    , SYSVAR_SA  , lpSymQuad[SYSVAR_SA  ])) return FALSE;   // Stop Action
-    if (!AssignGlobalCWS     (hGlbQuadWSID_CWS  , SYSVAR_WSID, lpSymQuad[SYSVAR_WSID])) return FALSE;   // Workspace Identifier
+    if (!AssignIntScalarCWS  (uQuadPW_CWS         , SYSVAR_PW      , lpSymQuad[SYSVAR_PW      ])) return FALSE;   // Print Width
+    if (!AssignIntScalarCWS  (uQuadRL_CWS         , SYSVAR_RL      , lpSymQuad[SYSVAR_RL      ])) return FALSE;   // Random Link
+    if (!AssignGlobalCWS     (hGlbQuadSA_CWS      , SYSVAR_SA      , lpSymQuad[SYSVAR_SA      ])) return FALSE;   // Stop Action
+    if (!AssignGlobalCWS     (hGlbQuadWSID_CWS    , SYSVAR_WSID    , lpSymQuad[SYSVAR_WSID    ])) return FALSE;   // Workspace Identifier
 
     // Set the values for []Z
     lpSymQuad[SYSVAR_Z]->stFlags.SysVarValid = SYSVAR_Z;
@@ -3240,38 +3432,40 @@ UBOOL InitSystemVars
     lpMemPTD = GetMemPTD ();
 
     // Set the array set validation routines
-    aSysVarValidSet[SYSVAR_ALX ] = ValidSetALX_EM ;
-    aSysVarValidSet[SYSVAR_CT  ] = ValidSetCT_EM  ;
-    aSysVarValidSet[SYSVAR_DM  ] = ValidSetDM_EM  ;
-    aSysVarValidSet[SYSVAR_ELX ] = ValidSetELX_EM ;
-    aSysVarValidSet[SYSVAR_FC  ] = ValidSetFC_EM  ;
-    aSysVarValidSet[SYSVAR_IC  ] = ValidSetIC_EM  ;
-    aSysVarValidSet[SYSVAR_IO  ] = ValidSetIO_EM  ;
-    aSysVarValidSet[SYSVAR_LX  ] = ValidSetLX_EM  ;
-    aSysVarValidSet[SYSVAR_PP  ] = ValidSetPP_EM  ;
-    aSysVarValidSet[SYSVAR_PR  ] = ValidSetPR_EM  ;
-    aSysVarValidSet[SYSVAR_PW  ] = ValidSetPW_EM  ;
-    aSysVarValidSet[SYSVAR_RL  ] = ValidSetRL_EM  ;
-    aSysVarValidSet[SYSVAR_SA  ] = ValidSetSA_EM  ;
-    aSysVarValidSet[SYSVAR_WSID] = ValidSetWSID_EM;
-    aSysVarValidSet[SYSVAR_Z   ] = ValidSetZ_EM   ;
+    aSysVarValidSet[SYSVAR_ALX     ] = ValidSetALX_EM      ;
+    aSysVarValidSet[SYSVAR_CT      ] = ValidSetCT_EM       ;
+    aSysVarValidSet[SYSVAR_DM      ] = ValidSetDM_EM       ;
+    aSysVarValidSet[SYSVAR_ELX     ] = ValidSetELX_EM      ;
+    aSysVarValidSet[SYSVAR_FC      ] = ValidSetFC_EM       ;
+    aSysVarValidSet[SYSVAR_FEATURE ] = ValidSetFEATURE_EM  ;
+    aSysVarValidSet[SYSVAR_IC      ] = ValidSetIC_EM       ;
+    aSysVarValidSet[SYSVAR_IO      ] = ValidSetIO_EM       ;
+    aSysVarValidSet[SYSVAR_LX      ] = ValidSetLX_EM       ;
+    aSysVarValidSet[SYSVAR_PP      ] = ValidSetPP_EM       ;
+    aSysVarValidSet[SYSVAR_PR      ] = ValidSetPR_EM       ;
+    aSysVarValidSet[SYSVAR_PW      ] = ValidSetPW_EM       ;
+    aSysVarValidSet[SYSVAR_RL      ] = ValidSetRL_EM       ;
+    aSysVarValidSet[SYSVAR_SA      ] = ValidSetSA_EM       ;
+    aSysVarValidSet[SYSVAR_WSID    ] = ValidSetWSID_EM     ;
+    aSysVarValidSet[SYSVAR_Z       ] = ValidSetZ_EM        ;
 
     // Set the array index validation routine
-    aSysVarValidNdx[SYSVAR_ALX ] = ValidNdxChar   ;
-    aSysVarValidNdx[SYSVAR_CT  ] = ValidNdxCT     ;
-    aSysVarValidNdx[SYSVAR_DM  ] = ValidNdxDM     ;
-    aSysVarValidNdx[SYSVAR_ELX ] = ValidNdxChar   ;
-    aSysVarValidNdx[SYSVAR_FC  ] = ValidNdxChar   ;
-    aSysVarValidNdx[SYSVAR_IC  ] = ValidNdxIC     ;
-    aSysVarValidNdx[SYSVAR_IO  ] = ValidNdxIO     ;
-    aSysVarValidNdx[SYSVAR_LX  ] = ValidNdxChar   ;
-    aSysVarValidNdx[SYSVAR_PP  ] = ValidNdxPP     ;
-    aSysVarValidNdx[SYSVAR_PR  ] = ValidNdxChar   ;
-    aSysVarValidNdx[SYSVAR_PW  ] = ValidNdxPW     ;
-    aSysVarValidNdx[SYSVAR_RL  ] = ValidNdxRL     ;
-    aSysVarValidNdx[SYSVAR_SA  ] = ValidNdxChar   ;
-    aSysVarValidNdx[SYSVAR_WSID] = ValidNdxChar   ;
-    aSysVarValidNdx[SYSVAR_Z   ] = ValidNdxAny    ;
+    aSysVarValidNdx[SYSVAR_ALX     ] = ValidNdxChar        ;
+    aSysVarValidNdx[SYSVAR_CT      ] = ValidNdxCT          ;
+    aSysVarValidNdx[SYSVAR_DM      ] = ValidNdxDM          ;
+    aSysVarValidNdx[SYSVAR_ELX     ] = ValidNdxChar        ;
+    aSysVarValidNdx[SYSVAR_FC      ] = ValidNdxChar        ;
+    aSysVarValidNdx[SYSVAR_FEATURE ] = ValidNdxFEATURE     ;
+    aSysVarValidNdx[SYSVAR_IC      ] = ValidNdxIC          ;
+    aSysVarValidNdx[SYSVAR_IO      ] = ValidNdxIO          ;
+    aSysVarValidNdx[SYSVAR_LX      ] = ValidNdxChar        ;
+    aSysVarValidNdx[SYSVAR_PP      ] = ValidNdxPP          ;
+    aSysVarValidNdx[SYSVAR_PR      ] = ValidNdxChar        ;
+    aSysVarValidNdx[SYSVAR_PW      ] = ValidNdxPW          ;
+    aSysVarValidNdx[SYSVAR_RL      ] = ValidNdxRL          ;
+    aSysVarValidNdx[SYSVAR_SA      ] = ValidNdxChar        ;
+    aSysVarValidNdx[SYSVAR_WSID    ] = ValidNdxChar        ;
+    aSysVarValidNdx[SYSVAR_Z       ] = ValidNdxAny         ;
 
     // Assign default values to the system vars
     if (!AssignDefaultSysVars (lpMemPTD->htsPTD.lpSymQuad))

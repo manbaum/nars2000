@@ -58,32 +58,33 @@ LPTOKEN CheckAxisOper
 #endif
 
 UBOOL CheckAxisImm
-    (IMM_TYPES  immType,        // Type of the immediate value
-     APLLONGEST aplLongest,     // The immediate value
-     LPTOKEN    lptkAxis,       // The Axis values
-     APLRANK    aplRankCmp,     // Comparison rank
-     LPUBOOL    lpbFract,       // Return TRUE iff fractional values are present,
-                                //   (may be NULL if fractional values not allowed)
-     LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
-                                //   (may be NULL if caller is not interested)
-     LPAPLNELM  lpaplNELMAxis,  // Return # elements in axis
-                                //   (may be NULL if caller is not interested)
-     HGLOBAL    *lphGlbAxis,    // Ptr to HGLOBAL where the cleaned up axis
-                                //   is to be stored.  If the return is FALSE,
-                                //   this ptr must be set to NULL.
-                                //   (may be NULL if caller is not interested)
-     LPAPLNELM  lpaplNELM,      // Local var w/NELM
-     LPAPLINT  *lplpAxisStart,  // Ptr to ptr to start of Axis values in *lphGlbAxis
-     LPAPLINT  *lplpAxisHead,   // ...                    user axis values in *lphGlbAxis
-     LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
+    (IMM_TYPES    immType,          // Type of the immediate value
+     APLLONGEST   aplLongest,       // The immediate value
+     LPTOKEN      lptkAxis,         // The Axis values
+     APLRANK      aplRankCmp,       // Comparison rank
+     LPUBOOL      lpbFract,         // Return TRUE iff fractional values are present,
+                                    //   (may be NULL if fractional values not allowed)
+     LPAPLINT     lpaplLastAxis,    // Return last axis value or ceiling if fractional
+                                    //   (may be NULL if caller is not interested)
+     LPAPLNELM    lpaplNELMAxis,    // Return # elements in axis
+                                    //   (may be NULL if caller is not interested)
+     HGLOBAL      *lphGlbAxis,      // Ptr to HGLOBAL where the cleaned up axis
+                                    //   is to be stored.  If the return is FALSE,
+                                    //   this ptr must be set to NULL.
+                                    //   (may be NULL if caller is not interested)
+     LPAPLNELM    lpaplNELM,        // Local var w/NELM
+     LPAPLINT    *lplpAxisStart,    // Ptr to ptr to start of Axis values in *lphGlbAxis
+     LPAPLINT    *lplpAxisHead,     // ...                    user axis values in *lphGlbAxis
+     LPAPLUINT    lpaplAxisContLo,  // Contiguous low axis (not NULL)
+     LPPERTABDATA lpMemPTD)         // Ptr to PertabData global memory
 
 {
-    APLUINT  ByteAxis;          // # bytes for the axis global
-    APLRANK  aplRank;           // Maximum rank for comparison
-    UBOOL    bRet = TRUE;       // TRUE iff result is valid
-    UINT     u;                 // Loop counter
-    LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
-    APLBOOL  bQuadIO;           // []IO
+    APLUINT  ByteAxis;              // # bytes for the axis global
+    APLRANK  aplRank;               // Maximum rank for comparison
+    UBOOL    bRet = TRUE;           // TRUE iff result is valid
+    UINT     u;                     // Loop counter
+    LPAPLINT lpAxisTail;            // Ptr to grade up of AxisHead
+    APLBOOL  bQuadIO;               // []IO
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -134,7 +135,8 @@ UBOOL CheckAxisImm
             aplRank = aplLongest - bQuadIO;
 
             // Check for negative indices [-aplRankCmp, -1]
-            if (SIGN_APLRANK (aplRank))
+            if (SIGN_APLRANK (aplRank)
+             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                 aplRank += aplRankCmp;
 
             // Ensure it's within range
@@ -151,7 +153,8 @@ UBOOL CheckAxisImm
             aplRank -= bQuadIO; // Less the index origin
 
             // Check for negative indices [-aplRankCmp, -1]
-            if (SIGN_APLRANK (aplRank))
+            if (SIGN_APLRANK (aplRank)
+             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                 aplRank += aplRankCmp;
 
             // If fractional values are allowed,
@@ -220,43 +223,44 @@ NORMAL_EXIT:
 #endif
 
 UBOOL CheckAxisGlb
-    (HGLOBAL    hGlbData,       // The global handle to check
-     LPTOKEN    lptkAxis,       // The Axis values
-     APLRANK    aplRankCmp,     // Comparison rank
-     UBOOL      bSingleton,     // TRUE iff scalar or one-element vector only
-                                //   is allowed
-     UBOOL      bSortAxes,      // TRUE iff the axes should be sorted
-                                //   (i.e., the order of the axes is unimportant)
-     UBOOL      bContiguous,    // TRUE iff the axes must be contiguous
-     UBOOL      bAllowDups,     // TRUE iff duplicate axes are allowed
-     LPUBOOL    lpbFract,       // Return TRUE iff fractional values are present,
-                                //   (may be NULL if fractional values not allowed)
-     LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
-                                //   (may be NULL if caller is not interested)
-     LPAPLNELM  lpaplNELMAxis,  // Return # elements in axis
-                                //   (may be NULL if caller is not interested)
-     HGLOBAL   *lphGlbAxis,     // Ptr to HGLOBAL where the cleaned up axis
-                                //   is to be stored.  If the return is FALSE,
-                                //   this ptr must be set to NULL.
-                                //   (may be NULL if caller is not interested)
-     LPAPLNELM  lpaplNELM,      // Local var for NELM
-     LPAPLINT  *lplpAxisStart,  // Ptr to ptr to start of Axis values in *lphGlbAxis
-     LPAPLINT  *lplpAxisHead,   // ...                    user axis values in *lphGlbAxis
-     LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
+    (HGLOBAL      hGlbData,         // The global handle to check
+     LPTOKEN      lptkAxis,         // The Axis values
+     APLRANK      aplRankCmp,       // Comparison rank
+     UBOOL        bSingleton,       // TRUE iff scalar or one-element vector only
+                                    //   is allowed
+     UBOOL        bSortAxes,        // TRUE iff the axes should be sorted
+                                    //   (i.e., the order of the axes is unimportant)
+     UBOOL        bContiguous,      // TRUE iff the axes must be contiguous
+     UBOOL        bAllowDups,       // TRUE iff duplicate axes are allowed
+     LPUBOOL      lpbFract,         // Return TRUE iff fractional values are present,
+                                    //   (may be NULL if fractional values not allowed)
+     LPAPLINT     lpaplLastAxis,    // Return last axis value or ceiling if fractional
+                                    //   (may be NULL if caller is not interested)
+     LPAPLNELM    lpaplNELMAxis,    // Return # elements in axis
+                                    //   (may be NULL if caller is not interested)
+     HGLOBAL     *lphGlbAxis,       // Ptr to HGLOBAL where the cleaned up axis
+                                    //   is to be stored.  If the return is FALSE,
+                                    //   this ptr must be set to NULL.
+                                    //   (may be NULL if caller is not interested)
+     LPAPLNELM    lpaplNELM,        // Local var for NELM
+     LPAPLINT    *lplpAxisStart,    // Ptr to ptr to start of Axis values in *lphGlbAxis
+     LPAPLINT    *lplpAxisHead,     // ...                    user axis values in *lphGlbAxis
+     LPAPLUINT    lpaplAxisContLo,  // Contiguous low axis (not NULL)
+     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
-    UBOOL    bRet = TRUE;       // TRUE iff the result is valid
-    LPVOID   lpMem,             // Ptr to incoming data global memory
-             lpDup = NULL;      // Ptr to duplciate axes global memory
-    HGLOBAL  hGlbDup = NULL;    // Duplicate axes global memory handle
-    UINT     uBitMask;          // Bit mask for looping through Booleans
-    APLUINT  ByteDup,           // # bytes for the duplicate axis test
-             ByteAxis,          // # bytes for the axis vector
-             u;                 // Loop counter
-    APLSTYPE aplTypeLcl;        // Incoming data storage type
-    APLRANK  aplRankLcl;        // Incoming data rank
-    LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
-    APLBOOL  bQuadIO;           // []IO
+    UBOOL    bRet = TRUE;           // TRUE iff the result is valid
+    LPVOID   lpMem,                 // Ptr to incoming data global memory
+             lpDup = NULL;          // Ptr to duplciate axes global memory
+    HGLOBAL  hGlbDup = NULL;        // Duplicate axes global memory handle
+    UINT     uBitMask;              // Bit mask for looping through Booleans
+    APLUINT  ByteDup,               // # bytes for the duplicate axis test
+             ByteAxis,              // # bytes for the axis vector
+             u;                     // Loop counter
+    APLSTYPE aplTypeLcl;            // Incoming data storage type
+    APLRANK  aplRankLcl;            // Incoming data rank
+    LPAPLINT lpAxisTail;            // Ptr to grade up of AxisHead
+    APLBOOL  bQuadIO;               // []IO
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -344,7 +348,8 @@ UBOOL CheckAxisGlb
                 aplRankLcl -= bQuadIO; // Less the index origin
 
                 // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl))
+                if (SIGN_APLRANK (aplRankLcl)
+                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                     aplRankLcl += aplRankCmp;
 
                 // Test against the comparison rank
@@ -389,7 +394,8 @@ UBOOL CheckAxisGlb
                 aplRankLcl = *lpaplInteger++ - bQuadIO;
 
                 // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl))
+                if (SIGN_APLRANK (aplRankLcl)
+                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                     aplRankLcl += aplRankCmp;
 
                 // Ensure it's within range
@@ -425,7 +431,8 @@ UBOOL CheckAxisGlb
                 aplRankLcl -= bQuadIO; // Less the index origin
 
                 // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl))
+                if (SIGN_APLRANK (aplRankLcl)
+                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                     aplRankLcl += aplRankCmp;
 
                 // If fractional values are allowed,
@@ -489,7 +496,8 @@ UBOOL CheckAxisGlb
                 aplRankLcl = apaOff + apaMul * u;
 
                 // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl))
+                if (SIGN_APLRANK (aplRankLcl)
+                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                     aplRankLcl += aplRankCmp;
 
                 // Ensure it's within range
@@ -677,34 +685,38 @@ NORMAL_EXIT:
 #endif
 
 UBOOL CheckAxis_EM
-    (LPTOKEN    lptkAxis,       // The Axis values
-     APLRANK    aplRankCmp,     // Comparison rank
-     UBOOL      bSingleton,     // TRUE iff scalar or one-element vector only
-                                //   is allowed
-     UBOOL      bSortAxes,      // TRUE iff the axes should be sorted
-                                //   (i.e., the order of the axes is unimportant)
-     UBOOL      bContiguous,    // TRUE iff the axes must be contiguous
-     UBOOL      bAllowDups,     // TRUE iff duplicate axes are allowed
-     LPUBOOL    lpbFract,       // Return TRUE iff fractional values are present,
-                                //   (may be NULL if fractional values not allowed)
-     LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
-                                //   (may be NULL if caller is not interested)
-     LPAPLNELM  lpaplNELMAxis,  // Return # elements in axis
-                                //   (may be NULL if caller is not interested)
-     HGLOBAL    *lphGlbAxis)    // Ptr to HGLOBAL where the cleaned up axis
-                                //   is to be stored.  If the return is FALSE,
-                                //   this ptr must be set to NULL.
-                                //   (may be NULL if caller is not interested)
+    (LPTOKEN    lptkAxis,           // The Axis values
+     APLRANK    aplRankCmp,         // Comparison rank
+     UBOOL      bSingleton,         // TRUE iff scalar or one-element vector only
+                                    //   is allowed
+     UBOOL      bSortAxes,          // TRUE iff the axes should be sorted
+                                    //   (i.e., the order of the axes is unimportant)
+     UBOOL      bContiguous,        // TRUE iff the axes must be contiguous
+     UBOOL      bAllowDups,         // TRUE iff duplicate axes are allowed
+     LPUBOOL    lpbFract,           // Return TRUE iff fractional values are present,
+                                    //   (may be NULL if fractional values not allowed)
+     LPAPLINT   lpaplLastAxis,      // Return last axis value or ceiling if fractional
+                                    //   (may be NULL if caller is not interested)
+     LPAPLNELM  lpaplNELMAxis,      // Return # elements in axis
+                                    //   (may be NULL if caller is not interested)
+     HGLOBAL    *lphGlbAxis)        // Ptr to HGLOBAL where the cleaned up axis
+                                    //   is to be stored.  If the return is FALSE,
+                                    //   this ptr must be set to NULL.
+                                    //   (may be NULL if caller is not interested)
 {
-    UBOOL      bRet = TRUE;     // TRUE iff the result is valid
-    APLNELM    aplNELM;         //
-    LPAPLINT   lpAxisStart,     // Ptr to ptr to start of Axis values in *lphGlbAxis
-               lpAxisHead;      // ...                    user axis values in *lphGlbAxis
-    UINT       u;               // Loop counter
-    APLUINT    aplAxisContLo;   // Contiguous low axis
-    HGLOBAL    hGlbData = NULL; //
-    IMM_TYPES  immType;         //
-    APLLONGEST aplLongest;      //
+    UBOOL        bRet = TRUE;       // TRUE iff the result is valid
+    APLNELM      aplNELM;           //
+    LPAPLINT     lpAxisStart,       // Ptr to ptr to start of Axis values in *lphGlbAxis
+                 lpAxisHead;        // ...                    user axis values in *lphGlbAxis
+    UINT         u;                 // Loop counter
+    APLUINT      aplAxisContLo;     // Contiguous low axis
+    HGLOBAL      hGlbData = NULL;   //
+    IMM_TYPES    immType;           //
+    APLLONGEST   aplLongest;        //
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // If the caller requests, an axis vector is allocated
     //   of length <2 * aplRankCmp>.  In the first <aplRankCmp>
@@ -838,7 +850,8 @@ UBOOL CheckAxis_EM
                             &aplNELM,       // Local var for NELM
                             &lpAxisStart,   // Ptr to ptr to start of Axis values in *lphGlbAxis
                             &lpAxisHead,    // ...                    user axis values in *lphGlbAxis
-                            &aplAxisContLo);// Contiguous low axis
+                            &aplAxisContLo, // Contiguous low axis
+                             lpMemPTD);     // Ptr to PerTabData global memory
     else
         // Handle the immediate case
         bRet = CheckAxisImm (immType,
@@ -858,7 +871,8 @@ UBOOL CheckAxis_EM
                             &aplNELM,       // Local var for NELM
                             &lpAxisStart,   // Ptr to ptr to start of Axis values in *lphGlbAxis
                             &lpAxisHead,    // ...                    user axis values in *lphGlbAxis
-                            &aplAxisContLo);// Contiguous low axis
+                            &aplAxisContLo, // Contiguous low axis
+                             lpMemPTD);     // Ptr to PerTabData global memory
     // If bad values, it's an AXIS ERROR
     if (!bRet)
     {

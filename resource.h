@@ -171,18 +171,20 @@
 #define IDC_CLEARWS_ELX_LEN                      824
 #define IDC_CLEARWS_FC_EC                        825
 #define IDC_CLEARWS_FC_LEN                       826
-#define IDC_CLEARWS_IO_EC                        827
-#define IDC_CLEARWS_IO_UD                        828
+#define IDC_CLEARWS_FEATURE_CB1                  827
+#define IDC_CLEARWS_FEATURE_CB2                  828
 #define IDC_CLEARWS_IC_CB1                       829
 #define IDC_CLEARWS_IC_CB2                       830
-#define IDC_CLEARWS_LX_EC                        831
-#define IDC_CLEARWS_LX_LEN                       832
-#define IDC_CLEARWS_MF_CB                        833
-#define IDC_CLEARWS_PP_EC                        834
-#define IDC_CLEARWS_PP_UD                        835
-#define IDC_CLEARWS_PW_EC                        836
-#define IDC_CLEARWS_PW_UD                        837
-#define IDC_CLEARWS_RL_EC                        838
+#define IDC_CLEARWS_IO_EC                        831
+#define IDC_CLEARWS_IO_UD                        832
+#define IDC_CLEARWS_LX_EC                        833
+#define IDC_CLEARWS_LX_LEN                       834
+#define IDC_CLEARWS_MF_CB                        835
+#define IDC_CLEARWS_PP_EC                        836
+#define IDC_CLEARWS_PP_UD                        837
+#define IDC_CLEARWS_PW_EC                        838
+#define IDC_CLEARWS_PW_UD                        839
+#define IDC_CLEARWS_RL_EC                        840
 
 #define INI_BUTTON_TEXT     WS_UTF16_HORIZELLIPSIS
 #define SET_BUTTON_TEXT     WS_UTF16_CHECKMARK
@@ -238,10 +240,11 @@
 
 #define IDC_RANGE_XB_CT                          890
 #define IDC_RANGE_XB_IO                          891
-#define IDC_RANGE_XB_IC                          892
-#define IDC_RANGE_XB_PP                          893
-#define IDC_RANGE_XB_PW                          894
-#define IDC_RANGE_XB_RL                          895
+#define IDC_RANGE_XB_FEATURE                     892
+#define IDC_RANGE_XB_IC                          893
+#define IDC_RANGE_XB_PP                          894
+#define IDC_RANGE_XB_PW                          895
+#define IDC_RANGE_XB_RL                          896
 
 #define IDC_RESET_TEXT                           900
 
@@ -249,16 +252,18 @@
 #define IDC_RESET_CT_RADIO2                      902
 #define IDC_RESET_FC_RADIO1                      903
 #define IDC_RESET_FC_RADIO2                      904
-#define IDC_RESET_IC_RADIO1                      905
-#define IDC_RESET_IC_RADIO2                      906
-#define IDC_RESET_IO_RADIO1                      907
-#define IDC_RESET_IO_RADIO2                      908
-#define IDC_RESET_PP_RADIO1                      909
-#define IDC_RESET_PP_RADIO2                      910
-#define IDC_RESET_PW_RADIO1                      911
-#define IDC_RESET_PW_RADIO2                      912
-#define IDC_RESET_RL_RADIO1                      913
-#define IDC_RESET_RL_RADIO2                      914
+#define IDC_RESET_FEATURE_RADIO1                 905
+#define IDC_RESET_FEATURE_RADIO2                 906
+#define IDC_RESET_IC_RADIO1                      907
+#define IDC_RESET_IC_RADIO2                      908
+#define IDC_RESET_IO_RADIO1                      909
+#define IDC_RESET_IO_RADIO2                      910
+#define IDC_RESET_PP_RADIO1                      911
+#define IDC_RESET_PP_RADIO2                      912
+#define IDC_RESET_PW_RADIO1                      913
+#define IDC_RESET_PW_RADIO2                      914
+#define IDC_RESET_RL_RADIO1                      915
+#define IDC_RESET_RL_RADIO2                      916
 
 #define IDC_SYNTCLR_MI1                         1020
 #define IDC_SYNTCLR_MI2                         1021

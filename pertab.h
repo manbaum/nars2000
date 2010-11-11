@@ -29,6 +29,7 @@
 #define INIT_PERTABVARS                             \
     lpMemPTD->Sig.nature    = ' DTP';               \
     lpMemPTD->uQuadMF       = uQuadMF_CWS;          \
+    SetCurrentFeatureCWS (lpMemPTD);                \
 
     // The following vars are already initialized to zero which is the default
     //   value from GHND, so they do not need to be set explicitly.
@@ -121,6 +122,7 @@ typedef struct tagPERTABDATA
     DWORD        dwThreadId;                // Corresponding thread ID
     HANDLE       hExitphore;                // Semaphore used to close a tab (may be NULL)
     HWND         hWndFENxt;                 // Next FE window handle (NULL = none)
+    APLINT       aplCurrentFEATURE[FEATURENDX_LENGTH];  // Current values for []FEATURE
 } PERTABDATA, *LPPERTABDATA;
 
 

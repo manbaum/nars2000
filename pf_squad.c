@@ -585,6 +585,10 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     LPSYMENTRY    lpSymTmp;             // Ptr to temporary LPSYMENTRY
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1203,7 +1207,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 aplLongestNxt = lpMemOdo[iAxisNxt];
 
             // Check for negative indices [-lpMemDimRht[iAxisNxt], -1]
-            if (SIGN_APLLONGEST (aplLongestNxt))
+            if (SIGN_APLLONGEST (aplLongestNxt)
+             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                 aplLongestNxt += lpMemDimRht[iAxisNxt];
 
             // Ensure that the value is within range

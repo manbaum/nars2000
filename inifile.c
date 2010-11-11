@@ -56,6 +56,7 @@
 #define KEYNAME_QUADCT                  L"QuadCT"
 #define KEYNAME_QUADELX                 L"QuadELX"
 #define KEYNAME_QUADFC                  L"QuadFC"
+#define KEYNAME_QUADFEATURE             L"QuadFEATURE"
 #define KEYNAME_QUADIC                  L"QuadIC"
 #define KEYNAME_QUADIO                  L"QuadIO"
 #define KEYNAME_QUADLX                  L"QuadLX"
@@ -618,6 +619,20 @@ void ReadIniFileGlb
                                  DEF_QUADFC_CWS_BR, // Ptr to default value
                                  DEF_QUADFC_GLB,    // HGLOBAL of the result
                                  lpwszIniFile);     // Ptr to the file name
+    // Make the default wide-string form of aplDefaultFEATURE
+    for (uCnt = 0, lpwszTemp = wszTemp; uCnt < FEATURENDX_LENGTH; uCnt++)
+        lpwszTemp +=
+          wsprintfW (lpwszTemp,
+                     L"%d ",
+                     aplDefaultFEATURE[uCnt]);
+    // Read in []FEATURE
+    hGlbQuadFEATURE_CWS =
+      GetPrivateProfileGlbIntW (SECTNAME_SYSVARS,       // Ptr to the section name
+                                KEYNAME_QUADFEATURE,    // Ptr to the key name
+                                wszTemp,                // Ptr to default value
+                                DEF_QUADFEATURE_GLB,    // HGLOBAL of the result
+                                FEATURENDX_LENGTH,      // Length of the default integer vector
+                                lpwszIniFile);          // Ptr to the file name
     // Make the default wide-string form of aplDefaultIC
     for (uCnt = 0, lpwszTemp = wszTemp; uCnt < ICNDX_LENGTH; uCnt++)
         lpwszTemp +=
@@ -757,6 +772,12 @@ void ReadIniFileGlb
                              KEYNAME_QUADCT,        // Ptr to the key name
                              DEF_RANGELIMIT_CT,     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    // Read in bRangeLimit.FEATURE
+    bRangeLimit.FEATURE =
+      GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
+                             KEYNAME_QUADFEATURE,   // Ptr to the key name
+                             DEF_RANGELIMIT_FEATURE,// Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
     // Read in bRangeLimit.IC
     bRangeLimit.IC =
       GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
@@ -803,6 +824,12 @@ void ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADFC,        // Ptr to the key name
                              DEF_RESETVARS_FC,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bResetVars.FEATURE
+    bResetVars.FEATURE =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
+                             KEYNAME_QUADFEATURE,   // Ptr to the key name
+                             DEF_RESETVARS_FEATURE, // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bResetVars.IC
     bResetVars.IC =
@@ -1731,6 +1758,36 @@ void SaveIniFile
                                  KEYNAME_QUADFC,
                                  hGlbQuadFC_CWS,
                                  lpwszIniFile);
+    //************************ []FEATURE **********************
+    // Lock the memory to get a ptr to it
+    lpMemObj = MyGlobalLock (hGlbQuadFEATURE_CWS);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemObj)
+    // Get the # bytes
+    aplNELMObj = lpHeader->NELM;
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMemObj = VarArrayBaseToData (lpMemObj, 1);
+
+    // Format []FEATURE
+    lpaplChar = wszTemp;
+    while (aplNELMObj--)
+        lpaplChar +=
+          wsprintfW (lpaplChar,
+                     L"%d ",
+                    *((LPAPLINT) lpMemObj)++);
+    // Zap the trailing blank
+    lpaplChar[-1] = WC_EOS;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadFEATURE_CWS); lpMemObj = NULL;
+
+    // Write out []FEATURE
+    WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
+                                KEYNAME_QUADFEATURE,        // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
     //************************ []IC ***************************
     // Lock the memory to get a ptr to it
     lpMemObj = MyGlobalLock (hGlbQuadIC_CWS);
@@ -1879,6 +1936,15 @@ void SaveIniFile
                                 KEYNAME_QUADCT,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
+    //******************* bRangeLimit.FEATURE *****************
+    wszTemp[0] = L'0' + bRangeLimit.FEATURE;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bRangeLimit.FEATURE
+    WritePrivateProfileStringW (SECTNAME_RANGELIMITS,       // Ptr to the section name
+                                KEYNAME_QUADFEATURE,        // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.IC **********************
     wszTemp[0] = L'0' + bRangeLimit.IC;
     wszTemp[1] = WC_EOS;
@@ -1944,6 +2010,15 @@ void SaveIniFile
     // Write out bResetVars.FC
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
                                 KEYNAME_QUADFC,             // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //****************** bResetVars.FEATURE *******************
+    wszTemp[0] = L'0' + bResetVars.FEATURE;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bResetVars.FEATURE
+    WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
+                                KEYNAME_QUADFEATURE,        // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.IC ************************

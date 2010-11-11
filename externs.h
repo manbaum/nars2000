@@ -115,39 +115,86 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
 #endif
 ;
 
-EXTERN
-HGLOBAL  hGlbQuadALX_CWS    ,           // []ALX    ([]dm)
-         hGlbQuadELX_CWS    ,           // []ELX    ([]dm)
-         hGlbQuadFC_SYS     ,           // []FC     (L".,*0_" WS_UTF16_OVERBAR)
-         hGlbQuadFC_CWS     ,           // []FC     hGlbQuadFC_SYS or from )LOAD
-         hGlbQuadIC_SYS     ,           // []IC     (aplDefaultIC)
-         hGlbQuadIC_CWS     ,           // []IC     hGlbQuadIC_SYS or from )LOAD
-         hGlbQuadLX_CWS     ,           // []LX     (L"")
-         hGlbQuadSA_CWS     ,           // []SA     (L"")
-         hGlbQuadWSID_CWS   ,           // []WSID   (WS_EOS)
-         hGlbQuadPR_CWS     ;           // []PR     (L"") (When an empty vector)
-EXTERN
-APLFLOAT fQuadCT_CWS        ;           // []CT
+
+// Feature Control Values
+typedef enum tagFEATURE_VALUES
+{
+    FEATUREVAL_FALSE,                   // 00:  FALSE
+    FEATUREVAL_TRUE,                    // 01:  TRUE
+    FEATUREVAL_LENGTH                   // 02:  # entries in this enum
+} FEATURE_VALUES, *LPFEATURE_VALUES;
+
+typedef enum tagFEATURE_INDICES
+{
+    FEATURENDX_NEGINDICES ,             // 00:  Allow negative indices
+    FEATURENDX_LENGTH                   // 01:  # entries in this enum
+} FEATURE_INDICES, *LPFEATURE_INDICES;
+
+// Define the minimum/maximum allowable values for []FEATURE
+#define FEATUREVAL_MINVAL       FALSE
+#define FEATUREVAL_MAXVAL       TRUE
+
+#define DEF_FEATURE_NEGINDICES  TRUE
+
+typedef struct tagFEATURE_NAMES
+{
+    FEATURE_INDICES eFeature;           // 00:  Feature enum index
+    LPWCHAR        lpwszFeatureName;    // 04:  Ptr to feature name
+} FEATURE_NAMES, *LPFEATURE_NAMES;
 
 EXTERN
-APLBOOL  bQuadIO_CWS        ;           // []IO
+APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
+#ifdef DEFINE_VALUES
+ = {DEF_FEATURE_NEGINDICES,             // 00:  Allow negative indices
+   }
+#endif
+;
 
 EXTERN
-APLINT   uQuadMF_CWS        ;           // []MF
+FEATURE_NAMES featNames[FEATURENDX_LENGTH]
+#ifdef DEFINE_VALUES
+= {{FEATURENDX_NEGINDICES, L"Allow Negative Indices"},
+  }
+#endif
+;
+
 
 EXTERN
-APLUINT  uQuadPP_CWS        ,           // []PP
-         uQuadPW_CWS        ,           // []PW
-         uQuadRL_CWS        ;           // []RL
+HGLOBAL  hGlbQuadALX_CWS     ,          // []ALX     ([]dm)
+         hGlbQuadELX_CWS     ,          // []ELX     ([]dm)
+         hGlbQuadFC_SYS      ,          // []FC      (L".,*0_" WS_UTF16_OVERBAR)
+         hGlbQuadFEATURE_SYS ,          // []FEATURE aplDefaultFEATURE
+         hGlbQuadFEATURE_CWS ,          // []FEATURE hGlbQuadFEATURE_SYS or from )LOAD
+         hGlbQuadFC_CWS      ,          // []FC      hGlbQuadFC_SYS or from )LOAD
+         hGlbQuadIC_SYS      ,          // []IC      (aplDefaultIC)
+         hGlbQuadIC_CWS      ,          // []IC      hGlbQuadIC_SYS or from )LOAD
+         hGlbQuadLX_CWS      ,          // []LX      (L"")
+         hGlbQuadSA_CWS      ,          // []SA      (L"")
+         hGlbQuadWSID_CWS    ,          // []WSID    (WS_EOS)
+         hGlbQuadPR_CWS      ;          // []PR      (L"") (When an empty vector)
+EXTERN
+APLFLOAT fQuadCT_CWS         ;          // []CT
 
 EXTERN
-APLCHAR  cQuadPR_CWS        ,           // []PR     (L' ') (When a char scalar)
-         cQuadxSA_CWS       ;           // []SA     (0)    (in its index form as an integer)
+APLBOOL  bQuadIO_CWS         ;          // []IO
+
+EXTERN
+APLINT   uQuadMF_CWS         ;          // []MF
+
+EXTERN
+APLUINT  uQuadPP_CWS         ,          // []PP
+         uQuadPW_CWS         ,          // []PW
+         uQuadRL_CWS         ;          // []RL
+
+EXTERN
+APLCHAR  cQuadPR_CWS         ,          // []PR     (L' ') (When a char scalar)
+         cQuadxSA_CWS        ;          // []SA     (0)    (in its index form as an integer)
 
 // Struct for whether or a System var is range limited
 typedef struct tagRANGELIMIT
 {
     UBOOL CT:1,
+          FEATURE:1,
           IC:1,
           IO:1,
           PP:1,
@@ -159,6 +206,7 @@ EXTERN
 RANGELIMIT bRangeLimit
 #ifdef DEFINE_VALUES
 = {DEF_RANGELIMIT_CT,       // []CT
+   DEF_RANGELIMIT_FEATURE,  // []FEATURE
    DEF_RANGELIMIT_IC,       // []IC
    DEF_RANGELIMIT_IO,       // []IO
    DEF_RANGELIMIT_PP,       // []PP
@@ -176,6 +224,7 @@ typedef struct tagRESET_VARS
 {
     UBOOL CT:1,
           FC:1,
+          FEATURE:1,
           IC:1,
           IO:1,
           PP:1,
@@ -188,6 +237,7 @@ RESET_VARS bResetVars
 #ifdef DEFINE_VALUES
 = {DEF_RESETVARS_CT,        // []CT
    DEF_RESETVARS_FC,        // []FC
+   DEF_RESETVARS_FEATURE,   // []FEATURE
    DEF_RESETVARS_IC,        // []IC
    DEF_RESETVARS_IO,        // []IO
    DEF_RESETVARS_PP,        // []PP

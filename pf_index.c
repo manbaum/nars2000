@@ -78,6 +78,10 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                  uBitIndex;         // Bit index ...
     LPSYMENTRY   lpSymTmp;          // Ptr to temporary LPSYMENTRY
     TOKEN_TYPES  TknTypeLst;        // Token type of the list arg
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get the attributes (Type, NELM, and Rank) of the name & list args
     AttrsOfToken (lptkNamArg, &aplTypeNam, &aplNELMNam, &aplRankNam, NULL);
@@ -180,6 +184,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                          aplTypeSub,        // List arg storage type
                                          aplLongestSub,     // List arg immediate value
                                          aplTypeRes,        // Result storage type
+                                         lpMemPTD,          // Ptr to PerTabData global memory
                                          lptkFunc);         // Ptr to function token
         else
         //***************************************************************
@@ -201,6 +206,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                              aplNELMSub,    // List arg NELM
                                              aplRankSub,    // List arg rank
                                              aplTypeRes,    // Result storage type
+                                             lpMemPTD,      // Ptr to PerTabData global memory
                                              lptkFunc);     // Ptr to function token
         else
         //***************************************************************
@@ -329,7 +335,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     aplLongestItm -= bQuadIO;
 
                     // Check for negative indices [-aplNELMNam, -1]
-                    if (SIGN_APLLONGEST (aplLongestItm))
+                    if (SIGN_APLLONGEST (aplLongestItm)
+                     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                         aplLongestItm += aplNELMNam;
 
                     // Check for INDEX ERROR
@@ -448,7 +455,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                           FALSE,        // TRUE iff array assignment
                                                           ARRAY_ERROR,  // Set arg storage type
                                                           NULL,         // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-                                                          0);           // Set arg immediate value
+                                                          0,            // Set arg immediate value
+                                                          lpMemPTD);    // Ptr to PerTabData global memory
                     if (lpYYItm)
                     {
                         // Split cases based upon the result storage type
@@ -622,14 +630,15 @@ NORMAL_EXIT:
 #endif
 
 LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
-    (HGLOBAL    hGlbNam,            // Name arg global memory handle
-     APLSTYPE   aplTypeNam,         // Name arg storage type
-     APLNELM    aplNELMNam,         // Name arg NELM
-     APLRANK    aplRankNam,         // Name arg rank
-     APLSTYPE   aplTypeLst,         // List arg storage type
-     APLLONGEST aplLongestLst,      // List arg immediate value
-     APLSTYPE   aplTypeRes,         // Result storage type
-     LPTOKEN    lptkFunc)           // Ptr to function token
+    (HGLOBAL      hGlbNam,          // Name arg global memory handle
+     APLSTYPE     aplTypeNam,       // Name arg storage type
+     APLNELM      aplNELMNam,       // Name arg NELM
+     APLRANK      aplRankNam,       // Name arg rank
+     APLSTYPE     aplTypeLst,       // List arg storage type
+     APLLONGEST   aplLongestLst,    // List arg immediate value
+     APLSTYPE     aplTypeRes,       // Result storage type
+     LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
+     LPTOKEN      lptkFunc)         // Ptr to function token
 
 {
     APLRANK      aplRankRes = 0;    // Result rank
@@ -663,7 +672,8 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
     aplLongestLst -= bQuadIO;
 
     // Check for negative indices [-aplNELMNam, -1]
-    if (SIGN_APLLONGEST (aplLongestLst))
+    if (SIGN_APLLONGEST (aplLongestLst)
+     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
         aplLongestLst += aplNELMNam;
 
     // Check for within range
@@ -790,16 +800,17 @@ NORMAL_EXIT:
 #endif
 
 LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
-    (HGLOBAL    hGlbNam,                // Name arg global memory handle
-     APLSTYPE   aplTypeNam,             // Name arg storage type
-     APLNELM    aplNELMNam,             // Name arg NELM
-     APLRANK    aplRankNam,             // Name arg rank
-     HGLOBAL    hGlbLst,                // List arg global memory handle
-     APLSTYPE   aplTypeLst,             // List arg storage type
-     APLNELM    aplNELMLst,             // List arg NELM
-     APLRANK    aplRankLst,             // List arg rank
-     APLSTYPE   aplTypeRes,             // Result storage type
-     LPTOKEN    lptkFunc)               // Ptr to function token
+    (HGLOBAL      hGlbNam,              // Name arg global memory handle
+     APLSTYPE     aplTypeNam,           // Name arg storage type
+     APLNELM      aplNELMNam,           // Name arg NELM
+     APLRANK      aplRankNam,           // Name arg rank
+     HGLOBAL      hGlbLst,              // List arg global memory handle
+     APLSTYPE     aplTypeLst,           // List arg storage type
+     APLNELM      aplNELMLst,           // List arg NELM
+     APLRANK      aplRankLst,           // List arg rank
+     APLSTYPE     aplTypeRes,           // Result storage type
+     LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
+     LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
     HGLOBAL           hGlbSub,          // Name arg item global memory handle
@@ -942,7 +953,8 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         aplLongestLst -= bQuadIO;
 
         // Check for negative indices [-aplNELMNam, -1]
-        if (SIGN_APLLONGEST (aplLongestLst))
+        if (SIGN_APLLONGEST (aplLongestLst)
+         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
             aplLongestLst += aplNELMNam;
 
         // Check for INDEX ERROR
@@ -1698,6 +1710,10 @@ UBOOL ArrayIndexSet_EM
     UBOOL        bRet = TRUE,       // TRUE iff the result is valid
                  bSysVar;           // TRUE iff indexed assignment into a SysVar
     TOKEN_TYPES  TknTypeLst;        // Token type of the list arg
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
 #define lptkFunc        lptkNamArg
 
@@ -1766,6 +1782,7 @@ UBOOL ArrayIndexSet_EM
                                                 lptkRhtArg,     // Ptr to right ...
                                                &hGlbRes,        // Ptr to result global memory handle
                                                 bSysVar,        // TRUE iff indexed assignment into a SysVar
+                                                lpMemPTD,       // Ptr to PerTabData global memory
                                                 lptkFunc);      // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -2358,12 +2375,13 @@ NORMAL_EXIT:
 #endif
 
 UBOOL ArrayIndexSetSingLst_EM
-    (LPTOKEN    lptkNamArg,             // Ptr to name arg token
-     LPTOKEN    lptkLstArg,             // Ptr to list ...
-     LPTOKEN    lptkRhtArg,             // Ptr to right ...
-     HGLOBAL   *lphGlbRes,              // Ptr to result global memory handle
-     UBOOL      bSysVar,                // TRUE iff indexed assignment into a SysVar
-     LPTOKEN    lptkFunc)               // Ptr to function token
+    (LPTOKEN      lptkNamArg,           // Ptr to name arg token
+     LPTOKEN      lptkLstArg,           // Ptr to list ...
+     LPTOKEN      lptkRhtArg,           // Ptr to right ...
+     HGLOBAL     *lphGlbRes,            // Ptr to result global memory handle
+     UBOOL        bSysVar,              // TRUE iff indexed assignment into a SysVar
+     LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
+     LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
     HGLOBAL         hGlbNam = NULL,     // Name arg global memory handle
@@ -2561,7 +2579,8 @@ UBOOL ArrayIndexSetSingLst_EM
         aplLongestSubLst -= bQuadIO;
 
         // Check for negative indices [-*lpMemNam, -1]
-        if (SIGN_APLLONGEST (aplLongestSubLst))
+        if (SIGN_APLLONGEST (aplLongestSubLst)
+         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
             aplLongestSubLst += *(LPAPLDIM) lpMemNam;
 
         // Check for INDEX ERROR (skipping over the single dimension)
@@ -2781,6 +2800,7 @@ UBOOL ArrayIndexSetSingLst_EM
                                            bQuadIO,         // []IO
                                            bSysVar,         // TRUE iff indexed assignment into a SysVar
                                            SysVarValid,     // Ptr to the SysVar validation routine
+                                           lpMemPTD,        // Ptr to PerTabData global memory
                                            lptkFunc);       // Ptr to function token
             if (!bRet)
                 goto ERROR_EXIT;
@@ -2854,6 +2874,7 @@ UBOOL ArrayIndexSetSingLst_EM
                                                    bQuadIO,         // []IO
                                                    bSysVar,         // TRUE iff indexed assignment into a SysVar
                                                    SysVarValid,     // Ptr to the SysVar validation routine
+                                                   lpMemPTD,        // Ptr to PerTabData global memory
                                                    lptkFunc);       // Ptr to function token
                     if (!bRet)
                         goto ERROR_EXIT;
@@ -2892,7 +2913,8 @@ UBOOL ArrayIndexSetSingLst_EM
                                                       TRUE,             // TRUE iff array assignment
                                                       aplTypeSet,       // Set arg storage type
                                                       hGlbSubRht,       // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-                                                      aplLongestRht);   // Set arg immediate value
+                                                      aplLongestRht,    // Set arg immediate value
+                                                      lpMemPTD);        // Ptr to PerTabData global memory
                     // If we allocated it above, free it now
                     if (IsSimple (aplTypeSubLst2)
                      && aplNELMSubLst2 EQ aplRankNam)
@@ -3008,6 +3030,7 @@ UBOOL ArrayIndexSetVector_EM
      UBOOL           bQuadIO,           // []IO
      UBOOL           bSysVar,           // TRUE iff indexed assignment into a SysVar
      ASYSVARVALIDNDX SysVarValid,       // Ptr to the SysVar validation routine
+     LPPERTABDATA    lpMemPTD,          // Ptr to PerTabData global memory
      LPTOKEN         lptkFunc)          // Ptr to function token
 
 {
@@ -3156,7 +3179,8 @@ UBOOL ArrayIndexSetVector_EM
     aplLongestSubLst -= bQuadIO;
 
     // Check for negative indices [-aplNELMNam, -1]
-    if (SIGN_APLLONGEST (aplLongestSubLst))
+    if (SIGN_APLLONGEST (aplLongestSubLst)
+     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
         aplLongestSubLst += aplNELMNam;
 
     // Check for INDEX ERROR

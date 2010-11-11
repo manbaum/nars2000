@@ -139,6 +139,10 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     APLLONGEST   aplLongestRht;     // Right arg iommediate value
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLBOOL      bQuadIO;           // []IO
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -187,6 +191,11 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
             goto DOMAIN_EXIT;
     } // End IF
 
+    // If the value is negative and negative indices are not allowed, ...
+    if (SIGN_APLLONGEST (aplLongestRht)
+     && !lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+        goto DOMAIN_EXIT;
+
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_APA, abs64 (aplLongestRht), 1);
 
@@ -224,7 +233,8 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     // Save the APA values
 #define lpAPA       ((LPAPLAPA) lpMemRes)
     // Handle negative indices
-    if (SIGN_APLINT (aplLongestRht))
+    if (SIGN_APLINT (aplLongestRht)
+     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
         lpAPA->Off = bQuadIO + aplLongestRht;
     else
         lpAPA->Off = bQuadIO;

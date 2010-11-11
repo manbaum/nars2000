@@ -1832,6 +1832,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 
 {
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Split cases based upon the left arg's token type
     switch (lptkLftArg->tkFlags.TknType)
@@ -1859,7 +1863,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                    FALSE,                                   // TRUE iff array assignment
                    ARRAY_ERROR,                             // Set arg storage type
                    NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-                   0);                                      // Set arg immediate value
+                   0,                                       // Set arg immediate value
+                   lpMemPTD);                               // Ptr to PerTabData global memory
             } else
                 // Handle the immediate case
                 lpYYRes =
@@ -1867,6 +1872,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                   (lptkLftArg->tkData.tkSym->stFlags.ImmType,   // Immediate type
                    lptkLftArg->tkData.tkSym->stData.stLongest,  // Immediate value
                    hGlbRht,                                     // Right arg global memory handle
+                   lpMemPTD,                                    // Ptr to PerTabData global memory
                    lptkFunc);                                   // Ptr to function token
             break;
 
@@ -1876,6 +1882,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
               (lptkLftArg->tkFlags.ImmType,                 // Immediate type
                lptkLftArg->tkData.tkLongest,                // Immediate value
                hGlbRht,                                     // Right arg global memory handle
+               lpMemPTD,                                    // Ptr to PerTabData global memory
                lptkFunc);                                   // Ptr to function token
             break;
 
@@ -1894,7 +1901,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                FALSE,                                       // TRUE iff array assignment
                ARRAY_ERROR,                                 // Set arg storage type
                NULL,                                        // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-               0);                                          // Set arg immediate value
+               0,                                           // Set arg immediate value
+               lpMemPTD);                                   // Ptr to PerTabData global memory
             break;
 
         defstop
@@ -1924,10 +1932,11 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
-    (IMM_TYPES  immTypeLft,             // Left arg immediate type (see IMM_TYPES)
-     APLLONGEST aplLongestLft,          // Left arg immediate value
-     HGLOBAL    hGlbRht,                // Right arg global memory handle
-     LPTOKEN    lptkFunc)               // Ptr to function token
+    (IMM_TYPES    immTypeLft,           // Left arg immediate type (see IMM_TYPES)
+     APLLONGEST   aplLongestLft,        // Left arg immediate value
+     HGLOBAL      hGlbRht,              // Right arg global memory handle
+     LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
+     LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
     APLSTYPE     aplTypeRht;        // Right arg storage type
@@ -1968,7 +1977,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             aplLongestLft -= bQuadIO;
 
             // Check for negative indices [-aplNELMRht, -1]
-            if (SIGN_APLLONGEST (aplLongestLft))
+            if (SIGN_APLLONGEST (aplLongestLft)
+             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                 aplLongestLft += aplNELMRht;
 
             // Ensure that the index is within range
@@ -2042,13 +2052,14 @@ DOMAIN_EXIT:
 #endif
 
 LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
-    (HGLOBAL    hGlbLft,                // Left  arg global memory handle
-     HGLOBAL    hGlbRht,                // Right ...
-     LPTOKEN    lptkFunc,               // Ptr to function token
-     UBOOL      bArraySet,              // TRUE iff in array assignment
-     APLSTYPE   aplTypeSet,             // Set arg storage type
-     HGLOBAL    hGlbSet,                // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-     APLLONGEST aplLongestSet)          // Set arg immediate value
+    (HGLOBAL      hGlbLft,              // Left  arg global memory handle
+     HGLOBAL      hGlbRht,              // Right ...
+     LPTOKEN      lptkFunc,             // Ptr to function token
+     UBOOL        bArraySet,            // TRUE iff in array assignment
+     APLSTYPE     aplTypeSet,           // Set arg storage type
+     HGLOBAL      hGlbSet,              // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+     APLLONGEST   aplLongestSet,        // Set arg immediate value
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
     APLSTYPE      aplTypeLft,           // Left  arg storage type
@@ -2193,7 +2204,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         aplTmpSubLft = ((uBitMask & ((LPAPLBOOL) lpMemSubLft)[iDim >> LOG2NBIB]) ? TRUE : FALSE) - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
-                        if (SIGN_APLLONGEST (aplTmpSubLft))
+                        if (SIGN_APLLONGEST (aplTmpSubLft)
+                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -2225,7 +2237,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         aplTmpSubLft = ((LPAPLUINT) lpMemSubLft)[iDim] - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
-                        if (SIGN_APLLONGEST (aplTmpSubLft))
+                        if (SIGN_APLLONGEST (aplTmpSubLft)
+                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -2257,7 +2270,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         aplTmpSubLft = FloatToAplint_SCT (((LPAPLFLOAT) lpMemSubLft)[iDim], &bRet) - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
-                        if (SIGN_APLLONGEST (aplTmpSubLft))
+                        if (SIGN_APLLONGEST (aplTmpSubLft)
+                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -2294,7 +2308,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         aplTmpSubLft = (apaOffSubLft + apaMulSubLft * iDim) - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
-                        if (SIGN_APLLONGEST (aplTmpSubLft))
+                        if (SIGN_APLLONGEST (aplTmpSubLft)
+                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -2361,7 +2376,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             aplLongestSubLft -= bQuadIO;
 
             // Check for negative indices [-aplNELMRht, -1]
-            if (SIGN_APLLONGEST (aplLongestSubLft))
+            if (SIGN_APLLONGEST (aplLongestSubLft)
+             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
                 aplLongestSubLft += aplNELMRht;
 
             // Ensure that the index is within range

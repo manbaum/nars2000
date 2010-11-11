@@ -28,8 +28,10 @@
 #define DEF_QUADFC_CWS_BR   L".,*0_{overbar}"       // The braces form of DEF_QUAD_FC_CWS
 #define DEF_QUADFC_CWS_LEN  ((sizeof (DEF_QUADFC_CWS) / sizeof (DEF_QUADFC_CWS[0])) - 1)
 #define DEF_QUADFC_OVERFLOW L'0'
-#define DEF_QUADIC_CWS      aplDefaultIC
 #define DEF_QUADFC_GLB      hGlbQuadFC_SYS
+#define DEF_QUADFEATURE_CWS aplDefaultFEATURE
+#define DEF_QUADFEATURE_GLB hGlbQuadFEATURE_SYS
+#define DEF_QUADIC_CWS      aplDefaultIC
 #define DEF_QUADIC_GLB      hGlbQuadIC_SYS
 #define DEF_QUADIO_CWS          1
 #define DEF_QUADMF_CWS          2
@@ -52,6 +54,9 @@
 
 #define DEF_MIN_QUADCT      0                   // Minimum value for []CT
 #define DEF_MAX_QUADCT      1E-10               // Maximum ...
+
+#define DEF_MIN_QUADFEATURE 0                   // Minimum value for []FEATURE
+#define DEF_MAX_QUADFEATURE 1                   // Maximum ...
 
 #define DEF_MIN_QUADIC      ICVAL_MINVAL        // Minimum value for []IC
 #define DEF_MAX_QUADIC      ICVAL_MAXVAL        // Maximum ...
@@ -107,24 +112,25 @@ typedef enum tagFC_INDICES
 
 typedef enum tagSYS_VARS
 {
-    SYSVAR_UNK = 0,             // 00:  Unknown name
-    SYSVAR_ALX    ,             // 01:  []ALX
-    SYSVAR_CT     ,             // 02:  []CT
-    SYSVAR_DM     ,             // 03:  []DM
-    SYSVAR_ELX    ,             // 04:  []ELX
-    SYSVAR_FC     ,             // 05:  []FC
-    SYSVAR_IC     ,             // 06:  []IC
-    SYSVAR_IO     ,             // 07:  []IO
-    SYSVAR_LX     ,             // 08:  []LX
-    SYSVAR_PP     ,             // 09:  []PP
-    SYSVAR_PR     ,             // 0A:  []PR
-    SYSVAR_PW     ,             // 0B:  []PW
-    SYSVAR_RL     ,             // 0C:  []RL
-    SYSVAR_SA     ,             // 0D:  []SA
-    SYSVAR_WSID   ,             // 0E:  []WSID
-    SYSVAR_Z      ,             // 0F:  []Z
-    SYSVAR_LENGTH               // 10:  # entries in this enum
-                                // 11-1F:  Available entries (5 bits)
+    SYSVAR_UNK = 0 ,            // 00:  Unknown name
+    SYSVAR_ALX     ,            // 01:  []ALX
+    SYSVAR_CT      ,            // 02:  []CT
+    SYSVAR_DM      ,            // 03:  []DM
+    SYSVAR_ELX     ,            // 04:  []ELX
+    SYSVAR_FC      ,            // 05:  []FC
+    SYSVAR_FEATURE ,            // 06:  []FEATURE
+    SYSVAR_IC      ,            // 07:  []IC
+    SYSVAR_IO      ,            // 08:  []IO
+    SYSVAR_LX      ,            // 09:  []LX
+    SYSVAR_PP      ,            // 0A:  []PP
+    SYSVAR_PR      ,            // 0B:  []PR
+    SYSVAR_PW      ,            // 0C:  []PW
+    SYSVAR_RL      ,            // 0D:  []RL
+    SYSVAR_SA      ,            // 0E:  []SA
+    SYSVAR_WSID    ,            // 0F:  []WSID
+    SYSVAR_Z       ,            // 10:  []Z
+    SYSVAR_LENGTH               // 11:  # entries in this enum
+                                // 12-1F:  Available entries (5 bits)
 } SYS_VARS, *LPSYS_VARS;
 
 

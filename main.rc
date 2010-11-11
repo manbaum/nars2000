@@ -232,90 +232,94 @@ BEGIN
     LTEXT           "As you can see, this is highly preliminary.",IDC_STATIC,3,72,225,8,SS_NOPREFIX
 END
 
-IDD_CUSTOMIZE DIALOGEX DISCARDABLE  0, 0, 349, 333
+IDD_CUSTOMIZE DIALOGEX DISCARDABLE  0, 0, 369, 333
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Customize"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Category",IDC_STATIC  ,  5,  5, 50,  8,WS_TABSTOP
     LISTBOX                     IDC_CUST_LB ,  5, 15, 80,284,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        ""         ,IDC_GROUPBOX, 90, 11,255,288
+    GROUPBOX        ""         ,IDC_GROUPBOX, 90, 11,275,288
     DEFPUSHBUTTON   "OK",       IDOK        , 15,305, 50, 14
     PUSHBUTTON      "Cancel"   ,IDCANCEL    , 75,305, 50, 14
     PUSHBUTTON      "Apply"    ,IDC_APPLY   ,135,305, 50, 14,WS_DISABLED
 END
 
-IDD_PROPPAGE_CLEARWS_VALUES DIALOGEX DISCARDABLE  0, 0, 255, 288
+IDD_PROPPAGE_CLEARWS_VALUES DIALOGEX DISCARDABLE  0, 0, 275, 288
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "These values are used to initialize the corresponding system variable whenever a CLEAR WS is loaded.",
-                          IDC_STATIC         ,  5, 10,240, 20
+                               IDC_STATIC              ,  5, 10,240, 20
 
-    LTEXT           "ALX",IDC_STATIC         ,  5, 34, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_ALX_EC ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,25, 30,150, 16
+    LTEXT           "ALX"     ,IDC_STATIC              ,  5, 34, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_ALX_EC      ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45, 30,150, 16
     LTEXT           "Character Vector (?)",
-                          IDC_CLEARWS_ALX_LEN,180, 34, 70, 13
+                               IDC_CLEARWS_ALX_LEN     ,200, 34, 70, 13
 
-    LTEXT           "CT" ,IDC_STATIC         ,  5, 52, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_CT_EC  ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,25, 48,150, 16
+    LTEXT           "CT"      ,IDC_STATIC              ,  5, 52, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_CT_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45, 48,150, 16
     LTEXT           "Floating Point Scalar",
-                          IDC_STATIC         ,180, 52, 70, 13
+                               IDC_STATIC              ,200, 52, 70, 13
 
-    LTEXT           "ELX",IDC_STATIC         ,  5, 70, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_ELX_EC,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,25, 66,150, 16
+    LTEXT           "ELX"     ,IDC_STATIC              ,  5, 70, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_ELX_EC     ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45, 66,150, 16
     LTEXT           "Character Vector (?)",
-                          IDC_CLEARWS_ELX_LEN,180, 70, 70, 13
+                               IDC_CLEARWS_ELX_LEN     ,200, 70, 70, 13
 
-    LTEXT           "FC" ,IDC_STATIC         ,  5, 88, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_FC_EC  ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,25, 84,150, 16
+    LTEXT           "FC"      ,IDC_STATIC              ,  5, 88, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_FC_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45, 84,150, 16
     LTEXT           "Character Vector (?)",
-                          IDC_CLEARWS_FC_LEN ,180, 88, 70, 13
+                               IDC_CLEARWS_FC_LEN      ,200, 88, 70, 13
 
-    LTEXT           "IO" ,IDC_STATIC         ,  5,106, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_IO_EC  ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,25,102, 30, 16
-    CONTROL         ""   ,IDC_CLEARWS_IO_UD  ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,55,102,10,16
+    LTEXT           "FEATURE" ,IDC_STATIC              ,  5,106, 40, 13
+    COMBOBOX                   IDC_CLEARWS_FEATURE_CB1 , 45,102,170, 250,WS_BORDER | CBS_DROPDOWNLIST
+    COMBOBOX                   IDC_CLEARWS_FEATURE_CB2 ,220,102, 50, 250,WS_BORDER | CBS_DROPDOWNLIST
+
+    LTEXT           "IC"      ,IDC_STATIC              ,  5,124, 40, 13
+    COMBOBOX                   IDC_CLEARWS_IC_CB1      , 45,120,135, 250,WS_BORDER | CBS_DROPDOWNLIST
+    COMBOBOX                   IDC_CLEARWS_IC_CB2      ,185,120, 85, 250,WS_BORDER | CBS_DROPDOWNLIST
+
+    LTEXT           "IO"      ,IDC_STATIC              ,  5,142, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_IO_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,138, 30, 16
+    CONTROL         ""        ,IDC_CLEARWS_IO_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,75,138,10,16
     LTEXT           "Boolean Scalar",
-                          IDC_STATIC         ,180,106, 70, 13
+                               IDC_STATIC              ,200,142, 70, 13
 
-    LTEXT           "IC" ,IDC_STATIC         ,  5,124, 20, 13
-    COMBOBOX              IDC_CLEARWS_IC_CB1 , 25,120,135, 250,WS_BORDER | CBS_DROPDOWNLIST
-    COMBOBOX              IDC_CLEARWS_IC_CB2 ,165,120, 85, 250,WS_BORDER | CBS_DROPDOWNLIST
-
-    LTEXT           "LX" ,IDC_STATIC         ,  5,142, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_LX_EC  ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,25,138,150, 16
+    LTEXT           "LX"      ,IDC_STATIC              ,  5,160, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_LX_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45,156,150, 16
     LTEXT           "Character Vector (?)",
-                          IDC_CLEARWS_LX_LEN ,180,142, 70, 13
+                               IDC_CLEARWS_LX_LEN      ,200,160, 70, 13
 
-    LTEXT           "MF" ,IDC_STATIC         ,  5,160, 20, 13
-    COMBOBOX              IDC_CLEARWS_MF_CB  , 25,156,155,100,WS_BORDER | CBS_DROPDOWNLIST
+    LTEXT           "MF"      ,IDC_STATIC              ,  5,178, 40, 13
+    COMBOBOX                   IDC_CLEARWS_MF_CB       , 45,174,155,100,WS_BORDER | CBS_DROPDOWNLIST
 
-    LTEXT           "PP" ,IDC_STATIC         ,  5,178, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_PP_EC  ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER ,25,174, 30, 16
-    CONTROL         ""   ,IDC_CLEARWS_PP_UD  ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,55,174,10,16
+    LTEXT           "PP"      ,IDC_STATIC              ,  5,196, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_PP_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER ,45,192, 30, 16
+    CONTROL         ""        ,IDC_CLEARWS_PP_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,65,192,10,16
     LTEXT           "Integer Scalar",
-                          IDC_STATIC         ,180,178, 70, 13
+                               IDC_STATIC              ,200,196, 70, 13
 
-    LTEXT           "PW" ,IDC_STATIC         ,  5,196, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_PW_EC  ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,25,192, 30, 16
-    CONTROL         ""   ,IDC_CLEARWS_PW_UD  ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,55,192,10,16
+    LTEXT           "PW"      ,IDC_STATIC              ,  5,214, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_PW_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,210, 30, 16
+    CONTROL         ""        ,IDC_CLEARWS_PW_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,65,210,10,16
     LTEXT           "Integer Scalar",
-                          IDC_STATIC         ,180,196, 70, 13
+                               IDC_STATIC              ,200,214, 70, 13
 
-    LTEXT           "RL" ,IDC_STATIC         ,  5,214, 20, 13
-    CONTROL         ""   ,IDC_CLEARWS_RL_EC  ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,25,210,150, 16
+    LTEXT           "RL"      ,IDC_STATIC              ,  5,232, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_RL_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,228,150, 16
     LTEXT           "Integer Scalar",
-                          IDC_STATIC         ,180,214, 70, 13
+                               IDC_STATIC              ,200,232, 70, 13
 END
 
-IDD_PROPPAGE_DIRS DIALOGEX DISCARDABLE  0, 0, 255, 288
+IDD_PROPPAGE_DIRS DIALOGEX DISCARDABLE  0, 0, 275, 288
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "TBD",IDC_STATIC,5,10,143,78
 END
 
-IDD_PROPPAGE_FONTS DIALOGEX DISCARDABLE  0, 0, 255, 288
+IDD_PROPPAGE_FONTS DIALOGEX DISCARDABLE  0, 0, 275, 288
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -382,21 +386,22 @@ BEGIN
 ////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8H,180,170,15, 8
 END
 
-IDD_PROPPAGE_RANGE_LIMITS DIALOGEX DISCARDABLE  0, 0, 255, 288
+IDD_PROPPAGE_RANGE_LIMITS DIALOGEX DISCARDABLE  0, 0, 275, 288
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Check the box to map assigned values of these system vars to the allowable range.  An unchecked box means that assigning an out of range value signals a DOMAIN ERROR.",
-                         IDC_STATIC     ,45,26,143,78
-    AUTOCHECKBOX    "CT",IDC_RANGE_XB_CT,10,26, 25,10
-    AUTOCHECKBOX    "IC",IDC_RANGE_XB_IC,10,39, 25,10
-    AUTOCHECKBOX    "IO",IDC_RANGE_XB_IO,10,52, 25,10
-    AUTOCHECKBOX    "PP",IDC_RANGE_XB_PP,10,65, 25,10
-    AUTOCHECKBOX    "PW",IDC_RANGE_XB_PW,10,78, 25,10
-    AUTOCHECKBOX    "RL",IDC_RANGE_XB_RL,10,91, 25,10
+                                IDC_STATIC           ,65, 26,143,78
+    AUTOCHECKBOX    "CT"      , IDC_RANGE_XB_CT      ,10, 26, 55,10
+    AUTOCHECKBOX    "FEATURE" , IDC_RANGE_XB_FEATURE ,10, 39, 55,10
+    AUTOCHECKBOX    "IC"      , IDC_RANGE_XB_IC      ,10, 52, 55,10
+    AUTOCHECKBOX    "IO"      , IDC_RANGE_XB_IO      ,10, 65, 55,10
+    AUTOCHECKBOX    "PP"      , IDC_RANGE_XB_PP      ,10, 78, 55,10
+    AUTOCHECKBOX    "PW"      , IDC_RANGE_XB_PW      ,10, 91, 55,10
+    AUTOCHECKBOX    "RL"      , IDC_RANGE_XB_RL      ,10,104, 55,10
 END
 
-IDD_PROPPAGE_SYNTAX_COLORING DIALOGEX DISCARDABLE  0, 0, 255, 288
+IDD_PROPPAGE_SYNTAX_COLORING DIALOGEX DISCARDABLE  0, 0, 275, 288
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -572,52 +577,56 @@ BEGIN
     PUSHBUTTON      "Restore Defaults"          , IDC_SYNTCLR_BN_RESTORE,105,258, 70, 14
 END
 
-IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, 255, 288
+IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, 275, 288
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           ""              ,IDC_RESET_TEXT     , 5, 10,200,40
+    LTEXT           ""              ,IDC_RESET_TEXT           , 5, 10,200,40
 
-    LTEXT           "CLEAR WS"      ,IDC_STATIC         ,20, 55, 60,10
-    LTEXT           "System Default",IDC_STATIC         ,60, 55, 60,10
+    LTEXT           "CLEAR WS"      ,IDC_STATIC               ,40, 55, 60,10
+    LTEXT           "System Default",IDC_STATIC               ,80, 55, 60,10
 
-    LTEXT           "CT"            ,IDC_STATIC         , 5, 70, 10, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO1,35, 70, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO2,75, 70, 16, 8
+    LTEXT           "CT"            ,IDC_STATIC               , 5, 70, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO1      ,55, 70, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO2      ,95, 70, 16, 8
 
-    LTEXT           "FC"            ,IDC_STATIC         , 5, 85, 10, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO1,35, 85, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO2,75, 85, 16, 8
+    LTEXT           "FC"            ,IDC_STATIC               , 5, 85, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO1      ,55, 85, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO2      ,95, 85, 16, 8
 
-    LTEXT           "IC"            ,IDC_STATIC         , 5,100,  8, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1,35,100, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2,75,100, 16, 8
+    LTEXT           "FEATURE"       ,IDC_STATIC               , 5,100, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO1 ,55,100, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO2 ,95,100, 16, 8
 
-    LTEXT           "IO"            ,IDC_STATIC         , 5,115,  8, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1,35,115, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2,75,115, 16, 8
+    LTEXT           "IC"            ,IDC_STATIC               , 5,115, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1      ,55,115, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2      ,95,115, 16, 8
 
-    LTEXT           "PP"            ,IDC_STATIC         , 5,130, 10, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1,35,130, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2,75,130, 16, 8
+    LTEXT           "IO"            ,IDC_STATIC               , 5,130, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1      ,55,130, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2      ,95,130, 16, 8
 
-    LTEXT           "PW"            ,IDC_STATIC         , 5,145, 12, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1,35,145, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2,75,145, 16, 8
+    LTEXT           "PP"            ,IDC_STATIC               , 5,145, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1      ,55,145, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2      ,95,145, 16, 8
 
-    LTEXT           "RL"            ,IDC_STATIC         , 5,160, 10, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1,35,160, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2,75,160, 16, 8
+    LTEXT           "PW"            ,IDC_STATIC               , 5,160, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1      ,55,160, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2      ,95,160, 16, 8
+
+    LTEXT           "RL"            ,IDC_STATIC               , 5,175, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1      ,55,175, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2      ,95,175, 16, 8
 END
 
-IDD_PROPPAGE_TAB_COLORS DIALOGEX DISCARDABLE  0, 0, 255, 288
+IDD_PROPPAGE_TAB_COLORS DIALOGEX DISCARDABLE  0, 0, 275, 288
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "TBD",IDC_STATIC,5,10,143,78
 END
 
-IDD_PROPPAGE_USER_PREFS DIALOGEX DISCARDABLE  0, 0, 255, 288
+IDD_PROPPAGE_USER_PREFS DIALOGEX DISCARDABLE  0, 0, 275, 288
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN

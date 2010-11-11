@@ -152,6 +152,7 @@
 
 // Range limits for []vars
 #define DEF_RANGELIMIT_CT           TRUE
+#define DEF_RANGELIMIT_FEATURE      TRUE
 #define DEF_RANGELIMIT_IC           TRUE
 #define DEF_RANGELIMIT_IO           TRUE
 #define DEF_RANGELIMIT_PP           TRUE
@@ -162,6 +163,7 @@
 // Empty assignment to []vars as Fixed System value (TRUE) or .ini file value (FALSE)
 #define DEF_RESETVARS_CT            FALSE
 #define DEF_RESETVARS_FC            FALSE
+#define DEF_RESETVARS_FEATURE       FALSE
 #define DEF_RESETVARS_IC            FALSE
 #define DEF_RESETVARS_IO            FALSE
 #define DEF_RESETVARS_PP            FALSE

@@ -96,6 +96,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWndLast,               // Last (outgoing) ...
                         hDlg,                   // Dialog          ...
                         hWndApply,              // Apply button    ...
+                        hWndFEATURE_CB1,        // []FEATURE ComboBox #1 ...
+                        hWndFEATURE_CB2,        // []FEATURE ...      #2 ...
                         hWndIC_CB1,             // []IC ComboBox #1 ...
                         hWndIC_CB2;             // []IC ...      #2 ...
            UINT         uSel,                   // Index of the current selection
@@ -129,20 +131,22 @@ APLU3264 CALLBACK CustomizeDlgProc
                                            &FontsRadio7[0],
                                            &FontsRadio8[0],
                                           };
-    static UINT         ResetRadioCT[] = {IDC_RESET_CT_RADIO1, IDC_RESET_CT_RADIO2},
-                        ResetRadioFC[] = {IDC_RESET_FC_RADIO1, IDC_RESET_FC_RADIO2},
-                        ResetRadioIC[] = {IDC_RESET_IC_RADIO1, IDC_RESET_IC_RADIO2},
-                        ResetRadioIO[] = {IDC_RESET_IO_RADIO1, IDC_RESET_IO_RADIO2},
-                        ResetRadioPP[] = {IDC_RESET_PP_RADIO1, IDC_RESET_PP_RADIO2},
-                        ResetRadioPW[] = {IDC_RESET_PW_RADIO1, IDC_RESET_PW_RADIO2},
-                        ResetRadioRL[] = {IDC_RESET_RL_RADIO1, IDC_RESET_RL_RADIO2};
-    static LPUINT       ResetRadioPtr[] = {&ResetRadioCT[0],
-                                           &ResetRadioFC[0],
-                                           &ResetRadioIC[0],
-                                           &ResetRadioIO[0],
-                                           &ResetRadioPP[0],
-                                           &ResetRadioPW[0],
-                                           &ResetRadioRL[0],
+    static UINT         ResetRadioCT      [] = {IDC_RESET_CT_RADIO1      , IDC_RESET_CT_RADIO2      },
+                        ResetRadioFC      [] = {IDC_RESET_FC_RADIO1      , IDC_RESET_FC_RADIO2      },
+                        ResetRadioFEATURE [] = {IDC_RESET_FEATURE_RADIO1 , IDC_RESET_FEATURE_RADIO2 },
+                        ResetRadioIC      [] = {IDC_RESET_IC_RADIO1      , IDC_RESET_IC_RADIO2      },
+                        ResetRadioIO      [] = {IDC_RESET_IO_RADIO1      , IDC_RESET_IO_RADIO2      },
+                        ResetRadioPP      [] = {IDC_RESET_PP_RADIO1      , IDC_RESET_PP_RADIO2      },
+                        ResetRadioPW      [] = {IDC_RESET_PW_RADIO1      , IDC_RESET_PW_RADIO2      },
+                        ResetRadioRL      [] = {IDC_RESET_RL_RADIO1      , IDC_RESET_RL_RADIO2      };
+    static LPUINT       ResetRadioPtr[] = {&ResetRadioCT      [0],
+                                           &ResetRadioFC      [0],
+                                           &ResetRadioFEATURE [0],
+                                           &ResetRadioIC      [0],
+                                           &ResetRadioIO      [0],
+                                           &ResetRadioPP      [0],
+                                           &ResetRadioPW      [0],
+                                           &ResetRadioRL      [0],
                                           };
            HWND         hWndProp,               // Property page window handle
                         hWndProp1,              // ...
@@ -152,6 +156,7 @@ APLU3264 CALLBACK CustomizeDlgProc
            LOGFONTW     lf_ST;                  // Static text LOGFONTW
     static HFONT        hFontNorm_ST = NULL,    // Normal static text font handle
                         hFontBold_ST = NULL;    // Bold   ...
+    static APLINT       featValues[FEATURENDX_LENGTH]; // []FEATURE local values
     static APLINT       icValues[ICNDX_LENGTH]; // []IC local values
     static RESET_VARS   lclResetVars;           // Local copy of bResetVars
            WCHAR        wszTemp[128];           // Temporary WCHAR storage
@@ -356,18 +361,20 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Initialize the CLEAR WS values
 
                         // Set the font for each Edit Ctrl or Combobox
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PP_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PW_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_RL_EC ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PP_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PW_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_RL_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
 
                         // Save the normal font handle
                         hFontNorm_ST = (HFONT) SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_LEN), WM_GETFONT, 0, 0);
@@ -478,17 +485,45 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_FC_EC,  lpwszGlbTemp);
 
                         //***************************************************************
-                        // []IO -- CLEAR WS Values
+                        // []FEATURE -- CLEAR WS Values
                         //***************************************************************
 
-                        // Get the []IO UpDown Control window handle
-                        hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_IO_UD);
+                        // Get the window handle to the ComboBox of index names & values
+                        hWndFEATURE_CB1 = GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1);
+                        hWndFEATURE_CB2 = GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2);
 
-                        // Set the range
-                        SendMessageW (hWnd_UD, UDM_SETRANGE, 0, MAKELONG (DEF_MAX_QUADIO, DEF_MIN_QUADIO));
+                        // Insert the []FEATURE index names
+                        for (uCnt = 0; uCnt < FEATURENDX_LENGTH; uCnt++)
+                            SendMessageW (hWndFEATURE_CB1, CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) featNames[uCnt].lpwszFeatureName);
 
-                        // Set the initial position
-                        SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (bQuadIO_CWS, 0));
+                        // Insert the []FEATURE index values
+                        for (uCnt = 0; uCnt < FEATUREVAL_LENGTH; uCnt++)
+                            SendMessageW (hWndFEATURE_CB2, CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) (uCnt ? L"TRUE" : L"FALSE"));
+
+                        // Lock the memory to get a ptr to it
+                        lpMemInt = MyGlobalLock (hGlbQuadFEATURE_CWS);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemInt)
+                        // Get the NELM
+                        aplNELM = lpHeader->NELM;
+#undef  lpHeader
+                        // Skip over the header and dimension to the data
+                        lpMemInt = VarArrayBaseToData (lpMemInt, 1);
+
+                        // Initialize the []FEATURE local values
+                        for (uCnt = 0; uCnt < FEATURENDX_LENGTH; uCnt++)
+                        if (uCnt < aplNELM)
+                            featValues[uCnt] = lpMemInt[uCnt];
+                        else
+                            featValues[uCnt] = aplDefaultFEATURE[uCnt];
+
+                        // Set the current selection to the first name
+                        //   and its corresponding value
+                        SendMessageW (hWndFEATURE_CB1, CB_SETCURSEL, 0, 0);
+                        SendMessageW (hWndFEATURE_CB2, CB_SETCURSEL, (APLU3264) (featValues[0] - FEATUREVAL_MINVAL), 0);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbQuadFEATURE_CWS); lpMemInt = NULL;
 
                         //***************************************************************
                         // []IC -- CLEAR WS Values
@@ -530,6 +565,19 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbQuadIC_CWS); lpMemInt = NULL;
+
+                        //***************************************************************
+                        // []IO -- CLEAR WS Values
+                        //***************************************************************
+
+                        // Get the []IO UpDown Control window handle
+                        hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_IO_UD);
+
+                        // Set the range
+                        SendMessageW (hWnd_UD, UDM_SETRANGE, 0, MAKELONG (DEF_MAX_QUADIO, DEF_MIN_QUADIO));
+
+                        // Set the initial position
+                        SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (bQuadIO_CWS, 0));
 
                         //***************************************************************
                         // []LX -- CLEAR WS Values
@@ -762,13 +810,14 @@ APLU3264 CALLBACK CustomizeDlgProc
                         lclResetVars = bResetVars;
 
                         // Set the radio button initial states
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[0][lclResetVars.CT]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[1][lclResetVars.FC]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[2][lclResetVars.IC]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[3][lclResetVars.IO]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[4][lclResetVars.PP]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[5][lclResetVars.PW]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[6][lclResetVars.RL]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[0][lclResetVars.CT     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[1][lclResetVars.FC     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[2][lclResetVars.FEATURE]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[3][lclResetVars.IC     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[4][lclResetVars.IO     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[5][lclResetVars.PP     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[6][lclResetVars.PW     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[7][lclResetVars.RL     ]), BM_SETCHECK, TRUE, 0);
 
                         break;
 
@@ -1413,10 +1462,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                         GetClearWsChrValue (hWndProp, IDC_CLEARWS_FC_EC, &hGlbQuadFC_CWS);
 
                         //***************************************************************
-                        // []IO
+                        // []FEATURE
                         //***************************************************************
-                        bQuadIO_CWS =
-                          GetDlgItemInt (hWndProp, IDC_CLEARWS_IO_EC, NULL, FALSE);
+
+                        // Save the new []FEATURE value
+                        GetClearWsComValue (ARRAY_INT, FEATURENDX_LENGTH, &hGlbQuadFEATURE_CWS, featValues, sizeof (featValues[0]));
 
                         //***************************************************************
                         // []IC
@@ -1424,6 +1474,12 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // Save the new []IC value
                         GetClearWsComValue (ARRAY_INT, ICNDX_LENGTH, &hGlbQuadIC_CWS, icValues, sizeof (icValues[0]));
+
+                        //***************************************************************
+                        // []IO
+                        //***************************************************************
+                        bQuadIO_CWS =
+                          GetDlgItemInt (hWndProp, IDC_CLEARWS_IO_EC, NULL, FALSE);
 
                         //***************************************************************
                         // []LX
@@ -1565,12 +1621,13 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWndProp = (HWND)
                           SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
-                        bRangeLimit.CT = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_CT);
-                        bRangeLimit.IC = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_IC);
-                        bRangeLimit.IO = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_IO);
-                        bRangeLimit.PP = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_PP);
-                        bRangeLimit.PW = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_PW);
-                        bRangeLimit.RL = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_RL);
+                        bRangeLimit.CT      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_CT      );
+                        bRangeLimit.FEATURE = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_FEATURE );
+                        bRangeLimit.IC      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_IC      );
+                        bRangeLimit.IO      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_IO      );
+                        bRangeLimit.PP      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_PP      );
+                        bRangeLimit.PW      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_PW      );
+                        bRangeLimit.RL      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_RL      );
                     } // End IF
 
 
@@ -1635,13 +1692,14 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWndProp = (HWND)
                           SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
-                        bResetVars.CT = IsDlgButtonChecked (hWndProp, IDC_RESET_CT_RADIO2);
-                        bResetVars.FC = IsDlgButtonChecked (hWndProp, IDC_RESET_FC_RADIO2);
-                        bResetVars.IC = IsDlgButtonChecked (hWndProp, IDC_RESET_IC_RADIO2);
-                        bResetVars.IO = IsDlgButtonChecked (hWndProp, IDC_RESET_IO_RADIO2);
-                        bResetVars.PP = IsDlgButtonChecked (hWndProp, IDC_RESET_PP_RADIO2);
-                        bResetVars.PW = IsDlgButtonChecked (hWndProp, IDC_RESET_PW_RADIO2);
-                        bResetVars.RL = IsDlgButtonChecked (hWndProp, IDC_RESET_RL_RADIO2);
+                        bResetVars.CT      = IsDlgButtonChecked (hWndProp, IDC_RESET_CT_RADIO2      );
+                        bResetVars.FC      = IsDlgButtonChecked (hWndProp, IDC_RESET_FC_RADIO2      );
+                        bResetVars.FEATURE = IsDlgButtonChecked (hWndProp, IDC_RESET_FEATURE_RADIO2 );
+                        bResetVars.IC      = IsDlgButtonChecked (hWndProp, IDC_RESET_IC_RADIO2      );
+                        bResetVars.IO      = IsDlgButtonChecked (hWndProp, IDC_RESET_IO_RADIO2      );
+                        bResetVars.PP      = IsDlgButtonChecked (hWndProp, IDC_RESET_PP_RADIO2      );
+                        bResetVars.PW      = IsDlgButtonChecked (hWndProp, IDC_RESET_PW_RADIO2      );
+                        bResetVars.RL      = IsDlgButtonChecked (hWndProp, IDC_RESET_RL_RADIO2      );
                     } // End IF
 
 
@@ -1894,6 +1952,38 @@ APLU3264 CALLBACK CustomizeDlgProc
                         default:
                             break;
                     } // End SWITCH
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_CLEARWS_FEATURE_CB1:
+                    // We care about CBN_SELCHANGE only
+                    if (CBN_SELCHANGE EQ cmdCtl)
+                    {
+                        // Get the changed index
+                        uSel = (UINT) SendMessageW (hWndFEATURE_CB1, CB_GETCURSEL, 0, 0);
+
+                        // Display the corresponding selection
+                        SendMessageW (hWndFEATURE_CB2, CB_SETCURSEL, (APLU3264) (featValues[uSel] - FEATUREVAL_MINVAL), 0);
+
+                        // Note that the Apply button is enabled (below) only when
+                        //   changing the value associated with this index.
+                    } // End IF
+
+                    return TRUE;    // We handled the msg
+
+                case IDC_CLEARWS_FEATURE_CB2:
+                    // We care about CBN_SELCHANGE only
+                    if (CBN_SELCHANGE EQ cmdCtl)
+                    {
+                        // Get the current index
+                        uSel = (UINT) SendMessageW (hWndFEATURE_CB1, CB_GETCURSEL, 0, 0);
+
+                        // Save as current value
+                        featValues[uSel] = ((APLINT) SendMessageW (hWndFEATURE_CB2, CB_GETCURSEL, 0, 0)) + FEATUREVAL_MINVAL;
+
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    } // End IF
 
                     return TRUE;    // We handled the msg
 

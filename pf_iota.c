@@ -813,6 +813,7 @@ UBOOL PrimFnDydIotaBvB
             BytesInLftBits,         // # bytes in the left arg data
             BytesInRhtBits,         // ...            right ...
             uBit,                   // The bit we found or are searching for
+            uValid,                 // # valid bits in the arg
             uLft,                   // Loop counter
             uRht,                   // Loop counter
             uTmp;                   // Temporary
@@ -862,8 +863,11 @@ UBOOL PrimFnDydIotaBvB
     // If we didn't find uBit, check the last byte (may be short)
     if (!Found[uBit])
     {
+        // Calculate the # valid bits in the last byte in the left arg
+        uValid = (MASKLOG2NBIB & (aplNELMLft - 1)) + 1;
+
         // Get the index of the next occurrence of uBit
-        uTmp = FastBoolTrans[lpMemLft[uLft]][fbtFirst[uBit]];
+        uTmp = FastBoolTrans[lpMemLft[uLft] & ((BIT0 << uValid) - 1)][fbtFirst[uBit]];
 
         // If the bit is not found, ...
         if (uTmp EQ NBIB)
@@ -927,6 +931,7 @@ UBOOL PrimFnDydIotaBvN
     APLUINT  Index[2],              // Index of the first [0,1] in the left arg
              BytesInLftBits,        // # bytes in the left arg data
              uBit,                  // The bit we found or are searching for
+             uValid,                // # valid bits in the arg
              uLft,                  // Loop counter
              uRht,                  // Loop counter
              uTmp;                  // Temporary
@@ -974,8 +979,11 @@ UBOOL PrimFnDydIotaBvN
     // If we didn't find uBit, check the last byte (may be short)
     if (!Found[uBit])
     {
+        // Calculate the # valid bits in the last byte in the left arg
+        uValid = (MASKLOG2NBIB & (aplNELMLft - 1)) + 1;
+
         // Get the index of the next occurrence of uBit
-        uTmp = FastBoolTrans[lpMemLft[uLft]][fbtFirst[uBit]];
+        uTmp = FastBoolTrans[lpMemLft[uLft] & ((BIT0 << uValid) - 1)][fbtFirst[uBit]];
 
         // If the bit is not found, ...
         if (uTmp EQ NBIB)

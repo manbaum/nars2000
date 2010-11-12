@@ -1,6 +1,34 @@
 Version 0.0.2.18 consists of the following Builds:
 
 
+Build #749 -- Version 0.0.2.18
+------------------------------
+
+* Fix Bug:  Edge Condition In MemberOf And IndexOf Where The Target Is Boolean
+
+Directory trunk:
+
+PF_EPSILON.C:
+  Fix Bug:  In <PrimFnDydEpsilonBvB>, when the # elements in either
+    or both args was a multiple of eight, the last byte in the arg
+    that was a multiple of eight was not handled correctly in that
+    the number of valid bits was miscalculated.
+  Fix Bug:  In <PrimFnDydEpsilonNvB>, when the # elements in the
+    right arg was a multiple of eight, the last byte in that arg
+    was not handled correctly in that the number of valid bits
+    was miscalculated.
+
+PF_IOTA.C:
+  Fix Bug:  In <PrimFnDydIotaBvB>, when the # elements in the left
+    arg was a multiple of eight, the last byte in that arg was not
+    handled correctly in that the number of valid bits was
+    miscalculated.
+  Fix Bug:  In <PrimFnDydIotaNvB>, when the # elements in the left
+    arg was a multiple of eight, the last byte in that arg was not
+    handled correctly in that the number of valid bits was
+    miscalculated.
+
+
 Build #748 -- Version 0.0.2.18
 ------------------------------
 
@@ -23,7 +51,7 @@ DATATYPE.H:
   Include []FEATURE in PERMNDX_QUADxxx enum.
 
 DEFINES.H:
-  Speify the default  Range Limit and Reset Vars values for []FEATURE.
+  Specify the default Range Limit and Reset Vars values for []FEATURE.
 
 EXTERNS.H:
   Define enums and structs for []FEATURE.

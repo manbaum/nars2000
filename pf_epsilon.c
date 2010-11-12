@@ -1604,6 +1604,7 @@ UBOOL PrimFnDydEpsilonBvB
     APLUINT BytesInLftBits,         // # bytes in the left arg data
             BytesInRhtBits,         // ...            right ...
             uBit,                   // The bit we found or are searching for
+            uValid,                 // # valid bits in the arg
             uLft,                   // Loop counter
             uRht;                   // Loop counter
 
@@ -1644,7 +1645,13 @@ UBOOL PrimFnDydEpsilonBvB
 
     // If we didn't find uBit, check the last byte (may be short)
     if (!Found[uBit])
-        Found[uBit] = (FastBoolTrans[lpMemRht[uRht]][fbtFirst[uBit]] < (MASKLOG2NBIB & aplNELMRht));
+    {
+        // Calculate the # valid bits in the last byte in the right arg
+        uValid = (MASKLOG2NBIB & (aplNELMRht - 1)) + 1;
+
+        // Handle the last byte specially
+        Found[uBit] = (FastBoolTrans[lpMemRht[uRht] & ((BIT0 << uValid) - 1)][fbtFirst[uBit]] < uValid);
+    } // End IF
 
     // If we found both a 0 and a 1, the result is all 1s
     if (Found[0] && Found[1])
@@ -1663,8 +1670,11 @@ UBOOL PrimFnDydEpsilonBvB
             *lpMemRes++ = ~*lpMemLft++;
         } // End FOR
 
+        // Calculate the # valid bits in the last byte in the left arg
+        uValid = (MASKLOG2NBIB & (aplNELMLft - 1)) + 1;
+
         // Handle the last byte specially
-        *lpMemRes |= ((BIT0 << (MASKLOG2NBIB & aplNELMLft)) - 1) & ~*lpMemLft;
+        *lpMemRes |= ((BIT0 << uValid) - 1) & ~*lpMemLft;
     } else
     // If we found only 1s, the result is the same as the left arg
     if (Found[1])
@@ -1695,6 +1705,7 @@ UBOOL PrimFnDydEpsilonNvB
     UBOOL    Found[2];              // TRUE iff there is at least one [0,1] in the right arg
     APLUINT  BytesInRhtBits,        // # bytes in the right arg data
              uBit,                  // The bit we found or are searching for
+             uValid,                // # valid bits in the arg
              uLft,                  // Loop counter
              uRht,                  // Loop counter
              uTmp;                  // Temporary
@@ -1736,7 +1747,13 @@ UBOOL PrimFnDydEpsilonNvB
 
     // If we didn't find uBit, check the last byte (may be short)
     if (!Found[uBit])
-        Found[uBit] = (FastBoolTrans[lpMemRht[uRht]][fbtFirst[uBit]] < (MASKLOG2NBIB & aplNELMRht));
+    {
+        // Calculate the # valid bits in the last byte in the right arg
+        uValid = (MASKLOG2NBIB & (aplNELMRht - 1)) + 1;
+
+        // Handle the last byte specially
+        Found[uBit] = (FastBoolTrans[lpMemRht[uRht] & ((BIT0 << uValid) - 1)][fbtFirst[uBit]] < uValid);
+    } // End IF
 
     // If the left arg is APA, get its parameters
     if (IsSimpleAPA (aplTypeLft))
@@ -1750,7 +1767,7 @@ UBOOL PrimFnDydEpsilonNvB
     // Initialize the Boolean bit index
     uBitIndex = 0;
 
-    // Loop throught the left arg,
+    // Loop through the left arg,
     //   saving in the result Found[0] for each 0 in the left arg, and
     //                        Found[1] for each 1 in the left arg, and
     //                        0        for each non-Boolean ...

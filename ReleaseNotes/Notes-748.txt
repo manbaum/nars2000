@@ -20,7 +20,7 @@ DATATYPE.H:
   Include []FEATURE in PERMNDX_QUADxxx enum.
 
 DEFINES.H:
-  Speify the default  Range Limit and Reset Vars values for []FEATURE.
+  Specify the default Range Limit and Reset Vars values for []FEATURE.
 
 EXTERNS.H:
   Define enums and structs for []FEATURE.

@@ -709,12 +709,13 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                     case IDD_PROPPAGE_RANGE_LIMITS:                     // MYWM_INITDIALOG
                         // Check the boxes of Range Limited system vars
-                        CheckDlgButton (hWndProp, IDC_RANGE_XB_CT, bRangeLimit.CT);
-                        CheckDlgButton (hWndProp, IDC_RANGE_XB_IC, bRangeLimit.IC);
-                        CheckDlgButton (hWndProp, IDC_RANGE_XB_IO, bRangeLimit.IO);
-                        CheckDlgButton (hWndProp, IDC_RANGE_XB_PP, bRangeLimit.PP);
-                        CheckDlgButton (hWndProp, IDC_RANGE_XB_PW, bRangeLimit.PW);
-                        CheckDlgButton (hWndProp, IDC_RANGE_XB_RL, bRangeLimit.RL);
+                        CheckDlgButton (hWndProp, IDC_RANGE_XB_CT      , bRangeLimit.CT      );
+                        CheckDlgButton (hWndProp, IDC_RANGE_XB_FEATURE , bRangeLimit.FEATURE );
+                        CheckDlgButton (hWndProp, IDC_RANGE_XB_IC      , bRangeLimit.IC      );
+                        CheckDlgButton (hWndProp, IDC_RANGE_XB_IO      , bRangeLimit.IO      );
+                        CheckDlgButton (hWndProp, IDC_RANGE_XB_PP      , bRangeLimit.PP      );
+                        CheckDlgButton (hWndProp, IDC_RANGE_XB_PW      , bRangeLimit.PW      );
+                        CheckDlgButton (hWndProp, IDC_RANGE_XB_RL      , bRangeLimit.RL      );
 
                         break;
 

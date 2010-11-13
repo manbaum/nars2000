@@ -392,6 +392,7 @@ UBOOL IsValid1stCharInName
 {
     return (wch EQ UTF16_DELTA
          || wch EQ UTF16_DELTAUNDERBAR
+         || wch EQ UTF16_UNDERBAR
          || (L'a' <= wch
           &&         wch <= L'z')
          || (L'A' <= wch
@@ -410,7 +411,6 @@ UBOOL IsValid2ndCharInName
 
 {
     return (IsValid1stCharInName (wch)
-         || wch EQ UTF16_UNDERBAR
          || wch EQ UTF16_OVERBAR
          || (L'0' <= wch
           &&         wch <= L'9'));

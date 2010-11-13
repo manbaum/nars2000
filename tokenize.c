@@ -69,7 +69,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Overbar
   {TKROW_INIT    , NULL        , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , NULL        , fnSysInit   },     // Quad
-  {TKROW_INIT    , NULL        , fnUnkDone   },     // Underbar
+  {TKROW_ALPHA   , NULL        , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Infinity
   {TKROW_INIT    , NULL        , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , NULL        , fnLstDone   },     // Semicolon  ...
@@ -102,7 +102,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Overbar
   {TKROW_INIT    , NULL        , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , NULL        , fnSysInit   },     // Quad
-  {TKROW_INIT    , NULL        , fnUnkDone   },     // Underbar
+  {TKROW_ALPHA   , NULL        , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Infinity
   {TKROW_INIT    , NULL        , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , NULL        , fnLstDone   },     // Semicolon  ...
@@ -135,7 +135,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Overbar
   {TKROW_INIT    , fnPointDone , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , fnPointDone , fnSysInit   },     // Quad
-  {TKROW_INIT    , fnPointDone , fnUnkDone   },     // Underbar
+  {TKROW_INIT    , fnPointDone , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Infinity
   {TKROW_INIT    , fnPointDone , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , fnPointDone , fnLstDone   },     // Semicolon  ...
@@ -267,7 +267,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, fnQuo1Done  , fnPointAcc  },     // Overbar
   {TKROW_INIT    , fnQuo1Done  , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , fnQuo1Done  , fnSysInit   },     // Quad
-  {TKROW_INIT    , fnQuo1Done  , fnUnkDone   },     // Underbar
+  {TKROW_INIT    , fnQuo1Done  , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, fnQuo1Done  , fnPointAcc  },     // Infinity
   {TKROW_INIT    , fnQuo1Done  , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , fnQuo1Done  , fnLstDone   },     // Semicolon  ...
@@ -333,7 +333,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, fnQuo2Done  , fnPointAcc  },     // Overbar
   {TKROW_INIT    , fnQuo2Done  , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , fnQuo2Done  , fnSysInit   },     // Quad
-  {TKROW_INIT    , fnQuo2Done  , fnUnkDone   },     // Underbar
+  {TKROW_INIT    , fnQuo2Done  , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, fnQuo2Done  , fnPointAcc  },     // Infinity
   {TKROW_INIT    , fnQuo2Done  , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , fnQuo2Done  , fnLstDone   },     // Semicolon  ...
@@ -366,7 +366,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, fnDotDone   , fnPointAcc  },     // Overbar
   {TKROW_INIT    , fnDotDone   , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , fnDotDone   , fnSysInit   },     // Quad
-  {TKROW_INIT    , fnDotDone   , fnUnkDone   },     // Underbar
+  {TKROW_INIT    , fnDotDone   , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, fnDotDone   , fnPointAcc  },     // Infinity
   {TKROW_INIT    , fnDotDone   , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , fnDotDone   , fnLstDone   },     // Semicolon  ...
@@ -399,7 +399,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, fnJotDone   , fnPointAcc  },     // Overbar
   {TKROW_INIT    , fnJotDone   , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , fnJotDone   , fnSysInit   },     // Quad
-  {TKROW_INIT    , fnJotDone   , fnUnkDone   },     // Underbar
+  {TKROW_INIT    , fnJotDone   , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, fnJotDone   , fnPointAcc  },     // Infinity
   {TKROW_INIT    , fnJotDone   , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , fnJotDone   , fnLstDone   },     // Semicolon  ...
@@ -432,7 +432,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, fnOutDone   , fnPointAcc  },     // Overbar
   {TKROW_INIT    , fnOutDone   , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , fnOutDone   , fnSysInit   },     // Quad
-  {TKROW_INIT    , fnOutDone   , fnUnkDone   },     // Underbar
+  {TKROW_INIT    , fnOutDone   , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, fnOutDone   , fnPointAcc  },     // Infinity
   {TKROW_INIT    , fnOutDone   , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , fnOutDone   , fnLstDone   },     // Semicolon  ...
@@ -465,7 +465,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Overbar
   {TKROW_INIT    , NULL        , fnDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME , NULL        , fnSysInit   },     // Quad
-  {TKROW_INIT    , NULL        , fnUnkDone   },     // Underbar
+  {TKROW_INIT    , NULL        , fnAlpInit   },     // Underbar
   {TKROW_POINTNOT, NULL        , fnPointAcc  },     // Infinity
   {TKROW_INIT    , NULL        , fnAsnDone   },     // Assignment symbol
   {TKROW_INIT    , NULL        , fnLstDone   },     // Semicolon  ...

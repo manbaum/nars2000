@@ -1228,11 +1228,11 @@ UBOOL fnAlpDone
                                             &stFlags);
         // If it's not found, ...
         if (!lpSymEntry)
-            goto VALUE_EXIT;
+            lpSymEntry = lpMemPTD->steNoValue;
         // If it's []Z and we're not fixing a function via []TF, ...
         if (lpSymEntry EQ lpMemPTD->htsPTD.lpSymQuad[SYSVAR_Z]
          && !lpMemPTD->bInTF)
-            goto VALUE_EXIT;
+            lpSymEntry = lpMemPTD->steNoValue;
     } else
         // Lookup in or append to the symbol table
         lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
@@ -1253,17 +1253,6 @@ UBOOL fnAlpDone
                              &tkFlags,
                              &tkData,
                               -lptkLocalVars->iStrLen);
-    goto NORMAL_EXIT;
-
-VALUE_EXIT:
-    // Mark as in error
-    bRet = FALSE;
-
-    // Save the error message
-    ErrorMessageIndirect (ERRMSG_VALUE_ERROR APPEND_NAME);
-
-    // Move the caret to the start of the invalid SysName
-    lptkLocalVars->uChar -= lptkLocalVars->iStrLen;
 NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
     InitAccumVars (lptkLocalVars);

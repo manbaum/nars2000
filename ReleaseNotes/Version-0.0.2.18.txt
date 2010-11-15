@@ -1,6 +1,17 @@
 Version 0.0.2.18 consists of the following Builds:
 
 
+Build #752 -- Version 0.0.2.18
+------------------------------
+
+* Allow Undefined System Names In Tokenize
+
+Directory trunk:
+
+TOKENIZE.C:
+  Allow undefined system names as a VALUE ERROR.
+
+
 Build #751 -- Version 0.0.2.18
 ------------------------------
 

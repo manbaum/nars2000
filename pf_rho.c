@@ -514,7 +514,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     //***************************************************************
     if (IsSimpleInt (aplTypeRht)    // If right arg is simple integer (BOOL, INT, APA),
      && IsSingleton (aplNELMRht)    //   and a singleton, ...
-     && !IsEmpty (aplNELMRes))      //   and not an empty result
+     && IsMultiNELM (aplNELMRes))   //   and the result has multiple elements
     {
         aplTypeRes = ARRAY_APA;     // Result is an APA
         bReshapeSing = TRUE;        // Mark as special handling

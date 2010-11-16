@@ -1590,12 +1590,12 @@ typedef struct tagLANGCHARS
                                          L"Unicode:  0x22A4 or 8868"},
         {UTF16_LEFTTACK           , {0}, L"LeftTack",
                                          L"Identity:  " WS_UTF16_LEFTTACK L"R\n"
-                                         L"Left:     L" WS_UTF16_LEFTTACK L"R\n\n"
+                                         L"Lev:      L" WS_UTF16_LEFTTACK L"R\n\n"
                                          L"Keyboard:  Alt-'|' or Alt-Shift-\"'\"\n\n"
                                          L"Unicode:  0x22A3 or 8867"},
         {UTF16_RIGHTTACK          , {0}, L"RightTack",
                                          L"Identity:  " WS_UTF16_RIGHTTACK L"R\n"
-                                         L"Right:    L" WS_UTF16_RIGHTTACK L"R\n\n"
+                                         L"Dex:      L" WS_UTF16_RIGHTTACK L"R\n\n"
                                          L"Keyboard:  Alt-\"'\"\n\n"
                                          L"Unicode:  0x22A2 or 8866"},
         LANGCHARS_SEPARATOR
@@ -1718,34 +1718,6 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  '" WS_UTF16_TILDE L"' or Shift-'`' or Alt-'t'\n\n"
                                          L"Unicode:  0x223C or 8764"},
         LANGCHARS_SEPARATOR
-        {UTF16_SLASH              , {0}, L"Slash",
-                                         L"Replicate:                 L/R  or    L/[X] R\n"
-                                         L"Reduce Operator:           f/R  or    f/[X] R\n"
-                                         L"N-wise Reduce Operator:  L f/R  or  L f/[X] R\n\n"
-                                         L"Keyboard:  '/'\n\n"
-                                         L"Unicode:  0x002F or 47"},
-        {UTF16_SLOPE              , {0}, L"Slope",
-                                         L"Expand:         L\\R  or  L\\[X] R\n"
-                                         L"Scan Operator:  f\\R  or  f\\[X] R\n\n"
-                                         L"Keyboard:  '\\'\n\n"
-                                         L"Unicode:  0x005C or 92"},
-        {UTF16_SLASHBAR           , {0}, L"SlashBar",
-                                         L"Replicate First Axis:               L" WS_UTF16_SLASHBAR L"R  or    L" WS_UTF16_SLASHBAR L"[X] R\n"
-                                         L"Reduce Operator First Axis:         f" WS_UTF16_SLASHBAR L"R  or    f" WS_UTF16_SLASHBAR L"[X] R\n"
-                                         L"N-wise Reduce Operator First Axis:  f" WS_UTF16_SLASHBAR L"R  or  L f" WS_UTF16_SLASHBAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'/'\n\n"
-                                         L"Unicode:  0x233F or 9023"},
-        {UTF16_SLOPEBAR           , {0}, L"SlopeBar",
-                                         L"Expand First Axis:         L" WS_UTF16_SLOPEBAR L"R  or  L" WS_UTF16_SLOPEBAR L"[X] R\n"
-                                         L"Scan Operator First Axis:  f" WS_UTF16_SLOPEBAR L"R  or  f" WS_UTF16_SLOPEBAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'.'\n\n"
-                                         L"Unicode:  0x2340 or 9024"},
-        {UTF16_CIRCLEMIDDLEDOT    , {0}, L"CircleMiddleDot",
-                                         L"Null Operator:    f" WS_UTF16_CIRCLEMIDDLEDOT L"R\n"
-                                         L"                L f" WS_UTF16_CIRCLEMIDDLEDOT L"R\n\n"
-                                         L"Keyboard:  Alt-'?' or Alt-Shift-'/'\n\n"
-                                         L"Unicode:  0x2299 or 8857"},
-        LANGCHARS_SEPARATOR
         {UTF16_COMMA              , {0}, L"Comma",
                                          L"Ravel:      ,R  or   ,[X] R\n"
                                          L"Catenate:  L,R  or  L,[X] R  where X is integral\n"
@@ -1778,6 +1750,33 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'^' or Alt-Shift-'6'\n\n"
                                          L"Unicode:  0x2349 or 9033"},
         LANGCHARS_SEPARATOR
+        {UTF16_SLASH              , {0}, L"Slash",
+                                         L"Replicate:                 L/R  or    L/[X] R\n"
+                                         L"Reduce Operator:           f/R  or    f/[X] R\n"
+                                         L"N-wise Reduce Operator:  L f/R  or  L f/[X] R\n\n"
+                                         L"Keyboard:  '/'\n\n"
+                                         L"Unicode:  0x002F or 47"},
+        {UTF16_SLOPE              , {0}, L"Slope",
+                                         L"Expand:         L\\R  or  L\\[X] R\n"
+                                         L"Scan Operator:  f\\R  or  f\\[X] R\n\n"
+                                         L"Keyboard:  '\\'\n\n"
+                                         L"Unicode:  0x005C or 92"},
+        {UTF16_SLASHBAR           , {0}, L"SlashBar",
+                                         L"Replicate First Axis:               L" WS_UTF16_SLASHBAR L"R  or    L" WS_UTF16_SLASHBAR L"[X] R\n"
+                                         L"Reduce Operator First Axis:         f" WS_UTF16_SLASHBAR L"R  or    f" WS_UTF16_SLASHBAR L"[X] R\n"
+                                         L"N-wise Reduce Operator First Axis:  f" WS_UTF16_SLASHBAR L"R  or  L f" WS_UTF16_SLASHBAR L"[X] R\n\n"
+                                         L"Keyboard:  Alt-'/'\n\n"
+                                         L"Unicode:  0x233F or 9023"},
+        {UTF16_SLOPEBAR           , {0}, L"SlopeBar",
+                                         L"Expand First Axis:         L" WS_UTF16_SLOPEBAR L"R  or  L" WS_UTF16_SLOPEBAR L"[X] R\n"
+                                         L"Scan Operator First Axis:  f" WS_UTF16_SLOPEBAR L"R  or  f" WS_UTF16_SLOPEBAR L"[X] R\n\n"
+                                         L"Keyboard:  Alt-'.'\n\n"
+                                         L"Unicode:  0x2340 or 9024"},
+        {UTF16_CIRCLEMIDDLEDOT    , {0}, L"CircleMiddleDot",
+                                         L"Null Operator:    f" WS_UTF16_CIRCLEMIDDLEDOT L"R\n"
+                                         L"                L f" WS_UTF16_CIRCLEMIDDLEDOT L"R\n\n"
+                                         L"Keyboard:  Alt-'?' or Alt-Shift-'/'\n\n"
+                                         L"Unicode:  0x2299 or 8857"},
         {UTF16_DIERESIS           , {0}, L"Dieresis",
                                          L"Each Operator:  f" WS_UTF16_DIERESIS L"R\n"
                                          L"              L f" WS_UTF16_DIERESIS L"R\n"
@@ -1824,6 +1823,7 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'{' or Alt-Shift-'['\n\n"
                                          L"Unicode:  0x235E or 9054"},
         {UTF16_QUAD               , {0}, L"Quad",
+                                         L"Used as the first character in system names\n\n"
                                          L"Evaluated Input:  A" WS_UTF16_LEFTARROW WS_UTF16_QUAD L"\n\n"
                                          L"Keyboard:  Alt-'l'\n\n"
                                          L"Unicode:  0x2395 or 9109"},
@@ -1861,7 +1861,7 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'H' or Alt-Shift-'h'\n\n"
                                          L"Unicode:  0x2359 or 9049"},
         {UTF16_UNDERBAR           , {0}, L"Underbar",
-                                         L"Used as the second or subsequent character in names\n\n"
+                                         L"Used as the first or subsequent character in names\n\n"
                                          L"Keyboard:  '_' or Shift-'-'\n\n"
                                          L"Unicode:  0x005F or 95"},
         {UTF16_ALPHA              , {0}, L"Alpha",
@@ -1890,7 +1890,7 @@ typedef struct tagLANGCHARS
     };
 
 #define LANGCHARS_LENGTH        countof (langChars)
-#define LANGCHARS_NSEPS         12
+#define LANGCHARS_NSEPS         11
 #define LANGCHARS_SEPWIDTH      8
 #define LANGCHARS_LEFTMARGIN    5
 #define LANGCHARS_RIGHTMARGIN   5
@@ -1913,7 +1913,6 @@ typedef struct tagLANGCHARS
     static TOOLINFOW  tti = {0};                // ...
     static LOGFONTW   lfOldTT;                  // For Old TT
     static APLU3264   uTTWidth;                 // Original TT tip width
-    static TTGETTITLE ttgti = {sizeof (ttgti)}; // Tooltip Get Title and Icon struc
 
 ////LCLODSAPI ("LW_RB: ", hWnd, message, wParam, lParam);
     switch (message)
@@ -1979,20 +1978,27 @@ typedef struct tagLANGCHARS
                             // If there's a last outlined char, ...
                             if (uLastCnt NE NOLASTCHAR)
                             {
-                                WCHAR wszText[256];
+                                static WCHAR wszText[1024];
+                                       UINT  uLen;
 
-                                // Create the title text
+                                // Create the tooltip title
                                 wsprintfW (wszText,
-                                           L"%s (%c)",
+                                           L"%s (%c)\n",
                                            langChars[uLastCnt].lpwszTitle,
                                            langChars[uLastCnt].wc);
+                                // Get the title length
+                                uLen = lstrlenW (wszText);
 
-                                // Tell the TT to precede each Tooltip with an info icon
-                                SendMessageW (hWndTT, TTM_SETTITLEW, TTI_INFO, (LPARAM) wszText);
+                                // Append enough underbars to underline the text
+                                //   "- 1" to omit the trailing L'\n'
+                                FillMemoryW (&wszText[uLen], uLen - 1, UTF16_LDC_DB_HORZ);
 
+                                // Append the tooltip text
+                                wsprintfW (&wszText[uLen + uLen - 1],
+                                           L"\n%s",
+                                           langChars[uLastCnt].lpwszTipText);
                                 // Display the tooltip for the last outlined char
-                                //   "+ 2" to skip over the \n\n
-                                lpnmtdi->lpszText = langChars[uLastCnt].lpwszTipText;
+                                lpnmtdi->lpszText = wszText;
                             } // End IF
 
                             break;
@@ -2106,19 +2112,6 @@ typedef struct tagLANGCHARS
                     //   and return the previous width
                     uTTWidth =
                       SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, GetFSIndAveCharSize (FONTENUM_LW)->cx * MAXTIPWIDTHINCHARS);
-
-                    // If this version of Comctl32.dll supports this message, ...
-                    if (fComctl32FileVer >= 6)
-                        // Get the current Tooltip Title and Icon
-                        //   to restore later (WM_MOUSELEAVE)
-                        SendMessageW (hWndTT, TTM_GETTITLE, 0, (LPARAM) &ttgti);
-                    else
-                    {
-                        // Set default values so we may restore later (WM_MOUSELEAVE)
-                        ttgti.uTitleBitmap = TTI_NONE;
-                        ttgti.cch          = 0;
-                        ttgti.pszTitle     = NULL;
-                    } // End IF
 
                     // Get the TT's current font
                     hFontOldTT = (HFONT)
@@ -2266,9 +2259,6 @@ typedef struct tagLANGCHARS
                 // Recreate the original font from its LOGFONTW so we can restore it
                 hFontTmp = MyCreateFontIndirectW (&lfOldTT);
                 SendMessageW (hWndTT, WM_SETFONT, (WPARAM) hFontTmp, MAKELPARAM (FALSE, 0));
-
-                // Restore the old Tooltip icon and text
-                SendMessageW (hWndTT, TTM_SETTITLEW, (WPARAM) ttgti.uTitleBitmap, (LPARAM) ttgti.pszTitle);
 
                 // Restore the old tip width
                 SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, (LPARAM) uTTWidth);

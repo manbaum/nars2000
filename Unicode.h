@@ -63,6 +63,16 @@
 #define UTF16_LDC_LT_VERT_L      0x2524         // LDC light vertical and left
 #define UTF16_LDC_LT_HORZ_D      0x252C         // LDC light horizontal and down
 #define UTF16_LDC_LT_HORZ_U      0x2534         // LDC light horizontal and up
+#define UTF16_LDC_DB_HORZ        0x2550         // LDC double horizontal
+#define UTF16_LDC_DB_VERT        0x2551         // LDC double vertical
+#define UTF16_LDC_DB_UL          0x2554         // LDC double upper left
+#define UTF16_LDC_DB_UR          0x2557         // LDC double upper right
+#define UTF16_LDC_DB_LL          0x255A         // LDC double lower left
+#define UTF16_LDC_DB_LR          0x255D         // LDC double lower right
+#define UTF16_LDC_DB_VERT_R      0x2560         // LDC double vertical and right
+#define UTF16_LDC_DB_VERT_L      0x2563         // LDC double vertical and left
+#define UTF16_LDC_DB_HORZ_D      0x2566         // LDC double horizontal and down
+#define UTF16_LDC_DB_HORZ_U      0x2569         // LDC double horizontal and up
 #define UTF16_LEFTRIGHTARROWS    0x2194         // Left-right arrows
 
 // The alphabet, unshifted

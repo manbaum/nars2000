@@ -67,7 +67,8 @@ LPPL_YYSTYPE SysFnET_EM_YY
     while (lpSISCur
         && lpSISCur->DfnType NE DFNTYPE_FCN
         && lpSISCur->DfnType NE DFNTYPE_OP1
-        && lpSISCur->DfnType NE DFNTYPE_OP2)
+        && lpSISCur->DfnType NE DFNTYPE_OP2
+        && lpSISCur->DfnType NE DFNTYPE_QUADEA)
         lpSISCur = lpSISCur->lpSISPrv;
 
     if (lpSISCur)
@@ -143,7 +144,7 @@ WSFULL_EXIT:
 
 UBOOL SetEventTypeMessage
     (EVENT_TYPES EventType,         // Event type (see EVENT_TYPES)
-     LPAPLCHAR   lpMemMsg,          // Ptr to event message (maybe NULL)
+     LPAPLCHAR   lpMemMsg,          // Ptr to event message (may be NULL)
      LPTOKEN     lptkFunc)          // Ptr to function token
 
 {
@@ -159,14 +160,19 @@ UBOOL SetEventTypeMessage
     while (lpSISCur
         && lpSISCur->DfnType NE DFNTYPE_FCN
         && lpSISCur->DfnType NE DFNTYPE_OP1
-        && lpSISCur->DfnType NE DFNTYPE_OP2)
+        && lpSISCur->DfnType NE DFNTYPE_OP2
+        && lpSISCur->DfnType NE DFNTYPE_QUADEA)
         lpSISCur = lpSISCur->lpSISPrv;
-    if (lpSISCur && lpMemMsg)
-        ErrorMessageIndirectToken (lpMemMsg, lptkFunc);
 
+    // If there's an SIS level, ...
     if (lpSISCur)
     {
-        lpSISCur->EventType = EventType;
+        if (lpMemMsg)
+        {
+            ErrorMessageIndirectToken (lpMemMsg, lptkFunc);
+            lpSISCur->EventType = EVENTTYPE_UNK;
+        } else
+            lpSISCur->EventType = EventType;
 
         return TRUE;
     } else

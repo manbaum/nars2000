@@ -237,8 +237,12 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
     lpwszCompLine[0] = (APLCHAR) aplLongest;
     lpwszCompLine[1] = WC_EOS;
 
-    return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE, lptkFunc);
-
+    return
+      PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine,    // Ptr to text of line to execute
+                                      TRUE,             // TRUE iff we should free lpwszCompLine
+                                      TRUE,             // TRUE iff we should return a NoValue YYRes
+                                      TRUE,             // TRUE iff we should act on errors
+                                      lptkFunc);        // Ptr to function token
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
@@ -305,8 +309,12 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
-    return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE, lptkFunc);
-
+    return
+      PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine,    // Ptr to text of line to execute
+                                      TRUE,             // TRUE iff we should free lpwszCompLine
+                                      TRUE,             // TRUE iff we should return a NoValue YYRes
+                                      TRUE,             // TRUE iff we should act on errors
+                                      lptkFunc);        // Ptr to function token
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
@@ -323,7 +331,9 @@ WSFULL_EXIT:
 
 LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     (LPAPLCHAR lpwszCompLine,           // Ptr to text of line to execute
-     UBOOL     bFreeCompLine,           // TRUE iff we shoudl free lpwszCompLine
+     UBOOL     bFreeCompLine,           // TRUE iff we should free lpwszCompLine
+     UBOOL     bMakeNoValue,            // TRUE iff we should return a NoValue YYRes
+     UBOOL     bActOnErrors,            // TRUE iff we should act on errors
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
@@ -340,8 +350,11 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 
     // Call common function which calls ParseCtrlStruc & ParseLine
     exitType =
-      PrimFnMonUpTackJotCSPLParse (hWndEC, lpMemPTD, lpwszCompLine, lptkFunc);
-
+      PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
+                                   lpMemPTD,        // Ptr to PerTabData struc
+                                   lpwszCompLine,   // Ptr to text of line to execute
+                                   bActOnErrors,    // TRUE iff we shoudl act on errors
+                                   lptkFunc);       // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)
     {
@@ -368,10 +381,16 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
         case EXITTYPE_QUADERROR_INIT:
         case EXITTYPE_QUADERROR_EXEC:
         case EXITTYPE_STOP:
-            // Make a PL_YYSTYPE NoValue entry
-            lpYYRes = MakeNoValue_YY (lptkFunc);
+            // If we should return a NoValue YYRes, ...
+            if (bMakeNoValue)
+            {
+                // Make a PL_YYSTYPE NoValue entry
+                lpYYRes = MakeNoValue_YY (lptkFunc);
 
-            break;
+                break;
+            } // End IF
+
+            // Fall through to error code
 
         case EXITTYPE_NONE:
         case EXITTYPE_ERROR:
@@ -414,6 +433,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     (HWND         hWndEC,               // Edit Ctrl window handle
      LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      LPAPLCHAR    lpwszCompLine,        // Ptr to text of line to execute
+     UBOOL        bActOnErrors,         // TRUE iff we should act on errors
      LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
@@ -482,6 +502,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
                                 &hSigaphore,        // Ptr to semaphore handle to signal
                                  1,                 // Function line # (1 for execute or immexec)
                                  0,                 // Starting token # in the above function line
+                                 bActOnErrors,      // TRUE iff we should act on errors
                                  FALSE);            // TRUE iff executing only one stmt
     // Untokenize the temporary line and free its memory
     Untokenize (hGlbToken);
@@ -521,6 +542,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
      HANDLE      *lphSigaphore,         // Ptr to Semaphore handle to signal (NULL if none)
      UINT         uLineNum,             // Function line #
      UINT         uTknNum,              // Starting token # in the above function line
+     UBOOL        bActOnErrors,         // TRUE iff we should act on errors
      UBOOL        bExec1Stmt)           // TRUE iff executing only one stmt
 
 {
@@ -545,7 +567,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
                  uLineNum,              // Function line # (1 for execute or immexec)
                  uTknNum,               // Starting token # in the above function line
                  NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
-                 TRUE,                  // TRUE iff errors are acted upon
+                 bActOnErrors,          // TRUE iff errors are acted upon
                  bExec1Stmt);           // TRUE iff executing only one stmt
     // Get this thread's LocalVars ptr
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);

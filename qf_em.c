@@ -60,10 +60,12 @@ LPPL_YYSTYPE SysFnEM_EM_YY
 
     // Get ptr to current SIS header
     lpSISCur = lpMemPTD->lpSISCur;
-        while (lpSISCur
+
+    while (lpSISCur
         && lpSISCur->DfnType NE DFNTYPE_FCN
         && lpSISCur->DfnType NE DFNTYPE_OP1
-        && lpSISCur->DfnType NE DFNTYPE_OP2)
+        && lpSISCur->DfnType NE DFNTYPE_OP2
+        && lpSISCur->DfnType NE DFNTYPE_QUADEA)
         lpSISCur = lpSISCur->lpSISPrv;
 
     if (lpSISCur)

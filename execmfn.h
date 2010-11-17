@@ -66,6 +66,7 @@ typedef enum tagMFO
 #define $ENCLOSE        WS_UTF16_LEFTSHOE
 #define $ENCODE         WS_UTF16_DOWNTACK
 #define $EPSILON        WS_UTF16_EPSILON
+#define $EXECUTE        WS_UTF16_UPTACKJOT
 #define $FIRST          WS_UTF16_UPARROW
 #define $FORMAT         WS_UTF16_DOWNTACKJOT
 #define $GE             WS_UTF16_RIGHTCARETUNDERBAR
@@ -89,6 +90,9 @@ typedef enum tagMFO
 #define $NEG            WS_UTF16_OVERBAR
 #define $NOTEQUAL       WS_UTF16_NOTEQUAL
 #define $QUAD           WS_UTF16_QUAD
+#define $QUAD_ALX       WS_UTF16_QUAD L"ALX"
+#define $QUAD_DM        WS_UTF16_QUAD L"DM"
+#define $QUAD_ELX       WS_UTF16_QUAD L"ELX"
 #define $QUAD_ERROR     WS_UTF16_QUAD L"ERROR"
 #define $QUAD_ID        WS_UTF16_QUAD SYSLBL_ID
 #define $QUAD_INV       WS_UTF16_QUAD SYSLBL_INV

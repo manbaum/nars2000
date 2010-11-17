@@ -20,58 +20,59 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-typedef struct tagINTMONINFO        // Internal function line monitoring info
+typedef struct tagINTMONINFO            // Internal function line monitoring info
 {
-    APLINT  IncSubFns,              // 00:  Total time including subfunctions (8 bytes)
-            ExcSubFns;              // 08:  ...        excluding ...          (8 bytes)
-    UINT    Count:30,               // 10:  3FFFFFFF:  # times executed
-            IncActive:1,            //      40000000:  IncSubFns active
-            ExcActive:1;            //      80000000:  ExcSubFns active
-                                    // 14:  Length
+    APLINT  IncSubFns,                  // 00:  Total time including subfunctions (8 bytes)
+            ExcSubFns;                  // 08:  ...        excluding ...          (8 bytes)
+    UINT    Count:30,                   // 10:  3FFFFFFF:  # times executed
+            IncActive:1,                //      40000000:  IncSubFns active
+            ExcActive:1;                //      80000000:  ExcSubFns active
+                                        // 14:  Length
 } INTMONINFO, *LPINTMONINFO;
 
-typedef struct tagEXTMONINFO        // External function line monitoring info
+typedef struct tagEXTMONINFO            // External function line monitoring info
 {
-    APLINT  IncSubFns,              // 00:  Total time including subfunctions (8 bytes)
-            ExcSubFns,              // 08:  ...        excluding ...          (8 bytes)
-            Count;                  // 10:  # times executed                  (8 bytes)
-                                    // 18:  Length
+    APLINT  IncSubFns,                  // 00:  Total time including subfunctions (8 bytes)
+            ExcSubFns,                  // 08:  ...        excluding ...          (8 bytes)
+            Count;                      // 10:  # times executed                  (8 bytes)
+                                        // 18:  Length
 } EXTMONINFO, *LPEXTMONINFO;
 
-typedef struct tagFCNLINE           // Function line structure, one per function line
+typedef struct tagFCNLINE               // Function line structure, one per function line
 {
-    HGLOBAL hGlbTxtLine,            // 00:  Text of the line (APLCHAR) global memory handle
-            hGlbTknLine;            // 04:  Tokenized line (TOKEN)     ...
-    UINT    bStop:1,                // 08:  00000001:  Stop on this line
-            bTrace:1,               //      00000002:  Trace this line
-            bEmpty:1,               //      00000004:  Empty line
-            :29;                    //      FFFFFFF8:  Available bits
-                                    // 0C:  Length
+    HGLOBAL hGlbTxtLine,                // 00:  Text of the line (APLCHAR) global memory handle
+            hGlbTknLine;                // 04:  Tokenized line (TOKEN)     ...
+    UINT    bStop:1,                    // 08:  00000001:  Stop on this line
+            bTrace:1,                   //      00000002:  Trace this line
+            bEmpty:1,                   //      00000004:  Empty line
+            :29;                        //      FFFFFFF8:  Available bits
+                                        // 0C:  Length
 } FCNLINE, *LPFCNLINE;
 
-typedef enum tagDFN_TYPES           // User-Defined Function/Operator Types
+typedef enum tagDFN_TYPES               // User-Defined Function/Operator Types
 {
-    DFNTYPE_UNK = 0,                // 00:  Unknown
-    DFNTYPE_OP1,                    // 01:  Monadic operator
-    DFNTYPE_OP2,                    // 02:  Dyadic operator
-    DFNTYPE_FCN,                    // 03:  Niladic/monadic/dyadic/ambivalent function
-    DFNTYPE_IMM,                    // 04:  Immediate execution
-    DFNTYPE_EXEC,                   // 05:  Execute primitive
-    DFNTYPE_QUAD,                   // 06:  Quad input
-    DFNTYPE_QQUAD,                  // 07:  Quote-Quad input
-                                    // 08-0F:  Available entries (4 bits)
+    DFNTYPE_UNK = 0,                    // 00:  Unknown
+    DFNTYPE_OP1,                        // 01:  Monadic operator
+    DFNTYPE_OP2,                        // 02:  Dyadic operator
+    DFNTYPE_FCN,                        // 03:  Niladic/monadic/dyadic/ambivalent function
+    DFNTYPE_IMM,                        // 04:  Immediate execution
+    DFNTYPE_EXEC,                       // 05:  Execute primitive
+    DFNTYPE_QUAD,                       // 06:  Quad input
+    DFNTYPE_QQUAD,                      // 07:  Quote-Quad input
+    DFNTYPE_QUADEA,                     // 08:  Quad-EA
+                                        // 09-0F:  Available entries (4 bits)
 } DFN_TYPES;
 
 #define cDfnTypeStr     L"?12FIE!@"
 
-typedef enum tagFCN_VALENCES        // User-Defined Function/Operator Valence
+typedef enum tagFCN_VALENCES            // User-Defined Function/Operator Valence
 {
-    FCNVALENCE_NIL = 0,             // 00:  Niladic function
-    FCNVALENCE_MON,                 // 01:  Monadic function/derived function
-    FCNVALENCE_DYD,                 // 02:  Dyadic  ...
-    FCNVALENCE_AMB,                 // 03:  Ambivalent ...
-    FCNVALENCE_IMM,                 // 04:  Immediate execution
-                                    // 05-07:  Available entries (3 bits)
+    FCNVALENCE_NIL = 0,                 // 00:  Niladic function
+    FCNVALENCE_MON,                     // 01:  Monadic function/derived function
+    FCNVALENCE_DYD,                     // 02:  Dyadic  ...
+    FCNVALENCE_AMB,                     // 03:  Ambivalent ...
+    FCNVALENCE_IMM,                     // 04:  Immediate execution
+                                        // 05-07:  Available entries (3 bits)
 } FCN_VALENCES;
 
 typedef enum tagSYSLBL_CON

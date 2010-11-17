@@ -106,20 +106,131 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // right ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht;        // right ...
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL;    // Right ...
+    LPAPLCHAR    lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL;   // ...    right ...
+    APLLONGEST   aplLongestLft,     // Left arg immediate value
+                 aplLongestRht;     // Right ...
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
+    // Create an SIS layer to stop unwinding through this level
+    // Fill in the SIS header for Quad-EA
+    FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
+                NULL,                   // Semaphore handle
+                DFNTYPE_QUADEA,         // DfnType
+                FCNVALENCE_MON,         // FcnValence
+                FALSE,                  // Suspended
+                TRUE,                   // Restartable
+                TRUE);                  // LinkIntoChain
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, NULL, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
 
+    // Check for LEFT & RIGHT RANK ERRORs
+    if (IsMultiRank (aplRankLft))
+        goto LEFT_RANK_EXIT;
+    if (IsMultiRank (aplRankRht))
+        goto RIGHT_RANK_EXIT;
 
+    // Check for LEFT & RIGHT DOMAIN ERRORs
+    if (!IsSimpleChar (aplTypeLft))
+        goto LEFT_DOMAIN_EXIT;
+    if (!IsSimpleChar (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
 
+    // Get the right arg's global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
+    // If it's global, ...
+    if (hGlbRht)
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    else
+        // Point to the immediate value
+        lpMemRht = (LPAPLCHAR) &aplLongestRht;
 
+    // Execute the right arg
+    lpYYRes =
+      PrimFnMonUpTackJotCommon_EM_YY (lpMemRht,     // Ptr to text of line to execute
+                                      FALSE,        // TRUE iff we should free lpwszCompLine
+                                      FALSE,        // TRUE iff we should return a NoValue YYRes
+                                      FALSE,        // TRUE iff we should act on errors
+                                      lptkFunc);    // Ptr to function token
+    // If it succeeded, ...
+    if (lpYYRes)
+        goto NORMAL_EXIT;
 
+    // There was an error, so execute the left arg
 
+    // Get the left arg's global ptrs
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
 
+    // If it's global, ...
+    if (hGlbLft)
+        // Skip over the header and dimensions to the data
+        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    else
+        // Point to the immediate value
+        lpMemLft = (LPAPLCHAR) &aplLongestLft;
 
+    // Execute the left arg
+    lpYYRes =
+      PrimFnMonUpTackJotCommon_EM_YY (lpMemLft,     // Ptr to text of line to execute
+                                      FALSE,        // TRUE iff we should free lpwszCompLine
+                                      TRUE,         // TRUE iff we should return a NoValue YYRes
+                                      TRUE,         // TRUE iff we should act on errors
+                                      lptkFunc);    // Ptr to function token
+    goto NORMAL_EXIT;
 
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (hGlbLft && lpMemLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
+
+    // Unlocalize the STEs on the innermost level
+    //   and strip off one level
+    UnlocalizeSTEs ();
+
+    return lpYYRes;
 } // End SysFnDydEA_EM_YY
 #undef  APPEND_NAME
 

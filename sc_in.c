@@ -389,6 +389,7 @@ UBOOL TransferInverseArr2_EM
       PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
                                    lpMemPTD,    // Ptr to PerTabData global memory
                                    lpwName,     // Ptr to text of line to execute
+                                   TRUE,        // TRUE iff we should act on errors
                                    NULL);       // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)
@@ -529,6 +530,7 @@ UBOOL TransferInverseFcn2_EM
       PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
                                    lpMemPTD,    // Ptr to PerTabData global memory
                                    lpwData,     // Ptr to text of line to execute
+                                   TRUE,        // TRUE iff we should act on errors
                                    NULL);       // Ptr to function token
     Assert (exitType EQ EXITTYPE_NODISPLAY
          || exitType EQ EXITTYPE_NOVALUE
@@ -1059,6 +1061,7 @@ UBOOL TransferInverseNum1_EM
           PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
                                        lpMemPTD,    // Ptr to PerTabData global memory
                                        lpwName,     // Ptr to text of line to execute
+                                       TRUE,        // TRUE iff we should act on errors
                                        NULL);       // Ptr to function token
         Assert (exitType EQ EXITTYPE_NODISPLAY
              || exitType EQ EXITTYPE_ERROR);

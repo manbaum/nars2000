@@ -526,6 +526,7 @@ DWORD WINAPI ImmExecStmtInThread
                           PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
                                                        lpMemPTD,                                // Ptr to PerTabData global memory
                                                        WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                                       TRUE,                                    // TRUE iff we should act on errors
                                                        NULL);                                   // Ptr to function token
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
@@ -565,6 +566,7 @@ DWORD WINAPI ImmExecStmtInThread
                       PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
                                                    lpMemPTD,                                // Ptr to PerTabData global memory
                                                    WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                                   TRUE,                                    // TRUE iff we should act on errors
                                                    NULL);                                   // Ptr to function token
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
@@ -722,6 +724,7 @@ EXIT_TYPES ActOnError
       PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
                                    lpMemPTD,                                // Ptr to PerTabData global memory
                                    WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                   TRUE,                                    // TRUE iff we should act on errors
                                    NULL);                                   // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)

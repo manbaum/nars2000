@@ -8135,6 +8135,7 @@ NORMAL_EXIT:
           PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
                                        lpMemPTD,    // Ptr to PerTabData global memory
                                        lpwszLine,   // Ptr to text of line to execute
+                                       TRUE,        // TRUE iff we should act on errors
                                        NULL);       // Ptr to function token
         // Split cases based upon the exit type
         switch (exitType)
@@ -10327,8 +10328,8 @@ UINT GetEOSIndex
 
         Assert (lpplLocalVars->lptkStart[uCnt + uLen - 1].tkFlags.TknType EQ TKT_SOS);
 
-        if (lpplLocalVars->lptkStart[uCnt].tkCharIndex < tkCharIndex
-         &&                                              tkCharIndex < lpplLocalVars->lptkStart[uCnt + uLen - 1].tkCharIndex)
+        if (lpplLocalVars->lptkStart[uCnt].tkCharIndex <= tkCharIndex
+         &&                                               tkCharIndex < lpplLocalVars->lptkStart[uCnt + uLen - 1].tkCharIndex)
             break;
     } // End FOR
 

@@ -400,7 +400,8 @@ void ErrorMessageDirect
     while (lpSISCur
         && lpSISCur->DfnType NE DFNTYPE_FCN
         && lpSISCur->DfnType NE DFNTYPE_OP1
-        && lpSISCur->DfnType NE DFNTYPE_OP2)
+        && lpSISCur->DfnType NE DFNTYPE_OP2
+        && lpSISCur->DfnType NE DFNTYPE_QUADEA)
         lpSISCur = lpSISCur->lpSISPrv;
 
     // If there's an SIS level, fill in []EM

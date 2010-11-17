@@ -1734,6 +1734,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 PrimFnMonUpTackJotCSPLParse (hWndEC,    // Edit Ctrl window handle
                                              lpMemPTD,  // Ptr to PerTabData global memory
                                              lpwLine,   // Ptr to text of line to execute
+                                             TRUE,      // TRUE iff we should act on errors
                                              NULL);     // Ptr to function token
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 

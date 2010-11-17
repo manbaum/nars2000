@@ -1209,6 +1209,7 @@ UBOOL CS_SELECT_Stmt_EM
                                              NULL,                  // Ptr to Semaphore handle to signal (NULL if none)
                                              tdSOS.Next.uLineNum,   // Function line #
                                              tdSOS.Next.uTknNum,    // Starting token # in the above function line
+                                             TRUE,                  // TRUE iff we should act on errors
                                              TRUE);                 // TRUE iff executing only one stmt
                 // Split cases based upon the exit type
                 switch (exitType)

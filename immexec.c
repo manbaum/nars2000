@@ -86,7 +86,7 @@ VOID CALLBACK WaitForImmExecStmt
 
     // Signal the next level (if appropriate)
     if (lpMemWFSO->hSigaphore)
-        ReleaseSemaphore (lpMemWFSO->hSigaphore, 1, NULL);
+        MyReleaseSemaphore (lpMemWFSO->hSigaphore, 1, NULL);
     else
         DisplayPrompt (lpMemWFSO->hWndEC, 10);
     // We no longer need this ptr
@@ -691,7 +691,7 @@ ERROR_EXIT:
         // If there's an hExitphore pending from a )RESET, release it
         if (bResetAll && lpMemPTD->hExitphore)
             // Start executing at the Tab Delete code
-            ReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
+            MyReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
 
         return exitType;
     } __except (CheckException (GetExceptionInformation (), L"ImmExecStmtInThread"))

@@ -517,7 +517,7 @@ ERROR_EXIT:
 #ifdef DEBUG
         dprintfWL9 (L"~~Releasing semaphore:  %p (%S#%d)", hSigaphore, FNLN);
 #endif
-        ReleaseSemaphore (hSigaphore, 1, NULL);
+        MyReleaseSemaphore (hSigaphore, 1, NULL);
 
         // Release our time slice so the released thread can act
         Sleep (0);

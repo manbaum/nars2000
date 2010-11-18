@@ -9795,10 +9795,10 @@ LPPL_YYSTYPE WaitForInput
 
     // Create a semaphore
     hSemaphore =
-      CreateSemaphoreW (NULL,           // No security attrs
-                        0,              // Initial count (non-signalled)
-                        64*1024,        // Maximum count
-                        NULL);          // No name
+      MyCreateSemaphoreW (NULL,         // No security attrs
+                          0,            // Initial count (non-signalled)
+                          64*1024,      // Maximum count
+                          NULL);        // No name
     // Fill in the SIS header for Quote-Quad/Quad Input Mode
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 hSemaphore,             // Semaphore handle
@@ -9834,7 +9834,7 @@ LPPL_YYSTYPE WaitForInput
     dprintfWL9 (L"~~WaitForSingleObject (EXIT):   %s (%S#%d)", L"WaitForInput", FNLN);
 #endif
     // Close the semaphore handle as it is no longer needed
-    CloseHandle (hSemaphore); hSemaphore = NULL;
+    MyCloseSemaphore (hSemaphore); hSemaphore = NULL;
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level

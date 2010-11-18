@@ -829,10 +829,10 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Create a semaphore
     hSemaphore =
     lpMemPTD->lpSISCur->hSemaphore =
-      CreateSemaphoreW (NULL,           // No security attrs
-                        0,              // Initial count (non-signalled)
-                        64*1024,        // Maximum count
-                        NULL);          // No name
+      MyCreateSemaphoreW (NULL,         // No security attrs
+                          0,            // Initial count (non-signalled)
+                          64*1024,      // Maximum count
+                          NULL);        // No name
 #ifdef DEBUG
     DisplayFcnLine (lpMemDfnHdr->hGlbTxtHdr, lpMemPTD, 0);
 #endif
@@ -1033,7 +1033,7 @@ NEXTLINE:
     DisplayFcnLine (NULL, lpMemPTD, NEG1U);
 #endif
     // Close the semaphore handle as it isn't used anymore
-    CloseHandle (hSemaphore); hSemaphore = lpMemPTD->lpSISCur->hSemaphore = NULL;
+    MyCloseSemaphore (hSemaphore); hSemaphore = lpMemPTD->lpSISCur->hSemaphore = NULL;
 
     // If we're initially resetting through []ERROR/[]ES,
     //   convert to execute resetting

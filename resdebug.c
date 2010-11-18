@@ -28,6 +28,7 @@
 
 #define OBJ_GLBLOCK     15
 #define OBJ_GLBALLOC    16
+#define OBJ_SEMAPHORE   17
 
 
 // ************** DEBUGGING DATA ********************************************
@@ -48,7 +49,8 @@ UINT
  auLinNumENHMETAFILE[MAXOBJ],               // 13
  auLinNumCOLORSPACE [MAXOBJ],               // 14
  auLinNumGLBLOCK    [MAXOBJ],               // 15
- auLinNumGLBALLOC   [MAXOBJ];               // 16
+ auLinNumGLBALLOC   [MAXOBJ],               // 16
+ auLinNumSEMAPHORE  [MAXOBJ];               // 17
 
 UINT *lpaauLinNum[] =
 {&auLinNumPEN        [0],                   //  1
@@ -67,6 +69,7 @@ UINT *lpaauLinNum[] =
  &auLinNumCOLORSPACE [0],                   // 14
  &auLinNumGLBLOCK    [0],                   // 15
  &auLinNumGLBALLOC   [0],                   // 16
+ &auLinNumSEMAPHORE  [0],                   // 17
 };
 
 int
@@ -85,7 +88,8 @@ int
  iCountENHMETAFILE = 0,                     // 13
  iCountCOLORSPACE  = 0,                     // 14
  iCountGLBLOCK     = 0,                     // 15
- iCountGLBALLOC    = 0;                     // 16
+ iCountGLBALLOC    = 0,                     // 16
+ iCountSEMAPHORE   = 0;                     // 17
 
 int *lpiaCount[] =
 {&iCountPEN        ,                        //  1
@@ -104,6 +108,7 @@ int *lpiaCount[] =
  &iCountCOLORSPACE ,                        // 14
  &iCountGLBLOCK    ,                        // 15
  &iCountGLBALLOC   ,                        // 16
+ &iCountSEMAPHORE  ,                        // 17
 };
 
 HANDLE
@@ -122,7 +127,8 @@ HANDLE
  ahENHMETAFILE [MAXOBJ],                    // 13
  ahCOLORSPACE  [MAXOBJ],                    // 14
  ahGLBLOCK     [MAXOBJ],                    // 15
- ahGLBALLOC    [MAXOBJ];                    // 16
+ ahGLBALLOC    [MAXOBJ],                    // 16
+ ahSEMAPHORE   [MAXOBJ];                    // 17
 
 HANDLE *lpaah[] =
 {&ahPEN        [0],                         //  1
@@ -141,11 +147,13 @@ HANDLE *lpaah[] =
  &ahCOLORSPACE [0],                         // 14
  &ahGLBLOCK    [0],                         // 15
  &ahGLBALLOC   [0],                         // 16
+ &ahSEMAPHORE  [0],                         // 17
 };
 
 LPCHAR
  lpaFileNameGLBLOCK     [MAXOBJ],           // 15
- lpaFileNameGLBALLOC    [MAXOBJ];           // 16
+ lpaFileNameGLBALLOC    [MAXOBJ],           // 16
+ lpaFileNameSEMAPHORE   [MAXOBJ];           // 17
 
 LPCHAR *lpaaFileName[] =
 {
@@ -165,6 +173,7 @@ LPCHAR *lpaaFileName[] =
  NULL,                                      // 14
  &lpaFileNameGLBLOCK[0],                    // 15
  &lpaFileNameGLBALLOC[0],                   // 16
+ &lpaFileNameSEMAPHORE[0],                  // 17
 };
 
 
@@ -349,6 +358,40 @@ void _LastTouch
                   lpaaFileName[OBJ_GLBALLOC - 1][j],
                   lpaauLinNum [OBJ_GLBALLOC - 1][j]);
 } // End _LastTouch
+
+
+//***************************************************************************
+//  $MyCloseSemaphore
+//
+//  Close a semaphore
+//***************************************************************************
+
+UBOOL _MyCloseSemaphore
+    (HANDLE hSemaphore,                             // Semaphore handle
+     UINT   uLine)                                  // Line #
+
+{
+    UBOOL bRet;
+    char  szTemp[1024];
+
+    bRet =
+      CloseHandle (hSemaphore);                     // Semaphore handle
+    if (!bRet)
+    {
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
+        MBC (szTemp);
+        DbgBrk ();
+    } else
+        _DeleObj (OBJ_SEMAPHORE, hSemaphore);
+
+    return bRet;
+} // _MyCloseSemaphore
 
 
 //***************************************************************************
@@ -593,6 +636,47 @@ HRGN _MyCreateRectRgnIndirect
 
     return hRgn;
 } // _MyCreateRectRgnIndirect
+
+
+//***************************************************************************
+//  $MyCreateSemaphoreW
+//
+//  Create a semaphore
+//***************************************************************************
+
+HANDLE _MyCreateSemaphoreW
+    (LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,   // Ptr to security attributes (may be NULL)
+     LONG                  lInitialCount,           // Initial count
+     LONG                  lMaximumCount,           // Maximum count
+     LPWSTR                lpName,                  // Ptr to name (may be NULL)
+     LPCHAR                lpFileName,              // Ptr to filename
+     UINT                  uLine)                   // Line #
+
+{
+    HANDLE hSemaphore;
+    char   szTemp[1024];
+
+    hSemaphore =
+      CreateSemaphoreW (lpSemaphoreAttributes,      // Ptr to security attributes (may be NULL)
+                        lInitialCount,              // Initial count
+                        lMaximumCount,              // Maximum count
+                        lpName);                    // Ptr to name (may be NULL)
+    if (!hSemaphore)
+    {
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
+        MBC (szTemp);
+        DbgBrk ();
+    } else
+        _SaveObj (OBJ_SEMAPHORE, hSemaphore, lpFileName, uLine);
+
+    return hSemaphore;
+} // _MyCreateSemaphoreW
 
 
 //***************************************************************************
@@ -882,6 +966,43 @@ UBOOL _MyReleaseDC
 
     return bRet;
 } // _MyReleaseDC
+
+
+//***************************************************************************
+//  $MyReleaseSemaphore
+//
+//  Release a semaphore
+//***************************************************************************
+
+UBOOL _MyReleaseSemaphore
+    (HANDLE hSemaphore,                             // Semaphore handle
+     LONG   lReleaseCount,                          // Release count
+     LPLONG lpPreviousCount,                        // Ptr to previous count (may be NULL)
+     UINT   uLine)                                  // Line #
+
+{
+    UBOOL bRet;
+    char  szTemp[1024];
+
+    bRet =
+      ReleaseSemaphore (hSemaphore,                 // Semaphore handle
+                        lReleaseCount,              // Release count
+                        lpPreviousCount);           // Ptr to previous count (may be NULL)
+    if (!bRet)
+    {
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
+        MBC (szTemp);
+        DbgBrk ();
+    } // End IF
+
+    return bRet;
+} // _MyReleaseSemaphore
 
 
 //***************************************************************************

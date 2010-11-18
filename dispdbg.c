@@ -28,8 +28,13 @@
 #ifdef DEBUG
 // Resource debugging variables
 extern HANDLE ahGLBALLOC[MAXOBJ];
+extern HANDLE ahSEMAPHORE[MAXOBJ];
+
 extern UINT auLinNumGLBALLOC[MAXOBJ];
+extern UINT auLinNumSEMAPHORE[MAXOBJ];
+
 extern LPCHAR lpaFileNameGLBALLOC[MAXOBJ];
+extern LPCHAR lpaFileNameSEMAPHORE[MAXOBJ];
 #endif
 
 
@@ -430,6 +435,7 @@ void DisplayGlobals
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
     IMM_TYPES    immType;           // Immediate type of the incoming array
+    UBOOL        uValid;            // TRUE iff the value is valid
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -741,6 +747,25 @@ void DisplayGlobals
 #undef  MAX_VAL_LEN
 
     DbgMsgW (L"********** End Globals *********************************");
+
+////DbgMsgW (L"********** Semaphores **********************************");
+
+    for (uValid = FALSE, i = 0; i < MAXOBJ; i++)
+    if (hGlb = ahSEMAPHORE[i])
+    {
+        wsprintfW (wszTemp,
+                   L"hGlb=%p                                               (%S#%4d)",
+                   hGlb,
+                   lpaFileNameSEMAPHORE[i],
+                   auLinNumSEMAPHORE[i]);
+        DbgMsgW (wszTemp);
+
+        // Mark as valid
+        uValid = TRUE;
+    } // End FOR/IF
+
+    if (uValid)
+        DbgMsgW (L"********** End Semaphores ******************************");
 
     UpdateDBWindow ();
 } // End DisplayGlobals

@@ -476,7 +476,7 @@ void DisplayPrompt
     if (lpMemPTD->hExitphore)
     {
         // Start executing at the Tab Delete code
-        ReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
+        MyReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
 
         return;
     } // End IF
@@ -638,7 +638,7 @@ NORMAL_EXIT:
         dprintfWL9 (L"~~Releasing semaphore:  %p (%S#%d)", lpMemPTD->lpSISCur->hSemaphore, FNLN);
 #endif
         // Signal WaitForInput that we have a result
-        ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
+        MyReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
 
         // Release our time slice so the released thread can act
         Sleep (0);
@@ -1612,7 +1612,7 @@ NORMAL_EXIT:
                     {
                         // If there's a delay active, signal it
                         if (lpMemPTD->hSemaDelay)
-                            ReleaseSemaphore (lpMemPTD->hSemaDelay, 1, NULL);
+                            MyReleaseSemaphore (lpMemPTD->hSemaDelay, 1, NULL);
                         else
                             lpMemPTD->lpPLCur->bCtrlBreak = TRUE;
                     } // End IF

@@ -56,7 +56,7 @@ UBOOL CmdReset_EM
         lpMemPTD->ImmExecExitType = EXITTYPE_RESET_ALL;
 
         // Signal the next layer to begin resetting
-        ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
+        MyReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
     } // End IF
 
     return TRUE;

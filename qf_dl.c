@@ -124,10 +124,10 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
 
     // Create a semaphore so we can be interrupted
     lpMemPTD->hSemaDelay =
-      CreateSemaphoreW (NULL,           // No security attrs
-                        0,              // Initial count (non-signalled)
-                        64*1024,        // Maximum count
-                        NULL);          // No name
+      MyCreateSemaphoreW (NULL,         // No security attrs
+                          0,            // Initial count (non-signalled)
+                          64*1024,      // Maximum count
+                          NULL);        // No name
     // Get the current tick count so we can subtract it from the next tick count
     dwTickCount = GetTickCount ();
 
@@ -139,7 +139,7 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
     dwTickCount = GetTickCount () - dwTickCount;
 
     // Close the semaphore handle as it is no longer needed
-    CloseHandle (lpMemPTD->hSemaDelay); lpMemPTD->hSemaDelay = NULL;
+    MyCloseSemaphore (lpMemPTD->hSemaDelay); lpMemPTD->hSemaDelay = NULL;
 
     // Convert from DWORD milliseconds to float seconds
     aplFloatRht = ((APLFLOAT) dwTickCount) / 1000;

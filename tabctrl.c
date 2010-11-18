@@ -910,10 +910,10 @@ void FreeGlobalStorage
 
             // Create a semaphore for ourselves
             lpMemPTD->hExitphore =
-              CreateSemaphoreW (NULL,           // No security attrs
-                                0,              // Initial count (non-signalled)
-                                64*1024,        // Maximum count
-                                NULL);          // No name
+              MyCreateSemaphoreW (NULL,         // No security attrs
+                                  0,            // Initial count (non-signalled)
+                                  64*1024,      // Maximum count
+                                  NULL);        // No name
             // Call )RESET
             CmdReset_EM (L"");
 #ifdef DEBUG
@@ -926,7 +926,7 @@ void FreeGlobalStorage
             dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
 #endif
             // Close the semaphore handle as it isn't used anymore
-            CloseHandle (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
+            MyCloseSemaphore (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
         } // End IF
 
         // Get a ptr to the HTS

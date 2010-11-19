@@ -127,6 +127,7 @@ void ExpungeError
 
 {
     APLUINT   uQuadPW;              // []PW
+    APLCHAR   aplChar;              // Temporary character
 
     // Get the current value of []PW
     uQuadPW = GetQuadPW ();
@@ -153,9 +154,16 @@ void ExpungeError
         *lpiNotErasedWidth += 2;
     } // End IF
 
+    // Save and zap the char after the name
+    aplChar = lpwGlbName[iLen];
+    lpwGlbName[iLen] = WC_EOS;
+
     // Output the STE name
     AppendLine (lpwGlbName, TRUE, FALSE);
     *lpiNotErasedWidth += iLen;
+
+    // Restore the char we zapped
+    lpwGlbName[iLen] = aplChar;
 } // End ExpungeError
 
 

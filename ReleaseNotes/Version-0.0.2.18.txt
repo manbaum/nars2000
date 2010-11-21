@@ -1,6 +1,21 @@
 Version 0.0.2.18 consists of the following Builds:
 
 
+Build #758 -- Version 0.0.2.18
+------------------------------
+
+* Fix Bug:  PSDFs With a Nested Scalar Argument Micompute Its Index
+
+Directory trunk:
+
+PRIMFNS.C:
+PRIMSPEC.C:
+  In <PrimFnDydSimpNest_EM>, <PrimFnDydNestSimp_EM>, <CalcLftRhtArgIndices>,
+    and <MakeDydPrototype_EM_PTB>, if the smaller rank argument is a nested
+    scalar, the index into it is incorrectly calculated followed shortly by
+    mayhem.
+
+
 Build #757 -- Version 0.0.2.18
 ------------------------------
 

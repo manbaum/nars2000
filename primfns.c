@@ -1325,11 +1325,11 @@ HGLOBAL MakeDydPrototype_EM_PTB
                     //   with the smaller rank
                     if (aplRankLft < aplRankRht)
                     {
-                        uLft = uArg;
+                        uLft = uArg * !IsScalar (aplRankLft);
                         uRht = uRes;
                     } else
                     {
-                        uRht = uArg;
+                        uRht = uArg * !IsScalar (aplRankRht);
                         uLft = uRes;
                     } // End IF/ELSE
                 } else
@@ -2492,15 +2492,15 @@ UBOOL CheckRankLengthError_EM
         // If axis full (or no axis) and ranks the same, ...
         if (aplRankLft EQ aplRankRht)
         {
-            // Check for OUTER LENGTH ERROR
-            for (uRes = 0; uRes < (APLRANKSIGN) aplRankRes; uRes++)
-            if ((VarArrayBaseToDim (lpMemLft))[uRes] !=
-                (VarArrayBaseToDim (lpMemRht))[uRes])
-            {
-                uRes = (APLINT) -1; // Mark as in error
+                // Check for OUTER LENGTH ERROR
+                for (uRes = 0; uRes < (APLRANKSIGN) aplRankRes; uRes++)
+                if ((VarArrayBaseToDim (lpMemLft))[uRes] !=
+                    (VarArrayBaseToDim (lpMemRht))[uRes])
+                {
+                    uRes = (APLINT) -1; // Mark as in error
 
-                break;
-            } // End FOR/IF
+                    break;
+                } // End FOR/IF
         } else
             uRes = (APLINT) -1; // Mark as in error (unequal ranks w/o axis)
 

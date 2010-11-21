@@ -2060,11 +2060,11 @@ UBOOL PrimFnDydSimpNest_EM
                 //   with the smaller rank
                 if (aplRankLft < aplRankRht)
                 {
-                    uLft = uArg;
+                    uLft = uArg * !IsScalar (aplRankLft);
                     uRht = uRes;
                 } else
                 {
-                    uRht = uArg;
+                    uRht = uArg * !IsScalar (aplRankRht);
                     uLft = uRes;
                 } // End IF/ELSE
             } else
@@ -2430,11 +2430,11 @@ UBOOL PrimFnDydNestSimp_EM
                 //   with the smaller rank
                 if (aplRankLft < aplRankRht)
                 {
-                    uLft = uArg;
+                    uLft = uArg * !IsScalar (aplRankLft);
                     uRht = uRes;
                 } else
                 {
-                    uRht = uArg;
+                    uRht = uArg * !IsScalar (aplRankRht);
                     uLft = uRes;
                 } // End IF/ELSE
             } else
@@ -7387,11 +7387,11 @@ void CalcLftRhtArgIndices
     //   with the smaller rank
     if (aplRankLft < aplRankRht)
     {
-        *lpuLft = uArg;
+        *lpuLft = uArg * !IsScalar (aplRankLft);
         *lpuRht = uRes;
     } else
     {
-        *lpuRht = uArg;
+        *lpuRht = uArg * !IsScalar (aplRankRht);
         *lpuLft = uRes;
     } // End IF/ELSE
 } // End CalcLftRhtArgIndices

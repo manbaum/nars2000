@@ -4194,6 +4194,12 @@ void InsRepCharStr
             uStrLen;        // Incoming string length
     UBOOL   bSelection;     // TRUE iff there is a selection
 
+    // Ignore invalid window handles
+    //   (e.g., click in Debug Window and then Language Bar
+    //    with no valid active EC)
+    if (hWnd EQ NULL)
+        return;
+
     Assert (IzitEC (hWnd));
 
     // Get the handle of the parent window (SM/FE)

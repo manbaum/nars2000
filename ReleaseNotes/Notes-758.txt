@@ -1,7 +1,7 @@
 Build #758 -- Version 0.0.2.18
 ------------------------------
 
-* Fix Bug:  PSDFs With a Nested Scalar Argument Micompute Its Index
+* Fix Bug:  PSDFs With a Nested Scalar Argument Miscompute Its Index
 
 Directory trunk:
 

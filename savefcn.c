@@ -1875,39 +1875,44 @@ UBOOL GetSpecialLabelNums
                 // stData is an LPSYMENTRY
                 Assert (GetPtrTypeDir (lptkLine[1].tkData.tkSym) EQ PTRTYPE_STCONST);
 
-                // Get the Name's global memory handle
-                hGlbName = lptkLine[1].tkData.tkSym->stHshEntry->htGlbName;
+                // If the stHshEntry is valid, ...
+                //   (might not be if the System Label is mispelled)
+                if (lptkLine[1].tkData.tkSym->stHshEntry)
+                {
+                    // Get the Name's global memory handle
+                    hGlbName = lptkLine[1].tkData.tkSym->stHshEntry->htGlbName;
 
-                // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (hGlbName);
+                    // Lock the memory to get a ptr to it
+                    lpMemName = MyGlobalLock (hGlbName);
 
-                if (lstrcmpiW (lpMemName, $QUAD_ID ) EQ 0)
-                {
-                    if (lpMemDfnHdr->nSysLblId )
-                        goto ERROR_EXIT;
-                    lpMemDfnHdr->nSysLblId  = uLineNum + 1;
-                } else
-                if (lstrcmpiW (lpMemName, $QUAD_INV) EQ 0)
-                {
-                    if (lpMemDfnHdr->nSysLblInv)
-                        goto ERROR_EXIT;
-                    lpMemDfnHdr->nSysLblInv = uLineNum + 1;
-                } else
-                if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
-                {
-                    if (lpMemDfnHdr->nSysLblPro)
-                        goto ERROR_EXIT;
-                    lpMemDfnHdr->nSysLblPro = uLineNum + 1;
-                } else
-                if (lstrcmpiW (lpMemName, $QUAD_SGL) EQ 0)
-                {
-                    if (lpMemDfnHdr->nSysLblSgl)
-                        goto ERROR_EXIT;
-                    lpMemDfnHdr->nSysLblSgl = uLineNum + 1;
-                } // End IF/ELSE/...
+                    if (lstrcmpiW (lpMemName, $QUAD_ID ) EQ 0)
+                    {
+                        if (lpMemDfnHdr->nSysLblId )
+                            goto ERROR_EXIT;
+                        lpMemDfnHdr->nSysLblId  = uLineNum + 1;
+                    } else
+                    if (lstrcmpiW (lpMemName, $QUAD_INV) EQ 0)
+                    {
+                        if (lpMemDfnHdr->nSysLblInv)
+                            goto ERROR_EXIT;
+                        lpMemDfnHdr->nSysLblInv = uLineNum + 1;
+                    } else
+                    if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
+                    {
+                        if (lpMemDfnHdr->nSysLblPro)
+                            goto ERROR_EXIT;
+                        lpMemDfnHdr->nSysLblPro = uLineNum + 1;
+                    } else
+                    if (lstrcmpiW (lpMemName, $QUAD_SGL) EQ 0)
+                    {
+                        if (lpMemDfnHdr->nSysLblSgl)
+                            goto ERROR_EXIT;
+                        lpMemDfnHdr->nSysLblSgl = uLineNum + 1;
+                    } // End IF/ELSE/...
 
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                } // End IF
             } // End IF
         } // End IF
 

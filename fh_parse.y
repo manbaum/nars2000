@@ -883,11 +883,11 @@ void fh_yyfprintf
 
 {
 #if (defined (DEBUG)) && (defined (YYFPRINTF_DEBUG))
-    va_list vl;
-    int     i1,
-            i2,
-            i3;
-    static char szTemp[256] = {'\0'};
+    va_list  vl;
+    APLU3264 i1,
+             i2,
+             i3;
+    static  char szTemp[256] = {'\0'};
 
     va_start (vl, lpszFmt);
 
@@ -896,9 +896,9 @@ void fh_yyfprintf
     //   as using va_arg in the argument list to
     //   wsprintf pushes the arguments in reverse
     //   order.
-    i1 = va_arg (vl, int);
-    i2 = va_arg (vl, int);
-    i3 = va_arg (vl, int);
+    i1 = va_arg (vl, APLU3264);
+    i2 = va_arg (vl, APLU3264);
+    i3 = va_arg (vl, APLU3264);
 
     va_end (vl);
 

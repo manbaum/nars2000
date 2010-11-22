@@ -74,7 +74,7 @@ UBOOL CmdErase_EM
             if (lpSymEntry)
             {
                 // Attempt to expunge the global value
-                if (!ExpungeName (GetGlobalSTE (lpSymEntry)))
+                if (!ExpungeName (GetGlobalSTE (lpSymEntry), TRUE))
                 {
                     HGLOBAL   htGlbName;            // STE name global memory handle
                     LPAPLCHAR lpwGlbName;           // Ptr to STE name

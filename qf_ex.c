@@ -197,7 +197,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
             // If found, attempt to expunge the name
             // If not found, return a one if it's a valid name, zero otherwise
             if (lpSymEntry)
-                *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
+                *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
             else
                 *lpMemDataRes |= (IsValidName ((LPAPLCHAR) &aplLongestRht,
                                                1)) << uBitIndex;
@@ -232,7 +232,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                     // If found, attempt to expunge the name
                     // If not found, return a one if it's a valid name, zero otherwise
                     if (lpSymEntry)
-                        *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
+                        *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
                     else
                         *lpMemDataRes |= (IsValidName (lpMemDataStart,
                                                       (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart))) << uBitIndex;
@@ -272,7 +272,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                 // If found, attempt to expunge the name
                 // If not found, return a one if it's a valid name, zero otherwise
                 if (lpSymEntry)
-                    *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
+                    *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
                 else
                     *lpMemDataRes |= (IsValidName (lpMemDataStart,
                                                    (APLU3264) (aplNELMCol - uCol))) << uBitIndex;
@@ -358,28 +358,43 @@ NORMAL_EXIT:
 //***************************************************************************
 
 APLBOOL ExpungeName
-    (LPSYMENTRY lpSymEntry)         // Ptr to the Symbol Table Entry
+    (LPSYMENTRY lpSymEntry,         // Ptr to the Symbol Table Entry
+     UBOOL      bGlobalName)        // TRUE iff we should free the global value of []EM
 
 {
-    UBOOL bQuadDM;
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    HGLOBAL     *lphGlbQuadEM;      // Ptr to active hGlbQuadEM (in either lpSISCur or lpMemPTD)
+    UBOOL        bQuadDM,           // TRUE iff the name is []DM
+                 bQuadEM;           // ...                  []EM
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Check for eraseability
-    if (!EraseableName (lpSymEntry, &bQuadDM))
+    if (!EraseableName (lpSymEntry, &bQuadDM, &bQuadEM))
         return 0;
 
     // If it's []DM, ...
     if (bQuadDM)
     {
-        LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-
-        // Get ptr to PerTabData global memory
-        lpMemPTD = GetMemPTD ();
-
         // Out with the old
         FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
 
         // In with the new
         lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+    } else
+    // If it's []EM, ...
+    if (bQuadEM)
+    {
+        // Get a ptr to either the global (in lpMemPTD)
+        lphGlbQuadEM = bGlobalName ? &lpMemPTD->hGlbQuadEM
+        //                           or the active hGlbQuadEM (in either lpSISCur or lpMemPTD)
+                                   : GetPtrQuadEM (lpMemPTD);
+        // Out wth the old
+        FreeResultGlobalVar (*lphGlbQuadEM); *lphGlbQuadEM = NULL;
+
+        // In with the new
+        *lphGlbQuadEM = hGlbQuadEM_DEF;
     } else
     {
         // If the STE is not immediate and has a value, ...
@@ -433,7 +448,8 @@ void EraseSTE
 
 APLBOOL EraseableName
     (LPSYMENTRY lpSymEntry,     // Ptr to SYMENTRY of name
-     LPUBOOL    lpbQuadDM)      // Ptr to return flag of TRUE iff the name if []DM
+     LPUBOOL    lpbQuadDM,      // Ptr to return flag of TRUE iff the name if []DM
+     LPUBOOL    lpbQuadEM)      // ...                                        []EM
 
 {
     HGLOBAL   htGlbName;        // Name global memory handle
@@ -472,9 +488,13 @@ APLBOOL EraseableName
                 // Save flag of whether or not the name is []DM
                 *lpbQuadDM = lstrcmpiW (lpMemName, WS_QUADDM) EQ 0;
 
+                // Save flag of whether or not the name is []EM
+                *lpbQuadEM = lstrcmpiW (lpMemName, WS_QUADEM) EQ 0;
+
                 // Not if it's a system name
-                //   but []DM is ok
+                //   but []DM and []EM are ok
                 bRet = (*lpbQuadDM
+                     || *lpbQuadEM
                      || !IsSysName (lpMemName));
             } // End IF
 

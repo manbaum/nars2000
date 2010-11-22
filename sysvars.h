@@ -43,6 +43,7 @@
 #define DEF_QUADLX_CWS      L""
 #define DEF_QUADLX_GLB      hGlbV0Char
 #define WS_QUADDM           WS_UTF16_QUAD L"DM"
+#define WS_QUADEM           WS_UTF16_QUAD L"EM"
 #define DEF_QUADALX_CWS     WS_QUADDM
 #define DEF_QUADELX_CWS     WS_QUADDM
 #define DEF_QUADALX_CWS_BR  L"{quad}DM"         // The braces form of DEF_QUADALX_CWS

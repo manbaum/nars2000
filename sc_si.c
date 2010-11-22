@@ -104,7 +104,7 @@ UBOOL CmdSiSinlCom_EM
         {
             case DFNTYPE_IMM:
 #ifdef DEBUG
-                // If it's not CmsSave_EM, ...
+                // If it's not CmdSave_EM, ...
                 if (lpMemSaveWSID EQ NULL)
                 {
                     AppendLine (WS_UTF16_IOTA, FALSE, TRUE);
@@ -123,7 +123,7 @@ UBOOL CmdSiSinlCom_EM
                 // Lock the memory to get a ptr to it
                 lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 
-                // If it's CmsSave_EM, ...
+                // If it's CmdSave_EM, ...
                 if (lpMemSaveWSID)
                     // Format the text as an ASCII string with non-ASCII chars
                     //   represented as either {symbol} or {\xXXXX} where XXXX is
@@ -139,7 +139,7 @@ UBOOL CmdSiSinlCom_EM
                 // We no longer need this ptr
                 MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
 
-                // If it's not CmsSave_EM, ...
+                // If it's not CmdSave_EM, ...
                 if (lpMemSaveWSID EQ NULL)
                     // Display the function name & line #
                     AppendLine (lpwszTemp, FALSE, !bSINL);
@@ -209,7 +209,7 @@ UBOOL CmdSiSinlCom_EM
                 break;
 
             case DFNTYPE_EXEC:
-                // If it's not CmsSave_EM, ...
+                // If it's not CmdSave_EM, ...
                 if (lpMemSaveWSID EQ NULL)
                     AppendLine (WS_UTF16_UPTACKJOT, FALSE, TRUE);
                 else
@@ -220,7 +220,7 @@ UBOOL CmdSiSinlCom_EM
                 break;
 
             case DFNTYPE_QUAD:
-                // If it's not CmsSave_EM, ...
+                // If it's not CmdSave_EM, ...
                 if (lpMemSaveWSID EQ NULL)
                     AppendLine (WS_UTF16_QUAD, FALSE, TRUE);
                 else

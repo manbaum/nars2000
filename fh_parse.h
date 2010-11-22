@@ -59,7 +59,7 @@ typedef enum tagDFN_TYPES               // User-Defined Function/Operator Types
     DFNTYPE_EXEC,                       // 05:  Execute primitive
     DFNTYPE_QUAD,                       // 06:  Quad input
     DFNTYPE_QQUAD,                      // 07:  Quote-Quad input
-    DFNTYPE_QUADEA,                     // 08:  Quad-EA
+    DFNTYPE_ERRCTRL,                    // 08:  Error control via Quad-EA/-EC
                                         // 09-0F:  Available entries (4 bits)
 } DFN_TYPES;
 

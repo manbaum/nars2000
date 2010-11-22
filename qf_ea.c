@@ -126,11 +126,14 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
     // Fill in the SIS header for Quad-EA
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 NULL,                   // Semaphore handle
-                DFNTYPE_QUADEA,         // DfnType
+                DFNTYPE_ERRCTRL,        // DfnType
                 FCNVALENCE_MON,         // FcnValence
                 FALSE,                  // Suspended
                 TRUE,                   // Restartable
                 TRUE);                  // LinkIntoChain
+    // Fill in the non-default SIS header entries
+////lpMemPTD->lpSISCur->ItsEC = FALSE;  // Already zero from FillSISNxt
+
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, NULL, &aplRankLft, NULL);
@@ -165,6 +168,7 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
                                       FALSE,        // TRUE iff we should free lpwszCompLine
                                       FALSE,        // TRUE iff we should return a NoValue YYRes
                                       FALSE,        // TRUE iff we should act on errors
+                                      NULL,         // Ptr to return EXITTYPE_xxx (may be NULL)
                                       lptkFunc);    // Ptr to function token
     // If it succeeded, ...
     if (lpYYRes)
@@ -189,6 +193,7 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
                                       FALSE,        // TRUE iff we should free lpwszCompLine
                                       TRUE,         // TRUE iff we should return a NoValue YYRes
                                       TRUE,         // TRUE iff we should act on errors
+                                      NULL,         // Ptr to return EXITTYPE_xxx (may be NULL)
                                       lptkFunc);    // Ptr to function token
     goto NORMAL_EXIT;
 

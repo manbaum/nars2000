@@ -394,6 +394,7 @@ UBOOL TransferInverseArr2_EM
     // Split cases based upon the exit type
     switch (exitType)
     {
+        case EXITTYPE_DISPLAY:
         case EXITTYPE_NODISPLAY:
             // If the Execute/Quad result is present, free it
             if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)

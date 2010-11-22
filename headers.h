@@ -51,6 +51,7 @@
 #include "tokenize.h"
 #include "execmfn.h"
 #include "dictionary.h"
+#include "eventtypes.h"
 #include "pertab.h"
 #include "threads.h"
 #include "savefcn.h"
@@ -61,7 +62,6 @@
 #include "sis.h"
 #include "editctrl.h"
 #include "termcode.h"
-#include "eventtypes.h"
 #include "qf.h"
 #include "fmtspec.h"
 

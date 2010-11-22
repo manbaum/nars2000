@@ -242,6 +242,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
                                       TRUE,             // TRUE iff we should free lpwszCompLine
                                       TRUE,             // TRUE iff we should return a NoValue YYRes
                                       TRUE,             // TRUE iff we should act on errors
+                                      NULL,             // Ptr to return EXITTYPE_xxx (may be NULL)
                                       lptkFunc);        // Ptr to function token
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -314,6 +315,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
                                       TRUE,             // TRUE iff we should free lpwszCompLine
                                       TRUE,             // TRUE iff we should return a NoValue YYRes
                                       TRUE,             // TRUE iff we should act on errors
+                                      NULL,             // Ptr to return EXITTYPE_xxx (may be NULL)
                                       lptkFunc);        // Ptr to function token
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -330,11 +332,12 @@ WSFULL_EXIT:
 //***************************************************************************
 
 LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
-    (LPAPLCHAR lpwszCompLine,           // Ptr to text of line to execute
-     UBOOL     bFreeCompLine,           // TRUE iff we should free lpwszCompLine
-     UBOOL     bMakeNoValue,            // TRUE iff we should return a NoValue YYRes
-     UBOOL     bActOnErrors,            // TRUE iff we should act on errors
-     LPTOKEN   lptkFunc)                // Ptr to function token
+    (LPAPLCHAR   lpwszCompLine,     // Ptr to text of line to execute
+     UBOOL       bFreeCompLine,     // TRUE iff we should free lpwszCompLine
+     UBOOL       bMakeNoValue,      // TRUE iff we should return a NoValue YYRes
+     UBOOL       bActOnErrors,      // TRUE iff we should act on errors
+     LPEXITTYPES lpExitType,        // Ptr to return EXITTYPE_xxx (may be NULL)
+     LPTOKEN     lptkFunc)          // Ptr to function token
 
 {
     LPPL_YYSTYPE   lpYYRes;         // Ptr to the result
@@ -351,7 +354,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     // Call common function which calls ParseCtrlStruc & ParseLine
     exitType =
       PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
-                                   lpMemPTD,        // Ptr to PerTabData struc
+                                   lpMemPTD,        // Ptr to PerTabData global memory
                                    lpwszCompLine,   // Ptr to text of line to execute
                                    bActOnErrors,    // TRUE iff we shoudl act on errors
                                    lptkFunc);       // Ptr to function token
@@ -412,6 +415,10 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     {
         MyVirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
     } // End IF
+
+    // If the caller wants the EXITTYPE_xxx, ...
+    if (lpExitType)
+        *lpExitType = exitType;
 
     return lpYYRes;
 } // PrimFnMonUpTackJotCommon_EM_YY

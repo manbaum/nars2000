@@ -45,7 +45,6 @@ LPPL_YYSTYPE SysFnEM_EM_YY
 
 {
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
     HGLOBAL      hGlbRes = NULL;    // Result ...
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
@@ -58,20 +57,8 @@ LPPL_YYSTYPE SysFnEM_EM_YY
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // Get ptr to current SIS header
-    lpSISCur = lpMemPTD->lpSISCur;
-
-    while (lpSISCur
-        && lpSISCur->DfnType NE DFNTYPE_FCN
-        && lpSISCur->DfnType NE DFNTYPE_OP1
-        && lpSISCur->DfnType NE DFNTYPE_OP2
-        && lpSISCur->DfnType NE DFNTYPE_QUADEA)
-        lpSISCur = lpSISCur->lpSISPrv;
-
-    if (lpSISCur)
-        hGlbRes = CopySymGlbDirAsGlb (MakePtrTypeGlb (lpSISCur->hGlbQuadEM));
-    else
-        hGlbRes = hGlbQuadEM;
+    // Get ptr to the active hGlbQuadEM (in either lpSISCur or lpMemPTD)
+    hGlbRes = CopySymGlbDir_PTB (*GetPtrQuadEM (lpMemPTD));
 
     // Allocate a YYRes
     lpYYRes = YYAlloc ();
@@ -80,7 +67,7 @@ LPPL_YYSTYPE SysFnEM_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = hGlbRes;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;

@@ -739,9 +739,15 @@ StmtSing:
                                              if (lpSISCur->ResetFlag EQ RESETFLAG_ALL)
                                                  lpplLocalVars->ExitType = EXITTYPE_RESET_ALL;
                                              else
-                                             // If the exit type isn't GOTO_LINE, mark it as already displayed
+                                             // If the result is NoValue, mark the exit type as such
+                                             if (IsTokenNoValue (&$1.tkToken))
+                                                 lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
+                                             else
+                                             // If the exit type isn't GOTO_LINE, mark it displayable or not
                                              if (lpplLocalVars->ExitType NE EXITTYPE_GOTO_LINE)
-                                                 lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
+                                                 lpplLocalVars->ExitType =
+                                                   $1.tkToken.tkFlags.NoDisplay ? EXITTYPE_NODISPLAY
+                                                                                : EXITTYPE_DISPLAY;
                                          } // End IF
                                         }
     | error   GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"error");
@@ -836,7 +842,8 @@ StmtSing:
                                                  lpplLocalVars->ExitType = EXITTYPE_RESET_ONE;
                                              } else
                                              {
-                                                 lpSISCur->ResetFlag = RESETFLAG_ONE_INIT;
+                                                 if (!lpSISCur->ItsEC)
+                                                     lpSISCur->ResetFlag = RESETFLAG_ONE_INIT;
                                                  lpplLocalVars->ExitType = EXITTYPE_RESET_ONE_INIT;
                                              } // End IF/ELSE
 
@@ -887,6 +894,7 @@ StmtSing:
                                              } else
                                                  FreeResult (&$1);
 
+                                             // Mark the result as already displayed
                                              lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
                                          } // End IF/ELSE/IF
                                         }
@@ -7943,8 +7951,16 @@ EXIT_TYPES ParseLine
             break;
 
         case EXITTYPE_RESET_ONE_INIT:
-            // Set the reset flag
-            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ONE_INIT;
+            // Get a ptr to the current SIS header
+            lpSISCur = lpMemPTD->lpSISCur;
+
+            // Peel back to the first non-Exec layer
+            while (lpSISCur->DfnType EQ DFNTYPE_EXEC)
+               lpSISCur = lpSISCur->lpSISPrv;
+
+            if (!lpSISCur->ItsEC)
+                // Set the reset flag
+                lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ONE_INIT;
 
             break;
 
@@ -8093,7 +8109,8 @@ NORMAL_EXIT:
 
     // If there's an error to be signalled, ...
     if (uError NE ERRORCODE_NONE
-     && bActOnErrors)
+     && bActOnErrors
+     && lpMemPTD->lpSISCur->lpSISErrCtrl EQ NULL)
     {
         EXIT_TYPES exitType;        // Return code from ImmExecStmt
 
@@ -10087,12 +10104,15 @@ void ArrExprCheckCaller
 
     // Save the Execute/Quad result
     //   unless the current line starts with a "sink"
-    if (lpplLocalVars->lpwszLine[0] NE UTF16_LEFTARROW)
+    //   or there's a error control parent active
+    if (lpplLocalVars->lpwszLine[0] NE UTF16_LEFTARROW
+     || lpMemPTD->lpSISCur->lpSISErrCtrl NE NULL)
         lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
 
     // If it's not NoValue, ...
     if (!IsTokenNoValue (&lpYYArg->tkToken))
     {
+        // Free the YYRes (but not the storage)
         YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
     } // End IF
 } // End ArrExprCheckCaller

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,7 +43,8 @@ typedef struct tagSIS_HEADER
     HGLOBAL          hGlbDfnHdr,    // 0C:  User-defined function/operator global memory handle (may be NULL if not fcn/op)
                      hGlbFcnName,   // 10:  Function name global memory handle (may be NULL if not fcn/op)
                      hGlbQuadEM;    // 14:  []EM global memory handle
-    UINT             DfnType:4,     // 18:  0000000F:  User-defined function/operator Type (see DFN_TYPES)
+    LPSYMENTRY       lpSymGlbGoto;  // 18:  []EC[2] entry for {goto} target as an LPSYMENTRY or HGLOBAL
+    UINT             DfnType:4,     // 1C:  0000000F:  User-defined function/operator Type (see DFN_TYPES)
                      FcnValence:3,  //      00000070:  User-defined function/operator Valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Suspended:1,   //      00000100:  Function is suspended
@@ -51,20 +52,22 @@ typedef struct tagSIS_HEADER
                      PermFn:1,      //      00001000:  Permanent function (i.e. Magic Function/Operator)
                      Restartable:1, //      00002000:  This SI level is restartable
                      Unwind:1,      //      00004000:  Unwind this level for error message level
-                     :17;           //      FFFF8000:  Available bits
-    UINT             EventType,     // 1C:  Event type (Major, Minor) (see EVENT_TYPES)
-                     CurLineNum,    // 20:  Current line # (origin-1)
-                     NxtLineNum,    // 24:  Next    ...
-                     NxtTknNum,     // 28:  Next token #
-                     numLabels,     // 2C:  # line labels
-                     numFcnLines,   // 30:  # lines in the function (not counting the header)
-                     numSymEntries, // 34:  # LPSYMENTRYs localized on the stack
-                     QQPromptLen,   // 38:  Quote-Quad input prompt length
-                     ErrorCode;     // 3C:  Error code (see ERROR_CODES)
+                     ItsEC:1,       //      00008000:  TRUE iff DFNTYPE_ERRCTRL and this level is []EC (not []EA)
+                     :16;           //      FFFF0000:  Available bits
+    EVENT_TYPES      EventType;     // 20:  Event type (Major, Minor) (see EVENT_TYPES)
+    UINT             CurLineNum,    // 24:  Current line # (origin-1)
+                     NxtLineNum,    // 28:  Next    ...
+                     NxtTknNum,     // 2C:  Next token #
+                     numLabels,     // 30:  # line labels
+                     numFcnLines,   // 34:  # lines in the function (not counting the header)
+                     numSymEntries, // 38:  # LPSYMENTRYs localized on the stack
+                     QQPromptLen,   // 3C:  Quote-Quad input prompt length
+                     ErrorCode;     // 40:  Error code (see ERROR_CODES)
     struct tagSIS_HEADER
-                    *lpSISPrv,      // 40:  Ptr to previous SIS header (NULL = none)
-                    *lpSISNxt;      // 44:  Ptr to next     ...         ...
-    LPTOKEN          lptkFunc;      // 48:  Ptr to function token for Quote-Quad input
+                    *lpSISErrCtrl,  // 44:  Ptr to controlling []EA/[]EC SIS header (NULL = none)
+                    *lpSISPrv,      // 48:  Ptr to previous SIS header (NULL = none)
+                    *lpSISNxt;      // 4C:  Ptr to next     ...         ...
+    LPTOKEN          lptkFunc;      // 50:  Ptr to function token for Quote-Quad input
     struct tagFORSTMT
                     *lpForStmtBase, // 54:  Ptr to starting entry in FORSTMT stack
                     *lpForStmtNext; // 58:  Ptr to next available ...

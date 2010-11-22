@@ -68,7 +68,7 @@ LPPL_YYSTYPE SysFnET_EM_YY
         && lpSISCur->DfnType NE DFNTYPE_FCN
         && lpSISCur->DfnType NE DFNTYPE_OP1
         && lpSISCur->DfnType NE DFNTYPE_OP2
-        && lpSISCur->DfnType NE DFNTYPE_QUADEA)
+        && lpSISCur->DfnType NE DFNTYPE_ERRCTRL)
         lpSISCur = lpSISCur->lpSISPrv;
 
     if (lpSISCur)
@@ -142,7 +142,7 @@ WSFULL_EXIT:
 //  Set the event type and message
 //***************************************************************************
 
-UBOOL SetEventTypeMessage
+void SetEventTypeMessage
     (EVENT_TYPES EventType,         // Event type (see EVENT_TYPES)
      LPAPLCHAR   lpMemMsg,          // Ptr to event message (may be NULL)
      LPTOKEN     lptkFunc)          // Ptr to function token
@@ -157,26 +157,30 @@ UBOOL SetEventTypeMessage
     // Get ptr to current SIS header
     lpSISCur = lpMemPTD->lpSISCur;
 
-    while (lpSISCur
-        && lpSISCur->DfnType NE DFNTYPE_FCN
-        && lpSISCur->DfnType NE DFNTYPE_OP1
-        && lpSISCur->DfnType NE DFNTYPE_OP2
-        && lpSISCur->DfnType NE DFNTYPE_QUADEA)
-        lpSISCur = lpSISCur->lpSISPrv;
+    // If there's a []EA/[]EC parent in control, ...
+    if (lpSISCur->lpSISErrCtrl NE NULL)
+        // Get ptr to current []EA/[]EC parent of the current SI stack
+        lpSISCur = lpSISCur->lpSISErrCtrl;
+    else
+        while (lpSISCur
+            && lpSISCur->DfnType NE DFNTYPE_FCN
+            && lpSISCur->DfnType NE DFNTYPE_OP1
+            && lpSISCur->DfnType NE DFNTYPE_OP2
+            && lpSISCur->DfnType NE DFNTYPE_ERRCTRL)
+            lpSISCur = lpSISCur->lpSISPrv;
+
+    // If there's a message, ...
+    if (lpMemMsg)
+    {
+        ErrorMessageIndirectToken (lpMemMsg, lptkFunc);
+        EventType = EVENTTYPE_UNK;
+    } // End IF
 
     // If there's an SIS level, ...
     if (lpSISCur)
-    {
-        if (lpMemMsg)
-        {
-            ErrorMessageIndirectToken (lpMemMsg, lptkFunc);
-            lpSISCur->EventType = EVENTTYPE_UNK;
-        } else
-            lpSISCur->EventType = EventType;
-
-        return TRUE;
-    } else
-        return FALSE;
+        lpSISCur->EventType = EventType;
+    else
+        lpMemPTD->EventType = EventType;
 } // SetEventTypeMessage
 
 

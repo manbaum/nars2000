@@ -132,6 +132,7 @@
   #include "qf_dl.pro"
   #include "qf_dr.pro"
   #include "qf_ea.pro"
+  #include "qf_ec.pro"
   #include "qf_em.pro"
   #include "qf_error.pro"
   #include "qf_es.pro"

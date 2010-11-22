@@ -33,6 +33,7 @@
 #define SysFnDL_EM_YY       NULL
 #define SysFnDR_EM_YY       NULL
 #define SysFnEA_EM_YY       NULL
+#define SysFnEC_EM_YY       NULL
 #define SysFnEM_EM_YY       NULL
 #define SysFnERROR_EM_YY    NULL
 #define SysFnES_EM_YY       NULL
@@ -124,6 +125,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM_YY     , 0              },  // Delay Execution
     {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM_YY     , 0              },  // Data Representation
     {WS_UTF16_QUAD L"ea"       ,      1,      FALSE, SysFnEA_EM_YY     , 0              },  // Execute Alternate
+    {WS_UTF16_QUAD L"ec"       ,      1,      FALSE, SysFnEC_EM_YY     , 0              },  // Execute Controlled
 ////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, SysFnERASE_EM_YY  , 0              },  // Erase Names
     {WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM_YY  , 0              },  // Signal Error
     {WS_UTF16_QUAD L"es"       ,      1,      FALSE, SysFnES_EM_YY     , 0              },  // Event Simulate
@@ -238,21 +240,52 @@ void MakePermVars
     MyGlobalUnlock (hGlbZilde); lpHeader = NULL;
 
     //***************************************************************
-    // Create initial value for []EM (3 x 0 char matrix)
+    // Create initial value for []EC[2] (0 x 0 Boolean matrix)
     //***************************************************************
-    hGlbQuadEM = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, 0, 2));
-    if (!hGlbQuadEM)
+    hGlb0by0 = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 2));
+    if (!hGlb0by0)
     {
         DbgStop ();         // We should never get here
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbQuadEM);
+    lpHeader = MyGlobalLock (hGlb0by0);
+
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_BOOL;
+    lpHeader->PermNdx    = PERMNDX_0BY0;    // So we don't free it
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+////lpHeader->RefCnt     = 0;               // Ignore as this is perm
+////lpHeader->NELM       = 0;               // Already zero from GHND
+    lpHeader->Rank       = 2;
+
+    // Mark as shape 0 by 0
+////(VarArrayBaseToDim (lpHeader))[0] = 0;  // Already zero from GHND
+////(VarArrayBaseToDim (lpHeader))[1] = 0;  // Already zero from GHND
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlb0by0); lpHeader = NULL;
+
+    // Set the PTB
+    hGlb0by0 = MakePtrTypeGlb (hGlb0by0);
+
+    //***************************************************************
+    // Create initial value for []EM (3 x 0 char matrix)
+    //***************************************************************
+    hGlb3by0 = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, 0, 2));
+    if (!hGlb3by0)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpHeader = MyGlobalLock (hGlb3by0);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
-    lpHeader->PermNdx    = PERMNDX_QUADEM;  // So we don't free it
+    lpHeader->PermNdx    = PERMNDX_3BY0;    // So we don't free it
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
 ////lpHeader->RefCnt     = 0;               // Ignore as this is perm
 ////lpHeader->NELM       = 0;               // Already zero from GHND
@@ -263,7 +296,10 @@ void MakePermVars
 ////(VarArrayBaseToDim (lpHeader))[1] = 0;  // Already zero from GHND
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbQuadEM); lpHeader = NULL;
+    MyGlobalUnlock (hGlb3by0); lpHeader = NULL;
+
+    // Set the PTB
+    hGlb3by0 = MakePtrTypeGlb (hGlb3by0);
 
     //***************************************************************
     // Create various permanent vectors

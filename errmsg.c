@@ -56,6 +56,9 @@ void BreakMessage
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
+    // Save the event type
+    SetEventTypeMessage (EVENTTYPE_BREAK, NULL, NULL);
+
     // Mark as suspended
     lpSISCur->Suspended = TRUE;
 
@@ -198,21 +201,22 @@ void ErrorMessageDirect
      UINT    uCaret)            // Position of caret (origin-0)
 
 {
-    APLNELM        aplNELMRes;  // Result NELM
-    APLUINT        ByteRes;     // # bytes in the result
-    HGLOBAL        hGlbRes;     // Result global memory handle
-    LPAPLCHAR      lpMemRes;    // Ptr to result global memory
-    LPPERTABDATA   lpMemPTD;    // Ptr to PerTabData global memory
-    LPSIS_HEADER   lpSISCur,    // Ptr to current SIS header
-                   lpSISPrv;    // ...    previous ...
-    UINT           uErrMsgLen,  // Error message length
-                   uNameLen,    // Length of function name[line #]
-                   uErrLinLen,  // Error line length
-                   uCaretLen,   // Caret line length
-                   uTailLen,    // Length of line tail
-                   uMaxLen,     // Maximum length
-                   uExecCnt;    // # execute levels
+    APLNELM        aplNELMRes;      // Result NELM
+    APLUINT        ByteRes;         // # bytes in the result
+    HGLOBAL        hGlbRes;         // Result global memory handle
+    LPAPLCHAR      lpMemRes;        // Ptr to result global memory
+    LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
+    LPSIS_HEADER   lpSISCur,        // Ptr to current SIS header
+                   lpSISPrv;        // ...    previous ...
+    UINT           uErrMsgLen,      // Error message length
+                   uNameLen,        // Length of function name[line #]
+                   uErrLinLen,      // Error line length
+                   uCaretLen,       // Caret line length
+                   uTailLen,        // Length of line tail
+                   uMaxLen,         // Maximum length
+                   uExecCnt;        // # execute levels
     LPMEMTXT_UNION lpMemTxtLine = NULL; // Ptr to text header/line global memory
+    HGLOBAL       *lphGlbQuadEM;    // Ptr to active hGlbQuadEM (in either lpSISCur or lpMemPTD)
 
 #define ERROR_CARET     UTF16_UPCARET   // UTF16_CIRCUMFLEX
 
@@ -232,7 +236,9 @@ void ErrorMessageDirect
         while (lpSISCur && lpSISCur->Unwind)
             lpSISCur = lpSISCur->lpSISPrv;
 
+        // If there's an SIS level, ...
         if (lpSISCur)
+        // Split cases based upon the defined function type
         switch (lpSISCur->DfnType)
         {
             case DFNTYPE_OP1:
@@ -296,7 +302,7 @@ void ErrorMessageDirect
             case DFNTYPE_QQUAD:
             defstop
                 break;
-        } // End SWITCH
+        } // End IF/SWITCH
     } else
         uNameLen = 0;
 
@@ -389,97 +395,85 @@ void ErrorMessageDirect
     // Save the new value in the PTD
     lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbRes); hGlbRes = NULL;
 
+    //***************************************************************
     // Also create the corresponding value for []EM
+    //***************************************************************
 
-    // Get ptr to current SI stack
-    lpSISCur = lpMemPTD->lpSISCur;
+    // Get a ptr to the active hGlbQuadEM (in either lpSISCur or lpMemPTD)
+    lphGlbQuadEM = GetPtrQuadEM (lpMemPTD);
 
-    // If there's no user-defined function/operator at or
-    //   above the current level, the default
-    //   value for []EM is already in place
-    while (lpSISCur
-        && lpSISCur->DfnType NE DFNTYPE_FCN
-        && lpSISCur->DfnType NE DFNTYPE_OP1
-        && lpSISCur->DfnType NE DFNTYPE_OP2
-        && lpSISCur->DfnType NE DFNTYPE_QUADEA)
-        lpSISCur = lpSISCur->lpSISPrv;
+    // Calculate the maximum length
+    uMaxLen = max (uErrMsgLen, uNameLen + uErrLinLen);
+    uMaxLen = max (uMaxLen, uCaretLen + 1);
 
-    // If there's an SIS level, fill in []EM
-    if (lpSISCur)
-    {
-        // Calculate the maximum length
-        uMaxLen = max (uErrMsgLen, uNameLen + uErrLinLen);
-        uMaxLen = max (uMaxLen, uCaretLen + 1);
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_CHAR, 3 * uMaxLen, 2);
 
-        // Calculate space needed for the result
-        ByteRes = CalcArraySize (ARRAY_CHAR, 3 * uMaxLen, 2);
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EM_EXIT;
 
-        // Check for overflow
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EM_EXIT;
-
-        // Allocate space for the result
-        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
-            goto WSFULL_EM_EXIT;
-        // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EM_EXIT;
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-        // Fill in the header
-        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeader->ArrType    = ARRAY_CHAR;
-////////lpHeader->Perm       = FALSE;           // Already zero from GHND
-////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-        lpHeader->RefCnt     = 1;
-        lpHeader->NELM       = 3 * uMaxLen;
-        lpHeader->Rank       = 2;
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->Perm       = FALSE;           // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = 3 * uMaxLen;
+    lpHeader->Rank       = 2;
 #undef  lpHeader
 
-        // Skip over the header to the dimensions
-        lpMemRes = (LPAPLCHAR) VarArrayBaseToDim (lpMemRes);
+    // Skip over the header to the dimensions
+    lpMemRes = (LPAPLCHAR) VarArrayBaseToDim (lpMemRes);
 
-        // Fill in the result's dimensions
-        *((LPAPLDIM) lpMemRes)++ = 3;
-        *((LPAPLDIM) lpMemRes)++ = uMaxLen;
+    // Fill in the result's dimensions
+    *((LPAPLDIM) lpMemRes)++ = 3;
+    *((LPAPLDIM) lpMemRes)++ = uMaxLen;
 
-        // lpMemRes now points to the data
+    // lpMemRes now points to the data
 
-        // Copy the error message text to the result
-        CopyMemoryW (lpMemRes, lpwszMsg, uErrMsgLen);
-        lpMemRes += uErrMsgLen;
-        uTailLen = uMaxLen - uErrMsgLen;
+    // Copy the error message text to the result
+    CopyMemoryW (lpMemRes, lpwszMsg, uErrMsgLen);
+    lpMemRes += uErrMsgLen;
+    uTailLen = uMaxLen - uErrMsgLen;
+    lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
+
+    // Copy the function name[line #] to the result
+    CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
+    lpMemRes += uNameLen;
+
+    // Copy the function line to the result
+    CopyMemoryW (lpMemRes, lpwszLine, uErrLinLen);
+    lpMemRes += uErrLinLen;
+    uTailLen = uMaxLen - (uNameLen + uErrLinLen);
+    lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
+
+    // Copy the caret line to the result
+    if (uCaret NE NEG1U)
+    {
+        lpMemRes = FillMemoryW (lpMemRes, uCaretLen, L' ');
+       *lpMemRes++ = ERROR_CARET;
+        uTailLen = uMaxLen - (uCaretLen + 1);
         lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
+    } else
+        lpMemRes = FillMemoryW (lpMemRes, uMaxLen, L' ');
 
-        // Copy the function name[line #] to the result
-        CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, uNameLen);
-        lpMemRes += uNameLen;
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-        // Copy the function line to the result
-        CopyMemoryW (lpMemRes, lpwszLine, uErrLinLen);
-        lpMemRes += uErrLinLen;
-        uTailLen = uMaxLen - (uNameLen + uErrLinLen);
-        lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
+    // Free the old value of []EM
+    FreeResultGlobalVar (*lphGlbQuadEM); *lphGlbQuadEM = NULL;
 
-        // Copy the caret line to the result
-        if (uCaret NE NEG1U)
-        {
-            lpMemRes = FillMemoryW (lpMemRes, uCaretLen, L' ');
-           *lpMemRes++ = ERROR_CARET;
-            uTailLen = uMaxLen - (uCaretLen + 1);
-            lpMemRes = FillMemoryW (lpMemRes, uTailLen, L' ');
-        } else
-            lpMemRes = FillMemoryW (lpMemRes, uMaxLen, L' ');
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-        // Free the old value of []EM
-        FreeResultGlobalVar (lpSISCur->hGlbQuadEM); lpSISCur->hGlbQuadEM = NULL;
-
-        // Save the global in the current SIS header
-        lpSISCur->hGlbQuadEM = hGlbRes;
-    } // End IF
+    // Save the global in the current SIS header
+    *lphGlbQuadEM = MakePtrTypeGlb (hGlbRes);
 
     if (lpMemTxtLine)
     {
@@ -497,16 +491,51 @@ WSFULL_DM_EXIT:
     return;
 WSFULL_EM_EXIT:
     // WS FULL, so leave it alone
-    lpSISCur->hGlbQuadEM = hGlbQuadEM;
+    *lphGlbQuadEM = hGlbQuadEM_DEF;
 
     MessageBoxW (hWndMF,
-                 L"Unable to allocate space for " WS_UTF16_QUAD L"EM",
+                 L"Unable to allocate space for " WS_QUADEM,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
     return;
 } // End ErrorMessageDirect
 #undef  ERROR_CARET
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $GetPtrQuadEM
+//
+//  Return a ptr to the active hGlbQuadEM in either lpSISCur or lpMemPTD
+//***************************************************************************
+
+HGLOBAL *GetPtrQuadEM
+    (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+
+{
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+
+    // Get ptr to current SI stack
+    lpSISCur = lpMemPTD->lpSISCur;
+
+    // If there's a []EA/[]EC parent in control, ...
+    if (lpSISCur->lpSISErrCtrl NE NULL)
+        // Get ptr to current []EA/[]EC parent of the current SI stack
+        lpSISCur = lpSISCur->lpSISErrCtrl;
+    else
+        while (lpSISCur
+            && lpSISCur->DfnType NE DFNTYPE_FCN
+            && lpSISCur->DfnType NE DFNTYPE_OP1
+            && lpSISCur->DfnType NE DFNTYPE_OP2
+            && lpSISCur->DfnType NE DFNTYPE_ERRCTRL)
+            lpSISCur = lpSISCur->lpSISPrv;
+
+    // If there's an SIS level, ...
+    if (lpSISCur)
+        return &lpSISCur->hGlbQuadEM;
+    else
+        return &lpMemPTD->hGlbQuadEM;
+} // End GetPtrQuadEM
 
 
 //***************************************************************************

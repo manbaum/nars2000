@@ -789,6 +789,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\qf_ec.c"
+				>
+			</File>
+			<File
 				RelativePath=".\qf_em.c"
 				>
 			</File>
@@ -1104,6 +1108,10 @@
 			</File>
 			<File
 				RelativePath=".\qf.h"
+				>
+			</File>
+			<File
+				RelativePath=".\qf_ec.h"
 				>
 			</File>
 			<File

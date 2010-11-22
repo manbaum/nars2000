@@ -23,7 +23,6 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
-#include "eventtypes.h"
 
 
 //***************************************************************************

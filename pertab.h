@@ -30,6 +30,7 @@
     lpMemPTD->Sig.nature    = ' DTP';               \
     lpMemPTD->uQuadMF       = uQuadMF_CWS;          \
     SetCurrentFeatureCWS (lpMemPTD);                \
+    lpMemPTD->hGlbQuadEM    = hGlbQuadEM_DEF;       \
 
     // The following vars are already initialized to zero which is the default
     //   value from GHND, so they do not need to be set explicitly.
@@ -45,6 +46,7 @@
 #endif
 ////lpMemPTD->hExitphore    = NULL;
 ////lpMemPTD->hWndFENxt     = NULL;
+////lpMemPTD->EventType     = EVENTTYPE_NOERROR;
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -117,6 +119,8 @@ typedef struct tagPERTABDATA
     IMLangFontLink
                 *lpFontLink;                // Ptr to FontLink struc
 #endif
+    HGLOBAL      hGlbQuadEM;                // []EM global memory handle for global value
+    EVENT_TYPES  EventType;                 // []ET global value (Major, Minor) (see EVENT_TYPES)
     APLCHAR      cQuadPR,                   // []PR     (' ') (When a char scalar) (2 bytes)
                  cQuadxSA;                  // []SA     (0)   (in its index form as an integer) (2 bytes)
     DWORD        dwThreadId;                // Corresponding thread ID

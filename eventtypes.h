@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,37 +31,39 @@
 #define EVENT_TYPES             UINT
 
 // The event types, taken from the APL2 Language Reference Manual (Feb 1994)
-#define EVENTTYPE_NOERROR                   MAKE_ET (0,  0)
-#define EVENTTYPE_UNK                       MAKE_ET (0,  1)
+typedef enum tagEVENT_TYPES
+{
+    EVENTTYPE_NOERROR                   = MAKE_ET (0,  0),
+    EVENTTYPE_UNK                       = MAKE_ET (0,  1),
 
 // Resource errors
-#define EVENTTYPE_BREAK                     MAKE_ET (1,  1)
-#define EVENTTYPE_SYSTEM_ERROR              MAKE_ET (1,  2)
-#define EVENTTYPE_WS_FULL                   MAKE_ET (1,  3)
-#define EVENTTYPE_LIMIT_ST                  MAKE_ET (1,  4)
-#define EVENTTYPE_LIMIT_RANK                MAKE_ET (1,  8)
-#define EVENTTYPE_LIMIT_IMPL                MAKE_ET (1, 13)
+    EVENTTYPE_BREAK                     = MAKE_ET (1,  1),
+    EVENTTYPE_SYSTEM_ERROR              = MAKE_ET (1,  2),
+    EVENTTYPE_WS_FULL                   = MAKE_ET (1,  3),
+    EVENTTYPE_LIMIT_ST                  = MAKE_ET (1,  4),
+    EVENTTYPE_LIMIT_RANK                = MAKE_ET (1,  8),
+    EVENTTYPE_LIMIT_IMPL                = MAKE_ET (1, 13),
 
 // SYNTAX ERRORs
-#define EVENTTYPE_SYNTAX_ERROR_ARGOMITTED   MAKE_ET (2,  1)
-#define EVENTTYPE_SYNTAX_ERROR_ILLFORMED    MAKE_ET (2,  2)
-#define EVENTTYPE_SYNTAX_ERROR_NAMECLASS    MAKE_ET (2,  3)
-#define EVENTTYPE_SYNTAX_ERROR_CONTEXT      MAKE_ET (2,  4)
+    EVENTTYPE_SYNTAX_ERROR_ARGOMITTED   = MAKE_ET (2,  1),
+    EVENTTYPE_SYNTAX_ERROR_ILLFORMED    = MAKE_ET (2,  2),
+    EVENTTYPE_SYNTAX_ERROR_NAMECLASS    = MAKE_ET (2,  3),
+    EVENTTYPE_SYNTAX_ERROR_CONTEXT      = MAKE_ET (2,  4),
 
 // VALUE_ERRORs
-#define EVENTTYPE_VALUE_ERROR_NAME          MAKE_ET (3,  1)
-#define EVENTTYPE_VALUE_ERROR_FCN           MAKE_ET (3,  2)
+    EVENTTYPE_VALUE_ERROR_NAME          = MAKE_ET (3,  1),
+    EVENTTYPE_VALUE_ERROR_FCN           = MAKE_ET (3,  2),
 
 // Explicit argument errors
-#define EVENTTYPE_VALENCE_ERROR             MAKE_ET (5,  1)
-#define EVENTTYPE_RANK_ERROR                MAKE_ET (5,  2)
-#define EVENTTYPE_LENGTH_ERROR              MAKE_ET (5,  3)
-#define EVENTTYPE_DOMAIN_ERROR              MAKE_ET (5,  4)
-#define EVENTTYPE_INDEX_ERROR               MAKE_ET (5,  5)
-#define EVENTTYPE_AXIS_ERROR                MAKE_ET (5,  6)
+    EVENTTYPE_VALENCE_ERROR             = MAKE_ET (5,  1),
+    EVENTTYPE_RANK_ERROR                = MAKE_ET (5,  2),
+    EVENTTYPE_LENGTH_ERROR              = MAKE_ET (5,  3),
+    EVENTTYPE_DOMAIN_ERROR              = MAKE_ET (5,  4),
+    EVENTTYPE_INDEX_ERROR               = MAKE_ET (5,  5),
+    EVENTTYPE_AXIS_ERROR                = MAKE_ET (5,  6),
+} EVENT_TYPES, *LPEVENT_TYPES;
 
-
-// N.B.:  Whenever changing the above #defines
+// N.B.:  Whenever changing the above enum
 //   be sure to make a corresponding change to
 //   <SysFnDydES_EM_YY> in <qf_es.c>.
 

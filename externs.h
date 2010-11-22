@@ -1025,7 +1025,8 @@ EXTERN
 HGLOBAL hGlbQuadA,                      // []A
         hGlbQuadAV,                     // []AV
         hGlbQuadxLX,                    // []xLX default
-        hGlbQuadEM,                     // []EM default
+        hGlb0by0,                       // 0 0 {rho} 0 -- []EC[2] default
+        hGlb3by0,                       // 3 0 {rho}'' -- []EM default
         hGlbQuadFC,                     // []FC default
         hGlbQuadIC,                     // []IC default
         hGlbQuadWSID_CWS,               // []WSID in CLEAR WS
@@ -1036,6 +1037,9 @@ HGLOBAL hGlbQuadA,                      // []A
         hGlbSAOff,                      // 'OFF'
         hGlbV0Char,                     // ''
         hGlbZilde;                      // {zilde}
+
+#define hGlbQuadEC2_DEF     hGlb0by0
+#define hGlbQuadEM_DEF      hGlb3by0
 
 EXTERN
 APLFLOAT PosInfinity,                   // Positive infinity

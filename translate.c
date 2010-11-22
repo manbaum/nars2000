@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "headers.h"
+#include "qf_ec.h"
 
 
 //***************************************************************************
@@ -671,6 +672,50 @@ void TranslateNARSToAPL2
             *lpMemRht++ = L'\xFF';
     } // End WHILE
 } // End TranslateNARSToAPL2
+
+
+//***************************************************************************
+//  $TranslateExitTypeToReturnCode
+//
+//  Translate EXITTYPE_xxx to []EC return code
+//***************************************************************************
+
+UINT TranslateExitTypeToReturnCode
+    (EXIT_TYPES exitType)
+
+{
+    // Split cases based upon the EXITTYPE_xxx
+    switch (exitType)
+    {
+        case EXITTYPE_GOTO_ZILDE:
+        case EXITTYPE_GOTO_LINE:
+            return EC_RETCODE_GOTO_LINE;
+
+        case EXITTYPE_ERROR:
+        case EXITTYPE_QUADERROR_INIT:
+            return EC_RETCODE_ERROR;
+
+        case EXITTYPE_DISPLAY:
+            return EC_RETCODE_DISPLAY;
+
+        case EXITTYPE_NODISPLAY:
+            return EC_RETCODE_NODISPLAY;
+
+        case EXITTYPE_NOVALUE:
+            return EC_RETCODE_NOVALUE;
+
+        case EXITTYPE_RESET_ONE_INIT:
+            return EC_RETCODE_RESET_ONE;
+
+        case EXITTYPE_NONE:
+        case EXITTYPE_RESET_ONE:
+        case EXITTYPE_RESET_ALL:
+        case EXITTYPE_QUADERROR_EXEC:
+        case EXITTYPE_STOP:
+        defstop
+            return EC_RETCODE_UNK;
+    } // End SWITCH
+} // End TranslateExitTypeToReturnCode
 
 
 //***************************************************************************

@@ -894,10 +894,14 @@ RESTART_AFTER_ERROR:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-        // If suspended, wait for the semaphore to trigger
-        if (lpMemPTD->lpSISCur->Suspended)
+        // If suspended,
+        //   and there's no parent []EA/[]EC control, ...
+        if (lpMemPTD->lpSISCur->Suspended
+         && lpMemPTD->lpSISCur->lpSISErrCtrl EQ NULL)
         {
             HWND hWndEC;        // Edit Ctrl window handle
+
+            // Wait for the semaphore to trigger
 
             // Get the Edit Ctrl window handle
             (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
@@ -1430,7 +1434,7 @@ void UnlocalizeSTEs
         resetFlag = lpSISCur->ResetFlag;
 
         // Free the outgoing value of []EM
-        FreeResultGlobalVar (lpSISCur->hGlbQuadEM); lpMemPTD->lpSISCur->hGlbQuadEM = NULL;
+        FreeResultGlobalVar (lpSISCur->hGlbQuadEM); lpSISCur->hGlbQuadEM = NULL;
 
         // Get # LPSYMENTRYs on the stack
         numSymEntries = lpSISCur->numSymEntries;

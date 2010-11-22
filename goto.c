@@ -63,6 +63,7 @@ EXIT_TYPES GotoLine_EM
     LPPLLOCALVARS  lpplLocalVars;   // Ptr to PL local vars
     TOKEN          tkNxt;           // Token of next stmt
     UINT           uTknNum = 0;     // Starting token #
+    UBOOL          bExecEC;         // TRUE iff we're executing under []EC
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -75,35 +76,31 @@ EXIT_TYPES GotoLine_EM
     if (IsMultiRank (aplRankRht))
         goto RANK_EXIT;
 
-    // Get the first value
-    GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
-                       &aplIntegerRht,  // Ptr to integer result
-                       &aplFloatRht,    // Ptr to float ...
-                        NULL,           // Ptr to WCHAR ...
-                        NULL,           // Ptr to longest ...
-                        NULL,           // Ptr to lpSym/Glb ...
-                       &immType,        // Ptr to ...immediate type ...
-                        NULL);          // Ptr to array type ...
-    if (immType EQ IMMTYPE_ERROR
-     || IsImmChr (immType))
-        goto DOMAIN_EXIT;
-
-    if (IsImmFlt (immType))
+    // If the right arg is not empty, ...
+    if (!IsEmpty (aplNELMRht))
     {
-        UBOOL bRet;
-
-        // Attempt to convert the float to an integer using System CT
-        aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-        if (!bRet)
+        // Get the first value
+        GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                           &aplIntegerRht,  // Ptr to integer result
+                           &aplFloatRht,    // Ptr to float ...
+                            NULL,           // Ptr to WCHAR ...
+                            NULL,           // Ptr to longest ...
+                            NULL,           // Ptr to lpSym/Glb ...
+                           &immType,        // Ptr to ...immediate type ...
+                            NULL);          // Ptr to array type ...
+        if (immType EQ IMMTYPE_ERROR
+         || IsImmChr (immType))
             goto DOMAIN_EXIT;
-    } // End IF
 
-    // If the right arg is empty, ...
-    if (IsEmpty (aplNELMRht))
-    {
-        exitType = EXITTYPE_GOTO_ZILDE;
+        if (IsImmFlt (immType))
+        {
+            UBOOL bRet;
 
-        goto NORMAL_EXIT;
+            // Attempt to convert the float to an integer using System CT
+            aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+            if (!bRet)
+                goto DOMAIN_EXIT;
+        } // End IF
     } // End IF
 
     // Copy ptr to current SI level
@@ -114,6 +111,17 @@ EXIT_TYPES GotoLine_EM
      && lpSISCur->lpSISPrv                  // There is a previous level
      && !lpSISCur->lpSISPrv->Restartable)   // and it's not restartable
         goto NORESTART_EXIT;
+
+    // Save the {goto} target if we're executing under []EC
+    bExecEC = SaveGotoTarget (lpMemPTD, lptkRhtArg);
+
+    // If the right arg is empty, ...
+    if (IsEmpty (aplNELMRht))
+    {
+        exitType = EXITTYPE_GOTO_ZILDE;
+
+        goto NORMAL_EXIT;
+    } // End IF
 
     // Ensure line # is within range
     if (aplIntegerRht < 0
@@ -127,7 +135,8 @@ EXIT_TYPES GotoLine_EM
          || lpSISCur->DfnType EQ DFNTYPE_EXEC))
         lpSISCur = lpSISCur->lpSISPrv;
 
-    if (lpSISCur EQ NULL)
+    if (lpSISCur EQ NULL
+     || bExecEC)
         hGlbTknLine = NULL;
     else
         // Get the the corresponding tokenized line's global memory handle
@@ -205,6 +214,8 @@ EXIT_TYPES GotoLine_EM
     // Save the exit type
     exitType = EXITTYPE_GOTO_LINE;
 
+    // If we're not executing under []EC, ...
+    if (!bExecEC)
     // Split cases based upon the function type
     switch (lpMemPTD->lpSISCur->DfnType)
     {
@@ -265,7 +276,7 @@ EXIT_TYPES GotoLine_EM
 
         defstop
             break;
-    } // End SWITCH
+    } // End IF/SWITCH
 
     goto NORMAL_EXIT;
 
@@ -296,6 +307,66 @@ NORMAL_EXIT:
     return exitType;
 } // End GotoLine_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SaveGotoTarget
+//
+//  Save the {goto} target if we're executing under []EC
+//***************************************************************************
+
+UBOOL SaveGotoTarget
+    (LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
+     LPTOKEN      lptkGoto)     // Ptr to {goto} target token
+
+{
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+
+    // Get ptr to current SIS header
+    lpSISCur = lpMemPTD->lpSISCur;
+
+    while (lpSISCur
+        && lpSISCur->DfnType NE DFNTYPE_FCN
+        && lpSISCur->DfnType NE DFNTYPE_OP1
+        && lpSISCur->DfnType NE DFNTYPE_OP2
+        && lpSISCur->DfnType NE DFNTYPE_ERRCTRL)
+        lpSISCur = lpSISCur->lpSISPrv;
+
+    // If there's an SIS level, ...
+    //    and we're executing under []EA/[]EC, ...
+    if (lpSISCur
+     && lpSISCur->DfnType EQ DFNTYPE_ERRCTRL)
+    {
+        // If we're executing under []EC but not []EA, ...
+        if (lpSISCur->ItsEC)
+        // Split cases based upon the token type
+        switch (lptkGoto->tkFlags.TknType)
+        {
+            case TKT_VARIMMED:
+                // Copy the {goto} target as an LPSYMENTRY
+                lpSISCur->lpSymGlbGoto =
+                  MakeSymEntry_EM (lptkGoto->tkFlags.ImmType,   // Immediate type
+                                  &lptkGoto->tkData.tkLongest,  // Ptr to immediate value
+                                   lptkGoto);                   // Ptr to function token
+                break;
+
+            case TKT_VARARRAY:
+                // Copy the {goto} target as an HGLOBAL
+                lpSISCur->lpSymGlbGoto =
+                  CopySymGlbDir_PTB (lptkGoto->tkData.tkGlbData);
+                break;
+
+            defstop
+                break;
+        } // End IF/SWITCH
+
+        // Mark as executing under []EA/[]EC
+        return TRUE;
+    } // End IF
+
+    // Mark as not executing under []EA/[]EC
+    return FALSE;
+} // End SaveGotoTarget
 
 
 //***************************************************************************

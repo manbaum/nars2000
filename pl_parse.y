@@ -22,7 +22,7 @@
 
 /****************************************************************************
 
-Parse a line of pre-tokenized tokens.
+Parse a line of pre-tokenized symbols.
 
 Based upon "The Syntax of APL:  An Old Approach Revisited" by
 Jean Jacques Giardot & Florence Rollin, ACM SIGAPL Quote-Quad APL 1987
@@ -127,7 +127,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
  */
 %right DIAMOND
 %left  ASSIGN PRIMFCN NAMEFCN NAMETRN SYSFN12 GOTO SYSNS
-%right NULLOP NAMEOP1 OP1 NAMEOP2 OP2 NAMEOP3 OP3 JOTDOT OP3ASSIGN NAMEOP3ASSIGN
+%right NAMEOP1 OP1 NAMEOP2 OP2 NAMEOP3 OP3 JOTDOT OP3ASSIGN NAMEOP3ASSIGN
 %right OP2CONSTANT OP2NAMEVAR OP2CHRSTRAND OP2NUMSTRAND
 
 %start StmtMult
@@ -5460,39 +5460,6 @@ LeftOper:
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
-    | NULLOP OP3                        {DbgMsgWP (L"%%LeftOper:  OP3 NULLOP");
-                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             // Change the first token in the function strand
-                                             //   from ambiguous operator to a function
-                                             AmbOpToFcn (&$2);
-
-                                             lpplLocalVars->lpYYOp1 =
-                                               PushFcnStrand_YY (&$1, 2, DIRECT);    // Monadic operator (Direct)
-
-                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$2);
-                                                 YYERROR3
-                                             } // End IF
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1;
-
-                                             lpplLocalVars->lpYYFcn =
-                                               PushFcnStrand_YY (&$2, 1, DIRECT);    // Left operand (Direct)
-
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                                 YYERROR3
-                                             } // End IF
-
-                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                         } // End IF
-                                        }
 ////|                  MonOp error      //--Conflicts
     |                  MonOp FILLJOT    {DbgMsgWP (L"%%LeftOper:  FILLJOT MonOp");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -7138,28 +7105,6 @@ AmbOpX:
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 MonOp:
                        OP1              {DbgMsgWP (L"%%MonOp:  OP1");
-                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYMak =
-                                               MakePrimOp1_YY (&$1);
-
-                                             if (!lpplLocalVars->lpYYMak)            // If not defined, free args and YYERROR
-                                                 YYERROR3
-
-                                             lpplLocalVars->lpYYOp1 =
-                                               PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
-                                             YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
-
-                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-                                                 YYERROR3
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYOp1;
-                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
-                                         } // End IF
-                                        }
-    |                  NULLOP           {DbgMsgWP (L"%%MonOp:  NULLOP");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -9150,7 +9095,7 @@ PL_YYLEX_START:
         case TKT_OP1NAMED:
             // Check for / or /[I] or /[A]
             if (CheckNullOp3 (lpplLocalVars))
-                return NULLOP;
+                goto PL_YYLEX_START;    // Ignore this token
             else
                 return NAMEOP1;
 
@@ -9174,7 +9119,7 @@ PL_YYLEX_START:
         case TKT_OP1IMMED:
             // Check for / or /[I] or /[A]
             if (CheckNullOp3 (lpplLocalVars))
-                return NULLOP;
+                goto PL_YYLEX_START;    // Ignore this token
             else
                 return OP1;
 
@@ -9698,11 +9643,11 @@ void pl_yyfprintf
 
 {
 #if (defined (DEBUG)) && (defined (YYFPRINTF_DEBUG))
-    va_list vl;
+    va_list  vl;
     int     i1,
-            i2,
-            i3;
-    static  char szTemp[256] = {'\0'};
+             i2,
+             i3;
+    static   char szTemp[256] = {'\0'};
 
     va_start (vl, lpszFmt);
 

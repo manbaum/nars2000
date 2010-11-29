@@ -144,7 +144,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     if (bPrototyping && bLftArg)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
     } else
@@ -154,7 +154,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     if (bPrototyping && bRhtArg)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+        lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
         if (!lpPrimProtoRht)
             goto RIGHT_NONCE_EXIT;
     } else

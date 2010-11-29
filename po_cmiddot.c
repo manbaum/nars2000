@@ -160,7 +160,7 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
     if (bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto NONCE_EXIT;
 
@@ -255,7 +255,7 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
     if (bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto NONCE_EXIT;
 

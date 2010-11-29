@@ -250,9 +250,9 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                                       aplTypeRht,       // Right arg storage type
                                       aplLongestRht,    // Right arg immediate value
                                       hGlbRht,          // Right arg global memory handle
-                                      lpYYFcnStrOpr,    // Ptr to operator function strand
-                                      lpYYFcnStrLft,    // Ptr to left operand
-                                      bPrototyping);    // TRUE iff prototyping
+                                 lpYYFcnStrOpr,     // Ptr to operator function strand
+                                 lpYYFcnStrLft,     // Ptr to left operand
+                                 bPrototyping);     // TRUE iff prototyping
         goto NORMAL_EXIT;
     } // End IF
 
@@ -306,22 +306,18 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
      || bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
 
     // Get a ptr to the Primitive Function Flags
-    lpPrimFlagsLft = GetPrimFlagsPtr (lpYYFcnStrLft);
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
     if (lpPrimFlagsLft)
         lpPrimIdentLft = &PrimIdent[lpPrimFlagsLft->Index];
     else
         lpPrimIdentLft = NULL;
-
-    // Use all zero PrimFlags if not present
-    if (!lpPrimFlagsLft)
-        lpPrimFlagsLft = &PrimFlags0;
 
     // If the result is empty or the axis dimension is zero, ...
     if (IsEmpty (aplNELMRes)
@@ -445,25 +441,25 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             aplTypeRes = ARRAY_NESTED;
         else
         {
-            // Get the corresponding lpPrimSpecLft
-            lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the corresponding lpPrimSpecLft
+        lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
-            // Calculate the storage type of the result
-            aplTypeRes =
-              (*lpPrimSpecLft->StorageTypeDyd) (aplNELMRht,
-                                               &aplTypeRht,
-                                               &lpYYFcnStrLft->tkToken,
-                                                aplNELMRht,
-                                               &aplTypeRht);
-            if (aplTypeRes EQ ARRAY_ERROR)
-                goto DOMAIN_EXIT;
+        // Calculate the storage type of the result
+        aplTypeRes =
+          (*lpPrimSpecLft->StorageTypeDyd) (aplNELMRht,
+                                           &aplTypeRht,
+                                           &lpYYFcnStrLft->tkToken,
+                                            aplNELMRht,
+                                           &aplTypeRht);
+        if (aplTypeRes EQ ARRAY_ERROR)
+            goto DOMAIN_EXIT;
 
-            // Mark as a primitive scalar dyadic function
-            bPrimDydScal = TRUE;
+        // Mark as a primitive scalar dyadic function
+        bPrimDydScal = TRUE;
         } // End IF/ELSE
     } else
         aplTypeRes = ARRAY_NESTED;
-
+RESTART_ALLOC:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -500,16 +496,6 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         *((LPAPLDIM) lpMemRes)++ = lpMemDimRht[uDim];
 
     // lpMemRes now points to its data
-
-    // If the result is nested, ...
-    if (IsNested (aplTypeRes))
-    {
-        // Fill nested result with PTR_REUSED
-        //   in case we fail part way through
-        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-        for (uRes = 1; uRes < aplNELMRes; uRes++)
-            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
-    } // End IF
 
     // If this is primitive or user-defined function/operator identity element, ...
     if (bPrimIdent)
@@ -1009,12 +995,22 @@ RESTART_EXCEPTION:
                                 } // End IF
                             } else
                             {
-                                DbgBrk ();      // ***TESTME*** -- Can this ever happen??
+                                // It's now an INT result
+                                aplTypeRes = ARRAY_INT;
 
+                                if (hGlbRes)
+                                {
+                                    if (lpMemRes)
+                                    {
+                                        // We no longer need this ptr
+                                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                    } // End IF
 
+                                    // We no longer need this storage
+                                    FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                                } // End IF
 
-
-
+                                goto RESTART_ALLOC;
                             } // End IF/ELSE
 
                             break;
@@ -1195,7 +1191,7 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
             hGlbPro =
             hGlbRht =
               MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbRht),    // Proto arg global memory handle
-                                      &lpYYFcnStrOpr->tkToken,      // Ptr to function token
+                                  &lpYYFcnStrOpr->tkToken,  // Ptr to function token
                                        MP_NUMONLY);                 // Numerics only
             if (!hGlbRht)
                 goto WSFULL_EXIT;
@@ -1375,7 +1371,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
      || IsEmpty (aplNELMRht))
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
     } else
@@ -1485,15 +1481,11 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     aplRankRes = max (aplRankRht, 1);
 
     // Get a ptr to the Primitive Function Flags
-    lpPrimFlagsLft = GetPrimFlagsPtr (lpYYFcnStrLft);
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
     if (lpPrimFlagsLft)
         lpPrimIdentLft = &PrimIdent[lpPrimFlagsLft->Index];
     else
         lpPrimIdentLft = NULL;
-
-    // Use all zero PrimFlags if not present
-    if (!lpPrimFlagsLft)
-        lpPrimFlagsLft = &PrimFlags0;
 
     // If the left arg is zero, or
     //    the absolute value of the left arg is (uDimAxRht + 1),
@@ -1818,7 +1810,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     } else
     {
         // Otherwise, we're out of special cases
-
+RESTART_ALLOC:
         // Allocate storage for the result
         if (!PrimOpDydSlashAllocate_EM
              (aplTypeRht,           // Right arg storage type
@@ -2037,12 +2029,22 @@ RESTART_EXCEPTION:
                                       (BIT0 & tkRhtArg.tkData.tkBoolean) << (MASKLOG2NBIB & (UINT) uRes);
                                 else
                                 {
-                                    DbgBrk ();      // ***TESTME*** -- Can this ever happen??
+                                    // It's now an INT result
+                                    aplTypeRes = ARRAY_INT;
 
+                                    if (hGlbRes)
+                                    {
+                                        if (lpMemRes)
+                                        {
+                                            // We no longer need this ptr
+                                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                        } // End IF
 
+                                        // We no longer need this storage
+                                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                                    } // End IF
 
-
-
+                                    goto RESTART_ALLOC;
                                 } // End IF/ELSE
 
                                 break;

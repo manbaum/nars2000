@@ -412,25 +412,22 @@ LPPRIMSPEC PrimSpecTab[PRIMTAB_LEN];    // The table of corresponding LPPRIMSPEC
                                         //   for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
-    WORD Index    :4,                   // 000F:  Function index (see FBFN_INDS)
-         Available:5,                   // 01F0:  Available flag bits
-         IdentElem:1,                   // 0200:  TRUE iff this function has an identity element
-         DydScalar:1,                   // 0400:  ...                    is scalar dyadic
-         MonScalar:1,                   // 0800:  ...                       ...    monadic
-         Alter    :1,                   // 1000:  ...                       alternating
-         AssocBool:1,                   // 2000:  ...                       associative on Booleans only
-         AssocNumb:1,                   // 4000:  ...                       associative on all numbers
-         FastBool :1;                   // 8000:  Boolean function w/reduction & scan can be sped up
-                                        // 0000:  No available bits
+    APLU3264  Index    :4,              // 00:  0000000F:  Function index (see FBFN_INDS)
+              IdentElem:1,              //      00000010:  TRUE iff this function has an identity element
+              bLftIdent:1,              //      00000020:  TRUE iff the identity function is a left identity
+              bRhtIdent:1,              //      00000040:  ...                                 right ...
+              DydScalar:1,              //      00000080:  ...                    is scalar dyadic
+              MonScalar:1,              //      00000100:  ...                       ...    monadic
+              Alter    :1,              //      00000200:  ...                       alternating
+              AssocBool:1,              //      00000400:  ...                       associative on Booleans only
+              AssocNumb:1,              //      00000800:  ...                       associative on all numbers
+              FastBool :1,              //      00001000:  Boolean function w/reduction & scan can be sped up
+                       :19;             //      FFFFE000:  Available flag bits
+    LPPRIMOPS lpPrimOps;                // 04:  Ptr to PRIMOPS entry of the identity function (or NULL if it's a scalar fcn)
 } PRIMFLAGS, *LPPRIMFLAGS;
 
 EXTERN
-PRIMFLAGS PrimFlags0                    // All zero PrimFlags for global R/O use
-#ifdef DEFINE_VALUES
- = {0}
-#endif
-,
-          PrimFlags[PRIMTAB_LEN];       // The flag tables for all primitive functions/operators
+PRIMFLAGS PrimFlags[PRIMTAB_LEN];       // The flag tables for all primitive functions/operators
 
 
 //***************************************************************************
@@ -556,18 +553,6 @@ typedef union tagGLBSYM
     HGLOBAL    hGlb;        // Result is APLNESTED
     LPSYMENTRY lpSym;       // Result is APLHETERO
 } GLBSYM, *LPGLBSYM;
-
-typedef struct tagIDENTFNS
-{
-    LPPRIMOPS lpPrimOps;    // 00:  Ptr to PRIMOPS entry of the identity function
-    APLU3264  bLftIdent:1,  // 04:  00000001:  TRUE iff the identity function is a left identity
-              bRhtIdent:1,  //   :  00000002:  ...                                 right ...
-              :30;          //      FFFFFFFC:  Available bits
-} IDENTFNS, *LPIDENTFNS;
-
-// Identity Functions Table
-EXTERN
-IDENTFNS PrimIdentFnsTab[PRIMTAB_LEN];
 
 EXTERN
 const TOKEN tkZero

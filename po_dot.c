@@ -499,8 +499,8 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     if (bPrototyping)
     {
        // Get the appropriate prototype function ptrs
-       lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
-       lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+       lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
+       lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
 
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
@@ -510,18 +510,12 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     } // End IF
 
     // Get a ptr to the Primitive Function Flags
-    lpPrimFlagsLft = GetPrimFlagsPtr (lpYYFcnStrLft);
-    lpPrimFlagsRht = GetPrimFlagsPtr (lpYYFcnStrRht);
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
+    lpPrimFlagsRht = GetPrimFlagsPtr (&lpYYFcnStrRht->tkToken);
     if (lpPrimFlagsLft)
         lpPrimIdentLft = &PrimIdent[lpPrimFlagsLft->Index];
     else
         lpPrimIdentLft = NULL;
-
-    // Use all zero PrimFlags if not present
-    if (!lpPrimFlagsLft)
-        lpPrimFlagsLft = &PrimFlags0;
-    if (!lpPrimFlagsRht)
-        lpPrimFlagsRht = &PrimFlags0;
 
     // Get the attributes (Type,NELM, and Rank)
     //   of the left & right args
@@ -575,7 +569,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     {
         if (!lpPrimProtoLft)
             // Get the appropriate prototype function ptr
-            lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+            lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
     } else
@@ -753,15 +747,6 @@ RESTART_INNERPROD_RES:
 
     // Skip over the dimensions to the data
     lpMemRes = lpMemDimRes;
-
-    if (IsNested (aplTypeRes))
-    {
-        // Fill nested result with PTR_REUSED
-        //   in case we fail part way through
-        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-        for (uRes = 1; uRes < aplNELMRes; uRes++)
-            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
-    } // End IF
 
     // Check for empty result
     if (IsEmpty (aplNELMRes))
@@ -945,7 +930,7 @@ RESTART_INNERPROD_RES:
         if (!lpPrimProtoRht)
         {
             // Get the appropriate prototype function ptr
-            lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+            lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
             if (!lpPrimProtoRht)
                 goto RIGHT_NONCE_EXIT;
         } // End IF

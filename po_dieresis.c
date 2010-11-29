@@ -129,7 +129,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
     LPPL_YYSTYPE lpYYFcnStrRht,     // Ptr to right operand function strand
                  lpYYRes = NULL,    // Ptr to result
                  lpYYRes2 = NULL;   // Ptr to secondary result
-    LPIDENTFNS   lpPrimIdentRht;    // Ptr to right operand identity function
+    LPPRIMFLAGS  lpPrimFlagsRht;    // Ptr to right operand primitive flags
     LPTOKEN      lptkAxisRht;       // Ptr to axis operator token (if any)
     TOKEN        tkItem;            // Item token
 
@@ -159,11 +159,11 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
     // Check for right operand axis operator
     lptkAxisRht = CheckAxisOper (lpYYFcnStrRht);
 
-    // Get the appropriate identity function ptr
-    lpPrimIdentRht = GetIdentityFcnPtr (&lpYYFcnStrRht->tkToken);
+    // Get the appropriate primitive flags ptr
+    lpPrimFlagsRht = GetPrimFlagsPtr (&lpYYFcnStrRht->tkToken);
 
     // Check for error
-    if (!lpPrimIdentRht || !lpPrimIdentRht->lpPrimOps)
+    if (!lpPrimFlagsRht || !lpPrimFlagsRht->lpPrimOps)
         goto RIGHT_DOMAIN_EXIT;
 
     // Calculate space needed for the result
@@ -226,7 +226,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
                                         &tkItem);       // Ptr to the result token
         // Execute the right operand identity function on each item of the right arg
         lpYYRes2 =
-          (*lpPrimIdentRht->lpPrimOps)
+          (*lpPrimFlagsRht->lpPrimOps)
                             (lptkRhtArg,            // Ptr to original right arg token
                              lpYYFcnStrRht,         // Ptr to function strand
                             &tkItem,                // Ptr to right arg token
@@ -428,7 +428,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
      || bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto NONCE_EXIT;
 
@@ -1176,7 +1176,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
      || bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto NONCE_EXIT;
 

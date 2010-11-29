@@ -360,18 +360,14 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
      || bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+        lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
         if (!lpPrimProtoRht)
             goto NONCE_EXIT;
     } else
         lpPrimProtoRht = NULL;
 
     // Get a ptr to the Primitive Function Flags
-    lpPrimFlagsRht = GetPrimFlagsPtr (lpYYFcnStrRht);
-
-    // Use all zero PrimFlags if not present
-    if (!lpPrimFlagsRht)
-        lpPrimFlagsRht = &PrimFlags0;
+    lpPrimFlagsRht = GetPrimFlagsPtr (&lpYYFcnStrRht->tkToken);
 
     // The rank of the result is the sum of the left & right ranks
     aplRankRes = aplRankLft + aplRankRht;

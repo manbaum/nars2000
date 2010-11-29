@@ -501,9 +501,8 @@ UBOOL PrimScalarFnDydAllocate_EM
 {
     APLUINT  ByteRes;           // # bytes in the result
     LPVOID   lpMemRes;          // Ptr to locked memory in result
-    LPAPLDIM lpMemDimArg;
-    APLUINT  uRes;
-    LPVOID   lpMem;
+    LPAPLDIM lpMemDimArg;       // Ptr to the arg dimensions
+    APLUINT  uRes;              // Loop counter
 
     // Initialize the result
     *lphGlbRes = NULL;
@@ -603,25 +602,12 @@ UBOOL PrimScalarFnDydAllocate_EM
         if (aplRankLft > aplRankRht)
             lpMemDimArg = lpMemLft;
         else
-            lpMemDimArg = lpMemRht;
+                lpMemDimArg = lpMemRht;
 
         // Copy the dimensions to the result
         for (uRes = 0; uRes < *lpaplRankRes; uRes++)
             (VarArrayBaseToDim (lpMemRes))[uRes] = (VarArrayBaseToDim (lpMemDimArg))[uRes];
     } // End IF/ELSE/...
-
-    // Fill nested result with PTR_REUSED
-    //   in case we fail part way through
-    if (IsNested (aplTypeRes))
-    {
-        // Skip over the header and dimensions to the data
-        lpMem = VarArrayBaseToData (lpMemRes, *lpaplRankRes);
-
-        // Fill in the prototype
-        *((LPAPLNESTED) lpMem) = PTR_REUSED;
-        for (uRes = 1; uRes < aplNELMRes; uRes++)
-            ((LPAPLNESTED) lpMem)[uRes] = PTR_REUSED;
-    } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;

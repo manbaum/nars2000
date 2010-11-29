@@ -205,8 +205,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
     if (bPrototyping)
     {
        // Get the appropriate prototype function ptrs
-       lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
-       lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+       lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
+       lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
 
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;

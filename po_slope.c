@@ -150,7 +150,6 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                       uDimRht,              // Starting index in right arg of current vector
                       uDimAxRht,            // Right arg axis dimension
                       uRht,                 // Right arg loop counter
-                      uRes,                 // Result loop counter
                       ByteRes;              // # bytes in the result
     APLINT            apaOffRht,            // Right arg APA offset
                       apaMulRht;            // ...           multiplier
@@ -197,7 +196,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     if (bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
     } else
@@ -244,9 +243,9 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                                       aplTypeRht,       // Right arg storage type
                                       aplLongestRht,    // Right arg immediate value
                                       hGlbRht,          // Right arg global memory handle
-                                      lpYYFcnStrOpr,    // Ptr to operator function strand
-                                      lpYYFcnStrLft,    // Ptr to left operand
-                                      bPrototyping);    // TRUE iff prototyping
+                                 lpYYFcnStrOpr,     // Ptr to operator function strand
+                                 lpYYFcnStrLft,     // Ptr to left operand
+                                 bPrototyping);     // TRUE iff prototyping
         goto NORMAL_EXIT;
     } // End IF
 
@@ -306,11 +305,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     } // End IF
 
     // Get a ptr to the Primitive Function Flags
-    lpPrimFlagsLft = GetPrimFlagsPtr (lpYYFcnStrLft);
-
-    // Use all zero PrimFlags if not present
-    if (!lpPrimFlagsLft)
-        lpPrimFlagsLft = &PrimFlags0;
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
     // If the product of the dimensions above
     //   the axis dimension is one, and
@@ -370,7 +365,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         } // End IF/ELSE
     } else
         aplTypeRes = ARRAY_NESTED;
-
+RESTART_ALLOC:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -405,16 +400,6 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         *((LPAPLDIM) lpMemRes)++ = lpMemDimRht[uDim];
 
     // lpMemRes now points to its data
-
-    // If the result is nested, ...
-    if (IsNested (aplTypeRes))
-    {
-        // Fill nested result with PTR_REUSED
-        //   in case we fail part way through
-        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-        for (uRes = 1; uRes < aplNELMRes; uRes++)
-            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
-    } // End IF
 
     // If this is a fast Boolean operation, ...
     if (bFastBool)
@@ -503,12 +488,22 @@ RESTART_EXCEPTION:
                                       (BIT0 & tkLftArg.tkData.tkBoolean) << (MASKLOG2NBIB & (UINT) uRht);
                                 else
                                 {
-                                    DbgBrk ();      // ***TESTME*** -- Can this ever happen??
+                                    // It's now an INT result
+                                    aplTypeRes = ARRAY_INT;
 
+                                    if (hGlbRes)
+                                    {
+                                        if (lpMemRes)
+                                        {
+                                            // We no longer need this ptr
+                                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                        } // End IF
 
+                                        // We no longer need this storage
+                                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                                    } // End IF
 
-
-
+                                    goto RESTART_ALLOC;
                                 } // End IF/ELSE
 
                                 break;
@@ -626,12 +621,22 @@ RESTART_EXCEPTION:
                                           (BIT0 & tkLftArg.tkData.tkBoolean) << (MASKLOG2NBIB & (UINT) uRht);
                                     else
                                     {
-                                        DbgBrk ();      // ***TESTME*** -- Can this ever happen??
+                                        // It's now an INT result
+                                        aplTypeRes = ARRAY_INT;
 
+                                        if (hGlbRes)
+                                        {
+                                            if (lpMemRes)
+                                            {
+                                                // We no longer need this ptr
+                                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                            } // End IF
 
+                                            // We no longer need this storage
+                                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                                        } // End IF
 
-
-
+                                        goto RESTART_ALLOC;
                                     } // End IF/ELSE
 
                                     break;
@@ -700,10 +705,10 @@ RESTART_EXCEPTION:
                 // through
                 //   uRht = uDimRht + uAx * uDimHi;
 
-                // Calculate the index of last element in this vector
+                // Calculate the index of rightmost element in this vector
                 uRht = uDimRht + uAx * uDimHi;
 
-                // Get the last element as the right arg
+                // Get the righmost element as the right arg
                 GetNextValueMemIntoToken (uRht,             // Index to use
                                           lpMemRht,         // Ptr to global memory object to index
                                           aplTypeRht,       // Storage type of the arg
@@ -794,12 +799,24 @@ RESTART_EXCEPTION:
                                       (BIT0 & tkRhtArg.tkData.tkBoolean) << (MASKLOG2NBIB & (UINT) uRht);
                                 else
                                 {
-                                    DbgBrk ();      // ***TESTME*** -- Can this ever happen??
+                                    // This can occur with {nand}\2 3
 
+                                    // It's now an INT result
+                                    aplTypeRes = ARRAY_INT;
 
+                                    if (hGlbRes)
+                                    {
+                                        if (lpMemRes)
+                                        {
+                                            // We no longer need this ptr
+                                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                        } // End IF
 
+                                        // We no longer need this storage
+                                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                                    } // End IF
 
-
+                                    goto RESTART_ALLOC;
                                 } // End IF/ELSE
 
                                 break;

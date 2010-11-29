@@ -122,7 +122,7 @@ LPPL_YYSTYPE PrimIdentOpDieresisTilde_EM_YY
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
-    LPIDENTFNS   lpPrimIdentLft;        // Ptr to left operand identity function
+    LPPRIMFLAGS  lpPrimFlagsLft;        // Ptr to left operand primitive flags
     LPTOKEN      lptkAxisLft;           // Ptr to axis operator token (if any)
 
     // The right arg is the prototype item from
@@ -150,16 +150,16 @@ LPPL_YYSTYPE PrimIdentOpDieresisTilde_EM_YY
     // Check for left operand axis operator
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
 
-    // Get the appropriate identity function ptr
-    lpPrimIdentLft = GetIdentityFcnPtr (&lpYYFcnStrLft->tkToken);
+    // Get the appropriate primitive flags ptr
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
     // Check for error
-    if (!lpPrimIdentLft || !lpPrimIdentLft->lpPrimOps)
+    if (!lpPrimFlagsLft || !lpPrimFlagsLft->lpPrimOps)
         goto LEFT_DOMAIN_EXIT;
 
     // Execute the left operand identity function on the right arg
     return
-      (*lpPrimIdentLft->lpPrimOps)
+      (*lpPrimFlagsLft->lpPrimOps)
                         (lptkRhtOrig,           // Ptr to original right arg token
                          lpYYFcnStrLft,         // Ptr to function strand
                          lptkRhtArg,            // Ptr to right arg token
@@ -243,7 +243,7 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     if (bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto NONCE_EXIT;
 
@@ -347,7 +347,7 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
     if (bPrototyping)
     {
         // Get the appropriate prototype function ptr
-        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
             goto NONCE_EXIT;
 

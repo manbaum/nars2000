@@ -53,7 +53,7 @@ GLBSYM GetIdentityElement_EM
                  lpYYResL = NULL,   // Ptr to left result
                  lpYYResR = NULL;   // Ptr to right result
     GLBSYM       hGlbSym = {NULL};  // Result
-    LPIDENTFNS   lpPrimIdentLft;    // Ptr to Left operand identity function
+    LPPRIMFLAGS  lpPrimFlagsLft;    // Ptr to Left operand primitive flags
     LPTOKEN      lptkAxisLft,       // Ptr to left operand axis token
                  lptkAxisRht;       // ...    right ...
     TOKEN        tkFcn = {0};       // Function token
@@ -88,7 +88,7 @@ GLBSYM GetIdentityElement_EM
         //   as a prototype function if it's a UDFO
 
         // Get the appropriate prototype function ptr
-        lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
+        lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
 
         // Check for error
         if (!lpPrimProtoRht)
@@ -155,14 +155,14 @@ GLBSYM GetIdentityElement_EM
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
 
     // Get the appropriate identity function ptr
-    lpPrimIdentLft = GetIdentityFcnPtr (&lpYYFcnStrLft->tkToken);
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
     // Check for error
-    if (!lpPrimIdentLft || !lpPrimIdentLft->lpPrimOps)
+    if (!lpPrimFlagsLft || !lpPrimFlagsLft->lpPrimOps)
         goto LEFT_NONCE_EXIT;
 
     lpYYRes =
-      (*lpPrimIdentLft->lpPrimOps)
+      (*lpPrimFlagsLft->lpPrimOps)
                         (lptkRhtArg,            // Ptr to original right arg token
                          lpYYFcnStrLft,         // Ptr to operator or function strand
                         &lpYYRes3->tkToken,     // Ptr to right arg token

@@ -402,6 +402,578 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $PrimIdentFnScalar_EM_YY
+//
+//  Generate an identity element for a primitive scalar dyadic function
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnScalar_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
+    (LPTOKEN lptkRhtOrig,               // Ptr to original right arg token
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to identity element result
+    APLSTYPE     aplTypeRht,            // Right arg storage type
+                 aplTypeRes;            // Result    ...
+    APLNELM      aplNELMRht,            // Right arg NELM
+                 aplNELMRes,            // Result    ...
+                 aplNELMAxis;           // Axis      ...
+    APLRANK      aplRankRht,            // Right arg rank
+                 aplRankRes;            // Result    ...
+    HGLOBAL      hGlbRht = NULL,        // Right arg global memory handle
+                 hGlbRes = NULL,        // Result    ...
+                 hGlbAxis = NULL;       // Axis      ...
+    LPVOID       lpMemRht = NULL,       // Ptr to right arg global memory
+                 lpMemRes = NULL;       // Ptr to result    ...
+    LPAPLDIM     lpMemDimRht,           // Ptr to right arg dimensions
+                 lpMemDimRes;           // Ptr to result    ...
+    APLLONGEST   aplLongestRht;         // Right arg immediate value
+    APLUINT      ByteRes;               // # bytes in the result
+    LPAPLUINT    lpMemAxisHead = NULL,  // Ptr to axis head
+                 lpMemAxisTail = NULL;  // Ptr to axis tail
+    LPPRIMSPEC   lpPrimSpec;            // Ptr to function PRIMSPEC
+    LPPRIMFLAGS  lpPrimFlags;           // Ptr to function PrimFlags entry
+    LPPRIMIDENT  lpPrimIdent;           // Ptr to function PrimIdent entry
+    APLUINT      uRht;                  // Loop counter
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for axis present
+    if (lptkAxis NE NULL)
+    {
+        // Check the axis values, fill in # elements in axis
+        if (!CheckAxis_EM (lptkAxis,        // The axis token
+                           aplRankRht,      // All values less than this
+                           FALSE,           // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // TRUE iff fractional values allowed
+                           NULL,            // Return last axis value
+                          &aplNELMAxis,     // Return # elements in axis vector
+                          &hGlbAxis))       // Return HGLOBAL with APLINT axis values
+            return NULL;
+
+        // Lock the memory to get a ptr to it
+        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+
+        // Get pointer to the axis tail (where the [X] values are)
+        lpMemAxisTail = &lpMemAxisHead[aplRankRht - aplNELMAxis];
+    } else
+        // No axis is the same as all axes
+        aplNELMAxis = aplRankRht;
+
+    // The result rank is the NELM axis
+    aplRankRes = aplNELMAxis;
+
+    // Get the corresponding lpPrimSpec
+    lpPrimSpec = PrimSpecTab[SymTrans (lptkFunc)];
+
+    // Calculate the storage type of the result
+    aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMRht,
+                                               &aplTypeRht,
+                                                lptkFunc,
+                                                aplNELMRht,
+                                               &aplTypeRht);
+    if (aplTypeRes EQ ARRAY_ERROR)
+        goto DOMAIN_EXIT;
+
+    Assert (IsSimpleNum (aplTypeRes)
+         || IsNested (aplTypeRes));
+
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
+
+    // If there's an identity element, ...
+    if (lpPrimFlags && lpPrimFlags->IdentElem)
+        lpPrimIdent = &PrimIdent[lpPrimFlags->Index];
+    else
+        goto DOMAIN_EXIT;
+
+    // If the result is simple numeric, ...
+    if (IsSimpleNum (aplTypeRes))
+    {
+        // If the identity element is simple Boolean, ...
+        if (lpPrimIdent->IsBool)
+            // Make it Boolean
+            aplTypeRes = ARRAY_BOOL;
+        else
+            // Make it float
+            aplTypeRes = ARRAY_FLOAT;
+    } // End IF
+
+    // Get right arg global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // If the right arg is a simple scalar, ...
+    if (hGlbRht EQ NULL)
+    {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        lpYYRes->tkToken.tkFlags.ImmType   = lpPrimIdent->IsBool ? IMMTYPE_BOOL
+                                                                 : IMMTYPE_FLOAT;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+        if (lpPrimIdent->IsBool)
+            lpYYRes->tkToken.tkData.tkBoolean = lpPrimIdent->bIdentElem;
+        else
+            lpYYRes->tkToken.tkData.tkFloat   = lpPrimIdent->fIdentElem;
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
+    // Skip over the header to the dimensions
+    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+
+    //***************************************************************
+    //  Calculate result NELM
+    //***************************************************************
+    if (lpMemAxisTail)
+        for (aplNELMRes = 1, uRht = 0; uRht < aplRankRes; uRht++)
+            aplNELMRes *= lpMemDimRht[lpMemAxisTail[uRht]];
+    else
+        aplNELMRes = aplNELMRht;
+
+    //***************************************************************
+    // Calculate space needed for the result
+    //***************************************************************
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
+
+    //***************************************************************
+    // Check for overflow
+    //***************************************************************
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
+
+    // Skip over the header to the dimensions
+    lpMemDimRes = VarArrayBaseToDim (lpMemRes);
+
+    //***************************************************************
+    // Fill in the result's dimension
+    //***************************************************************
+    if (lpMemAxisTail)
+        for (uRht = 0; uRht < aplRankRes; uRht++)
+            *lpMemDimRes++ = lpMemDimRht[lpMemAxisTail[uRht]];
+    else
+        CopyMemory (lpMemDimRes, lpMemDimRht, (APLU3264) aplRankRes * sizeof (APLDIM));
+
+    // Skip over the header and dimensions to the data
+    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+
+    // If the right arg (and result) is simple (numeric), ...
+    if (IsSimpleNum (aplTypeRht))
+    {
+        // Fill in the result data
+        if (lpPrimIdent->IsBool)
+        {
+            Assert (IsSimpleBool (aplTypeRes));
+
+            if (lpPrimIdent->bIdentElem)
+                FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), 0xFF);
+        } else
+        {
+            Assert (IsSimpleFlt (aplTypeRes));
+
+            for (uRht = 0; uRht < aplNELMRes; uRht++)
+                *((LPAPLFLOAT) lpMemRes)++ = lpPrimIdent->fIdentElem;
+        } // End IF/ELSE
+    } else
+    {
+        // The result is nested
+        Assert (aplTypeRes EQ ARRAY_NESTED);
+
+        if (!PrimIdentFnScalarCommon_EM (lpMemRht,          // Ptr to right arg global memory data
+                                         lpMemRes,          // ...    result ...
+                                         aplNELMRht,        // Right arg NELM
+                                         aplNELMRes,        // Result    ...
+                                         lpPrimIdent,       // Ptr to function PrimIdent entry
+                                         lpPrimSpec,        // Ptr to function PRIMSPEC
+                                         lptkAxis,          // Ptr to axis token
+                                         lptkFunc))         // Ptr to function token
+            goto ERROR_EXIT;
+    } // End IF/ELSE
+
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&lpYYRes->tkToken);
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (hGlbAxis && lpMemAxisHead)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbAxis); lpMemAxisHead = lpMemAxisTail = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End PrimIdentFnScalar_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimIdentFnScalarCommon_EM
+//
+//  Common (recursive) routine to PrimIdentScalar_EM_YY
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnScalarCommon_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL PrimIdentFnScalarCommon_EM
+    (LPAPLHETERO lpMemRht,                  // Ptr to right arg global memory data
+     LPAPLHETERO lpMemRes,                  // ...    result ...
+     APLNELM     aplNELMRht,                // Right arg NELM
+     APLNELM     aplNELMRes,                // Result    ...
+     LPPRIMIDENT lpPrimIdent,               // Ptr to function PrimIdent entry
+     LPPRIMSPEC  lpPrimSpec,                // Ptr to function PRIMSPEC
+     LPTOKEN     lptkAxis,                  // Ptr to axis token
+     LPTOKEN     lptkFunc)                  // Ptr to function token
+
+{
+    APLUINT   uRht;                         // Loop counter
+    HGLOBAL   hGlbItm = NULL,               // Item global memory handle
+              hGlbRes2 = NULL,              // Result2 ...
+              hGlbAxis = NULL;              // Axis ...
+    APLSTYPE  aplTypeItm,                   // Item storage type
+              aplTypeRes2;                  // Result2 ...
+    APLNELM   aplNELMItm,                   // Item NELM
+              aplNELMRes2,                  // Result2 ...
+              aplNELMAxis;                  // Axis ...
+    APLRANK   aplRankItm,                   // Item rank
+              aplRankRes2;
+    LPVOID    lpMemItm = NULL,              // Ptr to item global memory
+              lpMemRes2 = NULL;             // ...    result2 ...
+    UBOOL     bRet = FALSE;                 // TRUE iff the result is valid
+    APLUINT   ByteRes2;                     // # bytes in the result2
+    LPAPLDIM  lpMemDimItm,                  // Ptr to item dimensions
+              lpMemDimRes2;                 // Ptr to result2    ...
+    LPAPLUINT lpMemAxisHead = NULL,         // Ptr to axis head
+              lpMemAxisTail = NULL;         // Ptr to axis tail
+
+    // Loop through the right arg
+    for (uRht = 0; uRht < aplNELMRht; uRht++)
+    {
+        // Split cases based upon the ptr type bits
+        switch (GetPtrTypeDir (lpMemRht[uRht]))
+        {
+            case PTRTYPE_STCONST:
+                // Save the identity element
+                *lpMemRes++ =
+                  MakeSymEntry_EM (lpMemRht[uRht]->stFlags.ImmType,     // Immediate type
+                                  &lpMemRht[uRht]->stData.stLongest,    // Ptr to immediate value
+                                   lptkFunc);                           // Ptr to function token
+                break;
+
+            case PTRTYPE_HGLOBAL:
+                // Get the item's global memory handle
+                hGlbItm = ClrPtrTypeDir (lpMemRht[uRht]);
+
+                // Lock the memory to get a ptr to it
+                lpMemItm = MyGlobalLock (hGlbItm);
+
+                // Get the item's attributes
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemItm)
+                aplTypeItm = lpHeader->ArrType;
+                aplNELMItm = lpHeader->NELM;
+                aplRankItm = lpHeader->Rank;
+#undef  lpHeader
+                // Check for axis present
+                if (lptkAxis NE NULL)
+                {
+                    // Check the axis values, fill in # elements in axis
+                    if (!CheckAxis_EM (lptkAxis,        // The axis token
+                                       aplRankItm,      // All values less than this
+                                       FALSE,           // TRUE iff scalar or one-element vector only
+                                       FALSE,           // TRUE iff want sorted axes
+                                       FALSE,           // TRUE iff axes must be contiguous
+                                       FALSE,           // TRUE iff duplicate axes are allowed
+                                       NULL,            // TRUE iff fractional values allowed
+                                       NULL,            // Return last axis value
+                                      &aplNELMAxis,     // Return # elements in axis vector
+                                      &hGlbAxis))       // Return HGLOBAL with APLINT axis values
+                        goto ERROR_EXIT;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemAxisHead = MyGlobalLock (hGlbAxis);
+
+                    // Get pointer to the axis tail (where the [X] values are)
+                    lpMemAxisTail = &lpMemAxisHead[aplRankItm - aplNELMAxis];
+                } else
+                    // No axis is the same as all axes
+                    aplNELMAxis = aplRankItm;
+
+                // The result2 rank is the NELM axis
+                aplRankRes2 = aplNELMAxis;
+
+                // Calculate the storage type of the result2
+                aplTypeRes2 = (*lpPrimSpec->StorageTypeDyd) (aplNELMItm,
+                                                            &aplTypeItm,
+                                                             lptkFunc,
+                                                             aplNELMItm,
+                                                            &aplTypeItm);
+                if (aplTypeRes2 EQ ARRAY_ERROR)
+                    goto DOMAIN_EXIT;
+
+                Assert (IsSimpleNum (aplTypeRes2)
+                     || IsNested (aplTypeRes2));
+
+                // If the result2 is simple numeric,
+                //   and not float,...
+                if (IsSimpleNum (aplTypeRes2)
+                 && !IsSimpleFlt (aplTypeRes2))
+                    // Make it Boolean
+                    aplTypeRes2 = ARRAY_BOOL;
+
+                // Skip over the header to the dimensions
+                lpMemDimItm = VarArrayBaseToDim (lpMemItm);
+
+                //***************************************************************
+                //  Calculate result2 NELM
+                //***************************************************************
+                if (lpMemAxisTail)
+                    for (aplNELMRes2 = 1, uRht = 0; uRht < aplRankRes2; uRht++)
+                        aplNELMRes2 *= lpMemDimItm[lpMemAxisTail[uRht]];
+                else
+                    aplNELMRes2 = aplNELMItm;
+
+                //***************************************************************
+                // Calculate space needed for the result2
+                //***************************************************************
+                ByteRes2 = CalcArraySize (aplTypeRes2, aplNELMRes2, aplRankRes2);
+
+                //***************************************************************
+                // Check for overflow
+                //***************************************************************
+                if (ByteRes2 NE (APLU3264) ByteRes2)
+                    goto WSFULL_EXIT;
+
+                //***************************************************************
+                // Now we can allocate the storage for the result
+                //***************************************************************
+                hGlbRes2 = DbgGlobalAlloc (GHND, (APLU3264) ByteRes2);
+                if (!hGlbRes2)
+                    goto WSFULL_EXIT;
+
+                // Lock the memory to get a ptr to it
+                lpMemRes2 = MyGlobalLock (hGlbRes2);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes2)
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = aplTypeRes2;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = aplNELMRes2;
+                lpHeader->Rank       = aplRankRes2;
+#undef  lpHeader
+
+                // Skip over the header to the dimensions
+                lpMemDimRes2 = VarArrayBaseToDim (lpMemRes2);
+
+                //***************************************************************
+                // Fill in the result's dimension
+                //***************************************************************
+                if (lpMemAxisTail)
+                    for (uRht = 0; uRht < aplRankRes2; uRht++)
+                        *lpMemDimRes2++ = lpMemDimItm[lpMemAxisTail[uRht]];
+                else
+                    CopyMemory (lpMemDimRes2, lpMemDimItm, (APLU3264) aplRankRes2 * sizeof (APLDIM));
+
+                // Skip over the header and dimensions to the data
+                lpMemItm  = VarArrayBaseToData (lpMemItm , aplRankItm);
+                lpMemRes2 = VarArrayBaseToData (lpMemRes2, aplRankRes2);
+
+                // If the item (and result2) is simple (numeric), ...
+                if (IsSimpleNum (aplTypeItm))
+                {
+                    // Fill in the result data
+                    if (lpPrimIdent->IsBool)
+                    {
+                        if (lpPrimIdent->bIdentElem)
+                            FillMemory (lpMemRes2, (APLU3264) RoundUpBitsToBytes (aplNELMRes2), 0xFF);
+                    } else
+                    {
+                        for (uRht = 0; uRht < aplNELMRes2; uRht++)
+                            *((LPAPLFLOAT) lpMemRes2)++ = lpPrimIdent->fIdentElem;
+                    } // End IF/ELSE
+                } else
+                {
+                    // The result is nested
+                    Assert (aplTypeRes2 EQ ARRAY_NESTED);
+
+                    if (!PrimIdentFnScalarCommon_EM (lpMemItm,          // Ptr to item global memory data
+                                                     lpMemRes2,         // ...    result2 ...
+                                                     aplNELMItm,        // Item NELM
+                                                     aplNELMRes2,       // Result2    ...
+                                                     lpPrimIdent,       // Ptr to function PrimIdent entry
+                                                     lpPrimSpec,        // Ptr to function PRIMSPEC
+                                                     lptkAxis,          // Ptr to axis token
+                                                     lptkFunc))         // Ptr to function token
+                        goto ERROR_EXIT;
+                } // End IF/ELSE
+
+                // We no longer need these ptrs
+                MyGlobalUnlock (hGlbItm);  lpMemItm  = NULL;
+                MyGlobalUnlock (hGlbRes2); lpMemRes2 = NULL;
+
+                // Save in the result
+                *lpMemRes++ = MakePtrTypeGlb (hGlbRes2);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End FOR
+
+    // Mark as successful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes2)
+    {
+        if (lpMemRes2)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes2); lpMemRes2 = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes2); hGlbRes2 = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRes2 && lpMemRes2)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes2); lpMemRes2 = NULL;
+    } // End IF
+
+    if (hGlbItm && lpMemItm)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
+    } // End IF
+
+    if (hGlbAxis && lpMemAxisTail)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbAxis); lpMemAxisTail = NULL;
+    } // End IF
+
+    return bRet;
+} // End PrimIdentFnScalarCommon_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnMon_EM_YY
 //
 //  Primitive scalar monadic function
@@ -1967,15 +2539,6 @@ UBOOL PrimFnDydSimpNest_EM
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    if (IsNested (aplTypeRes))
-    {
-        // Fill nested result with PTR_REUSED
-        //   in case we fail part way through
-        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-        for (uRes = 1; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
-            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
-    } // End IF
-
     // Handle axis if present
     if (aplNELMAxis NE aplRankRes)
     {
@@ -2336,15 +2899,6 @@ UBOOL PrimFnDydNestSimp_EM
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
-
-    if (IsNested (aplTypeRes))
-    {
-        // Fill nested result with PTR_REUSED
-        //   in case we fail part way through
-        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-        for (uRes = 1; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
-            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
-    } // End IF
 
     // Handle axis if present
     if (aplNELMAxis NE aplRankRes)

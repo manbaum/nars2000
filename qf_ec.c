@@ -243,6 +243,27 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 
                 break;
 
+            case TKT_VARNAMED:
+                // stData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lpYYRes2->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                // If the value is immediate, ...
+                if (IsTknImmed (&lpYYRes2->tkToken))
+                {
+                    // Save the immediate result
+                    lpMemRes[2] =
+                      MakeSymEntry_EM (lpYYRes2->tkToken.tkData.tkSym->stFlags.ImmType,     // Immediate type
+                                      &lpYYRes2->tkToken.tkData.tkSym->stData.stLongest,    // Ptr to immediate value
+                                       lptkFunc);                                           // Ptr to function token
+                    // Check for error
+                    if (lpMemRes[2] EQ NULL)
+                        goto ERROR_EXIT;
+                } else
+                    // Save the global result
+                    lpMemRes[2] =
+                      CopySymGlbDir_PTB (lpYYRes2->tkToken.tkData.tkSym->stData.stGlbData);
+                break;
+
             defstop
                 break;
         } // End SWITCH

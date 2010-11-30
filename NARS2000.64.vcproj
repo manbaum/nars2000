@@ -267,7 +267,7 @@
                 >
             </File>
             <File
-                RelativePath="&quot;$(OutDir)&quot;\cs_parse.c"
+                RelativePath="&quot;$(OutDir)\cs_parse.c&quot;"
                 >
             </File>
             <File
@@ -397,7 +397,7 @@
                 >
             </File>
             <File
-                RelativePath="&quot;$(OutDir)&quot;\fh_parse.c"
+                RelativePath="&quot;$(OutDir)\fh_parse.c&quot;"
                 >
             </File>
             <File
@@ -665,7 +665,7 @@
                 >
             </File>
             <File
-                RelativePath="&quot;$(OutDir)&quot;\pl_parse.c"
+                RelativePath="&quot;$(OutDir)\pl_parse.c&quot;"
                 >
             </File>
             <File
@@ -689,7 +689,7 @@
                 </FileConfiguration>
             </File>
             <File
-                RelativePath="&quot;$(OutDir)&quot;\pn_parse.c"
+                RelativePath="&quot;$(OutDir)\pn_parse.c&quot;"
                 >
             </File>
             <File

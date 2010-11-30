@@ -451,6 +451,18 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     Assert (lptkFunc    NE NULL);
     Assert (lptkRhtArg  NE NULL);
 
+    // Get the corresponding lpPrimSpec
+    lpPrimSpec = PrimSpecTab[SymTrans (lptkFunc)];
+
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
+
+    // If there's an identity element, ...
+    if (lpPrimFlags && lpPrimFlags->IdentElem)
+        lpPrimIdent = &PrimIdent[lpPrimFlags->Index];
+    else
+        goto DOMAIN_EXIT;
+
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
@@ -482,9 +494,6 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     // The result rank is the NELM axis
     aplRankRes = aplNELMAxis;
 
-    // Get the corresponding lpPrimSpec
-    lpPrimSpec = PrimSpecTab[SymTrans (lptkFunc)];
-
     // Calculate the storage type of the result
     aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMRht,
                                                &aplTypeRht,
@@ -496,15 +505,6 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
 
     Assert (IsSimpleNum (aplTypeRes)
          || IsNested (aplTypeRes));
-
-    // Get a ptr to the Primitive Function Flags
-    lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
-
-    // If there's an identity element, ...
-    if (lpPrimFlags && lpPrimFlags->IdentElem)
-        lpPrimIdent = &PrimIdent[lpPrimFlags->Index];
-    else
-        goto DOMAIN_EXIT;
 
     // If the result is simple numeric, ...
     if (IsSimpleNum (aplTypeRes))
@@ -543,6 +543,11 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
 
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+
+    //***************************************************************
+    //  Code from here on down to the call to <PrimFnScalarCommon_EM>
+    //    can be incorporated into that routine as an optimization.
+    //***************************************************************
 
     //***************************************************************
     //  Calculate result NELM
@@ -623,10 +628,13 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
         // The result is nested
         Assert (aplTypeRes EQ ARRAY_NESTED);
 
+        // Handle nested prototypes
+        aplNELMRht = max (aplNELMRht, 1);
+
+        // Recurse into the array
         if (!PrimIdentFnScalarCommon_EM (lpMemRht,          // Ptr to right arg global memory data
                                          lpMemRes,          // ...    result ...
                                          aplNELMRht,        // Right arg NELM
-                                         aplNELMRes,        // Result    ...
                                          lpPrimIdent,       // Ptr to function PrimIdent entry
                                          lpPrimSpec,        // Ptr to function PRIMSPEC
                                          lptkAxis,          // Ptr to axis token
@@ -718,7 +726,6 @@ UBOOL PrimIdentFnScalarCommon_EM
     (LPAPLHETERO lpMemRht,                  // Ptr to right arg global memory data
      LPAPLHETERO lpMemRes,                  // ...    result ...
      APLNELM     aplNELMRht,                // Right arg NELM
-     APLNELM     aplNELMRes,                // Result    ...
      LPPRIMIDENT lpPrimIdent,               // Ptr to function PrimIdent entry
      LPPRIMSPEC  lpPrimSpec,                // Ptr to function PRIMSPEC
      LPTOKEN     lptkAxis,                  // Ptr to axis token
@@ -812,12 +819,17 @@ UBOOL PrimIdentFnScalarCommon_EM
                 Assert (IsSimpleNum (aplTypeRes2)
                      || IsNested (aplTypeRes2));
 
-                // If the result2 is simple numeric,
-                //   and not float,...
-                if (IsSimpleNum (aplTypeRes2)
-                 && !IsSimpleFlt (aplTypeRes2))
-                    // Make it Boolean
-                    aplTypeRes2 = ARRAY_BOOL;
+                // If the result2 is simple numeric, ...
+                if (IsSimpleNum (aplTypeRes2))
+                {
+                    // If the identity element is simple Boolean, ...
+                    if (lpPrimIdent->IsBool)
+                        // Make it Boolean
+                        aplTypeRes2 = ARRAY_BOOL;
+                    else
+                        // Make it float
+                        aplTypeRes2 = ARRAY_FLOAT;
+                } // End IF
 
                 // Skip over the header to the dimensions
                 lpMemDimItm = VarArrayBaseToDim (lpMemItm);
@@ -885,10 +897,14 @@ UBOOL PrimIdentFnScalarCommon_EM
                     // Fill in the result data
                     if (lpPrimIdent->IsBool)
                     {
+                        Assert (IsSimpleBool (aplTypeRes2));
+
                         if (lpPrimIdent->bIdentElem)
                             FillMemory (lpMemRes2, (APLU3264) RoundUpBitsToBytes (aplNELMRes2), 0xFF);
                     } else
                     {
+                        Assert (IsSimpleFlt (aplTypeRes2));
+
                         for (uRht = 0; uRht < aplNELMRes2; uRht++)
                             *((LPAPLFLOAT) lpMemRes2)++ = lpPrimIdent->fIdentElem;
                     } // End IF/ELSE
@@ -897,10 +913,13 @@ UBOOL PrimIdentFnScalarCommon_EM
                     // The result is nested
                     Assert (aplTypeRes2 EQ ARRAY_NESTED);
 
+                    // Handle nested prototypes
+                    aplNELMItm = max (aplNELMItm, 1);
+
+                    // Recurse into the array
                     if (!PrimIdentFnScalarCommon_EM (lpMemItm,          // Ptr to item global memory data
                                                      lpMemRes2,         // ...    result2 ...
                                                      aplNELMItm,        // Item NELM
-                                                     aplNELMRes2,       // Result2    ...
                                                      lpPrimIdent,       // Ptr to function PrimIdent entry
                                                      lpPrimSpec,        // Ptr to function PRIMSPEC
                                                      lptkAxis,          // Ptr to axis token
@@ -2179,9 +2198,12 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
                  lpMemRht = NULL;       // Ptr to right ...
     APLINT       aplInteger;            // Temporary integer value
-    UBOOL        bRet = TRUE;           // TRUE iff result is valid
+    UBOOL        bRet = TRUE,           // TRUE iff result is valid
+                 bLftIdent,             // TRUE iff the function has a left identity element and the Axis tail is valid
+                 bRhtIdent;             // ...                         right ...
     LPPRIMFN_DYD_SNvSN lpPrimFn;        // Ptr to dyadic scalar SimpNest vs. SimpNest function
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
+    LPPRIMFLAGS  lpPrimFlags;           // Ptr to function PrimFlags entry
 
     DBGENTER;
 
@@ -2251,6 +2273,15 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
+
+    // Set the identity element bits
+    bLftIdent = lpPrimFlags->bLftIdent
+             && (lpMemAxisTail NE NULL);
+    bRhtIdent = lpPrimFlags->bRhtIdent
+             && (lpMemAxisTail NE NULL);
+
     // Check for RANK and LENGTH ERRORs
     if (!CheckRankLengthError_EM (aplRankRes,
                                   aplRankLft,
@@ -2261,6 +2292,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                   lpMemRht,
                                   aplNELMAxis,
                                   lpMemAxisTail,
+                                  bLftIdent,
+                                  bRhtIdent,
                                   lptkFunc))
         goto ERROR_EXIT;
 
@@ -2306,6 +2339,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                      aplRankRht,
                                     &aplRankRes,
                                      aplTypeRes,
+                                     bLftIdent,
+                                     bRhtIdent,
                                      aplNELMLft,
                                      aplNELMRht,
                                      aplNELMRes))
@@ -2368,6 +2403,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                       aplNELMRht,
                       aplNELMRes,
                       aplNELMAxis,
+                      bLftIdent,
+                      bRhtIdent,
                       lpPrimSpec))
         goto ERROR_EXIT;
     else
@@ -2464,6 +2501,10 @@ UBOOL PrimFnDydSimpNest_EM
      APLNELM       aplNELMRht,      // Right ...
      APLNELM       aplNELMRes,      // Result ...
      APLNELM       aplNELMAxis,     // Axis ...
+
+     UBOOL         bLftIdent,       // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL         bRhtIdent,       // ...                         right ...
+
      LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
@@ -2706,6 +2747,8 @@ UBOOL PrimFnDydSimpNest_EM
                                                 aplFloatLft,
                                                 aplCharLft,
                                                 hGlbSub,
+                                                bLftIdent,
+                                                bRhtIdent,
                                                 lpPrimSpec);
                 if (!hGlbSub)
                     goto ERROR_EXIT;
@@ -2825,6 +2868,10 @@ UBOOL PrimFnDydNestSimp_EM
      APLNELM       aplNELMRht,      // Right ...
      APLNELM       aplNELMRes,      // Result ...
      APLNELM       aplNELMAxis,     // Axis ...
+
+     UBOOL         bLftIdent,       // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL         bRhtIdent,       // ...                         right ...
+
      LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
@@ -3067,6 +3114,8 @@ UBOOL PrimFnDydNestSimp_EM
                                                 aplFloatRht,
                                                 aplCharRht,
                                                 hGlbSub,
+                                                bLftIdent,
+                                                bRhtIdent,
                                                 lpPrimSpec);
                 if (!hGlbSub)
                     goto ERROR_EXIT;
@@ -3164,6 +3213,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
      APLFLOAT   aplFloatRht,        // ...       float   ...
      APLCHAR    aplCharRht,         // ...       char    ...
      APLNESTED  aplNestedLft,       // Left arg nested value
+     UBOOL      bLftIdent,          // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL      bRhtIdent,          // ...                         right ...
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
@@ -3252,6 +3303,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                      aplRankLft,
                                     &aplRankRes,
                                      aplTypeRes,
+                                     bLftIdent,
+                                     bRhtIdent,
                                      aplNELMRht,
                                      aplNELMLft,
                                      aplNELMRes))
@@ -3293,6 +3346,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                      aplIntegerRht,
                                      aplFloatRht,
                                      aplCharRht,
+                                     bLftIdent,
+                                     bRhtIdent,
                                      lptkFunc,
                                      lpPrimSpec);
 
@@ -3346,6 +3401,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                                     aplFloatRht,
                                                     aplCharRht,
                                                     hGlbSub,
+                                                    bLftIdent,
+                                                    bRhtIdent,
                                                     lpPrimSpec);
                     if (!hGlbSub)
                         goto ERROR_EXIT;
@@ -3484,6 +3541,10 @@ UBOOL PrimFnDydNestNest_EM
      APLNELM      aplNELMRht,       // Right ...
      APLNELM      aplNELMRes,       // Result ...
      APLNELM      aplNELMAxis,      // Axis ...
+
+     UBOOL        bLftIdent,        // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL        bRhtIdent,        // ...                         right ...
+
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
@@ -3504,6 +3565,8 @@ UBOOL PrimFnDydNestNest_EM
                                   lpMemRht,
                                   aplNELMAxis,
                                   lpMemAxisTail,
+                                  bLftIdent,
+                                  bRhtIdent,
                                   lptkFunc))
         goto ERROR_EXIT;
 
@@ -3612,6 +3675,8 @@ UBOOL PrimFnDydSingMult_EM
      APLINT            apaMulRht,           // ...       ... multiplier
      LPVARARRAY_HEADER lpMemHdrRht,         // Ptr to left/right arg header (in case we blow up)
      LPVOID            lpMemRht,            // Points to the data
+     UBOOL             bLftIdent,           // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL             bRhtIdent,           // ...                         right ...
      LPTOKEN           lptkFunc,            // Ptr to function token
      LPPRIMSPEC        lpPrimSpec)          // Ptr to local PRIMSPEC
 
@@ -4590,6 +4655,8 @@ RESTART_EXCEPTION:
                                                          lpMemHdrRht->Rank,
                                                         &aplRankRes,
                                                          aplTypeRes,
+                                                         bLftIdent,
+                                                         bRhtIdent,
                                                          1,
                                                          lpMemHdrRht->NELM,
                                                          aplNELMRes))
@@ -4677,6 +4744,8 @@ UBOOL PrimFnDydMultSing_EM
      APLINT            aplIntegerRht,       // ...       integer value
      APLFLOAT          aplFloatRht,         // ...       float   ...
      APLCHAR           aplCharRht,          // ...       char    ...
+     UBOOL             bLftIdent,           // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL             bRhtIdent,           // ...                         right ...
      LPTOKEN           lptkFunc,            // Ptr to function token
      LPPRIMSPEC        lpPrimSpec)          // Ptr to local PRIMSPEC
 
@@ -5655,6 +5724,8 @@ RESTART_EXCEPTION:
                                                          0,
                                                         &aplRankRes,
                                                          aplTypeRes,
+                                                         bLftIdent,
+                                                         bRhtIdent,
                                                          lpMemHdrLft->NELM,
                                                          1,
                                                          aplNELMRes))
@@ -5733,6 +5804,8 @@ HGLOBAL PrimFnDydSiScNest_EM
      APLFLOAT   aplFloatLft,        // ...      float   ...
      APLCHAR    aplCharLft,         // ...      char    ...
      APLNESTED  aplNestedRht,       // Right arg nested value
+     UBOOL      bLftIdent,          // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL      bRhtIdent,          // ...                         right ...
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
@@ -5821,6 +5894,8 @@ HGLOBAL PrimFnDydSiScNest_EM
                                      aplRankRht,
                                     &aplRankRes,
                                      aplTypeRes,
+                                     bLftIdent,
+                                     bRhtIdent,
                                      aplNELMLft,
                                      aplNELMRht,
                                      aplNELMRes))
@@ -5859,6 +5934,8 @@ HGLOBAL PrimFnDydSiScNest_EM
                                       apaMulRht,
                                       lpMemHdrRht,
                                       lpMemRht,
+                                      bLftIdent,
+                                      bRhtIdent,
                                       lptkFunc,
                                       lpPrimSpec);
     else
@@ -5911,6 +5988,8 @@ HGLOBAL PrimFnDydSiScNest_EM
                                                     aplFloatLft,
                                                     aplCharLft,
                                                     hGlbSub,
+                                                    bLftIdent,
+                                                    bRhtIdent,
                                                     lpPrimSpec);
                     if (!hGlbSub)
                         goto ERROR_EXIT;
@@ -6278,6 +6357,10 @@ UBOOL PrimFnDydSimpSimp_EM
      APLNELM      aplNELMRht,       // Right ...
      APLNELM      aplNELMRes,       // Result ...
      APLNELM      aplNELMAxis,      // Axis ...
+
+     UBOOL        bLftIdent,        // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL        bRhtIdent,        // ...                         right ...
+
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
@@ -6556,6 +6639,8 @@ RESTART_EXCEPTION_SINGLETON:
                                                                  aplRankRht,
                                                                 &aplRankRes,
                                                                  aplTypeRes,
+                                                                 bLftIdent,
+                                                                 bRhtIdent,
                                                                  aplNELMLft,
                                                                  aplNELMRht,
                                                                  aplNELMRes))
@@ -6674,6 +6759,8 @@ RESTART_EXCEPTION_SINGLETON:
                                          aplIntegerRht,
                                          aplFloatRht,
                                          aplCharRht,
+                                         bLftIdent,
+                                         bRhtIdent,
                                          lptkFunc,
                                          lpPrimSpec);
         else                            // Lft = Singleton, Rht = Multipleton
@@ -6691,6 +6778,8 @@ RESTART_EXCEPTION_SINGLETON:
                                          apaMulRht,
                                          lpMemHdrArg,
                                          lpMemDimArg,
+                                         bLftIdent,
+                                         bRhtIdent,
                                          lptkFunc,
                                          lpPrimSpec);
         // Check for error
@@ -6740,7 +6829,7 @@ RESTART_EXCEPTION_SINGLETON:
         } // End IF
 
         // If the axis is significant, ...
-        if (lpMemAxisHead && aplNELMAxis NE aplRankRes)
+        if (lpMemAxisHead)
         {
             // Calculate space needed for the weighting vector
             ByteRes = aplRankRes * sizeof (APLUINT);
@@ -6827,6 +6916,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -6863,6 +6954,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -6899,6 +6992,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -6935,6 +7030,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -6970,6 +7067,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -7170,6 +7269,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -7202,6 +7303,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -7236,6 +7339,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -7266,6 +7371,8 @@ RESTART_EXCEPTION_AXIS:
                                                   aplRankLft,
                                                  &uRht,
                                                   aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
                                                   aplNELMAxis,
                                                   lpMemAxisHead,
                                                   lpMemOdo,
@@ -7323,6 +7430,8 @@ RESTART_EXCEPTION_AXIS:
                                                                  aplRankRht,
                                                                 &aplRankRes,
                                                                  aplTypeRes,
+                                                                 bLftIdent,
+                                                                 bRhtIdent,
                                                                  aplNELMLft,
                                                                  aplNELMRht,
                                                                  aplNELMRes))
@@ -7782,6 +7891,8 @@ RESTART_EXCEPTION_NOAXIS:
                                                                  aplRankRht,
                                                                 &aplRankRes,
                                                                  aplTypeRes,
+                                                                 bLftIdent,
+                                                                 bRhtIdent,
                                                                  aplNELMLft,
                                                                  aplNELMRht,
                                                                  aplNELMRes))
@@ -7918,6 +8029,8 @@ void CalcLftRhtArgIndices
      APLRANK   aplRankLft,
      LPAPLINT  lpuRht,
      APLRANK   aplRankRht,
+     UBOOL     bLftIdent,           // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL     bRhtIdent,           // ...                         right ...
      APLNELM   aplNELMAxis,
      LPAPLUINT lpMemAxisHead,
      LPAPLUINT lpMemOdo,
@@ -7939,14 +8052,27 @@ void CalcLftRhtArgIndices
 
     // Use the just computed index for the argument
     //   with the smaller rank
+    if (aplRankLft > aplRankRht)
+    {
+        *lpuRht = uArg * !IsScalar (aplRankRht);
+        *lpuLft = uRes;
+    } else
     if (aplRankLft < aplRankRht)
     {
         *lpuLft = uArg * !IsScalar (aplRankLft);
         *lpuRht = uRes;
     } else
     {
-        *lpuRht = uArg * !IsScalar (aplRankRht);
-        *lpuLft = uRes;
+        // If there's right identity element only, ...
+        if (!bLftIdent && bRhtIdent)
+        {
+            *lpuRht = uArg * !IsScalar (aplRankRht);
+            *lpuLft = uRes;
+        } else
+        {
+            *lpuLft = uArg * !IsScalar (aplRankLft);
+            *lpuRht = uRes;
+        } // End IF/ELSE
     } // End IF/ELSE
 } // End CalcLftRhtArgIndices
 

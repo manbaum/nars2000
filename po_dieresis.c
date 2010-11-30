@@ -1065,7 +1065,9 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                   lpMemRht = NULL,      // Ptr to right ...
                   lpMemRes = NULL;      // Ptr to result   ...
     LPAPLDIM      lpMemDimRes;          // Ptr to result dimensions
-    UBOOL         bRet = TRUE;          // TRUE iff result is valid
+    UBOOL         bRet = TRUE,          // TRUE iff result is valid
+                  bLftIdent,            // TRUE iff the function has a left identity element and the Axis tail is valid
+                  bRhtIdent;            // ...                         right ...
     APLUINT       uLft,                 // Left arg loop counter
                   uRht,                 // Right ...
                   uRes,                 // Result   ...
@@ -1085,6 +1087,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     LPPRIMFNS     lpPrimProtoLft;       // Ptr to left operand function strand (may be NULL if not prototyping)
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPRIMFLAGS   lpPrimFlagsLft;       // Ptr to left operand PrimFlags entry
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1149,6 +1152,15 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
+
+    // Set the identity element bits
+    bLftIdent = lpPrimFlagsLft->bLftIdent
+             && (lpMemAxisTail NE NULL);
+    bRhtIdent = lpPrimFlagsLft->bRhtIdent
+             && (lpMemAxisTail NE NULL);
+
     // Check for RANK and LENGTH ERRORs
     if (!CheckRankLengthError_EM (aplRankRes,
                                   aplRankLft,
@@ -1159,6 +1171,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                   lpMemRht,         // Ptr to right arg memory Sig.nature
                                   aplNELMAxis,
                                   lpMemAxisTail,
+                                  bLftIdent,        // TRUE iff the function has a left identity element and the Axis tail is valid
+                                  bRhtIdent,        // ...                         right ...
                                  &lpYYFcnStrOpr->tkToken))
         goto ERROR_EXIT;
 
@@ -1194,6 +1208,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                       aplRankRht,
                                      &aplRankRes,
                                       aplTypeRes,
+                                      bLftIdent,    // TRUE iff the function has a left identity element and the Axis tail is valid
+                                      bRhtIdent,    // ...                         right ...
                                       aplNELMLft,
                                       aplNELMRht,
                                       aplNELMRes))
@@ -1343,6 +1359,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                   aplRankLft,
                                  &uRht,
                                   aplRankRht,
+                                  bLftIdent,            // TRUE iff the function has a left identity element and the Axis tail is valid
+                                  bRhtIdent,            // ...                         right ...
                                   aplNELMAxis,
                                   lpMemAxisHead,
                                   lpMemOdo,

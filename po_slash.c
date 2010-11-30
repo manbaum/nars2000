@@ -323,18 +323,19 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     if (IsEmpty (aplNELMRes)
      || IsZeroDim (uDimAxRht))
     {
-        // If we're also prototyping, ...
-        if (bPrototyping)
+        // If we're also prototyping,
+        //   and it's a UDFO, ...
+        if (bPrototyping
+         && IsTknUsrDfn (&lpYYFcnStrLft->tkToken))
             goto NONCE_EXIT;
 
-        // If the reduction function is primitive scalar dyadic, ...
-        if (lpPrimFlagsLft->DydScalar)
+        // If the reduction function is primitive scalar dyadic,
+        //   and the right arg is not nested, ...
+        if (lpPrimFlagsLft->DydScalar
+         && !IsNested (aplTypeRht))
         {
-            // If it's not an immediate primitive function,
-            //   or it is, but is without an identity element,
-            //   signal a DOMAIN ERROR
-            if (lpYYFcnStrLft->tkToken.tkFlags.TknType NE TKT_FCNIMMED
-             || !lpPrimFlagsLft->IdentElem)
+            // If there's no identity element, ...
+            if (!lpPrimFlagsLft->IdentElem)
                 goto DOMAIN_EXIT;
 
             // Get the identity element
@@ -441,21 +442,21 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             aplTypeRes = ARRAY_NESTED;
         else
         {
-        // Get the corresponding lpPrimSpecLft
-        lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+            // Get the corresponding lpPrimSpecLft
+            lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
-        // Calculate the storage type of the result
-        aplTypeRes =
-          (*lpPrimSpecLft->StorageTypeDyd) (aplNELMRht,
-                                           &aplTypeRht,
-                                           &lpYYFcnStrLft->tkToken,
-                                            aplNELMRht,
-                                           &aplTypeRht);
-        if (aplTypeRes EQ ARRAY_ERROR)
-            goto DOMAIN_EXIT;
+            // Calculate the storage type of the result
+            aplTypeRes =
+              (*lpPrimSpecLft->StorageTypeDyd) (aplNELMRht,
+                                               &aplTypeRht,
+                                               &lpYYFcnStrLft->tkToken,
+                                                aplNELMRht,
+                                               &aplTypeRht);
+            if (aplTypeRes EQ ARRAY_ERROR)
+                goto DOMAIN_EXIT;
 
-        // Mark as a primitive scalar dyadic function
-        bPrimDydScal = TRUE;
+            // Mark as a primitive scalar dyadic function
+            bPrimDydScal = TRUE;
         } // End IF/ELSE
     } else
         aplTypeRes = ARRAY_NESTED;
@@ -1551,18 +1552,18 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             aplTypeRes = ARRAY_NESTED;
         else
         {
-            // Get the corresponding lpPrimSpecLft
-            lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the corresponding lpPrimSpecLft
+        lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
-            // Calculate the storage type of the result
-            aplTypeRes =
-              (*lpPrimSpecLft->StorageTypeDyd) (1,
-                                               &aplTypeRht,
-                                               &lpYYFcnStrLft->tkToken,
-                                                1,
-                                               &aplTypeRht);
-            if (aplTypeRes EQ ARRAY_ERROR)
-                goto DOMAIN_EXIT;
+        // Calculate the storage type of the result
+        aplTypeRes =
+          (*lpPrimSpecLft->StorageTypeDyd) (1,
+                                           &aplTypeRht,
+                                           &lpYYFcnStrLft->tkToken,
+                                            1,
+                                           &aplTypeRht);
+        if (aplTypeRes EQ ARRAY_ERROR)
+            goto DOMAIN_EXIT;
         } // End IF/ELSE
     } else
         // Assume that the result storage type is nested
@@ -1684,6 +1685,41 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             // Get identity element's global ptr (if any)
             aplLongestIdn = GetGlbPtrs (&lpYYRes->tkToken, &hGlbIdn);
 
+            // If the result is empty, ...
+            if (IsEmpty (aplNELMRes))
+            {
+                // If the result is global, ...
+                if (hGlbIdn)
+                    // Make the prototype
+                    hSymGlbIdn =
+                      MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbIdn),    // Proto arg handle
+                                              &lpYYFcnStrLft->tkToken,      // Ptr to function token
+                                               MP_CHARS);                   // CHARs allowed
+                else
+                {
+                    // Get the attributes (Type, NELM, and Rank) of the identity element
+                    AttrsOfToken (&lpYYRes2->tkToken, &aplTypeIdn, NULL, NULL, NULL);
+
+                    // If the identity element is numeric
+                    if (IsImmNum (aplTypeIdn))
+                    {
+                        // Use Boolean zero
+                        aplTypeIdn = ARRAY_BOOL;
+                        aplLongestIdn = 0;
+                    } else
+                    {
+                        // Use character blank
+                        aplTypeIdn = ARRAY_CHAR;
+                        aplLongestIdn = L' ';
+                    } // End IF/ELSE
+
+                    // Make the prototype
+                    hSymGlbIdn =
+                      MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeIdn),
+                                      &aplLongestIdn,
+                                      &lpYYFcnStrLft->tkToken);
+                } // End IF/ELSE
+            } else
             // If the result is global, ...
             if (hGlbIdn)
                 hSymGlbIdn = CopySymGlbDirAsGlb (hGlbIdn);
@@ -1697,7 +1733,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                   MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeIdn),
                                   &aplLongestIdn,
                                   &lpYYFcnStrLft->tkToken);
-            } // End IF/ELSE
+            } // End IF/ELSE/...
 
             // Free the YYRes (and the storage)
             FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;

@@ -706,8 +706,8 @@ UBOOL CheckAxis_EM
 {
     UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     APLNELM      aplNELM;           //
-    LPAPLINT     lpAxisStart,       // Ptr to ptr to start of Axis values in *lphGlbAxis
-                 lpAxisHead;        // ...                    user axis values in *lphGlbAxis
+    LPAPLINT     lpAxisStart,       // Ptr to start of Axis values in *lphGlbAxis
+                 lpAxisHead;        // ...             user axis values in *lphGlbAxis
     UINT         u;                 // Loop counter
     APLUINT      aplAxisContLo;     // Contiguous low axis
     HGLOBAL      hGlbData = NULL;   //

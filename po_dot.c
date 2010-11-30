@@ -538,8 +538,12 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
      && !IsUnitDim (aplFrstRht))    // ...
         goto LENGTH_EXIT;
 
-    // Calc larger of inner dimensions (in case of scalar extension)
-    aplInnrMax = max (aplColsLft, aplFrstRht);
+    // Calc length of inner dimensions (in case of scalar extension)
+    if (IsZeroDim (aplColsLft)
+     || IsZeroDim (aplFrstRht))
+        aplInnrMax = 0;
+    else
+        aplInnrMax = max (aplColsLft, aplFrstRht);
 
     // Calc product of the remaining dimensions in left arg
     if (aplColsLft)
@@ -1361,53 +1365,6 @@ RESTART_INNERPROD_RES:
         } // End FOR/FOR
     } else
     {
-        // If the inner dimensions are zero, ...
-        if (IsEmpty (aplInnrMax))
-        {
-            GLBSYM hGlbSym;                 // Ptr to Identity Element
-#ifdef DEBUG
-            if (IsSimpleNum (aplTypeRes))
-                Assert (IsSimpleBool (aplTypeRes));
-#endif
-            DbgStop (); // ***FIXME***
-
-
-
-
-
-
-            // Fill the array with the Identity Element of the
-            //   left operand
-            hGlbSym =
-              GetIdentityElement_EM (lpYYFcnStrLft,     // Ptr to left operand function strand
-                                     lptkLftArg,        // Ptr to left arg token
-                                     lpYYFcnStrRht,     // Ptr to right operand function strand
-                                     lptkRhtArg);       // Ptr to right arg token
-            // Check for error
-            if (hGlbSym.hGlb EQ NULL)
-                goto ERROR_EXIT;
-
-            // Trundle through the left & right arg remaining dimensions
-            for (uOutLft = 0; uOutLft < aplRestLft; uOutLft++)
-            for (uOutRht = 0; uOutRht < aplRestRht; uOutRht++)
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSym.hGlb);
-
-            // Split cases based upon whether or not the Identity Element is immediate
-            switch (GetPtrTypeDir (hGlbSym.hGlb))
-            {
-                case PTRTYPE_STCONST:
-                    break;
-
-                case PTRTYPE_HGLOBAL:
-                    // Free the Identity Element storage
-                     FreeResultGlobalDFLV (hGlbSym.hGlb);
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-        } else
         // Trundle through the left & right arg remaining dimensions
         for (uOutLft = 0; uOutLft < aplRestLft; uOutLft++)
         for (uOutRht = 0; uOutRht < aplRestRht; uOutRht++)

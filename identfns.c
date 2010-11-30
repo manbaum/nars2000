@@ -28,7 +28,7 @@
 //***************************************************************************
 //  $GetIdentityElement_EM
 //
-//  Return the identity element for a give function and array
+//  Return the identity element for a given function and array
 //
 //  The idea for Identity Functions was taken from Brown/Jenkins
 //    "APL Identity Crisis"
@@ -49,9 +49,10 @@ GLBSYM GetIdentityElement_EM
 {
     LPPL_YYSTYPE lpYYRes = NULL,    // Ptr to intermediate result
                  lpYYRes2 = NULL,   // Ptr to secondary result
-                 lpYYRes3 = NULL,   // Ptr to tertiary  ...
                  lpYYResL = NULL,   // Ptr to left result
-                 lpYYResR = NULL;   // Ptr to right result
+                 lpYYResL2 = NULL,  // Ptr to secondary left result
+                 lpYYResR = NULL,   // Ptr to right result
+                 lpYYResR2 = NULL;  // Ptr to secondary right result
     GLBSYM       hGlbSym = {NULL};  // Result
     LPPRIMFLAGS  lpPrimFlagsLft;    // Ptr to Left operand primitive flags
     LPTOKEN      lptkAxisLft,       // Ptr to left operand axis token
@@ -94,7 +95,7 @@ GLBSYM GetIdentityElement_EM
         if (!lpPrimProtoRht)
             goto RIGHT_NONCE_EXIT;
 
-        // Extract the left arg item as an empty vector
+        // Reshape the left arg item to an empty vector
         lpYYResL =
           PrimFnDydRho_EM_YY (&tkLft,           // Ptr to left arg token
                               &tkFcn,           // Ptr to function token
@@ -104,7 +105,7 @@ GLBSYM GetIdentityElement_EM
         if (lpYYResL EQ NULL)
             goto ERROR_EXIT;
 
-        // Extract the right arg item as an empty vector
+        // Reshape the right arg item to an empty vector
         lpYYResR =
           PrimFnDydRho_EM_YY (&tkLft,           // Ptr to left arg token
                               &tkFcn,           // Ptr to function token
@@ -114,6 +115,31 @@ GLBSYM GetIdentityElement_EM
         if (lpYYResR EQ NULL)
             goto ERROR_EXIT;
 
+        // Setup a token with the {take} function
+////////tkFcn.tkFlags.TknType   = TKT_FCNIMMED;         // Already set above
+////////tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;      // Already set above
+////////tkFcn.tkFlags.NoDisplay = FALSE;                // Already zero from = {0}
+        tkFcn.tkData.tkIndex    = UTF16_UPARROW;
+////////tkFcn.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
+
+        // Execute monadic UpArrow on the last two results to extract the first item
+        lpYYResL2 =
+          PrimFnMonUpArrow_EM_YY (&tkFcn,               // Ptr to function token
+                                  &lpYYResL->tkToken,   // Ptr to right arg token
+                                   NULL);               // Ptr to axis token (may be NULL)
+        // Check for error
+        if (lpYYResL2 EQ NULL)
+            goto ERROR_EXIT;
+
+        // Execute monadic UpArrow on the last two results to extract the first item
+        lpYYResR2 =
+          PrimFnMonUpArrow_EM_YY (&tkFcn,               // Ptr to function token
+                                  &lpYYResR->tkToken,   // Ptr to right arg token
+                                   NULL);               // Ptr to axis token (may be NULL)
+        // Check for error
+        if (lpYYResR2 EQ NULL)
+            goto ERROR_EXIT;
+
         // Execute the right operand between the left and right args
 
         // Note that we cast the function strand to LPTOKEN
@@ -121,33 +147,32 @@ GLBSYM GetIdentityElement_EM
         //   function which takes a function token, and one to a
         //   primitive operator which takes a function strand
         lpYYRes2 =
-          (*lpPrimProtoRht) (&lpYYResL->tkToken,    // Ptr to left arg token (may be NULL)
+          (*lpPrimProtoRht) (&lpYYResL2->tkToken,   // Ptr to left arg token (may be NULL)
                     (LPTOKEN) lpYYFcnStrRht,        // Ptr to left operand function strand
-                             &lpYYResR->tkToken,    // Ptr to right arg token
+                             &lpYYResR2->tkToken,   // Ptr to right arg token
                               lptkAxisRht);         // Ptr to axis token (may be NULL)
-        // Check for error
-        if (lpYYRes2 EQ NULL)
-            goto ERROR_EXIT;
+    } else
+    {
+        // Setup a token with the {take} function
+        tkFcn.tkFlags.TknType   = TKT_FCNIMMED;         // Already set above
+        tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;      // Already set above
+////////tkFcn.tkFlags.NoDisplay = FALSE;                // Already zero from = {0}
+        tkFcn.tkData.tkIndex    = UTF16_UPARROW;
+        tkFcn.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
-        // Copy the result as the new right arg token
-        lptkRhtArg = &lpYYRes2->tkToken;
+        // Execute monadic UpArrow on the right arg to extract the first item
+        lpYYRes2 =
+          PrimFnMonUpArrow_EM_YY (&tkFcn,               // Ptr to function token
+                                   lptkRhtArg,          // Ptr to right arg token
+                                   NULL);               // Ptr to axis token (may be NULL)
     } // End IF/ELSE
 
-    // Setup a token with the {take} function
-    tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
-    tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
-////tkFcn.tkFlags.NoDisplay = FALSE;                // Already zero from = {0}
-    tkFcn.tkData.tkIndex    = UTF16_UPARROW;
-    tkFcn.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
-
-    // Execute monadic UpArrow on the last result to extract the first item
-    lpYYRes3 =
-      PrimFnMonUpArrow_EM_YY (&tkFcn,               // Ptr to function token
-                               lptkRhtArg,          // Ptr to right arg token
-                               NULL);               // Ptr to axis token (may be NULL)
     // Check for error
-    if (lpYYRes3 EQ NULL)
+    if (lpYYRes2 EQ NULL)
         goto ERROR_EXIT;
+
+    // Copy the result as the new right arg token
+    lptkRhtArg = &lpYYRes2->tkToken;
 
     // Execute the left operand identity function on the right arg
 
@@ -165,7 +190,7 @@ GLBSYM GetIdentityElement_EM
       (*lpPrimFlagsLft->lpPrimOps)
                         (lptkRhtArg,            // Ptr to original right arg token
                          lpYYFcnStrLft,         // Ptr to operator or function strand
-                        &lpYYRes3->tkToken,     // Ptr to right arg token
+                         lptkRhtArg,            // Ptr to right arg token
                          lptkAxisLft);          // Ptr to axis token (may be NULL)
     // Check for error
     if (lpYYRes EQ NULL)
@@ -210,19 +235,24 @@ NORMAL_EXIT:
         FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
     } // End IF
 
-    if (lpYYRes3)
-    {
-        FreeResult (lpYYRes3); YYFree (lpYYRes3); lpYYRes3 = NULL;
-    } // End IF
-
     if (lpYYResL)
     {
         FreeResult (lpYYResL); YYFree (lpYYResL); lpYYResL = NULL;
     } // End IF
 
+    if (lpYYResL2)
+    {
+        FreeResult (lpYYResL2); YYFree (lpYYResL2); lpYYResL2 = NULL;
+    } // End IF
+
     if (lpYYResR)
     {
         FreeResult (lpYYResR); YYFree (lpYYResR); lpYYResR = NULL;
+    } // End IF
+
+    if (lpYYResR2)
+    {
+        FreeResult (lpYYResR2); YYFree (lpYYResR2); lpYYResR2 = NULL;
     } // End IF
 
     return hGlbSym;
@@ -252,7 +282,7 @@ UBOOL FillIdentityElement_EM
      LPTOKEN      lptkRhtArg)                   // Ptr to right arg token
 
 {
-    GLBSYM  hGlbSym = {NULL};                   // Result
+    GLBSYM  hGlbSym;                            // Result
     APLUINT uRes;                               // Loop counter
 
     // Get the identity element
@@ -262,7 +292,9 @@ UBOOL FillIdentityElement_EM
                              lpYYFcnStrRht,     // Ptr to right operand function strand
                              lptkRhtArg);       // Ptr to right arg token
     // Check for errors
-    if (hGlbSym.hGlb)
+    if (hGlbSym.hGlb EQ NULL)
+        return FALSE;
+
     // Split cases based upon the ptr type bits
     switch (GetPtrTypeDir (hGlbSym.hGlb))
     {
@@ -312,10 +344,29 @@ UBOOL FillIdentityElement_EM
                     break;
 
                 case ARRAY_NESTED:
-                    // Save the identity element in the result
-                    *((LPAPLNESTED) lpMemRes)++ = hGlbSym.hGlb;
-                    for (uRes = 1; uRes < aplNELMRes; uRes++)
-                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSym.hGlb);
+                    // If the result is empty, ...
+                    if (IsEmpty (aplNELMRes))
+                    {
+                        LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+                        // Get ptr to PerTabData global memory
+                        lpMemPTD = GetMemPTD ();
+
+                        // If the identity element is numeric, ...
+                        if (IsImmNum (hGlbSym.lpSym->stFlags.ImmType))
+                            // Save the prototype of the identity element in the result
+                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->steZero;
+                        else
+                            // Save the prototype of the identity element in the result
+                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->steBlank;
+                    } else
+                    {
+                        // Save the identity element in the result
+                        *((LPAPLNESTED) lpMemRes)++ = hGlbSym.hGlb;
+                        for (uRes = 1; uRes < aplNELMRes; uRes++)
+                            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSym.hGlb);
+                    } // End IF/ELSE
+
                     break;
 
                 case ARRAY_APA:
@@ -331,17 +382,39 @@ UBOOL FillIdentityElement_EM
 
             Assert (IsNested (aplTypeRes));
 
-            // Save the identity element in the result
-            *((LPAPLNESTED) lpMemRes)++ = hGlbSym.hGlb;
-            for (uRes = 1; uRes < aplNELMRes; uRes++)
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSym.hGlb);
+            // If the result is empty, ...
+            if (IsEmpty (aplNELMRes))
+            {
+                HGLOBAL hGlbPro;        // Prototype global memory handle
+
+                // Make the prototype
+                hGlbPro =
+                  MakeMonPrototype_EM_PTB (hGlbSym.hGlb,            // Proto arg handle
+                                          &lpYYFcnStrLft->tkToken,  // Ptr to function token
+                                           MP_CHARS);               // CHARs allowed
+                // We no longer need this storage
+                FreeResultGlobalVar (hGlbSym.hGlb); hGlbSym.hGlb = NULL;
+
+                // Check for error
+                if (hGlbPro EQ NULL)
+                    return FALSE;
+
+                // Save the prototype of the identity element in the result
+                *((LPAPLNESTED) lpMemRes)++ = hGlbPro;
+            } else
+            {
+                *((LPAPLNESTED) lpMemRes)++ = hGlbSym.hGlb;
+                for (uRes = 1; uRes < aplNELMRes; uRes++)
+                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSym.hGlb);
+            } // End IF/ELSE
+
             break;
 
         defstop
             break;
     } // End IF/SWITCH
 
-    return (hGlbSym.hGlb NE NULL);
+    return TRUE;
 } // End FillIdentityElement_EM
 #undef  APPEND_NAME
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2010 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,6 +71,10 @@ typedef UBOOL PRIMFN_DYD_SNvSN
      APLNELM      aplNELMRht,               // Right ...
      APLNELM      aplNELMRes,               // Result ...
      APLNELM      aplNELMAxis,              // Axis ...
+
+     UBOOL        bLftIdent,                // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL        bRhtIdent,                // ...                         right ...
+
      struct tagPRIMSPEC *lpPrimSpec);       // Ptr to local PRIMSPEC
 
 typedef PRIMFN_DYD_SNvSN *LPPRIMFN_DYD_SNvSN;

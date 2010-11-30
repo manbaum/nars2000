@@ -494,6 +494,9 @@ UBOOL PrimScalarFnDydAllocate_EM
 
      APLSTYPE   aplTypeRes,     // Result type
 
+     UBOOL      bLftIdent,      // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL      bRhtIdent,      // ...                         right ...
+
      APLNELM    aplNELMLft,     // Left arg NELM
      APLNELM    aplNELMRht,     // Right ...
      APLNELM    aplNELMRes)     // Result ...
@@ -602,7 +605,18 @@ UBOOL PrimScalarFnDydAllocate_EM
         if (aplRankLft > aplRankRht)
             lpMemDimArg = lpMemLft;
         else
+        if (aplRankLft < aplRankRht)
+            lpMemDimArg = lpMemRht;
+        else
+        {
+            // If there's right identity element only, ...
+            if (!bLftIdent && bRhtIdent)
+                // Copy the left arg dimensions
+                lpMemDimArg = lpMemLft;
+            else
+                // Otherwise, copy the right arg dimensions
                 lpMemDimArg = lpMemRht;
+        } // End IF/ELSE/...
 
         // Copy the dimensions to the result
         for (uRes = 0; uRes < *lpaplRankRes; uRes++)
@@ -885,7 +899,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                     if (hSymGlbProto)
                     {
                         // We no longer need this storage
-                        FreeResultGlobalVar (ClrPtrTypeInd (lpMemArr)); *((LPAPLNESTED) lpMemArr) = NULL;
+                        FreeResultGlobalIncompleteVar (ClrPtrTypeInd (lpMemArr)); *((LPAPLNESTED) lpMemArr) = NULL;
 
                         *((LPAPLNESTED) lpMemArr)++ = hSymGlbProto;
                     } else
@@ -931,7 +945,7 @@ NORMAL_EXIT:
     if (!bRet)
     {
         // We no longer need this storage
-        FreeResultGlobalVar (hGlbArr); hGlbArr = NULL;
+        FreeResultGlobalIncompleteVar (hGlbArr); hGlbArr = NULL;
     } // End IF
 
     DBGLEAVE;
@@ -1002,12 +1016,15 @@ HGLOBAL MakeDydPrototype_EM_PTB
                 uRht,                   // Loop counter
                 uRes;                   // Loop counter
     APLINT      iDim;                   // Dimension loop counter
-    UBOOL       bBoolFn;                // TRUE iff the function is equal or not-equal
+    UBOOL       bBoolFn,                // TRUE iff the function is equal or not-equal
+                bLftIdent,              // TRUE iff the function has a left identity element and the Axis tail is valid
+                bRhtIdent;              // ...                         right ...
     LPPRIMSPEC  lpPrimSpec;             // Ptr to local PRIMSPEC
     LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis values, fleshed out
                 lpMemAxisTail = NULL,   // Ptr to grade up of AxisHead
                 lpMemOdo = NULL,        // Ptr to odometer global memory
                 lpMemWVec = NULL;       // Ptr to weighting vector ...
+    LPPRIMFLAGS lpPrimFlags;            // Ptr to function PrimFlags entry
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg
@@ -1097,6 +1114,15 @@ HGLOBAL MakeDydPrototype_EM_PTB
     if (hGlbRht)
         lpMemRht = MyGlobalLock (ClrPtrTypeDir (hGlbRht));
 
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
+
+    // Set the identity element bits
+    bLftIdent = lpPrimFlags->bLftIdent
+             && (lpMemAxisTail NE NULL);
+    bRhtIdent = lpPrimFlags->bRhtIdent
+             && (lpMemAxisTail NE NULL);
+
     // Check for RANK and LENGTH ERRORs
     if (!CheckRankLengthError_EM (aplRankRes,
                                   aplRankLft,
@@ -1107,7 +1133,9 @@ HGLOBAL MakeDydPrototype_EM_PTB
                                   lpMemRht,
                                   aplNELMAxis,
                                   lpMemAxisTail,
-                                  lptkFunc))
+                                  bLftIdent,        // TRUE iff the function has a left identity element
+                                  bRhtIdent,        // ...                         right ...
+                                  lptkFunc))        // Ptr to the function token
         goto ERROR_EXIT;
 
     // The NELM of the result is the larger of the two args
@@ -1147,14 +1175,32 @@ HGLOBAL MakeDydPrototype_EM_PTB
 #undef  lpHeader
 
         // Copy the dimensions to the result
-        if (aplRankRes EQ aplRankLft)
+        if (aplRankLft < aplRankRht)
+            // Copy from the right
+            CopyMemory (VarArrayBaseToDim (lpMemRes),
+                        VarArrayBaseToDim (lpMemRht),
+                        (APLU3264) aplNELMRes * sizeof (APLDIM));
+        else
+        if (aplRankLft > aplRankRht)
+            // Copy from the left
             CopyMemory (VarArrayBaseToDim (lpMemRes),
                         VarArrayBaseToDim (lpMemLft),
                         (APLU3264) aplNELMRes * sizeof (APLDIM));
         else
-            CopyMemory (VarArrayBaseToDim (lpMemRes),
-                        VarArrayBaseToDim (lpMemRht),
-                        (APLU3264) aplNELMRes * sizeof (APLDIM));
+        {
+            // If the function has a right-hand identity element only, ...
+            if (bRhtIdent && !bLftIdent)
+                // Copy from the left
+                CopyMemory (VarArrayBaseToDim (lpMemRes),
+                            VarArrayBaseToDim (lpMemLft),
+                            (APLU3264) aplNELMRes * sizeof (APLDIM));
+            else
+                // Copy from the right
+                CopyMemory (VarArrayBaseToDim (lpMemRes),
+                            VarArrayBaseToDim (lpMemRht),
+                            (APLU3264) aplNELMRes * sizeof (APLDIM));
+        } // End IF/ELSE/...
+
         // Skip over the header and dimensions to the data
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
@@ -1208,6 +1254,8 @@ HGLOBAL MakeDydPrototype_EM_PTB
                                          aplRankRht,
                                         &aplRankRes,
                                          aplTypeRes,
+                                         bLftIdent,     // TRUE iff the function has a left identity element and the Axis tail is valid
+                                         bRhtIdent,     // ...                         right ...
                                          aplNELMLft,
                                          aplNELMRht,
                                          aplNELMRes))
@@ -1866,7 +1914,7 @@ HGLOBAL CopyArray_EM
 
         if (!bRet)
         {
-            FreeResultGlobalVar (hGlbDst); hGlbDst = NULL;
+            FreeResultGlobalIncompleteVar (hGlbDst); hGlbDst = NULL;
         } // End IF
     } else
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -2411,6 +2459,8 @@ UBOOL CheckRankLengthError_EM
      LPVOID   lpMemRht,             // Ptr to right arg memory
      APLNELM  aplNELMAxis,          // Axis NELM
      LPAPLINT lpMemAxisTail,        // Ptr to grade up of AxisHead
+     UBOOL    bLftIdent,            // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL    bRhtIdent,            // ...                         right ...
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
@@ -2478,10 +2528,39 @@ UBOOL CheckRankLengthError_EM
         // If axis full (or no axis) and ranks the same, ...
         if (aplRankLft EQ aplRankRht)
         {
+            // If the function has no identity element, ...
+            if (!bLftIdent && !bRhtIdent)
+            {
                 // Check for OUTER LENGTH ERROR
                 for (uRes = 0; uRes < (APLRANKSIGN) aplRankRes; uRes++)
                 if ((VarArrayBaseToDim (lpMemLft))[uRes] !=
                     (VarArrayBaseToDim (lpMemRht))[uRes])
+                {
+                    uRes = (APLINT) -1; // Mark as in error
+
+                    break;
+                } // End FOR/IF
+            } else
+            // If the function has a right-hand identity element only, ...
+            if (bRhtIdent && !bLftIdent)
+            {
+                // Check for OUTER LENGTH ERROR
+                for (uRes = 0; uRes < (APLRANKSIGN) aplRankRes; uRes++)
+                if ((VarArrayBaseToDim (lpMemLft))[lpMemAxisTail[uRes]] !=
+                    (VarArrayBaseToDim (lpMemRht))[uRes])
+                {
+                    uRes = (APLINT) -1; // Mark as in error
+
+                    break;
+                } // End FOR/IF
+
+
+            } else
+            // If the function has a left- or right-hand or both identity elements
+                // Check for OUTER LENGTH ERROR
+                for (uRes = 0; uRes < (APLRANKSIGN) aplRankRes; uRes++)
+                if ((VarArrayBaseToDim (lpMemLft))[uRes] !=
+                    (VarArrayBaseToDim (lpMemRht))[lpMemAxisTail[uRes]])
                 {
                     uRes = (APLINT) -1; // Mark as in error
 

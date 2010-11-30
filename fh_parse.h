@@ -63,7 +63,13 @@ typedef enum tagDFN_TYPES               // User-Defined Function/Operator Types
                                         // 09-0F:  Available entries (4 bits)
 } DFN_TYPES;
 
-#define cDfnTypeStr     L"?12FIE!@"
+#ifdef DEBUG
+  // N.B.:  Whenever changing the above enum
+  //   be sure to make a corresponding change to
+  //   <cDfnTypeStr> below.
+
+  #define cDfnTypeStr     L"?12FIE!@%"
+#endif
 
 typedef enum tagFCN_VALENCES            // User-Defined Function/Operator Valence
 {

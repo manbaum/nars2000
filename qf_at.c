@@ -814,5 +814,284 @@ LPAPLUINT AttributeObjSize
 
 
 //***************************************************************************
+//  $CalcSymEntrySize
+//
+//  Calculate the size of a SYMENTRY
+//***************************************************************************
+
+APLINT CalcSymEntrySize
+    (LPSYMENTRY lpSymEntry,         // Ptr to the SYMENTRY
+     LPAPLINT   lpDataSize)         // Ptr to save area for object data size (may be NULL)
+                                    // If this value is not NULL, it is assumed to have
+                                    //   been initialized so we may add to it to allow
+                                    //   it to be called serially.
+
+{
+    APLUINT aplSize = 0;            // The result
+
+    // If it's an immediate (any type) or an internal function, ...
+    if (lpSymEntry->stFlags.Imm
+     || lpSymEntry->stFlags.FcnDir)
+    {
+        aplSize = sizeof (SYMENTRY);
+
+        // If the caller wants the data size, ...
+        if (lpDataSize)
+        switch (lpSymEntry->stFlags.ImmType)
+        {
+            case IMMTYPE_BOOL:
+                *lpDataSize += sizeof (APLBOOL);
+
+                break;
+
+            case IMMTYPE_INT:
+                *lpDataSize += sizeof (APLINT);
+
+                break;
+
+            case IMMTYPE_FLOAT:
+                *lpDataSize += sizeof (APLFLOAT);
+
+                break;
+
+            case IMMTYPE_CHAR:
+                *lpDataSize += sizeof (APLCHAR);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
+    // If it has no value, ...
+    if (!lpSymEntry->stFlags.Value)
+        aplSize = 0;
+    else
+    // If it is a user variable, ...
+    if (IsNameTypeVar (lpSymEntry->stFlags.stNameType))
+    {
+        // Start with the size of the SYMENTRY
+        aplSize = sizeof (SYMENTRY);
+
+        // Recurse through the array returning the total size
+        aplSize += CalcGlbVarSize (lpSymEntry->stData.stGlbData, lpDataSize);
+    } else
+    // If it is a user function/operator, ...
+    if (IsNameTypeFnOp (lpSymEntry->stFlags.stNameType))
+    {
+        HGLOBAL      hGlbDfnHdr;        // User-defined function/operator header global memory handle
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
+        LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
+        UINT         uNumFcnLines,      // # function lines
+                     uLine;             // Loop counter
+        APLINT       aplGlbSize;        // Global size temp
+
+        // Get the global memory handle
+        hGlbDfnHdr = lpSymEntry->stData.stGlbData;
+
+        // stData is a valid HGLOBAL function array or user-defined function/operator
+        Assert (IsGlbTypeFcnDir_PTB (hGlbDfnHdr)
+             || IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
+
+        // Clear the ptr type bits
+        hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
+
+        // Split cases based upon the user-defined function/operator bit
+        if (lpSymEntry->stFlags.UsrDfn)
+        {
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+            // Get # function lines
+            uNumFcnLines = lpMemDfnHdr->numFcnLines;
+
+            // Start with the size of the DFN_HEADER
+            aplSize =   sizeof (DFN_HEADER)
+                      + sizeof (LPSYMENTRY) * (lpMemDfnHdr->numResultSTE
+                                             + lpMemDfnHdr->numLftArgSTE
+                                             + lpMemDfnHdr->numRhtArgSTE
+                                             + lpMemDfnHdr->numLocalsSTE)
+                      + sizeof (FCNLINE) * uNumFcnLines;
+            if (lpMemDfnHdr->hGlbMonInfo)
+                aplSize += MyGlobalSize (lpMemDfnHdr->hGlbMonInfo);
+
+            // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+            lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+            // If the caller wants the data size, ...
+            if (lpDataSize)
+                *lpDataSize += uNumFcnLines * sizeof (FCNLINE);
+
+            // Initialize
+            aplGlbSize = 0;
+
+            // Loop through the function lines
+            for (uLine = 0; uLine < uNumFcnLines; uLine++)
+            {
+                if (lpFcnLines->hGlbTxtLine)
+                    aplGlbSize += MyGlobalSize (lpFcnLines->hGlbTxtLine);
+
+                if (lpFcnLines->hGlbTknLine)
+                    aplGlbSize += MyGlobalSize (lpFcnLines->hGlbTknLine);
+
+                // Skip to the next struct
+                lpFcnLines++;
+            } // End FOR
+
+            // Add in the size of the function header text
+            if (lpMemDfnHdr->hGlbTxtHdr)
+                aplGlbSize += MyGlobalSize (lpMemDfnHdr->hGlbTxtHdr);
+
+            // Add in the size of the function header tokenized
+            if (lpMemDfnHdr->hGlbTknHdr)
+                aplGlbSize += MyGlobalSize (lpMemDfnHdr->hGlbTknHdr);
+
+            // Include in the object size
+            aplSize += aplGlbSize;
+
+            // If the caller wants the data size, ...
+            if (lpDataSize)
+                *lpDataSize += aplGlbSize;
+
+            // Add in the size of the function Undo buffer
+            if (lpMemDfnHdr->hGlbUndoBuff)
+                aplSize += MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+        } else
+        // Otherwise, it's a function array
+            // Start with the size of the SYMENTRY
+            aplSize = sizeof (SYMENTRY)
+                    + CalcGlbFcnSize (lpSymEntry->stData.stGlbData, lpDataSize);
+    } else
+    // Otherwise, its size is zero
+        aplSize = 0;
+
+    return aplSize;
+} // End CalcSymEntrySize
+
+
+//***************************************************************************
+//  $CalcGlbVarSize
+//
+//  Calculate the size of a global memory variable
+//***************************************************************************
+
+APLUINT CalcGlbVarSize
+    (HGLOBAL  hGlbData,             // Global memory handle
+     LPAPLINT lpDataSize)           // Ptr to save area for object data size (may be NULL)
+                                    // If this value is not NULL, it is assumed to have
+                                    //   been initialized so we may add to it to allow
+                                    //   it to be called serially.
+
+{
+    APLUINT     aplSize = 0;        // The result
+    LPAPLNESTED lpMemData;          // Ptr to the global memory
+    APLSTYPE    aplType;            // Data storage type
+    APLNELM     aplNELM;            // Data NELM
+    APLRANK     aplRank;            // Data rank
+    APLUINT     uData;              // Loop counter
+
+    // stData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir_PTB (hGlbData));
+
+    hGlbData = ClrPtrTypeDir (hGlbData);
+
+    aplSize += MyGlobalSize (hGlbData);
+
+    // Lock the memory to get a ptr to it
+    lpMemData = MyGlobalLock (hGlbData);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemData)
+    // Get the Array Type, NELM, and Rank
+    aplType = lpHeader->ArrType;
+    aplNELM = lpHeader->NELM;
+    aplRank = lpHeader->Rank;
+#undef  lpHeader
+
+    // If the caller wants the data size, ...
+    if (lpDataSize)
+        *lpDataSize += aplSize - (sizeof (VARARRAY_HEADER) + aplRank * sizeof (APLDIM));
+
+    // If the array is simple, that's all
+    if (IsSimple (aplType))
+        goto NORMAL_EXIT;
+
+    // Skip over the header and dimensions to the data
+    lpMemData = VarArrayBaseToData (lpMemData, aplRank);
+
+    // Loop through the array adding the sizes
+    for (uData = 0; uData < aplNELM; uData++)
+    // Split cases based upon the pointer type
+    switch (GetPtrTypeDir (lpMemData[uData]))
+    {
+        case PTRTYPE_STCONST:
+            aplSize += sizeof (SYMENTRY);
+
+            break;
+
+        case PTRTYPE_HGLOBAL:
+            aplSize += CalcGlbVarSize (lpMemData[uData], lpDataSize);
+
+            break;
+
+        defstop
+            break;
+    } // End FOR/SWITCH
+NORMAL_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMemData = NULL;
+
+    return aplSize;
+} // End CalcGlbVarSize
+
+
+//***************************************************************************
+//  $CalcGlbFcnSize
+//
+//  Calculate the size of a global memory function array
+//***************************************************************************
+
+APLUINT CalcGlbFcnSize
+    (HGLOBAL  hGlbData,             // Global memory handle
+     LPAPLINT lpDataSize)           // Ptr to save area for object data size (may be NULL)
+                                    // If this value is not NULL, it is assumed to have
+                                    //   been initialized so we may add to it to allow
+                                    //   it to be called serially.
+
+{
+    APLUINT           aplSize = 0;  // The result
+    HGLOBAL           hGlbTxtLine;  // Line text global memory handle
+    LPFCNARRAY_HEADER lpMemData;    // Ptr to the global memory
+
+    // stData is a valid HGLOBAL function array
+    Assert (IsGlbTypeFcnDir_PTB (hGlbData));
+
+    hGlbData = ClrPtrTypeDir (hGlbData);
+
+    aplSize += MyGlobalSize (hGlbData);
+
+    // Lock the memory to get a ptr to it
+    lpMemData = MyGlobalLock (hGlbData);
+
+#define lpHeader        ((LPFCNARRAY_HEADER) lpMemData)
+    // Get the text ptr
+    hGlbTxtLine = lpHeader->hGlbTxtLine;
+#undef  lpHeader
+
+    // If there's a line text global memory handle, ...
+    if (hGlbTxtLine)
+        aplSize += MyGlobalSize (hGlbTxtLine);
+
+    // If the caller wants the data size, ...
+    if (lpDataSize)
+        *lpDataSize += aplSize - sizeof (FCNARRAY_HEADER);
+
+    return aplSize;
+} // End CalcGlbFcnSize
+
+
+//***************************************************************************
 //  End of File: qf_at.c
 //***************************************************************************

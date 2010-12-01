@@ -52,13 +52,46 @@ Downloads</h1>
 
   <p>There are several types of files available for downloading:
     <b>NARS2000.zip</b>, <b>NARS2000.map</b>, <b>Release Notes</b>, and
-    <b>Special Files</b>.  The <b>zip</b> files contain everything you
+    <b>Special Files</b>.  The <b>.zip</b> files contain everything you
     need to run the program and are the recommended downloads for end
-    users.  The <b>map</b> files contain debugging information and are used
+    users.  The <b>.map</b> files contain debugging information and are used
     by developers.  The <b>Release Notes</b> contain information about the
     corresponding release and are, generally, of most use to developers.  The
     <b>Special Files</b> such as <b>qdebug.zip</b>, <b>misc.zip</b>, and
     <b>gsldir.zip</b> contain support files needed by developers.</p>
+
+  <ol>
+    <li><p>Download the latest version (marked <b>Recommended</b>) and save it
+      in your choice of directory (preferably its own).</p></li>
+
+    <li><p>Unzip the contents of the file into the same (or a different) directory.
+      This step unzips several files, including a <b>.exe</b> (the executable)
+      and a <b>.ttf</b> (the APL font).</p></li>
+
+    <li><p>If you are running under Vista or Win7, either run the executable
+      (NARS2000.exe) the first time (and only the first time) as Administrator
+      so as to have the proper privileges to install a font under program
+      control, or install the font manually.</p>
+
+      <p>If you are running under WinXP, neither of the following steps are
+        necessary:</p>
+
+      <ul>
+        <li><p>To run an executable as Administrator, right-click the <b>.exe</b>
+          file and choose "Run as administrator".  This step is necessary only
+          once in order to allow the program to install the APL font; after that,
+          run the executable as normal by (say) double-clicking on the <b>.exe</b>
+           file.</p>
+
+          <p><b>OR</b></p>
+        </li>
+
+        <li><p>To install a font manually, right-click the <b>.ttf</b> file and
+          choose "Install".</p>
+        </li>
+      </ul>
+    </li>
+  </ol>
 
   <form id="DisplayForm" action="">&nbsp;
     <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="return DisplayTab ();" />

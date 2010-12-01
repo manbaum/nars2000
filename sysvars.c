@@ -44,7 +44,6 @@
 #define SysFnLC_EM_YY       NULL
 #define SysFnNC_EM_YY       NULL
 #define SysFnNL_EM_YY       NULL
-#define SysFnSIZE_EM_YY     NULL
 #define SysFnSYSID_EM_YY    NULL
 #define SysFnSYSVER_EM_YY   NULL
 #define SysFnTC_EM_YY       NULL
@@ -138,7 +137,6 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY     , 0              },  // Monitor Function
     {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM_YY     , 0              },  // Name Classification
     {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM_YY     , 0              },  // Name List
-    {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM_YY   , 0              },  // Size of an object
 ////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, SysFnSS_EM_YY     , 0              },  // Search String
 ////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM_YY   , 0              },  // Manage Stop Points
     {WS_UTF16_QUAD L"tf"       ,      1,      FALSE, SysFnTF_EM_YY     , 0              },  // Transfer Form

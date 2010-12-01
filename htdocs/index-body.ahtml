@@ -195,12 +195,17 @@ Welcome to NARS2000</h1>
                 <span class="APL">L=0</span>,
                 <span class="APL">1</span>,
                 <span class="APL">2</span>, and higher</li>
+            <li><span class="APL">L {quad}EA R</span></li>
+            <li><span class="APL">{quad}EC R</span></li>
+            <li><span class="APL">{quad}EM</span></li>
             <li><span class="APL">{quad}ERROR R</span></li>
+            <li><span class="APL">{quad}ES R</span></li>
+            <li><span class="APL">L {quad}ES R</span></li>
+            <li><span class="APL">{quad}ET</span></li>
             <li><span class="APL">{quad}FMT R</span></li>
             <li><span class="APL">L {quad}FMT R</span></li>
             <li><span class="APL">{quad}MF R</span></li>
             <li><span class="APL">L {quad}MF R</span></li>
-            <li><span class="APL">{quad}SIZE R</span></li>
             <li><span class="APL">{quad}SYSID</span></li>
             <li><span class="APL">{quad}SYSVER</span></li>
             <li><span class="APL">{quad}TC</span> and other related <span class="APL">{quad}TC</span>xxx</li>
@@ -371,22 +376,6 @@ Welcome to NARS2000</h1>
     <li>Line continuation marker for easier display of long lines &mdash;
       this also allows comments within a line</li>
     <li>Idiom recognition at tokenization time</li>
-  </ul>
-</div>
-
-<div class="section">
-  <h2 id="Currently_Unimplemented">Currently Unimplemented Feature</h2>
-
-  <p>The following feature is required by the Extended APL Standard, but
-    is not, as yet, implemented:</p>
-
-  <h3>System Function</h3>
-  <ul>
-    <li>Dyadic
-      <ul>
-        <li class="TBD"><span class="APL">{quad}EA</span> (Execute Alternate)</li>
-      </ul>
-    </li>
   </ul>
 </div>
 

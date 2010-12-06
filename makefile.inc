@@ -485,8 +485,7 @@ $(O)main.res:           $(@B).rc        $(MAIN_RCDEP)
 $(BC)$(ENAME).hlp:      $(ENAME).rtf
         $(HLP) -o $@ -xr %s
 
-$(WS)local.h:           main.h          \
-                        defines.h       \
+$(WS)local.h:           defines.h       \
                         editctrl.h      \
                         resource.h      \
                         enums.h

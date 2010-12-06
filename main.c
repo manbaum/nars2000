@@ -1830,7 +1830,7 @@ LRESULT APIENTRY MFWndProc
                     {
                         case IDWC_WS_RB:
                         case IDWC_ED_RB:
-                        case IDWC_FN_RB:
+                        case IDWC_OW_RB:
                             // Get the current button count
                             nButtons =
                               SendMessageW (lpnmtb->hdr.hwndFrom, TB_BUTTONCOUNT, 0, 0);
@@ -1867,7 +1867,7 @@ LRESULT APIENTRY MFWndProc
 
                         case IDWC_WS_RB:
                         case IDWC_ED_RB:
-                        case IDWC_FN_RB:
+                        case IDWC_OW_RB:
                             // Get the coordinates of the button
                             SendMessageW (lpnmtb->hdr.hwndFrom, TB_GETRECT, (WPARAM) lpnmtb->iItem, (LPARAM) &rc);
 
@@ -2158,7 +2158,7 @@ LRESULT APIENTRY MFWndProc
                     {
                         case IDWC_WS_RB:
                         case IDWC_ED_RB:
-                        case IDWC_FN_RB:
+                        case IDWC_OW_RB:
                         case IDWC_TC:
                             // Get and set the TT's styles
                             dwStyle = GetWindowLong (lpnmttc->hwndToolTips, GWL_STYLE);
@@ -2309,7 +2309,7 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;       // We handled the msg
 
-                case IDM_TOGGLE_LNS_FN:
+                case IDM_TOGGLE_LNS_FCN:
                     // Toggle the Fcn Line #s display value for the active (FE) window
                     SetWindowLongW (hWndActive, GWLSF_FLN, !GetWindowLongW (hWndActive, GWLSF_FLN));
 
@@ -2320,7 +2320,7 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_TB_WS:
                 case IDM_TB_ED:
-                case IDM_TB_FN:
+                case IDM_TB_OW:
                 case IDM_TB_FW:
                 case IDM_TB_LW:
                     // Calculate zero-origin index
@@ -2799,7 +2799,7 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;   // We handled the msg
 
-                case IDM_NEW_FN:
+                case IDM_NEW_FCN:
                     // Get ptr to PerTabData global memory
                     lpMemPTD = GetPerTabPtr (TabCtrl_GetCurSel (hWndTC)); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
                     if (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
@@ -2807,7 +2807,7 @@ LRESULT APIENTRY MFWndProc
                         PostMessageW (lpMemPTD->hWndSM, MYWM_CREATEFCN, 0, 0);
                     return FALSE;   // We handled the msg
 
-                case IDM_CLOSE_FN:
+                case IDM_CLOSE_FCN:
                     // Tell the active window to handle it
                     PostMessageW (hWndActive, MYWM_CLOSE_FN, wParam, lParam);
 
@@ -2815,13 +2815,13 @@ LRESULT APIENTRY MFWndProc
 
                 // The following messages are signalled from the Objects Menu
                 //   when a function window is open
-                case IDM_SAVE_FN:
+                case IDM_SAVE_FCN:
                     // Tell the active window to handle it
                     PostMessageW (hWndActive, MYWM_SAVE_FN, wParam, lParam);
 
                     return FALSE;   // We handled the msg
 
-                case IDM_SAVECLOSE_FN:
+                case IDM_SAVECLOSE_FCN:
                     // Tell the active window to handle it
                     PostMessageW (hWndActive, MYWM_SAVECLOSE_FN, wParam, lParam);
 
@@ -2991,9 +2991,9 @@ LRESULT APIENTRY MFWndProc
             } // End IF
 
             // Destroy the image lists
-            if (hImageListFN)
+            if (hImageListOW)
             {
-                ImageList_Destroy (hImageListFN); hImageListFN = NULL;
+                ImageList_Destroy (hImageListOW); hImageListOW = NULL;
             } // End IF
 
             if (hImageListED)

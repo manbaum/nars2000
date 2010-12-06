@@ -26,19 +26,22 @@
 #include <commctrl.h>
 #include "headers.h"
 
+// Save area for old WS/ED/OW Toolbar window procedure address
+WNDPROC lpfnOldWS_ED_OWToolbarWndProc;
+
 // These window titles are for debugging purpose only
 #ifdef DEBUG
 WCHAR wszRBTitle[]         = WS_APPNAME L" Rebar Ctrl Window"                                WS_APPEND_DEBUG,
       wszTB_WSTitle[]      = WS_APPNAME L" Toolbar in Workspace Window in Rebar Ctrl Window" WS_APPEND_DEBUG,
       wszTB_EDTitle[]      = WS_APPNAME L" Toolbar in Edit Window in Rebar Ctrl Window"      WS_APPEND_DEBUG,
-      wszTB_FNTitle[]      = WS_APPNAME L" Toolbar in Objects Window in Rebar Ctrl Window"   WS_APPEND_DEBUG,
+      wszTB_OWTitle[]      = WS_APPNAME L" Toolbar in Objects Window in Rebar Ctrl Window"   WS_APPEND_DEBUG,
       wszFW_RBTitle[]      = WS_APPNAME L" Font Window in Rebar Ctrl Window"                 WS_APPEND_DEBUG,
       wszLW_RBTitle[]      = WS_APPNAME L" Language Window in Rebar Ctrl Window"             WS_APPEND_DEBUG;
 #else
   #define wszRBTitle        NULL
   #define wszTB_WSTitle     NULL
   #define wszTB_EDTitle     NULL
-  #define wszTB_FNTitle     NULL
+  #define wszTB_OWTitle     NULL
   #define wszFW_RBTitle     NULL
   #define wszLW_RBTitle     NULL
 #endif
@@ -46,13 +49,13 @@ WCHAR wszRBTitle[]         = WS_APPNAME L" Rebar Ctrl Window"                   
 char pszNoCreateRBWnd[]    = "Unable to create Rebar Ctrl",
      pszNoCreateWS_RBWnd[] = "Unable to create Workspace Window in Rebar Ctrl",
      pszNoCreateED_RBWnd[] = "Unable to create Edit Window in Rebar Ctrl",
-     pszNoCreateFN_RBWnd[] = "Unable to create Objects Window in Rebar Ctrl",
+     pszNoCreateOW_RBWnd[] = "Unable to create Objects Window in Rebar Ctrl",
      pszNoCreateFW_RBWnd[] = "Unable to create Font Window in Rebar Ctrl",
      pszNoCreateLW_RBWnd[] = "Unable to create Language Window in Rebar Ctrl";
 
 HBITMAP hBitmapWS,                  // Handle to WS bitmap strip
         hBitmapED,                  // ...       ED ...
-        hBitmapFN;                  // ...       FN ...
+        hBitmapOW;                  // ...       OW ...
 
 #define IMAGE_FW_CY     30
 
@@ -90,41 +93,56 @@ HBITMAP hBitmapWS,                  // Handle to WS bitmap strip
 // Workspace Toolbar
 //***************************************************************
 
+#define BUTTONSTYLE0    BTNS_BUTTON
 #define BUTTONSTYLE1    BTNS_BUTTON
 #define BUTTONSTYLE2    BTNS_DROPDOWN
 #define BUTTONSTYLE3    BTNS_CHECK
 
 typedef enum tagIMAGEINDEX_WS
 {
-    IMAGEINDEX_WS_FILENEW = 0 , // 00:  Image index for FILENEW
-    IMAGEINDEX_WS_FILEOPEN    , // 01:  ...             FILEOPEN
-    IMAGEINDEX_WS_FILEXOPEN   , // 02:  ...             FILEXOPEN
-    IMAGEINDEX_WS_FILECOPY    , // 03:  ...             FILECOPY
-    IMAGEINDEX_WS_FILESAVE    , // 04:  ...             FILESAVE
-    IMAGEINDEX_WS_FILESAVE_AS , // 05:  ...             FILESAVEAS
-    IMAGEINDEX_WS_FILEPRINT   , // 06:  ...             FILEPRINT
-    IMAGEINDEX_WS_FILEDROP    , // 07:  ...             FILEDROP
-    IMAGEINDEX_WS_LENGTH        // 08:  Length
+    IMAGEINDEX_WS_FILENEW = 0 ,     // 00:  Image index for FILENEW
+    IMAGEINDEX_WS_FILEOPEN    ,     // 01:  ...             FILEOPEN
+    IMAGEINDEX_WS_FILEXOPEN   ,     // 02:  ...             FILEXOPEN
+    IMAGEINDEX_WS_FILECOPY    ,     // 03:  ...             FILECOPY
+    IMAGEINDEX_WS_FILESAVE    ,     // 04:  ...             FILESAVE
+    IMAGEINDEX_WS_FILESAVE_AS ,     // 05:  ...             FILESAVEAS
+    IMAGEINDEX_WS_FILEPRINT   ,     // 06:  ...             FILEPRINT
+    IMAGEINDEX_WS_FILEDROP    ,     // 07:  ...             FILEDROP
+    IMAGEINDEX_WS_LENGTH            // 08:  Length
 };
 
-#define IDI_IMAGELIST_WS        0
+typedef enum tagIMAGEINDEX_WS0
+{
+    IMAGEINDEX_WS_ARROW1 = 0  ,     // 00:  ...             Drop Down Arrow #1
+    IMAGEINDEX_WS_ARROW2      ,     // 01:  ...             Drop Down Arrow #2
+    IMAGEINDEX_WS_ARROW3      ,     // 02:  ...             Drop Down Arrow #3
+    IMAGEINDEX_WS_LENGTH0           // 03:  Length
+};
+
+#define IDI_IMAGELIST_WS0       0
+#define IDI_IMAGELIST_WS        1
 
 // Initialize Workspace Window button info
-TBBUTTON tbButtonsWS[IMAGEINDEX_WS_LENGTH] =
+TBBUTTON tbButtonsWS[IMAGEINDEX_WS_LENGTH + IMAGEINDEX_WS_LENGTH0] =
 {
-  {MAKELONG (IMAGEINDEX_WS_FILENEW    , IDI_IMAGELIST_WS), IDM_NEW_WS    , TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Create a new workspace"                       },
-  {MAKELONG (IMAGEINDEX_WS_FILEOPEN   , IDI_IMAGELIST_WS), IDM_LOAD_WS   , TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Open an existing workspace from disk"         },
-  {MAKELONG (IMAGEINDEX_WS_FILEXOPEN  , IDI_IMAGELIST_WS), IDM_XLOAD_WS  , TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"XOpen an existing workspace from disk"        },
-  {MAKELONG (IMAGEINDEX_WS_FILECOPY   , IDI_IMAGELIST_WS), IDM_COPY_WS   , TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Copy from disk into the current workspace"    },
-  {MAKELONG (IMAGEINDEX_WS_FILESAVE   , IDI_IMAGELIST_WS), IDM_SAVE_WS   , TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the current workspace to disk"           },
-  {MAKELONG (IMAGEINDEX_WS_FILESAVE_AS, IDI_IMAGELIST_WS), IDM_SAVE_AS_WS, TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the current workspace to disk\n"
-                                                                                                                            L"under a different name"                       },
-  {MAKELONG (IMAGEINDEX_WS_FILEPRINT  , IDI_IMAGELIST_WS), IDM_PRINT_WS  , TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Print a selection or the current page\n"
-                                                                                                                            L"from the current workspace"                   },
-  {MAKELONG (IMAGEINDEX_WS_FILEDROP   , IDI_IMAGELIST_WS), IDM_DROP_WS   , TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Delete an existing workspace from disk"       },
+  {MAKELONG (IMAGEINDEX_WS_FILENEW    , IDI_IMAGELIST_WS ), IDM_NEW_WS    , TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Create a new workspace"                       },
+  {MAKELONG (IMAGEINDEX_WS_FILEOPEN   , IDI_IMAGELIST_WS ), IDM_LOAD_WS   , TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Open an existing workspace from disk"         },
+  {MAKELONG (IMAGEINDEX_WS_ARROW1     , IDI_IMAGELIST_WS0), 0             , TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select from a list of recent worksapces"      },
+  {MAKELONG (IMAGEINDEX_WS_FILEXOPEN  , IDI_IMAGELIST_WS ), IDM_XLOAD_WS  , TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"XOpen an existing workspace from disk"        },
+  {MAKELONG (IMAGEINDEX_WS_ARROW2     , IDI_IMAGELIST_WS0), 0             , TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select from a list of recent worksapces"      },
+  {MAKELONG (IMAGEINDEX_WS_FILECOPY   , IDI_IMAGELIST_WS ), IDM_COPY_WS   , TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Copy from disk into the current workspace"    },
+  {MAKELONG (IMAGEINDEX_WS_ARROW3     , IDI_IMAGELIST_WS0), 0             , TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select from a list of recent worksapces"      },
+  {MAKELONG (IMAGEINDEX_WS_FILESAVE   , IDI_IMAGELIST_WS ), IDM_SAVE_WS   , TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the current workspace to disk"           },
+  {MAKELONG (IMAGEINDEX_WS_FILESAVE_AS, IDI_IMAGELIST_WS ), IDM_SAVE_AS_WS, TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the current workspace to disk\n"
+                                                                                                                             L"under a different name"                       },
+  {MAKELONG (IMAGEINDEX_WS_FILEPRINT  , IDI_IMAGELIST_WS ), IDM_PRINT_WS  , TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Print a selection or the current page\n"
+                                                                                                                             L"from the current workspace"                   },
+  {MAKELONG (IMAGEINDEX_WS_FILEDROP   , IDI_IMAGELIST_WS ), IDM_DROP_WS   , TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Delete an existing workspace from disk"       },
 };
 
-#define NUMBUTTONS_WS       countof (tbButtonsWS)
+#define NUMBUTTONS_WS       IMAGEINDEX_WS_LENGTH
+#define NUMBUTTONS_WS0      IMAGEINDEX_WS_LENGTH0
+
 
 //***************************************************************
 // Edit Toolbar
@@ -143,52 +161,73 @@ typedef enum tagIMAGEINDEX_ED
     IMAGEINDEX_ED_LENGTH            // 08:  Length
 };
 
-#define IDI_IMAGELIST_ED        0
-
-// Initialize Edit Window button info
-TBBUTTON tbButtonsED[IMAGEINDEX_ED_LENGTH] =
+typedef enum tagIMAGEINDEX_ED0
 {
-  {MAKELONG (IMAGEINDEX_ED_EDITCUT       , IDI_IMAGELIST_ED), IDM_CUT       ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Cut selected text from the current workspace"     },
-  {MAKELONG (IMAGEINDEX_ED_EDITCOPY      , IDI_IMAGELIST_ED), IDM_COPY      ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Copy selected text from the current workspace"    },
-  {MAKELONG (IMAGEINDEX_ED_EDITPASTE     , IDI_IMAGELIST_ED), IDM_PASTE     ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Paste text into the current workspace"            },
-  {MAKELONG (IMAGEINDEX_ED_EDITDELETE    , IDI_IMAGELIST_ED), IDM_DELETE    ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Delete selected text from the current workspace"  },
-  {MAKELONG (IMAGEINDEX_ED_EDITUNDO      , IDI_IMAGELIST_ED), IDM_UNDO      ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Undo the last text change"                        },
-  {MAKELONG (IMAGEINDEX_ED_EDITREDO      , IDI_IMAGELIST_ED), IDM_REDO      ,  0              , BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Redo the next text change"                        },
-  {MAKELONG (IMAGEINDEX_ED_EDITNEW       , IDI_IMAGELIST_ED), IDM_NEW_FN    ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Create a new function"                            },
-  {MAKELONG (IMAGEINDEX_ED_EDITCUSTOMIZE , IDI_IMAGELIST_ED), IDM_CUSTOMIZE ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Customize Features and Appearance"                },
+    IMAGEINDEX_ED_ARROW1 = 0    ,   // 00:  ...             Drop Down Arrow #1
+    IMAGEINDEX_ED_ARROW2        ,   // 01:  ...             Drop Down Arrow #2
+    IMAGEINDEX_ED_ARROW3        ,   // 02:  ...             Drop Down Arrow #3
+    IMAGEINDEX_ED_LENGTH0           // 03:  Length
 };
 
-#define NUMBUTTONS_ED       countof (tbButtonsED)
+#define IDI_IMAGELIST_ED0       0
+#define IDI_IMAGELIST_ED        1
+
+// Initialize Edit Window button info
+TBBUTTON tbButtonsED[IMAGEINDEX_ED_LENGTH + IMAGEINDEX_ED_LENGTH0] =
+{
+  {MAKELONG (IMAGEINDEX_ED_EDITCUT       , IDI_IMAGELIST_ED ), IDM_CUT       ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Cut selected text from the current workspace"     },
+  {MAKELONG (IMAGEINDEX_ED_ARROW1        , IDI_IMAGELIST_ED0), 0             ,  TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select how the text is to be Copied"             },
+  {MAKELONG (IMAGEINDEX_ED_EDITCOPY      , IDI_IMAGELIST_ED ), IDM_COPY      ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Copy selected text from the current workspace"    },
+  {MAKELONG (IMAGEINDEX_ED_ARROW2        , IDI_IMAGELIST_ED0), 0             ,  TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select how the text is to be Copied"              },
+  {MAKELONG (IMAGEINDEX_ED_EDITPASTE     , IDI_IMAGELIST_ED ), IDM_PASTE     ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Paste text into the current workspace"            },
+  {MAKELONG (IMAGEINDEX_ED_ARROW3        , IDI_IMAGELIST_ED0), 0             ,  TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select how the text is to Pasted"                 },
+  {MAKELONG (IMAGEINDEX_ED_EDITDELETE    , IDI_IMAGELIST_ED ), IDM_DELETE    ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Delete selected text from the current workspace"  },
+  {MAKELONG (IMAGEINDEX_ED_EDITUNDO      , IDI_IMAGELIST_ED ), IDM_UNDO      ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Undo the last text change"                        },
+  {MAKELONG (IMAGEINDEX_ED_EDITREDO      , IDI_IMAGELIST_ED ), IDM_REDO      ,  0              , BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Redo the next text change"                        },
+  {MAKELONG (IMAGEINDEX_ED_EDITNEW       , IDI_IMAGELIST_ED ), IDM_NEW_FCN   ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Create a new function"                            },
+  {MAKELONG (IMAGEINDEX_ED_EDITCUSTOMIZE , IDI_IMAGELIST_ED ), IDM_CUSTOMIZE ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Customize Features and Appearance"                },
+};
+
+#define NUMBUTTONS_ED       IMAGEINDEX_ED_LENGTH
+#define NUMBUTTONS_ED0      IMAGEINDEX_ED_LENGTH0
+
 
 //***************************************************************
 // Objects Toolbar
 //***************************************************************
 
-typedef enum tagIMAGEINDEX_FN
+typedef enum tagIMAGEINDEX_OW
 {
-    IMAGEINDEX_FN_OBJCLOSE    = 0,  // 00:  Image index for OBJCLOSE
-    IMAGEINDEX_FN_OBJSAVE        ,  // 01:  ...             OBJSAVE
-    IMAGEINDEX_FN_OBJSAVE_AS     ,  // 02:  ...             OBJSAVE_AS
-    IMAGEINDEX_FN_OBJSAVECLOSE   ,  // 03:  ...             OBJSAVECLOSE
-    IMAGEINDEX_FN_OBJTOGGLE_LNS  ,  // 04:  ...             OBJTOGGLE_LNS
-    IMAGEINDEX_FN_LENGTH            // 05:  Length
+    IMAGEINDEX_OW_OBJCLOSE    = 0,  // 00:  Image index for OBJCLOSE
+    IMAGEINDEX_OW_OBJSAVE        ,  // 01:  ...             OBJSAVE
+    IMAGEINDEX_OW_OBJSAVE_AS     ,  // 02:  ...             OBJSAVE_AS
+    IMAGEINDEX_OW_OBJSAVECLOSE   ,  // 03:  ...             OBJSAVECLOSE
+    IMAGEINDEX_OW_OBJTOGGLE_LNS  ,  // 04:  ...             OBJTOGGLE_LNS
+    IMAGEINDEX_OW_LENGTH            // 05:  Length
 };
 
-#define IDI_IMAGELIST_FN        0
+typedef enum tagIMAGEINDEX_OW0
+{
+    IMAGEINDEX_OW_LENGTH0 = 0       // 00:  Length
+};
+
+#define IDI_IMAGELIST_OW0       0
+#define IDI_IMAGELIST_OW        1
 
 // Initialize Objects Window button info
-TBBUTTON tbButtonsFN[IMAGEINDEX_FN_LENGTH] =
+TBBUTTON tbButtonsOW[IMAGEINDEX_OW_LENGTH + IMAGEINDEX_OW_LENGTH0] =
 {
-  {MAKELONG (IMAGEINDEX_FN_OBJCLOSE     , IDI_IMAGELIST_FN), IDM_CLOSE_FN     ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Close the function"                             },
-  {MAKELONG (IMAGEINDEX_FN_OBJSAVE      , IDI_IMAGELIST_FN), IDM_SAVE_FN      ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the function into the current workspace"   },
-  {MAKELONG (IMAGEINDEX_FN_OBJSAVE_AS   , IDI_IMAGELIST_FN), IDM_SAVE_AS_FN   ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the function into the current workspace\n"
-                                                                                                                                  L"under a different name"                         },
-  {MAKELONG (IMAGEINDEX_FN_OBJSAVECLOSE , IDI_IMAGELIST_FN), IDM_SAVECLOSE_FN ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the function into the current workspace\n"
-                                                                                                                                  L"and close it"                                   },
-  {MAKELONG (IMAGEINDEX_FN_OBJTOGGLE_LNS, IDI_IMAGELIST_FN), IDM_TOGGLE_LNS_FN,  TBSTATE_ENABLED, BUTTONSTYLE3, {0}, 0, (INT_PTR) L"Toggle display of line numbers"                 },
+  {MAKELONG (IMAGEINDEX_OW_OBJCLOSE     , IDI_IMAGELIST_OW ), IDM_CLOSE_FCN      ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Close the function"                             },
+  {MAKELONG (IMAGEINDEX_OW_OBJSAVE      , IDI_IMAGELIST_OW ), IDM_SAVE_FCN       ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the function into the current workspace"   },
+  {MAKELONG (IMAGEINDEX_OW_OBJSAVE_AS   , IDI_IMAGELIST_OW ), IDM_SAVE_AS_FCN    ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the function into the current workspace\n"
+                                                                                                                                     L"under a different name"                         },
+  {MAKELONG (IMAGEINDEX_OW_OBJSAVECLOSE , IDI_IMAGELIST_OW ), IDM_SAVECLOSE_FCN  ,  TBSTATE_ENABLED, BUTTONSTYLE1, {0}, 0, (INT_PTR) L"Save the function into the current workspace\n"
+                                                                                                                                     L"and close it"                                   },
+  {MAKELONG (IMAGEINDEX_OW_OBJTOGGLE_LNS, IDI_IMAGELIST_OW ), IDM_TOGGLE_LNS_FCN ,  TBSTATE_ENABLED, BUTTONSTYLE3, {0}, 0, (INT_PTR) L"Toggle display of line numbers"                 },
 };
 
-#define NUMBUTTONS_FN       countof (tbButtonsFN)
+#define NUMBUTTONS_OW       IMAGEINDEX_OW_LENGTH
+#define NUMBUTTONS_OW0      IMAGEINDEX_OW_LENGTH0
 
 
 
@@ -238,11 +277,11 @@ UBOOL CreateEntireRebarCtrl
     //***************************************************************
     // Create the Objects Window in the Rebar Ctrl
     //***************************************************************
-    hWndFN_RB =
+    hWndOW_RB =
       MakeObjectsWindow (hWndParent);
-    if (hWndFN_RB EQ NULL)
+    if (hWndOW_RB EQ NULL)
     {
-        MB (pszNoCreateFN_RBWnd);
+        MB (pszNoCreateOW_RBWnd);
         return FALSE;
     } // End IF
 
@@ -395,11 +434,20 @@ HWND MakeWorkspaceWindow
                        NULL);               // No extra data
     if (hWndRes)
     {
+        // Subclass the Toolbar so we can handle
+        //   WM_MOUSEMOVE/LEAVE
+        lpfnOldWS_ED_OWToolbarWndProc = (WNDPROC)
+          SetWindowLongPtrW (hWndRes,
+                             GWLP_WNDPROC,
+                             (APLU3264) (LONG_PTR) (WNDPROC) &LclWS_ED_OWToolbarWndProc);
+        // Tell the subclass procedure to initialize its vars
+        SendMessageW (hWndRes, MYWM_INIT_EC, 0, (LPARAM) &tbButtonsWS);
+
         // Tell the Toolbar Ctrl the size of our struc
         SendMessageW (hWndRes, TB_BUTTONSTRUCTSIZE, sizeof (TBBUTTON), 0);
 
-////////// Enable multiple image lists
-////////SendMessageW (hWndRes, CCM_SETVERSION, 5, 0);
+        // Enable multiple image lists
+        SendMessageW (hWndRes, CCM_SETVERSION, 5, 0);
 
         //***************************************************************
         // Fill in the Toolbar Ctrl
@@ -408,16 +456,14 @@ HWND MakeWorkspaceWindow
         // Load the bitmap strip
         hBitmapWS =
           MyLoadBitmap (_hInstance,                         // Bitmap instance
-                       MAKEINTRESOURCE (IDB_WORKSPACE));    // Bitmap ID
+                        MAKEINTRESOURCE (IDB_WORKSPACE));   // Bitmap ID
         // Add it to the image list
         ImageList_Add (hImageListWS,                        // Handle to image list
                        hBitmapWS,                           // Bitmap handle
                        NULL);                               // No mask
         // Assign the image list to the Toolbar Ctrl
-        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_WS, (LPARAM) hImageListWS);
-
-        // Tell the Toolbar about the Tooltip Ctrl
-        SendMessageW (hWndRes, TB_SETTOOLTIPS, (WPARAM) hWndTT, 0);
+        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_WS , (LPARAM) hImageListWS);
+        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_WS0, (LPARAM) hImageListWS);
 
         // Tell the Toolbar Ctrl to use the iString value as a Tooltip
         SendMessageW (hWndRes, TB_SETMAXTEXTROWS, 0, 0);
@@ -427,11 +473,19 @@ HWND MakeWorkspaceWindow
         SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS | TBSTYLE_EX_MIXEDBUTTONS);
 
         // Add buttons to the Toolbar Ctrl
-        SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_WS, (LPARAM) &tbButtonsWS);
+        SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_WS + NUMBUTTONS_WS0, (LPARAM) &tbButtonsWS);
 
         // Show the window
         ShowWindow (hWndRes, SW_SHOWNORMAL);
-    } // End IF
+    }
+#ifdef DEBUG
+    else
+    {
+        UINT uErr = GetLastError ();
+
+        DbgBrk ();
+    } // End IF/ELSE
+#endif
 
     return hWndRes;
 } // End MakeWorkspaceWindow
@@ -450,27 +504,21 @@ void InitWorkspaceBand
 {
     REBARBANDINFOW rbBand;          // Rebar band info struc
     DWORD          dwBtnSize;       // Size of buttons in Toolbar
-    UINT           uCnt,            // Loop counter
-                   uBtnsDropDown,   // # buttons with BTNS_DROPDOWN style
-                   uArrowWidth,     // Width of the arrow next to a dropdown button
+    UINT           uArrowWidth,     // Width of the arrow next to a dropdown button
                    uWidth;          // Width of the Toolbar client area
 ////UINT           uItem;           // Index of this band
 
     // Get the size of the buttons in the Toolbar in the Workspace Window
     dwBtnSize = (DWORD)
       SendMessageW (hWndWS_RB, TB_GETBUTTONSIZE, 0, 0);
-#define dwBtnHeight     LOWORD (dwBtnSize)
-#define dwBtnWidth      HIWORD (dwBtnSize)
-
-    // Count the number of buttons with BTNS_DROPDOWN style
-    for (uCnt = uBtnsDropDown = 0; uCnt < NUMBUTTONS_WS; uCnt++)
-        uBtnsDropDown += (tbButtonsWS[uCnt].fsStyle & BTNS_DROPDOWN) NE 0;
+#define dwBtnHeight     HIWORD (dwBtnSize)
+#define dwBtnWidth      LOWORD (dwBtnSize)
 
     // Get the width of the dropdown arrow
     uArrowWidth = GetSystemMetrics (SM_CXVSCROLL);
 
     // Calculate the width of the Toolbar client area
-    uWidth = NUMBUTTONS_WS * dwBtnWidth + uArrowWidth * uBtnsDropDown;
+    uWidth = NUMBUTTONS_WS * dwBtnWidth + NUMBUTTONS_WS0 * uArrowWidth;
 
     // Initialize the band info struc
     ZeroMemory (&rbBand, sizeof (rbBand));
@@ -506,7 +554,6 @@ void InitWorkspaceBand
 ////rbBand.cyChild    =
 ////rbBand.cyMaxChild =
 ////rbBand.cyIntegral =
-////rbBand.cxIdeal    =
 ////rbBand.lParam     =
 ////rbBand.cxheader   =
 #undef  dwBtnWidth
@@ -577,11 +624,20 @@ HWND MakeEditWindow
                        NULL);               // No extra data
     if (hWndRes)
     {
+        // Subclass the Toolbar so we can handle
+        //   WM_MOUSEMOVE/LEAVE
+        lpfnOldWS_ED_OWToolbarWndProc = (WNDPROC)
+          SetWindowLongPtrW (hWndRes,
+                             GWLP_WNDPROC,
+                             (APLU3264) (LONG_PTR) (WNDPROC) &LclWS_ED_OWToolbarWndProc);
+        // Tell the subclass procedure to initialize its vars
+        SendMessageW (hWndRes, MYWM_INIT_EC, 0, (LPARAM) &tbButtonsED);
+
         // Tell the Toolbar Ctrl the size of our struc
         SendMessageW (hWndRes, TB_BUTTONSTRUCTSIZE, sizeof (TBBUTTON), 0);
 
-////////// Enable multiple image lists
-////////SendMessageW (hWndRes, CCM_SETVERSION, 5, 0);
+        // Enable multiple image lists
+        SendMessageW (hWndRes, CCM_SETVERSION, 5, 0);
 
         //***************************************************************
         // Fill in the Toolbar Ctrl
@@ -596,10 +652,8 @@ HWND MakeEditWindow
                        hBitmapED,                           // Bitmap handle
                        NULL);                               // No mask
         // Assign the image list to the Toolbar Ctrl
-        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_ED, (LPARAM) hImageListED);
-
-        // Tell the Toolbar about the Tooltip Ctrl
-        SendMessageW (hWndRes, TB_SETTOOLTIPS, (WPARAM) hWndTT, 0);
+        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_ED , (LPARAM) hImageListED);
+        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_ED0, (LPARAM) hImageListED);
 
         // Tell the Toolbar Ctrl to use the iString value as a Tooltip
         SendMessageW (hWndRes, TB_SETMAXTEXTROWS, 0, 0);
@@ -609,11 +663,19 @@ HWND MakeEditWindow
         SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS | TBSTYLE_EX_MIXEDBUTTONS);
 
         // Add buttons to the Toolbar Ctrl
-        SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_ED, (LPARAM) &tbButtonsED);
+        SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_ED + NUMBUTTONS_ED0, (LPARAM) &tbButtonsED);
 
         // Show the window
         ShowWindow (hWndRes, SW_SHOWNORMAL);
-    } // End IF
+    }
+#ifdef DEBUG
+    else
+    {
+        UINT uErr = GetLastError ();
+
+        DbgBrk ();
+    } // End IF/ELSE
+#endif
 
     return hWndRes;
 } // End MakeEditWindow
@@ -632,27 +694,21 @@ void InitEditBand
 {
     REBARBANDINFOW rbBand;          // Rebar band info struc
     DWORD          dwBtnSize;       // Size of buttons in Toolbar
-    UINT           uCnt,            // Loop counter
-                   uBtnsDropDown,   // # buttons with BTNS_DROPDOWN style
-                   uArrowWidth,     // Width of the arrow next to a dropdown button
+    UINT           uArrowWidth,     // Width of the arrow next to a dropdown button
                    uWidth;          // Width of the Toolbar client area
 ////UINT           uItem;           // Index of this band
 
     // Get the size of the buttons in the Toolbar in the Edit Window
     dwBtnSize = (DWORD)
       SendMessageW (hWndED_RB, TB_GETBUTTONSIZE, 0, 0);
-#define dwBtnHeight     LOWORD (dwBtnSize)
-#define dwBtnWidth      HIWORD (dwBtnSize)
-
-    // Count the number of buttons with BTNS_DROPDOWN style
-    for (uCnt = uBtnsDropDown = 0; uCnt < NUMBUTTONS_ED; uCnt++)
-        uBtnsDropDown += (tbButtonsED[uCnt].fsStyle & BTNS_DROPDOWN) NE 0;
+#define dwBtnHeight     HIWORD (dwBtnSize)
+#define dwBtnWidth      LOWORD (dwBtnSize)
 
     // Get the width of the dropdown arrow
     uArrowWidth = GetSystemMetrics (SM_CXVSCROLL);
 
     // Calculate the width of the Toolbar client area
-    uWidth = NUMBUTTONS_ED * dwBtnWidth + uArrowWidth * uBtnsDropDown;
+    uWidth = NUMBUTTONS_ED * dwBtnWidth + NUMBUTTONS_ED0 * uArrowWidth;
 
     // Initialize the band info struc
     ZeroMemory (&rbBand, sizeof (rbBand));
@@ -688,7 +744,6 @@ void InitEditBand
 ////rbBand.cyChild    =
 ////rbBand.cyMaxChild =
 ////rbBand.cyIntegral =
-////rbBand.cxIdeal    =
 ////rbBand.lParam     =
 ////rbBand.cxheader   =
 #undef  dwBtnWidth
@@ -708,7 +763,7 @@ void InitEditBand
 //***************************************************************************
 //  $MakeObjectsWindow
 //
-//  Create the Objects Window
+//  Create the Objects Window in the Rebar Ctrl
 //***************************************************************************
 
 HWND MakeObjectsWindow
@@ -720,15 +775,15 @@ HWND MakeObjectsWindow
     //***************************************************************
     // Create an image list
     //***************************************************************
-    hImageListFN =
-      ImageList_Create (IMAGE_FN_CX,    // Common width in pixels
-                        IMAGE_FN_CY,    // ...    height ...
+    hImageListOW =
+      ImageList_Create (IMAGE_OW_CX,    // Common width in pixels
+                        IMAGE_OW_CY,    // ...    height ...
                         0
                       | ILC_COLOR32
                       | ILC_MASK,       // Flags
-                        NUMBUTTONS_FN,  // Max # images
+                        NUMBUTTONS_OW,  // Max # images
                         0);             // # images by which the list can grow
-    if (!hImageListFN)
+    if (!hImageListOW)
         return NULL;                    // Stop the whole process
 
     hWndRes =
@@ -736,7 +791,7 @@ HWND MakeObjectsWindow
                      | TBSTYLE_EX_DOUBLEBUFFER
                        ,
                        TOOLBARCLASSNAMEW,   // Class
-                       wszTB_FNTitle,       // Window title (for debugging purposes only)
+                       wszTB_OWTitle,       // Window title (for debugging purposes only)
                        0                    // Styles
                      | WS_CHILD
                      | WS_CLIPSIBLINGS
@@ -754,34 +809,41 @@ HWND MakeObjectsWindow
                        0, 0,                // X- and Y-coord
                        0, 0,                // X- and Y-size
                        hWndParent,          // Parent window
-               (HMENU) IDWC_FN_RB,          // Window ID
+               (HMENU) IDWC_OW_RB,          // Window ID
                        _hInstance,          // Instance
                        NULL);               // No extra data
     if (hWndRes)
     {
+        // Subclass the Toolbar so we can handle
+        //   WM_MOUSEMOVE/LEAVE
+        lpfnOldWS_ED_OWToolbarWndProc = (WNDPROC)
+          SetWindowLongPtrW (hWndRes,
+                             GWLP_WNDPROC,
+                             (APLU3264) (LONG_PTR) (WNDPROC) &LclWS_ED_OWToolbarWndProc);
+        // Tell the subclass procedure to initialize its vars
+        SendMessageW (hWndRes, MYWM_INIT_EC, 0, (LPARAM) &tbButtonsOW);
+
         // Tell the Toolbar Ctrl the size of our struc
         SendMessageW (hWndRes, TB_BUTTONSTRUCTSIZE, sizeof (TBBUTTON), 0);
 
-////////// Enable multiple image lists
-////////SendMessageW (hWndRes, CCM_SETVERSION, 5, 0);
+        // Enable multiple image lists
+        SendMessageW (hWndRes, CCM_SETVERSION, 5, 0);
 
         //***************************************************************
         // Fill in the Toolbar Ctrl
         //***************************************************************
 
         // Load the bitmap strip
-        hBitmapFN =
+        hBitmapOW =
           MyLoadBitmap (_hInstance,                         // Bitmap instance
-                       MAKEINTRESOURCE (IDB_OBJECTS));      // Bitmap ID
+                        MAKEINTRESOURCE (IDB_OBJECTS));     // Bitmap ID
         // Add it to the image list
-        ImageList_Add (hImageListFN,                        // Handle to image list
-                       hBitmapFN,                           // Bitmap handle
+        ImageList_Add (hImageListOW,                        // Handle to image list
+                       hBitmapOW,                           // Bitmap handle
                        NULL);                               // No mask
         // Assign the image list to the Toolbar Ctrl
-        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_FN, (LPARAM) hImageListFN);
-
-        // Tell the Toolbar about the Tooltip Ctrl
-        SendMessageW (hWndRes, TB_SETTOOLTIPS, (WPARAM) hWndTT, 0);
+        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_OW , (LPARAM) hImageListOW);
+        SendMessageW (hWndRes, TB_SETIMAGELIST, IDI_IMAGELIST_OW0, (LPARAM) hImageListOW);
 
         // Tell the Toolbar Ctrl to use the iString value as a Tooltip
         SendMessageW (hWndRes, TB_SETMAXTEXTROWS, 0, 0);
@@ -791,11 +853,19 @@ HWND MakeObjectsWindow
         SendMessageW (hWndRes, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS | TBSTYLE_EX_MIXEDBUTTONS);
 
         // Add buttons to the Toolbar Ctrl
-        SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_FN, (LPARAM) &tbButtonsFN);
+        SendMessageW (hWndRes, TB_ADDBUTTONSW, NUMBUTTONS_OW + NUMBUTTONS_OW0, (LPARAM) &tbButtonsOW);
 
         // Show the window
         ShowWindow (hWndRes, SW_SHOWNORMAL);
     } // End IF
+#ifdef DEBUG
+    else
+    {
+        UINT uErr = GetLastError ();
+
+        DbgBrk ();
+    } // End IF/ELSE
+#endif
 
     return hWndRes;
 } // End MakeObjectsWindow
@@ -814,28 +884,21 @@ void InitObjectsBand
 {
     REBARBANDINFOW rbBand;          // Rebar band info struc
     DWORD          dwBtnSize;       // Size of buttons in Toolbar
-    UINT           uCnt,            // Loop counter
-                   uBtnsDropDown,   // # buttons with BTNS_DROPDOWN style
-                   uArrowWidth,     // Width of the arrow next to a dropdown button
+    UINT           uArrowWidth,     // Width of the arrow next to a dropdown button
                    uWidth;          // Width of the Toolbar client area
 ////UINT           uItem;           // Index of this band
 
     // Get the size of the buttons in the Toolbar in the Objects Window
     dwBtnSize = (DWORD)
-      SendMessageW (hWndFN_RB, TB_GETBUTTONSIZE, 0, 0);
-#define dwBtnHeight     LOWORD (dwBtnSize)
-#define dwBtnWidth      HIWORD (dwBtnSize)
-
-    // Count the number of buttons with BTNS_DROPDOWN style
-    for (uCnt = uBtnsDropDown = 0; uCnt < NUMBUTTONS_FN; uCnt++)
-        uBtnsDropDown += (tbButtonsFN[uCnt].fsStyle & BTNS_DROPDOWN) NE 0;
+      SendMessageW (hWndOW_RB, TB_GETBUTTONSIZE, 0, 0);
+#define dwBtnHeight     HIWORD (dwBtnSize)
+#define dwBtnWidth      LOWORD (dwBtnSize)
 
     // Get the width of the dropdown arrow
     uArrowWidth = GetSystemMetrics (SM_CXVSCROLL);
 
     // Calculate the width of the Toolbar client area
-    // "+ 10" to account for the rightmost button not displaying (why??)
-    uWidth = NUMBUTTONS_FN * dwBtnWidth + uArrowWidth * uBtnsDropDown + 10;
+    uWidth = NUMBUTTONS_OW * dwBtnWidth + NUMBUTTONS_OW0 * uArrowWidth;
 
     // Initialize the band info struc
     ZeroMemory (&rbBand, sizeof (rbBand));
@@ -861,17 +924,16 @@ void InitObjectsBand
     rbBand.lpText     = L"Objects";
 ////rbBand.cch        =
 ////rbBand.iImage     =
-    rbBand.hwndChild  = hWndFN_RB;
+    rbBand.hwndChild  = hWndOW_RB;
     rbBand.cxMinChild = uWidth;
     rbBand.cyMinChild = 2 + dwBtnHeight + 2;    // Including top & bottom border
     rbBand.cxIdeal    = uWidth;
     rbBand.cx         = uWidth;
 ////rbBand.hbmBack    =
-    rbBand.wID        = IDWC_FN_RB;
+    rbBand.wID        = IDWC_OW_RB;
 ////rbBand.cyChild    =
 ////rbBand.cyMaxChild =
 ////rbBand.cyIntegral =
-////rbBand.cxIdeal    =
 ////rbBand.lParam     =
 ////rbBand.cxheader   =
 #undef  dwBtnWidth
@@ -881,11 +943,340 @@ void InitObjectsBand
     SendMessageW (hWndRB, RB_INSERTBANDW, (WPARAM) uBandPos, (LPARAM) &rbBand);
 
 ////// Get the zero-based index of the Objects Window band
-////uItem = SendMessageW (hWndRB, RB_IDTOINDEX, IDWC_FN_RB, 0);
+////uItem = SendMessageW (hWndRB, RB_IDTOINDEX, IDWC_OW_RB, 0);
 ////
 ////// Maximize this band to the size of cxIdeal
 ////SendMessageW (hWndRB, RB_MAXIMIZEBAND, uItem, TRUE);
 } // End InitObjectsBand
+
+
+//***************************************************************************
+//  $LclWS_ED_OWToolbarWndProc
+//
+//  Local window procedure for the Workspace/Edit/Objects Window TOOLBAR
+//***************************************************************************
+
+
+LRESULT WINAPI LclWS_ED_OWToolbarWndProc
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
+
+{
+    POINT            pt;                    // Mouse coords
+    APLI3264         iCnt;                  // Index of non-separator item (may be negative)
+    static UBOOL     bTrackMouse = FALSE,   // TRUE iff tracking the mouse via tme
+                     bAttrsTT = FALSE;      // TRUE iff we've initialized the TT attributes
+    TRACKMOUSEEVENT  tme;                   // For Tooltip Ctrl tracking
+    static APLU3264  uTTWidth;              // Original TT tip width
+    TOOLINFOW        tti = {0};             // For Tooltip Ctrl tracking
+#define NOLASTCNT    0x3FFFFFFF
+    static APLI3264  iLastCnt = NOLASTCNT;  // Last valid index
+    TBBUTTON         tbbi;                  // For Toolbar Button Info
+    UINT             uArrowWidth;           // Width of the arrow next to a dropdown button
+
+////LCLODSAPI ("OWTB: ", hWnd, message, wParam, lParam);
+    // Split cases
+    switch (message)
+    {
+        case MYWM_INIT_EC:          // 0 = wParam
+        {                           // lptbButton = (LPTBBUTTON) lParam;
+#ifdef DEBUG
+            LPTBBUTTON lptbButton = (LPTBBUTTON) lParam;
+#else
+  #define lptbButton    ((LPTBBUTTON) lParam)
+#endif
+            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            if (fComctl32FileVer >= 6)
+                tti.cbSize = sizeof (tti);
+            else
+                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+
+            // Fill in the TOOLINFOW struc
+            tti.uFlags   = 0
+                         | TTF_IDISHWND
+                         | TTF_TRACK
+                         ;
+            tti.hwnd     = hWnd;
+            tti.uId      = (UINT_PTR) hWnd;
+////////////tti.rect     =                      // Not used with TTF_IDISHWND
+////////////tti.hinst    =                      // Not used except with string resources
+            tti.lpszText = LPSTR_TEXTCALLBACKW;
+            tti.lParam   = lParam;
+
+            // Attach the Tooltip window to it
+            SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
+
+            return FALSE;               // We handled the msg
+#ifndef DEBUG
+  #undef  lptbButton
+#endif
+        } // End MYWM_INIT_EC
+
+        case WM_NOTIFY:             // idCtrl = (int) wParam;
+        {                           // pnmh = (LPNMHDR) lParam;
+#ifdef DEBUG
+            LPNMHDR         lpnmhdr = (LPNMHDR) lParam;
+            LPNMTTDISPINFOW lpnmtdi = (LPNMTTDISPINFOW) lParam;
+            WPARAM          idCtl   = wParam;
+#else
+  #define lpnmhdr         ((LPNMHDR) lParam)
+  #define lpnmtdi         ((LPNMTTDISPINFOW) lParam)
+  #define idCtl           ((WPARAM) wParam)
+#endif
+            // Ensure that this is our window
+            Assert (hWnd EQ (HWND) idCtl);
+
+////        // Split cases based upon the control id
+////        switch (idCtl)
+////        {
+////            case IDWC_OW_RB:
+                    // Split cases based upon the code
+                    switch (lpnmhdr->code)
+                    {
+                        case TTN_GETDISPINFOW:
+
+                            // If there's a last index, ...
+                            if (iLastCnt NE NOLASTCNT)
+                            {
+                                // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+                                if (fComctl32FileVer >= 6)
+                                    tti.cbSize = sizeof (tti);
+                                else
+                                    tti.cbSize = TTTOOLINFOW_V2_SIZE;
+
+                                // Initialize the Tooltip Info struct
+                                tti.hwnd = hWnd;
+                                tti.uId  = (UINT_PTR) hWnd;
+
+                                // Get the tooltip info
+                                SendMessageW (hWndTT, TTM_GETTOOLINFOW, 0, (LPARAM) &tti);
+
+                                // Get the button state
+
+                                // Set the Tooltip text
+                                lpnmtdi->lpszText = (LPWSTR) ((LPTBBUTTON) tti.lParam)[iLastCnt].iString;
+                            } // End IF
+
+                            break;
+
+                        default:
+                            break;
+                    } // End SWITCH
+
+                    return FALSE;       // We handled the msg
+
+////            default:
+////                break;
+////        } // End SWITCH
+////
+////        break;
+#ifndef DEBUG
+  #undef  idCtl
+  #undef  lpnmtdi
+  #undef  lpnmhdr
+#endif
+        } // End WM_NOTIFY
+
+        case WM_MOUSEMOVE:          // fwKeys = wParam;        // key flags
+                                    // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
+                                    // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
+            // Save the mouse position as a point
+            pt.x = GET_X_LPARAM (lParam);
+            pt.y = GET_Y_LPARAM (lParam);
+
+            // Ask the Toolbar where we are
+            iCnt = (APLI3264)
+              SendMessageW (hWnd, TB_HITTEST, 0, (LPARAM) &pt);
+
+            // If the index is over an item, ...
+            if (iCnt >= 0)
+            {
+                RECT rcHit;         // This item's bounding rectangle
+
+                // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+                if (fComctl32FileVer >= 6)
+                    tti.cbSize = sizeof (tti);
+                else
+                    tti.cbSize = TTTOOLINFOW_V2_SIZE;
+                // Initialize the struct
+                tti.hwnd = hWnd;
+                tti.uId  = (UINT_PTR) hWnd;
+
+                // If we haven't initialized the Tooltip attributes, ...
+                if (!bAttrsTT)
+                {
+                    HFONT   hFont;
+                    LOGFONT lf;
+
+                    // Get the current font for this window
+                    hFont = (HFONT) SendMessageW (hWnd, WM_GETFONT, 0, 0);
+
+                    // Get this font's LOGFONT struc
+                    GetObjectW (hFont, sizeof (lf), &lf);
+
+                    // Set the maximum Tooltip width in pixels
+                    //   and return the previous width
+                    uTTWidth = (APLU3264)
+                      SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, lf.lfWidth * MAXTIPWIDTHINCHARS);
+
+                    // Mark as initialized
+                    bAttrsTT = TRUE;
+                } // End IF
+
+                // Get this item's bounding rectangle
+                SendMessageW (hWnd, TB_GETITEMRECT, iCnt, (LPARAM) &rcHit);
+
+                // Get the Toolbar button info
+                SendMessageW (hWnd, TB_GETBUTTON, iCnt, (LPARAM) &tbbi);
+
+                // If this a BTNS_DROPDOWN button, ...
+                if (tbbi.fsStyle & BTNS_DROPDOWN)
+                {
+                    // Get the width of the dropdown arrow
+                    uArrowWidth = GetSystemMetrics (SM_CXVSCROLL);
+
+                    // If the mouse is over the dropdown arrow
+                    if (pt.x >= (int) (rcHit.right - uArrowWidth))
+                        iCnt++;
+
+                    // If this index is different from the last and we're tracking the mouse, ...
+                    if (iCnt NE iLastCnt
+                     && bTrackMouse)
+                    {
+                        // We need to toggle the Tooltip tracking state off/on to tell the
+                        //   Tooltip Ctrl to resend TTN_GETDISPINFOW.
+
+                        // Cancel request notification (WM_MOUSELEAVE)
+                        //   when the mouse leaves this window
+                        tme.cbSize      = sizeof (TRACKMOUSEEVENT);
+                        tme.dwFlags     = 0
+                                        | TME_CANCEL
+                                        | TME_LEAVE
+                                          ;
+                        tme.hwndTrack   = hWnd;
+////////////////////////tme.dwHoverTime =
+                        _TrackMouseEvent (&tme);
+
+                        // Tell the Tooltip Ctrl to stop tracking
+                        SendMessageW (hWndTT, TTM_TRACKACTIVATE, FALSE, (LPARAM) &tti);
+
+                        // Mark as no longer tracking
+                        bTrackMouse = FALSE;
+                    } // End IF
+                } // End IF
+
+                // If this index is different from the last, ...
+                if (iCnt NE iLastCnt)
+                {
+                    // Save the new last index
+                    iLastCnt = iCnt;
+
+                    // In case we are now over a BTNS_DROPDOWN button
+
+                    // Set the Tooltip balloon to the bottom right-hand corner of the
+                    //   Hit rectangle so that it always appears in a constant place
+                    pt.x = rcHit.right;
+                    pt.y = rcHit.bottom;
+
+                    // Convert the coords for the Tooltip
+                    ClientToScreen (hWnd, &pt);
+
+                    // Tell the Tooltip Ctrl the new position
+                    SendMessageW (hWndTT, TTM_TRACKPOSITION, 0, MAKELONG (pt.x, pt.y));
+                } // End IF
+
+                // If not already tracking, ...
+                if (!bTrackMouse)
+                {
+                    // Request notification (WM_MOUSELEAVE)
+                    //   when the mouse leaves this window
+                    tme.cbSize      = sizeof (TRACKMOUSEEVENT);
+                    tme.dwFlags     = 0
+                                    | TME_LEAVE
+                                      ;
+                    tme.hwndTrack   = hWnd;
+////////////////////tme.dwHoverTime =
+                    _TrackMouseEvent (&tme);
+
+                    // Tell the Tooltip Ctrl to track
+                    SendMessageW (hWndTT, TTM_TRACKACTIVATE, TRUE, (LPARAM) &tti);
+
+                    // Mark as tracking
+                    bTrackMouse = TRUE;
+                } // End IF
+            } // End IF
+
+            return FALSE;               // We handled the msg
+
+        case WM_MOUSELEAVE:         // fwKeys = wParam;        // key flags
+                                    // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
+                                    // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
+            // Note that W automatically cancels the _TrackMouseEvent
+            //   which caused this message to be sent so there's no
+            //   need to cancel it ourselves.
+
+            // If we've initialized the Tooltip attributes, ...
+            if (bAttrsTT)
+            {
+                // Restore the old tip width
+                SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, (LPARAM) uTTWidth);
+
+                // Mark as no longer initialized
+                bAttrsTT = FALSE;
+            } // End IF
+
+            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            if (fComctl32FileVer >= 6)
+                tti.cbSize = sizeof (tti);
+            else
+                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+
+            // Initialize the struct
+            tti.hwnd = hWnd;
+            tti.uId  = (UINT_PTR) hWnd;
+
+            // Tell the Tooltip Ctrl to stop tracking
+            SendMessageW (hWndTT, TTM_TRACKACTIVATE, FALSE, (LPARAM) &tti);
+
+            // Mark as no longer valid
+            iLastCnt = NOLASTCNT;
+
+            // Mark as no longer tracking
+            bTrackMouse = FALSE;
+
+            return FALSE;               // We handled the msg
+
+        case WM_DESTROY:
+            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            if (fComctl32FileVer >= 6)
+                tti.cbSize = sizeof (tti);
+            else
+                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+
+            // Initialize the struct
+            tti.hwnd = hWnd;
+            tti.uId  = (UINT_PTR) hWnd;
+
+            // Unregister the Tooltip for this window
+            SendMessageW (hWndTT,
+                          TTM_DELTOOLW,
+                          0,
+                          (LPARAM) &tti);
+            break;
+
+        default:
+            break;
+    } // End SWITCH
+
+////LCLODSAPI ("OWTBZ:", hWnd, message, wParam, lParam);
+    return CallWindowProcW (lpfnOldWS_ED_OWToolbarWndProc,
+                            hWnd,
+                            message,
+                            wParam,
+                            lParam); // Pass on down the line
+} // End LclWS_ED_OWToolbarWndProc
 
 
 //***************************************************************************
@@ -898,9 +1289,9 @@ void DeleteImageBitmaps
     (void)
 
 {
-    MyDeleteObject (hBitmapFN);
-    MyDeleteObject (hBitmapED);
-    MyDeleteObject (hBitmapWS);
+    MyDeleteObject (hBitmapOW); hBitmapOW = NULL;
+    MyDeleteObject (hBitmapED); hBitmapED = NULL;
+    MyDeleteObject (hBitmapWS); hBitmapWS = NULL;
 } // End DeleteImageBitmaps
 
 
@@ -936,6 +1327,14 @@ HWND MakeFontWindow
     if (hWndRes)
         // Show the window
         ShowWindow (hWndRes, SW_SHOWNORMAL);
+#ifdef DEBUG
+    else
+    {
+        UINT uErr = GetLastError ();
+
+        DbgBrk ();
+    } // End IF/ELSE
+#endif
 
     return hWndRes;
 } // End MakeFontWindow
@@ -1293,28 +1692,28 @@ LRESULT APIENTRY FW_RBWndProc
             SendMessageW (hWndTT,
                           TTM_DELTOOLW,
                           0,
-                          (LPARAM) (LPTOOLINFOW) &tti);
+                          (LPARAM) &tti);
             // Unregister the Tooltip for the Font Style Combobox
             tti.hwnd     = hWndCBFS_FW;
             tti.uId      = (UINT_PTR) hWndCBFS_FW;
             SendMessageW (hWndTT,
                           TTM_DELTOOLW,
                           0,
-                          (LPARAM) (LPTOOLINFOW) &tti);
+                          (LPARAM) &tti);
             // Unregister the Tooltip for the Font Size Edit Ctrl
             tti.hwnd     = hWndEC_FW;
             tti.uId      = (UINT_PTR) hWndEC_FW;
             SendMessageW (hWndTT,
                           TTM_DELTOOLW,
                           0,
-                          (LPARAM) (LPTOOLINFOW) &tti);
+                          (LPARAM) &tti);
             // Unregister the Tooltip for the Font Size UpDown Ctrl
             tti.hwnd     = hWndUD_FW;
             tti.uId      = (UINT_PTR) hWndUD_FW;
             SendMessageW (hWndTT,
                           TTM_DELTOOLW,
                           0,
-                          (LPARAM) (LPTOOLINFOW) &tti);
+                          (LPARAM) &tti);
             // Write out the APL Font Names to the .ini file
             WriteAplFontNames (hWndCBFN_FW);
 
@@ -1384,7 +1783,6 @@ void InitFontBand
 ////rbBand.cyChild    =
 ////rbBand.cyMaxChild =
 ////rbBand.cyIntegral =
-////rbBand.cxIdeal    =
 ////rbBand.lParam     =
 ////rbBand.cxheader   =
 
@@ -1432,6 +1830,14 @@ HWND MakeLanguageWindow
     if (hWndRes)
         // Show the window
         ShowWindow (hWndRes, SW_SHOWNORMAL);
+#ifdef DEBUG
+    else
+    {
+        UINT uErr = GetLastError ();
+
+        DbgBrk ();
+    } // End IF/ELSE
+#endif
 
     return hWndRes;
 } // End MakeLanguageWindow
@@ -1953,8 +2359,8 @@ typedef struct tagLANGCHARS
 
             break;                  // Continue with next handler
 
-        case WM_NOTIFY:
-        {
+        case WM_NOTIFY:             // idCtrl = (int) wParam;
+        {                           // pnmh = (LPNMHDR) lParam;
 #ifdef DEBUG
             LPNMHDR         lpnmhdr = (LPNMHDR) lParam;
             LPNMTTDISPINFOW lpnmtdi = (LPNMTTDISPINFOW) lParam;
@@ -2535,7 +2941,7 @@ typedef struct tagLANGCHARS
             SendMessageW (hWndTT,
                           TTM_DELTOOLW,
                           0,
-                          (LPARAM) (LPTOOLINFOW) &tti);
+                          (LPARAM) &tti);
             // Uninitialize window-specific resources
             LW_RB_Delete (hWnd);
 
@@ -2608,7 +3014,6 @@ void InitLanguageBand
 ////rbBand.cyChild    =
 ////rbBand.cyMaxChild =
 ////rbBand.cyIntegral =
-////rbBand.cxIdeal    =
 ////rbBand.lParam     =
 ////rbBand.cxheader   =
 

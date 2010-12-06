@@ -1673,12 +1673,12 @@ LRESULT WINAPI LclEditCtrlWndProc
     LRESULT      lResult;                   // Result from calling original handler
     LPUNDO_BUF   lpUndoNxt,                 // Ptr to next available slot in the Undo Buffer
                  lpUndoBeg;                 // ...    first          ...
-    DWORD        uCharPosBeg,               // Pos of the beginning char
+    APLU3264     uCharPosBeg,               // Pos of the beginning char
                  uCharPosEnd,               // ...        ending    ...
                  uCharPos,                  // ...    a character position
                  uLinePos,                  // Char position of start of line
-                 uLineNum;                  // Line #
-    APLU3264     uLineLen,                  // Line length
+                 uLineNum,                  // Line #
+                 uLineLen,                  // Line length
                  uSpaces,                   // # spaces to insert
                  uGroupIndex;               // Group index
     WCHAR        wChar[TABSTOP + 1],        // Array of blanks for converting tabs to spaces
@@ -2446,11 +2446,16 @@ LRESULT WINAPI LclEditCtrlWndProc
 #undef  keyData
 #undef  nVirtKey
 
-#define wchCharCode ((WCHAR) wParam)
-#define keyData     (*(LPKEYDATA) &lParam)
         case WM_CHAR:               // wchCharCode = (TCHAR) wParam; // character code
                                     // lKeyData = lParam;           // Key data
         {
+#ifdef DEBUG
+            WCHAR   wchCharCode = (WCHAR) wParam;
+            KEYDATA keyData     = *(LPKEYDATA) &lParam;
+#else
+  #define wchCharCode   ((WCHAR) wParam)
+  #define keyData       (*(LPKEYDATA) &lParam)
+#endif
             int iChar;
 
             // Handle Shifted & unshifted chars
@@ -2575,8 +2580,10 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
         } // End WM_CHAR
-#undef  keyData
-#undef  wchCharCode
+#ifndef DEBUG
+  #undef  keyData
+  #undef  wchCharCode
+#endif
 
 #define wchCharCode ((WCHAR) wParam)
 #define keyData     (*(LPKEYDATA) &lParam)
@@ -4837,7 +4844,7 @@ void SetLineNumState
 
     // Get the current flags of the Object Toolbar's Toggle Fcn Line #s button
     uFlags = (UINT)
-      SendMessageW (hWndFN_RB, TB_GETSTATE, IDM_TOGGLE_LNS_FN, 0);
+      SendMessageW (hWndOW_RB, TB_GETSTATE, IDM_TOGGLE_LNS_FCN, 0);
 
     // Set the flags of the Objects Toolbar's Toggle Fcn Line #s button
     if (GetWindowLongW (hWndFE, GWLSF_FLN))
@@ -4846,7 +4853,7 @@ void SetLineNumState
         uFlags &= ~TBSTATE_CHECKED;
 
     // Tell the Objects Toolbar about the new state
-    SendMessageW (hWndFN_RB, TB_SETSTATE, IDM_TOGGLE_LNS_FN, (LPARAM) uFlags);
+    SendMessageW (hWndOW_RB, TB_SETSTATE, IDM_TOGGLE_LNS_FCN, (LPARAM) uFlags);
 
     // Get the corresponding Edit Ctrl window handle
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);

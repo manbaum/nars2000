@@ -44,10 +44,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <windows.h>
 #include <stdio.h>      // For sscanfW
 #include <ctype.h>
+
 #include "macros.h"
 #include "defines.h"
-#include "datatype.h"
-#include "main.h"
+#include "types.h"
 #include "dictionary.h"
 
 // Include prototypes unless prototyping

@@ -32,7 +32,6 @@
 typedef int PAINTHOOK (HWND, HDC, int, int, LPWSTR, int, int, long, int, int, UBOOL);
 typedef PAINTHOOK *LPPAINTHOOK;
 
-#define MYWM_INIT_EC        (WM_APP + 100)
 #define MYWM_REDO           (WM_APP + 101)
 #define MYWM_SELECTALL      (WM_APP + 102)
 #define MYWM_KEYDOWN        (WM_APP + 103)

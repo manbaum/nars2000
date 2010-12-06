@@ -52,11 +52,11 @@ extern int __cdecl dprintfWL9 (unsigned short *lpwszFmt,...);
 extern int gDbgLvl;
 #endif
 
-#include "main.h"
+#include "enums.h"
 #include "defines.h"
+#include "types.h"
 #include "editctrl.h"
 #include "resource.h"
-#include "enums.h"
 
 #ifdef DEBUG
   #define   LCLODSAPI   ODSAPI

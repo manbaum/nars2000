@@ -72,7 +72,7 @@ typedef enum tagWINDOWIDS       // Window IDs
     IDWC_RB       ,             // 0A:  ...                            RB ...
     IDWC_WS_RB    ,             // 0B:  ...           WS Window     in RB control
     IDWC_ED_RB    ,             // 0C:  ...           ED ...        in RB control
-    IDWC_FN_RB    ,             // 0D:  ...           FN ...        in RB control
+    IDWC_OW_RB    ,             // 0D:  ...           OW ...        in RB control
     IDWC_FW_RB    ,             // 0E:  ...           FW ...        in RB control
     IDWC_CBFN_FW  ,             // 0F:  ...           CB Font Name  in FW window
     IDWC_CBFS_FW  ,             // 10:  ...           CB Font Style in ...
@@ -122,6 +122,44 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
     SYSCMD_XLOAD    ,           // 17:  )XLOAD
     SYSCMD_WSID     ,           // 18:  )WSID
 } SYSCMDS_ENUM, *LPSYSCMDS_ENUM;
+
+
+typedef enum tagEXCEPTION_CODES // Exception Codes
+{
+    EXCEPTION_SUCCESS = 0 ,     // 00:  All OK
+    EXCEPTION_RESULT_FLOAT,     // 01:  Result should be Float
+    EXCEPTION_DOMAIN_ERROR,     // 02:  Signal a DOMAIN ERROR
+    EXCEPTION_LIMIT_ERROR,      // 03:  Signal a LIMIT ERROR
+    EXCEPTION_CTRL_BREAK,       // 04:  Ctrl-Break pressed
+} EXCEPTION_CODES;
+
+
+typedef enum tagMAKE_PROTO
+{
+    MP_CHARS,                   // 00:  Chars allowed in MakeMonPrototype arg
+    MP_NUMONLY,                 // 01:  Numerics only ...
+    MP_NUMCONV                  // 02:  Convert chars to numerics ...
+} MAKE_PROTO;
+
+
+typedef enum tagEXIT_TYPES
+{
+    EXITTYPE_NONE = 0,          // 00:  Undefined
+    EXITTYPE_GOTO_ZILDE,        // 01:  {goto} {zilde}
+    EXITTYPE_GOTO_LINE,         // 02:  {goto} LineNum
+    EXITTYPE_RESET_ONE,         // 03:  {goto}
+    EXITTYPE_RESET_ONE_INIT,    // 04:  {goto}  (first time)
+    EXITTYPE_RESET_ALL,         // 05:  )RESET
+    EXITTYPE_QUADERROR_INIT,    // 06:  []ERROR/[]ES -- initialization
+    EXITTYPE_QUADERROR_EXEC,    // 07:  []ERROR/[]ES -- execute []ELX
+    EXITTYPE_ERROR,             // 08:  ERROR
+    EXITTYPE_STOP,              // 09:  Stop processing, cannot continue
+    EXITTYPE_DISPLAY,           // 0A:  Value not already displayed
+    EXITTYPE_NODISPLAY,         // 0B:  Value already displayed
+    EXITTYPE_NOVALUE,           // 0C:  No value returned
+    EXITTYPE_RETURNxLX,         // 0D:  Return from []ELX/[]ALX
+                                // 0E-0F:  Available entries (4 bits)
+} EXIT_TYPES, *LPEXITTYPES;
 
 
 //***************************************************************************

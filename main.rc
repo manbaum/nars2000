@@ -172,7 +172,7 @@ BEGIN
         //   <aRebarBands> entries
         MENUITEM "&Workspace Toolbar"         , IDM_TB_WS
         MENUITEM "&Edit Toolbar"              , IDM_TB_ED
-        MENUITEM "&Objects Toolbar"           , IDM_TB_FN
+        MENUITEM "&Objects Toolbar"           , IDM_TB_OW
         MENUITEM "SM &Font Toolbar"           , IDM_TB_FW
         MENUITEM "&Language Toolbar"          , IDM_TB_LW
     END
@@ -185,12 +185,12 @@ BEGIN
     END
     POPUP "Ob&jects"
     BEGIN
-        MENUITEM "&New\tCtrl+N"               , IDM_NEW_FN
-        MENUITEM "&Quit\tCtrl+Q"              , IDM_CLOSE_FN
-        MENUITEM "&Save\tCtrl+S"              , IDM_SAVE_FN
-        MENUITEM "Save and &Quit\tCtrl+E"     , IDM_SAVECLOSE_FN
-        MENUITEM "Save &As\tCtrl+A"           , IDM_SAVE_AS_FN      , INACTIVE GRAYED   // ***FIXME***
-        MENUITEM "&Toggle Line Numbers"       , IDM_TOGGLE_LNS_FN
+        MENUITEM "&New\tCtrl+N"               , IDM_NEW_FCN
+        MENUITEM "&Quit\tCtrl+Q"              , IDM_CLOSE_FCN
+        MENUITEM "&Save\tCtrl+S"              , IDM_SAVE_FCN
+        MENUITEM "Save and &Quit\tCtrl+E"     , IDM_SAVECLOSE_FCN
+        MENUITEM "Save &As\tCtrl+A"           , IDM_SAVE_AS_FCN     , INACTIVE GRAYED   // ***FIXME***
+        MENUITEM "&Toggle Line Numbers"       , IDM_TOGGLE_LNS_FCN
     END
     POPUP "&Help"
     BEGIN

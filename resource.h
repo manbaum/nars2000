@@ -113,7 +113,7 @@
 #define IDM_TB_FIRST                             IDM_TB_WS
 #define IDM_TB_WS                                600
 #define IDM_TB_ED                                601
-#define IDM_TB_FN                                602
+#define IDM_TB_OW                                602
 #define IDM_TB_FW                                603
 #define IDM_TB_LW                                604
 #define IDM_TB_LAST                              IDM_TB_LW
@@ -142,12 +142,12 @@
 #define IDM_LOCALIZE                             730
 #define IDM_UNLOCALIZE                           731
 
-#define IDM_NEW_FN                               740
-#define IDM_CLOSE_FN                             741
-#define IDM_SAVE_FN                              742
-#define IDM_SAVE_AS_FN                           743
-#define IDM_SAVECLOSE_FN                         744
-#define IDM_TOGGLE_LNS_FN                        745
+#define IDM_NEW_FCN                              740
+#define IDM_CLOSE_FCN                            741
+#define IDM_SAVE_FCN                             742
+#define IDM_SAVE_AS_FCN                          743
+#define IDM_SAVECLOSE_FCN                        744
+#define IDM_TOGGLE_LNS_FCN                       745
 
 #define IDM_CUSTOMIZE                            750
 

@@ -26,15 +26,18 @@
   #pragma pack(push,4)
 #endif
 
+// Disable stack checking
+#pragma check_stack(off)
+
 #include "macros.h"
 #include "enums.h"
-#include "main.h"
+#include "defines.h"
+#include "types.h"
 #include "perfmon.h"
 #include "uniscribe.h"
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "resource.h"
-#include "defines.h"
 #include "datatype.h"
 #include "tokens.h"
 #include "primfns.h"

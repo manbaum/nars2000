@@ -51,9 +51,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 
 #include "macros.h"
+#include "enums.h"
 #include "defines.h"
-#include "datatype.h"
-#include "main.h"
+#include "types.h"
 #include "dictionary.h"
 
 // Include prototypes unless prototyping

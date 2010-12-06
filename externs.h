@@ -915,9 +915,9 @@ WCHAR wszStatusIdle[]
 #define IMAGE_ED_CX     24
 #define IMAGE_ED_CY     24
 
-// Width and height of each image in the FN image list
-#define IMAGE_FN_CX     24
-#define IMAGE_FN_CY     24
+// Width and height of each image in the OW image list
+#define IMAGE_OW_CX     24
+#define IMAGE_OW_CY     24
 
 
 //***************************************************************************
@@ -941,7 +941,7 @@ REBARBANDS aRebarBands[1 + IDM_TB_LAST - IDM_TB_FIRST]
 //   Show?  SM?    FE?  WindowID
  = {{TRUE, TRUE , TRUE, IDWC_WS_RB},   // Workspace
     {TRUE, TRUE , TRUE, IDWC_ED_RB},   // Edit
-    {TRUE, FALSE, TRUE, IDWC_FN_RB},   // Objects
+    {TRUE, FALSE, TRUE, IDWC_OW_RB},   // Objects
     {TRUE, TRUE , TRUE, IDWC_FW_RB},   // SM Font
     {TRUE, TRUE , TRUE, IDWC_LW_RB},   // Language
    }
@@ -998,7 +998,7 @@ HWND hWndTC,                            // Global Tab Control window handle
      hWndRB,                            // ...    Rebar Ctrl
      hWndWS_RB,                         // ...    Workspace Window in Rebar Ctrl
      hWndED_RB,                         // ...    Edit      ...
-     hWndFN_RB,                         // ...    Objects   ...
+     hWndOW_RB,                         // ...    Objects   ...
      hWndFW_RB,                         // ...    Font      ...
      hWndCBFN_FW,                       // ...    Combobox for Font Name in Font Window in Rebar Ctrl
      hWndCBFS_FW,                       // ...    Combobox for Font Style ...
@@ -1221,7 +1221,7 @@ EXTERN
 HIMAGELIST hImageListTC,                // Handle to the common image list for TC
            hImageListWS,                // ...                                 WS
            hImageListED,                // ...                                 ED
-           hImageListFN;                // ...                                 FN
+           hImageListOW;                // ...                                 OW
 
 // Same order as in ARRAY_TYPES
 // so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED
@@ -1515,6 +1515,20 @@ UINT uColorNames
 = countof (aColorNames)
 #endif
 ;
+
+//***************************************************************************
+//  Character codes
+//***************************************************************************
+
+typedef struct tagVKSTATE
+{
+    UINT  Shift:1,              // 00000001:  Left- or right-shift key up(0) or down(1)
+          Alt:1,                // 00000002:  Left- or right-Alt key up(0) or down(1)
+          Ctl:1,                // 00000004:  Left or -right Ctl key up(0) or down(1)
+          Ins:1,                // 00000008:  Replace(0) or insert(1)
+          :28;                  // FFFFFFF0:  Available bits
+} VKSTATE, *LPVKSTATE;
+
 
 typedef struct
 {
@@ -1986,10 +2000,6 @@ int gInitCustomizeCategory
 = DEF_INIT_CATEGORY
 #endif
 ;
-
-typedef unsigned int   uint32_t;
-typedef unsigned short uint16_t;
-typedef unsigned char  uint8_t;
 
 typedef enum tagUNDO_ACTS
 {

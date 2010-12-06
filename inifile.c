@@ -39,6 +39,7 @@
 #define SECTNAME_COLORS                 L"Colors"
 #define SECTNAME_TOOLBARS               L"Toolbars"
 #define SECTNAME_MIGRATION              L"Migration"
+#define SECTNAME_RECENTFILES            L"RecentFiles"
 
 // Key names
 #define KEYNAME_VERSION                 L"Version"
@@ -439,8 +440,11 @@ void ReadIniFileGlb
 
 {
     WCHAR wszTemp[1024],            // Temporary storage for string results
+          wszKey[8 + 1],            // Room for a keyname
          *lpwszTemp;                // Temporary ptr into wszTemp
+
     UINT  uCnt;                     // Loop counter
+    WCHAR (*lpwszRecentFiles)[][_MAX_PATH]; // Ptr to list of recent files
 
 #define TEMPBUFLEN      countof (wszTemp)
 
@@ -921,6 +925,46 @@ void ReadIniFileGlb
                                  aToolbarNames[uCnt],   // Ptr to the key name
                                  TRUE,                  // Default value if not found
                                  lpwszIniFile);         // Ptr to the file name
+
+    //***************************************************************
+    // Read in the [RecentFiles] section
+    //***************************************************************
+
+    // Get the # entries in the Recent Files list
+    uNumRecentFiles =
+      GetPrivateProfileIntW (SECTNAME_RECENTFILES,  // Ptr to the section name
+                             KEYNAME_COUNT,         // Ptr to the key name
+                             uNumRecentFiles,       // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Allocate space for the Recent Files list
+    hGlbRecentFiles =
+      MyGlobalAlloc (GHND, uNumRecentFiles * _MAX_PATH * sizeof (WCHAR));
+
+////// Check for error
+////if (!hGlbRecentFiles)
+////    return -1;          // Stop the whole process
+
+    // Lock the memory to get a ptr to it
+    lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
+
+    // Loop through the Recent Files
+    for (uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
+    {
+        // Format the keyname
+        wsprintfW (wszKey,
+                   L"%u",
+                   uCnt);
+        // Read in the next Recent File
+        GetPrivateProfileStringW (SECTNAME_RECENTFILES,         // Ptr to the section name
+                                  wszKey,                       // Ptr to the key name
+                                  L"",                          // Ptr to the default value
+                                  (*lpwszRecentFiles)[uCnt],    // Ptr to the output buffer
+                                  _MAX_PATH,                    // Count of the output buffer
+                                  lpwszIniFile);                // Ptr to the file name
+    } // End FOR
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
 #undef  TEMPBUFLEN
 } // End ReadIniFileGlb
 
@@ -1413,11 +1457,12 @@ void SaveIniFile
 
 {
     WCHAR     wszTemp[1024],                                // Temporary storage
-              wszKey[3];                                    // ...
+              wszKey[8 + 1];                                // ...
     UINT      uCnt;                                         // Loop counter
     LPVOID    lpMemObj;                                     // Ptr to object global memory
     LPAPLCHAR lpaplChar;                                    // Ptr to output save area
     APLNELM   aplNELMObj;                                   // Object NELM
+    WCHAR   (*lpwszRecentFiles)[][_MAX_PATH];               // Ptr to list of recent files
 
     //*********************************************************
     // Write out [General] section entries
@@ -2108,6 +2153,40 @@ void SaveIniFile
                                     aToolbarNames[uCnt],        // Ptr to the key name
                                     L"0" + aRebarBands[uCnt].bShowBand, // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
+    //*********************************************************
+    // Write out [RecentFiles] section entries
+    //*********************************************************
+
+    // Lock the memory to get a ptr to it
+    lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
+
+    // Loop through the Recent Files
+    for (uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
+    if ((*lpwszRecentFiles)[uCnt][0])
+    {
+        // Format the keyname
+        wsprintfW (wszKey,
+                   L"%u",
+                   uCnt);
+        // Write out the current Recent File
+        WritePrivateProfileStringW (SECTNAME_RECENTFILES,       // Ptr to the section name
+                                    wszKey,                     // Ptr to the key name
+                                  (*lpwszRecentFiles)[uCnt],    // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+    } // End FOR
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
+
+    // Format the # Recent Files
+    wsprintfW (wszKey,
+               L"%u",
+               uNumRecentFiles);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_RECENTFILES,       // Ptr to the section name
+                                KEYNAME_COUNT,              // Ptr to the key name
+                                wszKey,                     // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
 } // End SaveIniFile
 
 

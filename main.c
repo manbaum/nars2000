@@ -1469,6 +1469,7 @@ LRESULT APIENTRY MFWndProc
     HWND         hWndActive,    // Active window handle
                  hWndMC,        // MDI Client ...
                  hWndSM;        // Session Manager ...
+    UINT         uCnt;          // Loop counter
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     static HWND  hWndTC_TT;     // Window handle for TT in TC
 ////static DWORD aHelpIDs[] = {
@@ -1627,8 +1628,7 @@ LRESULT APIENTRY MFWndProc
                 RECT rc,                    // Rectangle for new MF client area
                      rcRB;                  // ...           Rebar Ctrl
                 UINT uHeightRB,             // Total height of Rebar ctrl
-                     uTabCnt,               // # tabs in Tab Ctrl
-                     uCnt;                  // Loop counter
+                     uTabCnt;               // # tabs in Tab Ctrl
 
                 // Calculate the display rectangle, assuming the
                 //   tab control is the size of the client area
@@ -1883,16 +1883,60 @@ LRESULT APIENTRY MFWndProc
                                 case IDM_LOAD_WS:
                                 case IDM_XLOAD_WS:
                                 case IDM_COPY_WS:
+                                {
+                                    WCHAR (*lpwszRecentFiles)[][_MAX_PATH]; // Ptr to list of recent files
+                                    LPWCHAR lpwszWSID;                      // Ptr to current recent file
+                                    UINT    uIDBase;                        // ID base (IDM_LOAD_BASE/IDM_XLOAD_BASE/IDM_COPY_BASE)
+
+                                    // Get the ID base
+                                    switch (lpnmtb->iItem)
+                                    {
+                                        case IDM_LOAD_WS:
+                                            uIDBase = IDM_LOAD_BASE;
+
+                                            break;
+
+                                        case IDM_XLOAD_WS:
+                                            uIDBase = IDM_XLOAD_BASE;
+
+                                            break;
+
+                                        case IDM_COPY_WS:
+                                            uIDBase = IDM_COPY_BASE;
+
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    // Lock the memory to get a ptr to it
+                                    lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
+
                                     // Fill in the popup menu with a list of recently
                                     //   )LOADed/)XLOADed/)COPYed WSs
-                                    // ***FINISHME***
+                                    for (uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
+                                    {
+                                        // Get a ptr to the current recent file
+                                        lpwszWSID = (*lpwszRecentFiles)[uCnt];
 
-                                    AppendMenuW (hMenu,                 // Handle
-                                                 MF_STRING              // Flags
-                                               | MF_ENABLED,
-                                                 0,                     // ID
-                                                 L"***TBD***");         // Text
+                                        if (lpwszWSID[0] EQ WC_EOS)
+                                            break;
+
+                                        // Append the file name, shortened if appropriate
+                                        AppendMenuW (hMenu,                     // Handle
+                                                     0                          // Flags
+                                                   | MF_STRING
+                                                   | MF_ENABLED,
+                                                     uIDBase + uCnt,            // ID
+                                                     ShortenWSID (lpwszWSID));  // Text
+                                    } // End FOR
+
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
+
                                     break;
+                                } // End IDM_LOAD/XLOAD/COPY_WS
 
                                 case IDM_CUT:
                                 case IDM_COPY:
@@ -2787,6 +2831,39 @@ LRESULT APIENTRY MFWndProc
 ////////////////    SaveAsFunction (hWndActive);
 ////////////////
 ////////////////    return FALSE;   // We handled the msg
+
+                default:
+                {
+                    WCHAR (*lpwszRecentFiles)[][_MAX_PATH]; // Ptr to list of recent files
+
+                    // Lock the memory to get a ptr to it
+                    lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
+
+                    // Check for IDM_LOAD_BASE
+                    if (IDM_LOAD_BASE  <= idCtl
+                     &&                   idCtl < (IDM_LOAD_BASE + uNumRecentFiles))
+                    {
+                        // )LOAD the corresponding workspace
+                        CmdLoadCom_EM ((*lpwszRecentFiles)[idCtl - IDM_LOAD_BASE], TRUE);
+                    } else
+                    // Check for IDM_XLOAD_BASE
+                    if (IDM_XLOAD_BASE <= idCtl
+                     &&                   idCtl < (IDM_XLOAD_BASE + uNumRecentFiles))
+                    {
+                        // )XLOAD the corresponding workspace
+                        CmdLoadCom_EM ((*lpwszRecentFiles)[idCtl - IDM_XLOAD_BASE], FALSE);
+                    } else
+                    // Check for IDM_COPY_BASE
+                    if (IDM_COPY_BASE  <= idCtl
+                     &&                   idCtl < (IDM_COPY_BASE + uNumRecentFiles))
+                    {
+                        // )COPY the corresponding workspace
+                        CmdCopy_EM    ((*lpwszRecentFiles)[idCtl - IDM_COPY_BASE]);
+                    } // End IF/ELSE/...
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
+                } // End default
             } // End SWITCH
 
             break;                  // Continue with next handler ***MUST***

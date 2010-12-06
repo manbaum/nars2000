@@ -307,6 +307,9 @@ UBOOL SaveNewWsid_EM
         Assert (lpMemSaveWSID[iLen2] EQ L'.');
         lpMemSaveWSID[iLen2] = WC_EOS;
 
+        // Save the WSID in the list of recent files
+        SaveRecentWSID (lpMemSaveWSID);
+
         // Calculate space needed for the new WSID
         ByteWSID = CalcArraySize (ARRAY_CHAR, iLen2, 1);
 
@@ -400,6 +403,58 @@ LPWCHAR ShortenWSID
     else
         return lpMemWSID;
 } // End ShortenWSID
+
+
+//***************************************************************************
+//  $SaveRecentWSID
+//
+//  Save a WSID in the list of recent files
+//***************************************************************************
+
+void SaveRecentWSID
+    (LPAPLCHAR lpMemWSID)               // Ptr to []WSID to save (excludes WS_WKSEXT)
+
+{
+    UINT  uCnt;                             // Loop counter
+    WCHAR (*lpwszRecentFiles)[][_MAX_PATH]; // Ptr to list of recent files
+
+    // Lock the memory to get a ptr to it
+    lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
+
+    // Check for duplicates
+    for (uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
+    {
+        if (lstrcmpW (lpMemWSID, (*lpwszRecentFiles)[uCnt]) EQ 0)
+        {
+            // It's in our list, so move it from position uCnt to 0
+            if (uCnt NE 0)
+            {
+                // Move entries from [0, uCnt - 1] to [1, uCnt]
+                MoveMemoryW ((*lpwszRecentFiles)[1],
+                             (*lpwszRecentFiles)[0],
+                             uCnt * _MAX_PATH);
+                // Copy the new file to the top
+                lstrcpyW ((*lpwszRecentFiles)[0], lpMemWSID);
+            } // End IF
+
+            break;
+        } // End IF
+    } // End FOR
+
+    // If it's not in our list, ...
+    if (uCnt EQ uNumRecentFiles)
+    {
+        // Move entries from [0, uNumRecentFiles - 2] to [1, uNumRecentFiles - 1]
+        MoveMemoryW ((*lpwszRecentFiles)[1],
+                     (*lpwszRecentFiles)[0],
+                     (uNumRecentFiles - 1) * _MAX_PATH);
+        // Copy the new file to the top
+        lstrcpyW ((*lpwszRecentFiles)[0], lpMemWSID);
+    } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
+} // End SaveRecentWSID
 
 
 //***************************************************************************

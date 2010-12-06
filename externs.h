@@ -2069,6 +2069,21 @@ typedef enum tagFLT_DISP_FMT    // Floating Point Display Formats
 //   <gDTOA_Mode> in <display.c>.
 
 
+//***************************************************************************
+//  Recent Files
+//***************************************************************************
+
+EXTERN
+HGLOBAL hGlbRecentFiles;        // Recent files global memory handle
+
+EXTERN
+UINT uNumRecentFiles
+#ifdef DEFINE_VALUES
+ = DEF_RECENTFILES;
+#endif
+;
+
+
 #define ENUMS_DEFINED
 #undef  EXTERN
 

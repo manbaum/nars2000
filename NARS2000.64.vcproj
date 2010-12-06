@@ -837,10 +837,6 @@
                 >
             </File>
             <File
-                RelativePath=".\qf_size.c"
-                >
-            </File>
-            <File
                 RelativePath=".\qf_sysid.c"
                 >
             </File>

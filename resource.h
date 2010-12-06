@@ -151,6 +151,11 @@
 
 #define IDM_CUSTOMIZE                            750
 
+// The following IDs are used as a base of length <uNumRecentFiles>
+#define IDM_LOAD_BASE                          11000
+#define IDM_XLOAD_BASE                         12000
+#define IDM_COPY_BASE                          13000
+
 // Control IDs
 #define IDC_VERSION                              800
 #define IDC_LINK                                 801

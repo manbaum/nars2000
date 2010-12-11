@@ -179,9 +179,6 @@ UBOOL CmdSiSinlCom_EM
                         // Copy the STE name to local storage
                         lpw = CopySteName (lpwszTemp, &lpSymEntryNxt[numSym], &uNameLen);
 
-                        // Ensure properly terminated
-                        *lpw = WC_EOS;
-
                         // Get the name length plus two leading blanks
                         uNameLen += 2;
 

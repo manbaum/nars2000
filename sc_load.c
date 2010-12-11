@@ -1534,6 +1534,18 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Skip past the section name and its terminating zero
             lpwSrc = &lpwSectName[lstrlenW (lpwSectName) + 1];
 
+            // Copy the function name past the end of the section name
+            lstrcpyW (lpwSrc, lpwFcnName);
+
+            // Point to the function name
+            lpwFcnName = lpwSrc;
+
+            // Convert the {name}s and other chars to UTF16_xxx
+            (void) ConvertNameInPlace (lpwFcnName);
+
+            // Skip past the converted function name and its terminating zero
+            lpwSrc = &lpwSrc[lstrlenW (lpwSrc) + 1];
+
             // Get the count for the section name
             uLineCnt =
               ProfileGetInt (lpwSectName,   // Ptr to the section name

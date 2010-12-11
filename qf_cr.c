@@ -696,6 +696,50 @@ LPAPLCHAR CopySteName
 
 
 //***************************************************************************
+//  $ConvSteName
+//
+//  Copy and convert a STE name
+//***************************************************************************
+
+LPAPLCHAR ConvSteName
+    (LPAPLCHAR  lpMemRes,       // Ptr to result global memory
+     LPSYMENTRY lpSymEntry,     // Ptr to function symbol table entry
+     LPAPLNELM  lpaplNELM)      // Ptr to name length (may be NULL)
+
+{
+    LPAPLCHAR lpMemName,        // Ptr to function name global memory
+              lpMemEnd;         // Ptr to end of the converted name
+    UINT      uNameLen;         // Length of STE name
+
+    Assert (IsValidPtr    (lpSymEntry                       , sizeof (lpSymEntry)            ));
+    Assert (IsValidPtr    (lpSymEntry->stHshEntry           , sizeof (lpSymEntry->stHshEntry)));
+    Assert (IsValidHandle (lpSymEntry->stHshEntry->htGlbName                                 ));
+
+    // Lock the memory to get a ptr to it
+    lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+    // Get the name length
+    uNameLen = lstrlenW (lpMemName);
+
+    // Convert the name to {symbol} form
+    //   and copy to the output area
+    lpMemEnd = lpMemRes;
+    lpMemEnd +=
+      ConvertWideToNameLength (lpMemRes,    // Ptr to output save buffer
+                               lpMemName,   // Ptr to incoming chars
+                               uNameLen);   // # chars to convert
+    // Return the name length, if requested
+    if (lpaplNELM)
+        *lpaplNELM = lstrlenW (lpMemRes);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+
+    return lpMemEnd;
+} // End ConvSteName
+
+
+//***************************************************************************
 //  $SysFnDydCR_EM_YY
 //
 //  Dyadic []CR -- Canonical Representation (matrix or vector)

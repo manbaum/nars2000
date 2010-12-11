@@ -840,14 +840,11 @@ LPAPLCHAR SavedWsFormGlbFcn
             // Skip over the leading part
             lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
 
-            // Copy the function name from the STE
+            // Copy and convert the function name from the STE
             lpwszFcnName =
-              CopySteName (lpwszFcnName,            // Ptr to output area
+              ConvSteName (lpwszFcnName,            // Ptr to output area
                            lpMemDfnHdr->steFcnName, // Ptr to function STE
                            NULL);                   // Ptr to name length (may be NULL)
-            // Ensure properly terminated
-            *lpwszFcnName = WC_EOS;
-
             // Append separator
             *lpaplChar++ = L'=';
 

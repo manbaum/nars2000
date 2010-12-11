@@ -1708,8 +1708,6 @@ LPWCHAR DisplayFcnSub
               CopySteName (lpaplChar,                           // Ptr to result global memory
                            lpYYMem->tkToken.tkData.tkSym,       // Ptr to function symbol table entry
                            NULL);                               // Ptr to name length (may be NULL)
-            if (lpaplChar[-1] EQ L' ')
-                *--lpaplChar = WC_EOS;  // Overwrite the trailing blank
             break;
 
         case TKT_OP1NAMED:          // At the moment, named operators are all one char

@@ -1238,6 +1238,11 @@ void pn_yyerror                     // Called for Bison syntax error
 
     // Set the error char index
     lppnLocalVars->uCharIndex += lppnLocalVars->uNumCur;
+
+    // If we're at the end, ...
+    if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ WC_EOS)
+        // Back off to the last char
+        lppnLocalVars->uCharIndex--;
 } // End pn_yyerror
 #undef  APPEND_NAME
 

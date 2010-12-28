@@ -581,7 +581,7 @@ LRESULT APIENTRY FEWndProc
 
         case MYWM_INIT_EC:
         {
-            APLU3264 uLineLen;      // Line length
+            UINT uLineLen;      // Line length
 
             // Write out the FE window title
             SetFETitle (hWnd);
@@ -590,7 +590,7 @@ LRESULT APIENTRY FEWndProc
             DrawLineNumsFE (hWndEC);
 
             // Set the caret to the end of the function header
-            uLineLen = (APLU3264) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
+            uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
             SendMessageW (hWndEC, EM_SETSEL, uLineLen, uLineLen);
 
             return FALSE;           // We handled the msg
@@ -601,7 +601,7 @@ LRESULT APIENTRY FEWndProc
         case MYWM_CMPNAME:          // uLen = (UINT) wParam
                                     // lpwName = (LPWCHAR) lParam
         {
-            APLU3264 uNameLen;      // Function name length
+            UINT     uNameLen;      // Function name length
             LPWCHAR  lpwszTemp;     // Ptr to temporary storage
 
             // Get ptr to PerTabData global memory
@@ -910,13 +910,13 @@ LRESULT APIENTRY FEWndProc
 //  Parse the function name from a FE window and return it
 //***************************************************************************
 
-APLU3264 GetFunctionName
+UINT GetFunctionName
     (HWND    hWndFE,                // FE window handle
      LPWCHAR lpwszTemp)             // Ptr to temporary storage
 
 {
     HWND         hWndEC;            // Edit Ctrl window handle
-    APLU3264     uLineLen,          // Line length
+    UINT         uLineLen,          // Line length
                  uNameLen;          // Function name length
     LPSYMENTRY   lpSymName;         // Ptr to function name STE
 
@@ -929,7 +929,7 @@ APLU3264 GetFunctionName
     ((LPWORD) lpwszTemp)[0] = (WORD) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
 
     // Get the contents of the line
-    uLineLen = (APLU3264) SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
+    uLineLen = (UINT) SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
 
     // Ensure the line is properly terminated
     lpwszTemp[uLineLen] = WC_EOS;
@@ -939,7 +939,7 @@ APLU3264 GetFunctionName
     if (lpSymName)
         // Append the function name from the symbol table
         //   and calculate its length
-        uNameLen = (CopySteName (lpwszTemp, lpSymName, NULL) - lpwszTemp);
+        uNameLen = (UINT) (CopySteName (lpwszTemp, lpSymName, NULL) - lpwszTemp);
     else
         // Mark as no function name
         uNameLen = 0;
@@ -960,7 +960,7 @@ void SetFETitle
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
-    APLU3264     uNameLen;          // Function name length
+    UINT         uNameLen;          // Function name length
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -1673,7 +1673,7 @@ LRESULT WINAPI LclEditCtrlWndProc
     LRESULT      lResult;                   // Result from calling original handler
     LPUNDO_BUF   lpUndoNxt,                 // Ptr to next available slot in the Undo Buffer
                  lpUndoBeg;                 // ...    first          ...
-    APLU3264     uCharPosBeg,               // Pos of the beginning char
+    UINT         uCharPosBeg,               // Pos of the beginning char
                  uCharPosEnd,               // ...        ending    ...
                  uCharPos,                  // ...    a character position
                  uLinePos,                  // Char position of start of line
@@ -3555,7 +3555,7 @@ void CopyAPLChars_EM
      UNI_TRANS uIndex)              // UNI_TRANS index
 
 {
-    APLU3264     numChars;          // # chars on the clipboard
+    UINT         numChars;          // # chars on the clipboard
     HGLOBAL      hGlbClip = NULL,   // Clipboard global memory handle
                  hGlbText = NULL;   // Clipboard UNICODETEXT global memory handle
     LPVOID       lpMemClip = NULL;  // Ptr to clipboard global memory
@@ -3593,14 +3593,14 @@ void CopyAPLChars_EM
             goto NORMAL_EXIT;
 
         // Get the # chars
-        numChars = (APLU3264) MyGlobalSize (hGlbClip);
+        numChars = (UINT) MyGlobalSize (hGlbClip);
 
         // Mark as not Unicode chars
         bUnicode = FALSE;
     } else
     {
         // Get the # chars
-        numChars = (APLU3264) MyGlobalSize (hGlbClip) / sizeof (WCHAR);
+        numChars = (UINT) MyGlobalSize (hGlbClip) / sizeof (WCHAR);
 
         // Mark as Unicode chars
         bUnicode = TRUE;
@@ -3870,7 +3870,7 @@ void PasteAPLChars_EM
             GlobalUnlock (hGlbClip); lpMemClip = NULL;
         } else
         {
-            APLU3264 uLen;
+            UINT uLen;
 
             // Allocate space for the new object
             // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
@@ -4091,11 +4091,11 @@ UINT GetCurCharPos
 
 WCHAR GetCharValue
     (HWND     hWndEC,               // Window handle of the Edit Ctrl
-     APLU3264 uCharPos)             // Char position (-1 = under the caret)
+     UINT     uCharPos)             // Char position (-1 = under the caret)
 
 {
     POINT    ptCaret;               // The caret position
-    APLU3264 uLineNum,              // The line #
+    UINT     uLineNum,              // The line #
              uLinePos,              // The line position (start of line)
              uLineLen,              // The line length
              uLineOff;              // The line offset
@@ -4149,9 +4149,9 @@ void AppendUndo
     (HWND      hWnd,            // SM/FE Window handle
      UINT      GWLxx_UNDO_NXT,  // Offset in hWnd extra bytes of lpUndoNxt
      UNDO_ACTS Action,          // Action to take
-     APLU3264  CharPosBeg,      // Beginning character position, -1 = caret
-     APLU3264  CharPosEnd,      // Ending    ...
-     APLU3264  Group,           // Group index, 0 = no group
+     UINT      CharPosBeg,      // Beginning character position, -1 = caret
+     UINT      CharPosEnd,      // Ending    ...
+     UINT      Group,           // Group index, 0 = no group
      WCHAR     Char)            // Character, 0 = none
 
 {

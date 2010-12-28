@@ -1,6 +1,18 @@
 Version 0.0.2.19 consists of the following Builds:
 
 
+Build #773 -- Version 0.0.2.19
+------------------------------
+
+* Fix Bug:  Use 32-bit (Not 64-bit) Types For All Vars Involved With EM_** APIs
+
+Directory trunk:
+
+EDITFCN.C:
+  Fix Bug:  Use 32-bit types (not 64-bit) for all vars involved with EM_xxx calls
+    as those APIs work on and return 32-bit values only.
+
+
 Build #772 -- Version 0.0.2.19
 ------------------------------
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1140,7 +1140,7 @@ UBOOL PrimFnDydIotaAvN_EM
         } // End IF/ELSE
 
         // Determine if the right arg value is in the left arg
-        if (!bRet
+        if (bRet
          && apaMinLft <= aplIntegerRht
          &&              aplIntegerRht <= apaMaxLft
          && (0 EQ apaMulLft

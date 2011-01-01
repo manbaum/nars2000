@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -333,6 +333,16 @@
 // Wide char versions
 #define CopyMemoryW(dst,src,len)    CopyMemory (dst, src, (len) * sizeof (WCHAR))
 #define MoveMemoryW(dst,src,len)    MoveMemory (dst, src, (len) * sizeof (WCHAR))
+
+// Macros for returning a result from a Dialog
+#define DlgReturn(hDlg,lRet)        SetWindowLongPtr (hDlg, DWLP_MSGRESULT, lRet);  \
+                                    return lRet;
+#define DlgMsgPass(hDlg)            DlgReturn (hDlg, DLG_MSGPASS)   // Pass this msg on to the next handler
+#define DlgMsgDone(hDlg)            DlgReturn (hDlg, DLG_MSGDONE)   // Do not pass this msg on to the next handler
+#define DLG_MSGPASS                 FALSE           // Pass this Dlg msg on to the next handler
+#define DLG_MSGDONE                 TRUE            // We handled this Dlg msg
+#define DLG_MSGDEFFOCUS             TRUE            // In WM_INITDIALOG, set keyboard focus to wParam, DWLP_MSGRESULT ignored
+#define DLG_MSGNODEFFOCUS           FALSE           // ...               do not set focus
 
 
 //***************************************************************************

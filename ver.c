@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ APLU3264 CALLBACK AboutDlgProc
                           TTM_ADDTOOLW,
                           0,
                           (LPARAM) (LPTOOLINFOW) &tti);
-            return TRUE;            // Use the focus in wParam
+            return DLG_MSGDEFFOCUS; // Use the focus in wParam
         } // End WM_INITDIALOG
 
         case WM_CTLCOLORSTATIC:     // hdc = (HDC) wParam;   // Handle of display context
@@ -203,7 +203,7 @@ APLU3264 CALLBACK AboutDlgProc
                 // Select it into the DC
                 SelectObject (hDC, hFont);
 
-                // Return handle of brush for background
+                // Return handle of brush for background, DWLP_MSGRESULT is ignored
                 return (APLU3264) (HANDLE_PTR) CreateSolidBrush (GetSysColor (COLOR_BTNFACE));
             } else
                 break;
@@ -230,7 +230,7 @@ APLU3264 CALLBACK AboutDlgProc
                           (LPARAM) (LPTOOLINFOW) &tti);
             EndDialog (hDlg, TRUE); // Quit this dialog
 
-            return TRUE;            // We handled the msg
+            DlgMsgDone (hDlg);      // We handled the msg
 
 #define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
 #define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
@@ -242,7 +242,7 @@ APLU3264 CALLBACK AboutDlgProc
                 case IDOK:
                     PostMessageW (hDlg, WM_CLOSE, 0, 0);
 
-                    return TRUE;    // We handled the msg
+                    DlgMsgDone (hDlg);      // We handled the msg
             } // End switch (wParam)
 
             break;
@@ -251,7 +251,7 @@ APLU3264 CALLBACK AboutDlgProc
 #undef  idCtl
     } // End SWITCH
 
-    return FALSE;           // We didn't handle the msg
+    DlgMsgPass (hDlg);      // We didn't handle the msg
 } // End AboutDlgProc
 
 

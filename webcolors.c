@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -128,7 +128,7 @@ __try
             // Reposition the window to the center of the screen
             CenterWindow (hDlg);
 
-            return TRUE;            // Use the focus in wParam
+            return DLG_MSGDEFFOCUS; // Use the focus in wParam
         } // End WM_INITDIALOG
 #undef  lInitParam
 
@@ -152,12 +152,13 @@ __try
                     // and the background color, too.
                     SetBkColor (hdcStatic, DEF_SCN_NAVY);
 
-                    // Return a NULL brush so the normal background is used
+                    // Return a NULL brush so the normal background is used, DWLP_MSGRESULT is ignored
                     return (APLU3264) GetStockObject (NULL_BRUSH);
                 } // End IF
             } else
             // Check to see if this is our OwnerDraw static text control
             if (IDC_WEBCLR_LT_REP EQ idCtl)
+                // Return the brush handle, DWLP_MSGRESULT is ignored
                 return (APLU3264) GetStockObject (WHITE_BRUSH);
             break;
 #undef  hwndStatic
@@ -199,7 +200,7 @@ __try
                         // Return the ptr to the caller
                         lpttt->lpszText = TooltipText;
 #undef  lpttt
-                        return FALSE;
+                        DlgMsgDone (hDlg);  // We handled the msg
                     } // End IF
 
                     break;
@@ -266,14 +267,14 @@ __try
                 } // End SWITCH
             } // End IF/ELSE
 
-            return TRUE;            // We handled the msg
+            DlgMsgDone (hDlg);      // We handled the msg
 #undef  lpdis
 #undef  idCtl
 
         case WM_CLOSE:
             PostMessageW (hDlg, MYWM_CLOSE, FALSE, 0);
 
-            return TRUE;            // We handled the msg
+            DlgMsgDone (hDlg);      // We handled the msg
 
         case MYWM_CLOSE:                    // bSuccess = (UBOOL) wParam
                                             // clrRef = (COLORREF) lParam
@@ -292,7 +293,7 @@ __try
             // Quit this dialog
             EndDialog (hDlg, ((UBOOL) lParam) ? (COLORREF) lParam : -1);
 
-            return TRUE;            // We handled the msg
+            DlgMsgDone (hDlg);      // We handled the msg
 
 #define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
 #define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
@@ -306,7 +307,7 @@ __try
                 case IDCANCEL:
                     PostMessageW (hDlg, MYWM_CLOSE, FALSE, 0);
 
-                    return TRUE;    // We handled the msg
+                    DlgMsgDone (hDlg);      // We handled the msg
 
                 default:
                     // Check to see if this is one of our Web Color Names buttons
@@ -316,7 +317,7 @@ __try
                         // Tell 'em to quit and use this color
                         PostMessageW (hDlg, MYWM_CLOSE, TRUE, aColorNames[idCtl - IDC_WEBCLR_BN001].clrRef);
 
-                        return TRUE;    // We handled the msg
+                        DlgMsgDone (hDlg);      // We handled the msg
                     } // End IF
 
                     break;
@@ -334,7 +335,7 @@ __try
     DisplayException ();
 } // End __try/__except
 
-    return FALSE;           // We didn't handle the msg
+    DlgMsgPass (hDlg);      // We didn't handle the msg
 } // End WebColorsDlgProc
 
 

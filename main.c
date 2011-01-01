@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,9 +114,6 @@ char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
 int glbStatusPartsWidth[SP_LENGTH] = {0};
 int glbStatusBorders[3];
 WNDPROC lpfnOldStatusWndProc;           // Save area for old Status Window procedure
-#ifdef DEBUG
-WNDPROC lpfnOldTooltipCtrlWndProc;      //
-#endif
 
 
 //***************************************************************************
@@ -523,10 +520,10 @@ void InitChooseFont
         fontStruc[fontEnum].lpcf->lpLogFont  = fontStruc[fontEnum].lplf;
         fontStruc[fontEnum].lpcf->iPointSize = fontStruc[fontEnum].iDefPtSize * 10; // Font point size in 1/10ths
         fontStruc[fontEnum].lpcf->Flags      = 0
-                                             | CF_INITTOLOGFONTSTRUCT
-                                             | CF_FORCEFONTEXIST
-                                             | CF_SCREENFONTS
                                              | CF_ENABLEHOOK
+                                             | CF_FORCEFONTEXIST
+                                             | CF_INITTOLOGFONTSTRUCT
+                                             | CF_SCREENFONTS
                                                ;
 ////////fontStruc[fontEnum].lpcf->rgbColors  =              // Only w/CF_EFFECTS
         fontStruc[fontEnum].lpcf->lCustData  = (LPARAM) fontStruc[fontEnum].lpwTitle;
@@ -559,8 +556,8 @@ UINT_PTR APIENTRY MyChooseFontHook
     {
         case WM_INITDIALOG:             // hwndFocus = (HWND) wParam; // Handle of control to receive focus
                                         // lInitParam = lParam;       // Initialization parameter
-            // Set the window title
-            SetWindowTextW (hDlg, (LPWCHAR) ((LPCHOOSEFONT) lParam)->lCustData);
+                // Set the window title
+                SetWindowTextW (hDlg, (LPWCHAR) ((LPCHOOSEFONT) lParam)->lCustData);
 
 #define SampleText      L"(" WS_UTF16_IOTA L"V)" WS_UTF16_EQUALUNDERBAR WS_UTF16_RIGHTSHOE WS_UTF16_JOT L".,/" WS_UTF16_IOTA WS_UTF16_DIERESIS L"V"
 
@@ -2455,10 +2452,10 @@ LRESULT APIENTRY MFWndProc
                 case IDM_CUSTOMIZE:
                     // Display a dialog with the choices
                     DialogBoxParamW (_hInstance,
-                                     MAKEINTRESOURCEW (IDD_CUSTOMIZE),
-                                     hWndMF,
-                          (DLGPROC) &CustomizeDlgProc,
-                                     0);
+                                           MAKEINTRESOURCEW (IDD_CUSTOMIZE),
+                                           hWndMF,
+                                (DLGPROC) &CustomizeDlgProc,
+                                           0);
                     return FALSE;       // We handled the msg
 
                 case IDM_HELP_CONTENTS:
@@ -3474,7 +3471,7 @@ UBOOL CALLBACK UpdatesDlgProc
 
             CenterWindow (hDlg);    // Reposition the window to the center of the screen
 
-            return TRUE;            // Use the focus in wParam
+            return DLG_MSGDEFFOCUS; // Use the focus in wParam
         } // End WM_INITDIALOG
 
         case WM_CLOSE:
@@ -3486,7 +3483,7 @@ UBOOL CALLBACK UpdatesDlgProc
 
             EndDialog (hDlg, TRUE); // Quit this dialog
 
-            return TRUE;            // We handled the msg
+            DlgMsgDone (hDlg);      // We handled the msg
 
 #define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
 #define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
@@ -3498,7 +3495,7 @@ UBOOL CALLBACK UpdatesDlgProc
                 case IDOK:
                     PostMessageW (hDlg, WM_CLOSE, 0, 0);
 
-                    return TRUE;    // We handled the msg
+                    DlgMsgDone (hDlg);  // We handled the msg
             } // End switch (wParam)
 
             break;
@@ -4306,8 +4303,8 @@ int PASCAL WinMain
                 if (!TranslateMDISysAccel (hWndMC, &Msg)
                  && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
                 {
-                    TranslateMessage (&Msg);
-                    DispatchMessageW (&Msg);
+                        TranslateMessage (&Msg);
+                        DispatchMessageW (&Msg);
                 } // End IF
             } // End IF/ELSE
         } // End WHILE

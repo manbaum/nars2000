@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ UBOOL CheckAxisImm
     APLUINT  ByteAxis;              // # bytes for the axis global
     APLRANK  aplRank;               // Maximum rank for comparison
     UBOOL    bRet = TRUE;           // TRUE iff result is valid
-    UINT     u;                     // Loop counter
+    UINT     uCnt;                  // Loop counter
     LPAPLINT lpAxisTail;            // Ptr to grade up of AxisHead
     APLBOOL  bQuadIO;               // []IO
 
@@ -184,9 +184,9 @@ UBOOL CheckAxisImm
     if (bRet && lphGlbAxis)
     {
         // Save the remaining values
-        for (u = 0; u < aplRankCmp; u++)
-        if (u NE aplRank)
-            *(*lplpAxisHead)++ = u;
+        for (uCnt = 0; uCnt < aplRankCmp; uCnt++)
+        if (uCnt NE aplRank)
+            *(*lplpAxisHead)++ = uCnt;
 
         // Save the trailing value
         *lpAxisTail++ = aplRank;
@@ -249,18 +249,18 @@ UBOOL CheckAxisGlb
      LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
-    UBOOL    bRet = TRUE;           // TRUE iff the result is valid
-    LPVOID   lpMem,                 // Ptr to incoming data global memory
-             lpDup = NULL;          // Ptr to duplciate axes global memory
-    HGLOBAL  hGlbDup = NULL;        // Duplicate axes global memory handle
-    UINT     uBitMask;              // Bit mask for looping through Booleans
-    APLUINT  ByteDup,               // # bytes for the duplicate axis test
-             ByteAxis,              // # bytes for the axis vector
-             u;                     // Loop counter
-    APLSTYPE aplTypeLcl;            // Incoming data storage type
-    APLRANK  aplRankLcl;            // Incoming data rank
-    LPAPLINT lpAxisTail;            // Ptr to grade up of AxisHead
-    APLBOOL  bQuadIO;               // []IO
+    UBOOL     bRet = TRUE;          // TRUE iff the result is valid
+    LPVOID    lpMem;                // Ptr to incoming data global memory
+    LPAPLBOOL lpDup = NULL;         // Ptr to duplciate axes global memory
+    HGLOBAL   hGlbDup = NULL;       // Duplicate axes global memory handle
+    UINT      uBitMask;             // Bit mask for looping through Booleans
+    APLUINT   ByteDup,              // # bytes for the duplicate axis test
+              ByteAxis,             // # bytes for the axis vector
+              uCnt;                 // Loop counter
+    APLSTYPE  aplTypeLcl;           // Incoming data storage type
+    APLRANK   aplRankLcl;           // Incoming data rank
+    LPAPLINT  lpAxisTail;           // Ptr to grade up of AxisHead
+    APLBOOL   bQuadIO;              // []IO
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -341,7 +341,7 @@ UBOOL CheckAxisGlb
             uBitMask = BIT0;
 
             // Loop through the elements
-            for (u = 0; bRet && u < *lpaplNELM; u++)
+            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
             {
                 // Get the next bit value
                 aplRankLcl = (uBitMask & *(LPAPLBOOL) lpMem) ? TRUE : FALSE;
@@ -389,7 +389,7 @@ UBOOL CheckAxisGlb
 #define lpaplInteger    ((LPAPLINT) lpMem)
 
             // Loop through the elements
-            for (u = 0; bRet && u < *lpaplNELM; u++)
+            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
             {
                 aplRankLcl = *lpaplInteger++ - bQuadIO;
 
@@ -424,7 +424,7 @@ UBOOL CheckAxisGlb
 #define lpaplFloat      ((LPAPLFLOAT) lpMem)
 
             // Loop through the elements
-            for (u = 0; bRet && u < *lpaplNELM; u++)
+            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
             {
                 // Attempt to convert the float to an integer using System CT
                 aplRankLcl = FloatToAplint_SCT (*lpaplFloat++, &bRet);
@@ -490,10 +490,10 @@ UBOOL CheckAxisGlb
                  && ((apaOff + apaMul * (apaLen - 1)) < (APLRANKSIGN) aplRankCmp));
 
             // Save the trailing axis values
-            for (u = 0; bRet && u < (APLUINT) apaLen; u++)
+            for (uCnt = 0; bRet && uCnt < (APLUINT) apaLen; uCnt++)
             {
                 // Get the next value
-                aplRankLcl = apaOff + apaMul * u;
+                aplRankLcl = apaOff + apaMul * uCnt;
 
                 // Check for negative indices [-aplRankCmp, -1]
                 if (SIGN_APLRANK (aplRankLcl)
@@ -542,16 +542,16 @@ UBOOL CheckAxisGlb
         uBitMask = BIT0;
 
         // Loop through the lpDup values looking for zeros
-        for (u = 0; u < aplRankCmp; u++)
+        for (uCnt = 0; uCnt < aplRankCmp; uCnt++)
         {
             // If the bit is a zero, ...
-            if (!(uBitMask & *(LPAPLBOOL) lpDup))
+            if (!(uBitMask & *lpDup))
                 // Save the next value
-                *(*lplpAxisHead)++ = u;
+                *(*lplpAxisHead)++ = uCnt;
             else            // the bit is a one
             if (bSortAxes)  // and we're sorting axes
                 // Fill in the trailing axis values in order
-                *lpAxisTail++ = u;
+                *lpAxisTail++ = uCnt;
 
             // Shift over the bit mask
             uBitMask <<= 1;
@@ -560,13 +560,13 @@ UBOOL CheckAxisGlb
             if (uBitMask EQ END_OF_BYTE)
             {
                 uBitMask = BIT0;        // Start over
-                ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+                lpDup++;                // Skip to next byte
             } // End IF
         } // End FOR
     } // End IF
 
     // If the axes must be contiguous, check that
-    if (bRet && bContiguous)
+    if (bRet && (bContiguous || bAllowDups))
     {
         // Unlock and lock the memory to reset the
         //   ptr to the start
@@ -576,10 +576,10 @@ UBOOL CheckAxisGlb
         uBitMask = BIT0;
 
         // Look for the first 1
-        for (u = 0; u < aplRankCmp; u++)
+        for (uCnt = 0; uCnt < aplRankCmp; uCnt++)
         {
             // If it's a 1, break
-            if (uBitMask & *(LPAPLBOOL) lpDup)
+            if (uBitMask & *lpDup)
                 break;
 
             // Shift over the bit mask
@@ -589,18 +589,18 @@ UBOOL CheckAxisGlb
             if (uBitMask EQ END_OF_BYTE)
             {
                 uBitMask = BIT0;        // Start over
-                ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+                lpDup++;                // Skip to next byte
             } // End IF
         } // End FOR
 
         // Save as contiguous low axis
-        *lpaplAxisContLo = u;
+        *lpaplAxisContLo = uCnt;
 
         // Look for consecutive 1s
-        for (; u < aplRankCmp; u++)
+        for (; uCnt < aplRankCmp; uCnt++)
         {
             // If it's a 0, break
-            if (!(uBitMask & *(LPAPLBOOL) lpDup))
+            if (!(uBitMask & *lpDup))
                 break;
 
             // Shift over the bit mask
@@ -610,19 +610,19 @@ UBOOL CheckAxisGlb
             if (uBitMask EQ END_OF_BYTE)
             {
                 uBitMask = BIT0;        // Start over
-                ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+                lpDup++;                // Skip to next byte
             } // End IF
         } // End FOR
 
         // Save as highest contiguous axis
         if (lpaplLastAxis)
-            *lpaplLastAxis = u - 1;
+            *lpaplLastAxis = uCnt - 1;
 
         // Look for consecutive 0s
-        for (; u < aplRankCmp; u++)
+        for (; uCnt < aplRankCmp; uCnt++)
         {
             // If it's a 1, break
-            if (uBitMask & *(LPAPLBOOL) lpDup)
+            if (uBitMask & *lpDup)
                 break;
 
             // Shift over the bit mask
@@ -632,14 +632,20 @@ UBOOL CheckAxisGlb
             if (uBitMask EQ END_OF_BYTE)
             {
                 uBitMask = BIT0;        // Start over
-                ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+                lpDup++;                // Skip to next byte
             } // End IF
         } // End FOR
 
         // If we're not at the end, the axes
         //   are not contiguous
-        bRet = (u EQ aplRankCmp);
+        bRet = (uCnt EQ aplRankCmp);
     } // End IF
+
+    // If we allow duplicates, ...
+    if (bRet && bAllowDups)
+        // If so (it's slicing dyadic transpose), so the axes
+        //   must be contiguous starting at []IO.
+        bRet = (*lpDup & BIT0);
 
     goto NORMAL_EXIT;
 
@@ -708,7 +714,7 @@ UBOOL CheckAxis_EM
     APLNELM      aplNELM;           //
     LPAPLINT     lpAxisStart,       // Ptr to start of Axis values in *lphGlbAxis
                  lpAxisHead;        // ...             user axis values in *lphGlbAxis
-    UINT         u;                 // Loop counter
+    UINT         uCnt;                 // Loop counter
     APLUINT      aplAxisContLo;     // Contiguous low axis
     HGLOBAL      hGlbData = NULL;   //
     IMM_TYPES    immType;           //
@@ -766,19 +772,19 @@ UBOOL CheckAxis_EM
         lpMemAxis = MyGlobalLock (*lphGlbAxis);
 
         // Fill the memory with [0, alpRankCmp-1]
-        for (u = 0; u < aplRankCmp; u++)
-            *lpMemAxis++ = u;
+        for (uCnt = 0; uCnt < aplRankCmp; uCnt++)
+            *lpMemAxis++ = uCnt;
 
         // Second verse same as the first
-        for (u = 0; u < aplRankCmp; u++)
-            *lpMemAxis++ = u;
+        for (uCnt = 0; uCnt < aplRankCmp; uCnt++)
+            *lpMemAxis++ = uCnt;
 
         // We no longer need this ptr
         MyGlobalUnlock (*lphGlbAxis); lpMemAxis = NULL;
 
         // Save the last value
         if (lpaplLastAxis)
-            *lpaplLastAxis = u;
+            *lpaplLastAxis = uCnt;
 
         // Return the # elements
         if (lpaplNELMAxis NE NULL)
@@ -902,12 +908,12 @@ UBOOL CheckAxis_EM
             //   first half.
 
             // A{is}{iota}aplRankCmp
-            for (u = 0; u < aplRankCmp; u++)
-                lpAxisStart[aplRankCmp + u] = u;
+            for (uCnt = 0; uCnt < aplRankCmp; uCnt++)
+                lpAxisStart[aplRankCmp + uCnt] = uCnt;
 
             // A[X[{gradeup}X]]{is}X
-            for (u = 0; u < aplNELM; u++)
-                lpAxisStart[aplRankCmp + aplAxisContLo + u] = lpAxisHead[u];
+            for (uCnt = 0; uCnt < aplNELM; uCnt++)
+                lpAxisStart[aplRankCmp + aplAxisContLo + uCnt] = lpAxisHead[uCnt];
 
             // Copy back to the first half
             CopyMemory (lpAxisStart, &lpAxisStart[aplRankCmp], (APLU3264) (aplRankCmp * sizeof (lpAxisStart[0])));
@@ -919,8 +925,8 @@ UBOOL CheckAxis_EM
         else
             // Because these values are guaranteed to be a permutation
             //   vector, we can use an address sort.
-            for (u = 0; u < aplRankCmp; u++)
-                lpAxisStart[aplRankCmp + lpAxisStart[u]] = u;
+            for (uCnt = 0; uCnt < aplRankCmp; uCnt++)
+                lpAxisStart[aplRankCmp + lpAxisStart[uCnt]] = uCnt;
 
         if (lphGlbAxis)
         {
@@ -957,9 +963,9 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL TestDupAxis
-    (LPVOID  lpDup,
-     APLRANK aplRank,
-     UBOOL   bAllowDups)
+    (LPAPLBOOL lpDup,
+     APLRANK   aplRank,
+     UBOOL     bAllowDups)
 
 {
     UBOOL bRet = TRUE;
@@ -970,11 +976,11 @@ UBOOL TestDupAxis
 
     // See if this value has already been seen
     if (!bAllowDups)
-        bRet = !(uBitMask & ((LPAPLBOOL) lpDup)[aplRank >> LOG2NBIB]);
+        bRet = !(uBitMask & lpDup[aplRank >> LOG2NBIB]);
 
     // Set this value for the next time if necessary
     if (bRet || bAllowDups)
-        ((LPAPLBOOL) lpDup)[aplRank >> LOG2NBIB] |= uBitMask;
+        lpDup[aplRank >> LOG2NBIB] |= uBitMask;
 
     return bRet;
 } // End TestDupAxis

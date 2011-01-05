@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,6 +65,7 @@
 #define IDD_UPDATES                              131
 #define IDD_CUSTOMIZE                            132
 #define IDD_WEBCOLORS                            133
+#define IDD_NEWKEYB                              134
 
 // The following define must be the first number
 //   in the IDD_xxx sequence
@@ -72,13 +73,14 @@
 
 // The following defines must be in sequence
 #define IDD_PROPPAGE_CLEARWS_VALUES              150
-#define IDD_PROPPAGE_DIRS                               156 // Not implemented as yet
+#define IDD_PROPPAGE_DIRS                               157 // Not implemented as yet
 #define IDD_PROPPAGE_FONTS                       151
-#define IDD_PROPPAGE_RANGE_LIMITS                152
-#define IDD_PROPPAGE_SYNTAX_COLORING             153
-#define IDD_PROPPAGE_SYSTEM_VAR_RESET            154
-#define IDD_PROPPAGE_TAB_COLORS                         157 // Not implemented as yet
-#define IDD_PROPPAGE_USER_PREFS                  155
+#define IDD_PROPPAGE_KEYBS                       152
+#define IDD_PROPPAGE_RANGE_LIMITS                153
+#define IDD_PROPPAGE_SYNTAX_COLORING             154
+#define IDD_PROPPAGE_SYSTEM_VAR_RESET            155
+#define IDD_PROPPAGE_TAB_COLORS                         158 // Not implemented as yet
+#define IDD_PROPPAGE_USER_PREFS                  156
 
 // Message IDs
 #define IDM_EXIT                                 102
@@ -773,6 +775,177 @@
 #define IDC_WEBCLR_BN_LAST                      IDC_WEBCLR_BN140
 
 #define IDC_WEBCLR_LT_REP                       4000
+
+#define IDC_KEYB_CB_LAYOUT                      4150
+#define IDC_KEYB_BN_MAKEACT                     4151
+#define IDC_KEYB_LT_ISACT                       4152
+#define IDC_KEYB_XB_ALT                         4153    // MUST be lowest
+#define IDC_KEYB_XB_CTRL                        4154    // ...     middle
+#define IDC_KEYB_XB_SHIFT                       4155    // ...     highest
+#define IDC_KEYB_EC_UNICODE                     4156
+#define IDC_KEYB_BN_UNICODE                     4157
+#define IDC_KEYB_RB_DEC                         4158
+#define IDC_KEYB_RB_HEX                         4159
+#define IDC_KEYB_RB_CLIP0                       4160
+#define IDC_KEYB_RB_CLIP1                       4161
+#define IDC_KEYB_RB_UNDO0                       4162
+#define IDC_KEYB_RB_UNDO1                       4163
+#define IDC_KEYB_RB_FNED0                       4164
+#define IDC_KEYB_RB_FNED1                       4165
+#define IDC_KEYB_BN_COPY                        4166
+#define IDC_KEYB_BN_DEL                         4167
+#define IDC_KEYB_BN_FONT                        4168
+#define IDC_KEYB_TC                             4169
+#define IDC_NEWKEYB_EC                          4170
+
+#define IDC_KEYB_BN_KC_00                       4200
+#define IDC_KEYB_BN_KC_01                       4201
+#define IDC_KEYB_BN_KC_02                       4202
+#define IDC_KEYB_BN_KC_03                       4203
+#define IDC_KEYB_BN_KC_04                       4204
+#define IDC_KEYB_BN_KC_05                       4205
+#define IDC_KEYB_BN_KC_06                       4206
+#define IDC_KEYB_BN_KC_07                       4207
+#define IDC_KEYB_BN_KC_08                       4208
+#define IDC_KEYB_BN_KC_09                       4209
+#define IDC_KEYB_BN_KC_0A                       4210
+#define IDC_KEYB_BN_KC_0B                       4211
+#define IDC_KEYB_BN_KC_0C                       4212
+
+#define IDC_KEYB_BN_KC_10                       4220
+#define IDC_KEYB_BN_KC_11                       4221
+#define IDC_KEYB_BN_KC_12                       4222
+#define IDC_KEYB_BN_KC_13                       4223
+#define IDC_KEYB_BN_KC_14                       4224
+#define IDC_KEYB_BN_KC_15                       4225
+#define IDC_KEYB_BN_KC_16                       4226
+#define IDC_KEYB_BN_KC_17                       4227
+#define IDC_KEYB_BN_KC_18                       4228
+#define IDC_KEYB_BN_KC_19                       4229
+#define IDC_KEYB_BN_KC_1A                       4230
+#define IDC_KEYB_BN_KC_1B                       4231
+#define IDC_KEYB_BN_KC_1C                       4232
+
+#define IDC_KEYB_BN_KC_20                       4240
+#define IDC_KEYB_BN_KC_21                       4241
+#define IDC_KEYB_BN_KC_22                       4242
+#define IDC_KEYB_BN_KC_23                       4243
+#define IDC_KEYB_BN_KC_24                       4244
+#define IDC_KEYB_BN_KC_25                       4245
+#define IDC_KEYB_BN_KC_26                       4246
+#define IDC_KEYB_BN_KC_27                       4247
+#define IDC_KEYB_BN_KC_28                       4248
+#define IDC_KEYB_BN_KC_29                       4249
+#define IDC_KEYB_BN_KC_2A                       4250
+#define IDC_KEYB_BN_KC_2B                       4251
+
+#define IDC_KEYB_BN_KC_30                       4260
+#define IDC_KEYB_BN_KC_31                       4261
+#define IDC_KEYB_BN_KC_32                       4262
+#define IDC_KEYB_BN_KC_33                       4263
+#define IDC_KEYB_BN_KC_34                       4264
+#define IDC_KEYB_BN_KC_35                       4265
+#define IDC_KEYB_BN_KC_36                       4266
+#define IDC_KEYB_BN_KC_37                       4267
+#define IDC_KEYB_BN_KC_38                       4268
+#define IDC_KEYB_BN_KC_39                       4269
+#define IDC_KEYB_BN_KC_3A                       4270
+
+#define IDC_KEYB_BN_KC_LAST                     IDC_KEYB_BN_KC_3A
+
+// N.B.:  The individual entries within a row must be consecutive
+#define IDC_KEYB_BN_TC_00                       4300
+#define IDC_KEYB_BN_TC_01                       4301
+#define IDC_KEYB_BN_TC_02                       4302
+#define IDC_KEYB_BN_TC_03                       4303
+#define IDC_KEYB_BN_TC_04                       4304
+#define IDC_KEYB_BN_TC_05                       4305
+
+#define IDC_KEYB_BN_TC_10                       4310
+#define IDC_KEYB_BN_TC_11                       4311
+#define IDC_KEYB_BN_TC_12                       4312
+#define IDC_KEYB_BN_TC_13                       4313
+#define IDC_KEYB_BN_TC_14                       4314
+#define IDC_KEYB_BN_TC_15                       4315
+
+#define IDC_KEYB_BN_TC_20                       4320
+#define IDC_KEYB_BN_TC_21                       4321
+#define IDC_KEYB_BN_TC_22                       4322
+#define IDC_KEYB_BN_TC_23                       4323
+#define IDC_KEYB_BN_TC_24                       4324
+#define IDC_KEYB_BN_TC_25                       4325
+
+#define IDC_KEYB_BN_TC_30                       4330
+#define IDC_KEYB_BN_TC_31                       4331
+#define IDC_KEYB_BN_TC_32                       4332
+#define IDC_KEYB_BN_TC_33                       4333
+#define IDC_KEYB_BN_TC_34                       4334
+#define IDC_KEYB_BN_TC_35                       4335
+
+#define IDC_KEYB_BN_TC_40                       4340
+#define IDC_KEYB_BN_TC_41                       4341
+#define IDC_KEYB_BN_TC_42                       4342
+#define IDC_KEYB_BN_TC_43                       4343
+#define IDC_KEYB_BN_TC_44                       4344
+#define IDC_KEYB_BN_TC_45                       4345
+
+#define IDC_KEYB_BN_TC_50                       4350
+#define IDC_KEYB_BN_TC_51                       4351
+#define IDC_KEYB_BN_TC_52                       4352
+#define IDC_KEYB_BN_TC_53                       4353
+#define IDC_KEYB_BN_TC_54                       4354
+#define IDC_KEYB_BN_TC_55                       4355
+
+#define IDC_KEYB_BN_TC_60                       4360
+#define IDC_KEYB_BN_TC_61                       4361
+#define IDC_KEYB_BN_TC_62                       4362
+#define IDC_KEYB_BN_TC_63                       4363
+#define IDC_KEYB_BN_TC_64                       4364
+#define IDC_KEYB_BN_TC_65                       4365
+
+#define IDC_KEYB_BN_TC_70                       4370
+#define IDC_KEYB_BN_TC_71                       4371
+#define IDC_KEYB_BN_TC_72                       4372
+#define IDC_KEYB_BN_TC_73                       4373
+#define IDC_KEYB_BN_TC_74                       4374
+#define IDC_KEYB_BN_TC_75                       4375
+
+#define IDC_KEYB_BN_TC_80                       4380
+#define IDC_KEYB_BN_TC_81                       4381
+#define IDC_KEYB_BN_TC_82                       4382
+#define IDC_KEYB_BN_TC_83                       4383
+#define IDC_KEYB_BN_TC_84                       4384
+#define IDC_KEYB_BN_TC_85                       4385
+
+#define IDC_KEYB_BN_TC_90                       4390
+#define IDC_KEYB_BN_TC_91                       4391
+#define IDC_KEYB_BN_TC_92                       4392
+#define IDC_KEYB_BN_TC_93                       4393
+#define IDC_KEYB_BN_TC_94                       4394
+#define IDC_KEYB_BN_TC_95                       4395
+
+#define IDC_KEYB_BN_TC_A0                       4400
+#define IDC_KEYB_BN_TC_A1                       4401
+#define IDC_KEYB_BN_TC_A2                       4402
+#define IDC_KEYB_BN_TC_A3                       4403
+#define IDC_KEYB_BN_TC_A4                       4404
+#define IDC_KEYB_BN_TC_A5                       4405
+
+#define IDC_KEYB_BN_TC_B0                       4410
+#define IDC_KEYB_BN_TC_B1                       4411
+#define IDC_KEYB_BN_TC_B2                       4412
+#define IDC_KEYB_BN_TC_B3                       4413
+#define IDC_KEYB_BN_TC_B4                       4414
+#define IDC_KEYB_BN_TC_B5                       4415
+
+#define IDC_KEYB_BN_TC_C0                       4420
+#define IDC_KEYB_BN_TC_C1                       4421
+#define IDC_KEYB_BN_TC_C2                       4422
+#define IDC_KEYB_BN_TC_C3                       4423
+#define IDC_KEYB_BN_TC_C4                       4424
+#define IDC_KEYB_BN_TC_C5                       4425
+
+#define IDC_KEYB_BN_TC_LAST                     IDC_KEYB_BN_TC_C5
 
 #define IDC_STATIC                                -1
 

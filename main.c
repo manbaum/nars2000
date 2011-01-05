@@ -556,11 +556,26 @@ UINT_PTR APIENTRY MyChooseFontHook
     {
         case WM_INITDIALOG:             // hwndFocus = (HWND) wParam; // Handle of control to receive focus
                                         // lInitParam = lParam;       // Initialization parameter
+            // If there's a window title, ...
+            if (((LPCHOOSEFONT) lParam)->lCustData)
                 // Set the window title
                 SetWindowTextW (hDlg, (LPWCHAR) ((LPCHOOSEFONT) lParam)->lCustData);
+            else
+            {
+                // Set the window title
+                SetWindowTextW (hDlg, L"Keyboard Font");
 
-#define SampleText      L"(" WS_UTF16_IOTA L"V)" WS_UTF16_EQUALUNDERBAR WS_UTF16_RIGHTSHOE WS_UTF16_JOT L".,/" WS_UTF16_IOTA WS_UTF16_DIERESIS L"V"
+                // Hide the size selection windows
+                ShowWindow (GetDlgItem (hDlg, stc3), SW_HIDE);
+                ShowWindow (GetDlgItem (hDlg, cmb3), SW_HIDE);
+            } // End IF/ELSE
 
+            // Subclass the Sample Text Static Ctrl
+            //   so we can avoid overwriting our Sample Text
+            (HANDLE_PTR) lpfnOldChooseFontSampleWndProc =
+              SetWindowLongPtrW (GetDlgItem (hDlg, stc5),
+                                 GWLP_WNDPROC,
+                                 (APLU3264) (LONG_PTR) (WNDPROC) &LclChooseFontSampleWndProc);
             // Set the sample text
             SetWindowTextW (GetDlgItem (hDlg, stc5), SampleText);
 
@@ -570,6 +585,48 @@ UINT_PTR APIENTRY MyChooseFontHook
             return FALSE;               // Pass msg to standard dialog
     } // End SWITCH
 } // End MyChooseFontHook
+
+
+//***************************************************************************
+//  $LclChooseFontSampleWndProc
+//
+//  Local ChooseFont Sample Text subclass procedure
+//***************************************************************************
+
+LRESULT WINAPI LclChooseFontSampleWndProc
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
+
+{
+////LCLODSAPI ("LST: ", hWnd, message, wParam, lParam);
+
+    // Split cases
+    switch (message)
+    {
+        case WM_SETTEXT:
+            // Set the sample text
+            return
+              CallWindowProcW (lpfnOldChooseFontSampleWndProc,
+                               hWnd,
+                               message,
+                               wParam,
+                      (LPARAM) SampleText);     // Pass on down the line
+            break;
+
+        default:
+            break;
+    } // End SWITCH
+
+////LCLODSAPI ("LSTZ: ", hWnd, message, wParam, lParam);
+    return
+      CallWindowProcW (lpfnOldChooseFontSampleWndProc,
+                       hWnd,
+                       message,
+                       wParam,
+                       lParam);     // Pass on down the line
+} // End LclChooseFontSampleWndProc
 
 
 //***************************************************************************
@@ -982,22 +1039,6 @@ void ApplyNewFontSM
 
     // Refont the Language Window in the Rebar Ctrl
     InvalidateRect (hWndLW_RB, NULL, FALSE);
-
-    // Is the Customize dialog active?
-    if (ghDlgCustomize)
-    {
-        // Initialize to the Edit Ctrl class
-        enumSetFontW.lpwClassName = LECWNDCLASS;
-
-        // Refont the Customize windows
-        EnumChildWindows (ghDlgCustomize, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
-
-        // Initialize to the ComboBox class
-        enumSetFontW.lpwClassName = WC_COMBOBOXW;
-
-        // Refont the Customize windows
-        EnumChildWindows (ghDlgCustomize, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
-    } // End IF
 
 #ifndef UNISCRIBE
     // Copy the SM LOGFONTW & TEXTMETRICS
@@ -2451,7 +2492,8 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_CUSTOMIZE:
                     // Display a dialog with the choices
-                    DialogBoxParamW (_hInstance,
+////////////////////ghDlgCustomize =        // Set in the WM_INITDIALOG handler
+                      CreateDialogParamW (_hInstance,
                                            MAKEINTRESOURCEW (IDD_CUSTOMIZE),
                                            hWndMF,
                                 (DLGPROC) &CustomizeDlgProc,
@@ -2940,6 +2982,16 @@ LRESULT APIENTRY MFWndProc
                 return FALSE;           // Not OK to terminate/we handled the msg
 
         case WM_DESTROY:
+            // If the Customize dialog box is still active, ...
+            if (ghDlgCustomize)
+                // Destroy it
+                DestroyWindow (ghDlgCustomize);
+            // If the Keyboard Layout global memory is present, ...
+            if (hGlbKeybLayouts)
+            {
+                MyGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
+            } // End IF
+
             // Remove all saved window properties
             EnumPropsW (hWnd, EnumCallbackRemoveProp);
 
@@ -4023,8 +4075,10 @@ UBOOL InitInstance
     hIconClose    = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CLOSE   ));
     hIconCustom   = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CUSTOM  ));
 
-    // Get keyboard accelerators
-    hAccel = LoadAccelerators (hInstance, MAKEINTRESOURCE (IDR_ACCEL));
+////// Get keyboard accelerators
+//////   Not used with Customize Dialog for keyboards but left in to
+//////     to see how it's done.
+////hAccel = LoadAccelerators (hInstance, MAKEINTRESOURCE (IDR_ACCEL));
 
     // Initialize the cursors
     hCursorWait = LoadCursor (NULL, MAKEINTRESOURCE (IDC_WAIT));
@@ -4231,7 +4285,8 @@ int PASCAL WinMain
     PERFMON
 
     // Read in global .ini file values
-    ReadIniFileGlb ();
+    if (!ReadIniFileGlb ())
+        goto EXIT4;
 
     PERFMON
 
@@ -4303,9 +4358,13 @@ int PASCAL WinMain
                 if (!TranslateMDISysAccel (hWndMC, &Msg)
                  && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
                 {
+                    // Check for DialogBox messages
+                    if (ghDlgCustomize EQ NULL || !IsDialogMessage (ghDlgCustomize, &Msg))
+                    {
                         TranslateMessage (&Msg);
                         DispatchMessageW (&Msg);
-                } // End IF
+                    } // End IF/IF
+                } // End IF/IF
             } // End IF/ELSE
         } // End WHILE
     } __except (CheckException (GetExceptionInformation (), L"WinMain"))

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-        MENUITEM "&Undo\tCtrl-Z",               IDM_UNDO
-        MENUITEM "&Redo\tCtrl-Y",               IDM_REDO
+        MENUITEM "&Undo",                       IDM_UNDO
+        MENUITEM "&Redo",                       IDM_REDO
         MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tCtrl-X",                IDM_CUT
-        MENUITEM "&Copy\tCtrl-C",               IDM_COPY
+        MENUITEM "Cu&t\tShft-Del",              IDM_CUT
+        MENUITEM "&Copy\tCtrl-Ins",             IDM_COPY
         POPUP "Cop&y APL"
         BEGIN
             MENUITEM "Copy APL+&Win",           IDM_COPY_APLWIN
@@ -33,7 +33,7 @@
             MENUITEM "Copy &PC3270"             IDM_COPY_PC3270
             MENUITEM "Copy &Braces"             IDM_COPY_BRACES
         END
-        MENUITEM "&Paste\tCtrl-V",              IDM_PASTE
+        MENUITEM "&Paste\tShift-Ins",           IDM_PASTE
         POPUP "Past&e APL"
         BEGIN
             MENUITEM "Paste APL+&Win",          IDM_PASTE_APLWIN
@@ -44,7 +44,7 @@
         END
         MENUITEM "&Delete",                     IDM_DELETE
         MENUITEM SEPARATOR
-        MENUITEM "Select &All\tCtrl-A",         IDM_SELECTALL
+        MENUITEM "Select &All",                 IDM_SELECTALL
         MENUITEM SEPARATOR
         MENUITEM "Customi&ze...",               IDM_CUSTOMIZE
 

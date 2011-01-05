@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,12 +29,17 @@
 */
 
 #define STRICT
+#define OEMRESOURCE                     // Necessary to get OBM checkboxes
 #include <windows.h>
 #include <windowsx.h>
 #include <stdio.h>
 #include "headers.h"
 
+#define KEYB_UNICODE_LIMIT          4   // Maximum # WCHARs allowed in the Keyboard Unicode Edit Ctrl
+                                        // Change to 8 when we support UCS-32
+
 extern HICON hIconCustom;
+WNDPROC lpfnOldKeybEditCtrlWndProc;     // Save area for old EditCtrl window proc
 
 WCHAR wszCancelMessage[] = L"You have made changes to the Customize settings.  Save the changes?";
 
@@ -72,9 +77,181 @@ LPWCHAR icIndexValues[ICVAL_LENGTH]
 SYNTAXCOLORS lclSyntaxColors[SC_LENGTH];
 
 char pszNoCreateWCWnd[]     = "Unable to create Web Color Names window";
+HFONT hFontKB = NULL;
+
+#define KKC_CY          4           // # rows in Keyb Keycaps
+
+// Array of beginning IDs for each Keycap row
+UINT aKKC_IDC_BEG[]
+ = {IDC_KEYB_BN_KC_00,
+    IDC_KEYB_BN_KC_10,
+    IDC_KEYB_BN_KC_20,
+    IDC_KEYB_BN_KC_30,
+   };
+
+// Array of ending IDs for each Keycap row
+UINT aKKC_IDC_END[]
+ = {IDC_KEYB_BN_KC_0C,
+    IDC_KEYB_BN_KC_1C,
+    IDC_KEYB_BN_KC_2B,
+    IDC_KEYB_BN_KC_3A,
+   };
+
+// Scan codes for the KeyCaps, row by row
+UINT aKKC_SC_R0[] = {0x29, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D};
+UINT aKKC_SC_R1[] = {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x2B};
+UINT aKKC_SC_R2[] = {0x1E, 0x1F, 0x20 ,0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2B};
+UINT aKKC_SC_R3[] = {0x38, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35};
+
+typedef struct tagKKC_SC
+{
+    UINT *aSC;
+    UINT uLen;
+} KKC_SC, *LPKKC_SC;
+
+// Array of Keyboard Keycap scancodes one for each row
+//   along with their length
+KKC_SC aKKC_SC[]
+ = {{aKKC_SC_R0, 13},
+    {aKKC_SC_R1, 13},
+    {aKKC_SC_R2, 12},
+    {aKKC_SC_R3, 11},
+   };
+
+// Array of beginning IDs for each TabCtrl row
+UINT aKTC_IDC_BEG[]
+ = {IDC_KEYB_BN_TC_00,
+    IDC_KEYB_BN_TC_10,
+    IDC_KEYB_BN_TC_20,
+    IDC_KEYB_BN_TC_30,
+    IDC_KEYB_BN_TC_40,
+    IDC_KEYB_BN_TC_50,
+    IDC_KEYB_BN_TC_60,
+    IDC_KEYB_BN_TC_70,
+    IDC_KEYB_BN_TC_80,
+    IDC_KEYB_BN_TC_90,
+    IDC_KEYB_BN_TC_A0,
+    IDC_KEYB_BN_TC_B0,
+    IDC_KEYB_BN_TC_C0,
+   };
+
+#define NOCONTROL           -1
+
+// ID of last highlighted control
+UINT idLastKeycap = NOCONTROL;
+
+#define KTC_TXT_CX      6           // # cols in KTC text
+#define KTC_TXT_CY     13           // # rows ...
+
+WCHAR awKTC_APL[KTC_TXT_CY][KTC_TXT_CX]
+= {{UTF16_UPCARET       , UTF16_DOWNCARET       , UTF16_UPCARETTILDE    , UTF16_DOWNCARETTILDE   , UTF16_TILDE            , UTF16_ZILDE             },
+   {UTF16_DELTASTILE    , UTF16_DELSTILE        , UTF16_DELTA           , UTF16_DEL              , UTF16_DELTAUNDERBAR    , UTF16_DIERESISDEL       },
+   {UTF16_QUAD          , UTF16_QUOTEQUAD       , UTF16_SQUAD           , UTF16_DOMINO           , UTF16_COLONBAR         , UTF16_TIMES             },
+   {UTF16_UPARROW       , UTF16_DOWNARROW       , UTF16_UPDOWNARROWS    , UTF16_LEFTARROW        , UTF16_RIGHTARROW       , UTF16_LEFTRIGHTARROWS   },
+   {UTF16_UPTACK        , UTF16_DOWNTACK        , UTF16_LEFTTACK        , UTF16_RIGHTTACK        , UTF16_UPTACKJOT        , UTF16_DOWNTACKJOT       },
+   {UTF16_JOT           , UTF16_DIERESISJOT     , UTF16_DIERESISDOWNTACK, UTF16_DIERESISSTAR     , UTF16_DIERESIS         , 0                       },
+   {UTF16_UPSTILE       , UTF16_DOWNSTILE       , UTF16_STILE           , UTF16_STILETILDE       , 0                      , 0                       },
+   {UTF16_LEFTSHOE      , UTF16_RIGHTSHOE       , UTF16_LEFTSHOEUNDERBAR, UTF16_RIGHTSHOEUNDERBAR, UTF16_UPSHOE           , UTF16_DOWNSHOE          },
+   {UTF16_IOTA          , UTF16_IOTAUNDERBAR    , UTF16_EPSILON         , UTF16_EPSILONUNDERBAR  , UTF16_RHO              , 0                       },
+   {UTF16_CIRCLE        , UTF16_CIRCLESTILE     , UTF16_CIRCLEBAR       , UTF16_CIRCLESLOPE      , UTF16_CIRCLESTAR       , UTF16_DIERESISCIRCLE    },
+   {UTF16_SLASH         , UTF16_SLASHBAR        , UTF16_SLOPE           , UTF16_SLOPEBAR         , UTF16_NOTEQUAL         , UTF16_SECTION           },
+   {UTF16_EQUALUNDERBAR , UTF16_NOTEQUALUNDERBAR, UTF16_ALPHA           , UTF16_OMEGA            , UTF16_LEFTCARETUNDERBAR, UTF16_RIGHTCARETUNDERBAR},
+   {UTF16_DIAMOND       , UTF16_COMMABAR        , UTF16_OVERBAR         , UTF16_LAMP             , UTF16_INFINITY         , UTF16_CIRCLEMIDDLEDOT   },
+  };
+
+WCHAR awKTC_ABC[KTC_TXT_CY][KTC_TXT_CX]
+= {{L'a', L'b', L'c', L'd', L'e', L'f'},
+   {L'g', L'h', L'i', L'j', L'k', L'l'},
+   {L'm', L'n', L'o', L'p', L'q', L'r'},
+   {L's', L't', L'u', L'v', L'w', L'x'},
+   {L'y', L'z',   0 ,   0 ,   0 ,   0 },
+   {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
+   {L'A', L'B', L'C', L'D', L'E', L'F'},
+   {L'G', L'H', L'I', L'J', L'K', L'L'},
+   {L'M', L'N', L'O', L'P', L'Q', L'R'},
+   {L'S', L'T', L'U', L'V', L'W', L'X'},
+   {L'Y', L'Z',   0 ,   0 ,   0 ,   0 },
+   {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
+  };
+
+WCHAR awKTC_123[KTC_TXT_CY][KTC_TXT_CX]
+= {{L'0', L'1', L'2', L'3', L'4', L'5'},
+   {L'6', L'7', L'8', L'9', L'0',   0 },
+   {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
+   {L'`', L'~', L'!', L'@', L'#', L'$'},
+   {L'%', L'^', L'&', L'*', L'_', L'='},
+   {L'|', L'?',   0 ,   0 ,   0 ,   0 },
+   {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
+   {L'(', L')', L'[', L']', L'{', L'}'},
+   {L'+', L'-', L'/', L'\\',L'<', L'>'},
+   {L';', L':', L',', L'.', L'\'',L'"'},
+   {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
+   {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
+  };
+
+WCHAR awKTC_BOX[KTC_TXT_CY][KTC_TXT_CX]
+= {{UTF16_LDC_LT_UL     , UTF16_LDC_LT_HORZ_D , UTF16_LDC_LT_UR     , 0 , UTF16_LDC_LT_HORZ , 0},
+   {UTF16_LDC_LT_VERT_R , UTF16_LDC_LT_CROSS  , UTF16_LDC_LT_VERT_L , 0 , UTF16_LDC_LT_VERT , 0},
+   {UTF16_LDC_LT_LL     , UTF16_LDC_LT_HORZ_U , UTF16_LDC_LT_LR     , 0 ,                 0 , 0},
+   {                  0 ,                   0 ,                   0 , 0 ,                 0 , 0},
+   {UTF16_LDC_DB_UL     , UTF16_LDC_DB_HORZ_D , UTF16_LDC_DB_UR     , 0 , UTF16_LDC_DB_HORZ , 0},
+   {UTF16_LDC_DB_VERT_R , UTF16_LDC_DB_CROSS  , UTF16_LDC_DB_VERT_L , 0 , UTF16_LDC_DB_VERT , 0},
+   {UTF16_LDC_DB_LL     , UTF16_LDC_DB_HORZ_U , UTF16_LDC_DB_LR     , 0 ,                 0 , 0},
+   {                  0 ,                   0 ,                   0 , 0 ,                 0 , 0},
+   {L'\x2580'           , L'\x2584'           ,                   0 , 0 ,                 0 , 0},
+   {L'\x2588'           , L'\x258C'           , L'\x2590'           , 0 ,                 0 , 0},
+   {L'\x2591'           , L'\x2592'           , L'\x2593'           , 0 ,                 0 , 0},
+   {                  0 ,                   0 ,                   0 , 0 ,                 0 , 0},
+  };
+
+
+WCHAR awKTC_NLS[KTC_TXT_CY][KTC_TXT_CX]
+= {{L'\x00E0', L'\x00E1', L'\x00E2', L'\x00E3', L'\x00E4', L'\x00E5'},    // a
+   {L'\x00C0', L'\x00C1', L'\x00C2', L'\x00C3', L'\x00C4', L'\x00C5'},    // A
+   {        0, L'\x0107', L'\x0109', L'\x010B', L'\x00E7', L'\x010D'},    // c
+   {        0, L'\x0106', L'\x0108', L'\x010A', L'\x00C7', L'\x010C'},    // C
+   {L'\x00E8', L'\x00E9', L'\x00EA',         0, L'\x00EB', L'\x00F8'},    // e
+   {L'\x00C8', L'\x00C9', L'\x00CA',         0, L'\x00CB', L'\x00F1'},    // E
+   {L'\x00EC', L'\x00ED', L'\x00EE', L'\x0129', L'\x00EF', L'\x00D1'},    // i
+   {L'\x00CC', L'\x00CD', L'\x00CE', L'\x0128', L'\x00CF', L'\x00DF'},    // I
+   {L'\x00F2', L'\x00F3', L'\x00F4', L'\x00F5', L'\x00F6',         0},    // o
+   {L'\x00D2', L'\x00D3', L'\x00D4', L'\x00D5', L'\x00D6',         0},    // O
+   {L'\x00F9', L'\x00FA', L'\x00FB', L'\x0169', L'\x00FC',         0},    // u
+   {L'\x00D9', L'\x00DA', L'\x00DB', L'\x0168', L'\x00DC',         0},    // U
+   {L'\x00A3', L'\x20AC', L'\x20A7', L'\x00A5', L'\x00BF', L'\x00A1'},    // Currency
+  };
+
+typedef struct tagKTC               // Keyb TabCtrl
+{
+    LPWSTR  lpwName;                // Ptr to Tab name
+    WCHAR   (*lpwText)[KTC_TXT_CX]; // Ptr to TC page
+    UINT    idLastHighlight;        // IDC_xxx of last highted button (NOCONTROL = none)
+} KTC, *LPKTC;
+
+KTC aKTC[]
+= {{L"APL", awKTC_APL, NOCONTROL},
+   {L"abc", awKTC_ABC, NOCONTROL},
+   {L"123", awKTC_123, NOCONTROL},
+   {L"Box", awKTC_BOX, NOCONTROL},
+   {L"NLS", awKTC_NLS, NOCONTROL},
+  };
+
+LPKEYBLAYOUTS lpGlbKeybLayouts = NULL,  // Ptr to array of global Keyboard Layouts
+              lpLclKeybLayouts = NULL;  // ...             local  ...
+KEYBLAYOUTS aKeybLayoutOrig;            // Copy of the original keyboard layout
+HGLOBAL hLclKeybLayouts;                // Local keyb layouts global memory handle
+
+typedef struct tagNEWKEYBDLG
+{
+    LPWCHAR lpwKeybLayoutName;          // Ptr to input/output keyboard layout name
+    HWND    hWndProp;                   // Property page window handle
+} NEWKEYBDLG, *LPNEWKEYBDLG;
 
 // Define message # used to set a color
 #define MYWM_SETCOLOR           (WM_APP + 0)
+
+// Define default pt size for the CLEARWS Values font
+#define DEF_CWSPTSIZE       11
 
 
 //***************************************************************************
@@ -90,7 +267,7 @@ APLU3264 CALLBACK CustomizeDlgProc
      LPARAM lParam)     // ...
 
 {
-    static HFONT        hFont = NULL;           //
+    static HFONT        hFontCWS = NULL;        // Font for CLEARWS Values
     static HWND         hWndGroupBox,           // Dialog GroupBox window handle
                         hWndListBox,            // Dialog ListBox  ...
                         hWndLast,               // Last (outgoing) ...
@@ -102,7 +279,13 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWndIC_CB2;             // []IC ...      #2 ...
            UINT         uSel,                   // Index of the current selection
                         uShow,                  // Show/hide flag
+                        uCol,                   // Loop counter
+                        uValue,                 // Temporary value
+                        idLHL,                  // ID of LastHighlight
+                        uStyle,                 // Window Style
+                        uScanCode,              // Scan code
                         uCnt;                   // Loop counter
+           APLU3264     uKeybSize;              // Size of local/global keyboard layouts
            HANDLE_PTR   uIDD;                   // Item data:  IDD_xxx or HWND
            RECT         rc;                     // Temporary rectangle
            LPAPLCHAR    lpMemChr,               // Ptr to global memory
@@ -152,8 +335,10 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWndProp1,              // ...
                         hWndProp2,              // ...
                         hWndFont,               // Font property page ChooseFontW button window handle
+                        hWndKTC,                // Keyboard TabCtrl window handle
                         hWnd_UD;                // []IO/[]PP/[]PW UpDown Control or its Buddy window handle
-           LOGFONTW     lf_ST;                  // Static text LOGFONTW
+           LOGFONTW     lf_ST,                  // Static text LOGFONTW
+                        lf_CWS;                 // CLEARWS Values ...
     static HFONT        hFontNorm_ST = NULL,    // Normal static text font handle
                         hFontBold_ST = NULL;    // Bold   ...
     static APLINT       featValues[FEATURENDX_LENGTH]; // []FEATURE local values
@@ -161,6 +346,7 @@ APLU3264 CALLBACK CustomizeDlgProc
     static RESET_VARS   lclResetVars;           // Local copy of bResetVars
            WCHAR        wszTemp[128];           // Temporary WCHAR storage
            char         szTemp[128];            // Temporary char storage
+    static WCHAR        wszText[2] = {L'\0'};
     static CHOOSECOLORW cc = {0};               // Struct for ChooseColorW
     static UBOOL        gbFore;                 // TRUE iff the button is FOREGROUND
     static UINT         guIndex;                // Index of the button
@@ -214,7 +400,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 #define UNITRANS_STR_LENGTH      countof (unitransStr)
 
     // The following text is too long for a resource file (limit 256 chars), so we define it here
-    //   and save it ino the dialog upon initialization of the appropriate Property Page
+    //   and save it into the dialog upon initialization of the appropriate Property Page
     static LPWCHAR    lpwFontsText = L"There are several categories of fonts (Session Manager, etc.).  "
                                      L"Click the button to the left of the text to change the font "
                                      L"for that category.  Click a radio button to the right of "
@@ -227,6 +413,10 @@ APLU3264 CALLBACK CustomizeDlgProc
                                      L"allows you to choose which value is used.";
 
     static TOOLINFOW tti = {sizeof (tti)};  // For Tooltip Ctrl
+    static CHOOSEFONTW cfKB = {0};
+
+    WCHAR        wszStr[KEYB_UNICODE_LIMIT + 1];
+    LPWCHAR      lpwszStr;              // Temporary string ptr
 
 #define MYWM_INITDIALOG                 (WM_APP + 100)
 #define MYWM_ENABLECHOOSEFONT           (WM_APP + 101)
@@ -328,7 +518,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                 PostMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_CUST_LB, NULL, LBN_SELCHANGE));
             } // End IF
 
-            return TRUE;            // Use the focus in wParam
+            return DLG_MSGDEFFOCUS;     // Use the focus in wParam, DWL_MSGRESULT is ignored
 
         case MYWM_INITDIALOG:
             // Set the group box text
@@ -358,28 +548,49 @@ APLU3264 CALLBACK CustomizeDlgProc
                 switch (custStruc[wParam].uIDD)
                 {
                     case IDD_PROPPAGE_CLEARWS_VALUES:                   // MYWM_INITDIALOG
+                    {
+                        HDC hDCTmp;                         // Temporary DC
+                        int iLogPixelsY;                    // # vertical pixels per inch in the DC
+
                         // Initialize the CLEAR WS values
 
-                        // Set the font for each Edit Ctrl or Combobox
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PP_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PW_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_RL_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontSM, MAKELPARAM (FALSE, 0));
+                        // Get a new device context
+                        hDCTmp = MyGetDC (HWND_DESKTOP);
+
+                        // Get the # pixels per vertical inch
+                        iLogPixelsY = GetDeviceCaps (hDCTmp, LOGPIXELSY);
+
+                        // Release the one we just created
+                        MyReleaseDC (HWND_DESKTOP, hDCTmp); hDCTmp = NULL;
+
+                        // Get the current SM LOGFONTW struc and set its size
+                        GetObjectW (hFontSM, sizeof (lf_CWS), &lf_CWS);
+
+                        lf_CWS.lfHeight = -MulDiv (DEF_CWSPTSIZE, iLogPixelsY, 72);
+
+                        // Create a new HFONT from the changed LOGFONTW
+                        hFontCWS = MyCreateFontIndirectW (&lf_CWS);
+
+                        // Set the font for each Edit Ctrl or ComboBox
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PP_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PW_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_RL_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
 
                         // Save the normal font handle
                         hFontNorm_ST = (HFONT) SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_LEN), WM_GETFONT, 0, 0);
 
-                        // Get the current LOGFONTW struct and make it bold
+                        // Get the current LOGFONTW struc and make it bold
                         GetObjectW (hFontNorm_ST, sizeof (lf_ST), &lf_ST);
 
                         // Set the new weight
@@ -667,6 +878,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_RL_EC,  lpwszGlbTemp);
 
                         break;
+                    } // End IDD_PROPPAGE_CLEARWS_VALUES
 
 ////////////////////case IDD_PROPPAGE_DIRS:                             // MYWM_INITDIALOG
 ////////////////////    DbgBrk ();      // ***FINISHME***
@@ -706,6 +918,187 @@ APLU3264 CALLBACK CustomizeDlgProc
                         } // End FOR
 
                         break;
+
+                    case IDD_PROPPAGE_KEYBS:                            // MYWM_INITDIALOG
+                    {
+                        TCITEMW tcItem = {0};               // TabCtrl item struc
+                        RECT    rcKTC;                      // Client rect
+                        UINT    uCnt;                       // Loop counter
+                        NMHDR   nmhdr = {0};                // NMHDR for TCN_SELCHANGE
+                        HFONT   hFontTmp;                   // HFONT for one of the TabCtrl pushboxes
+                        LOGFONT lfTmp;                      // LOGFONT ...
+                        HDC     hDCTmp;                     // Temporary DC
+                        int     iLogPixelsY;                // # vertical pixels per inch in the DC
+
+                        // Get a new device context
+                        hDCTmp = MyGetDC (HWND_DESKTOP);
+
+                        // Get the # pixels per vertical inch
+                        iLogPixelsY = GetDeviceCaps (hDCTmp, LOGPIXELSY);
+
+                        // Release the one we just created
+                        MyReleaseDC (HWND_DESKTOP, hDCTmp); hDCTmp = NULL;
+
+                        // Make a copy of the active keyboard layout so we
+                        //   may resore it in case the user abandon changes
+                        aKeybLayoutOrig = aKeybLayoutAct;
+
+                        // Lock the memory to get a ptr to it
+                        lpGlbKeybLayouts = MyGlobalLock (hGlbKeybLayouts);
+
+                        // Get its size
+                        uKeybSize = MyGlobalSize (hGlbKeybLayouts);
+
+                        // Make a local copy of the keyboard layouts
+                        hLclKeybLayouts = MyGlobalAlloc (GHND, uKeybSize);
+                        if (!hLclKeybLayouts)
+                        {
+                            MessageBoxW (hWndProp, L"Unable to allocate memory for a local copy of the keyboard layouts.", lpwszAppName, MB_OK | MB_ICONERROR);
+
+                            EndDialog (hDlg, FALSE);                // Fail this dialog
+                        } // End IF
+
+                        // Lock the memory to get a ptr to it
+                        lpLclKeybLayouts = MyGlobalLock (hLclKeybLayouts);
+
+                        // Copy the global layouts to local memory
+                        CopyMemory (lpLclKeybLayouts, lpGlbKeybLayouts, uKeybSize);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbKeybLayouts); lpGlbKeybLayouts = NULL;
+
+                        //***************************************************************
+                        //  Keyboard TabCtrl
+                        //***************************************************************
+
+                        // Initialize the Tab Ctrl item struct
+                        tcItem.mask       = TCIF_TEXT | TCIF_PARAM;
+////////////////////////tcItem.pszText    =                         // Set below
+////////////////////////tcItem.cchTextMax =                         // Not used with TCM_INSERTITEM
+////////////////////////tcItem.iImage     =                         // Used with TCIF_IMAGE only
+                        tcItem.lParam     = 0;
+
+                        // Get the TabCtrl window handle
+                        hWndKTC = GetDlgItem (hWndProp, IDC_KEYB_TC);
+
+                        // Initialize the Tab Ctrl items
+                        for (uCnt = 0; uCnt < countof (aKTC); uCnt++)
+                        {
+                            tcItem.pszText = aKTC[uCnt].lpwName;
+                            tcItem.lParam  = (LPARAM) aKTC[uCnt].lpwText;
+                            SendMessageW (hWndKTC, TCM_INSERTITEMW, uCnt, (LPARAM) &tcItem);
+                        } // End FOR
+
+                        // Get the TabCtrl size
+                        GetClientRect (hWndKTC, &rcKTC);
+
+                        // Size each tab to one-third the TC width ("- 2" is to account for margins)
+                        SendMessageW (hWndKTC, TCM_SETITEMSIZE, 0, MAKELPARAM (rcKTC.right / 3 - 2, 0));
+
+                        // Set the current selection
+                        TabCtrl_SetCurSel (hWndKTC, uKeybTCNum);
+
+                        // Fill in the NMHDR struc
+////////////////////////nmhdr.hwndFrom =
+////////////////////////nmhdr.idFrom   =
+                        nmhdr.code     = TCN_SELCHANGE;
+
+                        // Tell the control to set the current text
+                        SendMessageW (hDlg, WM_NOTIFY, 0, (LPARAM) &nmhdr);
+
+                        //***************************************************************
+                        //  Keyboard CheckBoxes
+                        //***************************************************************
+
+                        CheckDlgButton (hWndProp, IDC_KEYB_XB_ALT  , uKeybState & KS_ALT);
+                        CheckDlgButton (hWndProp, IDC_KEYB_XB_CTRL , uKeybState & KS_CTRL);
+                        CheckDlgButton (hWndProp, IDC_KEYB_XB_SHIFT, uKeybState & KS_SHIFT);
+
+                        //***************************************************************
+                        //  Keyboard Unicode Ctrls
+                        //***************************************************************
+
+                        // Tell the control about the Unicode base
+                        CheckDlgButton (hWndProp, IDC_KEYB_RB_DEC, uKeybUnibase EQ 10);
+                        CheckDlgButton (hWndProp, IDC_KEYB_RB_HEX, uKeybUnibase EQ 16);
+
+                        // Limit the text in the Unicode Edit Ctrl
+                        SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_EC_UNICODE), EM_SETLIMITTEXT, KEYB_UNICODE_LIMIT, 0);
+
+                        // Initialize the value in the Unicode Button
+                        SetWindowTextW (GetDlgItem (hWndProp, IDC_KEYB_BN_UNICODE), L"\0");
+
+                        // Display the new value
+                        DisplayKeybTCValue (hWndProp, -1);
+
+                        // Subclass the Unicode Edit Ctrl
+                        //   so we can launder input
+                        (HANDLE_PTR) lpfnOldKeybEditCtrlWndProc =
+                          SetWindowLongPtrW (GetDlgItem (hWndProp, IDC_KEYB_EC_UNICODE),
+                                             GWLP_WNDPROC,
+                                             (APLU3264) (LONG_PTR) (WNDPROC) &LclKeybEditCtrlWndProc);
+
+                        //***************************************************************
+                        //  Keyboard Fonts
+                        //***************************************************************
+
+                        // Save the normal font handle
+                        hFontTmp = (HFONT) SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_BN_TC_00), WM_GETFONT, 0, 0);
+
+                        // Get the current LOGFONTW struct and make it bold
+                        GetObjectW (hFontTmp, sizeof (lfTmp), &lfTmp);
+
+                        // Set the height
+                        lfKB.lfHeight = -MulDiv (DEF_KBPTSIZE - 2, iLogPixelsY, 72);
+
+                        // Set the font for the appropriate keyboard controls
+                        //   from lfKB
+                        SetKeybFont (hWndProp);
+
+                        // Initialize the CHOOSEFONTW struc for IDC_KEYB_BN_FONT
+                        cfKB.lStructSize    = sizeof (cfKB);
+                        cfKB.hwndOwner      = hDlg;
+////////////////////////cfKB.hDC            =                           // Only w/CF_PRINTERFONTS
+                        cfKB.lpLogFont      = &lfKB;
+                        cfKB.iPointSize     = DEF_KBPTSIZE * 10;
+                        cfKB.Flags          = 0
+                                            | CF_APPLY
+                                            | CF_ENABLEHOOK
+                                            | CF_FORCEFONTEXIST
+                                            | CF_INITTOLOGFONTSTRUCT
+                                            | CF_SCREENFONTS
+                                              ;
+////////////////////////cfKB.rgbColors      =                           // Only w/CF_EFFECTS
+                        cfKB.lCustData      = (LPARAM) NULL;            // Signal to use "Keyboard Font"
+                        cfKB.lpfnHook       = &MyChooseFontHook;
+////////////////////////cfKB.lpTemplateName =                           // Only w/CF_ENABLETEMPLATE
+////////////////////////cfKB.hInstance      =                           // Only w/CF_ENABLETEMPLATE
+////////////////////////cfKB.lpszStyle      =                           // Only w/CF_USESTYLE
+////////////////////////cfKB.nFontType      =                           // Output only
+////////////////////////cfKB.nSizeMin       =                           // Only w/CF_LIMITSIZE
+////////////////////////cfKB.nSizeMax       =                           // Only w/CF_LIMITSIZE
+
+                        //***************************************************************
+                        //  Keyboard Layouts
+                        //***************************************************************
+
+                        // Loop through the Keyboard Layouts
+                        for (uCnt = 0; uCnt < uKeybLayoutCount; uCnt++)
+                            // Add the layout names
+                            SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_ADDSTRING, 0, (LPARAM) lpLclKeybLayouts[uCnt].wszLayoutName);
+
+                        // Get the CB index of the visible selection
+                        uCnt = (UINT)
+                          SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_FINDSTRING, -1, (LPARAM) wszKeybLayoutVis);
+
+                        // Select the visible one
+                        SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_SETCURSEL, uCnt, 0);
+
+                        // Display it
+                        DispKeybLayout (hWndProp);
+
+                        break;
+                    } // End IDD_PROPPAGE_KEYBS
 
                     case IDD_PROPPAGE_RANGE_LIMITS:                     // MYWM_INITDIALOG
                         // Check the boxes of Range Limited system vars
@@ -879,11 +1272,16 @@ APLU3264 CALLBACK CustomizeDlgProc
                         break;
                 } // End SWITCH
 
+                // Ensure that the OK button is still the default push button
+                uStyle = GetWindowLong (GetDlgItem (hDlg, IDOK), GWL_STYLE);
+                SendMessageW (GetDlgItem (hDlg, IDOK), BM_SETSTYLE, uStyle | BS_DEFPUSHBUTTON, TRUE);
+
                 // Restore the Apply button enable/disable state
                 EnableWindow (hWndApply, bApply);
             } // End IF
 
-            return TRUE;            // We handled the msg
+            // Return dialog result
+            DlgMsgDone (hDlg);              // We handled the msg
 
 #define ctrlId      ((UINT) wParam)
 #define bEnable     ((UBOOL) lParam)
@@ -944,7 +1342,9 @@ APLU3264 CALLBACK CustomizeDlgProc
             // Enable the Apply button
             EnableWindow (hWndApply, TRUE);
 
-            return TRUE;            // We handled the msg
+            // Return dialog result
+            DlgMsgDone (hDlg);              // We handled the msg
+
 #undef  bEnable
 #undef  ctrlId
 
@@ -952,19 +1352,22 @@ APLU3264 CALLBACK CustomizeDlgProc
             // Simulate a click of the Cancel button
             SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDCANCEL, NULL, BN_CLICKED));
 
-            return TRUE;            // We handled the msg
+            // Return dialog result
+            DlgMsgDone (hDlg);              // We handled the msg
 
-
-#define idCtl       ((UINT) wParam)
-#define lpmis       ((LPMEASUREITEMSTRUCT) lParam)
         case WM_MEASUREITEM:        // idCtl = (UINT) wParam;                // control identifier
-                                    // lpmis = (LPMEASUREITEMSTRUCT) lParam; // item-size information
-            // Check to see if this is one of our menu items
-            if (IDC_SYNTCLR_MI1 <= lpmis->itemID && lpmis->itemID <= IDC_SYNTCLR_MI_LAST)
-            {
+        {                           // lpmis = (LPMEASUREITEMSTRUCT) lParam; // item-size information
 #ifdef DEBUG
-                LPMEASUREITEMSTRUCT lpmis2 = lpmis;
+            UINT idCtl = (UINT) wParam;
+            LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT) lParam;
+#else
+  #define idCtl       ((UINT) wParam)
+  #define lpmis       ((LPMEASUREITEMSTRUCT) lParam)
 #endif
+            // Check to see if this is one of our menu items
+            if (IDC_SYNTCLR_MI1 <= lpmis->itemID
+             &&                    lpmis->itemID <= IDC_SYNTCLR_MI_LAST)
+            {
                 HDC  hDCClient;                         // Client Area DC
                 SIZE sMenuItem;                         // Size of menu text
                 UINT itemIndex;                         // Menu item index
@@ -1011,21 +1414,37 @@ APLU3264 CALLBACK CustomizeDlgProc
                 lpmis->itemHeight = max (sMenuItem.cy, SYNTCLR_MENU_MARGIN_TOP
                                                      + SYNTCLR_MENU_SWATCH_HEIGHT
                                                      + SYNTCLR_MENU_MARGIN_BOTTOM);
-                return TRUE;            // We handled the msg
-            } // End IF
+                // Return dialog result
+                DlgMsgDone (hDlg);              // We handled the msg
+////////////} else
+////////////// See if this is our Keyboard Layout ComboBox
+////////////if (idCtl EQ IDC_KEYB_CB_LAYOUT)
+////////////{
+////////////    // Nothing to do
+            } // End IF/ELSE
 
             return FALSE;           // We didn't handle the msg
-#undef  lpmis
-#undef  idCtl
+#ifndef DEBUG
+  #undef  lpmis
+  #undef  idCtl
+#endif
+        } // End WM_MEASUREITEM
 
-#define idCtl       ((UINT) wParam)
-#define lpdis       ((LPDRAWITEMSTRUCT) lParam)
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // Control identifier
-                                    // lpdis = (LPDRAWITEMSTRUCT) lParam; // Item-drawing information
+        {                           // lpdis = (LPDRAWITEMSTRUCT) lParam; // Item-drawing information
+#ifdef DEBUG
+            UINT             idCtl = (UINT) wParam;
+            LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT) lParam;
+#else
+  #define idCtl       ((UINT) wParam)
+  #define lpdis       ((LPDRAWITEMSTRUCT) lParam)
+#endif
+            //***************************************************************
+            // FONTS -- WM_DRAWITEM
+            //***************************************************************
             // Check to see if this is one of our Font buttons
             if (IDC_FONT1 <= idCtl && idCtl <= IDC_FONT_LAST)
             {
-                WCHAR  wszText[2];
                 RECT   rcItem;
                 HBRUSH hBrush;
 
@@ -1106,6 +1525,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                         break;
                 } // End SWITCH
             } else
+            //***************************************************************
+            // SYNTAX COLORING -- WM_DRAWITEM
+            //***************************************************************
             // Check to see if this is one of our Syntax Coloring Foreground/Background Color buttons
             if ((IDC_SYNTCLR_BN_FGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST)
              || (IDC_SYNTCLR_BN_BGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_BGCLR_LAST))
@@ -1209,7 +1631,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                             rcMark.right = rcMark.left + SYNTCLR_MENU_MARK_WIDTH;
 
                             // Get a Client Area DC for the bitmap
-                            hDCMem = CreateCompatibleDC (lpdis->hDC);
+                            hDCMem = MyCreateCompatibleDC (lpdis->hDC);
 
                             // Select it into the DC
                             hBitMapOld = SelectObject (hDCMem, hBitMapCheck);
@@ -1228,7 +1650,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                             SelectObject (hDCMem, hBitMapOld);
 
                             // We no longer need this resource
-                            DeleteDC (hDCMem);
+                            MyDeleteDC (hDCMem);
                         } // End IF
 
                         // If this is not a special item, ...
@@ -1273,32 +1695,192 @@ APLU3264 CALLBACK CustomizeDlgProc
                     case ODA_FOCUS:     // Ignore changes in focus
                         break;
                 } // End SWITCH
-            } // End IF/ELSE
+            } else
+            //***************************************************************
+            // KEYBOARDS -- WM_DRAWITEM
+            //***************************************************************
+            // Check to see if this is one of our Keyboard TabCtrl buttons
+            if (IDC_KEYB_BN_TC_00 <= idCtl
+             &&                      idCtl <= IDC_KEYB_BN_TC_LAST)
+            {
+                Assert (lpdis->CtlType EQ ODT_BUTTON);
 
-            return TRUE;            // We handled the msg
-#undef  lpdis
-#undef  idCtl
+                // Get the associated item data (window handle of the Property Page)
+                hWndProp = (HWND)
+                  SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
 
-        case WM_NOTIFY:             // idCtrl = (int) wParam;
-                                    // pnmh = (LPNMHDR) lParam;
-#define lpnmh   (*(LPNMHDR *) &lParam)
+                // Draw the button
+                DrawButton (hWndListBox, hWndProp, lpdis, idCtl);
+            } else
+            // Check to see if this is our Keyboard Unicode button
+            if (idCtl EQ IDC_KEYB_BN_UNICODE)
+            {
+                Assert (lpdis->CtlType EQ ODT_BUTTON);
 
+                // Get the associated item data (window handle of the Property Page)
+                hWndProp = (HWND)
+                  SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                // Draw the button
+                DrawButton (hWndListBox, hWndProp, lpdis, idCtl);
+
+                // Draw a border around the char
+                DrawEdge (lpdis->hDC, &lpdis->rcItem, EDGE_SUNKEN, BF_RECT);
+            } else
+            // Check to see if this is our Keyboard Layout ComboBox
+            if (idCtl EQ IDC_KEYB_CB_LAYOUT)
+            {
+                COLORREF clrBack,                   // Color of background
+                         clrText;                   // ...      text
+                WCHAR    wszKeybLayoutName[KBLEN];  // Save area for keyboard layout name
+                HBITMAP  hBitmapOBM;                // OBM bitmap handle
+                BITMAP   bmOBM;                     // OBM bitmap info
+                RECT     rcItem,                    // The item rectangle
+                         rcOBM;                     // The OBM rectangle
+
+                // Split cases based upon the item action
+                switch (lpdis->itemAction)
+                {
+                    case ODA_DRAWENTIRE:
+                    case ODA_SELECT:
+                        // Get the text
+                        SendMessageW (lpdis->hwndItem, CB_GETLBTEXT, lpdis->itemID, (LPARAM) wszKeybLayoutName);
+
+                        // Load the OBM check bitmap
+                        hBitmapOBM = LoadBitmapA (NULL, MAKEINTRESOURCEA (OBM_CHECK));
+
+                        // Get the width and height of the bitmap
+                        GetObjectA (hBitmapOBM, sizeof (BITMAP), &bmOBM);
+
+                        // Copy the item rectangle so we can change it
+                        rcItem = lpdis->rcItem;
+
+                        // Set the OBM rectangle for the checkmark
+                        rcOBM.left   = rcItem.left;
+                        rcOBM.top    = rcItem.top + ((rcItem.bottom - rcItem.top) - bmOBM.bmHeight) / 2;
+                        rcOBM.right  = rcOBM.left + bmOBM.bmWidth;
+                        rcOBM.bottom = rcOBM.top  + bmOBM.bmHeight;
+
+                        // Move the left edge of the rectangle over to accommodate the checkmark
+                        rcItem.left += bmOBM.bmWidth - 2;
+
+                        // If this is the active layout, ...
+                        if (lstrcmpW (wszKeybLayoutName, wszKeybLayoutAct) EQ 0)
+                            // Draw the checkmark
+                            DrawBitmap (lpdis->hDC,
+                                        hBitmapOBM,
+                                        rcOBM.left,
+                                        rcOBM.top);
+                        // Find this layout's #
+                        for (uCnt = 0; uCnt < uKeybLayoutCount; uCnt++)
+                        // See if this is the visible keyboard layout
+                        if (lstrcmpW (wszKeybLayoutName, lpLclKeybLayouts[uCnt].wszLayoutName) EQ 0)
+                            break;
+                        // Set the OBM rectangle for the bullet
+#define BULLET_WIDTH        6
+#define BULLET_HEIGHT       6
+                        rcOBM.left   = rcItem.left;
+                        rcOBM.top    = rcItem.top + ((rcItem.bottom - rcItem.top) - BULLET_HEIGHT) / 2;
+                        rcOBM.right  = rcOBM.left + BULLET_WIDTH;
+                        rcOBM.bottom = rcOBM.top  + BULLET_HEIGHT;
+
+                        // If this layout is read-only, ...
+                        if (lpLclKeybLayouts[uCnt].bReadOnly)
+                        {
+                            HPEN   hPen  , hOldPen;
+                            HBRUSH         hOldBrush;
+
+                            // Create a pen with which to draw the ellipse
+                            hPen = MyCreatePen (PS_SOLID, 1, DEF_SCN_BLACK);
+                            hOldPen = SelectObject (lpdis->hDC, hPen);
+
+                            // Create a black brush with which to fill the ellipse
+                            hOldBrush = SelectObject (lpdis->hDC, GetStockObject (BLACK_BRUSH));
+
+                            // Draw the bullet
+                            Ellipse (lpdis->hDC,
+                                     rcOBM.left,
+                                     rcOBM.top,
+                                     rcOBM.right,
+                                     rcOBM.bottom);
+                            // Restore the old objects
+                            SelectObject (lpdis->hDC, hOldBrush);
+                            SelectObject (lpdis->hDC, hOldPen);
+
+                            // Delete the object
+                            MyDeleteObject (hPen);
+                        } // End IF
+
+                        // Move the left edge of the rectangle over to accommodate the bullet
+                        rcItem.left += 2 * BULLET_WIDTH;
+
+                        // If we're selected, ...
+                        if (lpdis->itemState & ODS_SELECTED)
+                        {
+                            // Set the Foreground and Background colors
+                            clrBack = SetBkColor   (lpdis->hDC, GetSysColor (COLOR_HIGHLIGHT    ));
+                            clrText = SetTextColor (lpdis->hDC, GetSysColor (COLOR_HIGHLIGHTTEXT));
+                        } // End IF
+
+                        // Draw the text
+                        DrawTextW (lpdis->hDC,
+                                   wszKeybLayoutName,
+                                   -1,
+                                  &rcItem,
+                                   DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+                        // If we're selected, ...
+                        if (lpdis->itemState & ODS_SELECTED)
+                        {
+                            // Reset the Foreground and Background colors
+                             SetBkColor   (lpdis->hDC, clrBack);
+                             SetTextColor (lpdis->hDC, clrText);
+                        } // End IF
+
+                        // We no longer need this resource
+                        DeleteObject (hBitmapOBM); hBitmapOBM = NULL;
+
+                        break;
+
+                    case ODA_FOCUS:     // Ignore changes in focus
+                        break;
+                } // End SWITCH
+            } // End IF/ELSE/...
+
+            // Return dialog result
+            DlgMsgDone (hDlg);              // We handled the msg
+
+#ifndef DEBUG
+  #undef  lpdis
+  #undef  idCtl
+#endif
+        } // End WM_DRAWITEM
+
+        case WM_NOTIFY:             // idCtl = (int) wParam;
+        {                           // pnmh = (LPNMHDR) lParam;
+#ifdef DEBUG
+            int     idCtl = (int) wParam;
+            LPNMHDR lpnmh = (LPNMHDR) lParam;
+#else
+  #define idCtl   ((int) wParam)
+  #define lpnmh   ((LPNMHDR) lParam)
+#endif
             // Split cases based upon the notification code
             switch (lpnmh->code)
             {
+                //***************************************************************
+                // Tooltip Ctrl Notifications
+                //***************************************************************
                 case TTN_NEEDTEXTW:     // idTT = (int) wParam;
                                         // lpttt = (LPTOOLTIPTEXTW) lParam;
                 {
                     static WCHAR    TooltipText [_MAX_PATH];
-                           UINT     idCtl;
                            UBOOL    bFore;
                            COLORREF clrRef;
-
-#define lpttt   (*(LPTOOLTIPTEXTW *) &lParam)
-
-                    // Get the ID of the calling window
-                    idCtl = GetDlgCtrlID ((HWND) lpttt->hdr.idFrom);
-
+#ifdef DEBUG
+                           LPTOOLTIPTEXTW lpttt = (LPTOOLTIPTEXTW) lParam;
+#else
+  #define lpttt   ((LPTOOLTIPTEXTW) lParam)
+#endif
                     // Check to see if this is one of our Syntax Coloring Foreground/Background Color buttons
                     if (IDC_SYNTCLR_BN_FGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST)
                     {
@@ -1344,22 +1926,222 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef));
                     // Return the ptr to the caller
                     lpttt->lpszText = TooltipText;
-#undef  lpttt
+#ifndef DEBUG
+  #undef  lpttt
+#endif
                     return FALSE;
                 } // End TTN_NEEDTEXTW
+
+                //***************************************************************
+                // Tab Ctrl Notifications
+                //***************************************************************
+                case TCN_SELCHANGE:             // lpnmh = (LPNMHDR) lParam
+                {
+                    WCHAR (*lpwText)[KTC_TXT_CX];
+
+                    // Get the handle of the Keyboards Property Page
+                    hWndProp = (HWND)
+                      SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                    // Get the TabCtrl window handle
+                    hWndKTC = GetDlgItem (hWndProp, IDC_KEYB_TC);
+
+                    // Clear the highlight from the last button
+                    KeybHighlight (hWndProp, NOCONTROL);
+
+                    // Get the current selection
+                    uKeybTCNum = TabCtrl_GetCurSel (hWndKTC);
+
+                    // Get the ptr to this tab's text array
+                    lpwText = aKTC[uKeybTCNum].lpwText;
+
+                    // Loop through the TabCtrl text and change it to that
+                    //   of the incoming tab
+                    for (uCnt = 0; uCnt < KTC_TXT_CY; uCnt++)
+                    for (uCol = 0; uCol < KTC_TXT_CX; uCol++)
+                    {
+                        // Save the char in a string
+                        wszText[0] = lpwText[uCnt][uCol];
+
+                        // Tell the window about its char
+                        SendMessageW (GetDlgItem (hWndProp, aKTC_IDC_BEG[uCnt] + uCol), WM_SETTEXT, 0, (LPARAM) wszText);
+                    } // End FOR/FOR
+
+                    // Save the last highlight ID
+                    idLHL = aKTC[uKeybTCNum].idLastHighlight;
+
+                    // Display the new value
+                    DisplayKeybTCValue (hWndProp, aKTC[uKeybTCNum].idLastHighlight);
+
+                    // Restore the last highlight ID
+                    aKTC[uKeybTCNum].idLastHighlight = idLHL;
+
+                    // Highlight the current button
+                    KeybHighlight (hWndProp, aKTC[uKeybTCNum].idLastHighlight);
+
+                    return FALSE;           // Allow the selection to change
+                } // End TCN_SELCHANGE
+
+                //***************************************************************
+                // Custom Draw Notifications
+                //***************************************************************
+                case NM_CUSTOMDRAW:
+                    // Split cases based upon the ID
+                    if (IDC_KEYB_BN_KC_00 <= idCtl
+                     &&                      idCtl <= IDC_KEYB_BN_KC_LAST)
+                    {
+#ifdef DEBUG
+                        LPNMCUSTOMDRAW lpnmcd = (LPNMCUSTOMDRAW) lParam;
+#else
+  #define lpnmcd    ((LPNMCUSTOMDRAW) lParam)
+#endif
+                        // Split cases based upon the draw stage
+                        switch (lpnmcd->dwDrawStage)
+                        {
+                            case CDDS_PREERASE:
+                                break;
+
+                            case CDDS_PREPAINT:
+                                // Get the handle of the Keyboards Property Page
+                                hWndProp = (HWND)
+                                  SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                                // Get the row of the keycap
+                                for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+                                if ((UINT) idCtl <= aKKC_IDC_END[uCnt])
+                                    break;
+
+                                // Get the scan code
+                                uScanCode = aKKC_SC[uCnt].aSC[idCtl - aKKC_IDC_BEG[uCnt]];
+
+                                // If the ScanCode is within range of our table, and
+                                //   the keystate is Ctrl, and
+                                //   we're using Ctrl-C, -X, -V, -Z, -Y
+                                //   and this ScanCode is one of those, ...
+                                if (uScanCode < lpLclKeybLayouts[uKeybLayoutNumVis].uCharCodesLen
+                                 && uKeybState EQ KS_CTRL
+                                 && ((lpLclKeybLayouts[uKeybLayoutNumVis].bUseCXV
+                                   && (uScanCode EQ KeybCharToScanCode (L'c', KS_NONE)
+                                    || uScanCode EQ KeybCharToScanCode (L'x', KS_NONE)
+                                    || uScanCode EQ KeybCharToScanCode (L'v', KS_NONE)))
+                                  || (lpLclKeybLayouts[uKeybLayoutNumVis].bUseZY
+                                   && (uScanCode EQ KeybCharToScanCode (L'z', KS_NONE)
+                                    || uScanCode EQ KeybCharToScanCode (L'y', KS_NONE)))
+                                  || (lpLclKeybLayouts[uKeybLayoutNumVis].bUseSEQ
+                                   && (uScanCode EQ KeybCharToScanCode (L's', KS_NONE)
+                                    || uScanCode EQ KeybCharToScanCode (L'e', KS_NONE)
+                                    || uScanCode EQ KeybCharToScanCode (L'q', KS_NONE)))))
+                                {
+                                    HPEN   hPen  , hOldPen;
+                                    HBRUSH         hOldBrush;
+                                    RECT   rc;
+
+                                    // Create a pen with which to draw the ellipse
+                                    hPen = MyCreatePen (PS_SOLID, 4, DEF_SCN_RED);
+                                    hOldPen = SelectObject (lpnmcd->hdc, hPen);
+
+                                    // Create a transparent brush with which to fill the ellipse
+                                    hOldBrush = SelectObject (lpnmcd->hdc, GetStockObject (NULL_BRUSH));
+
+                                    // Copy the rectangle
+                                    rc = lpnmcd->rc;
+
+                                    // Move the rectangle in a bit
+                                    rc.left   += 4;
+                                    rc.top    += 4;
+                                    rc.right  -= 4;
+                                    rc.bottom -= 4;
+
+                                    // Draw the ellipse
+                                    Ellipse (lpnmcd->hdc,
+                                             rc.left,
+                                             rc.top,
+                                             rc.right,
+                                             rc.bottom);
+                                    // Draw the line
+                                    MoveToEx (lpnmcd->hdc,
+                                              rc.left + 4,
+                                              rc.top  + 4,
+                                              NULL);
+                                    LineTo (lpnmcd->hdc,
+                                            rc.right  - 4,
+                                            rc.bottom - 4);
+                                    // Restore the old objects
+                                    SelectObject (lpnmcd->hdc, hOldBrush);
+                                    SelectObject (lpnmcd->hdc, hOldPen);
+
+                                    // Delete the object
+                                    MyDeleteObject (hPen);
+                                } else
+                                {
+                                    UINT oldBkMode;
+
+                                    // If the ScanCode is within range of our table, ...
+                                    if (uScanCode < lpLclKeybLayouts[uKeybLayoutNumVis].uCharCodesLen)
+                                    {
+                                        // Get the char to draw
+                                        wszText[0] = lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[uScanCode].wc[uKeybState];
+
+                                        // If it's empty, ...
+                                        if (wszText[0] EQ L'\0')
+                                            // Draw a blank
+                                            wszText[0] = L' ';
+                                    } else
+                                        // Draw a blank
+                                        wszText[0] = L' ';
+
+                                    // Set the text background mode and save the old one
+                                    oldBkMode = SetBkMode (lpnmcd->hdc, TRANSPARENT);
+
+                                    // Draw the text (one char)
+                                    DrawTextW (lpnmcd->hdc,
+                                               wszText,
+                                               1,
+                                              &lpnmcd->rc,
+                                               DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+                                    // Restore the old text background mode
+                                    SetBkMode (lpnmcd->hdc, oldBkMode);
+                                } // End IF
+
+                                break;
+
+                            case CDDS_POSTERASE:
+                            case CDDS_POSTPAINT:
+                            defstop
+                                break;
+                        } // End SWITCH
+#ifndef DEBUG
+  #undef  lpnmcd
+#endif
+                    } // End IF
+
+                    break;
+
 
                 default:
                     break;
             } // End SWITCH
 
             break;
+#ifndef DEBUG
+  #undef  idCtl
+  #undef  lpnmh
+#endif
+        } // End WM_NOTIFY
 
-#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
-#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
-#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
         case WM_COMMAND:            // wNotifyCode = HIWORD(wParam); // Notification code
                                     // wID = LOWORD(wParam);         // Item, control, or accelerator identifier
                                     // hwndCtl = (HWND) lParam;      // Handle of control
+        {
+#ifdef DEBUG
+            UINT idCtl   = GET_WM_COMMAND_ID   (wParam, lParam),
+                 cmdCtl  = GET_WM_COMMAND_CMD  (wParam, lParam);
+            HWND hwndCtl = GET_WM_COMMAND_HWND (wParam, lParam);
+#else
+  #define idCtl             GET_WM_COMMAND_ID   (wParam, lParam)
+  #define cmdCtl            GET_WM_COMMAND_CMD  (wParam, lParam)
+  #define hwndCtl           GET_WM_COMMAND_HWND (wParam, lParam)
+#endif
             // If the user pressed one of our buttons, ...
             switch (idCtl)
             {
@@ -1370,13 +2152,13 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Close 'er up
                     EndDialog (hDlg, TRUE); // Quit this dialog
 
-                    return TRUE;    // We handled the msg
+                    return FALSE;   // We handled the msg
 
                 case IDCANCEL:
                     // Complain if abandoning changes
                     if (IsWindowEnabled (hWndApply))
                     // Split cases based upon the user response
-                    switch (MessageBoxW (NULL, wszCancelMessage, WS_APPNAME, MB_YESNOCANCEL | MB_ICONQUESTION))
+                    switch (MessageBoxW (NULL, wszCancelMessage, WS_APPNAME, MB_YESNOCANCEL | MB_ICONWARNING))
                     {
                         case IDYES:
                             // Apply changes by simulating a click of the Apply button
@@ -1385,10 +2167,15 @@ APLU3264 CALLBACK CustomizeDlgProc
                             break;
 
                         case IDNO:
+                            // If the keyboard layout is active, ...
+                            if (lpLclKeybLayouts)
+                                // Restore the original keyboard layout
+                                aKeybLayoutAct = aKeybLayoutOrig;
                             break;
 
                         case IDCANCEL:
-                            return TRUE;
+                            // Return dialog result
+                            DlgMsgDone (hDlg);              // We handled the msg
 
                         defstop
                             break;
@@ -1397,7 +2184,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Close 'er up
                     EndDialog (hDlg, TRUE); // Quit this dialog
 
-                    return TRUE;    // We handled the msg
+                    return FALSE;   // We handled the msg
 
                 case IDC_APPLY:
                 {
@@ -1611,6 +2398,43 @@ APLU3264 CALLBACK CustomizeDlgProc
 
 
                     //***************************************************************
+                    // KEYBOARDS -- Apply
+                    //***************************************************************
+
+                    // Get the Property Page index
+                    uCnt = IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START;
+                    if (custStruc[uCnt].bInitialized)
+                    {
+                        // Delete the global copy
+                        MyGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
+
+                        // Get the size of the local copy
+                        uKeybSize = MyGlobalSize (hLclKeybLayouts);
+
+                        // Allocate space for another copy of the local layouts
+                        hGlbKeybLayouts = MyGlobalAlloc (GHND, uKeybSize);
+                        if (!hGlbKeybLayouts)
+                        {
+                            MessageBoxW (hWndProp, L"Unable to allocate memory for a local copy of the keyboard layouts.", lpwszAppName, MB_OK | MB_ICONERROR);
+
+                            EndDialog (hDlg, FALSE);                // Fail this dialog
+                        } // End IF
+
+                        // Lock the memory to get a ptr to it
+                        lpGlbKeybLayouts = MyGlobalLock (hGlbKeybLayouts);
+
+                        // Copy the local values to the global copy
+                        CopyMemory (lpGlbKeybLayouts, lpLclKeybLayouts, uKeybSize);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbKeybLayouts); lpGlbKeybLayouts = NULL;
+
+                        // Save the current keyboard layout in our local copy
+                        aKeybLayoutOrig = aKeybLayoutAct;
+                    } // End IF
+
+
+                    //***************************************************************
                     // RANGE LIMITED VARS -- Apply
                     //***************************************************************
 
@@ -1762,7 +2586,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Disable the Apply button
                     EnableWindow (hWndApply, FALSE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
                 } // End IDC_APPLY
 
                 case IDC_CUST_LB:
@@ -1840,7 +2665,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                             break;
                     } // End SWITCH
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 //***************************************************************
                 // CLEAR WS VALUES -- WM_COMMAND
@@ -1891,7 +2717,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_CLEARWS_CT_EC:
                     // Split cases based upon the command
@@ -1954,14 +2781,15 @@ APLU3264 CALLBACK CustomizeDlgProc
                             break;
                     } // End SWITCH
 
-                    return TRUE;    // We handled the msg
+                    return FALSE;   // We handled the msg
 
                 case IDC_CLEARWS_FEATURE_CB1:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)
                     {
                         // Get the changed index
-                        uSel = (UINT) SendMessageW (hWndFEATURE_CB1, CB_GETCURSEL, 0, 0);
+                        uSel = (UINT)
+                          SendMessageW (hWndFEATURE_CB1, CB_GETCURSEL, 0, 0);
 
                         // Display the corresponding selection
                         SendMessageW (hWndFEATURE_CB2, CB_SETCURSEL, (APLU3264) (featValues[uSel] - FEATUREVAL_MINVAL), 0);
@@ -1970,14 +2798,16 @@ APLU3264 CALLBACK CustomizeDlgProc
                         //   changing the value associated with this index.
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_CLEARWS_FEATURE_CB2:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)
                     {
                         // Get the current index
-                        uSel = (UINT) SendMessageW (hWndFEATURE_CB1, CB_GETCURSEL, 0, 0);
+                        uSel = (UINT)
+                          SendMessageW (hWndFEATURE_CB1, CB_GETCURSEL, 0, 0);
 
                         // Save as current value
                         featValues[uSel] = ((APLINT) SendMessageW (hWndFEATURE_CB2, CB_GETCURSEL, 0, 0)) + FEATUREVAL_MINVAL;
@@ -1986,14 +2816,16 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_CLEARWS_IC_CB1:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)
                     {
                         // Get the changed index
-                        uSel = (UINT) SendMessageW (hWndIC_CB1, CB_GETCURSEL, 0, 0);
+                        uSel = (UINT)
+                          SendMessageW (hWndIC_CB1, CB_GETCURSEL, 0, 0);
 
                         // Display the corresponding selection
                         SendMessageW (hWndIC_CB2, CB_SETCURSEL, (APLU3264) (icValues[uSel] - ICVAL_MINVAL), 0);
@@ -2002,14 +2834,16 @@ APLU3264 CALLBACK CustomizeDlgProc
                         //   changing the value associated with this index.
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_CLEARWS_IC_CB2:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)
                     {
                         // Get the current index
-                        uSel = (UINT) SendMessageW (hWndIC_CB1, CB_GETCURSEL, 0, 0);
+                        uSel = (UINT)
+                          SendMessageW (hWndIC_CB1, CB_GETCURSEL, 0, 0);
 
                         // Save as current value
                         icValues[uSel] = ((APLINT) SendMessageW (hWndIC_CB2, CB_GETCURSEL, 0, 0)) + ICVAL_MINVAL;
@@ -2018,7 +2852,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_CLEARWS_MF_CB:
                     // We care about CBN_SELCHANGE only
@@ -2026,7 +2861,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
 
                 //***************************************************************
@@ -2049,7 +2885,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Disable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT2, FALSE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO3A:
                 case IDC_FONTS_RADIO3B:
@@ -2059,7 +2896,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Disable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT3, FALSE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO4A:
                 case IDC_FONTS_RADIO4B:
@@ -2070,7 +2908,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Disable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT4, FALSE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO5A:
                 case IDC_FONTS_RADIO5B:
@@ -2082,7 +2921,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Disable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT5, FALSE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO6A:
                 case IDC_FONTS_RADIO6B:
@@ -2095,7 +2935,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Disable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT6, FALSE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO7A:
                 case IDC_FONTS_RADIO7B:
@@ -2109,7 +2950,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Disable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT7, FALSE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO8A:
                 case IDC_FONTS_RADIO8B:
@@ -2124,7 +2966,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Disable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT8, FALSE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO1A:
                     // Set the local SameFontAs value
@@ -2133,7 +2976,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT1, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO2B:
                     // Set the local SameFontAs value
@@ -2142,7 +2986,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT2, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO3C:
                     // Set the local SameFontAs value
@@ -2151,7 +2996,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT3, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO4D:
                     // Set the local SameFontAs value
@@ -2160,7 +3006,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT4, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO5E:
                     // Set the local SameFontAs value
@@ -2169,7 +3016,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT5, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO6F:
                     // Set the local SameFontAs value
@@ -2178,7 +3026,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT6, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO7G:
                     // Set the local SameFontAs value
@@ -2187,7 +3036,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT7, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONTS_RADIO8H:
                     // Set the local SameFontAs value
@@ -2196,7 +3046,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the corresponding ChooseFontW button
                     SendMessageW (hDlg, MYWM_ENABLECHOOSEFONT, IDC_FONT8, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_FONT1:
                 case IDC_FONT2:
@@ -2216,14 +3067,14 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Get the index of the font
                         uCnt = idCtl - IDC_FONT1;
 
-                        // Get the ChooseFontW button window handle
-                        hWndFont = GetDlgItem (hWndProp, IDC_FONT1 + uCnt);
-
                         // Ask the user to choose a font, and keep track of
                         //   whether or not a font was chosen
                         // If the font changed, ...
                         if (ChooseFontW (&fontStruc[uCnt].cfLcl))
                         {
+                            // Get the ChooseFontW button window handle
+                            hWndFont = GetDlgItem (hWndProp, IDC_FONT1 + uCnt);
+
                             // Mark as changed
                             fontStruc[uCnt].bChanged = TRUE;
 
@@ -2235,7 +3086,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         } // End IF
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
 
                 //***************************************************************
@@ -2253,7 +3105,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
 
                 //***************************************************************
@@ -2268,12 +3121,407 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+
+                //***************************************************************
+                // KEYBOARDS -- WM_COMMAND
+                //***************************************************************
+
+                case IDC_KEYB_EC_UNICODE:
+                    // Split cases based upon the command
+                    switch (cmdCtl)
+                    {
+                        case EN_CHANGE:
+                            // Get the associated item data (window handle of the Property Page)
+                            hWndProp = (HWND)
+                              SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                            // Get the text
+                            SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_EC_UNICODE), WM_GETTEXT, KEYB_UNICODE_LIMIT + 1, (LPARAM) wszStr);
+
+                            // Convert the text to a binary value using base uKeybUnibase
+                            lpwszStr = &wszStr[0];
+                            uValue = 0;
+                            while (*lpwszStr)
+                            {
+                                // Shift over the value
+                                uValue *= uKeybUnibase;
+
+                                if (L'0' <= *lpwszStr && *lpwszStr <= L'9')
+                                    uValue += *lpwszStr - L'0';
+                                else
+                                    uValue += 10 + tolowerW (*lpwszStr) - L'a';
+
+                                // Skip to the next value
+                                lpwszStr++;
+                            } // End WHILE
+
+                            // Display the value
+                            wszText[0] = (WCHAR) uValue;
+                            SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_BN_UNICODE), WM_SETTEXT, 0, (LPARAM) wszText);
+
+                            // Clear the highlight from the last button
+                            KeybHighlight (hWndProp, NOCONTROL);
+
+                            // Clear the control ID
+                            aKTC[uKeybTCNum].idLastHighlight = NOCONTROL;
+
+                            break;
+                    } // End SWITCH
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_RB_DEC:
+                case IDC_KEYB_RB_HEX:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        UINT uNewBase;
+
+                        // Calculate the new base
+                        uNewBase = (idCtl EQ IDC_KEYB_RB_DEC) ? 10 : 16;
+
+                        // If it's different, ...
+                        if (uKeybUnibase NE uNewBase)
+                        {
+                            // Set the new base
+                            uKeybUnibase = uNewBase;
+
+                            // Get the associated item data (window handle of the Property Page)
+                            hWndProp = (HWND)
+                              SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                            // Save the last highlight ID
+                            idLHL = aKTC[uKeybTCNum].idLastHighlight;
+
+                            // Display the new value
+                            DisplayKeybTCValue (hWndProp, -1);
+
+                            // Restore the last highlight ID
+                            aKTC[uKeybTCNum].idLastHighlight = idLHL;
+
+                            // Highlight the last button
+                            KeybHighlight (hWndProp, aKTC[uKeybTCNum].idLastHighlight);
+                        } // End IF
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_BN_MAKEACT:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                        // Set the active keyboard to the current selection
+                        uKeybLayoutNumAct = uKeybLayoutNumVis;
+
+                        // Save the layout name
+                        lstrcpyW (wszKeybLayoutAct, wszKeybLayoutVis);
+
+                        // Save the active keyboard layout
+                        aKeybLayoutAct = lpLclKeybLayouts[uKeybLayoutNumAct];
+
+                        // Change the show/hide state of the button and text
+                        ShowWindow (GetDlgItem (hWndProp, IDC_KEYB_BN_MAKEACT), SW_HIDE);
+                        ShowWindow (GetDlgItem (hWndProp, IDC_KEYB_LT_ISACT  ), SW_SHOW);
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_BN_COPY:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        NEWKEYBDLG newKeybDlg;
+
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                        // Fill in the parameters passed to the NewKeybDlgProc
+                        newKeybDlg.lpwKeybLayoutName = wszKeybLayoutVis;
+                        newKeybDlg.hWndProp          = hWndProp;
+
+                        // Ask the user to type in a name for the new layout
+                        if (DialogBoxParamW (_hInstance,
+                                             MAKEINTRESOURCEW (IDD_NEWKEYB),
+                                             hWndProp,
+                                  (DLGPROC) &NewKeybDlgProc,
+                                   (LPARAM) &newKeybDlg))
+                        {
+                            HGLOBAL hGlbReAlloc;
+
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hLclKeybLayouts); lpLclKeybLayouts = NULL;
+
+                            // Reallocate up the struc
+                            hGlbReAlloc =
+                              MyGlobalReAlloc (hLclKeybLayouts, (uKeybLayoutCount + 1) * sizeof (KEYBLAYOUTS), GMEM_MOVEABLE | GMEM_ZEROINIT);
+
+                            // If it failed, ...
+                            if (hGlbReAlloc EQ NULL)
+                            {
+                                MessageBoxW (hDlg, L"Unable to allocate more memory for the new Keyboard Layout", WS_APPNAME, MB_OK | MB_ICONWARNING);
+
+                                // Lock the memory to get a ptr to it
+                                lpLclKeybLayouts = MyGlobalLock (hLclKeybLayouts);
+                            } else
+                            {
+                                // Save the (new) handle
+                                hLclKeybLayouts = hGlbReAlloc;
+
+                                // Lock the memory to get a ptr to it
+                                lpLclKeybLayouts = MyGlobalLock (hLclKeybLayouts);
+
+                                // Copy the selected keyboard layout to the new slot at the end of the keyboard layouts
+                                CopyMemory ((LPBYTE) &lpLclKeybLayouts[uKeybLayoutCount],
+                                            (LPBYTE) &lpLclKeybLayouts[uKeybLayoutNumVis],
+                                            sizeof (KEYBLAYOUTS));
+                                // Make it the visible layout
+                                uKeybLayoutNumVis = uKeybLayoutCount;
+
+                                // Make it writable
+                                lpLclKeybLayouts[uKeybLayoutNumVis].bReadOnly = FALSE;
+
+                                // Copy the new layout name
+                                lstrcpyW (lpLclKeybLayouts[uKeybLayoutNumVis].wszLayoutName, wszKeybLayoutVis);
+
+                                // Add it to the ComboBox
+                                SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_ADDSTRING, 0, (LPARAM) wszKeybLayoutVis);
+
+                                // Count it in
+                                uKeybLayoutCount++;
+                                uKeybLayoutUser++;
+
+                                // Get the CB index of the visible layout name
+                                uCnt = (UINT)
+                                  SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_FINDSTRING, -1, (LPARAM) wszKeybLayoutVis);
+
+                                // Select it
+                                SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_SETCURSEL, uCnt, 0);
+
+                                // Display it
+                                DispKeybLayout (hWndProp);
+                            } // End IF
+                        } // End IF
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_BN_DEL:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                        // If the visible selection is the active one, ...
+                        if (uKeybLayoutNumVis EQ uKeybLayoutNumAct)
+                            MessageBoxW (hDlg, L"Unable to delete the active Keyboard Layout -- make another layout active before deleting this one", WS_APPNAME, MB_OK | MB_ICONWARNING);
+                        else
+                        // Ask for confirmation from the user
+                        if (MessageBoxW (hDlg, L"Are you sure you want to delete this Keyboard Layout?", WS_APPNAME, MB_YESNO | MB_ICONWARNING) EQ IDYES)
+                        {
+                            // Get the CB index of the visible selection
+                            uCnt = (UINT)
+                              SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_FINDSTRING, -1, (LPARAM) wszKeybLayoutVis);
+
+                            // Delete it
+                            SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_DELETESTRING, uCnt, 0);
+
+                            // Count it out
+                            uKeybLayoutCount--;
+                            uKeybLayoutUser--;
+
+                            // If the deleted keyb layout was the last one, ...
+                            if (uKeybLayoutNumVis EQ uKeybLayoutCount)
+                                uKeybLayoutNumVis--;
+                            else
+                                // Copy down the keyb layouts above this one
+                                CopyMemory ((LPBYTE) &lpLclKeybLayouts[uKeybLayoutNumVis],
+                                            (LPBYTE) &lpLclKeybLayouts[uKeybLayoutNumVis + 1],
+                                            (uKeybLayoutCount - uKeybLayoutNumVis) * sizeof (KEYBLAYOUTS));
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hLclKeybLayouts); lpLclKeybLayouts = NULL;
+
+                            // Reallocate down the struc
+                            MyGlobalReAlloc (hLclKeybLayouts, uKeybLayoutCount * sizeof (KEYBLAYOUTS), GMEM_MOVEABLE);
+
+                            // Lock the memory to get a ptr to it
+                            lpLclKeybLayouts = MyGlobalLock (hLclKeybLayouts);
+
+                            // Set the visible keyb layout name
+                            lstrcpyW (wszKeybLayoutVis, lpLclKeybLayouts[uKeybLayoutNumVis].wszLayoutName);
+
+                            // Get the CB index of the visible layout name
+                            uCnt = (UINT)
+                              SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_FINDSTRING, -1, (LPARAM) wszKeybLayoutVis);
+
+                            // Select it
+                            SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_SETCURSEL, uCnt, 0);
+
+                            // Display it
+                            DispKeybLayout (hWndProp);
+                        } // End IF
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_BN_FONT:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Ask the user to choose a font, and keep track of
+                        //   whether or not a font was chosen
+                        // If the font changed, ...
+                        if (ChooseFontW (&cfKB))
+                        {
+                            // Get the associated item data (window handle of the Property Page)
+                            hWndProp = (HWND)
+                              SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                            // Set the font for the appropriate keyboard controls
+                            //   from lfKB
+                            SetKeybFont (hWndProp);
+                        } // End IF/ELSE
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_XB_ALT:
+                case IDC_KEYB_XB_CTRL:
+                case IDC_KEYB_XB_SHIFT:
+                {
+                    static UINT aKS[] = {KS_ALT, KS_CTRL, KS_SHIFT};
+                           UINT BITx;
+
+                    // Get the associated item data (window handle of the Property Page)
+                    hWndProp = (HWND)
+                      SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                    // Remove the highlight from the last control
+                    KeycapLowlight (hWndProp, idLastKeycap);
+
+                    // Save the new highlighted keycap
+                    idLastKeycap = NOCONTROL;
+
+                    // Set the mask bit
+                    BITx = aKS[idCtl - IDC_KEYB_XB_ALT];
+
+                    // If it's checked, ...
+                    if (IsDlgButtonChecked (hWndProp, idCtl))
+                        // Set the bit
+                        uKeybState |= BITx;
+                    else
+                        // Clear the bit
+                        uKeybState &= ~BITx;
+
+                    // Invalidate the KeyCap buttons
+                    for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+                    for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
+                        InvalidateRect (GetDlgItem (hWndProp, uCol), NULL, TRUE);
+
+                    // Display or hide the keyboard Ctrl keycaps
+                    DispKeybCtrlKeycaps (hWndProp);
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+                } // End IDC_KEYB_XB_xxx
+
+                case IDC_KEYB_RB_CLIP0:
+                case IDC_KEYB_RB_CLIP1:
+                    // Get the associated item data (window handle of the Property Page)
+                    hWndProp = (HWND)
+                      SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                    // Set or clear the bit
+                    lpLclKeybLayouts[uKeybLayoutNumVis].bUseCXV = IsDlgButtonChecked (hWndProp, IDC_KEYB_RB_CLIP0);
+
+                    // If it's now clear, ...
+                    if (!lpLclKeybLayouts[uKeybLayoutNumVis].bUseCXV)
+                    {
+                        lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'c', KS_NONE)].wc[KS_CTRL] =
+                        lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'x', KS_NONE)].wc[KS_CTRL] =
+                        lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'v', KS_NONE)].wc[KS_CTRL] = 0;
+                    } // End IF
+
+                    // Display or hide the keyboard Ctrl keycaps
+                    DispKeybCtrlKeycaps (hWndProp);
+
+                    // Enable the Apply button
+                    EnableWindow (hWndApply, TRUE);
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_RB_UNDO0:
+                case IDC_KEYB_RB_UNDO1:
+                    // Get the associated item data (window handle of the Property Page)
+                    hWndProp = (HWND)
+                      SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                    // Set or clear the bit
+                    lpLclKeybLayouts[uKeybLayoutNumVis].bUseZY = IsDlgButtonChecked (hWndProp, IDC_KEYB_RB_UNDO0);
+
+                    // If it's now clear, ...
+                    if (!lpLclKeybLayouts[uKeybLayoutNumVis].bUseZY)
+                    {
+                        lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'z', KS_NONE)].wc[KS_CTRL] =
+                        lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'y', KS_NONE)].wc[KS_CTRL] = 0;
+                    } // End IF
+
+                    // Display or hide the keyboard Ctrl keycaps
+                    DispKeybCtrlKeycaps (hWndProp);
+
+                    // Enable the Apply button
+                    EnableWindow (hWndApply, TRUE);
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_RB_FNED0:
+                case IDC_KEYB_RB_FNED1:
+                    // Get the associated item data (window handle of the Property Page)
+                    hWndProp = (HWND)
+                      SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                    // Set or clear the bit
+                    lpLclKeybLayouts[uKeybLayoutNumVis].bUseSEQ = IsDlgButtonChecked (hWndProp, IDC_KEYB_RB_FNED0);
+
+                    // If it's now clear, ...
+                    if (!lpLclKeybLayouts[uKeybLayoutNumVis].bUseSEQ)
+                    {
+                        lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L's', KS_NONE)].wc[KS_CTRL] =
+                        lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'e', KS_NONE)].wc[KS_CTRL] =
+                        lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'q', KS_NONE)].wc[KS_CTRL] = 0;
+                    } // End IF
+
+                    // Display or hide the keyboard Ctrl keycaps
+                    DispKeybCtrlKeycaps (hWndProp);
+
+                    // Enable the Apply button
+                    EnableWindow (hWndApply, TRUE);
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 default:
                     // Check to see if this is one of our Syntax Coloring Transparent checkboxes
                     if (IDC_SYNTCLR_XB_TRANS1 <= idCtl
-                     &&                          idCtl <= IDC_SYNTCLR_XB_TRANS_LAST)
+                     &&                          idCtl <= IDC_SYNTCLR_XB_TRANS_LAST
+                      && BN_CLICKED EQ cmdCtl)
                     {
                         // We care about BN_CLICKED only
                         if (BN_CLICKED EQ cmdCtl)
@@ -2295,13 +3543,15 @@ APLU3264 CALLBACK CustomizeDlgProc
                             EnableWindow (hWndApply, TRUE);
                         } // End IF
 
-                        return TRUE;    // We handled the msg
+                        // Return dialog result
+                        DlgMsgDone (hDlg);              // We handled the msg
                     } else
                     // Check to see if this is one of our Syntax Coloring Foreground/Background Color buttons
-                    if ((IDC_SYNTCLR_BN_FGCLR1 <= idCtl
-                      &&                          idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST)
-                     || (IDC_SYNTCLR_BN_BGCLR1 <= idCtl
-                      &&                          idCtl <= IDC_SYNTCLR_BN_BGCLR_LAST))
+                    if (((IDC_SYNTCLR_BN_FGCLR1 <= idCtl
+                       &&                          idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST)
+                      || (IDC_SYNTCLR_BN_BGCLR1 <= idCtl
+                       &&                          idCtl <= IDC_SYNTCLR_BN_BGCLR_LAST))
+                      && BN_CLICKED EQ cmdCtl)
                     {
                         HMENU         hMenu;                // Handle to popup menu
                         MENUITEMINFOW mii = {0};            // Menu item info for popup menu
@@ -2325,7 +3575,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                         if (!hMenu)
                         {
                             MBW (L"Unable to create popup menu");
-                            return TRUE;    // We handled the msg
+
+                            // Return dialog result
+                            DlgMsgDone (hDlg);              // We handled the msg
                         } // End IF
 
                         // Fill in static info
@@ -2463,8 +3715,138 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 break;
                         } // End SWITCH
 
-                        return TRUE;    // We handled the msg
-                    } // End IDC_SYNTCLR_BN_[F|B]GCLRnn
+                        // Return dialog result
+                        DlgMsgDone (hDlg);              // We handled the msg
+                    } else
+                    //***************************************************************
+                    // KEYBOARDS -- WM_COMMAND
+                    //***************************************************************
+                    if (IDC_KEYB_BN_TC_00 <= idCtl
+                     &&                      idCtl <= IDC_KEYB_BN_TC_LAST
+                     && BN_CLICKED EQ cmdCtl)
+                    {
+                        WCHAR wszAmp[3] = {L'&', L'&', L'\0'};
+
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                        // Clear the highlight from the last button
+                        KeybHighlight (hWndProp, NOCONTROL);
+
+                        // In case the value is an ampersand, ...
+                        SendMessageW (GetDlgItem (hWndProp, idCtl), WM_GETTEXT, 2, (LPARAM) wszText);
+                        if (wszText[0] EQ L'&')
+                            // Change the text to double the ampersand so it displays as a single ampersand
+                            SendMessageW (GetDlgItem (hWndProp, idCtl), WM_SETTEXT, 0, (LPARAM) wszAmp);
+
+                        // Display the new value
+                        DisplayKeybTCValue (hWndProp, idCtl);
+
+                        // Save as the new ID
+                        aKTC[uKeybTCNum].idLastHighlight = idCtl;
+
+                        // Highlight this button
+                        KeybHighlight (hWndProp, aKTC[uKeybTCNum].idLastHighlight);
+
+                        // Return dialog result
+                        DlgMsgDone (hDlg);              // We handled the msg
+                    } else
+                    if (IDC_KEYB_BN_KC_00 <= idCtl
+                     &&                      idCtl <= IDC_KEYB_BN_KC_LAST
+                     && BN_CLICKED EQ cmdCtl)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                        // If the Keyboard Layout is writable, ...
+                        if (!lpLclKeybLayouts[uKeybLayoutNumVis].bReadOnly)
+                        {
+                            // Copy the value in the Unicode button to the corresponding position in aCharCodes
+
+                            // Remove the highlight from the last control
+                            KeycapLowlight (hWndProp, idLastKeycap);
+
+                            // Save the new highlighted keycap
+                            idLastKeycap = idCtl;
+
+                            // Get the value to copy
+                            SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_BN_UNICODE), WM_GETTEXT, 2, (LPARAM) wszText);
+
+                            // Get the row of the keycap
+                            for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+                            if ((UINT) idCtl <= aKKC_IDC_END[uCnt])
+                                break;
+
+                            // Get the scan code
+                            uScanCode = aKKC_SC[uCnt].aSC[idCtl - aKKC_IDC_BEG[uCnt]];
+
+                            // Save the new value
+                            lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[uScanCode].wc[uKeybState] = wszText[0];
+
+                            // Enable the Apply button
+                            EnableWindow (hWndApply, TRUE);
+
+                            // If the visible layout is the active one, ...
+                            if (uKeybLayoutNumVis EQ uKeybLayoutNumAct)
+                                // Save the new value
+                                aKeybLayoutAct.aCharCodes[uScanCode].wc[uKeybState] = wszText[0];
+
+                            // Display the new value
+                            InvalidateRect (GetDlgItem (hWndProp, idCtl), NULL, TRUE);
+                        } else
+                        {
+                            // Complain to the user
+                            MessageBoxW (hDlg,
+                                         L"This Keyboard Layout is Read-Only.  Copy this layout to a writable one with the \"Copy\" button before changing it.",
+                                         WS_APPNAME,
+                                         MB_OK
+                                       | MB_ICONWARNING);
+                            // Remove the highlight
+                            KeycapLowlight (hWndProp, idCtl);
+                        } // End IF/ELSE
+
+                        // Return dialog result
+                        DlgMsgDone (hDlg);              // We handled the msg
+                    } // End IF/ELSE/...
+
+                    break;
+
+                case IDC_KEYB_CB_LAYOUT:
+                    // We care about CBN_SELCHANGE only
+                    if (CBN_SELCHANGE EQ cmdCtl)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                        // Get the CB index of the visible selection
+                        uSel = (UINT)
+                          SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_GETCURSEL, 0, 0);
+
+                        // Get the name of the visible selection
+                        SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_CB_LAYOUT), CB_GETLBTEXT, uSel, (LPARAM) wszKeybLayoutVis);
+
+                        // Loop through the Keyboard Layouts
+                        for (uKeybLayoutNumVis = -1, uCnt = 0; uCnt < uKeybLayoutCount; uCnt++)
+                        // See if this is the visible keyboard layout
+                        if (lstrcmpW (wszKeybLayoutVis, lpLclKeybLayouts[uCnt].wszLayoutName) EQ 0)
+                        {
+                            uKeybLayoutNumVis = uCnt;
+                            break;
+                        } // End IF
+
+                        // If not found, ...
+                        if (uKeybLayoutNumVis EQ -1)
+                            uKeybLayoutNumVis = uKeybLayoutNumAct;
+
+                        // Display the new Keyboard Layout selection
+                        DispKeybLayout (hWndProp);
+
+                        // Return dialog result
+                        DlgMsgDone (hDlg);              // We handled the msg
+                    } // End IF
 
                     break;
 
@@ -2504,7 +3886,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Enable the Apply button
                     EnableWindow (hWndApply, TRUE);
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
 
                 //***************************************************************
@@ -2523,7 +3906,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_RESET_IC_RADIO1:
                 case IDC_RESET_IC_RADIO2:
@@ -2537,7 +3921,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_RESET_FC_RADIO1:
                 case IDC_RESET_FC_RADIO2:
@@ -2551,7 +3936,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_RESET_IO_RADIO1:
                 case IDC_RESET_IO_RADIO2:
@@ -2565,7 +3951,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_RESET_PP_RADIO1:
                 case IDC_RESET_PP_RADIO2:
@@ -2579,7 +3966,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_RESET_PW_RADIO1:
                 case IDC_RESET_PW_RADIO2:
@@ -2593,7 +3981,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_RESET_RL_RADIO1:
                 case IDC_RESET_RL_RADIO2:
@@ -2607,7 +3996,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                         EnableWindow (hWndApply, TRUE);
                     } // End IF
 
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
 
                 //***************************************************************
@@ -2640,7 +4030,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     if (BN_CLICKED EQ cmdCtl)
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_USER_PREFS_CB_DEFAULTPASTE:
                 case IDC_USER_PREFS_CB_DEFAULTCOPY:
@@ -2648,13 +4039,17 @@ APLU3264 CALLBACK CustomizeDlgProc
                     if (CBN_SELCHANGE EQ cmdCtl)
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);
-                    return TRUE;    // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
             } // End SWITCH
 
             break;
-#undef  hwndCtl
-#undef  cmdCtl
-#undef  idCtl
+#ifndef DEBUG
+  #undef  hwndCtl
+  #undef  cmdCtl
+  #undef  idCtl
+#endif
+        } // End WM_COMMAND
 
 #define uIndex          LOWORD (wParam)
 #define bFore           HIWORD (wParam)
@@ -2719,6 +4114,46 @@ APLU3264 CALLBACK CustomizeDlgProc
                 } // End FOR
             } // End IF
 
+            // Set the index of the Keyboards Property Page
+            wParam = IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START;
+
+            // If the struc has been initialized, ...
+            if (custStruc[wParam].bInitialized)
+            {
+                // If it's still locked, ...
+                if (lpLclKeybLayouts)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hLclKeybLayouts); lpLclKeybLayouts = NULL;
+                } // End IF
+
+                // If it's still valid, ...
+                if (hLclKeybLayouts)
+                {
+                    // Delete the local copy
+                    MyGlobalFree (hLclKeybLayouts); hLclKeybLayouts = NULL;
+                } // End IF
+
+                // If it's still valid, ...
+                if (hFontKB)
+                {
+                    MyDeleteObject (hFontKB); hFontKB = NULL;
+                } // End IF
+            } // End IF
+
+            // Set the index of the CLEARWS Values Property Page
+            wParam = IDD_PROPPAGE_CLEARWS_VALUES - IDD_PROPPAGE_START;
+
+            // If the struc has been initialized, ...
+            if (custStruc[wParam].bInitialized)
+            {
+                // If it's still valid, ...
+                if (hFontCWS)
+                {
+                    MyDeleteObject (hFontCWS); hFontCWS = NULL;
+                } // End IF
+            } // End IF
+
             // Free allocated resources
             if (hFontBold_ST)
             {
@@ -2733,6 +4168,543 @@ APLU3264 CALLBACK CustomizeDlgProc
 
     return FALSE;           // We didn't handle the msg
 } // End CustomizeDlgProc
+
+
+//***************************************************************************
+//  $LclKeybEditCtrlWndProc
+//
+//  Local window procedure for the Customize's EDITCTRL
+//***************************************************************************
+
+LRESULT WINAPI LclKeybEditCtrlWndProc
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
+
+{
+////LCLODSAPI ("LEC: ", hWnd, message, wParam, lParam);
+
+    // Split cases
+    switch (message)
+    {
+        case WM_CHAR:               // wchCharCode = (TCHAR) wParam; // character code
+                                    // lKeyData = lParam;           // Key data
+        {
+#ifdef DEBUG
+            WCHAR   wchCharCode = (WCHAR) wParam;
+////        KEYDATA keyData     = *(LPKEYDATA) &lParam;
+#else
+  #define wchCharCode   ((WCHAR) wParam)
+  #define keyData       (*(LPKEYDATA) &lParam)
+#endif
+            // Ensure that the incoming char is one we allow for this base
+            if (L'0' <= wchCharCode && wchCharCode <= L'9'
+             || (uKeybUnibase EQ 16
+              && L'a' <= tolowerW (wchCharCode) && tolowerW (wchCharCode) <= L'f'))
+                break;
+
+            // Otherwise, sound the alarm
+            MessageBeep (NEG1U);
+
+            return FALSE;       // We handled the msg
+        } // End WM_CHAR
+#ifndef DEBUG
+  #undef  keyData
+  #undef  wchCharCode
+#endif
+    } // End SWITCH
+
+////LCLODSAPI ("LECZ: ", hWnd, message, wParam, lParam);
+    return CallWindowProcW (lpfnOldKeybEditCtrlWndProc,
+                            hWnd,
+                            message,
+                            wParam,
+                            lParam);    // Pass on down the line
+} // End LclKeybEditCtrlWndProc
+
+
+//***************************************************************************
+//  $DrawButton
+//
+//  Draw a button in the Customize DlgProc
+//***************************************************************************
+
+void DrawButton
+    (HWND             hWndListBox,          // Main ListBox window handle
+     HWND             hWndProp,             // Property Page window handle
+     LPDRAWITEMSTRUCT lpdis,                // Ptr to DRAWITEMSTRUCT
+     UINT             idCtl)                // IDC_xxx of the char to draw
+
+{
+    RECT   rcItem;                          // Rectangle to draw within
+    HBRUSH hBrush;                          // background brush to use
+    WCHAR  wszText[2] = {L'\0'};            // Char to draw
+
+    // Get the current background color of the ListBox
+    hBrush = (HBRUSH) GetClassLongPtr (hWndListBox, GCLP_HBRBACKGROUND);
+
+    // Get the char to draw
+    SendMessageW (GetDlgItem (hWndProp, idCtl), WM_GETTEXT, 2, (LPARAM) wszText);
+
+    // If it's empty, ...
+    if (wszText[0] EQ L'\0')
+        // Draw a blank
+        wszText[0] = L' ';
+
+    // Copy the drawing rectangle
+    rcItem = lpdis->rcItem;
+
+    // Split cases based upon the item action
+    switch (lpdis->itemAction)
+    {
+        case ODA_DRAWENTIRE:
+            // Fill the client area background
+            FillRect (lpdis->hDC, &rcItem, hBrush);
+
+            // Set the text background mode
+            SetBkMode (lpdis->hDC, TRANSPARENT);
+
+            // Draw the text (one char)
+            DrawTextW (lpdis->hDC,
+                       wszText,
+                       1,
+                      &rcItem,
+                       DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+            break;
+
+        case ODA_FOCUS:     // Ignore changes in focus
+            break;
+
+        case ODA_SELECT:
+            // Fill the client area background
+            FillRect (lpdis->hDC, &rcItem, hBrush);
+
+            // If the button is selected, ...
+            if (lpdis->itemState & ODS_SELECTED)
+            {
+                // Offset it by one pixel
+                rcItem.left  ++;
+                rcItem.top   ++;
+                rcItem.right ++;
+                rcItem.bottom++;
+            } // End IF
+
+            // Set the text background mode
+            SetBkMode (lpdis->hDC, TRANSPARENT);
+
+            // Draw the text (one char)
+            DrawTextW (lpdis->hDC,
+                       wszText,
+                       1,
+                      &rcItem,
+                       DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+            // Draw the edge as Sunken (if selected) or Raised (if normal)
+            DrawEdge (lpdis->hDC,
+                     &rcItem,
+                      (lpdis->itemState & ODS_SELECTED) ? EDGE_SUNKEN : EDGE_RAISED,
+                      BF_ADJUST | BF_RECT);
+            break;
+    } // End SWITCH
+} // End DrawButton
+
+
+//***************************************************************************
+//  $DisplayKeybTCValue
+//
+//  Display a value from the keyboard tabCtrl as a Unicode value
+//***************************************************************************
+
+void DisplayKeybTCValue
+    (HWND hWndProp,
+     UINT idCtl)
+
+{
+    WCHAR   wszText[2] = {L'\0'},
+            wszStr[KEYB_UNICODE_LIMIT + 1];
+    LPWCHAR lpwszStr;               // Temporary string ptr
+    UINT    uValue,                 // Temporary value
+            uCnt;                   // Loop counter
+
+    // If the value has changed, ...
+    if (idCtl NE -1)
+    {
+        // Get the value to convert
+        SendMessageW (GetDlgItem (hWndProp, idCtl), WM_GETTEXT, 2, (LPARAM) wszText);
+
+        // Display the character on the Unicode button
+        SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_BN_UNICODE), WM_SETTEXT, 0, (LPARAM) wszText);
+    } else
+        // Get the value to convert
+        SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_BN_UNICODE), WM_GETTEXT, 2, (LPARAM) wszText);
+
+    // Convert the code to a string in the Unicode base
+    lpwszStr = &wszStr[KEYB_UNICODE_LIMIT];
+    *lpwszStr = WC_EOS;
+    uValue = wszText[0];
+    uCnt = 0;       // Initialize the # digits
+    while (uValue)
+    {
+        // Format the digit
+        *--lpwszStr = L"0123456789ABCDEF"[uValue % uKeybUnibase];
+
+        // Strip it off
+        uValue /= uKeybUnibase;
+
+        // Count it in
+        uCnt++;
+    } // End WHILE
+
+    // If this is hexadecimal, ...
+    if (uKeybUnibase EQ 16)
+        // Pad with leading zeros
+        while (uCnt++ < 4)
+            *--lpwszStr = L'0';
+
+    // Select the entire text in the Edit Ctrl
+    SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_EC_UNICODE), EM_SETSEL, 0, -1);
+
+    // Insert the string into the Edit Ctrl
+    SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_EC_UNICODE), EM_REPLACESEL, FALSE, (LPARAM) lpwszStr);
+} // End DisplayKeybTCValue
+
+
+//***************************************************************************
+//  $KeybHighlight
+//
+//  Add or remove the highlight from a Keyboard TabCtrl button
+//***************************************************************************
+
+void KeybHighlight
+    (HWND hWndProp,                         // Keyboard Property Page window handle
+     UINT idNewCtl)                         // ID of control to highlight (or NOCONTROL to remove)
+
+{
+    WCHAR wszText[2] = {L'\0'};
+    UINT  uStyle;                           // Window Style
+    HWND  hWndCtl;                          // Window handle to the control
+
+    // If we're to highlight, ...
+    if (idNewCtl NE NOCONTROL)
+    {
+        // Get the window handle
+        hWndCtl = GetDlgItem (hWndProp, idNewCtl);
+
+        // Get the current style
+        uStyle = GetWindowLong (hWndCtl, GWL_STYLE);
+
+        // Highlight this button
+        SendMessageW (hWndCtl, BM_SETSTYLE, uStyle & ~BS_OWNERDRAW, TRUE);
+    } else
+    // Clear the highlight from the last button
+    if (aKTC[uKeybTCNum].idLastHighlight NE NOCONTROL)
+    {
+        // Get the window handle
+        hWndCtl = GetDlgItem (hWndProp, aKTC[uKeybTCNum].idLastHighlight);
+
+        // Get the current style
+        uStyle = GetWindowLong (hWndCtl, GWL_STYLE);
+
+        // In case the value is an ampersand, ...
+        SendMessageW (hWndCtl, WM_GETTEXT, 2, (LPARAM) wszText);
+        SendMessageW (hWndCtl, WM_SETTEXT, 0, (LPARAM) wszText);
+
+        // Set back to the normal style
+        SendMessageW (hWndCtl, BM_SETSTYLE, uStyle | BS_OWNERDRAW, TRUE);
+    } // End IF/ELSE
+} // End KeybHighlight
+
+
+//***************************************************************************
+//  $KeycapLowlight
+//
+//  Remove the highlight from a Keycap window
+//***************************************************************************
+
+void KeycapLowlight
+    (HWND hWndProp,                         // Keyboard Property Page window handle
+     UINT idCtl)                            // ID of control
+
+{
+    UINT  uStyle;                           // Window Style
+
+    // If the ID is valid, ...
+    if (idCtl NE NOCONTROL)
+    {
+        // Get the current style
+        uStyle = GetWindowLong (GetDlgItem (hWndProp, idCtl), GWL_STYLE);
+
+        // Set back to the normal style
+        SendMessageW (GetDlgItem (hWndProp, idCtl), BM_SETSTYLE, uStyle & ~BS_DEFPUSHBUTTON, TRUE);
+    } // End IF
+} // End KeycapLowlight
+
+
+//***************************************************************************
+//  $DispKeybLayout
+//
+//  Display a newly selected keyboard layout
+//***************************************************************************
+
+void DispKeybLayout
+    (HWND hWndProp)                         // Keyboard Property Page window handle
+
+{
+    UINT uCnt,                              // Loop counter
+         uCol;                              // ..
+
+    // Invalidate the KeyCap buttons
+    for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+    for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
+        InvalidateRect (GetDlgItem (hWndProp, uCol), NULL, TRUE);
+
+    // Change the show/hide state of the button and text
+    ShowWindow (GetDlgItem (hWndProp, IDC_KEYB_BN_MAKEACT), (uKeybLayoutNumAct EQ uKeybLayoutNumVis) ? SW_HIDE : SW_SHOW);
+    ShowWindow (GetDlgItem (hWndProp, IDC_KEYB_LT_ISACT  ), (uKeybLayoutNumAct EQ uKeybLayoutNumVis) ? SW_SHOW : SW_HIDE);
+
+    // Show/hide Keycap buttons
+    ShowWindow (GetDlgItem (hWndProp, IDC_KEYB_BN_KC_1C),
+                (lpLclKeybLayouts[uKeybLayoutNumVis].uScanCode2B_RowNum EQ 1) ? SW_SHOW : SW_HIDE);
+    ShowWindow (GetDlgItem (hWndProp, IDC_KEYB_BN_KC_2B),
+                (lpLclKeybLayouts[uKeybLayoutNumVis].uScanCode2B_RowNum EQ 2) ? SW_SHOW : SW_HIDE);
+    ShowWindow (GetDlgItem (hWndProp, IDC_KEYB_BN_KC_30),
+                 lpLclKeybLayouts[uKeybLayoutNumVis].bExtraKeyRow3            ? SW_SHOW : SW_HIDE);
+
+    // Check/uncheck CXV, ZY, and SEQ boxes
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_CLIP0,  lpLclKeybLayouts[uKeybLayoutNumVis].bUseCXV);
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_CLIP1, !lpLclKeybLayouts[uKeybLayoutNumVis].bUseCXV);
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_UNDO0,  lpLclKeybLayouts[uKeybLayoutNumVis].bUseZY );
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_UNDO1, !lpLclKeybLayouts[uKeybLayoutNumVis].bUseZY );
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_FNED0,  lpLclKeybLayouts[uKeybLayoutNumVis].bUseSEQ);
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_FNED1, !lpLclKeybLayouts[uKeybLayoutNumVis].bUseSEQ);
+
+    // Display or hide the keyboard Ctrl keycaps
+    DispKeybCtrlKeycaps (hWndProp);
+
+    // Enable/disable the Delete... button
+    EnableWindow (GetDlgItem (hWndProp, IDC_KEYB_BN_DEL), !lpLclKeybLayouts[uKeybLayoutNumVis].bReadOnly);
+
+    // Initialize ID of last highlighted keycap
+    idLastKeycap = NOCONTROL;
+} // End DispKeybLayout
+
+
+//***************************************************************************
+//  $DispKeybCtrlKeycaps
+//
+//  Display or hide the CXV, ZY, and SEQ keycaps
+//***************************************************************************
+
+void DispKeybCtrlKeycaps
+    (HWND hWndProp)                 // Keyboard Property Page window handle
+
+{
+    InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'c', KS_NONE))), NULL, TRUE);
+    InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'x', KS_NONE))), NULL, TRUE);
+    InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'v', KS_NONE))), NULL, TRUE);
+
+    InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'z', KS_NONE))), NULL, TRUE);
+    InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'y', KS_NONE))), NULL, TRUE);
+
+    InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L's', KS_NONE))), NULL, TRUE);
+    InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'e', KS_NONE))), NULL, TRUE);
+    InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'q', KS_NONE))), NULL, TRUE);
+} // End DispKeybCtrlKeycaps
+
+
+//***************************************************************************
+//  $KeybScanCodeToID
+//
+//  Find the ID of a given scancode
+//***************************************************************************
+
+UINT KeybScanCodeToID
+    (UINT uScanCode)                // The scancode to find
+
+{
+    UINT uCnt,                      // Loop counter
+         uCol;                      // ...
+
+    // Loop through the rows
+    for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+    for (uCol = 0; uCol < aKKC_SC[uCnt].uLen; uCol++)
+    if (aKKC_SC[uCnt].aSC[uCol] EQ uScanCode)
+        return aKKC_IDC_BEG[uCnt] + uCol;
+
+    return 0;
+} // End KeybScanCodeToID
+
+
+//***************************************************************************
+//  $KeybCharToScanCode
+//
+//  Find the scancode of a given char and state
+//***************************************************************************
+
+UINT KeybCharToScanCode
+    (WCHAR wc,                      // The char to find
+     UINT  uState)                  // The keyboard state (combination of KS_SHIFT, KS_CTRL, and KS_ALT)
+
+{
+    UINT uCnt,                      // Loop counter
+         uLen;                      // # scancodes in this layout
+
+    // Get the # scancodes in the current layout
+    uLen = lpLclKeybLayouts[uKeybLayoutNumVis].uCharCodesLen;
+
+    // Loop through the chars
+    for (uCnt = 0; uCnt < uLen; uCnt++)
+    if (lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[uCnt].wc[uState] EQ wc)
+        return uCnt;
+
+    return 0;
+} // End KeybCharToScanCode
+
+
+//***************************************************************************
+//  $SetKeybFont
+//
+//  Set the font for keyboard controls
+//***************************************************************************
+
+void SetKeybFont
+    (HWND hWndProp)
+
+{
+    UINT uCnt,                          // Loop counter
+         uCol;                          // ...
+
+    // If there is an existing font, delete it
+    if (hFontKB)
+    {
+        MyDeleteObject (hFontKB) ; hFontKB = NULL;
+    } // End IF
+
+    // Create the font for the keyboard TabCtrl
+    hFontKB = MyCreateFontIndirectW (&lfKB);
+
+    // Set the font for the keycap pushbuttons and redraw them
+    for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+    for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
+        SendMessageW (GetDlgItem (hWndProp, uCol), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontKB, MAKELPARAM (TRUE, 0));
+
+    // Set the font for the TabCtrl pushbuttons and redraw them
+    for (uCnt = 0; uCnt < KTC_TXT_CY; uCnt++)
+    for (uCol = 0; uCol < KTC_TXT_CX; uCol++)
+        SendMessageW (GetDlgItem (hWndProp, aKTC_IDC_BEG[uCnt] + uCol), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontKB, MAKELPARAM (TRUE, 0));
+
+    // Set the font for the Unicode button and redraw it
+    SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_BN_UNICODE), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontKB, MAKELPARAM (TRUE, 0));
+} // End SetKeybFont
+
+
+//***************************************************************************
+//  $NewKeybDlgProc
+//
+//  Ask the user to type in the name for the keyboard layout
+//***************************************************************************
+
+UBOOL CALLBACK NewKeybDlgProc
+    (HWND   hDlg,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
+
+{
+    static NEWKEYBDLG newKeybDlg;
+    static WCHAR      wszKeybLayoutName[KBLEN];
+           LPWCHAR    lpwTemp;
+           UINT       uLen;
+
+    // Split cases
+    switch (message)
+    {
+        case WM_INITDIALOG:     // hWndFocus = (HWND) wParam
+                                // lpNewKeybDlg = (LPNEWKEYBDLG) lParam
+            // Save the incoming data
+            newKeybDlg = *(LPNEWKEYBDLG) lParam;
+
+            // Copy the name for later use
+            lstrcpyW (wszKeybLayoutName, newKeybDlg.lpwKeybLayoutName);
+
+            // Limit the text in the Edit Ctrl
+            SendMessageW (GetDlgItem (hDlg, IDC_NEWKEYB_EC), EM_SETLIMITTEXT, countof (wszKeybLayoutName), 0);
+
+            // Seed the Edit Ctrl with this name
+            SetWindowTextW (GetDlgItem (hDlg, IDC_NEWKEYB_EC), wszKeybLayoutName);
+
+            // Return the focus to the Edit Ctrl
+            SetFocus (GetDlgItem (hDlg, IDC_NEWKEYB_EC));
+
+            return DLG_MSGNODEFFOCUS;               // We set the focus
+
+        case WM_CLOSE:
+            EndDialog (hDlg, FALSE);                // Fail this dialog
+
+#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
+#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
+#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
+        case WM_COMMAND:
+            // If the user pressed one of our buttons, ...
+            switch (idCtl)
+            {
+                case IDOK:
+                    // Get the text from the Edit Ctrl
+                    GetWindowTextW (GetDlgItem (hDlg, IDC_NEWKEYB_EC), wszKeybLayoutName, countof (wszKeybLayoutName));
+
+                    // Copy to a writable ptr
+                    lpwTemp = &wszKeybLayoutName[0];
+
+                    // Strip off leading blanks
+                    while (isspaceW (*lpwTemp))
+                        lpwTemp++;
+                    // Get the string length
+                    uLen = lstrlenW (lpwTemp);
+
+                    // Strip off trailing blanks
+                    while (uLen && isspaceW (lpwTemp[uLen - 1]))
+                        uLen--;
+                    // Zap it
+                    lpwTemp[uLen] = WC_EOS;
+
+                    // If there's anything remaining, ...
+                    if (uLen)
+                    {
+                        // Lookup this string in the caller's ComboBox
+                        uLen = (UINT)
+                          SendMessageW (GetDlgItem (newKeybDlg.hWndProp, IDC_KEYB_CB_LAYOUT), CB_FINDSTRING, -1, (LPARAM) lpwTemp);
+
+                        // If not found, ...
+                        if (uLen EQ CB_ERR)
+                        {
+                            // Copy the string to the caller's buffer
+                            lstrcpyW (newKeybDlg.lpwKeybLayoutName, lpwTemp);
+
+                            EndDialog (hDlg, TRUE);         // Quit this dialog
+                        } else
+                            MessageBoxW (hDlg, L"Duplicate Keyboard Layout Name -- Please try again.", WS_APPNAME, MB_OK | MB_ICONWARNING);
+                    } else
+                        MessageBoxW (hDlg, L"Empty Keyboard Layout Name -- Please try again.", WS_APPNAME, MB_OK | MB_ICONWARNING);
+
+                    // Return the focus to the Edit Ctrl
+                    SetFocus (GetDlgItem (hDlg, IDC_NEWKEYB_EC));
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDCANCEL:
+                    EndDialog (hDlg, FALSE);        // Fail this dialog
+            } // End SWITCH
+
+            break;
+#undef  hwndCtl
+#undef  cmdCtl
+#undef  idCtl
+    } // End SWITCH
+
+    // Return dialog result
+    DlgMsgPass (hDlg);              // We didn't handled the msg
+} // End NewKeybDlgProc
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -84,6 +84,8 @@ END
 //////////////////////////////////////////////////////////////////////////////
 //
 // Accelerators
+//   Not used with Customize Dialog for keyboards but left in to
+//     to see how it's done.
 //
 
 IDR_ACCEL ACCELERATORS MOVEABLE PURE
@@ -117,7 +119,7 @@ BEGIN
         MENUITEM "&Drop"                      , IDM_DROP_WS
 ////////MENUITEM "D&uplicate"                 , IDM_DUP_WS          , INACTIVE GRAYED   // ***FIXME***
         MENUITEM SEPARATOR
-        MENUITEM "&Print\tCtrl+P"             , IDM_PRINT_WS
+        MENUITEM "&Print"                     , IDM_PRINT_WS
         MENUITEM SEPARATOR
         MENUITEM "&Exit"                      , IDM_EXIT
     END
@@ -185,11 +187,11 @@ BEGIN
     END
     POPUP "Ob&jects"
     BEGIN
-        MENUITEM "&New\tCtrl+N"               , IDM_NEW_FCN
-        MENUITEM "&Quit\tCtrl+Q"              , IDM_CLOSE_FCN
-        MENUITEM "&Save\tCtrl+S"              , IDM_SAVE_FCN
-        MENUITEM "Save and &Quit\tCtrl+E"     , IDM_SAVECLOSE_FCN
-        MENUITEM "Save &As\tCtrl+A"           , IDM_SAVE_AS_FCN     , INACTIVE GRAYED   // ***FIXME***
+        MENUITEM "&New"                       , IDM_NEW_FCN
+        MENUITEM "&Quit"                      , IDM_CLOSE_FCN
+        MENUITEM "&Save"                      , IDM_SAVE_FCN
+        MENUITEM "Save and &Quit"             , IDM_SAVECLOSE_FCN
+        MENUITEM "Save &As"                   , IDM_SAVE_AS_FCN     , INACTIVE GRAYED   // ***FIXME***
         MENUITEM "&Toggle Line Numbers"       , IDM_TOGGLE_LNS_FCN
     END
     POPUP "&Help"
@@ -232,22 +234,28 @@ BEGIN
     LTEXT           "As you can see, this is highly preliminary.",IDC_STATIC,3,72,225,8,SS_NOPREFIX
 END
 
-IDD_CUSTOMIZE DIALOGEX DISCARDABLE  0, 0, 369, 333
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+#define CD_CX       394
+#define CD_CY       333
+
+#define PP_CX       300
+#define PP_CY       288
+
+IDD_CUSTOMIZE DIALOGEX DISCARDABLE  0, 0, CD_CX, CD_CY
+STYLE DS_MODALFRAME | DS_SHELLFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE
 CAPTION "Customize"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "&Category",IDC_STATIC  ,  5,  5, 50,  8,WS_TABSTOP
     LISTBOX                     IDC_CUST_LB ,  5, 15, 80,284,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        ""         ,IDC_GROUPBOX, 90, 11,275,288
+    GROUPBOX        ""         ,IDC_GROUPBOX, 90, 11,PP_CX,PP_CY
     DEFPUSHBUTTON   "OK",       IDOK        , 15,305, 50, 14
     PUSHBUTTON      "Cancel"   ,IDCANCEL    , 75,305, 50, 14
     PUSHBUTTON      "Apply"    ,IDC_APPLY   ,135,305, 50, 14,WS_DISABLED
 END
 
-IDD_PROPPAGE_CLEARWS_VALUES DIALOGEX DISCARDABLE  0, 0, 275, 288
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_PROPPAGE_CLEARWS_VALUES DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "These values are used to initialize the corresponding system variable whenever a CLEAR WS is loaded.",
                                IDC_STATIC              ,  5, 10,240, 20
@@ -255,22 +263,22 @@ BEGIN
     LTEXT           "ALX"     ,IDC_STATIC              ,  5, 34, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_ALX_EC      ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45, 30,150, 16
     LTEXT           "Character Vector (?)",
-                               IDC_CLEARWS_ALX_LEN     ,200, 34, 70, 13
+                               IDC_CLEARWS_ALX_LEN     ,200, 34, 80, 13
 
     LTEXT           "CT"      ,IDC_STATIC              ,  5, 52, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_CT_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45, 48,150, 16
     LTEXT           "Floating Point Scalar",
-                               IDC_STATIC              ,200, 52, 70, 13
+                               IDC_STATIC              ,200, 52, 80, 13
 
     LTEXT           "ELX"     ,IDC_STATIC              ,  5, 70, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_ELX_EC     ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45, 66,150, 16
     LTEXT           "Character Vector (?)",
-                               IDC_CLEARWS_ELX_LEN     ,200, 70, 70, 13
+                               IDC_CLEARWS_ELX_LEN     ,200, 70, 80, 13
 
     LTEXT           "FC"      ,IDC_STATIC              ,  5, 88, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_FC_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45, 84,150, 16
     LTEXT           "Character Vector (?)",
-                               IDC_CLEARWS_FC_LEN      ,200, 88, 70, 13
+                               IDC_CLEARWS_FC_LEN      ,200, 88, 80, 13
 
     LTEXT           "FEATURE" ,IDC_STATIC              ,  5,106, 40, 13
     COMBOBOX                   IDC_CLEARWS_FEATURE_CB1 , 45,102,170, 250,WS_BORDER | CBS_DROPDOWNLIST
@@ -284,12 +292,12 @@ BEGIN
     CONTROL         ""        ,IDC_CLEARWS_IO_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,138, 30, 16
     CONTROL         ""        ,IDC_CLEARWS_IO_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,75,138,10,16
     LTEXT           "Boolean Scalar",
-                               IDC_STATIC              ,200,142, 70, 13
+                               IDC_STATIC              ,200,142, 80, 13
 
     LTEXT           "LX"      ,IDC_STATIC              ,  5,160, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_LX_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45,156,150, 16
     LTEXT           "Character Vector (?)",
-                               IDC_CLEARWS_LX_LEN      ,200,160, 70, 13
+                               IDC_CLEARWS_LX_LEN      ,200,160, 80, 13
 
     LTEXT           "MF"      ,IDC_STATIC              ,  5,178, 40, 13
     COMBOBOX                   IDC_CLEARWS_MF_CB       , 45,174,155,100,WS_BORDER | CBS_DROPDOWNLIST
@@ -298,30 +306,30 @@ BEGIN
     CONTROL         ""        ,IDC_CLEARWS_PP_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER ,45,192, 30, 16
     CONTROL         ""        ,IDC_CLEARWS_PP_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,65,192,10,16
     LTEXT           "Integer Scalar",
-                               IDC_STATIC              ,200,196, 70, 13
+                               IDC_STATIC              ,200,196, 80, 13
 
     LTEXT           "PW"      ,IDC_STATIC              ,  5,214, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_PW_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,210, 30, 16
     CONTROL         ""        ,IDC_CLEARWS_PW_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,65,210,10,16
     LTEXT           "Integer Scalar",
-                               IDC_STATIC              ,200,214, 70, 13
+                               IDC_STATIC              ,200,214, 80, 13
 
     LTEXT           "RL"      ,IDC_STATIC              ,  5,232, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_RL_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,228,150, 16
     LTEXT           "Integer Scalar",
-                               IDC_STATIC              ,200,232, 70, 13
+                               IDC_STATIC              ,200,232, 80, 13
 END
 
-IDD_PROPPAGE_DIRS DIALOGEX DISCARDABLE  0, 0, 275, 288
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_PROPPAGE_DIRS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "TBD",IDC_STATIC,5,10,143,78
 END
 
-IDD_PROPPAGE_FONTS DIALOGEX DISCARDABLE  0, 0, 275, 288
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_PROPPAGE_FONTS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           ""               ,IDC_FONTS_TEXT   ,  5, 10,200,48
 
@@ -386,9 +394,197 @@ BEGIN
 ////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8H,180,170,15, 8
 END
 
-IDD_PROPPAGE_RANGE_LIMITS DIALOGEX DISCARDABLE  0, 0, 275, 288
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_PROPPAGE_KEYBS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
+BEGIN
+    RTEXT           "Layout Name: ", IDC_STATIC          ,  5, 12, 50, 14
+    COMBOBOX                         IDC_KEYB_CB_LAYOUT  , 60, 10,200,120, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | CBS_SORT | WS_TABSTOP
+    PUSHBUTTON      "Make Active"  , IDC_KEYB_BN_MAKEACT ,262,  7, 36, 16, BS_PUSHBUTTON | BS_MULTILINE | WS_TABSTOP | NOT WS_VISIBLE
+    LTEXT           "« Is Active"  , IDC_KEYB_LT_ISACT   ,262, 10, 36, 14, NOT WS_VISIBLE
+
+    CONTROL         ""             , IDC_KEYB_TC
+                                   , WC_TABCONTROLW
+                                   , TCS_MULTILINE
+                                   | TCS_FIXEDWIDTH      ,  5, 30, 69,196
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_00   , 10, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_01   , 20, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_02   , 30, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_03   , 40, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_04   , 50, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_05   , 60, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_10   , 10, 68, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_11   , 20, 68, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_12   , 30, 68, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_13   , 40, 68, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_14   , 50, 68, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_15   , 60, 68, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_20   , 10, 81, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_21   , 20, 81, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_22   , 30, 81, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_23   , 40, 81, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_24   , 50, 81, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_25   , 60, 81, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_30   , 10, 94, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_31   , 20, 94, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_32   , 30, 94, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_33   , 40, 94, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_34   , 50, 94, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_35   , 60, 94, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_40   , 10,107, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_41   , 20,107, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_42   , 30,107, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_43   , 40,107, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_44   , 50,107, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_45   , 60,107, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_50   , 10,120, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_51   , 20,120, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_52   , 30,120, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_53   , 40,120, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_54   , 50,120, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_55   , 60,120, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_60   , 10,133, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_61   , 20,133, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_62   , 30,133, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_63   , 40,133, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_64   , 50,133, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_65   , 60,133, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_70   , 10,146, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_71   , 20,146, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_72   , 30,146, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_73   , 40,146, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_74   , 50,146, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_75   , 60,146, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_80   , 10,159, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_81   , 20,159, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_82   , 30,159, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_83   , 40,159, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_84   , 50,159, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_85   , 60,159, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_90   , 10,172, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_91   , 20,172, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_92   , 30,172, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_93   , 40,172, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_94   , 50,172, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_95   , 60,172, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_A0   , 10,185, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_A1   , 20,185, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_A2   , 30,185, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_A3   , 40,185, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_A4   , 50,185, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_A5   , 60,185, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_B0   , 10,198, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_B1   , 20,198, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_B2   , 30,198, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_B3   , 40,198, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_B4   , 50,198, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_B5   , 60,198, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C0   , 10,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C1   , 20,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C2   , 30,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C3   , 40,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C4   , 50,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C5   , 60,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_00   , 75, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_01   , 90, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_02   ,105, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_03   ,120, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_04   ,135, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_05   ,150, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_06   ,165, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_07   ,180, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_08   ,195, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_09   ,210, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0A   ,225, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0B   ,240, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0C   ,255, 30, 14, 14
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_10   , 95, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_11   ,110, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_12   ,125, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_13   ,140, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_14   ,155, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_15   ,170, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_16   ,185, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_17   ,200, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_18   ,215, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_19   ,230, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1A   ,245, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1B   ,260, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1C   ,275, 50, 14, 14
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_20   ,102, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_21   ,117, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_22   ,132, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_23   ,147, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_24   ,162, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_25   ,177, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_26   ,192, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_27   ,207, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_28   ,222, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_29   ,237, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_2A   ,252, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_2B   ,267, 70, 14, 14
+
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_30   , 94, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_31   ,109, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_32   ,124, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_33   ,139, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_34   ,154, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_35   ,169, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_36   ,184, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_37   ,199, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_38   ,214, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_39   ,229, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_3A   ,244, 90, 14, 14
+
+    LTEXT           "Unicode"      , IDC_STATIC          , 85,110, 50, 14
+    EDITTEXT                         IDC_KEYB_EC_UNICODE , 85,120, 30, 14
+    PUSHBOX         " "            , IDC_KEYB_BN_UNICODE ,130,120, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    AUTORADIOBUTTON "Dec"          , IDC_KEYB_RB_DEC     , 85,135, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+    AUTORADIOBUTTON "Hex"          , IDC_KEYB_RB_HEX     ,120,135, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
+
+    GROUPBOX        "State"        , IDC_STATIC          ,175,110,100, 30
+
+    AUTOCHECKBOX    "Shift"        , IDC_KEYB_XB_SHIFT   ,180,120, 30, 14
+    AUTOCHECKBOX    "Ctrl"         , IDC_KEYB_XB_CTRL    ,215,120, 30, 14
+    AUTOCHECKBOX    "Alt"          , IDC_KEYB_XB_ALT     ,250,120, 30, 14
+
+    AUTORADIOBUTTON "Use Ctrl-C, -X, -V for Copy, Cut, Paste"
+                                   , IDC_KEYB_RB_CLIP0   , 85,150,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+    AUTORADIOBUTTON "Use Ctrl-Ins, Shift-Del, Shift-Ins for Copy, Cut, Paste"
+                                   , IDC_KEYB_RB_CLIP1   , 85,162,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
+    AUTORADIOBUTTON "Use Ctrl-Z, -Y for Undo, Redo"
+                                   , IDC_KEYB_RB_UNDO0   , 85,180,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+    AUTORADIOBUTTON "No keyboard shortcuts for Undo, Redo"
+                                   , IDC_KEYB_RB_UNDO1   , 85,192,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
+    AUTORADIOBUTTON "Use Ctrl-S, -E, -Q for Function Editing commands"
+                                   , IDC_KEYB_RB_FNED0   , 85,210,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+    AUTORADIOBUTTON "No keyboard shortcuts for Function Editing commands"
+                                   , IDC_KEYB_RB_FNED1   , 85,222,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
+
+    PUSHBUTTON      "Copy..."      , IDC_KEYB_BN_COPY    ,  5,270, 50, 14
+    PUSHBUTTON      "Delete..."    , IDC_KEYB_BN_DEL     , 65,270, 50, 14
+    PUSHBUTTON      "Font..."      , IDC_KEYB_BN_FONT    ,125,270, 50, 14
+END
+
+IDD_PROPPAGE_RANGE_LIMITS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Check the box to map assigned values of these system vars to the allowable range.  An unchecked box means that assigning an out of range value signals a DOMAIN ERROR.",
                                 IDC_STATIC           ,65, 26,143,78
@@ -401,9 +597,9 @@ BEGIN
     AUTOCHECKBOX    "RL"      , IDC_RANGE_XB_RL      ,10,104, 55,10
 END
 
-IDD_PROPPAGE_SYNTAX_COLORING DIALOGEX DISCARDABLE  0, 0, 275, 288
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_PROPPAGE_SYNTAX_COLORING DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Background Transparent"    , IDC_STATIC            ,200,  5, 45, 18
     GROUPBOX        "Foreground"                , IDC_STATIC            , 95, 10, 48,242
@@ -577,9 +773,9 @@ BEGIN
     PUSHBUTTON      "Restore Defaults"          , IDC_SYNTCLR_BN_RESTORE,105,258, 70, 14
 END
 
-IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, 275, 288
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           ""              ,IDC_RESET_TEXT           , 5, 10,200,40
 
@@ -619,16 +815,16 @@ BEGIN
     AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2      ,95,175, 16, 8
 END
 
-IDD_PROPPAGE_TAB_COLORS DIALOGEX DISCARDABLE  0, 0, 275, 288
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_PROPPAGE_TAB_COLORS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "TBD",IDC_STATIC,5,10,143,78
 END
 
-IDD_PROPPAGE_USER_PREFS DIALOGEX DISCARDABLE  0, 0, 275, 288
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_PROPPAGE_USER_PREFS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
+STYLE WS_CHILD | DS_SHELLFONT
+FONT 8, "MS Shell Dlg"
 BEGIN
     AUTOCHECKBOX    "Adjust []PW on window resize",
                     IDC_USER_PREFS_XB_ADJUSTPW           , 10, 26,160, 10
@@ -660,6 +856,18 @@ BEGIN
     COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,198, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
                     IDC_STATIC                           ,100,198,160, 10
+END
+
+
+IDD_NEWKEYB DIALOGEX DISCARDABLE  0, 0, 140, 65
+STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "New Keyboard Layout Name"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Enter the Layout Name" , IDC_STATIC          ,  5,  5,100, 10
+    EDITTEXT                                  IDC_NEWKEYB_EC      ,  5, 20,130, 14
+    DEFPUSHBUTTON   "OK"                    , IDOK                ,  5, 45, 50, 14
+    PUSHBUTTON      "Cancel"                , IDCANCEL            , 65, 45, 50, 14
 END
 
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -553,6 +553,92 @@ UBOOL IsValidPtr
         return FALSE;
     } // End __try/__except
 } // End IsValidPtr
+
+
+//***************************************************************************
+//  $GetDlgUnitsInPixels
+//
+//  Get a dialog's base units in pixels
+//***************************************************************************
+
+SIZE GetDlgUnitsInPixels
+    (HWND hWnd)
+
+{
+    RECT rcDlg;
+    SIZE sDlg;
+
+    // Set to the unit divisors
+    rcDlg.left   =
+    rcDlg.top    = 0;
+    rcDlg.right  = 4;
+    rcDlg.bottom = 8;
+
+    MapDialogRect (hWnd, &rcDlg);
+
+    sDlg.cx = rcDlg.right;
+    sDlg.cy = rcDlg.bottom;
+
+    return sDlg;
+} // End GetDlgUnitsInPixels
+
+
+//************************************************************************
+//  DrawBitmap
+//
+//  Draw a bitmap in a DC
+//************************************************************************
+
+void DrawBitmap
+    (HDC     hDC,           // Destination DC
+     HBITMAP hBitMap,       // The bitmap to draw
+     UINT    xDstOrg,       // Destin bit origin
+     UINT    yDstOrg)       // ...
+
+{
+    BITMAP  bm;
+    HDC     hDCMem;
+    POINT   ptSize, ptOrg;
+    HBITMAP hOldBitmap;
+
+    // Get a Client Area DC for the bitmap
+    hDCMem = MyCreateCompatibleDC (hDC);
+
+    // Select the bitmap into the DC
+    hOldBitmap = SelectObject (hDCMem, hBitMap);
+
+    // Copy the mapping mode from the original DC
+    SetMapMode (hDCMem, GetMapMode (hDC));
+
+    // Get the size of the bitmap
+    GetObjectA (hBitMap, sizeof (BITMAP), (LPSTR) &bm);
+
+    // Save it as a POINT
+    ptSize.x = bm.bmWidth;
+    ptSize.y = bm.bmHeight;
+
+    // Map the coords from Device to Logical
+    DPtoLP (hDC, &ptSize, 1);
+
+    // Initialize to the upper left corner
+    ptOrg.x = ptOrg.y = 0;
+
+    // Map the coords from Device to Logical
+    DPtoLP (hDCMem, &ptOrg, 1);
+
+    // Copy the bitmap from the memory DC to the destin DC
+    BitBlt (hDC,
+            xDstOrg, yDstOrg,
+            ptSize.x, ptSize.y,
+            hDCMem,
+            ptOrg.x, ptOrg.y,
+            SRCCOPY);
+    // Restore the old object
+    SelectObject (hDCMem, hOldBitmap);
+
+    // We no longer need this resource
+    MyDeleteDC (hDCMem); hDCMem = NULL;
+} // End DrawBitmap
 
 
 //***************************************************************************

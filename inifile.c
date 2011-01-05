@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,6 +40,8 @@
 #define SECTNAME_TOOLBARS               L"Toolbars"
 #define SECTNAME_MIGRATION              L"Migration"
 #define SECTNAME_RECENTFILES            L"RecentFiles"
+#define SECTNAME_KEYBOARDS              L"Keyboards"
+#define SECTNAME_KEYBPREFIX             L"KeybLayout-"
 
 // Key names
 #define KEYNAME_VERSION                 L"Version"
@@ -50,6 +52,17 @@
 #define KEYNAME_YSIZE                   L"ySize"
 #define KEYNAME_INITIALCAT              L"InitialCategory"
 #define KEYNAME_COUNT                   L"Count"
+#define KEYNAME_KEYBUNIBASE             L"KeybUnibase"
+#define KEYNAME_KEYBTCNUM               L"KeybTCNum"
+#define KEYNAME_KEYBSTATE               L"KeybState"
+#define KEYNAME_KEYBLAYOUTNAME          L"KeybLayoutName"
+#define KEYNAME_KEYBSCANCODE            L"KSC"
+#define KEYNAME_KEYBSCANCODE2B          L"KeybScanCode2B"
+#define KEYNAME_KEYBEXTRAKEYROW3        L"KeybExtraKeyRow3"
+#define KEYNAME_KEYBUSECXV              L"KeybUseCXV"
+#define KEYNAME_KEYBUSEZY               L"KeybUseZY"
+#define KEYNAME_KEYBUSESEQ              L"KeybUseSEQ"
+#define KEYNAME_LOGFONTKB               L"LogFontKB"
 
 #define KEYNAME_IC0LOG0                 L"IC0LOG0"
 
@@ -127,6 +140,9 @@
 #define KEYNAME_TOOLBAR_LW              L"Language"
 
 
+// Format string for Keyboard Layout SCA Chars for each ScanCode
+#define FMTSTR_KEYBCHARS        L"%04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X"
+
 // Format string for [Fonts] section LOGFONTW
 #define FMTSTR_LOGFONT_INP      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
 #define FMTSTR_LOGFONT_OUT      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
@@ -183,6 +199,12 @@ typedef struct tagMIGRATION
 
 // Default migration levels
 MIGRATION uMigration = {0};
+
+#define STRCNT_KEYBPREFIX       strcountof (SECTNAME_KEYBPREFIX)
+#define STRCNT_KEYBSCANCODE     strcountof (KEYNAME_KEYBSCANCODE)
+
+WCHAR wszSectName[STRCNT_KEYBPREFIX + 4],       // Room for prefix, some digits, and a terminating zero
+      wszKeyName[STRCNT_KEYBSCANCODE + 2 + 1];  // Room for prefix, 2 hex digits, and a terminating zero
 
 
 //***************************************************************************
@@ -435,16 +457,18 @@ void WriteAplFontNames
 //  Read in global-specific .ini file settings
 //***************************************************************************
 
-void ReadIniFileGlb
+UBOOL ReadIniFileGlb
     (void)
 
 {
-    WCHAR wszTemp[1024],            // Temporary storage for string results
-          wszKey[8 + 1],            // Room for a keyname
-         *lpwszTemp;                // Temporary ptr into wszTemp
-
-    UINT  uCnt;                     // Loop counter
-    WCHAR (*lpwszRecentFiles)[][_MAX_PATH]; // Ptr to list of recent files
+    WCHAR         wszTemp[1024],                    // Temporary storage for string results
+                  wszKey[8 + 1],                    // Room for a keyname
+                 *lpwszTemp;                        // Temporary ptr into wszTemp
+    UINT          uCnt,                             // Loop counter
+                  uCnt2,                            // ...
+                  uCol;                             // ...
+    WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
+    LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
 
 #define TEMPBUFLEN      countof (wszTemp)
 
@@ -733,7 +757,7 @@ void ReadIniFileGlb
                              KEYNAME_QUADRL,        // Ptr to the key name
                              DEF_QUADRL_CWS,        // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in []SA
+    // Read in []SA index
     cQuadxSA_CWS = (APLCHAR)
       GetPrivateProfileIntW (SECTNAME_SYSVARS,      // Ptr to the section name
                              KEYNAME_QUADSA,        // Ptr to the key name
@@ -940,9 +964,9 @@ void ReadIniFileGlb
     hGlbRecentFiles =
       MyGlobalAlloc (GHND, uNumRecentFiles * _MAX_PATH * sizeof (WCHAR));
 
-////// Check for error
-////if (!hGlbRecentFiles)
-////    return -1;          // Stop the whole process
+    // Check for error
+    if (!hGlbRecentFiles)
+        return FALSE;           // Stop the whole process
 
     // Lock the memory to get a ptr to it
     lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
@@ -965,7 +989,203 @@ void ReadIniFileGlb
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
+
+    //***************************************************************
+    // Read in the [Keyboards] section
+    //***************************************************************
+
+    // Get the # user-defined keyboards
+    uKeybLayoutUser =
+      GetPrivateProfileIntW (SECTNAME_KEYBOARDS,    // Ptr to the section name
+                             KEYNAME_COUNT,         // Ptr to the key name
+                             0,                     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Allocate space for the # built-in layouts + user-defined
+    hGlbKeybLayouts =
+      MyGlobalAlloc (GHND, (uKeybLayoutBI + uKeybLayoutUser) * sizeof (KEYBLAYOUTS));
+    if (hGlbKeybLayouts EQ NULL)
+    {
+        MessageBoxW (NULL, L"Unable to allocate enough memory for Keyboard Layouts", WS_APPNAME, MB_OK | MB_ICONSTOP);
+
+        return FALSE;           // Stop the whole process
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpKeybLayouts = MyGlobalLock (hGlbKeybLayouts);
+
+    // Get the Unicode base for typed chars (10 or 16)
+    uKeybUnibase =
+      GetPrivateProfileIntW (SECTNAME_KEYBOARDS,    // Ptr to the section name
+                             KEYNAME_KEYBUNIBASE,   // Ptr to the key name
+                             10,                    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Ensure the Unicode base is either 10 or 16
+    if (uKeybUnibase NE 10
+     && uKeybUnibase NE 16)
+        uKeybUnibase = 16;
+
+    // Get the index of the keyboard TabCtrl tab
+    uKeybTCNum =
+      GetPrivateProfileIntW (SECTNAME_KEYBOARDS,    // Ptr to the section name
+                             KEYNAME_KEYBTCNUM,     // Ptr to the key name
+                             10,                    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Get the initial keyboard state (0=none
+    //                                 1=           Alt
+    //                                 2=      Ctrl
+    //                                 3=      Ctrl+Alt
+    //                                 4=Shift
+    //                                 5=Shift     +Alt
+    //                                 6=Shift+Ctrl
+    //                                 7=Shift+Ctrl+Alt)
+    uKeybState =
+      GetPrivateProfileIntW (SECTNAME_KEYBOARDS,    // Ptr to the section name
+                             KEYNAME_KEYBSTATE,     // Ptr to the key name
+                             0,                     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Get the active keyboard layout name
+    GetPrivateProfileStringW (SECTNAME_KEYBOARDS,       // Ptr to the section name
+                              KEYNAME_KEYBLAYOUTNAME,   // Ptr to the key name
+                              KEYBLAYOUT_US_ALT,        // Ptr to the default value
+                              wszKeybLayoutAct,         // Ptr to the output buffer
+                              countof (wszKeybLayoutAct), // Count of the output buffer
+                              lpwszIniFile);            // Ptr to the file name
+    // Read in the LOGFONTW strucs
+    GetPrivateProfileLogFontW (SECTNAME_KEYBOARDS, KEYNAME_LOGFONTKB, &lfKB);
+
+    // Initialize the built-in keyboard CharCodes
+    for (uCnt = 0; uCnt < uKeybLayoutBI; uCnt++)
+    {
+        CopyMemory (lpKeybLayouts[uCnt].aCharCodes,
+                    aKeybLayoutsBI[uCnt].lpCharCodes,
+                    aKeybLayoutsBI[uCnt].uCharCodesLen * sizeof (CHARCODE));
+        lpKeybLayouts[uCnt].uCharCodesLen          = aKeybLayoutsBI[uCnt].uCharCodesLen;
+        lstrcpyW (lpKeybLayouts[uCnt].wszLayoutName, aKeybLayoutsBI[uCnt].wszLayoutName);
+        lpKeybLayouts[uCnt].uScanCode2B_RowNum     = aKeybLayoutsBI[uCnt].uScanCode2B_RowNum;
+        lpKeybLayouts[uCnt].bReadOnly              = TRUE;
+        lpKeybLayouts[uCnt].bExtraKeyRow3          = aKeybLayoutsBI[uCnt].bExtraKeyRow3;
+        lpKeybLayouts[uCnt].bUseCXV                = aKeybLayoutsBI[uCnt].bUseCXV;
+        lpKeybLayouts[uCnt].bUseZY                 = aKeybLayoutsBI[uCnt].bUseZY;
+        lpKeybLayouts[uCnt].bUseSEQ                = aKeybLayoutsBI[uCnt].bUseSEQ;
+    } // End FOR
+
+    // Read in the user-defined keyboard layouts
+    for (uCnt = 0, uCnt2 = uKeybLayoutBI;
+         uCnt < uKeybLayoutUser;
+         uCnt++, uCnt2++)
+    {
+        WCHAR wszKeybChars[8 * 8 - 2 + 1];              // Room for a string formatted by FMTSTR_KEYBCHARS
+        UINT wc[8],                                     // Save area for keyb chars as UINTs
+             uLen;                                      // Length value
+
+        // Format the section name
+        wsprintfW (wszSectName,
+                   SECTNAME_KEYBPREFIX L"%u",
+                   uCnt);
+        // Read in the layout name
+        GetPrivateProfileStringW (wszSectName,              // Ptr to the section name
+                                  KEYNAME_KEYBLAYOUTNAME,   // Ptr to the key name
+                                  L"",                      // Ptr to the default value
+                                  lpKeybLayouts[uCnt2].wszLayoutName, // Ptr to the output buffer
+                                  KBLEN,                    // Count of the output buffer
+                                  lpwszIniFile);            // Ptr to the file name
+        // Read in the row # for scancode 2B
+        lpKeybLayouts[uCnt2].uScanCode2B_RowNum =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_KEYBSCANCODE2B,    // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszIniFile);             // Ptr to the file name
+        // Read in the flag for extra key on row #3
+        lpKeybLayouts[uCnt2].bExtraKeyRow3 =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_KEYBEXTRAKEYROW3,  // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszIniFile);             // Ptr to the file name
+        // Read in the flag for Ctrl-C, -X, -V
+        lpKeybLayouts[uCnt2].bUseCXV =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_KEYBUSECXV,        // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszIniFile);             // Ptr to the file name
+        // Read in the flag for Ctrl-Z, -Y
+        lpKeybLayouts[uCnt2].bUseCXV =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_KEYBUSEZY,         // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszIniFile);             // Ptr to the file name
+        // Read in the flag for Ctrl-S, -E, -Q
+        lpKeybLayouts[uCnt2].bUseSEQ =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_KEYBUSESEQ,        // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszIniFile);             // Ptr to the file name
+        // Read in the # scancodes in the layout
+        uLen = lpKeybLayouts[uCnt2].uCharCodesLen =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_COUNT,             // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszIniFile);             // Ptr to the file name
+        // Loop through the scancodes
+        for (uCol = 0; uCol < uLen; uCol++)
+        {
+            // Format the keyname
+            wsprintfW (wszKeyName,
+                       KEYNAME_KEYBSCANCODE L"%02X",
+                       uCol);
+            // Read in the keyboard chars for this scancode
+            GetPrivateProfileStringW (wszSectName,              // Ptr to the section name
+                                      wszKeyName,               // Ptr to the key name
+                                      L"",                      // Ptr to the default value
+                                      wszKeybChars,             // Ptr to the output buffer
+                                      countof (wszKeybChars),   // Count of the output buffer
+                                      lpwszIniFile);            // Ptr to the file name
+            // Convert the hex digits to integers
+            sscanfW (wszKeybChars,
+                     FMTSTR_KEYBCHARS,
+                    &wc[0],
+                    &wc[1],
+                    &wc[2],
+                    &wc[3],
+                    &wc[4],
+                    &wc[5],
+                    &wc[6],
+                    &wc[7]);
+            // Save the values in aCharCodes
+            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[0] = wc[0];
+            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[1] = wc[1];
+            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[2] = wc[2];
+            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[3] = wc[3];
+            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[4] = wc[4];
+            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[5] = wc[5];
+            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[6] = wc[6];
+            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[7] = wc[7];
+        } // End FOR
+    } // End FOR
+
+    // Accumulate into the total # keyboard layouts
+    uKeybLayoutCount = uKeybLayoutBI + uKeybLayoutUser;
+
+    // Set the active keyboard layout #
+    for (uKeybLayoutNumAct = 0; uKeybLayoutNumAct < uKeybLayoutCount; uKeybLayoutNumAct++)
+    if (lstrcmpW (wszKeybLayoutAct, lpKeybLayouts[uKeybLayoutNumAct].wszLayoutName) EQ 0)
+        break;
+
+    Assert (uKeybLayoutNumAct < uKeybLayoutCount);
+    if (uKeybLayoutNumAct EQ uKeybLayoutCount)
+        uKeybLayoutNumAct = 0;
+    // Set the active keyboard layout
+    aKeybLayoutAct = lpKeybLayouts[uKeybLayoutNumAct];
+
+    // Make that the visible keyboard layout name
+    lstrcpyW (wszKeybLayoutVis, wszKeybLayoutAct);
+    uKeybLayoutNumVis = uKeybLayoutNumAct;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbKeybLayouts); lpKeybLayouts = NULL;
+
 #undef  TEMPBUFLEN
+
+    return TRUE;
 } // End ReadIniFileGlb
 
 
@@ -1456,13 +1676,17 @@ void SaveIniFile
     (void)
 
 {
-    WCHAR     wszTemp[1024],                                // Temporary storage
-              wszKey[8 + 1];                                // ...
-    UINT      uCnt;                                         // Loop counter
-    LPVOID    lpMemObj;                                     // Ptr to object global memory
-    LPAPLCHAR lpaplChar;                                    // Ptr to output save area
-    APLNELM   aplNELMObj;                                   // Object NELM
-    WCHAR   (*lpwszRecentFiles)[][_MAX_PATH];               // Ptr to list of recent files
+    WCHAR         wszTemp[1024],                    // Temporary storage
+                  wszKey[8 + 1];                    // ...
+    UINT          uCnt,                             // Loop counter
+                  uCnt2,                            // ...
+                  uCol,                             // ...
+                  uTmp;                             // Temp var
+    LPVOID        lpMemObj;                         // Ptr to object global memory
+    LPAPLCHAR     lpaplChar;                        // Ptr to output save area
+    APLNELM       aplNELMObj;                       // Object NELM
+    WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
+    LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
 
     //*********************************************************
     // Write out [General] section entries
@@ -1963,10 +2187,13 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //************************ []SA ***************************
-    // Write out []SA
+    wszTemp[0] = L'0' + cQuadxSA_CWS;
+    wszTemp[1] = WC_EOS;
+
+    // Write out []SA index
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
                                 KEYNAME_QUADSA,             // Ptr to the key name
-                                L"0" + cQuadxSA_CWS,        // Ptr to the key value
+                                wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //*********************************************************
     // Write out [RangeLimits] section entries
@@ -2148,11 +2375,17 @@ void SaveIniFile
 
     // Loop through the Toolbars
     for (uCnt = 0; uCnt < countof (aRebarBands); uCnt++)
+    {
+        wszTemp[0] = L'0' + aRebarBands[uCnt].bShowBand;
+        wszTemp[1] = WC_EOS;
+
         // Write out the entry
         WritePrivateProfileStringW (SECTNAME_TOOLBARS,          // Ptr to the section name
                                     aToolbarNames[uCnt],        // Ptr to the key name
-                                    L"0" + aRebarBands[uCnt].bShowBand, // Ptr to the key value
+                                    wszTemp,                    // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
+    } // End FOR
+
     //*********************************************************
     // Write out [RecentFiles] section entries
     //*********************************************************
@@ -2161,9 +2394,12 @@ void SaveIniFile
     lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
 
     // Loop through the Recent Files
-    for (uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
+    for (uTmp = uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
     if ((*lpwszRecentFiles)[uCnt][0])
     {
+        // Count in another valid Recent File
+        uTmp++;
+
         // Format the keyname
         wsprintfW (wszKey,
                    L"%u",
@@ -2173,20 +2409,200 @@ void SaveIniFile
                                     wszKey,                     // Ptr to the key name
                                   (*lpwszRecentFiles)[uCnt],    // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
-    } // End FOR
+    } // End FOR/IF
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
 
-    // Format the # Recent Files
+    // Format the # valid Recent Files
     wsprintfW (wszKey,
                L"%u",
-               uNumRecentFiles);
+               uTmp);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_RECENTFILES,       // Ptr to the section name
                                 KEYNAME_COUNT,              // Ptr to the key name
                                 wszKey,                     // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
+    //*********************************************************
+    // Write out [Keyboards] section entries
+    //*********************************************************
+
+    // Format the # user-defined keyboards
+    wsprintfW (wszKey,
+               L"%u",
+               uKeybLayoutUser);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
+                                KEYNAME_COUNT,              // Ptr to the key name
+                                wszKey,                     // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Format the keyboard Unicode base
+    wsprintfW (wszKey,
+               L"%u",
+               uKeybUnibase);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
+                                KEYNAME_KEYBUNIBASE,        // Ptr to the key name
+                                wszKey,                     // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Format the keyboard TabCtrl tab index
+    wsprintfW (wszKey,
+               L"%u",
+               uKeybTCNum);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
+                                KEYNAME_KEYBTCNUM,          // Ptr to the key name
+                                wszKey,                     // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Format the keyboard state
+    wsprintfW (wszKey,
+               L"%u",
+               uKeybState);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
+                                KEYNAME_KEYBSTATE,          // Ptr to the key name
+                                wszKey,                     // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Write out the active keyboard layout name
+    WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
+                                KEYNAME_KEYBLAYOUTNAME,     // Ptr to the key name
+                                wszKeybLayoutAct,           // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Write out the LOGFONTW struc for KB
+    WritePrivateProfileLogfontW (SECTNAME_KEYBOARDS,        // Ptr to the section name
+                                 KEYNAME_LOGFONTKB,         // Ptr to the key name
+                                &lfKB,                      // Ptr to LOGFONTW
+                                 lpwszIniFile);             // Ptr to the file name
+    // Lock the memory to get a ptr to it
+    lpKeybLayouts = MyGlobalLock (hGlbKeybLayouts);
+
+    // Write out the user-defined keyboard layouts
+    for (uCnt = 0, uCnt2 = uKeybLayoutBI;
+         uCnt < uKeybLayoutUser;
+         uCnt++, uCnt2++)
+    {
+        WCHAR wszKeybChars[8 * 8 - 2 + 1],              // Room for a string formatted by FMTSTR_KEYBCHARS
+              wszCount[8 + 1];                          // Scancode count
+        UINT uLen;                                      // Length value
+
+        // Format the section name
+        wsprintfW (wszSectName,
+                   SECTNAME_KEYBPREFIX L"%u",
+                   uCnt);
+        // Write out the layout name
+        WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                    KEYNAME_KEYBLAYOUTNAME,     // Ptr to the key name
+                                    lpKeybLayouts[uCnt2].wszLayoutName, // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+        wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].uScanCode2B_RowNum;
+        wszTemp[1] = WC_EOS;
+
+        // Write out the row # for scancode 2B
+        WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                    KEYNAME_KEYBSCANCODE2B,     // Ptr to the key name
+                                    wszTemp,                    // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+        wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bExtraKeyRow3;
+        wszTemp[1] = WC_EOS;
+
+        // Write out the flag for extra key on row #3
+        WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                    KEYNAME_KEYBEXTRAKEYROW3,   // Ptr to the key name
+                                    wszTemp,                    // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+        wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bUseCXV;
+        wszTemp[1] = WC_EOS;
+
+        // Write out the flag for Ctrl-C, -X, -V
+        WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                    KEYNAME_KEYBUSECXV,         // Ptr to the key name
+                                    wszTemp,                    // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+        wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bUseZY;
+        wszTemp[1] = WC_EOS;
+
+        // Write out the flag for Ctrl-Z, -Y
+        WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                    KEYNAME_KEYBUSEZY,          // Ptr to the key name
+                                    wszTemp,                    // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+        wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bUseSEQ;
+        wszTemp[1] = WC_EOS;
+
+        // Write out the flag for Ctrl-S, -E, -Q
+        WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                    KEYNAME_KEYBUSESEQ,         // Ptr to the key name
+                                    wszTemp,                    // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+        // Get the # scancodes in this layout
+        uLen = lpKeybLayouts[uCnt2].uCharCodesLen;
+
+        // Write out the # scancodes in this layout
+        wsprintfW (wszCount,
+                   L"%u",
+                   uLen);
+        WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                    KEYNAME_COUNT,              // Ptr to the key name
+                                    wszCount,                   // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
+        // Loop through the scancodes
+        for (uCol = 0; uCol < uLen; uCol++)
+        {
+            // Format the keyname
+            wsprintfW (wszKeyName,
+                       KEYNAME_KEYBSCANCODE L"%02X",
+                       uCol);
+            // Format the keyboard chars for this scancode
+            wsprintfW (wszKeybChars,
+                       FMTSTR_KEYBCHARS,
+                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[0],
+                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[1],
+                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[2],
+                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[3],
+                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[4],
+                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[5],
+                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[6],
+                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[7]);
+            // Write out the keyb chars for this scancode
+            WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                        wszKeyName,                 // Ptr to the key name
+                                        wszKeybChars,               // Ptr to the key value
+                                        lpwszIniFile);              // Ptr to the file name
+        } // End FOR
+#undef  SECTNAME
+    } // End FOR
+
+    // Delete keyboard layouts above the last user-defined layout
+    while (TRUE)
+    {
+        WCHAR wszLayoutName[KBLEN];                         // Space for a temporary layout name
+
+        // Format the section name
+        wsprintfW (wszSectName,
+                   SECTNAME_KEYBPREFIX L"%u",
+                   uCnt);
+        // Read in the layout name
+        GetPrivateProfileStringW (wszSectName,              // Ptr to the section name
+                                  KEYNAME_KEYBLAYOUTNAME,   // Ptr to the key name
+                                  L"",                      // Ptr to the default value
+                                  wszLayoutName,            // Ptr to the output buffer
+                                  KBLEN,                    // Count of the output buffer
+                                  lpwszIniFile);            // Ptr to the file name
+        // If the layout name is non-empty, ...
+        if (wszLayoutName[0])
+        {
+            // Delete the section
+            WritePrivateProfileSectionW (wszSectName,       // Ptr to the section name
+                                         NULL,              // Delete the entire section
+                                         lpwszIniFile);     // Ptr to the file name
+            // Skip to the next potential keyboard layout
+            uCnt++;
+        } else
+            break;
+    } // End WHILE
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbKeybLayouts); lpKeybLayouts = NULL;
 } // End SaveIniFile
 
 

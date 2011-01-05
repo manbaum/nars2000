@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -294,9 +294,6 @@ UINT gVarLvl        // Debug level for display of variable-related info
 
 EXTERN
 HINSTANCE _hInstance;                   // Global instance handle
-
-EXTERN
-HANDLE hAccel;                          // Keyboard accelerators
 
 EXTERN
 HMENU hMenuSM,                          // Handle for Session Manager menu
@@ -1516,172 +1513,6 @@ UINT uColorNames
 #endif
 ;
 
-//***************************************************************************
-//  Character codes
-//***************************************************************************
-
-typedef struct tagVKSTATE
-{
-    UINT  Shift:1,              // 00000001:  Left- or right-shift key up(0) or down(1)
-          Alt:1,                // 00000002:  Left- or right-Alt key up(0) or down(1)
-          Ctl:1,                // 00000004:  Left or -right Ctl key up(0) or down(1)
-          Ins:1,                // 00000008:  Replace(0) or insert(1)
-          :28;                  // FFFFFFF0:  Available bits
-} VKSTATE, *LPVKSTATE;
-
-
-typedef struct
-{
-    char  nrm;      // 00:  Normal           (shifted & unshifted) (unused)
-    WCHAR alt;      // 01:  Alt key pressed  (shifted & unshifted)
-} CHARCODE;
-
-// If you are looking for places on the keyboard to put a new symbol,
-//   there are several free Alt-Shift- combinations:
-//     Alt-'A'
-//     Alt-'B'
-//     Alt-'C'
-//     Alt-'D'
-//     Alt-'F'
-//     Alt-'K'
-//     Alt-'Q'
-//     Alt-'R'
-//     Alt-'S'
-//     Alt-'U'
-//     Alt-'V'
-//     Alt-'W'
-//     Alt-'X'
-//     Alt-'Y'
-//     Alt-'Z'
-//     Alt-'<'
-//     Alt-'>'
-//     Alt-':'
-//     Alt-'"'
-//
-//   as well as several duplicated symbols:
-//
-//     Symbol & Name              Keystroke
-//     --------------------------------------------------
-//     * Asterisk                 Alt-'p'
-//     = Equal                    Alt-'5'
-//     < Left Caret               Alt-'3'
-//     ? Question Mark            Alt-'q'
-//     > Right Caret              Alt-'7'
-//     ! Shriek                   Alt-'_'
-//     ' Single Quote             Alt-'k'
-//     | Stile                    Alt-'m'
-//     ~ Tilde                    Alt-'t'
-//     ^ Up Caret (Circumflex)    Alt-'0'
-
-EXTERN
-CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
-                                //   from 32 to 126 inclusive
-#ifdef DEFINE_VALUES
-=
-{
-//Nrm Alt
-{' ', L' '                    },  // Space             32
-{'!', UTF16_EQUALUNDERBAR     },  // Quote-dot         33
-{'"', 0                       },  // Quotation mark    34
-{'#', UTF16_DELSTILE          },  // Number sign       35
-{'$', UTF16_DELTASTILE        },  // Dollar sign       36
-{'%', UTF16_CIRCLESTILE       },  // Percent sign      37
-{'&', UTF16_CIRCLEBAR         },  // Ampersand         38
-{'\'',UTF16_DOWNTACKJOT       },  // Apostrophe        39
-{'(', UTF16_DOWNCARETTILDE    },  // Left paren        40
-{')', UTF16_UPCARETTILDE      },  // Right paren       41
-{'*', UTF16_CIRCLESTAR        },  // Star              42
-{'+', UTF16_DOMINO            },  // Plus sign         43
-{',', UTF16_LAMP              },  // Comma             44
-{'-', UTF16_TIMES             },  // Bar               45
-{'.', UTF16_SLOPEBAR          },  // Dot               46
-{'/', UTF16_SLASHBAR          },  // Slash             47
-{'0', UTF16_UPCARET           },  // 0                 48
-{'1', UTF16_DIERESIS          },  // 1                 49
-{'2', UTF16_OVERBAR           },  // 2                 50
-{'3', UTF16_LEFTCARET         },  // 3                 51
-{'4', UTF16_LEFTCARETUNDERBAR },  // 4                 52
-{'5', UTF16_EQUAL             },  // 5                 53
-{'6', UTF16_RIGHTCARETUNDERBAR},  // 6                 54
-{'7', UTF16_RIGHTCARET        },  // 7                 55
-{'8', UTF16_NOTEQUAL          },  // 8                 56
-{'9', UTF16_DOWNCARET         },  // 9                 57
-{':', 0                       },  // Colon             58
-{';', UTF16_UPTACKJOT         },  // Semicolon         59
-{'<', 0                       },  // Less              60
-{'=', UTF16_COLONBAR          },  // Equal             61
-{'>', 0                       },  // More              62
-{'?', UTF16_CIRCLEMIDDLEDOT   },  // Query             63
-{'@', UTF16_NOTEQUALUNDERBAR  },  // At sign           64
-{'A', 0                       },  // A                 65
-{'B', 0                       },  // B                 66
-{'C', 0                       },  // C                 67
-{'D', 0                       },  // D                 68
-{'E', UTF16_EPSILONUNDERBAR   },  // E                 69
-{'F', 0                       },  // F                 70
-{'G', UTF16_DIERESISDEL       },  // G                 71
-{'H', UTF16_DELTAUNDERBAR     },  // H                 72
-{'I', UTF16_IOTAUNDERBAR      },  // I                 73
-{'J', UTF16_DIERESISJOT       },  // J                 74
-{'K', 0                       },  // K                 75
-{'L', UTF16_SQUAD             },  // L                 76
-{'M', UTF16_STILETILDE        },  // M                 77
-{'N', UTF16_DIERESISDOWNTACK  },  // N                 78
-{'O', UTF16_DIERESISCIRCLE    },  // O                 79
-{'P', UTF16_DIERESISSTAR      },  // P                 80
-{'Q', 0                       },  // Q                 81
-{'R', 0                       },  // R                 82
-{'S', 0                       },  // S                 83
-{'T', UTF16_DIERESISTILDE     },  // T                 84
-{'U', 0                       },  // U                 85
-{'V', 0                       },  // V                 86
-{'W', 0                       },  // W                 87
-{'X', 0                       },  // X                 88
-{'Y', 0                       },  // Y                 89
-{'Z', 0                       },  // Z                 90
-{'[', UTF16_LEFTARROW         },  // Left bracket      91
-{'\\',UTF16_RIGHTTACK         },  // Slope             92
-{']', UTF16_RIGHTARROW        },  // Right bracket     93
-{'^', UTF16_CIRCLESLOPE       },  // Up caret          94
-{'_', UTF16_QUOTEDOT          },  // Underbar          95
-{'`', UTF16_DIAMOND           },  // Grave accent      96
-{'a', UTF16_ALPHA             },  // a                 97
-{'b', UTF16_UPTACK            },  // b                 98
-{'c', UTF16_UPSHOE            },  // c                 99
-{'d', UTF16_DOWNSTILE         },  // d                100
-{'e', UTF16_EPSILON           },  // e                101
-{'f', UTF16_INFINITY          },  // f                102
-{'g', UTF16_DEL               },  // g                103
-{'h', UTF16_DELTA             },  // h                104
-{'i', UTF16_IOTA              },  // i                105
-{'j', UTF16_JOT               },  // j                106
-{'k', UTF16_APOSTROPHE        },  // k                107
-{'l', UTF16_QUAD              },  // l                108
-{'m', UTF16_STILE             },  // m                109
-{'n', UTF16_DOWNTACK          },  // n                110
-{'o', UTF16_CIRCLE            },  // o                111
-{'p', UTF16_STAR              },  // p                112
-{'q', UTF16_QUERY             },  // q                113
-{'r', UTF16_RHO               },  // r                114
-{'s', UTF16_UPSTILE           },  // s                115
-{'t', UTF16_TILDE             },  // t                116
-{'u', UTF16_DOWNARROW         },  // u                117
-{'v', UTF16_DOWNSHOE          },  // v                118
-{'w', UTF16_OMEGA             },  // w                119
-{'x', UTF16_RIGHTSHOE         },  // x                120
-{'y', UTF16_UPARROW           },  // y                121
-{'z', UTF16_LEFTSHOE          },  // z                122
-{'{', UTF16_QUOTEQUAD         },  // Left brace       123
-{'|', UTF16_LEFTTACK          },  // Stile            124
-{'}', UTF16_ZILDE             },  // Right brace      125
-{'~', UTF16_COMMABAR          },  // Tilde            126
-}
-#endif
-;
-
-// The # rows in the above table
-#define ACHARCODES_NROWS    (sizeof (aCharCodes) / sizeof (aCharCodes[0]))
-
 // Translate tables between APL2 and NARS charsets
 EXTERN
 WCHAR APL2_ASCIItoNARS[257]
@@ -1976,11 +1807,12 @@ CUSTOMIZE custStruc[]
 {   {L"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
 ////{L"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
     {L"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
-    {L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 03
-    {L"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 04
-    {L"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 05
-////{L"Tab Colors"              , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 06
-    {L"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 07
+    {L"Keyboards"               , IDD_PROPPAGE_KEYBS            ,  FALSE},  // 03
+    {L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 04
+    {L"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 05
+    {L"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 06
+////{L"Tab Colors"              , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 07
+    {L"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 08
 }
 #endif
 ;
@@ -2093,6 +1925,14 @@ UINT uNumRecentFiles
 #endif
 ;
 
+//***************************************************************************
+//  Keyboards and Character Codes
+//***************************************************************************
+
+#include "keyboards.h"
+
+EXTERN
+WNDPROC lpfnOldChooseFontSampleWndProc; // Save area for old Sample Text Window procedure
 
 #define ENUMS_DEFINED
 #undef  EXTERN

@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2010 Sudley Place Software
+#     Copyright (C) 2006-2011 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ LIBS_WEXE = gdi32.lib           \
             libcmt.lib          \
             $(GSL_LIB)
 
-RCFLAGS = $(VERSION_FLAGS)
+RCFLAGS = /nologo $(VERSION_FLAGS)
 !if "$(DEBUG)" == "1"
 RCFLAGS = $(RCFLAGS) /D "DEBUG"
 !else
@@ -225,19 +225,19 @@ DEP:    DIR                     \
 
 {$(O)}.c{$(O)}.dep:
         @echo $(@F)
-        @php makedep.php -s$(O)=$$(O) %s > $@
+        @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
 
 {$(WS)}.c{$(O)}.dep:
         @echo $(@F)
-        @php makedep.php -s$(O)=$$(O),$(WS)=$$(WS) %s > $@
+        @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(WS)=$$(WS) %s > $@
 
 {}.c{$(O)}.dep:
         @echo $(@F)
-        @php makedep.php -s$(O)=$$(O) %s > $@
+        @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
 
 {}.rc{$(O)}.dev:
         @echo $(@F)
-        @php makedep.php -s$(O)=$$(O) %s > $@
+        @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
 
 !if !exist ($(O)dep.txt)
 !    message ***File $(O)dep.txt is missing:  Creating it...

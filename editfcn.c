@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,12 @@
 
  */
 
+#ifdef DEBUG
+//#define DEBUG_WM_KEYDOWN
+//#define DEBUG_WM_KEYUP
+//#define DEBUG_WM_CHAR
+#endif
+
 extern TKACTSTR fsaActTableTK [][TKCOL_LENGTH];
 char szCloseMessage[] = "You have changed the body of this function;"
                         " save the changes?";
@@ -54,18 +60,6 @@ typedef struct tagCLIPFMTS
     UINT    uFmtNum;                // Format #
     HGLOBAL hGlbFmt;                // Handle for this format #
 } CLIPFMTS, *LPCLIPFMTS;
-
-
-typedef struct tagKEYDATA
-{
-    UINT repeatCount:16,            // Repeat count
-         scanCode:8,                // Scan code
-         extendedKey:1,             // TRUE iff extended key (right-Alt, Right-Ctl)
-         reserved:4,                // Reserved
-         contextCode:1,             // TRUE iff Alt key is down while key is pressed
-         previousState:1,           // TRUE iff key is down before msg sent
-         transitionState:1;         // TRUE iff key is being released
-} KEYDATA, *LPKEYDATA;
 
 
 typedef enum tagFCNMEMVIRTENUM
@@ -107,7 +101,7 @@ UBOOL CreateFcnWindow
         lpwszLine++;
 
     // Skip over leading blanks
-    while (*lpwszLine EQ L' ')
+    while (isspaceW (*lpwszLine))
         lpwszLine++;
 
     // Calculate the length of the function name
@@ -1683,6 +1677,8 @@ LRESULT WINAPI LclEditCtrlWndProc
                  uGroupIndex;               // Group index
     WCHAR        wChar[TABSTOP + 1],        // Array of blanks for converting tabs to spaces
                  uChar;                     // Loop counter
+    WCHAR        wchCode[2] = {L'\0'};      // Character code
+    UINT         uState;                    // Keyboard state (Shift- Ctrl- Alt-keys)
     UBOOL        bSelection,                // TRUE iff there's a selection
                  bDrawLineNums = FALSE;     // TRUE iff the ending code should draw the
                                             //   line #s after calling the original handler
@@ -2092,18 +2088,29 @@ LRESULT WINAPI LclEditCtrlWndProc
 #undef  nWidth
 #undef  fwSizeType
 
-#define nVirtKey    ((int) wParam)
-#define keyData     (*(LPKEYDATA) &lParam)
-        case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // Virtual-key code
-                                    // lKeyData = lParam;           // Key data
+        case WM_KEYDOWN:            // nVirtKey = (int) wParam;         // Virtual-key code
+        {                           // lKeyData = *(LPKEYDATA) &lParam; // Key data
+#ifdef DEBUG
+            int     nVirtKey    = (int) wParam;
+            KEYDATA keyData     = *(LPKEYDATA) &lParam;
+#else
+  #define nVirtKey      ((int) wParam)
+  #define keyData       (*(LPKEYDATA) &lParam)
+#endif
+            nVirtKey = nVirtKey;        // Respecify to avoid compiler error (unreferenced var)
+            keyData = keyData;
+
+            // Get the key states
             ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
             ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
             ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
-
-            // Skip this if the Menu key is pressed
-            if (ksMenu)
-                break;
-
+#ifdef DEBUG_WM_KEYDOWN
+            dprintfWL0 (L"WM_KEYDOWN:     nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
+                        nVirtKey,
+                        nVirtKey,
+                        keyData.scanCode,
+                        ksShft, ksCtrl, ksMenu);
+#endif
             // Get the handle of the parent window
             hWndParent = GetParent (hWnd);
 
@@ -2115,6 +2122,33 @@ LRESULT WINAPI LclEditCtrlWndProc
             // This message handles special keys that don't
             //   produce a WM_CHAR, i.e. non-printable keys,
             //   Backspace, and Delete.
+
+            // If the scanCode is within range of our table, ...
+            if (keyData.scanCode < aKeybLayoutAct.uCharCodesLen)
+            {
+                // Set the keyb state
+                uState = (ksShft << 2) | (ksCtrl << 1) | (ksMenu << 0);
+
+                // Get the corresponding character
+                wchCode[0] = aKeybLayoutAct.aCharCodes[keyData.scanCode].wc[uState];
+
+                // Check for valid character
+                if (wchCode[0])
+                {
+                    // If this control allows numbers only, ...
+                    if (ES_NUMBER & GetWindowLongW (hWnd, GWL_STYLE))
+                    {
+                        if (L'0' > wchCode[0]
+                         ||        wchCode[0] > L'9')
+                            break;
+                    } // End IF
+
+                    // Insert/replace the char string
+                    InsRepCharStr (hWnd, wchCode, lpMemPTD EQ NULL);
+
+                    return FALSE;       // We handled the msg
+                } // End IF
+            } // End IF
 
             // Process the virtual key
             switch (nVirtKey)
@@ -2306,13 +2340,27 @@ LRESULT WINAPI LclEditCtrlWndProc
             // We need to pass this message on to the next handler
             //   so WM_CHAR & WM_SYSCHAR can process it.
             break;
-#undef  keyData
-#undef  nVirtKey
+#ifndef DEBUG
+  #undef  keyData
+  #undef  nVirtKey
+#endif
+        } // End WM_KEYDOWN
 
-#define nVirtKey    ((int) wParam)
-#define keyData     (*(LPKEYDATA) &lParam)
-        case WM_KEYUP:              // nVirtKey = (int) wParam;     // Virtual-key code
-                                    // lKeyData = lParam;           // Key data
+        case WM_KEYUP:              // nVirtKey = (int) wParam;         // Virtual-key code
+        {                           // lKeyData = *(LPKEYDATA) &lParam; // Key data
+#ifdef DEBUG
+            int     nVirtKey    = (int) wParam;
+            KEYDATA keyData     = *(LPKEYDATA) &lParam;
+#else
+  #define nVirtKey      ((int) wParam)
+  #define keyData       (*(LPKEYDATA) &lParam)
+#endif
+            nVirtKey = nVirtKey;        // Respecify to avoid compiler error (unreferenced var)
+            keyData = keyData;
+
+#ifdef DEBUG_WM_KEYUP
+            dprintfWL0 (L"WM_KEYUP:       nVirtKey = %02X(%c), ScanCode = %02X, SCMA = %u%u%u%u", nVirtKey, nVirtKey, keyData.scanCode);
+#endif
             // Process the virtual key
             switch (nVirtKey)
             {
@@ -2360,11 +2408,62 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End SWITCH
 
             break;
-#undef  nVirtKey
+#ifndef DEBUG
+  #undef  keyData
+  #undef  nVirtKey
+#endif
+        } // End WM_KEYUP
 
-#define nVirtKey ((int) wParam)
-        case WM_SYSKEYDOWN:         // nVirtKey = (int) wParam;     // Virtual-key code
-                                    // lKeyData = lParam;           // Key data
+        case WM_SYSKEYDOWN:         // nVirtKey = (int) wParam;         // Virtual-key code
+        {                           // lKeyData = *(LPKEYDATA) &lParam; // Key data
+#ifdef DEBUG
+            int     nVirtKey    = (int) wParam;
+            KEYDATA keyData     = *(LPKEYDATA) &lParam;
+#else
+  #define nVirtKey      ((int) wParam)
+  #define keyData       (*(LPKEYDATA) &lParam)
+#endif
+            nVirtKey = nVirtKey;        // Respecify to avoid compiler error (unreferenced var)
+            keyData = keyData;
+
+            // Get the key states
+            ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
+            ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
+            ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
+#ifdef DEBUG_WM_KEYDOWN
+            dprintfWL0 (L"WM_SYSKEYDOWN:  nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
+                        nVirtKey,
+                        nVirtKey,
+                        keyData.scanCode,
+                        ksShft, ksCtrl, ksMenu);
+#endif
+            // Ensure the scanCode is within range of our table
+            if (keyData.scanCode < aKeybLayoutAct.uCharCodesLen)
+            {
+                // Set the keyb state
+                uState = (ksShft << 2) | (ksCtrl << 1) | (ksMenu << 0);
+
+                // Get the corresponding character
+                wchCode[0] = aKeybLayoutAct.aCharCodes[keyData.scanCode].wc[uState];
+
+                // Check for valid character
+                if (wchCode[0])
+                {
+                    // If this control allows numbers only, ...
+                    if (ES_NUMBER & GetWindowLongW (hWnd, GWL_STYLE))
+                    {
+                        if (L'0' > wchCode[0]
+                         ||        wchCode[0] > L'9')
+                            break;
+                    } // End IF
+
+                    // Insert/replace the char string
+                    InsRepCharStr (hWnd, wchCode, lpMemPTD EQ NULL);
+
+                    return FALSE;       // We handled the msg
+                } // End IF
+            } // End IF
+
             // Process the virtual key
             switch (nVirtKey)
             {
@@ -2443,12 +2542,44 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End SWITCH
 
             break;
-#undef  keyData
-#undef  nVirtKey
+#ifndef DEBUG
+  #undef  keyData
+  #undef  nVirtKey
+#endif
+        } // End WM_SYSKEYDOWN
 
-        case WM_CHAR:               // wchCharCode = (TCHAR) wParam; // character code
-                                    // lKeyData = lParam;           // Key data
-        {
+////         case WM_SYSKEYUP:           // nVirtKey = (int) wParam;         // Virtual-key code
+////         {                           // lKeyData = *(LPKEYDATA) &lParam; // Key data
+//// #ifdef DEBUG
+////             int     nVirtKey    = (int) wParam;
+////             KEYDATA keyData     = *(LPKEYDATA) &lParam;
+//// #else
+////   #define nVirtKey      ((int) wParam)
+////   #define keyData       (*(LPKEYDATA) &lParam)
+//// #endif
+////             nVirtKey = nVirtKey;        // Respecify to avoid compiler error (unreferenced var)
+////             keyData = keyData;
+////
+////             // Get the key states
+////             ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
+////             ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
+////             ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
+//// #ifdef DEBUG_WM_KEYUP
+////             dprintfWL0 (L"WM_SYSKEYUP:    nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u%u",
+////                         nVirtKey,
+////                         nVirtKey,
+////                         keyData.scanCode,
+////                         ksShft, ksCtrl, ksMenu);
+//// #endif
+////             break;
+//// #ifndef DEBUG
+////   #undef  keyData
+////   #undef  nVirtKey
+//// #endif
+////         } // End WM_SYSKEYUP
+
+        case WM_CHAR:               // wchCharCode = (TCHAR) wParam;    // character code
+        {                           // lKeyData = *(LPKEYDATA) &lParam; // Key data
 #ifdef DEBUG
             WCHAR   wchCharCode = (WCHAR) wParam;
             KEYDATA keyData     = *(LPKEYDATA) &lParam;
@@ -2456,17 +2587,25 @@ LRESULT WINAPI LclEditCtrlWndProc
   #define wchCharCode   ((WCHAR) wParam)
   #define keyData       (*(LPKEYDATA) &lParam)
 #endif
-            int iChar;
-
-            // Handle Shifted & unshifted chars
-            //  e.g., 'a' = 97, 'z' = 122
+            wchCharCode = wchCharCode;  // Respecify to avoid compiler error (unreferenced var)
+            keyData = keyData;
 
             // If the transition state is set, then this char
             //   seems to come from the secondary char generated
             //   by Alt-nnnn
             if (keyData.transitionState)
                 return FALSE;
-
+            // Get the key states
+            ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
+            ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
+            ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
+#ifdef DEBUG_WM_CHAR
+            dprintfWL0 (L"WM_CHAR:      CharCode = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
+                         wchCharCode,
+                         wchCharCode,
+                         keyData.scanCode,
+                         ksShft, ksCtrl, ksMenu);
+#endif
             // Check for Tab
             if (wchCharCode EQ WC_HT)
             {
@@ -2477,14 +2616,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                 else
                     // Ignore Tab as we handled it in WM_KEYDOWN
                     return FALSE;       // We handled the msg
-            } // End IF
-
-            // If this control allows numbers only, ...
-            if (ES_NUMBER & GetWindowLongW (hWnd, GWL_STYLE))
-            {
-                if (L'0' > wchCharCode
-                 ||        wchCharCode > L'9')
-                    break;
             } // End IF
 
             // Check for Return
@@ -2499,8 +2630,54 @@ LRESULT WINAPI LclEditCtrlWndProc
                     return FALSE;
             } // End IF
 
+            // Check for Ctrl-C (Copy)
+            if (aKeybLayoutAct.bUseCXV
+             && ksCtrl
+             && wchCharCode EQ 03)
+            {
+                // Post to ourselves a request to Redo
+                PostMessageW (hWnd, WM_COPY, 0, 0);
+
+                return FALSE;       // We handled the msg
+            } // End IF
+
+            // Check for Ctrl-X (Cut)
+            if (aKeybLayoutAct.bUseCXV
+             && ksCtrl
+             && wchCharCode EQ 24)
+            {
+                // Post to ourselves a request to Redo
+                PostMessageW (hWnd, WM_CUT, 0, 0);
+
+                return FALSE;       // We handled the msg
+            } // End IF
+
+            // Check for Ctrl-V (Paste)
+            if (aKeybLayoutAct.bUseCXV
+             && ksCtrl
+             && wchCharCode EQ 22)
+            {
+                // Post to ourselves a request to Redo
+                PostMessageW (hWnd, WM_PASTE, 0, 0);
+
+                return FALSE;       // We handled the msg
+            } // End IF
+
+            // Check for Ctrl-Z (Redo)
+            if (aKeybLayoutAct.bUseZY
+             && ksCtrl
+             && wchCharCode EQ 26)
+            {
+                // Post to ourselves a request to Redo
+                PostMessageW (hWnd, WM_UNDO, 0, 0);
+
+                return FALSE;       // We handled the msg
+            } // End IF
+
             // Check for Ctrl-Y (Redo)
-            if (wchCharCode EQ 25)
+            if (aKeybLayoutAct.bUseZY
+             && ksCtrl
+             && wchCharCode EQ 25)
             {
                 // Post to ourselves a request to Redo
                 PostMessageW (hWnd, WM_REDO, 0, 0);
@@ -2509,7 +2686,9 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
             // Check for Ctrl-S (Save)
-            if (wchCharCode EQ 19
+            if (aKeybLayoutAct.bUseSEQ
+             && wchCharCode EQ 19
+             && ksCtrl
              && IzitFE (GetParent (hWnd)))  // Parent is FE
             {
                 // Post a request to ourselves to save the function
@@ -2519,7 +2698,9 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
             // Check for Ctrl-E (Save and End)
-            if (wchCharCode EQ 5
+            if (aKeybLayoutAct.bUseSEQ
+             && wchCharCode EQ 5
+             && ksCtrl
              && IzitFE (GetParent (hWnd)))  // Parent is FE
             {
                 // Post a request to ourselves to save & close the function
@@ -2529,7 +2710,9 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
             // Check for Ctrl-Q (Close)
-            if (wchCharCode EQ 17
+            if (aKeybLayoutAct.bUseSEQ
+             && wchCharCode EQ 17
+             && ksCtrl
              && IzitFE (GetParent (hWnd)))  // Parent is FE
             {
                 // Post a request to ourselves to close the function
@@ -2540,6 +2723,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
 ////////////// Check for Ctrl-A (SaveAs)        // ***FIXME*** -- Make this work??
 ////////////if (wchCharCode EQ 1
+//////////// && ksCtrl
 //////////// && IzitFE (GetParent (hWnd)))  // Parent is FE
 ////////////{
 ////////////    // Post a request to ourselves to save the function under a different name
@@ -2548,125 +2732,41 @@ LRESULT WINAPI LclEditCtrlWndProc
 ////////////    return FALSE;       // We handled the msg
 ////////////} // End IF
 
-            iChar = wchCharCode - L' ';
-            if (0 <= iChar
-             &&      iChar < ACHARCODES_NROWS)
-            {
-                // Get the Nrm- char code
-                wChar[0] = aCharCodes[iChar].nrm;
-                wChar[1] = WC_EOS;
+            // Check for chars we meed to pass on (BS, LF, CR)
+            if (!ksCtrl
+             && (wchCharCode EQ 8
+              || wchCharCode EQ 10
+              || wchCharCode EQ 13))
+                break;
 
-                // If it's valid, insert/replace it
-                if (wChar[0])
-                {
-                    // Insert/replace the char string
-                    InsRepCharStr (hWnd, wChar, lpMemPTD EQ NULL);
-
-                    return FALSE;       // We handled the msg
-                } else
-                // Otherwise, DbgMsg it
-                {
-#ifdef DEBUG
-                    WCHAR wszTemp[1024];    // Ptr to temporary output area
-
-                    wsprintfW (wszTemp,
-                               L"CHAR:  wchCharCode = %d, %c",
-                               wchCharCode,
-                               wchCharCode);
-                    DbgMsgW (wszTemp);
-#endif
-                } // End IF/ELSE
-            } // End IF/ELSE
-
-            break;
+            return FALSE;           // We handled the msg
         } // End WM_CHAR
 #ifndef DEBUG
   #undef  keyData
   #undef  wchCharCode
 #endif
 
-#define wchCharCode ((WCHAR) wParam)
-#define keyData     (*(LPKEYDATA) &lParam)
-        case WM_SYSCHAR:            // wchCharCode = (TCHAR) wParam; // character code
-                                    // lKeyData = lParam;           // Key data
-        {
-            int   iChar;
-
-            // Handle Shifted & unshifted Alt chars
-            //  e.g., 'a' = 97, 'z' = 122
-
-            iChar = wchCharCode - L' ';
-            if (0 <= iChar
-             &&      iChar < ACHARCODES_NROWS)
-            {
-                // If the Caps Lock key is On,
-                //   and the key is alphabetic,
-                //   the key comes in as toggled to Lower/Uppercase
-                //   depending upon the state of the shift key.
-                // I prefer the behavior where the Caps Lock key
-                //   doesn't affect the shift state when the Alt-key
-                //   is pressed, so the following code
-                //   toggles the upper/lowercase state
-                if (GetKeyState (VK_CAPITAL) & BIT0)
-                {
-                    if (L'a' <= wchCharCode && wchCharCode <= L'z')
-                        wchCharCode = (WCHAR) CharUpperW ((LPWCHAR) wchCharCode);
-                    else
-                    if (L'A' <= wchCharCode && wchCharCode <= L'Z')
-                        wchCharCode = (WCHAR) CharLowerW ((LPWCHAR) wchCharCode);
-
-                    iChar = wchCharCode - L' ';
-                } // End IF
-
-                // Get the Alt- char code
-                wChar[0] = aCharCodes[iChar].alt;
-                wChar[1] = WC_EOS;
-
-                // If this control allows numbers only, ...
-                if (ES_NUMBER & GetWindowLongW (hWnd, GWL_STYLE))
-                {
-                    if (L'0' > wChar[0]
-                     ||        wChar[0] > L'9')
-                        break;
-                } // End IF
-
-                // If it's valid, insert/replace it
-                if (wChar[0])
-                {
-                    // Insert/replace the char string
-                    InsRepCharStr (hWnd, wChar, lpMemPTD EQ NULL);
-
-                    return FALSE;       // We handled the msg
-                } else
-                // Otherwise, DbgMsg it
-                {
+        case WM_SYSCHAR:            // wchCharCode = (TCHAR) wParam;    // character code
+        {                           // lKeyData = *(LPKEYDATA) &lParam; // Key data
 #ifdef DEBUG
-                    WCHAR wszTemp[1024];    // Ptr to temporary output area
-
-                    wsprintfW (wszTemp,
-                               L"SYSCHAR:  wchCharCode = %d, %c",
-                               wchCharCode,
-                               wchCharCode);
-                    DbgMsgW (wszTemp);
+            WCHAR   wchCharCode = (WCHAR) wParam;
+            KEYDATA keyData     = *(LPKEYDATA) &lParam;
+#else
+  #define wchCharCode   ((WCHAR) wParam)
+  #define keyData       (*(LPKEYDATA) &lParam)
 #endif
-                } // End IF/ELSE
-            } else
-            {
-#ifdef DEBUG
-                WCHAR wszTemp[1024];    // Ptr to temporary output area
+            wchCharCode = wchCharCode;  // Respecify to avoid compiler error (unreferenced var)
+            keyData = keyData;
 
-                wsprintfW (wszTemp,
-                           L"SYSCHAR:  wchCharCode = %d, %c",
-                           wchCharCode,
-                           wchCharCode);
-                DbgMsgW (wszTemp);
+#ifdef DEBUG_WM_CHAR
+            dprintfWL0 (L"WM_SYSCHAR:   CharCode = %02X(%c), ScanCode = %02X", wchCharCode, wchCharCode, keyData.scanCode);
 #endif
-            } // End IF/ELSE
-
-            break;
+            return FALSE;           // We handled the msg
+#ifndef DEBUG
+  #undef  keyData
+  #undef  wchCharCode
+#endif
         } // End WM_SYSCHAR
-#undef  keyData
-#undef  wchCharCode
 
         case WM_UNDO:               // 0 = wParam
                                     // 0 = lParam

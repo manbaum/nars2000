@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,6 +63,7 @@
 #define UTF16_LDC_LT_VERT_L      0x2524         // LDC light vertical and left
 #define UTF16_LDC_LT_HORZ_D      0x252C         // LDC light horizontal and down
 #define UTF16_LDC_LT_HORZ_U      0x2534         // LDC light horizontal and up
+#define UTF16_LDC_LT_CROSS       0x253C         // LDC light horizontal and vertical
 #define UTF16_LDC_DB_HORZ        0x2550         // LDC double horizontal
 #define UTF16_LDC_DB_VERT        0x2551         // LDC double vertical
 #define UTF16_LDC_DB_UL          0x2554         // LDC double upper left
@@ -73,7 +74,9 @@
 #define UTF16_LDC_DB_VERT_L      0x2563         // LDC double vertical and left
 #define UTF16_LDC_DB_HORZ_D      0x2566         // LDC double horizontal and down
 #define UTF16_LDC_DB_HORZ_U      0x2569         // LDC double horizontal and up
+#define UTF16_LDC_DB_CROSS       0x256C         // LDC double horizontal and vertical
 #define UTF16_LEFTRIGHTARROWS    0x2194         // Left-right arrows
+#define UTF16_UPDOWNARROWS       0x2195         // Up-down arrows
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha
@@ -122,14 +125,14 @@
 #define UTF16_DIERESISSTAR       0x2363         // Alt-'P' - Power operator       (sourpuss)
 //efine UTF16_                                  // Alt-'Q' - (none)
 //efine UTF16_                                  // Alt-'R' - (none)
-//efine UTF16_                                  // Alt-'S' - (none)
+#define UTF16_SECTION            0x00A7         // Alt-'S' - Multiset Symmetric Difference (section)
 #define UTF16_DIERESISTILDE      0x2368         // Alt-'T' - Commute operator     (frown)
 //efine UTF16_                                  // Alt-'U' - (none)
 //efine UTF16_                                  // Alt-'V' - (none)
 //efine UTF16_                                  // Alt-'W' - (none)
-//efine UTF16_                                  // Alt-'X' - (none)
+#define UTF16_RIGHTSHOEUNDERBAR  0x2287         // Alt-'X' - Superset
 //efine UTF16_                                  // Alt-'Y' - (none)
-//efine UTF16_                                  // Alt-'Z' - (none)
+#define UTF16_LEFTSHOEUNDERBAR   0x2286         // Alt-'Z' - Subset
 
 // Top row, unshifted
 #define UTF16_DIAMOND            0x22C4         // Alt-'`' - diamond (not 0x25CA)
@@ -272,7 +275,20 @@
 #define WS_UTF16_LDC_LT_VERT_L      L"\x2524"   // LDC light vertical and left
 #define WS_UTF16_LDC_LT_HORZ_D      L"\x252C"   // LDC light horizontal and down
 #define WS_UTF16_LDC_LT_HORZ_U      L"\x2534"   // LDC light horizontal and up
+#define WS_UTF16_LDC_LT_CROSS       L"\x253C"   // LDC light horizontal and vertical
+#define WS_UTF16_LDC_DB_HORZ        L"\x2550"   // LDC double horizontal
+#define WS_UTF16_LDC_DB_VERT        L"\x2551"   // LDC double vertical
+#define WS_UTF16_LDC_DB_UL          L"\x2554"   // LDC double upper left
+#define WS_UTF16_LDC_DB_UR          L"\x2557"   // LDC double upper right
+#define WS_UTF16_LDC_DB_LL          L"\x255A"   // LDC double lower left
+#define WS_UTF16_LDC_DB_LR          L"\x255D"   // LDC double lower right
+#define WS_UTF16_LDC_DB_VERT_R      L"\x2560"   // LDC double vertical and right
+#define WS_UTF16_LDC_DB_VERT_L      L"\x2563"   // LDC double vertical and left
+#define WS_UTF16_LDC_DB_HORZ_D      L"\x2566"   // LDC double horizontal and down
+#define WS_UTF16_LDC_DB_HORZ_U      L"\x2569"   // LDC double horizontal and up
+#define WS_UTF16_LDC_DB_CROSS       L"\x256C"   // LDC double horizontal and vertical
 #define WS_UTF16_LEFTRIGHTARROWS    L"\x2194"   // Left-right arrows
+#define WS_UTF16_UPDOWNARROWS       L"\x2195"   // Up-down arrows
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA              L"\x237A"   // Alt-'a' - alpha
@@ -322,13 +338,14 @@
 //efine WS_UTF16_                               // Alt-'Q' - (none)
 //efine WS_UTF16_                               // Alt-'R' - (none)
 //efine WS_UTF16_                               // Alt-'S' - (none)
+#define WS_UTF16_SECTION            L"\x00A7"   // Alt-'S' - Multiset Symmetric Difference (section)
 #define WS_UTF16_DIERESISTILDE      L"\x2368"   // Alt-'T' - Commute operator     (frown)
 //efine WS_UTF16_                               // Alt-'U' - (none)
 //efine WS_UTF16_                               // Alt-'V' - (none)
 //efine WS_UTF16_                               // Alt-'W' - (none)
-//efine WS_UTF16_                               // Alt-'X' - (none)
+#define WS_UTF16_RIGHTSHOEUNDERBAR  L"\x2287"   // Alt-'X' - Superset
 //efine WS_UTF16_                               // Alt-'Y' - (none)
-//efine WS_UTF16_                               // Alt-'Z' - (none)
+#define WS_UTF16_LEFTSHOEUNDERBAR   L"\x2286"   // Alt-'Z' - Subset
 
 // Top row, unshifted
 #define WS_UTF16_DIAMOND            L"\x22C4"   // Alt-'`' - diamond (not \x25CA)

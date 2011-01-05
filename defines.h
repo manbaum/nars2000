@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,8 +54,12 @@
 #define DEF_MELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_MEFONTNAME
 #define DEF_VELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_VEFONTNAME
 
+#define DEF_KBFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_KBLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_KBFONTNAME
+
 #define DEF_TCPTSIZE        9           // Point size for TC font
 #define DEF_SMPTSIZE       13           // ...            SM ...
+#define DEF_KBPTSIZE       13           // ...            KB ...
 #define DEF_FBPTSIZE       13           // ...            FB ...
 #define DEF_LWPTSIZE       13           // ...            LW ...
 #define DEF_PRPTSIZE       13           // ...            PR ...
@@ -63,6 +67,8 @@
 #define DEF_FEPTSIZE       13           // ...            FE ...
 #define DEF_MEPTSIZE       13           // ...            ME ...
 #define DEF_VEPTSIZE       13           // ...            VE ...
+
+#define SampleText      L"(" WS_UTF16_IOTA L"V)" WS_UTF16_EQUALUNDERBAR WS_UTF16_RIGHTSHOE WS_UTF16_JOT L".,/" WS_UTF16_IOTA WS_UTF16_DIERESIS L"V"
 
 #define DEF_INDENT          6           // Prompt indent
 #define DEF_TABS            4           // Tab insertion
@@ -394,6 +400,7 @@ default:        \
 #define MYWM_LPMEMPTD       (WM_APP +20)    // MF (Pass lpMemPTD for TLS)
 #define MYWM_PROMPT         (WM_APP +21)    // MF (Display the prompt)
 #define MYWM_INIT_EC        (WM_APP +22)    // EC (Initialize local Edit Ctrl)
+#define MYWM_KEYBHIGHLIGHT  (WM_APP +23)    // CD (Highlight a button)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB
@@ -402,6 +409,16 @@ default:        \
 #define MYWM_DBGMSG_CLR     (WM_APP +53)    // DB
 #define MYWM_DBGMSG_SCROLL  (WM_APP +54)    // DB
 #define MYWM_UNHOOK         (WM_APP +55)    // DB
+
+
+//***************************************************************************
+//  Keyboard State Bits
+//***************************************************************************
+
+#define KS_SHIFT        4
+#define KS_CTRL         2
+#define KS_ALT          1
+#define KS_NONE         0
 
 
 //***************************************************************************
@@ -461,6 +478,7 @@ default:        \
 #define fopenW          _wfopen
 #define strlwrW         _wcslwr
 #define strdupW         _wcsdup
+#define tolowerW        towlower
 
 
 //***************************************************************************

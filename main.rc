@@ -215,7 +215,7 @@ BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,130,5,50,14
     LTEXT           "NARS2000 (WinXX)\nVersion %u.%u%u",IDC_VERSION,10,
                     5,115,18,NOT WS_GROUP
-    LTEXT           "Copyright © 2006-10 Sudley Place Software\nAll rights reserved.",
+    LTEXT           "Copyright © 2006-11 Sudley Place Software\nAll rights reserved.",
                     IDC_STATIC,10,30,150,18,NOT WS_GROUP
     ICON            IDI_NARS,IDC_LOADEDFROM,145,25, 0, 0,SS_NOTIFY | SS_REALSIZEIMAGE
     LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see",

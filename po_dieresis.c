@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -371,7 +371,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     LPVOID        lpMemRht = NULL,      // Ptr to right arg global memory
                   lpMemRes = NULL;      // Ptr to result    ...
     APLUINT       uRht,                 // Right arg loop counter
-                  uRes;                 // Result    ...
+                  uValErrCnt = 0;       // VALUE ERROR counter
     LPPL_YYSTYPE  lpYYRes = NULL,       // Ptr to the result
                   lpYYRes2;             // Ptr to secondary result
     APLINT        apaOff,               // Right arg APA offset
@@ -456,19 +456,16 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
         if (lpYYRes2)
         {
             // Check for NoValue
-            if (IsTokenNoValue (&lpYYRes2->tkToken))
+            if (!IsTokenNoValue (&lpYYRes2->tkToken))
             {
-                // Free the YYRes (but not the storage)
-                YYFree (lpYYRes2); lpYYRes2 = NULL;
-
-                goto VALUE_EXIT;
-            } // End IF
-
-            // Enclose the item
-            lpYYRes = PrimFnMonLeftShoe_EM_YY (&lpYYFcnStrLft->tkToken,     // Ptr to function token
-                                               &lpYYRes2->tkToken,          // Ptr to right arg token
-                                                NULL);                      // Ptr to LPPRIMSPEC
-            FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
+                // Enclose the item
+                lpYYRes = PrimFnMonLeftShoe_EM_YY (&lpYYFcnStrLft->tkToken,     // Ptr to function token
+                                                   &lpYYRes2->tkToken,          // Ptr to right arg token
+                                                    NULL);                      // Ptr to LPPRIMSPEC
+                // We no longer need this storage
+                FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
+            } else
+                lpYYRes = lpYYRes2;
         } else
             lpYYRes = NULL;
 
@@ -514,15 +511,6 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-    if (IsNested (aplTypeRes))
-    {
-        // Fill nested result with PTR_REUSED
-        //   in case we fail part way through
-        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-        for (uRes = 1; uRes < aplNELMRht; uRes++)
-            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
-    } // End IF
-
     // Fill in the right arg token
     tkRhtArg.tkFlags.TknType   = TKT_VARIMMED;
 ////tkRhtArg.tkFlags.ImmType   =       // To be filled in below
@@ -549,6 +537,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           lpYYFcnStrLft,        // Ptr to function strand
                                          &tkRhtArg,             // Ptr to right arg token
                                           lptkAxisLft,          // Ptr to left operand axis token
+                                         &uValErrCnt,           // Ptr to VALUE ERROR counter
                                           lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                     goto ERROR_EXIT;
                 break;
@@ -563,6 +552,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           lpYYFcnStrLft,        // Ptr to function strand
                                          &tkRhtArg,             // Ptr to right arg token
                                           lptkAxisLft,          // Ptr to left operand axis token
+                                         &uValErrCnt,           // Ptr to VALUE ERROR counter
                                           lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                     goto ERROR_EXIT;
                 break;
@@ -605,6 +595,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                        lpYYFcnStrLft,       // Ptr to function strand
                                       &tkRhtArg,            // Ptr to right arg token
                                        lptkAxisLft,         // Ptr to left operand axis token
+                                      &uValErrCnt,          // Ptr to VALUE ERROR counter
                                        lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                 // Free the arg token
                 FreeResultTkn (&tkRhtArg);
@@ -657,6 +648,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                               lpYYFcnStrLft,        // Ptr to function strand
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
+                                             &uValErrCnt,           // Ptr to VALUE ERROR counter
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -680,6 +672,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                               lpYYFcnStrLft,        // Ptr to function strand
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
+                                             &uValErrCnt,           // Ptr to VALUE ERROR counter
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -703,6 +696,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                               lpYYFcnStrLft,        // Ptr to function strand
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
+                                             &uValErrCnt,           // Ptr to VALUE ERROR counter
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -726,6 +720,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                               lpYYFcnStrLft,        // Ptr to function strand
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
+                                             &uValErrCnt,           // Ptr to VALUE ERROR counter
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -733,11 +728,11 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 break;
 
             case ARRAY_APA:
-    #define lpAPA       ((LPAPLAPA) lpMemRht)
+#define lpAPA       ((LPAPLAPA) lpMemRht)
                 // Get the APA parameters
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
-    #undef  lpAPA
+#undef  lpAPA
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
@@ -754,6 +749,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                               lpYYFcnStrLft,        // Ptr to function strand
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
+                                             &uValErrCnt,           // Ptr to VALUE ERROR counter
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -808,6 +804,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                            lpYYFcnStrLft,       // Ptr to function strand
                                           &tkRhtArg,            // Ptr to right arg token
                                            lptkAxisLft,         // Ptr to left operand axis token
+                                          &uValErrCnt,          // Ptr to VALUE ERROR counter
                                            lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                     // Free the arg token
                     FreeResultTkn (&tkRhtArg);
@@ -828,6 +825,23 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    // Check for VALUE ERROR
+    if (uValErrCnt)
+    {
+        // Check for all VALUE ERRORs
+        if (uValErrCnt EQ aplNELMRht)
+        {
+            // We no longer need this storage
+            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+            // Make a PL_YYSTYPE NoValue entry
+            lpYYRes = MakeNoValue_YY (&lpYYFcnStrOpr->tkToken);
+
+            goto NORMAL_EXIT;
+        } else
+            goto VALUE_EXIT;
     } // End IF
 
     // Allocate a new YYRes
@@ -919,6 +933,7 @@ UBOOL ExecFuncOnToken_EM
      LPPL_YYSTYPE lpYYFcnStr,           // Ptr to function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      LPTOKEN      lptkAxis,             // Ptr to function strand axis token (may be NULL)
+     LPAPLUINT    lpuValErrCnt,         // Ptr to VALUE ERROR counter
      LPPRIMFNS    lpPrimProto)          // Ptr to left operand prototype function (may be NULL)
 
 {
@@ -972,7 +987,10 @@ UBOOL ExecFuncOnToken_EM
                 // Free the YYRes (but not the storage)
                 YYFree (lpYYRes); lpYYRes = NULL;
 
-                goto VALUE_EXIT;
+                // Increment the VALUE ERROR counter
+                (*lpuValErrCnt)++;
+
+                return TRUE;
 
             defstop
                 break;
@@ -984,12 +1002,7 @@ UBOOL ExecFuncOnToken_EM
         return TRUE;
     } // End IF
 
-    goto ERROR_EXIT;
-
-VALUE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
-    goto ERROR_EXIT;
+    // Fall through to error handling code
 
 ERROR_EXIT:
     if (lpYYRes)
@@ -1071,6 +1084,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     APLUINT       uLft,                 // Left arg loop counter
                   uRht,                 // Right ...
                   uRes,                 // Result   ...
+                  uValErrCnt = 0,       // VALUE ERROR counter
                   ByteAlloc;            // # bytes to allocate
     APLINT        apaOffLft,            // Left arg APA offset
                   apaMulLft,            // ...          multiplier
@@ -1397,6 +1411,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                lpYYFcnStrLft,       // Ptr to function strand
                               &tkRhtArg,            // Ptr to right arg token
                                lptkAxisLft,         // Ptr to left operand axis token
+                              &uValErrCnt,          // Ptr to VALUE ERROR counter
                                lpPrimProtoLft);     // Ptr to left operand prototype function
         // Free the left & right arg tokens
         if (lpMemLft)
@@ -1412,6 +1427,23 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    // Check for VALUE ERROR
+    if (uValErrCnt)
+    {
+        // Check for all VALUE ERRORs
+        if (uValErrCnt EQ aplNELMRht)
+        {
+            // We no longer need this storage
+            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+            // Make a PL_YYSTYPE NoValue entry
+            lpYYRes = MakeNoValue_YY (&lpYYFcnStrOpr->tkToken);
+
+            goto NORMAL_EXIT;
+        } else
+            goto VALUE_EXIT;
     } // End IF
 
     // Allocate a new YYRes
@@ -1436,6 +1468,11 @@ LEFT_SYNTAX_EXIT:
 
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -291,7 +291,8 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     APLUINT       ByteRes,              // # bytes in the result
                   uLft,                 // Left arg loop counter
                   uRht,                 // Right ...
-                  uRes;                 // Result   ...
+                  uRes,                 // Result   ...
+                  uValErrCnt = 0;       // VALUE ERROR counter
     HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
                   hGlbRht = NULL,       // Right ...
                   hGlbRes = NULL;       // Result   ...
@@ -761,6 +762,7 @@ RESTART_JOTDOT:
                                lpYYFcnStrRht,       // Ptr to function strand
                               &tkRhtArg,            // Ptr to right arg token
                                lptkAxisRht,         // Ptr to right operand axis token (may be NULL)
+                              &uValErrCnt,          // Ptr to VALUE ERROR counter
                                lpPrimProtoRht);     // Ptr to right operand prototype function
         // Free the left & right arg tokens
         if (lpMemLft)
@@ -774,6 +776,23 @@ RESTART_JOTDOT:
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Check for VALUE ERROR
+    if (uValErrCnt)
+    {
+        // Check for all VALUE ERRORs
+        if (uValErrCnt EQ aplNELMRes)
+        {
+            // We no longer need this storage
+            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+            // Make a PL_YYSTYPE NoValue entry
+            lpYYRes = MakeNoValue_YY (&lpYYFcnStrOpr->tkToken);
+
+            goto NORMAL_EXIT;
+        } else
+            goto VALUE_EXIT;
+    } // End IF
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -812,6 +831,11 @@ NONCE_EXIT:
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    return NULL;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
 

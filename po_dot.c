@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -139,12 +139,12 @@ LPPL_YYSTYPE PrimIdentOpDot_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // Pick off the inner products we know how to handle
     if (lpYYFcnStrLft->TknCount EQ 1
@@ -269,12 +269,12 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_SYNTAX_EXIT:
+RIGHT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
@@ -482,12 +482,12 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // Check for left operand axis operator
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
@@ -503,10 +503,10 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
        lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
 
         if (!lpPrimProtoLft)
-            goto LEFT_NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
         if (!lpPrimProtoRht)
-            goto RIGHT_NONCE_EXIT;
+            goto RIGHT_OPERAND_NONCE_EXIT;
     } // End IF
 
     // Get a ptr to the Primitive Function Flags
@@ -575,7 +575,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
             // Get the appropriate prototype function ptr
             lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
-            goto LEFT_NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
 
@@ -585,7 +585,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     {
         // If we're also prototyping, ...
         if (bPrototyping)
-            goto LEFT_NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
         // If the reduction function is primitive scalar dyadic, ...
         if (lpPrimFlagsLft->DydScalar)
@@ -595,7 +595,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
             //   signal a DOMAIN ERROR
             if (lpYYFcnStrLft->tkToken.tkFlags.TknType NE TKT_FCNIMMED
              || !lpPrimFlagsLft->IdentElem)
-                goto LEFTOPR_DOMAIN_EXIT;
+                goto LEFT_OPERAND_DOMAIN_EXIT;
 
             // Get the identity element
             aplFloatIdent = lpPrimIdentLft->fIdentElem;
@@ -644,7 +644,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                                             aplFrstRht,
                                            &aplTypeRht);
         if (aplTypeCmp EQ ARRAY_ERROR)
-            goto RIGHTOPR_DOMAIN_EXIT;
+            goto RIGHT_OPERAND_DOMAIN_EXIT;
         // For the moment, APA is treated as INT
         if (IsSimpleAPA (aplTypeCmp))
             aplTypeCmp = ARRAY_INT;
@@ -657,7 +657,7 @@ RESTART_INNERPROD_CMP:
                                             aplInnrMax,
                                            &aplTypeCmp);
         if (aplTypeRes EQ ARRAY_ERROR)
-            goto LEFTOPR_DOMAIN_EXIT;
+            goto LEFT_OPERAND_DOMAIN_EXIT;
 
         // If the result is empty, make it Boolean
         if (IsEmpty (aplNELMRes))
@@ -936,7 +936,7 @@ RESTART_INNERPROD_RES:
             // Get the appropriate prototype function ptr
             lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
             if (!lpPrimProtoRht)
-                goto RIGHT_NONCE_EXIT;
+                goto RIGHT_OPERAND_NONCE_EXIT;
         } // End IF
 
         // Execute the right operand between the left & right items
@@ -1585,22 +1585,22 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_SYNTAX_EXIT:
+RIGHT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
-LEFT_NONCE_EXIT:
+LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_NONCE_EXIT:
+RIGHT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
@@ -1610,12 +1610,12 @@ LENGTH_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
-LEFTOPR_DOMAIN_EXIT:
+LEFT_OPERAND_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHTOPR_DOMAIN_EXIT:
+RIGHT_OPERAND_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;

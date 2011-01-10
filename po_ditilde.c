@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ LPPL_YYSTYPE PrimProtoOpDieresisTilde_EM_YY
 //***************************************************************************
 //  $PrimIdentOpDieresisTilde_EM_YY
 //
-//  Generate an identity element for the primitive operator dyadic DieresisTilde
+//  Generate an identity element for the primitive operator monadic DieresisTilde
 //***************************************************************************
 
 #ifdef DEBUG
@@ -145,7 +145,12 @@ LPPL_YYSTYPE PrimIdentOpDieresisTilde_EM_YY
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Check for left operand axis operator
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
@@ -155,7 +160,7 @@ LPPL_YYSTYPE PrimIdentOpDieresisTilde_EM_YY
 
     // Check for error
     if (!lpPrimFlagsLft || !lpPrimFlagsLft->lpPrimOps)
-        goto LEFT_DOMAIN_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Execute the left operand identity function on the right arg
     return
@@ -169,7 +174,12 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-LEFT_DOMAIN_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+LEFT_OPERAND_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
@@ -237,7 +247,7 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Split cases depending on whether or not we're prototyping
     if (bPrototyping)
@@ -245,7 +255,7 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
-            goto NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
         // Execute the function dyadically between the right arg and itself
         // Note that we cast the function strand to LPTOKEN
@@ -267,12 +277,12 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 
-NONCE_EXIT:
+LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
@@ -341,7 +351,7 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Split cases depending on whether or not we're prototyping
     if (bPrototyping)
@@ -349,7 +359,7 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
-            goto NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
         // Execute the function dyadically between the two args switched
         // Note that we cast the function strand to LPTOKEN
@@ -371,12 +381,12 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 
-NONCE_EXIT:
+LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;

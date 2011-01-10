@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -207,12 +207,12 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Ensure the right operand is a variable
     if (IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -238,12 +238,12 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 
         // Check for RIGHT OPERAND RANK ERROR
         if (1 < aplRankOprRht)
-            goto RANK_EXIT;
+            goto RIGHT_OPERAND_RANK_EXIT;
 
         // Check for RIGHT OPERAND LENGTH ERROR
         if (1 > aplNELMOprRht
          ||     aplNELMOprRht > 3)
-            goto LENGTH_EXIT;
+            goto RIGHT_OPERAND_LENGTH_EXIT;
 
         // Check for RIGHT OPERAND DOMAIN ERROR
         if (!IsSimpleNum (aplTypeOprRht))
@@ -392,22 +392,22 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 
     goto NORMAL_EXIT;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_SYNTAX_EXIT:
+RIGHT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
-RANK_EXIT:
+RIGHT_OPERAND_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
-LENGTH_EXIT:
+RIGHT_OPERAND_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;

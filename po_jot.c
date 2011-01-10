@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -131,10 +131,10 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
     if (IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     if (IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // Test for fcn/opr vs. var
     bLftArg = IsTknFcnOpr (&lpYYFcnStrLft->tkToken);
@@ -146,7 +146,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
-            goto LEFT_NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
 
@@ -156,7 +156,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
         if (!lpPrimProtoRht)
-            goto RIGHT_NONCE_EXIT;
+            goto RIGHT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoRht = NULL;
 
@@ -287,24 +287,29 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 
+LEFT_OPERAND_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    return NULL;
+
+RIGHT_OPERAND_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    return NULL;
+
+LEFT_OPERAND_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    return NULL;
+
+RIGHT_OPERAND_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    return NULL;
+
 LEFT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYFcnStrLft->tkToken);
-    return NULL;
-
-RIGHT_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYFcnStrRht->tkToken);
-    return NULL;
-
-LEFT_NONCE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                              &lpYYFcnStrLft->tkToken);
-    return NULL;
-
-RIGHT_NONCE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                              &lpYYFcnStrRht->tkToken);
+                               lptkLftArg);
     return NULL;
 } // End PrimOpJotCommon_EM_YY
 #undef  APPEND_NAME

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -154,7 +154,7 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Split cases depending on whether or not we're prototyping
     if (bPrototyping)
@@ -162,7 +162,7 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
-            goto NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
         // Execute the function monadically on the right arg
         // Note that we cast the function strand to LPTOKEN
@@ -184,12 +184,12 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 
-NONCE_EXIT:
+LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
@@ -249,7 +249,7 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Split cases depending on whether or not we're prototyping
     if (bPrototyping)
@@ -257,7 +257,7 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
-            goto NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
         // Execute the function dyadically between the two args
         // Note that we cast the function strand to LPTOKEN
@@ -274,12 +274,12 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
                                   lpYYFcnStrLft,// Ptr to left operand function strand
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxisOpr);     // Ptr to operator axis token
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 
-NONCE_EXIT:
+LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     return NULL;

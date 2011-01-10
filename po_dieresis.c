@@ -126,11 +126,11 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
                  hGlbRes = NULL;    // Result    ...
     LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
     LPAPLNESTED  lpMemRes = NULL;   // Ptr to result    ...
-    LPPL_YYSTYPE lpYYFcnStrRht,     // Ptr to right operand function strand
+    LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand
                  lpYYRes = NULL,    // Ptr to result
                  lpYYRes2 = NULL;   // Ptr to secondary result
-    LPPRIMFLAGS  lpPrimFlagsRht;    // Ptr to right operand primitive flags
-    LPTOKEN      lptkAxisRht;       // Ptr to axis operator token (if any)
+    LPPRIMFLAGS  lpPrimFlagsLft;    // Ptr to left operand primitive flags
+    LPTOKEN      lptkAxisLft;       // Ptr to axis operator token (if any)
     TOKEN        tkItem;            // Item token
 
     // The right arg is the prototype item from
@@ -144,27 +144,27 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
     //   (L f {each} R) ("each") is
     //   ({primops} f) {each} R.
 
-    // Set ptr to right operand,
+    // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
 
-    // Ensure the right operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
-     || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_SYNTAX_EXIT;
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Check for right operand axis operator
-    lptkAxisRht = CheckAxisOper (lpYYFcnStrRht);
+    // Check for left operand axis operator
+    lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
 
     // Get the appropriate primitive flags ptr
-    lpPrimFlagsRht = GetPrimFlagsPtr (&lpYYFcnStrRht->tkToken);
+    lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
     // Check for error
-    if (!lpPrimFlagsRht || !lpPrimFlagsRht->lpPrimOps)
-        goto RIGHT_DOMAIN_EXIT;
+    if (!lpPrimFlagsLft || !lpPrimFlagsLft->lpPrimOps)
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRht, aplRankRht);
@@ -226,11 +226,11 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
                                         &tkItem);       // Ptr to the result token
         // Execute the right operand identity function on each item of the right arg
         lpYYRes2 =
-          (*lpPrimFlagsRht->lpPrimOps)
+          (*lpPrimFlagsLft->lpPrimOps)
                             (lptkRhtArg,            // Ptr to original right arg token
-                             lpYYFcnStrRht,         // Ptr to function strand
+                             lpYYFcnStrLft,         // Ptr to function strand
                             &tkItem,                // Ptr to right arg token
-                             lptkAxisRht);          // Ptr to axis token (may be NULL)
+                             lptkAxisLft);          // Ptr to axis token (may be NULL)
         // Check for error
         if (lpYYRes2 EQ NULL)
             goto ERROR_EXIT;
@@ -244,7 +244,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
             lpSymEntry =
               MakeSymEntry_EM (lpYYRes2->tkToken.tkFlags.ImmType,   // ImmType to use (see IMM_TYPES)
                               &lpYYRes2->tkToken.tkData.tkLongest,  // Ptr to value to use
-                              &lpYYFcnStrRht->tkToken);             // Ptr to token to use in case of error
+                              &lpYYFcnStrLft->tkToken);             // Ptr to token to use in case of error
             // Check for error
             if (lpSymEntry EQ NULL)
                 goto ERROR_EXIT;
@@ -277,14 +277,14 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
 
     goto NORMAL_EXIT;
 
-RIGHT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYFcnStrRht->tkToken);
+                              &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_DOMAIN_EXIT:
+LEFT_OPERAND_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                              &lpYYFcnStrRht->tkToken);
+                              &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
 WSFULL_EXIT:
@@ -409,7 +409,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Check for left operand axis token
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
@@ -430,7 +430,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
-            goto NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
 ////////// Make sure the result is marked as Nested
 ////////aplTypeRes = ARRAY_NESTED;      // Set previously
@@ -864,12 +864,12 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-NONCE_EXIT:
+LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
@@ -1121,7 +1121,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Check for left operand axis token
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
@@ -1206,7 +1206,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
         if (!lpPrimProtoLft)
-            goto NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
 ////////// Make sure the result is marked as Nested
 ////////aplTypeRes = ARRAY_NESTED;      // Set previously
@@ -1461,12 +1461,12 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
 
     goto NORMAL_EXIT;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-NONCE_EXIT:
+LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;

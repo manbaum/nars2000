@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -194,12 +194,12 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_SYNTAX_EXIT;
+        goto LEFT_OPERAND_SYNTAX_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // Get a ptr to the left & right prototype function
     if (bPrototyping)
@@ -209,10 +209,10 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
        lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
 
         if (!lpPrimProtoLft)
-            goto LEFT_NONCE_EXIT;
+            goto LEFT_OPERAND_NONCE_EXIT;
 
         if (!lpPrimProtoRht)
-            goto RIGHT_NONCE_EXIT;
+            goto RIGHT_OPERAND_NONCE_EXIT;
     } // End IF
 
     // Check for axis operator in the left operand
@@ -301,22 +301,22 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 
-LEFT_SYNTAX_EXIT:
+LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 
-RIGHT_SYNTAX_EXIT:
+RIGHT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     return NULL;
 
-LEFT_NONCE_EXIT:
+LEFT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 
-RIGHT_NONCE_EXIT:
+RIGHT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     return NULL;

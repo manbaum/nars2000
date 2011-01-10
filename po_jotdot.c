@@ -145,7 +145,7 @@ LPPL_YYSTYPE PrimIdentOpJotDot_EM_YY
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -169,7 +169,7 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 
-RIGHT_SYNTAX_EXIT:
+RIGHT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     return NULL;
@@ -346,7 +346,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // The result NELM is the product of the left & right NELMs
     aplNELMRes = _imul64 (aplNELMLft, aplNELMRht, &bRet);
@@ -363,7 +363,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
         // Get the appropriate prototype function ptr
         lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
         if (!lpPrimProtoRht)
-            goto NONCE_EXIT;
+            goto RIGHT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoRht = NULL;
 
@@ -814,7 +814,7 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-RIGHT_SYNTAX_EXIT:
+RIGHT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
@@ -824,7 +824,7 @@ DOMAIN_EXIT:
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
-NONCE_EXIT:
+RIGHT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;

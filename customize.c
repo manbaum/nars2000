@@ -2429,7 +2429,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbKeybLayouts); lpGlbKeybLayouts = NULL;
 
+                        // Save the current keyboard layout as the active copy
+                        aKeybLayoutAct = lpLclKeybLayouts[uKeybLayoutNumAct];
+
                         // Save the current keyboard layout in our local copy
+                        //   to restore on Cancel
                         aKeybLayoutOrig = aKeybLayoutAct;
                     } // End IF
 
@@ -2781,7 +2785,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                             break;
                     } // End SWITCH
 
-                    return FALSE;   // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
                 case IDC_CLEARWS_FEATURE_CB1:
                     // We care about CBN_SELCHANGE only
@@ -3449,8 +3454,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Set or clear the bit
                     lpLclKeybLayouts[uKeybLayoutNumVis].bUseCXV = IsDlgButtonChecked (hWndProp, IDC_KEYB_RB_CLIP0);
 
-                    // If it's now clear, ...
-                    if (!lpLclKeybLayouts[uKeybLayoutNumVis].bUseCXV)
+                    // If it's now set, ...
+                    if (lpLclKeybLayouts[uKeybLayoutNumVis].bUseCXV)
                     {
                         lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'c', KS_NONE)].wc[KS_CTRL] =
                         lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'x', KS_NONE)].wc[KS_CTRL] =
@@ -3475,8 +3480,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Set or clear the bit
                     lpLclKeybLayouts[uKeybLayoutNumVis].bUseZY = IsDlgButtonChecked (hWndProp, IDC_KEYB_RB_UNDO0);
 
-                    // If it's now clear, ...
-                    if (!lpLclKeybLayouts[uKeybLayoutNumVis].bUseZY)
+                    // If it's now set, ...
+                    if (lpLclKeybLayouts[uKeybLayoutNumVis].bUseZY)
                     {
                         lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'z', KS_NONE)].wc[KS_CTRL] =
                         lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'y', KS_NONE)].wc[KS_CTRL] = 0;
@@ -3500,8 +3505,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Set or clear the bit
                     lpLclKeybLayouts[uKeybLayoutNumVis].bUseSEQ = IsDlgButtonChecked (hWndProp, IDC_KEYB_RB_FNED0);
 
-                    // If it's now clear, ...
-                    if (!lpLclKeybLayouts[uKeybLayoutNumVis].bUseSEQ)
+                    // If it's now set, ...
+                    if (lpLclKeybLayouts[uKeybLayoutNumVis].bUseSEQ)
                     {
                         lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L's', KS_NONE)].wc[KS_CTRL] =
                         lpLclKeybLayouts[uKeybLayoutNumVis].aCharCodes[KeybCharToScanCode (L'e', KS_NONE)].wc[KS_CTRL] =
@@ -3787,11 +3792,6 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                             // Enable the Apply button
                             EnableWindow (hWndApply, TRUE);
-
-                            // If the visible layout is the active one, ...
-                            if (uKeybLayoutNumVis EQ uKeybLayoutNumAct)
-                                // Save the new value
-                                aKeybLayoutAct.aCharCodes[uScanCode].wc[uKeybState] = wszText[0];
 
                             // Display the new value
                             InvalidateRect (GetDlgItem (hWndProp, idCtl), NULL, TRUE);

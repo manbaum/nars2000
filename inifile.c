@@ -488,11 +488,14 @@ UBOOL ReadIniFileGlb
     // Read in the [SameFontAs] section
     //***************************************************************
 
+    // Loop through the items of glbSameFontAs
     for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
     {
+        // Format the keyname
         wsprintfW (wszTemp,
                    L"%u",
                    uCnt);
+        // Read in the glbSameFontAs value
         glbSameFontAs[uCnt] =
           GetPrivateProfileIntW (SECTNAME_SAMEFONTAS,   // Ptr to the section name
                                  wszTemp,               // Ptr to the key name
@@ -647,8 +650,9 @@ UBOOL ReadIniFileGlb
                                  DEF_QUADFC_CWS_BR, // Ptr to default value
                                  DEF_QUADFC_GLB,    // HGLOBAL of the result
                                  lpwszIniFile);     // Ptr to the file name
-    // Make the default wide-string form of aplDefaultFEATURE
+    // Loop through the items of aplDefaultFEATURE
     for (uCnt = 0, lpwszTemp = wszTemp; uCnt < FEATURENDX_LENGTH; uCnt++)
+        // Make the default wide-string form of aplDefaultFEATURE
         lpwszTemp +=
           wsprintfW (lpwszTemp,
                      L"%d ",
@@ -661,8 +665,9 @@ UBOOL ReadIniFileGlb
                                 DEF_QUADFEATURE_GLB,    // HGLOBAL of the result
                                 FEATURENDX_LENGTH,      // Length of the default integer vector
                                 lpwszIniFile);          // Ptr to the file name
-    // Make the default wide-string form of aplDefaultIC
+    // Loop through the items of aplDefaultIC
     for (uCnt = 0, lpwszTemp = wszTemp; uCnt < ICNDX_LENGTH; uCnt++)
+        // Make the default wide-string form of aplDefaultIC
         lpwszTemp +=
           wsprintfW (lpwszTemp,
                      L"%d ",
@@ -1108,7 +1113,7 @@ UBOOL ReadIniFileGlb
                                  0,                         // Default value if not found
                                  lpwszIniFile);             // Ptr to the file name
         // Read in the flag for Ctrl-Z, -Y
-        lpKeybLayouts[uCnt2].bUseCXV =
+        lpKeybLayouts[uCnt2].bUseZY =
           GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
                                  KEYNAME_KEYBUSEZY,         // Ptr to the key name
                                  0,                         // Default value if not found
@@ -1233,6 +1238,7 @@ void GetPrivateProfileLogFontW
 {
     WCHAR wszTemp[1024];            // Temporary storage for string results
 
+    // Read in the LOGFONTW struc as a string
     GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
                               wszKeyName,           // Ptr to the key name
                               L"",                  // Ptr to the default value
@@ -1289,6 +1295,7 @@ APLFLOAT GetPrivateProfileFloatW
     WCHAR wszTemp[1024];                            // Temporary storage for string results
     char  szTemp[1024];                             // ...
 
+    // Read in the floating point value as a string
     GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
                               lpwKeyName,           // Ptr to the key name
                               L"",                  // Ptr to the default value
@@ -1388,6 +1395,7 @@ HGLOBAL GetPrivateProfileGlbComW
     LPVOID  lpMemRes,                               // Ptr to result global memory
             lpMemInp;                               // Ptr to input global memory
 
+    // Read in the global integer or char vector as a string
     GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
                               lpwKeyName,           // Ptr to the key name
                               L"\x0001",            // Ptr to the default value
@@ -1804,11 +1812,14 @@ void SaveIniFile
     // Write out [SameFontAs] section entries
     //*********************************************************
 
+    // Loop through the items of glbSameFontAs
     for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
     {
+        // Format the keyname
         wsprintfW (wszKey,
                    L"%u",
                    uCnt);
+        // Format the glbSameFontAs value
         wsprintfW (wszTemp,
                    L"%u",
                    glbSameFontAs[uCnt]);
@@ -1823,6 +1834,7 @@ void SaveIniFile
     //*********************************************************
 
     //******************* bAdjustPW ***************************
+    // Format bAdjustPw
     wszTemp[0] = L'0' + OptionFlags.bAdjustPW;
     wszTemp[1] = WC_EOS;
 
@@ -1832,6 +1844,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bUnderbarToLowercase ****************
+    // Format bUnderbarToLowercase
     wszTemp[0] = L'0' + OptionFlags.bUnderbarToLowercase;
     wszTemp[1] = WC_EOS;
 
@@ -1841,6 +1854,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bNewTabOnClear **********************
+    // Format bNewTabOnClear
     wszTemp[0] = L'0' + OptionFlags.bNewTabOnClear;
     wszTemp[1] = WC_EOS;
 
@@ -1850,6 +1864,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bNewTabOnLoad ***********************
+    // Format bNewTabOnLoad
     wszTemp[0] = L'0' + OptionFlags.bNewTabOnLoad;
     wszTemp[1] = WC_EOS;
 
@@ -1859,6 +1874,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bUseLocalTime ***********************
+    // Format bUseLocalTime
     wszTemp[0] = L'0' + OptionFlags.bUseLocalTime;
     wszTemp[1] = WC_EOS;
 
@@ -1868,6 +1884,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bBackupOnLoad ***********************
+    // Format bBackupOnLoad
     wszTemp[0] = L'0' + OptionFlags.bBackupOnLoad;
     wszTemp[1] = WC_EOS;
 
@@ -1877,6 +1894,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bBackupOnSave ***********************
+    // Format bBackupOnSave
     wszTemp[0] = L'0' + OptionFlags.bBackupOnSave;
     wszTemp[1] = WC_EOS;
 
@@ -1886,6 +1904,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bNoCopyrightMsg *********************
+    // Format bNoCopyrightMsg
     wszTemp[0] = L'0' + OptionFlags.bNoCopyrightMsg;
     wszTemp[1] = WC_EOS;
 
@@ -1895,6 +1914,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* uDefaultPaste ***********************
+    // Format uDefaultPaste
     wsprintfW (wszTemp,
                L"%u",
                OptionFlags.uDefaultPaste);
@@ -1904,6 +1924,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* uDefaultCopy ************************
+    // Format uDefaultCopy
     wsprintfW (wszTemp,
                L"%u",
                OptionFlags.uDefaultCopy);
@@ -1913,6 +1934,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bSyntClrFcns ************************
+    // Format bSyntClrFcns
     wszTemp[0] = L'0' + OptionFlags.bSyntClrFcns;
     wszTemp[1] = WC_EOS;
 
@@ -1922,6 +1944,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bSyntClrSess ************************
+    // Format bSyntClrSess
     wszTemp[0] = L'0' + OptionFlags.bSyntClrSess;
     wszTemp[1] = WC_EOS;
 
@@ -1931,6 +1954,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bSyntClrPrnt ************************
+    // Format bSyntClrPrnt
     wszTemp[0] = L'0' + OptionFlags.bSyntClrPrnt;
     wszTemp[1] = WC_EOS;
 
@@ -1940,6 +1964,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bCheckGroup *************************
+    // Format bCheckGroup
     wszTemp[0] = L'0' + OptionFlags.bCheckGroup;
     wszTemp[1] = WC_EOS;
 
@@ -1949,6 +1974,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bInsState ***************************
+    // Format bInsState
     wszTemp[0] = L'0' + OptionFlags.bInsState;
     wszTemp[1] = WC_EOS;
 
@@ -1959,6 +1985,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
 
     //******************* bRevDblClk **************************
+    // Format bRevDblClk
     wszTemp[0] = L'0' + OptionFlags.bRevDblClk;
     wszTemp[1] = WC_EOS;
 
@@ -1969,6 +1996,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
 
     //******************* bViewStatusBar **********************
+    // Format bViewStatusBar
     wszTemp[0] = L'0' + OptionFlags.bViewStatusBar;
     wszTemp[1] = WC_EOS;
 
@@ -1979,6 +2007,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
 
     //******************* bDefDispFcnLineNums *****************
+    // Format bDefDispFcnLineNums
     wszTemp[0] = L'0' + OptionFlags.bDefDispFcnLineNums;
     wszTemp[1] = WC_EOS;
 
@@ -2187,6 +2216,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //************************ []SA ***************************
+    // Format []SA index
     wszTemp[0] = L'0' + cQuadxSA_CWS;
     wszTemp[1] = WC_EOS;
 
@@ -2200,6 +2230,7 @@ void SaveIniFile
     //*********************************************************
 
     //******************* bRangeLimit.CT **********************
+    // Format bRangeLimit.CT
     wszTemp[0] = L'0' + bRangeLimit.CT;
     wszTemp[1] = WC_EOS;
 
@@ -2209,6 +2240,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.FEATURE *****************
+    // Format bRangeLimit.FEATURE
     wszTemp[0] = L'0' + bRangeLimit.FEATURE;
     wszTemp[1] = WC_EOS;
 
@@ -2218,6 +2250,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.IC **********************
+    // Format bRangeLimit.IC
     wszTemp[0] = L'0' + bRangeLimit.IC;
     wszTemp[1] = WC_EOS;
 
@@ -2227,6 +2260,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.IO **********************
+    // Format bRangeLimit.IO
     wszTemp[0] = L'0' + bRangeLimit.IO;
     wszTemp[1] = WC_EOS;
 
@@ -2236,6 +2270,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.PP **********************
+    // Format bRangeLimit.PP
     wszTemp[0] = L'0' + bRangeLimit.PP;
     wszTemp[1] = WC_EOS;
 
@@ -2245,6 +2280,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.PW **********************
+    // Format bRangeLimit.PW
     wszTemp[0] = L'0' + bRangeLimit.PW;
     wszTemp[1] = WC_EOS;
 
@@ -2254,6 +2290,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.RL **********************
+    // Format bRangeLimit.RL
     wszTemp[0] = L'0' + bRangeLimit.RL;
     wszTemp[1] = WC_EOS;
 
@@ -2267,6 +2304,7 @@ void SaveIniFile
     //*********************************************************
 
     //****************** bResetVars.CT ************************
+    // Format bResetVars.CT
     wszTemp[0] = L'0' + bResetVars.CT;
     wszTemp[1] = WC_EOS;
 
@@ -2276,6 +2314,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.FC ************************
+    // Format bResetVars.FC
     wszTemp[0] = L'0' + bResetVars.FC;
     wszTemp[1] = WC_EOS;
 
@@ -2285,6 +2324,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.FEATURE *******************
+    // Format bResetVars.FEATURE
     wszTemp[0] = L'0' + bResetVars.FEATURE;
     wszTemp[1] = WC_EOS;
 
@@ -2294,6 +2334,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.IC ************************
+    // Format bResetVars.IC
     wszTemp[0] = L'0' + bResetVars.IC;
     wszTemp[1] = WC_EOS;
 
@@ -2303,6 +2344,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.IO ************************
+    // Format bResetVars.IO
     wszTemp[0] = L'0' + bResetVars.IO;
     wszTemp[1] = WC_EOS;
 
@@ -2312,6 +2354,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.PP ************************
+    // Format bResetVars.PP
     wszTemp[0] = L'0' + bResetVars.PP;
     wszTemp[1] = WC_EOS;
 
@@ -2321,6 +2364,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.PW ************************
+    // Format bResetVars.PW
     wszTemp[0] = L'0' + bResetVars.PW;
     wszTemp[1] = WC_EOS;
 
@@ -2330,6 +2374,7 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.RL ************************
+    // Format bResetVars.RL
     wszTemp[0] = L'0' + bResetVars.RL;
     wszTemp[1] = WC_EOS;
 
@@ -2345,6 +2390,7 @@ void SaveIniFile
     // Loop through the color names
     for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
     {
+        // Format the color name value
          wsprintfW (wszTemp,
                     FMTSTR_SYNTAXCOLOR,
                     gSyntaxColorName[uCnt].syntClr.crFore,
@@ -2376,6 +2422,7 @@ void SaveIniFile
     // Loop through the Toolbars
     for (uCnt = 0; uCnt < countof (aRebarBands); uCnt++)
     {
+        // Format .bShowBand
         wszTemp[0] = L'0' + aRebarBands[uCnt].bShowBand;
         wszTemp[1] = WC_EOS;
 
@@ -2476,7 +2523,7 @@ void SaveIniFile
     // Lock the memory to get a ptr to it
     lpKeybLayouts = MyGlobalLock (hGlbKeybLayouts);
 
-    // Write out the user-defined keyboard layouts
+    // Loop through the user-defined keyboard layouts
     for (uCnt = 0, uCnt2 = uKeybLayoutBI;
          uCnt < uKeybLayoutUser;
          uCnt++, uCnt2++)
@@ -2494,6 +2541,7 @@ void SaveIniFile
                                     KEYNAME_KEYBLAYOUTNAME,     // Ptr to the key name
                                     lpKeybLayouts[uCnt2].wszLayoutName, // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
+        // Format the row # for scancode 2B
         wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].uScanCode2B_RowNum;
         wszTemp[1] = WC_EOS;
 
@@ -2502,6 +2550,7 @@ void SaveIniFile
                                     KEYNAME_KEYBSCANCODE2B,     // Ptr to the key name
                                     wszTemp,                    // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
+        // Format the flag for extra key on row #3
         wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bExtraKeyRow3;
         wszTemp[1] = WC_EOS;
 
@@ -2510,6 +2559,7 @@ void SaveIniFile
                                     KEYNAME_KEYBEXTRAKEYROW3,   // Ptr to the key name
                                     wszTemp,                    // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
+        // Format the flag for Ctrl-C, -X, -V
         wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bUseCXV;
         wszTemp[1] = WC_EOS;
 
@@ -2518,6 +2568,7 @@ void SaveIniFile
                                     KEYNAME_KEYBUSECXV,         // Ptr to the key name
                                     wszTemp,                    // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
+        // Format the flag for Ctrl-Z, -Y
         wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bUseZY;
         wszTemp[1] = WC_EOS;
 
@@ -2526,6 +2577,7 @@ void SaveIniFile
                                     KEYNAME_KEYBUSEZY,          // Ptr to the key name
                                     wszTemp,                    // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
+        // Format the flag for Ctrl-S, -E, -Q
         wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bUseSEQ;
         wszTemp[1] = WC_EOS;
 
@@ -2537,10 +2589,11 @@ void SaveIniFile
         // Get the # scancodes in this layout
         uLen = lpKeybLayouts[uCnt2].uCharCodesLen;
 
-        // Write out the # scancodes in this layout
+        // Format the # scancodes in this layout
         wsprintfW (wszCount,
                    L"%u",
                    uLen);
+        // Write out the # scancodes in this layout
         WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
                                     KEYNAME_COUNT,              // Ptr to the key name
                                     wszCount,                   // Ptr to the key value

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -367,6 +367,7 @@ long CheckException
 ////////case EXCEPTION_RESULT_INT:
         case EXCEPTION_RESULT_FLOAT:
         case EXCEPTION_DOMAIN_ERROR:
+        case EXCEPTION_NONCE_ERROR:
         case EXCEPTION_LIMIT_ERROR:
         case EXCEPTION_FLT_DIVIDE_BY_ZERO:
         case EXCEPTION_INT_DIVIDE_BY_ZERO:

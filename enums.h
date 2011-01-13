@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -131,6 +131,7 @@ typedef enum tagEXCEPTION_CODES // Exception Codes
     EXCEPTION_DOMAIN_ERROR,     // 02:  Signal a DOMAIN ERROR
     EXCEPTION_LIMIT_ERROR,      // 03:  Signal a LIMIT ERROR
     EXCEPTION_CTRL_BREAK,       // 04:  Ctrl-Break pressed
+    EXCEPTION_NONCE_ERROR,      // 05:  Signal a NONCE ERROR
 } EXCEPTION_CODES;
 
 

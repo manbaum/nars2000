@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1215,6 +1215,13 @@ RESTART_EXCEPTION_VARNAMED:
 
                         goto DOMAIN_EXIT;
 
+                    case EXCEPTION_NONCE_ERROR:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        YYFree (lpYYRes); lpYYRes = NULL;
+
+                        goto NONCE_EXIT;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -1360,6 +1367,13 @@ RESTART_EXCEPTION_VARIMMED:
 
                         goto DOMAIN_EXIT;
 
+                    case EXCEPTION_NONCE_ERROR:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        YYFree (lpYYRes); lpYYRes = NULL;
+
+                        goto NONCE_EXIT;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -1450,6 +1464,11 @@ AXIS_SYNTAX_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
     return NULL;
 } // End PrimFnMon_EM_YY
@@ -1549,6 +1568,11 @@ HGLOBAL PrimFnMonGlb_EM
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                     goto DOMAIN_EXIT;
+
+                case EXCEPTION_NONCE_ERROR:
+                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                    goto NONCE_EXIT;
 
                 case EXCEPTION_RESULT_FLOAT:
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -2072,6 +2096,11 @@ RESTART_EXCEPTION:
 
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_NONCE_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto NONCE_EXIT;
+
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -2115,6 +2144,11 @@ RESTART_EXCEPTION:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 
@@ -4630,6 +4664,11 @@ RESTART_EXCEPTION:
 
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_NONCE_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto NONCE_EXIT;
+
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -4703,6 +4742,11 @@ RESTART_EXCEPTION:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 
@@ -5699,6 +5743,11 @@ RESTART_EXCEPTION:
 
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_NONCE_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto NONCE_EXIT;
+
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -5772,6 +5821,11 @@ RESTART_EXCEPTION:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 
@@ -6278,6 +6332,11 @@ RESTART_EXCEPTION_IMMED:
 
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_NONCE_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto NONCE_EXIT;
+
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -6305,6 +6364,11 @@ RESTART_EXCEPTION_IMMED:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 
@@ -6613,6 +6677,11 @@ RESTART_EXCEPTION_SINGLETON:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         goto DOMAIN_EXIT;
+
+                    case EXCEPTION_NONCE_ERROR:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        goto NONCE_EXIT;
 
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
@@ -7405,6 +7474,11 @@ RESTART_EXCEPTION_AXIS:
 
                         goto DOMAIN_EXIT;
 
+                    case EXCEPTION_NONCE_ERROR:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        goto NONCE_EXIT;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -7866,6 +7940,11 @@ RESTART_EXCEPTION_NOAXIS:
 
                         goto DOMAIN_EXIT;
 
+                    case EXCEPTION_NONCE_ERROR:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        goto NONCE_EXIT;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -7955,6 +8034,11 @@ RESTART_EXCEPTION_NOAXIS:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

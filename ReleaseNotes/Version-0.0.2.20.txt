@@ -1,6 +1,20 @@
 Version 0.0.2.20 consists of the following Builds:
 
 
+Build #784 -- Version 0.0.2.20
+------------------------------
+
+* Allow NONCE ERRORs From RaiseException
+
+Directory trunk:
+
+ENUMS.H:
+EXCEPT.C:
+PRIMSPEC.C:
+  Update copyright year.
+  Include NONCE ERROR in list of recognized exceptions.
+
+
 Build #783 -- Version 0.0.2.20
 ------------------------------
 

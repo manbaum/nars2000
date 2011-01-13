@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1271,216 +1271,241 @@ LPAPLCHAR SavedWsFormGlbVar
     // Skip over the header and dimensions to the data
     lpMemObj = VarArrayBaseToData (lpMemObj, aplRankObj);
 
-    // Split cases based the object storage type
-    switch (aplTypeObj)
+    __try
     {
-        case ARRAY_BOOL:
-            // Initialize
-            uBitIndex = 0;
+        // Split cases based the object storage type
+        switch (aplTypeObj)
+        {
+            case ARRAY_BOOL:
+                // Initialize
+                uBitIndex = 0;
 
-            // Loop through the array elements
-            for (uObj = 0; uObj < aplNELMObj; uObj++)
-            {
-                // Format the value
-                lpaplChar =
-                  FormatAplintFC (lpaplChar,                                        // Ptr to output save area
-                                  BIT0 & ((*(LPAPLBOOL) lpMemObj) >> uBitIndex),    // The value to format
-                                  UTF16_BAR);                                       // Char to use as overbar
-                // Check for end-of-byte
-                if (++uBitIndex EQ NBIB)
+                // Loop through the array elements
+                for (uObj = 0; uObj < aplNELMObj; uObj++)
                 {
-                    uBitIndex = 0;              // Start over
-                    ((LPAPLBOOL) lpMemObj)++;   // Skip to next byte
-                } // End IF
-            } // End FOR
-
-            break;
-
-        case ARRAY_INT:
-            // Loop through the array elements
-            for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLINT) lpMemObj)++)
-                // Format the value
-                lpaplChar =
-                  FormatAplintFC (lpaplChar,            // Ptr to output save area
-                                  *(LPAPLINT) lpMemObj, // The value to format
-                                  UTF16_BAR);           // Char to use as overbar
-            break;
-
-        case ARRAY_FLOAT:
-            // Loop through the array elements
-            for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLFLOAT) lpMemObj)++)
-                // Format the value
-                lpaplChar =
-                  FormatFloatFC (lpaplChar,                                     // Ptr to output save area
-                                 *(LPAPLFLOAT) lpMemObj,                        // The value to format
-                                 DEF_MAX_QUADPP,                                // Precision to use
-                                 UTF16_DOT,                                     // Char to use as decimal separator
-                                 UTF16_BAR,                                     // Char to use as overbar
-                                 FLTDISPFMT_RAWFLT);                            // Float display format
-            break;
-
-        case ARRAY_CHAR:
-            // Append a leading single quote
-            *lpaplChar++ = WC_SQ;
-
-            // Loop through the array elements
-            for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLCHAR) lpMemObj)++)
-                // Format the text as an ASCII string with non-ASCII chars
-                //   represented as either {symbol} or {\xXXXX} where XXXX is
-                //   a four-digit hex number.
-                lpaplChar +=
-                  ConvertWideToNameLength (lpaplChar,           // Ptr to output save buffer
-                                           (LPAPLCHAR) lpMemObj,// Ptr to incoming chars
-                                           1);                  // # chars to convert
-            // Append a trailing single quote
-            *lpaplChar++ = WC_SQ;
-
-            break;
-
-        case ARRAY_APA:
-#define lpAPA       ((LPAPLAPA) lpMemObj)
-            // Get the APA parameters
-            apaOff = lpAPA->Off;
-            apaMul = lpAPA->Mul;
-#undef  lpAPA
-            // Format as an APA
-
-            // Append the offset
-            lpaplChar =
-              FormatAplintFC (lpaplChar,        // Ptr to output save area
-                              apaOff,           // The value to format
-                              UTF16_BAR);       // Char to use as overbar
-            // Append the multiplier
-            lpaplChar =
-              FormatAplintFC (lpaplChar,        // Ptr to output save area
-                              apaMul,           // The value to format
-                              UTF16_BAR);       // Char to use as overbar
-            break;
-
-        case ARRAY_NESTED:
-            // Take into account nested prototypes
-            aplNELMObj = max (aplNELMObj, 1);
-
-            // Fall through to common code
-
-        case ARRAY_HETERO:
-            // Write out each element as T N R S V
-
-            // Loop through the array elements
-            for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLNESTED) lpMemObj)++)
-            // Split case based upon the ptr type
-            switch (GetPtrTypeInd (lpMemObj))
-            {
-                case PTRTYPE_STCONST:
-#define lpSymEntry      (*(LPAPLHETERO) lpMemObj)
-
-                    // Get the SymTab flags
-                    stFlags = lpSymEntry->stFlags;
-
-                    // Append the header for the simple scalar
+                    // Format the value
                     lpaplChar =
-                      AppendArrayHeader (lpaplChar,                         // Ptr to output save area
-                                         TranslateImmTypeToChar (stFlags.ImmType),// Object storage type as WCHAR
-                                         1,                                 // Object NELM
-                                         0,                                 // Object rank
-                                         NULL,                              // Ptr to object dimensions
-                                         NULL);                             // Ptr to array header
-                    // Split cases based upon the immediate type
-                    switch (stFlags.ImmType)
+                      FormatAplintFC (lpaplChar,                                        // Ptr to output save area
+                                      BIT0 & ((*(LPAPLBOOL) lpMemObj) >> uBitIndex),    // The value to format
+                                      UTF16_BAR);                                       // Char to use as overbar
+                    // Check for end-of-byte
+                    if (++uBitIndex EQ NBIB)
                     {
-                        case IMMTYPE_BOOL:
-                        case IMMTYPE_INT:
-                        case IMMTYPE_FLOAT:
-                            // Ensure we format with full precision in case it's floating point
-                            uQuadPP = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
-                            if (IsImmFlt (stFlags.ImmType))
-                                lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP;
+                        uBitIndex = 0;              // Start over
+                        ((LPAPLBOOL) lpMemObj)++;   // Skip to next byte
+                    } // End IF
+                } // End FOR
 
-                            // Format the value
-                            lpaplChar =
-                              FormatImmedFC (lpaplChar,                             // Ptr to input string
-                                             stFlags.ImmType,                       // Immediate type
-                                            &lpSymEntry->stData.stLongest,          // Ptr to value to format
-                                             DEF_MAX_QUADPP,                        // Precision to use
-                                             UTF16_DOT,                             // Char to use as decimal separator
-                                             UTF16_BAR,                             // Char to use as overbar
-                                             FLTDISPFMT_RAWFLT);                    // Float display format
-                            // Restore user's precision
-                            lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
+                break;
 
-                            break;
+            case ARRAY_INT:
+                // Loop through the array elements
+                for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLINT) lpMemObj)++)
+                    // Format the value
+                    lpaplChar =
+                      FormatAplintFC (lpaplChar,            // Ptr to output save area
+                                      *(LPAPLINT) lpMemObj, // The value to format
+                                      UTF16_BAR);           // Char to use as overbar
+                break;
 
-                        case IMMTYPE_CHAR:
-                            // Append a leading single quote
-                            *lpaplChar++ = WC_SQ;
+            case ARRAY_FLOAT:
+                // Loop through the array elements
+                for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLFLOAT) lpMemObj)++)
+                    // Format the value
+                    lpaplChar =
+                      FormatFloatFC (lpaplChar,                                     // Ptr to output save area
+                                     *(LPAPLFLOAT) lpMemObj,                        // The value to format
+                                     DEF_MAX_QUADPP,                                // Precision to use
+                                     UTF16_DOT,                                     // Char to use as decimal separator
+                                     UTF16_BAR,                                     // Char to use as overbar
+                                     FLTDISPFMT_RAWFLT);                            // Float display format
+                break;
 
-                            // Format the text as an ASCII string with non-ASCII chars
-                            //   represented as either {symbol} or {\xXXXX} where XXXX is
-                            //   a four-digit hex number.
-                            lpaplChar +=
-                              ConvertWideToNameLength (lpaplChar,                               // Ptr to output save buffer
-                                                      &(*(LPAPLHETERO) lpMemObj)->stData.stChar,// Ptr to incoming chars
-                                                       1);                                      // # chars to convert
-                            // Append a trailing single quote
-                            *lpaplChar++ = WC_SQ;
+            case ARRAY_CHAR:
+                // Append a leading single quote
+                *lpaplChar++ = WC_SQ;
 
-                            // Append a trailing blank
-                            *lpaplChar++ = L' ';
+                // Loop through the array elements
+                for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLCHAR) lpMemObj)++)
+                    // Format the text as an ASCII string with non-ASCII chars
+                    //   represented as either {symbol} or {\xXXXX} where XXXX is
+                    //   a four-digit hex number.
+                    lpaplChar +=
+                      ConvertWideToNameLength (lpaplChar,           // Ptr to output save buffer
+                                               (LPAPLCHAR) lpMemObj,// Ptr to incoming chars
+                                               1);                  // # chars to convert
+                // Append a trailing single quote
+                *lpaplChar++ = WC_SQ;
 
-                            break;
+                break;
 
-                        defstop
-                            break;
-                    } // End SWITCH
+            case ARRAY_APA:
+    #define lpAPA       ((LPAPLAPA) lpMemObj)
+                // Get the APA parameters
+                apaOff = lpAPA->Off;
+                apaMul = lpAPA->Mul;
+    #undef  lpAPA
+                // Format as an APA
 
-#undef  lpSymEntry
-                    break;
+                // Append the offset
+                lpaplChar =
+                  FormatAplintFC (lpaplChar,        // Ptr to output save area
+                                  apaOff,           // The value to format
+                                  UTF16_BAR);       // Char to use as overbar
+                // Append the multiplier
+                lpaplChar =
+                  FormatAplintFC (lpaplChar,        // Ptr to output save area
+                                  apaMul,           // The value to format
+                                  UTF16_BAR);       // Char to use as overbar
+                break;
 
-                case PTRTYPE_HGLOBAL:
+            case ARRAY_NESTED:
+                // Take into account nested prototypes
+                aplNELMObj = max (aplNELMObj, 1);
+
+                // Fall through to common code
+
+            case ARRAY_HETERO:
+                // Write out each element as T N R S V
+
+                // Loop through the array elements
+                for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLNESTED) lpMemObj)++)
+                // Split case based upon the ptr type
+                switch (GetPtrTypeInd (lpMemObj))
                 {
-                    APLSTYPE aplTypeSub;
+                    case PTRTYPE_STCONST:
+    #define lpSymEntry      (*(LPAPLHETERO) lpMemObj)
 
-#define hGlbSub     (*(LPAPLNESTED *) lpMemObj)
+                        // Get the SymTab flags
+                        stFlags = lpSymEntry->stFlags;
 
-                    if (hGlbObj EQ PTR_REUSED)
-                    {
-                        // Append the HGLOBAL name
-                        lpaplChar +=
-                          wsprintfW (lpaplChar,
-                                     L"REUSED ");
-                    } else
-                    {
-                        // Get the global's Type
-                        AttrsOfGlb (hGlbSub, &aplTypeSub, NULL, NULL, NULL);
-
-                        // Convert the variable in global memory to saved ws form
+                        // Append the header for the simple scalar
                         lpaplChar =
-                          SavedWsFormGlbVar (lpaplChar,
-                                             hGlbSub,
-                                             lpMemSaveWSID,
-                                             lpuGlbCnt,
-                                             lpSymEntry);
-                        // Ensure there's a trailing blank
-                        if (lpaplChar[-1] NE L' ')
+                          AppendArrayHeader (lpaplChar,                         // Ptr to output save area
+                                             TranslateImmTypeToChar (stFlags.ImmType),// Object storage type as WCHAR
+                                             1,                                 // Object NELM
+                                             0,                                 // Object rank
+                                             NULL,                              // Ptr to object dimensions
+                                             NULL);                             // Ptr to array header
+                        // Split cases based upon the immediate type
+                        switch (stFlags.ImmType)
                         {
-                            *lpaplChar++ = L' ';
-                            *lpaplChar   = WC_EOS;
-                        } // End IF
-#undef  hGlbSub
-                    } // End IF/ELSE
+                            case IMMTYPE_BOOL:
+                            case IMMTYPE_INT:
+                            case IMMTYPE_FLOAT:
+                                // Ensure we format with full precision in case it's floating point
+                                uQuadPP = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
+                                if (IsImmFlt (stFlags.ImmType))
+                                    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP;
 
-                    break;
-                } // End PTRTYPE_HGLOBAL
+                                // Format the value
+                                lpaplChar =
+                                  FormatImmedFC (lpaplChar,                             // Ptr to input string
+                                                 stFlags.ImmType,                       // Immediate type
+                                                &lpSymEntry->stData.stLongest,          // Ptr to value to format
+                                                 DEF_MAX_QUADPP,                        // Precision to use
+                                                 UTF16_DOT,                             // Char to use as decimal separator
+                                                 UTF16_BAR,                             // Char to use as overbar
+                                                 FLTDISPFMT_RAWFLT);                    // Float display format
+                                // Restore user's precision
+                                lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
 
-                defstop
-                    break;
-            } // End FOR
+                                break;
 
-            break;
+                            case IMMTYPE_CHAR:
+                                // Append a leading single quote
+                                *lpaplChar++ = WC_SQ;
 
-        defstop
-            break;
-    } // End SWITCH
+                                // Format the text as an ASCII string with non-ASCII chars
+                                //   represented as either {symbol} or {\xXXXX} where XXXX is
+                                //   a four-digit hex number.
+                                lpaplChar +=
+                                  ConvertWideToNameLength (lpaplChar,                               // Ptr to output save buffer
+                                                          &(*(LPAPLHETERO) lpMemObj)->stData.stChar,// Ptr to incoming chars
+                                                           1);                                      // # chars to convert
+                                // Append a trailing single quote
+                                *lpaplChar++ = WC_SQ;
+
+                                // Append a trailing blank
+                                *lpaplChar++ = L' ';
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+    #undef  lpSymEntry
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                    {
+                        APLSTYPE aplTypeSub;
+
+    #define hGlbSub     (*(LPAPLNESTED *) lpMemObj)
+
+                        if (hGlbObj EQ PTR_REUSED)
+                        {
+                            // Append the HGLOBAL name
+                            lpaplChar +=
+                              wsprintfW (lpaplChar,
+                                         L"REUSED ");
+                        } else
+                        {
+                            // Get the global's Type
+                            AttrsOfGlb (hGlbSub, &aplTypeSub, NULL, NULL, NULL);
+
+                            // Convert the variable in global memory to saved ws form
+                            lpaplChar =
+                              SavedWsFormGlbVar (lpaplChar,
+                                                 hGlbSub,
+                                                 lpMemSaveWSID,
+                                                 lpuGlbCnt,
+                                                 lpSymEntry);
+                            // Ensure there's a trailing blank
+                            if (lpaplChar[-1] NE L' ')
+                            {
+                                *lpaplChar++ = L' ';
+                                *lpaplChar   = WC_EOS;
+                            } // End IF
+    #undef  hGlbSub
+                        } // End IF/ELSE
+
+                        break;
+                    } // End PTRTYPE_HGLOBAL
+
+                    defstop
+                        break;
+                } // End FOR
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM"))
+    {
+        if (hGlbObj && lpMemObj)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
+        } // End IF
+
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
+        {
+            case EXCEPTION_LIMIT_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+        } // End SWITCH
+    } // End __try/__except
 
     // Delete the last blank in case it matters,
     //   and ensure properly terminated

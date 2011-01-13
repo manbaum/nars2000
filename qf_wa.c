@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ LPPL_YYSTYPE SysFnWA_EM_YY
     {
         // Coalesce memory by allocating a large contiguous block
         // We use GlobalAlloc/Free instead of MyGlobalAlloc/Free to
-        //   avove debug messages upon failure.
+        //   avoid debug messages upon failure.
         hGlbTmp = GlobalAlloc (GMEM_MOVEABLE, (APLU3264) ByteTmpMid);
         if (hGlbTmp)
         {
@@ -113,7 +113,7 @@ LPPL_YYSTYPE SysFnWA_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkInteger  = ByteTmpHi;
+    lpYYRes->tkToken.tkData.tkInteger  = ByteTmpLo;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;

@@ -1,6 +1,19 @@
 Version 0.0.2.20 consists of the following Builds:
 
 
+Build #782 -- Version 0.0.2.20
+------------------------------
+
+* Return In []WA The Actual Value Of The Last Successful Allocation
+
+Directory trunk:
+
+QF_WA.C:
+  Update copyright year.
+  Improve comments.
+  Return actual value of the last successful allocation.
+
+
 Build #781 -- Version 0.0.2.20
 ------------------------------
 

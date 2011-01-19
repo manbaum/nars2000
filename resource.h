@@ -193,9 +193,6 @@
 #define IDC_CLEARWS_PW_UD                        839
 #define IDC_CLEARWS_RL_EC                        840
 
-#define INI_BUTTON_TEXT     WS_UTF16_HORIZELLIPSIS
-#define SET_BUTTON_TEXT     WS_UTF16_CHECKMARK
-
 #define IDC_FONT1                                840
 #define IDC_FONT2                                841
 #define IDC_FONT3                                842

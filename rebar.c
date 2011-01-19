@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -176,7 +176,7 @@ typedef enum tagIMAGEINDEX_ED0
 TBBUTTON tbButtonsED[IMAGEINDEX_ED_LENGTH + IMAGEINDEX_ED_LENGTH0] =
 {
   {MAKELONG (IMAGEINDEX_ED_EDITCUT       , IDI_IMAGELIST_ED ), IDM_CUT       ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Cut selected text from the current workspace"     },
-  {MAKELONG (IMAGEINDEX_ED_ARROW1        , IDI_IMAGELIST_ED0), 0             ,  TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select how the text is to be Copied"             },
+  {MAKELONG (IMAGEINDEX_ED_ARROW1        , IDI_IMAGELIST_ED0), 0             ,  TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select how the text is to be Copied"              },
   {MAKELONG (IMAGEINDEX_ED_EDITCOPY      , IDI_IMAGELIST_ED ), IDM_COPY      ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Copy selected text from the current workspace"    },
   {MAKELONG (IMAGEINDEX_ED_ARROW2        , IDI_IMAGELIST_ED0), 0             ,  TBSTATE_HIDDEN , BUTTONSTYLE0, {0}, 0, (INT_PTR) L"Select how the text is to be Copied"              },
   {MAKELONG (IMAGEINDEX_ED_EDITPASTE     , IDI_IMAGELIST_ED ), IDM_PASTE     ,  TBSTATE_ENABLED, BUTTONSTYLE2, {0}, 0, (INT_PTR) L"Paste text into the current workspace"            },
@@ -477,7 +477,7 @@ HWND MakeWorkspaceWindow
 
         // Show the window
         ShowWindow (hWndRes, SW_SHOWNORMAL);
-    }
+    } // End IF
 #ifdef DEBUG
     else
     {
@@ -667,7 +667,7 @@ HWND MakeEditWindow
 
         // Show the window
         ShowWindow (hWndRes, SW_SHOWNORMAL);
-    }
+    } // End IF
 #ifdef DEBUG
     else
     {
@@ -966,18 +966,16 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
 {
     POINT            pt;                    // Mouse coords
     APLI3264         iCnt;                  // Index of non-separator item (may be negative)
-    static UBOOL     bTrackMouse = FALSE,   // TRUE iff tracking the mouse via tme
-                     bAttrsTT = FALSE;      // TRUE iff we've initialized the TT attributes
-    TRACKMOUSEEVENT  tme;                   // For Tooltip Ctrl tracking
-    static APLU3264  uTTWidth;              // Original TT tip width
+    static UBOOL     bTrackMouse = FALSE;   // TRUE iff tracking the mouse
     TOOLINFOW        tti = {0};             // For Tooltip Ctrl tracking
 #define NOLASTCNT    0x3FFFFFFF
     static APLI3264  iLastCnt = NOLASTCNT;  // Last valid index
     TBBUTTON         tbbi;                  // For Toolbar Button Info
     UINT             uArrowWidth;           // Width of the arrow next to a dropdown button
+    static HWND      hWndTT;                // Tooltip window handle
 
 ////LCLODSAPI ("OWTB: ", hWnd, message, wParam, lParam);
-    // Split cases
+    // Split cases based upon the message
     switch (message)
     {
         case MYWM_INIT_EC:          // 0 = wParam
@@ -987,6 +985,18 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
 #else
   #define lptbButton    ((LPTBBUTTON) lParam)
 #endif
+            // If the Tooltip window has not been created as yet, ...
+            if (hWndTT EQ NULL)
+            {
+                // Create it
+                hWndTT = CreateTooltip ();
+                if (hWndTT EQ NULL)
+                    return -1;      // Mark as in error
+            } // End IF
+
+            // Set the maximum tip width
+            SetMaxTipWidth (hWndTT);
+
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
             if (fComctl32FileVer >= 6)
                 tti.cbSize = sizeof (tti);
@@ -1014,6 +1024,25 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
 #endif
         } // End MYWM_INIT_EC
 
+        case WM_SETFONT:
+        {
+#ifdef DEBUG
+            HFONT hFontTT = (HFONT) wParam; // Tooltip font handle
+#else
+  #define hFontTT   ((HFONT) wParam)
+#endif
+            // Tell the Tooltip window to use the same font
+            SendMessageW (hWndTT, WM_SETFONT, (WPARAM) hFontTT, MAKELPARAM (TRUE, 0));
+
+            // Set the maximum tip width
+            SetMaxTipWidth (hWndTT);
+
+            break;
+#ifndef DEBUG
+  #undef  hFontTT
+#endif
+        } // End WM_SETFONT
+
         case WM_NOTIFY:             // idCtrl = (int) wParam;
         {                           // pnmh = (LPNMHDR) lParam;
 #ifdef DEBUG
@@ -1025,53 +1054,39 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
   #define lpnmtdi         ((LPNMTTDISPINFOW) lParam)
   #define idCtl           ((WPARAM) wParam)
 #endif
-            // Ensure that this is our window
-            Assert (hWnd EQ (HWND) idCtl);
+            // Split cases based upon the code
+            switch (lpnmhdr->code)
+            {
+////////////////case TTN_NEEDTEXTW:
+                case TTN_GETDISPINFOW:
 
-////        // Split cases based upon the control id
-////        switch (idCtl)
-////        {
-////            case IDWC_OW_RB:
-                    // Split cases based upon the code
-                    switch (lpnmhdr->code)
+                    // If there's a last index, ...
+                    if (iLastCnt NE NOLASTCNT)
                     {
-                        case TTN_GETDISPINFOW:
+                        // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+                        if (fComctl32FileVer >= 6)
+                            tti.cbSize = sizeof (tti);
+                        else
+                            tti.cbSize = TTTOOLINFOW_V2_SIZE;
 
-                            // If there's a last index, ...
-                            if (iLastCnt NE NOLASTCNT)
-                            {
-                                // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
-                                if (fComctl32FileVer >= 6)
-                                    tti.cbSize = sizeof (tti);
-                                else
-                                    tti.cbSize = TTTOOLINFOW_V2_SIZE;
+                        // Initialize the Tooltip Info struct
+                        tti.hwnd = hWnd;
+                        tti.uId  = (UINT_PTR) hWnd;
 
-                                // Initialize the Tooltip Info struct
-                                tti.hwnd = hWnd;
-                                tti.uId  = (UINT_PTR) hWnd;
+                        // Get the tooltip info
+                        SendMessageW (hWndTT, TTM_GETTOOLINFOW, 0, (LPARAM) &tti);
 
-                                // Get the tooltip info
-                                SendMessageW (hWndTT, TTM_GETTOOLINFOW, 0, (LPARAM) &tti);
+                        // Set the Tooltip text
+                        lpnmtdi->lpszText = (LPWSTR) ((LPTBBUTTON) tti.lParam)[iLastCnt].iString;
+                    } // End IF
 
-                                // Get the button state
+                    break;
 
-                                // Set the Tooltip text
-                                lpnmtdi->lpszText = (LPWSTR) ((LPTBBUTTON) tti.lParam)[iLastCnt].iString;
-                            } // End IF
+                default:
+                    break;
+            } // End SWITCH
 
-                            break;
-
-                        default:
-                            break;
-                    } // End SWITCH
-
-                    return FALSE;       // We handled the msg
-
-////            default:
-////                break;
-////        } // End SWITCH
-////
-////        break;
+            return FALSE;       // We handled the msg
 #ifndef DEBUG
   #undef  idCtl
   #undef  lpnmtdi
@@ -1087,6 +1102,7 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
             pt.y = GET_Y_LPARAM (lParam);
 
             // Ask the Toolbar where we are
+            // If the return value is >= 0, it is the button # the mouse is over
             iCnt = (APLI3264)
               SendMessageW (hWnd, TB_HITTEST, 0, (LPARAM) &pt);
 
@@ -1104,27 +1120,6 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                 tti.hwnd = hWnd;
                 tti.uId  = (UINT_PTR) hWnd;
 
-                // If we haven't initialized the Tooltip attributes, ...
-                if (!bAttrsTT)
-                {
-                    HFONT   hFont;
-                    LOGFONT lf;
-
-                    // Get the current font for this window
-                    hFont = (HFONT) SendMessageW (hWnd, WM_GETFONT, 0, 0);
-
-                    // Get this font's LOGFONT struc
-                    GetObjectW (hFont, sizeof (lf), &lf);
-
-                    // Set the maximum Tooltip width in pixels
-                    //   and return the previous width
-                    uTTWidth = (APLU3264)
-                      SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, lf.lfWidth * MAXTIPWIDTHINCHARS);
-
-                    // Mark as initialized
-                    bAttrsTT = TRUE;
-                } // End IF
-
                 // Get this item's bounding rectangle
                 SendMessageW (hWnd, TB_GETITEMRECT, iCnt, (LPARAM) &rcHit);
 
@@ -1139,6 +1134,7 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
 
                     // If the mouse is over the dropdown arrow
                     if (pt.x >= (int) (rcHit.right - uArrowWidth))
+                        // Skip to the dropdown item #
                         iCnt++;
 
                     // If this index is different from the last and we're tracking the mouse, ...
@@ -1148,19 +1144,11 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                         // We need to toggle the Tooltip tracking state off/on to tell the
                         //   Tooltip Ctrl to resend TTN_GETDISPINFOW.
 
-                        // Cancel request notification (WM_MOUSELEAVE)
-                        //   when the mouse leaves this window
-                        tme.cbSize      = sizeof (TRACKMOUSEEVENT);
-                        tme.dwFlags     = 0
-                                        | TME_CANCEL
-                                        | TME_LEAVE
-                                          ;
-                        tme.hwndTrack   = hWnd;
-////////////////////////tme.dwHoverTime =
-                        _TrackMouseEvent (&tme);
-
                         // Tell the Tooltip Ctrl to stop tracking
                         SendMessageW (hWndTT, TTM_TRACKACTIVATE, FALSE, (LPARAM) &tti);
+
+                        // Clear tracking and capture
+                        PostMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
 
                         // Mark as no longer tracking
                         bTrackMouse = FALSE;
@@ -1190,15 +1178,8 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                 // If not already tracking, ...
                 if (!bTrackMouse)
                 {
-                    // Request notification (WM_MOUSELEAVE)
-                    //   when the mouse leaves this window
-                    tme.cbSize      = sizeof (TRACKMOUSEEVENT);
-                    tme.dwFlags     = 0
-                                    | TME_LEAVE
-                                      ;
-                    tme.hwndTrack   = hWnd;
-////////////////////tme.dwHoverTime =
-                    _TrackMouseEvent (&tme);
+                    // Capture the mouse
+                    SetCapture (hWnd);
 
                     // Tell the Tooltip Ctrl to track
                     SendMessageW (hWndTT, TTM_TRACKACTIVATE, TRUE, (LPARAM) &tti);
@@ -1206,26 +1187,36 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                     // Mark as tracking
                     bTrackMouse = TRUE;
                 } // End IF
+            } else
+            {
+                // The mouse is outside our window
+                // Clear tracking and capture
+                PostMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+
+                // Mark as no longer tracking
+                bTrackMouse = FALSE;
             } // End IF
 
             return FALSE;               // We handled the msg
 
+        case WM_LBUTTONUP:          // fwKeys = wParam;        // key flags
+                                    // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
+                                    // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
+            // This message is here to avoid the TT from remaining
+            //   on the screen if the user clicks on a Toolbar button
+
+            // If we're tracking the mouse, ...
+            if (bTrackMouse)
+                // Clear tracking and capture
+                PostMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+            break;
+
         case WM_MOUSELEAVE:         // fwKeys = wParam;        // key flags
                                     // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
                                     // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
-            // Note that W automatically cancels the _TrackMouseEvent
-            //   which caused this message to be sent so there's no
-            //   need to cancel it ourselves.
-
-            // If we've initialized the Tooltip attributes, ...
-            if (bAttrsTT)
-            {
-                // Restore the old tip width
-                SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, (LPARAM) uTTWidth);
-
-                // Mark as no longer initialized
-                bAttrsTT = FALSE;
-            } // End IF
+            // The mouse is outside our window and
+            //   we no longer need this resource
+            ReleaseCapture ();
 
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
             if (fComctl32FileVer >= 6)
@@ -1249,21 +1240,13 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
             return FALSE;               // We handled the msg
 
         case WM_DESTROY:
-            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
-            if (fComctl32FileVer >= 6)
-                tti.cbSize = sizeof (tti);
-            else
-                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+            // If the Tooltip window is still present, ...
+            if (hWndTT)
+            {
+                // Destroy it
+                DestroyWindow (hWndTT); hWndTT = NULL;
+            } // End IF
 
-            // Initialize the struct
-            tti.hwnd = hWnd;
-            tti.uId  = (UINT_PTR) hWnd;
-
-            // Unregister the Tooltip for this window
-            SendMessageW (hWndTT,
-                          TTM_DELTOOLW,
-                          0,
-                          (LPARAM) &tti);
             break;
 
         default:
@@ -1277,6 +1260,50 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                             wParam,
                             lParam); // Pass on down the line
 } // End LclWS_ED_OWToolbarWndProc
+
+
+//***************************************************************************
+//  $SetMaxTipWidth
+//
+//  Set the maximum Tooltip width
+//***************************************************************************
+
+void SetMaxTipWidth
+    (HWND  hWndTT)                  // Tooltip window handle
+{
+    HFONT       hFontTT,            // Tooltip font handle
+                hFontOld;           // Old DC font handle (if any)
+    HDC         hDCTmp;             // Temporary Device Context handle
+    int         iOldMode;           // Old mapping mode
+    TEXTMETRICW tm;                 // Textmetrics for the current font
+
+    // Get the current font for the Tooltip window
+    hFontTT = (HFONT) SendMessageW (hWndTT, WM_GETFONT, 0, 0);
+
+    // Get a new device context
+    hDCTmp = MyGetDC (hWndTT);
+
+    // Set the mapping mode
+    iOldMode = SetMapMode (hDCTmp, MM_TEXT);
+
+    // Select the newly created font
+    hFontOld = SelectObject (hDCTmp, hFontTT);
+
+    // Get the text metrics for this font
+    GetTextMetricsW (hDCTmp, &tm);
+
+    // Restore the old font
+    SelectObject (hDCTmp, hFontOld);
+
+    // Restore the mapping mode
+    SetMapMode (hDCTmp, iOldMode);
+
+    // Release the one we created
+    MyReleaseDC (hWndTT, hDCTmp); hDCTmp = NULL;
+
+    // Set the maximum Tooltip width in pixels
+    SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, tm.tmAveCharWidth * MAXTIPWIDTHINCHARS);
+} // End SetMaxTipWidth
 
 
 //***************************************************************************
@@ -1381,11 +1408,19 @@ LRESULT APIENTRY FW_RBWndProc
 {
     static TOOLINFOW tti = {0};             // For Tooltip Ctrl
     RECT             rc;                    // Temporary rectangle
+    static HWND      hWndTT;                // Tooltip window handle
 
 ////LCLODSAPI ("FW_RB: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_CREATE:
+            // Create a Tooltip window
+            hWndTT = CreateTooltip ();
+
+            // Check for errors
+            if (hWndTT EQ NULL)
+                return -1;                      // Stop the whole process
+
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
             if (fComctl32FileVer >= 6)
                 tti.cbSize = sizeof (tti);
@@ -1720,6 +1755,13 @@ LRESULT APIENTRY FW_RBWndProc
             // Uninitialize window-specific resources
             FW_RB_Delete (hWnd);
 
+            // If the Tooltip window is still present, ...
+            if (hWndTT)
+            {
+                // Destroy it
+                DestroyWindow (hWndTT); hWndTT = NULL;
+            } // End IF
+
             return FALSE;           // We handled the msg
 
         default:
@@ -1872,7 +1914,7 @@ void LW_RB_Delete
 //***************************************************************************
 //  $LW_RBWndProc
 //
-//  Message processing routine for the Workspace Window in Rebar Ctrl window
+//  Message processing routine for the Language Window in Rebar Ctrl window
 //***************************************************************************
 
 LRESULT APIENTRY LW_RBWndProc
@@ -2313,17 +2355,24 @@ typedef struct tagLANGCHARS
     HFONT             hFontTmp,                 // Temporary font
                       hFontOld;                 // Old font
     RECT              rcChar;                   // Rectangle around largest char
-    static UBOOL      bTrackMouse = FALSE,      // TRUE iff tracking the mouse via tme
-                      bAttrsTT = FALSE;         // TRUE iff we've initialized the TT attributes
-    TRACKMOUSEEVENT   tme;                      // For Tooltip Ctrl tracking
+    static UBOOL      bTrackMouse = FALSE;      // TRUE iff tracking the mouse
     static TOOLINFOW  tti = {0};                // ...
-    static LOGFONTW   lfOldTT;                  // For Old TT
-    static APLU3264   uTTWidth;                 // Original TT tip width
+    static HWND       hWndTT;                   // Tooltip window handle
 
 ////LCLODSAPI ("LW_RB: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_CREATE:
+            // Create a Tooltip window
+            hWndTT = CreateTooltip ();
+
+            // Check for errors
+            if (hWndTT EQ NULL)
+                return -1;                      // Stop the whole process
+
+            // Set the Tooltip font for the Language window
+            SetTTFontLW (hWndTT);
+
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
             if (fComctl32FileVer >= 6)
                 tti.cbSize = sizeof (tti);
@@ -2370,56 +2419,44 @@ typedef struct tagLANGCHARS
   #define lpnmtdi         ((LPNMTTDISPINFOW) lParam)
   #define idCtl           ((WPARAM) wParam)
 #endif
-            // Ensure that this is our window
-            Assert (hWnd EQ (HWND) idCtl);
-
-////        // Split cases based upon the control id
-////        switch (idCtl)
-////        {
-////            case IDWC_LW_RB:
-                    // Split cases based upon the code
-                    switch (lpnmhdr->code)
+            // Split cases based upon the code
+            switch (lpnmhdr->code)
+            {
+////////////////case TTN_NEEDTEXTW:
+                case TTN_GETDISPINFOW:
+                    // If there's a last outlined char, ...
+                    if (uLastCnt NE NOLASTCHAR)
                     {
-                        case TTN_GETDISPINFOW:
-                            // If there's a last outlined char, ...
-                            if (uLastCnt NE NOLASTCHAR)
-                            {
-                                static WCHAR wszText[1024];
-                                       UINT  uLen;
+                        static WCHAR wszText[1024];
+                               UINT  uLen;
 
-                                // Create the tooltip title
-                                wsprintfW (wszText,
-                                           L"%s (%c)\n",
-                                           langChars[uLastCnt].lpwszTitle,
-                                           langChars[uLastCnt].wc);
-                                // Get the title length
-                                uLen = lstrlenW (wszText);
+                        // Create the tooltip title
+                        wsprintfW (wszText,
+                                   L"%s (%c)\n",
+                                   langChars[uLastCnt].lpwszTitle,
+                                   langChars[uLastCnt].wc);
+                        // Get the title length
+                        uLen = lstrlenW (wszText);
 
-                                // Append enough underbars to underline the text
-                                //   "- 1" to omit the trailing L'\n'
-                                FillMemoryW (&wszText[uLen], uLen - 1, UTF16_LDC_DB_HORZ);
+                        // Append enough underbars to underline the text
+                        //   "- 1" to omit the trailing L'\n'
+                        FillMemoryW (&wszText[uLen], uLen - 1, UTF16_LDC_DB_HORZ);
 
-                                // Append the tooltip text
-                                wsprintfW (&wszText[uLen + uLen - 1],
-                                           L"\n%s",
-                                           langChars[uLastCnt].lpwszTipText);
-                                // Display the tooltip for the last outlined char
-                                lpnmtdi->lpszText = wszText;
-                            } // End IF
+                        // Append the tooltip text
+                        wsprintfW (&wszText[uLen + uLen - 1],
+                                   L"\n%s",
+                                   langChars[uLastCnt].lpwszTipText);
+                        // Display the tooltip for the last outlined char
+                        lpnmtdi->lpszText = wszText;
+                    } // End IF
 
-                            break;
+                    break;
 
-                        default:
-                            break;
-                    } // End SWITCH
+                default:
+                    break;
+            } // End SWITCH
 
-                    return FALSE;
-
-////            default:
-////                break;
-////        } // End SWITCH
-////
-////        break;
+            return FALSE;
 #ifndef DEBUG
   #undef  idCtl
   #undef  lpnmtdi
@@ -2430,6 +2467,12 @@ typedef struct tagLANGCHARS
         case WM_GETFONT:
             // Get the font handle we want to use
             return (LRESULT) GetFSIndFontHandle (FONTENUM_LW);
+
+        case WM_SETFONT:
+            // Set the Tooltip font for the Language window
+            SetTTFontLW (hWndTT);
+
+            return FALSE;           // We handled the msg
 
         case MYWM_CLEARCHAR:
             // If there is a prevously outlined char, ...
@@ -2508,47 +2551,6 @@ typedef struct tagLANGCHARS
             for (uCnt = 0; uCnt < LANGCHARS_LENGTH; uCnt++)
             if (PtInRect (&langChars[uCnt].rcHit, pt))
             {
-                // If we haven't initialized the Tooltip attributes, ...
-                if (!bAttrsTT)
-                {
-                    HFONT    hFontOldTT;
-                    LOGFONTW lfTmp;
-
-                    // Set the maximum Tooltip width in pixels
-                    //   and return the previous width
-                    uTTWidth =
-                      SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, GetFSIndAveCharSize (FONTENUM_LW)->cx * MAXTIPWIDTHINCHARS);
-
-                    // Get the TT's current font
-                    hFontOldTT = (HFONT)
-                      SendMessageW (hWndTT, WM_GETFONT, 0, 0);
-
-                    // Because the TT Ctrl will destroy the old TT font as soon as we
-                    //  tell it to use our font, we must get the old font's LOGFONT
-                    //   so we can re-create it when restoring it
-                    GetObjectW (hFontOldTT, sizeof (LOGFONTW), &lfOldTT);
-
-                    // Get the font handle we want to use
-                    hFontTmp = GetFSIndFontHandle (FONTENUM_LW);
-
-                    // Get the LOGFONTW of this handle
-                    GetObjectW (hFontTmp, sizeof (LOGFONTW), &lfTmp);
-
-                    // If they are different, ...
-                    if (memcmp (&lfOldTT, &lfTmp, sizeof (LOGFONTW)) NE 0)
-                    {
-                        // Use the LW font to display the Tooltip
-                        SendMessageW (hWndTT, WM_SETFONT, (WPARAM) hFontTmp, MAKELPARAM (FALSE, 0));
-                        if (GetObjectType (hFontOldTT) EQ OBJ_FONT)
-                        {
-                            DeleteObject (hFontOldTT);  hFontOldTT = NULL;
-                        } // End IF
-                    } // End IF
-
-                    // Mark as initialized
-                    bAttrsTT = TRUE;
-                } // End IF
-
                 // If this character index is different from the last, ...
                 if (uLastCnt NE uCnt)
                 {
@@ -2558,10 +2560,10 @@ typedef struct tagLANGCHARS
                     // Save index to last char
                     uLastCnt = uCnt;
 
-                    // Set the Tooltip balloon to the bottom right-hand corner of the
+                    // Set the Tooltip balloon to 3/4 down from the top to bottom borders of the
                     //   Hit rectangle so that it always appears in a constant place
-                    pt.x = langChars[uCnt].rcHit.right;
-                    pt.y = langChars[uCnt].rcHit.bottom;
+                    pt.x = (langChars[uCnt].rcHit.left + langChars[uCnt].rcHit.right) / 2;
+                    pt.y = (langChars[uCnt].rcHit.top + 3 * langChars[uCnt].rcHit.bottom) / 4;
 
                     // Convert the coords for the Tooltip
                     ClientToScreen (hWnd, &pt);
@@ -2625,15 +2627,8 @@ typedef struct tagLANGCHARS
                 // If not already tracking, ...
                 if (!bTrackMouse)
                 {
-                    // Request notification (WM_MOUSELEAVE)
-                    //   when the mouse leaves this window
-                    tme.cbSize      = sizeof (TRACKMOUSEEVENT);
-                    tme.dwFlags     = 0
-                                    | TME_LEAVE
-                                      ;
-                    tme.hwndTrack   = hWnd;
-////////////////////tme.dwHoverTime =
-                    _TrackMouseEvent (&tme);
+                    // Capture the mouse
+                    SetCapture (hWnd);
 
                     // Tell the Tooltip Ctrl to track
                     SendMessageW (hWndTT, TTM_TRACKACTIVATE, TRUE, (LPARAM) &tti);
@@ -2647,31 +2642,23 @@ typedef struct tagLANGCHARS
 
             // If we didn't find a match, ...
             if (uCnt EQ LANGCHARS_LENGTH)
+            {
+                // The mouse is outside our window
                 // Clear tracking and capture
-                SendMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+                PostMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+
+                // Mark as no longer tracking
+                bTrackMouse = FALSE;
+            } // End IF
 
             return FALSE;           // We handled the msg
 
         case WM_MOUSELEAVE:         // fwKeys = wParam;        // key flags
                                     // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
                                     // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
-            // Note that W automatically cancels the _TrackMouseEvent
-            //   which caused this message to be sent so there's no
-            //   need to cancel it ourselves.
-
-            // If we've initialized the Tooltip attributes, ...
-            if (bAttrsTT)
-            {
-                // Recreate the original font from its LOGFONTW so we can restore it
-                hFontTmp = MyCreateFontIndirectW (&lfOldTT);
-                SendMessageW (hWndTT, WM_SETFONT, (WPARAM) hFontTmp, MAKELPARAM (FALSE, 0));
-
-                // Restore the old tip width
-                SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, (LPARAM) uTTWidth);
-
-                // Mark as no longer initialized
-                bAttrsTT = FALSE;
-            } // End IF
+            // The mouse is outside our window and
+            //   we no longer need this resource
+            ReleaseCapture ();
 
             // Tell the Tooltip Ctrl to stop tracking
             SendMessageW (hWndTT, TTM_TRACKACTIVATE, FALSE, (LPARAM) &tti);
@@ -2945,6 +2932,13 @@ typedef struct tagLANGCHARS
             // Uninitialize window-specific resources
             LW_RB_Delete (hWnd);
 
+            // If the Tooltip window is still present, ...
+            if (hWndTT)
+            {
+                // Destroy it
+                DestroyWindow (hWndTT); hWndTT = NULL;
+            } // End IF
+
             return FALSE;           // We handled the msg
 
         default:
@@ -2954,6 +2948,31 @@ typedef struct tagLANGCHARS
 ////LCLODSAPI ("LW_RBZ:", hWnd, message, wParam, lParam);
     return DefWindowProcW (hWnd, message, wParam, lParam);
 } // End LW_RBWndProc
+
+
+//***************************************************************************
+//  $SetTTFontLW
+//
+//  Set the Tooltip font for the Language Window
+//***************************************************************************
+
+void SetTTFontLW
+    (HWND  hWndTT)                      // Tooltip window handle
+
+{
+    HFONT hFont;
+
+    // Set the maximum Tooltip width in pixels
+    SendMessageW (hWndTT, TTM_SETMAXTIPWIDTH, 0, GetFSIndAveCharSize (FONTENUM_LW)->cx * MAXTIPWIDTHINCHARS);
+
+    // Get the font handle we want to use
+    hFont = GetFSIndFontHandle (FONTENUM_LW);
+
+    // If it's valid, ...
+    if (hFont)
+        // Use the LW font to display the Tooltip
+        SendMessageW (hWndTT, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
+} // End SetTTFontLW
 
 
 //***************************************************************************
@@ -3030,6 +3049,9 @@ void InitLanguageBand
 ////
 ////// Maximize this band to the size of cxIdeal
 ////SendMessageW (hWndRB, RB_MAXIMIZEBAND, uItem, TRUE);
+
+    // (Re)set the Language Window font
+    SendMessageW (hWndLW_RB, WM_SETFONT, (WPARAM) GetFSIndFontHandle (FONTENUM_LW), MAKELPARAM (TRUE, 0));
 } // End InitLanguageBand
 
 

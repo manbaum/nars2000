@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -840,18 +840,11 @@ LRESULT WINAPI LclTabCtrlWndProc
             // If it's valid, ...
             if (iNewTabIndex NE -1)
             {
-                static NMHDR nmHdr;
-
-                // Fill in the NMHDR fields
-                nmHdr.hwndFrom = NULL;
-                nmHdr.idFrom   = 0;
-                nmHdr.code     = TCN_SELCHANGE;
-
                 // Select it
                 TabCtrl_SetCurSel (hWndTC, iNewTabIndex);
 
-                // Tell the Master Frame to select the new tab
-                PostMessageW (hWndMF, WM_NOTIFY, 0, (LPARAM) &nmHdr);
+                // Call common code to show/hide the tab windows
+                TabCtrl_SelChange ();
             } // End IF
 
             // Save as new tab ID

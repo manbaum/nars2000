@@ -395,30 +395,31 @@ KEYBLAYOUTS_BI aKeybLayoutsBI[]
 ;
 
 EXTERN
-KEYBLAYOUTS aKeybLayoutAct;     // Active keyboard layout
+KEYBLAYOUTS aKeybLayoutAct;         // Active keyboard layout
 
 EXTERN
-UINT uKeybLayoutNumAct,         // # of active keyboard layout
-     uKeybLayoutNumVis,         // # of visible ...
-     uKeybLayoutCount,          // Total # keyboard layouts (built-in + user-defined)
-     uKeybLayoutBI              // # built-in keyboard layouts
+UINT uGlbKeybLayoutNumAct,          // # of active keyboard layout
+     uGlbKeybLayoutNumVis,          // # of visible ...
+     uGlbKeybLayoutCount,           // Total # keyboard layouts (built-in + user-defined)
+     uGlbKeybLayoutUser,            // # user-defined keyboard layouts
+     uGlbKeybLayoutBI               // # built-in keyboard layouts
 #ifdef DEFINE_VALUES
-= countof (aKeybLayoutsBI)      // Initialize to # built-in keyboard layouts
+= countof (aKeybLayoutsBI)          // Initialize to # built-in keyboard layouts
 #endif
-,    uKeybLayoutUser,           // # user-defined keyboard layouts
-     uKeybUnibase,              // Keyboard Unicode base:  10 or 16
-     uKeybTCNum,                // Initial keyboard TabCtrl index
-     uKeybState;                // Initial keyboard state:  0 to 7 (3 bits, Shift(4), Ctrl(2), Alt(1))
+,
+     uKeybUnibase,                  // Keyboard Unicode base:  10 or 16
+     uKeybTCNum,                    // Initial keyboard TabCtrl index
+     uKeybState;                    // Initial keyboard state:  0 to 7 (3 bits, Shift(4), Ctrl(2), Alt(1))
 
 EXTERN
-HGLOBAL hGlbKeybLayouts;        // Keyboard layout global memory handle
-                                // The contents of this handle is an array of KEYBLAYOUTS strucs
+HGLOBAL hGlbKeybLayouts;            // Keyboard layout global memory handle
+                                    // The contents of this handle is an array of KEYBLAYOUTS strucs
 EXTERN
-WCHAR wszKeybLayoutAct[KBLEN],  // Active keyboard layout name
-      wszKeybLayoutVis[KBLEN];  // Visible .....
+WCHAR wszGlbKeybLayoutAct[KBLEN],   // Active global keyboard layout name
+      wszGlbKeybLayoutVis[KBLEN];   // Visible .....
 
 EXTERN
-LOGFONTW lfKB                   // LOGFONTW for the Keyboard
+LOGFONTW lfKB                       // LOGFONTW for the Keyboard
 #ifdef DEFINE_VALUES
  = {DEF_KBLOGFONT}
 #endif

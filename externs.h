@@ -1679,7 +1679,6 @@ HFONT hFontTC,                          // Handle to font for the TC
       hFontAlt,                         // ...                    Alternate SM
 #endif
       hFontSM,                          // ...                    SM
-      hFontFB,                          // ...                    FB
       hFontLW,                          // ...                    LW
       hFontPR,                          // ...                    Printer
       hFontCC,                          // ...                    CC
@@ -1919,11 +1918,8 @@ EXTERN
 HGLOBAL hGlbRecentFiles;        // Recent files global memory handle
 
 EXTERN
-UINT uNumRecentFiles
-#ifdef DEFINE_VALUES
- = DEF_RECENTFILES;
-#endif
-;
+UINT uNumRecentFiles;           // # current recent files
+
 
 //***************************************************************************
 //  Keyboards and Character Codes

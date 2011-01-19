@@ -333,65 +333,65 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           ""               ,IDC_FONTS_TEXT   ,  5, 10,200,48
 
-    PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT1        ,  5, 60,15,14,BS_OWNERDRAW
-    LTEXT           "Session Manager",IDC_STATIC       , 25, 65,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO1A, 90, 65,15, 8
+    PUSHBUTTON      "Change =>"      ,IDC_FONT1        ,  5, 62,45,14
+    LTEXT           "Session Manager",IDC_STATIC       , 55, 65,60, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO1A,120, 65,15, 8
 
-    PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT2        ,  5, 75,15,14,BS_OWNERDRAW
-    LTEXT           "Function Editor",IDC_STATIC       , 25, 80,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO2A, 90, 80,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO2B,105, 80,15, 8
+    PUSHBUTTON      "Change =>"      ,IDC_FONT2        ,  5, 77,45,14
+    LTEXT           "Function Editor",IDC_STATIC       , 55, 80,60, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO2A,120, 80,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO2B,135, 80,15, 8
 
-    PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT3        ,  5, 90,15,14,BS_OWNERDRAW
-    LTEXT           "Printer"        ,IDC_STATIC       , 25, 95,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3A, 90, 95,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3B,105, 95,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3C,120, 95,15, 8
+    PUSHBUTTON      "Change =>"      ,IDC_FONT3        ,  5, 92,45,14
+    LTEXT           "Printer"        ,IDC_STATIC       , 55, 95,60, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3A,120, 95,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3B,135, 95,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO3C,150, 95,15, 8
 
-    PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT4        ,  5,105,15,14,BS_OWNERDRAW
-    LTEXT           "Crash Window"   ,IDC_STATIC       , 25,110,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4A, 90,110,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4B,105,110,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4C,120,110,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4D,135,110,15, 8
+    PUSHBUTTON      "Change =>"      ,IDC_FONT4        ,  5,107,45,14
+    LTEXT           "Crash Window"   ,IDC_STATIC       , 55,110,60, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4A,120,110,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4B,135,110,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4C,150,110,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO4D,165,110,15, 8
 
-    PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT5        ,  5,120,15,14,BS_OWNERDRAW
-    LTEXT           "Tab Control"    ,IDC_STATIC       , 25,125,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5A, 90,125,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5B,105,125,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5C,120,125,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5D,135,125,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5E,150,125,15, 8
+    PUSHBUTTON      "Change =>"      ,IDC_FONT5        ,  5,122,45,14
+    LTEXT           "Tab Control"    ,IDC_STATIC       , 55,125,60, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5A,120,125,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5B,135,125,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5C,150,125,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5D,165,125,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO5E,180,125,15, 8
 
-    PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT6        ,  5,135,15,14,BS_OWNERDRAW
-    LTEXT           "Language Bar"   ,IDC_STATIC       , 25,140,60, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6A, 90,140,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6B,105,140,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6C,120,140,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6D,135,140,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6E,150,140,15, 8
-    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6F,165,140,15, 8
+    PUSHBUTTON      "Change =>"      ,IDC_FONT6        ,  5,137,45,14
+    LTEXT           "Language Bar"   ,IDC_STATIC       , 55,140,60, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6A,120,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6B,135,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6C,150,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6D,165,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6E,180,140,15, 8
+    AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6F,195,140,15, 8
 ////
-////PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT7        ,  5,150,15,14,BS_OWNERDRAW
-////LTEXT           "Vector Editor"  ,IDC_STATIC       , 25,155,60, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7A, 90,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7B,105,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7C,120,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7D,135,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7E,150,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7F,165,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7G,180,155,15, 8
+////PUSHBUTTON      "Change =>"      ,IDC_FONT7        ,  5,152,45,14
+////LTEXT           "Vector Editor"  ,IDC_STATIC       , 55,155,60, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7A,120,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7B,135,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7C,150,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7D,165,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7E,180,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7F,195,155,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7G,210,155,15, 8
 ////
-////PUSHBUTTON      INI_BUTTON_TEXT  ,IDC_FONT7        ,  5,165,15,14,BS_OWNERDRAW
-////LTEXT           "Matrix Editor"  ,IDC_STATIC       , 25,170,60, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8A, 90,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8B,105,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8C,120,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8D,135,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8E,150,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8F,165,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8G,180,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8H,180,170,15, 8
+////PUSHBUTTON      "Change =>"      ,IDC_FONT7        ,  5,167,45,14
+////LTEXT           "Matrix Editor"  ,IDC_STATIC       , 55,170,60, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8A,120,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8B,135,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8C,150,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8D,165,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8E,180,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8F,195,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8G,210,170,15, 8
+////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8H,240,170,15, 8
 END
 
 IDD_PROPPAGE_KEYBS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -499,58 +499,58 @@ BEGIN
     PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C4   , 50,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
     PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C5   , 60,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
 
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_00   , 75, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_01   , 90, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_02   ,105, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_03   ,120, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_04   ,135, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_05   ,150, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_06   ,165, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_07   ,180, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_08   ,195, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_09   ,210, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0A   ,225, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0B   ,240, 30, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0C   ,255, 30, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_00   , 75, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_01   , 90, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_02   ,105, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_03   ,120, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_04   ,135, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_05   ,150, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_06   ,165, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_07   ,180, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_08   ,195, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_09   ,210, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0A   ,225, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0B   ,240, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_0C   ,255, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
 
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_10   , 95, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_11   ,110, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_12   ,125, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_13   ,140, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_14   ,155, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_15   ,170, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_16   ,185, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_17   ,200, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_18   ,215, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_19   ,230, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1A   ,245, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1B   ,260, 50, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1C   ,275, 50, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_10   , 95, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_11   ,110, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_12   ,125, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_13   ,140, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_14   ,155, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_15   ,170, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_16   ,185, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_17   ,200, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_18   ,215, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_19   ,230, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1A   ,245, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1B   ,260, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_1C   ,275, 50, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
 
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_20   ,102, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_21   ,117, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_22   ,132, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_23   ,147, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_24   ,162, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_25   ,177, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_26   ,192, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_27   ,207, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_28   ,222, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_29   ,237, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_2A   ,252, 70, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_2B   ,267, 70, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_20   ,102, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_21   ,117, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_22   ,132, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_23   ,147, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_24   ,162, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_25   ,177, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_26   ,192, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_27   ,207, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_28   ,222, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_29   ,237, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_2A   ,252, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_2B   ,267, 70, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
 
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_30   , 94, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_31   ,109, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_32   ,124, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_33   ,139, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_34   ,154, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_35   ,169, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_36   ,184, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_37   ,199, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_38   ,214, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_39   ,229, 90, 14, 14
-    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_3A   ,244, 90, 14, 14
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_30   , 94, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_31   ,109, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_32   ,124, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_33   ,139, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_34   ,154, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_35   ,169, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_36   ,184, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_37   ,199, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_38   ,214, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_39   ,229, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_KC_3A   ,244, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
 
     LTEXT           "Unicode"      , IDC_STATIC          , 85,110, 50, 14
     EDITTEXT                         IDC_KEYB_EC_UNICODE , 85,120, 30, 14

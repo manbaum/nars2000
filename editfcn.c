@@ -2734,9 +2734,9 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             // Check for chars we meed to pass on (BS, LF, CR)
             if (!ksCtrl
-             && (wchCharCode EQ 8
-              || wchCharCode EQ 10
-              || wchCharCode EQ 13))
+             && (wchCharCode EQ WC_BS
+              || wchCharCode EQ WC_LF
+              || wchCharCode EQ WC_CR))
                 break;
 
             return FALSE;           // We handled the msg

@@ -400,7 +400,6 @@ default:        \
 #define MYWM_LPMEMPTD       (WM_APP +20)    // MF (Pass lpMemPTD for TLS)
 #define MYWM_PROMPT         (WM_APP +21)    // MF (Display the prompt)
 #define MYWM_INIT_EC        (WM_APP +22)    // EC (Initialize local Edit Ctrl)
-#define MYWM_KEYBHIGHLIGHT  (WM_APP +23)    // CD (Highlight a button)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB
@@ -426,7 +425,10 @@ default:        \
 //***************************************************************************
 
 #define AC_EOS          '\0'        // 00:  End-of-string
+#define AC_BS           '\b'        // 08:  Backspace
+#define AC_HT           '\t'        // 09:  Horizontal Tab
 #define AC_LF           '\n'        // 0A:  Linefeed
+#define AC_FF           '\f'        // 0C:  FormFeed
 #define AC_CR           '\r'        // 0D:  Carriage Return
 #define AC_BLANK        ' '         // 20:  Space
 #define AC_LEFTPAREN    '('         // 28:  Left Paren
@@ -441,15 +443,19 @@ default:        \
 #define EOL_LEN         2           // Length of EOL ("\r\n")
 
 #define WC_EOS          L'\0'       // 00:  End-of-string
+#define WC_BS           L'\b'       // 08:  Backspace
 #define WC_HT           L'\t'       // 09:  Horizontal Tab
 #define WC_LF           L'\n'       // 0A:  Linefeed
+#define WC_FF           L'\f'       // 0C:  FormFeed
 #define WC_CR           L'\r'       // 0D:  Carriage Return
 #define WC_DQ           L'\"'       // 22:  Double Quote
 #define WC_SQ           L'\''       // 27:  Single Quote
 #define WC_SLOPE        L'\\'       // 5C:  Slope
 
+#define WS_BS           L"\b"       // 08:  Backspace
 #define WS_HT           L"\t"       // 09:  Horizontal Tab
 #define WS_LF           L"\n"       // 0A:  Linefeed
+#define WS_FF           L"\f"       // 0C:  FormFeed
 #define WS_CR           L"\r"       // 0D:  Carriage Return
 #define WS_DQ           L"\""       // 22:  Double Quote
 #define WS_SQ           L"\'"       // 27:  Single Quote

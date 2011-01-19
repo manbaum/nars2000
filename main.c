@@ -107,7 +107,7 @@ char pszNoRegPMWndClass[]   = "Unable to register window class <" PMWNDCLASS ">.
 
 char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateTCWnd[]     = "Unable to create Tab Control window",
-     pszNoCreateTTWnd[]     = "Unable to create ToolTip window",
+     pszNoCreateTTWnd[]     = "Unable to create Tooltip window",
      pszNoCreateSTWnd[]     = "Unable to create Status window",
      pszNoCreateCCWnd[]     = "Unable to create Crash Control window";
 
@@ -1270,18 +1270,18 @@ void ApplyNewFontVE
 
 
 //***************************************************************************
-//  $CreateToolTip
+//  $CreateTooltip
 //
-//  Creates the ToolTip window and initializes it.
+//  Creates the Tooltip window and initializes it.
 //***************************************************************************
 
-HWND CreateToolTip
+HWND CreateTooltip
     (void)
 
 {
     HWND hWnd;
 
-    // Create the ToolTip window
+    // Create the Tooltip window
     hWnd =
       CreateWindowExW (0L,                  // Extended styles
                        TOOLTIPS_CLASSW,     // Class for MS Controls
@@ -1303,13 +1303,10 @@ HWND CreateToolTip
                        _hInstance,          // Instance
                        NULL);               // No extra data
     if (hWnd EQ NULL)
-    {
         MB (pszNoCreateTTWnd);
-        return NULL;        // Stop the whole process
-    } // End IF
 
     return hWnd;
-} // End CreateToolTip
+} // End CreateTooltip
 
 
 //***************************************************************************
@@ -1328,10 +1325,10 @@ UBOOL CreateChildWindows
     GetClientRect (hWndParent, &rc);
 
     //***************************************************************
-    // Create the ToolTip window first so that
+    // Create the Tooltip window first so that
     // the other windows can reference it.
     //***************************************************************
-    hWndTT = CreateToolTip ();
+    hWndTT = CreateTooltip ();
     if (hWndTT EQ NULL)
         return FALSE;       // Stop the whole process
 
@@ -1803,7 +1800,7 @@ LRESULT APIENTRY MFWndProc
                                     // lpnmhdr = (LPNMHDR) lParam;
         {
 #ifdef DEBUG
-            LPNMHDR     lpnmhdr = (LPNMHDR) lParam;
+            LPNMHDR     lpnmhdr = (LPNMHDR)     lParam;
             LPNMTOOLBAR lpnmtb  = (LPNMTOOLBAR) lParam;
 #else
   #define lpnmhdr   ((LPNMHDR) lParam)
@@ -2101,27 +2098,10 @@ LRESULT APIENTRY MFWndProc
 
                 case TCN_SELCHANGE:         // idTabCtl = (int) LOWORD(wParam);
                                             // lpnmhdr = (LPNMHDR) lParam;
-                {
-                    int iCurTabIndex,       // Index of the current tab
-                        iLstTabIndex;       // Index of the previous tab
+                    // Call common code to show/hide the tab windows
+                    TabCtrl_SelChange ();
 
-                    // Get the index of the incoming tab
-                    iCurTabIndex = TabCtrl_GetCurSel (hWndTC);
-
-                    // Get the index of the previous tab
-                    iLstTabIndex = TranslateTabIDToIndex (gLstTabID);
-
-                    // Save the index of the incoming tab
-                    gCurTabID = TranslateTabIndexToID (iCurTabIndex);
-
-                    // Hide the child windows of the outgoing tab
-                    if (iLstTabIndex NE -1 && iLstTabIndex NE iCurTabIndex)
-                        ShowHideChildWindows (GetWndMC (iLstTabIndex), FALSE);
-                    // Show the child windows of the incoming tab
-                    if (iCurTabIndex NE -1)
-                        ShowHideChildWindows (GetWndMC (iCurTabIndex), TRUE);
                     return FALSE;       // We handled the msg
-                } // End TCN_SELCHANGE
 
                 //***************************************************************
                 // Tooltip Ctrl Notifications
@@ -2958,6 +2938,17 @@ LRESULT APIENTRY MFWndProc
                 fHelp = FALSE;
             } // End IF
 
+            // If the Customize dialog box is still active, ...
+            if (ghDlgCustomize)
+            {
+                // Ask 'em to close
+                SendMessageW (ghDlgCustomize, WM_CLOSE, 0, 0);
+
+                // If the Customize dialog box is still active, ...
+                if (ghDlgCustomize)
+                    return FALSE;
+            } // End IF
+
             // Save .ini file variables
             SaveIniFile ();
 
@@ -3012,11 +3003,6 @@ LRESULT APIENTRY MFWndProc
             if (hFontSM)
             {
                 MyDeleteObject (hFontSM); hFontSM = NULL;
-            } // End IF
-
-            if (hFontFB)
-            {
-                MyDeleteObject (hFontFB); hFontFB = NULL;
             } // End IF
 
             if (hFontCC)
@@ -3088,6 +3074,37 @@ LRESULT APIENTRY MFWndProc
 ////LCLODSAPI ("MFZ:", hWnd, message, wParam, lParam);
     return DefFrameProcW (hWnd, hWndMC, message, wParam, lParam);
 } // End MFWndProc
+
+
+//***************************************************************************
+//  $TabCtrl_SelChange
+//
+//  Handle Tab Ctrl notification TCN_SELCHANGE
+//***************************************************************************
+
+void TabCtrl_SelChange
+    (void)
+
+{
+    int iCurTabIndex,       // Index of the current tab
+        iLstTabIndex;       // Index of the previous tab
+
+    // Get the index of the incoming tab
+    iCurTabIndex = TabCtrl_GetCurSel (hWndTC);
+
+    // Get the index of the previous tab
+    iLstTabIndex = TranslateTabIDToIndex (gLstTabID);
+
+    // Save the index of the incoming tab
+    gCurTabID = TranslateTabIndexToID (iCurTabIndex);
+
+    // Hide the child windows of the outgoing tab
+    if (iLstTabIndex NE -1 && iLstTabIndex NE iCurTabIndex)
+        ShowHideChildWindows (GetWndMC (iLstTabIndex), FALSE);
+    // Show the child windows of the incoming tab
+    if (iCurTabIndex NE -1)
+        ShowHideChildWindows (GetWndMC (iCurTabIndex), TRUE);
+} // End TabCtrl_SelChange
 
 
 //***************************************************************************

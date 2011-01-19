@@ -963,11 +963,11 @@ UBOOL ReadIniFileGlb
     uNumRecentFiles =
       GetPrivateProfileIntW (SECTNAME_RECENTFILES,  // Ptr to the section name
                              KEYNAME_COUNT,         // Ptr to the key name
-                             uNumRecentFiles,       // Default value if not found
+                             0,                     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Allocate space for the Recent Files list
     hGlbRecentFiles =
-      MyGlobalAlloc (GHND, uNumRecentFiles * _MAX_PATH * sizeof (WCHAR));
+      MyGlobalAlloc (GHND, DEF_RECENTFILES * _MAX_PATH * sizeof (WCHAR));
 
     // Check for error
     if (!hGlbRecentFiles)
@@ -1000,14 +1000,14 @@ UBOOL ReadIniFileGlb
     //***************************************************************
 
     // Get the # user-defined keyboards
-    uKeybLayoutUser =
+    uGlbKeybLayoutUser =
       GetPrivateProfileIntW (SECTNAME_KEYBOARDS,    // Ptr to the section name
                              KEYNAME_COUNT,         // Ptr to the key name
                              0,                     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Allocate space for the # built-in layouts + user-defined
     hGlbKeybLayouts =
-      MyGlobalAlloc (GHND, (uKeybLayoutBI + uKeybLayoutUser) * sizeof (KEYBLAYOUTS));
+      MyGlobalAlloc (GHND, (uGlbKeybLayoutBI + uGlbKeybLayoutUser) * sizeof (KEYBLAYOUTS));
     if (hGlbKeybLayouts EQ NULL)
     {
         MessageBoxW (NULL, L"Unable to allocate enough memory for Keyboard Layouts", WS_APPNAME, MB_OK | MB_ICONSTOP);
@@ -1052,14 +1052,14 @@ UBOOL ReadIniFileGlb
     GetPrivateProfileStringW (SECTNAME_KEYBOARDS,       // Ptr to the section name
                               KEYNAME_KEYBLAYOUTNAME,   // Ptr to the key name
                               KEYBLAYOUT_US_ALT,        // Ptr to the default value
-                              wszKeybLayoutAct,         // Ptr to the output buffer
-                              countof (wszKeybLayoutAct), // Count of the output buffer
+                              wszGlbKeybLayoutAct,      // Ptr to the output buffer
+                              countof (wszGlbKeybLayoutAct),// Count of the output buffer
                               lpwszIniFile);            // Ptr to the file name
     // Read in the LOGFONTW strucs
     GetPrivateProfileLogFontW (SECTNAME_KEYBOARDS, KEYNAME_LOGFONTKB, &lfKB);
 
     // Initialize the built-in keyboard CharCodes
-    for (uCnt = 0; uCnt < uKeybLayoutBI; uCnt++)
+    for (uCnt = 0; uCnt < uGlbKeybLayoutBI; uCnt++)
     {
         CopyMemory (lpKeybLayouts[uCnt].aCharCodes,
                     aKeybLayoutsBI[uCnt].lpCharCodes,
@@ -1075,8 +1075,8 @@ UBOOL ReadIniFileGlb
     } // End FOR
 
     // Read in the user-defined keyboard layouts
-    for (uCnt = 0, uCnt2 = uKeybLayoutBI;
-         uCnt < uKeybLayoutUser;
+    for (uCnt = 0, uCnt2 = uGlbKeybLayoutBI;
+         uCnt < uGlbKeybLayoutUser;
          uCnt++, uCnt2++)
     {
         WCHAR wszKeybChars[8 * 8 - 2 + 1];              // Room for a string formatted by FMTSTR_KEYBCHARS
@@ -1168,22 +1168,22 @@ UBOOL ReadIniFileGlb
     } // End FOR
 
     // Accumulate into the total # keyboard layouts
-    uKeybLayoutCount = uKeybLayoutBI + uKeybLayoutUser;
+    uGlbKeybLayoutCount = uGlbKeybLayoutBI + uGlbKeybLayoutUser;
 
     // Set the active keyboard layout #
-    for (uKeybLayoutNumAct = 0; uKeybLayoutNumAct < uKeybLayoutCount; uKeybLayoutNumAct++)
-    if (lstrcmpW (wszKeybLayoutAct, lpKeybLayouts[uKeybLayoutNumAct].wszLayoutName) EQ 0)
+    for (uGlbKeybLayoutNumAct = 0; uGlbKeybLayoutNumAct < uGlbKeybLayoutCount; uGlbKeybLayoutNumAct++)
+    if (lstrcmpW (wszGlbKeybLayoutAct, lpKeybLayouts[uGlbKeybLayoutNumAct].wszLayoutName) EQ 0)
         break;
 
-    Assert (uKeybLayoutNumAct < uKeybLayoutCount);
-    if (uKeybLayoutNumAct EQ uKeybLayoutCount)
-        uKeybLayoutNumAct = 0;
+    Assert (uGlbKeybLayoutNumAct < uGlbKeybLayoutCount);
+    if (uGlbKeybLayoutNumAct EQ uGlbKeybLayoutCount)
+        uGlbKeybLayoutNumAct = 0;
     // Set the active keyboard layout
-    aKeybLayoutAct = lpKeybLayouts[uKeybLayoutNumAct];
+    aKeybLayoutAct = lpKeybLayouts[uGlbKeybLayoutNumAct];
 
     // Make that the visible keyboard layout name
-    lstrcpyW (wszKeybLayoutVis, wszKeybLayoutAct);
-    uKeybLayoutNumVis = uKeybLayoutNumAct;
+    lstrcpyW (wszGlbKeybLayoutVis, wszGlbKeybLayoutAct);
+    uGlbKeybLayoutNumVis = uGlbKeybLayoutNumAct;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbKeybLayouts); lpKeybLayouts = NULL;
@@ -2477,7 +2477,7 @@ void SaveIniFile
     // Format the # user-defined keyboards
     wsprintfW (wszKey,
                L"%u",
-               uKeybLayoutUser);
+               uGlbKeybLayoutUser);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
                                 KEYNAME_COUNT,              // Ptr to the key name
@@ -2513,7 +2513,7 @@ void SaveIniFile
     // Write out the active keyboard layout name
     WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
                                 KEYNAME_KEYBLAYOUTNAME,     // Ptr to the key name
-                                wszKeybLayoutAct,           // Ptr to the key value
+                                wszGlbKeybLayoutAct,        // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Write out the LOGFONTW struc for KB
     WritePrivateProfileLogfontW (SECTNAME_KEYBOARDS,        // Ptr to the section name
@@ -2524,8 +2524,8 @@ void SaveIniFile
     lpKeybLayouts = MyGlobalLock (hGlbKeybLayouts);
 
     // Loop through the user-defined keyboard layouts
-    for (uCnt = 0, uCnt2 = uKeybLayoutBI;
-         uCnt < uKeybLayoutUser;
+    for (uCnt = 0, uCnt2 = uGlbKeybLayoutBI;
+         uCnt < uGlbKeybLayoutUser;
          uCnt++, uCnt2++)
     {
         WCHAR wszKeybChars[8 * 8 - 2 + 1],              // Room for a string formatted by FMTSTR_KEYBCHARS

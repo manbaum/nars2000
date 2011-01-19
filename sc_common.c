@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -444,12 +444,20 @@ void SaveRecentWSID
     // If it's not in our list, ...
     if (uCnt EQ uNumRecentFiles)
     {
-        // Move entries from [0, uNumRecentFiles - 2] to [1, uNumRecentFiles - 1]
-        MoveMemoryW ((*lpwszRecentFiles)[1],
-                     (*lpwszRecentFiles)[0],
-                     (uNumRecentFiles - 1) * _MAX_PATH);
-        // Copy the new file to the top
-        lstrcpyW ((*lpwszRecentFiles)[0], lpMemWSID);
+        // If there's room at the end of the list, ...
+        if (uNumRecentFiles < DEF_RECENTFILES)
+            // Append it to the end and
+            //   increase the # Recent Files
+            lstrcpyW ((*lpwszRecentFiles)[uNumRecentFiles++], lpMemWSID);
+        else
+        {
+            // Move entries from [0, DEF_RECENTFILES - 2] to [1, DEF_RECENTFILES - 1]
+            MoveMemoryW ((*lpwszRecentFiles)[1],
+                         (*lpwszRecentFiles)[0],
+                         (DEF_RECENTFILES - 1) * _MAX_PATH);
+            // Copy the new file to the top
+            lstrcpyW ((*lpwszRecentFiles)[0], lpMemWSID);
+        } // End IF/ELSE
     } // End IF
 
     // We no longer need this ptr

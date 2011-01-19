@@ -1266,12 +1266,28 @@ int LclECPaintHook
 
     if (lFlags & PRF_PRINTCLIENT)
     {
+        LOGFONTW lf;
+        HFONT    hFontTmp;
+        TEXTMETRICW tm;                 // TEXTMETRICWs for the Printer Font
+
+        // Get the LOGFONTW structure for the font
+        GetObjectW (hFontPR, sizeof (lf), &lf);
+
+        // Convert the font from screen coords to printer coords
+        lf.lfHeight = MulDiv (lf.lfHeight, GetLogPixelsY (hDC), GetLogPixelsY (NULL));
+
+        // Make a font of it
+        hFontTmp = MyCreateFontIndirectW (&lf);
+
         // Use the printer font
-        hFontOld = SelectObject (hDC, hFontPR);
+        hFontOld = SelectObject (hDC, hFontTmp);
+
+        // Get the text metrics for this font
+        GetTextMetricsW (hDC, &tm);
 
         // Respecify the horizontal & vertical positions in printer coordinates
-        rcAct.top  = GetFSIndAveCharSize (FONTENUM_PR)->cy * (rcAct.top  / line_height);
-        rcAct.left = GetFSIndAveCharSize (FONTENUM_PR)->cx * (rcAct.left / char_width);
+        rcAct.top  = MulDiv (tm.tmHeight      , rcAct.top , line_height);
+        rcAct.left = MulDiv (tm.tmAveCharWidth, rcAct.left, char_width );
 
         // Calculate the width & height of the line
         //   in printer coordinates

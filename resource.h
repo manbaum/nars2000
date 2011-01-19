@@ -193,15 +193,15 @@
 #define IDC_CLEARWS_PW_UD                        839
 #define IDC_CLEARWS_RL_EC                        840
 
-#define IDC_FONT1                                840
-#define IDC_FONT2                                841
-#define IDC_FONT3                                842
-#define IDC_FONT4                                843
-#define IDC_FONT5                                844
-#define IDC_FONT6                                845
-#define IDC_FONT7                                846
-#define IDC_FONT8                                847
-#define IDC_FONT_LAST                            IDC_FONT8
+#define IDC_FONTS1                               840
+#define IDC_FONTS2                               841
+#define IDC_FONTS3                               842
+#define IDC_FONTS4                               843
+#define IDC_FONTS5                               844
+#define IDC_FONTS6                               845
+#define IDC_FONTS7                               846
+#define IDC_FONTS8                               847
+#define IDC_FONTS_LAST                           IDC_FONTS8
 
 #define IDC_FONTS_RADIO1A                        850
 #define IDC_FONTS_RADIO2A                        851
@@ -943,6 +943,16 @@
 #define IDC_KEYB_BN_TC_C5                       4425
 
 #define IDC_KEYB_BN_TC_LAST                     IDC_KEYB_BN_TC_C5
+
+#define IDC_FONTS_LT1                           5000
+#define IDC_FONTS_LT2                           5001
+#define IDC_FONTS_LT3                           5002
+#define IDC_FONTS_LT4                           5003
+#define IDC_FONTS_LT5                           5004
+#define IDC_FONTS_LT6                           5005
+#define IDC_FONTS_LT7                           5006
+#define IDC_FONTS_LT8                           5007
+#define IDC_FONTS_LT_LAST                        IDC_FONTS_LT8
 
 #define IDC_STATIC                                -1
 

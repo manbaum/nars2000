@@ -474,9 +474,7 @@ void InitChooseFont
     (void)
 
 {
-    HDC hDC;                    // The Device Context handle
     int iLogPixelsY,            // # vertical pixels per inch in the DC
-        iOldMode,               // Previous mapping mode
         fontEnum;               // Loop counter
 
     // Loop through the fonts
@@ -485,18 +483,13 @@ void InitChooseFont
         // Zero the struc
         ZeroMemory (fontStruc[fontEnum].lpcf, sizeof (CHOOSEFONT));
 
-        if (fontStruc[fontEnum].bPrinter)
-            // Create a printer device context
-            hDC = GetPrinterDC ();
-        else
-            // Create a screen device context
-            hDC = MyGetDC (HWND_DESKTOP);
-
-        // Set the mapping mode
-        iOldMode = SetMapMode (hDC, MM_TEXT);
-
         // Get # vertical pixels per inch
-        iLogPixelsY = GetDeviceCaps (hDC, LOGPIXELSY);
+        // N.B.:  Do not use Printer DC here as that calculation is done
+        //        at printing time.  We need to use screen coordinates
+        //        for display purposes and convert to printer coords
+        //        only when printing.
+////////iLogPixelsY = GetLogPixelsY (hDC);
+        iLogPixelsY = GetLogPixelsY (NULL);
 
         // Convert from point size to pixels
         //   unless already set in which case
@@ -505,14 +498,6 @@ void InitChooseFont
             fontStruc[fontEnum].lplf->lfHeight = -MulDiv (fontStruc[fontEnum].iDefPtSize, iLogPixelsY, 72);
         else
             fontStruc[fontEnum].iDefPtSize = MulDiv (-fontStruc[fontEnum].lplf->lfHeight, 72, iLogPixelsY);
-
-        // Restore the mapping mode
-        SetMapMode (hDC, iOldMode);
-
-        if (fontStruc[fontEnum].bPrinter)
-            DeleteDC (hDC);
-        else
-            MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
 
         fontStruc[fontEnum].lpcf->lStructSize = sizeof (CHOOSEFONT);
 ////////fontStruc[fontEnum].lpcf->hwndOwner  =
@@ -613,8 +598,6 @@ LRESULT WINAPI LclChooseFontSampleWndProc
                                message,
                                wParam,
                       (LPARAM) SampleText);     // Pass on down the line
-            break;
-
         default:
             break;
     } // End SWITCH
@@ -641,8 +624,7 @@ void CreateNewFontCom
      LPCHOOSEFONTW lpcf,                // Ptr to in CHOOSEFONTW with iPointSize
      LPTEXTMETRICW lptm,                // Ptr to in TEXTMETRICWs
      long         *lpcxAveChar,         // Ptr to out avg width (may be NULL)
-     long         *lpcyAveChar,         // Ptr to out avg height (may be NULL)
-     HDC           hDC)                 // Handle to device context if not default (may be NULL)
+     long         *lpcyAveChar)         // Ptr to out avg height (may be NULL)
 
 {
     HDC   hDCTmp;                       // Temporary DC
@@ -662,7 +644,7 @@ void CreateNewFontCom
     *lphFont = MyCreateFontIndirectW (lplf);
 
     // Get a new device context or use the given one
-    hDCTmp = hDC ? hDC : MyGetDC (HWND_DESKTOP);
+    hDCTmp = MyGetDC (HWND_DESKTOP);
 
     // Set the mapping mode
     iOldMode = SetMapMode (hDCTmp, MM_TEXT);
@@ -682,12 +664,8 @@ void CreateNewFontCom
     // Restore the mapping mode
     SetMapMode (hDCTmp, iOldMode);
 
-    // If no given device context, ...
-    if (hDC EQ NULL)
-    {
-        // Release the one we created
-        MyReleaseDC (HWND_DESKTOP, hDCTmp); hDCTmp = NULL;
-    } // End IF
+    // Release the one we created
+    MyReleaseDC (HWND_DESKTOP, hDCTmp); hDCTmp = NULL;
 
     // New height in pixels
     cyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
@@ -727,8 +705,7 @@ void CreateNewFontTC
                       &cfTC,
                       &tmTC,
                       &GetFSDirAveCharSize (FONTENUM_TC)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_TC)->cy,
-                       NULL);
+                      &GetFSDirAveCharSize (FONTENUM_TC)->cy);
     // If we are also applying the font, ...
     if (bApply)
         ApplyNewFontEnum (FONTENUM_TC);
@@ -847,8 +824,7 @@ void CreateNewFontCC
                       &cfCC,
                       &tmCC,
                       &GetFSDirAveCharSize (FONTENUM_CC)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_CC)->cy,
-                       NULL);
+                      &GetFSDirAveCharSize (FONTENUM_CC)->cy);
     // If we are also applying the font, ...
     if (bApply)
         ApplyNewFontEnum (FONTENUM_CC);
@@ -889,8 +865,7 @@ void CreateNewFontLW
                       &cfLW,
                       &tmLW,
                       &GetFSDirAveCharSize (FONTENUM_LW)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_LW)->cy,
-                       NULL);
+                      &GetFSDirAveCharSize (FONTENUM_LW)->cy);
     // If we are also applying the font, ...
     if (bApply)
         ApplyNewFontEnum (FONTENUM_LW);
@@ -934,8 +909,7 @@ void CreateNewFontSM
                       &cfSM,
                       &tmSM,
                       &GetFSDirAveCharSize (FONTENUM_SM)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_SM)->cy,
-                       NULL);
+                      &GetFSDirAveCharSize (FONTENUM_SM)->cy);
     // Change the font name in the Comboxbox in the Font Window
     InitFontName ();
 
@@ -1054,7 +1028,6 @@ void ApplyNewFontSM
                       &cfSM,
                       &tmAlt,
                        NULL,
-                       NULL,
                        NULL);
 #endif
 #ifdef DEBUG
@@ -1078,22 +1051,13 @@ void CreateNewFontPR
     (UBOOL bApply)                      // TRUE iff we should apply the new font
 
 {
-    HDC hDC;                    // Handle to the printer device context
-
-    // Create a printer device context
-    hDC = GetPrinterDC ();
-
     // Call common routine to set various variables
     CreateNewFontCom (&hFontPR,
                       &lfPR,
                       &cfPR,
                       &tmPR,
                       &GetFSDirAveCharSize (FONTENUM_PR)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_PR)->cy,
-                       hDC);
-    // We no longer need this resource
-    DeleteDC (hDC);
-
+                      &GetFSDirAveCharSize (FONTENUM_PR)->cy);
     // If we are also applying the font, ...
     if (bApply)
         ApplyNewFontEnum (FONTENUM_PR);
@@ -1114,27 +1078,6 @@ void ApplyNewFontPR
 
 
 //***************************************************************************
-//  $GetPrinterDC
-//
-//  Create a printer Device Context
-//***************************************************************************
-
-HDC GetPrinterDC
-    (void)
-
-{
-    WCHAR wszTemp[1024];        // Buffer for printer name
-    DWORD dwLen = countof (wszTemp);
-
-    // Get info about the default printer
-    GetDefaultPrinterW (wszTemp, &dwLen);
-
-    // Create a printer device context
-    return CreateDCW (L"WINSPOOL", wszTemp, NULL, NULL);
-} // End GetPrinterDC
-
-
-//***************************************************************************
 //  $CreateNewFontFE
 //
 //  Create a new font for the FE windows.
@@ -1150,8 +1093,7 @@ void CreateNewFontFE
                       &cfFE,
                       &tmFE,
                       &GetFSDirAveCharSize (FONTENUM_FE)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_FE)->cy,
-                       NULL);
+                      &GetFSDirAveCharSize (FONTENUM_FE)->cy);
     // If we are also applying the font, ...
     if (bApply)
         ApplyNewFontEnum (FONTENUM_FE);
@@ -1195,8 +1137,7 @@ void CreateNewFontME
                       &cfME,
                       &tmME,
                       &GetFSDirAveCharSize (FONTENUM_ME)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_ME)->cy,
-                       NULL);
+                      &GetFSDirAveCharSize (FONTENUM_ME)->cy);
     // If we are also applying the font, ...
     if (bApply)
         ApplyNewFontEnum (FONTENUM_ME);
@@ -1240,8 +1181,7 @@ void CreateNewFontVE
                       &cfVE,
                       &tmVE,
                       &GetFSDirAveCharSize (FONTENUM_VE)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_VE)->cy,
-                       NULL);
+                      &GetFSDirAveCharSize (FONTENUM_VE)->cy);
     // If we are also applying the font, ...
     if (bApply)
         ApplyNewFontEnum (FONTENUM_VE);
@@ -2756,8 +2696,7 @@ LRESULT APIENTRY MFWndProc
                                               &cfPR,
                                               &tmPR,
                                               &GetFSDirAveCharSize (FONTENUM_PR)->cx,
-                                              &GetFSDirAveCharSize (FONTENUM_PR)->cy,
-                                               pdex.hDC);
+                                              &GetFSDirAveCharSize (FONTENUM_PR)->cy);
                             // This font is put into the DC by LclECPaintHook
 
                             // Setup the DOCINFO struc for the print job

@@ -38,14 +38,20 @@
 
 #include "headers.h"
 
-#define KEYB_UNICODE_LIMIT          4   // Maximum # WCHARs allowed in the Keyboard Unicode Edit Ctrl
-                                        // Change to 8 when we support UCS-32
-
 extern HICON hIconCustom;
 WNDPROC lpfnOldKeybEditCtrlWndProc,     // Save area for old EditCtrl window proc
         lpfnOldFontsStaticTextWndProc;  // ...               Static Text ...
+HWND hWndListBox;                       // Dialog ListBox window handle
 
+// Local copy of gSyntaxColorName[].syntClr
+SYNTAXCOLORS lclSyntaxColors[SC_LENGTH];
+
+char pszNoCreateWCWnd[]  = "Unable to create Web Color Names window";
 WCHAR wszCancelMessage[] = L"You have made changes to the Customize settings.  Save the changes?";
+
+//***************************************************************************
+//  []IC-specific Information
+//***************************************************************************
 
 // []IC Index Names -- these must be in the same order as the IC_INDICES enum.
 LPWCHAR icIndexNames[ICNDX_LENGTH]
@@ -77,13 +83,16 @@ LPWCHAR icIndexValues[ICVAL_LENGTH]
    WS_UTF16_OVERBAR WS_UTF16_INFINITY,
   };
 
-// Local copy of gSyntaxColorName[].syntClr
-SYNTAXCOLORS lclSyntaxColors[SC_LENGTH];
 
-char pszNoCreateWCWnd[]     = "Unable to create Web Color Names window";
-HFONT hFontKB = NULL;
+//***************************************************************************
+//  Keyboard-specific Information
+//***************************************************************************
 
-#define KKC_CY          4           // # rows in Keyb Keycaps
+#define KEYB_UNICODE_LIMIT          4   // Maximum # WCHARs allowed in the Keyboard Unicode Edit Ctrl
+                                        // Change to 8 when we support UCS-32
+HFONT hFontKB = NULL;                   // Font handle for the keyboard TabCtrl and Keycaps
+
+#define KKC_CY          4               // # rows in Keyb Keycaps
 
 // Array of beginning IDs for each Keycap row
 UINT aKKC_IDC_BEG[]
@@ -318,7 +327,6 @@ APLU3264 CALLBACK CustomizeDlgProc
 {
     static HFONT        hFontCWS = NULL;        // Font for CLEARWS Values
     static HWND         hWndGroupBox,           // Dialog GroupBox window handle
-                        hWndListBox,            // Dialog ListBox  ...
                         hWndKeybComboBox,       // Keyboard Layout ComboBox window handle
                         hWndKeycapC,            // Keyboard letter C window handle
                         hWndKeycapX,            // ...             X ...
@@ -1153,6 +1161,22 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////////////////cfKB.nFontType      =                           // Output only
 ////////////////////////cfKB.nSizeMin       =                           // Only w/CF_LIMITSIZE
 ////////////////////////cfKB.nSizeMax       =                           // Only w/CF_LIMITSIZE
+
+                        // Add a Tooltip to the Font button
+                        // Fill in constant fields
+                        tti.uFlags   = 0
+                                     | TTF_IDISHWND
+                                     | TTF_SUBCLASS
+                                       ;
+                        tti.hwnd     = hWndProp;
+                        tti.uId      = (INT_PTR) GetDlgItem (hWndProp, IDC_KEYB_BN_FONT);
+////////////////////////tti.rect     =                      // Not used with TTF_IDISHWND
+////////////////////////tti.hinst    =                      // Not used except with string resources
+                        tti.lpszText = LPSTR_TEXTCALLBACKW;
+////////////////////////tti.lParam   =                      // Not used by this code
+
+                        // Register a tooltip for the Keyboard Fonts button
+                        SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
 
                         //***************************************************************
                         //  Keyboard Keycaps
@@ -2163,18 +2187,28 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // Check to see if this is one of our Font labels
                         if ((IDC_FONTS1    <= idCtl && idCtl <= IDC_FONTS_LAST)
-                         || (IDC_FONTS_LT1 <= idCtl && idCtl <= IDC_FONTS_LT_LAST))
+                         || (IDC_FONTS_LT1 <= idCtl && idCtl <= IDC_FONTS_LT_LAST)
+                         ||                            idCtl EQ IDC_KEYB_BN_FONT)
                         {
-                            LPLOGFONTW lplf;
+                            LOGFONTW lf;
 
                             // Convert the idCtl into an index
                             if (IDC_FONTS1    <= idCtl && idCtl <= IDC_FONTS_LAST)
+                            {
                                 idCtl -= IDC_FONTS1;
-                            else
+
+                                // Get a ptr to the current LOGFONTW struc
+                                lf = *fontStruc[lclSameFontAs[idCtl]].lpcf->lpLogFont;
+                            } else
+                            if (IDC_FONTS_LT1 <= idCtl && idCtl <= IDC_FONTS_LT_LAST)
+                            {
                                 idCtl -= IDC_FONTS_LT1;
 
-                            // Get a ptr to the current LOGFONTW struc
-                            lplf = fontStruc[lclSameFontAs[idCtl]].lpcf->lpLogFont;
+                                // Get a ptr to the current LOGFONTW struc
+                                lf = *fontStruc[lclSameFontAs[idCtl]].lpcf->lpLogFont;
+                            } else
+                                // Get the LOGFONTW structure for the font
+                                GetObjectW (hFontKB, sizeof (lf), &lf);
 
                             // Get # vertical pixels per inch
                             // N.B.:  Do not use a Printer DC here as that calculation is done
@@ -2186,26 +2220,26 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                             // Format the relevant data
                             wsprintfW (TooltipText,
-                                       strchrW (lplf->lfFaceName, L' ') ? L"\"%s\"%s" : L"%s%s",
-                                       lplf->lfFaceName,
-                                       GetFontWeightW (lplf->lfWeight));
+                                       strchrW (lf.lfFaceName, L' ') ? L"\"%s\"%s" : L"%s%s",
+                                       lf.lfFaceName,
+                                       GetFontWeightW (lf.lfWeight));
                             // If the font is Italic, ...
-                            if (lplf->lfItalic)
+                            if (lf.lfItalic)
                                 lstrcatW (TooltipText, L" Italic");
 
                             // If the font is Underlined, ...
-                            if (lplf->lfUnderline)
+                            if (lf.lfUnderline)
                                 lstrcatW (TooltipText, L" Underline");
 
                             // If the font is Strike Out, ...
-                            if (lplf->lfStrikeOut)
+                            if (lf.lfStrikeOut)
                                 lstrcatW (TooltipText, L" StrikeOut");
 
                             // If the font's height is negative, ...
-                            if (lplf->lfHeight < 0)
+                            if (lf.lfHeight < 0)
                                 wsprintfW (&TooltipText[lstrlenW (TooltipText)],
                                             L" %u point",
-                                            -MulDiv (lplf->lfHeight, 72, iLogPixelsY));
+                                            -MulDiv (lf.lfHeight, 72, iLogPixelsY));
                             // Return the ptr to the caller
                             lpttt->lpszText = TooltipText;
                         } else
@@ -3607,15 +3641,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                         //   whether or not a font was chosen
                         // If the font changed, ...
                         if (ChooseFontW (&cfKB))
-                        {
-                            // Get the associated item data (window handle of the Property Page)
-                            hWndProp = (HWND)
-                              SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
-
                             // Set the font for the appropriate keyboard controls
                             //   from lfKB
-                            SetKeybFont (hWndProp);
-                        } // End IF/ELSE
+                            SetKeybFont (NULL);
                     } // End IF
 
                     // Return dialog result
@@ -4861,11 +4889,17 @@ UINT KeybCharToScanCode
 //***************************************************************************
 
 void SetKeybFont
-    (HWND hWndProp)
+    (HWND hWndProp)                     // Property Page window handle (amy be NULL)
 
 {
     UINT uCnt,                          // Loop counter
          uCol;                          // ...
+
+    // If the Property Page window handle has not been specified, ...
+    if (hWndProp EQ NULL)
+        // Get the associated item data (window handle of the Property Page)
+        hWndProp = (HWND)
+          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
 
     // If there is an existing font, delete it
     if (hFontKB)

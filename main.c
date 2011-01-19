@@ -566,6 +566,44 @@ UINT_PTR APIENTRY MyChooseFontHook
 
             return FALSE;               // Pass msg to standard dialog
 
+        case WM_COMMAND:            // wNotifyCode = HIWORD (wParam);   // Notification code
+                                    // wID = LOWORD (wParam);           // Item, control, or accelerator identifier
+                                    // hwndCtl = (HWND) lParam;         // Handle of control
+        {
+#ifdef DEBUG
+            UINT idCtl   = GET_WM_COMMAND_ID   (wParam, lParam),
+                 cmdCtl  = GET_WM_COMMAND_CMD  (wParam, lParam);
+            HWND hwndCtl = GET_WM_COMMAND_HWND (wParam, lParam);
+#else
+  #define idCtl             GET_WM_COMMAND_ID   (wParam, lParam)
+  #define cmdCtl            GET_WM_COMMAND_CMD  (wParam, lParam)
+  #define hwndCtl           GET_WM_COMMAND_HWND (wParam, lParam)
+#endif
+            // If the user pressed one of our buttons, ...
+            switch (idCtl)
+            {
+                case psh3:          // The Apply button id
+                    // Get the current LOGFONTW struc
+                    SendMessageW (hDlg, WM_CHOOSEFONT_GETLOGFONT, 0, (LPARAM) &lfKB);
+
+                    // Set the font for the appropriate keyboard controls
+                    //   from lfKB
+                    SetKeybFont (NULL);
+
+                    break;
+
+                default:
+                    break;
+            } // End SWITCH
+
+            return FALSE;               // Pass msg to standard dialog
+#ifndef DEBUG
+  #undef  hwndCtl
+  #undef  cmdCtl
+  #undef  idCtl
+#endif
+        } // End WM_COMMAND
+
         default:
             return FALSE;               // Pass msg to standard dialog
     } // End SWITCH

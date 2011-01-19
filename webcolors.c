@@ -102,7 +102,7 @@ __try
             } // End FOR
 
             // The color buttons are initialized in WM_DRAWITEM
-            // The Tooltip text is filled in by WM_NOTIFY/TTN_NEEDTEXTW
+            // The Tooltip text is filled in by WM_NOTIFY/TTN_GETDISPINFOW
 
             // If we didn't match the name (some non-Web Color), ...
             if (lpwName EQ NULL)
@@ -171,7 +171,8 @@ __try
             // Split cases based upon the notification code
             switch (lpnmh->code)
             {
-                case TTN_NEEDTEXTW:     // idTT = (int) wParam;
+////////////////case TTN_NEEDTEXTW:
+                case TTN_GETDISPINFOW:  // idCtl = (int) wParam;
                                         // lpttt = (LPTOOLTIPTEXTW) lParam;
                 {
                     static WCHAR    TooltipText[_MAX_PATH];
@@ -204,7 +205,7 @@ __try
                     } // End IF
 
                     break;
-                } // End TTN_NEEDTEXTW
+                } // End TTN_GETDISPINFOW
 
                 default:
                     break;

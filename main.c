@@ -2106,7 +2106,8 @@ LRESULT APIENTRY MFWndProc
                 //***************************************************************
                 // Tooltip Ctrl Notifications
                 //***************************************************************
-                case TTN_GETDISPINFOW:      // idTT = (int) wParam;
+////////////////case TTN_NEEDTEXTW:
+                case TTN_GETDISPINFOW:      // idCtl = (int) wParam;
                                             // lptdi = (LPNMTTDISPINFOW) lParam;
                 {
                     static WCHAR TooltipText[_MAX_PATH];
@@ -2471,13 +2472,15 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;       // We handled the msg
 
                 case IDM_CUSTOMIZE:
-                    // Display a dialog with the choices
-////////////////////ghDlgCustomize =        // Set in the WM_INITDIALOG handler
-                      CreateDialogParamW (_hInstance,
-                                           MAKEINTRESOURCEW (IDD_CUSTOMIZE),
-                                           hWndMF,
-                                (DLGPROC) &CustomizeDlgProc,
-                                           0);
+                    // If not already open, ...
+                    if (ghDlgCustomize EQ NULL)
+                        // Display a dialog with the choices
+////////////////////////ghDlgCustomize =        // Set in the WM_INITDIALOG handler
+                          CreateDialogParamW (_hInstance,
+                                               MAKEINTRESOURCEW (IDD_CUSTOMIZE),
+                                               hWndMF,
+                                    (DLGPROC) &CustomizeDlgProc,
+                                               0);
                     return FALSE;       // We handled the msg
 
                 case IDM_HELP_CONTENTS:

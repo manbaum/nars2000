@@ -947,6 +947,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                             fontStruc[uCnt].bChanged =
                             fontStruc[uCnt].bApplied = FALSE;
 
+                            // Set the owner to hWndProp so we can't close this dialog with ChooseFontW open
+                            fontStruc[uCnt].cfLcl.hwndOwner = hWndProp;
+
                             // Set the radio button initial states
                             SendMessageW (GetDlgItem (hWndProp, FontsRadioPtr[uCnt][glbSameFontAs[uCnt]]), BM_SETCHECK, TRUE, 0);
 
@@ -1094,7 +1097,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // Initialize the CHOOSEFONTW struc for IDC_KEYB_BN_FONT
                         cfKB.lStructSize    = sizeof (cfKB);
-                        cfKB.hwndOwner      = hDlg;
+                        cfKB.hwndOwner      = hWndProp;
 ////////////////////////cfKB.hDC            =                           // Only w/CF_PRINTERFONTS
                         cfKB.lpLogFont      = &lfKB;
                         cfKB.iPointSize     = DEF_KBPTSIZE * 10;
@@ -1285,7 +1288,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // Fill in the static members of the CHOOSECOLORW struc
                         cc.lStructSize    = sizeof (cc);
-                        cc.hwndOwner      = hDlg;
+                        cc.hwndOwner      = hWndProp;
 ////////////////////////cc.hInstance      = NULL;                   // Already zero from = {0}
 ////////////////////////cc.rgbResult      =                         // Filled in by the WM_COMMAND handler
                         cc.lpCustColors   = aCustomColors;
@@ -2028,7 +2031,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                 //***************************************************************
                 // Tooltip Ctrl Notifications
                 //***************************************************************
-                case TTN_NEEDTEXTW:     // idCtl = (int) wParam;
+////////////////case TTN_NEEDTEXTW:
+                case TTN_GETDISPINFOW:  // idCtl = (int) wParam;
                                         // lpttt = (LPTOOLTIPTEXTW) lParam;
                 {
                     static WCHAR    TooltipText [_MAX_PATH];
@@ -2117,6 +2121,9 @@ APLU3264 CALLBACK CustomizeDlgProc
                             lpttt->lpszText = L"Reserved for system use; click on \"No keyboard shortcuts for Function Editing commands\" to change";
                     } else
                     {
+                        // In case we used TTF_IDISHWND when adding the Tooltip, get the Ctrl ID
+                        idCtl = GetDlgCtrlID ((HWND) idCtl);
+
                         // Check to see if this is one of our Syntax Coloring Foreground/Background Color buttons
                         if (IDC_SYNTCLR_BN_FGCLR1 <= idCtl && idCtl <= IDC_SYNTCLR_BN_FGCLR_LAST)
                         {
@@ -2167,7 +2174,7 @@ APLU3264 CALLBACK CustomizeDlgProc
   #undef  lpttt
 #endif
                     return FALSE;
-                } // End TTN_NEEDTEXTW
+                } // End TTN_GETDISPINFOW
 
                 //***************************************************************
                 // Tab Ctrl Notifications
@@ -2461,8 +2468,17 @@ APLU3264 CALLBACK CustomizeDlgProc
                             // If the font changed, ...
                             if (fontStruc[uCnt].bChanged)
                             {
+                                HWND hwndOwner;
+
+                                // Because we changed the hwndOwner in cfLcl,
+                                //   we must not copy it back to the global
+                                hwndOwner = fontStruc[uCnt].lpcf->hwndOwner;
+
                                 // Copy the local CHOOSEFONTW value to the global
                                 *fontStruc[uCnt].lpcf = fontStruc[uCnt].cfLcl;
+
+                                // Restore the original value
+                                fontStruc[uCnt].lpcf->hwndOwner = hwndOwner;
 
                                 // Call the CreateNewFontXX for this font
                                 //   but don't apply it as yet as other

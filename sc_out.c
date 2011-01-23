@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,18 +155,19 @@ UBOOL CmdOut_EM
                         break;
 
                     case NAMETYPE_VAR:
-                        // Check for []WSID and skip it if found
+                        // Check for []DM and []WSID and skip it if found
 
                         // Lock the memory to get a ptr to it
                         lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 
                         // Compare the names
-                        uCnt = lstrcmpiW (lpwGlbName, WS_UTF16_QUAD L"wsid");
+                        uCnt = lstrcmpiW (lpwGlbName, WS_UTF16_QUAD L"wsid") EQ 0
+                            || lstrcmpiW (lpwGlbName, WS_QUADDM            ) EQ 0;
 
                         // We no longer need this ptr
                         MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;
 
-                        if (uCnt EQ 0)
+                        if (uCnt)
                             continue;
 
                         // Mark as a variable

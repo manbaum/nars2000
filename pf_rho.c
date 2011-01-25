@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1022,7 +1022,7 @@ void PrimFnDydRhoCopyDim
                     break;
 
                 case IMMTYPE_FLOAT:
-                    *lpDimRes = (APLDIM) (lptkLftArg->tkData.tkSym->stData.stFloat);
+                    *lpDimRes = (APLDIM) FloatToAplint_SCT (lptkLftArg->tkData.tkSym->stData.stFloat, NULL);
 
                     break;
 
@@ -1048,7 +1048,7 @@ void PrimFnDydRhoCopyDim
                     break;
 
                 case IMMTYPE_FLOAT:
-                    *lpDimRes = (APLDIM) (lptkLftArg->tkData.tkFloat);
+                    *lpDimRes = (APLDIM) FloatToAplint_SCT (lptkLftArg->tkData.tkFloat, NULL);
 
                     break;
 
@@ -1506,10 +1506,11 @@ void PrimFnDydRhoLftGlbCopyDim
      LPAPLDIM  lpaplDim)
 
 {
-    LPVOID   lpMemLft,      // Ptr to left argument global memory
-             lpDataLft;
-    APLNELM  aplNELMLft;
-    UINT     uLft, uBitMaskLft;
+    LPVOID   lpMemLft,      // Ptr to left arg header (via lpHeader)
+             lpDataLft;     // Ptr to left arg global memory
+    APLNELM  aplNELMLft;    // Left arg NELM
+    UINT     uLft,          // Loop counter
+             uBitMaskLft;   // Left arg bit mask
 
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
@@ -1551,7 +1552,7 @@ void PrimFnDydRhoLftGlbCopyDim
 
         case ARRAY_FLOAT:
             for (uLft = 0; uLft < aplNELMLft; uLft++)
-                *lpaplDim++ = (APLDIM) *((LPAPLFLOAT) lpDataLft)++;
+                *lpaplDim++ = (APLDIM) FloatToAplint_SCT (*((LPAPLFLOAT) lpDataLft)++, NULL);
             break;
 
         case ARRAY_APA:

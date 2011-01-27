@@ -61,6 +61,11 @@ void MakeWorkspaceNameCanonical
      && wszInp[1] NE L':')      // and no drive letter
     {
         lstrcpyW (wszOut, wszDefDir);
+
+        // If the input doesn't already start with a backslash, ...
+        if (wszInp[0] NE WC_SLOPE)
+            AppendBackslash (wszOut);
+
         lstrcatW (wszOut, wszInp);
     } else
         lstrcpyW (wszOut, wszInp);
@@ -74,6 +79,28 @@ void MakeWorkspaceNameCanonical
      && lstrcmpiW (&wszOut[uLen - WS_WKSEXT_LEN], WS_WKSEXT) EQ 0)
         wszOut[uLen - WS_WKSEXT_LEN] = WC_EOS;
 } // End MakeWorkspaceNameCanonical
+
+
+//***************************************************************************
+//  $AppendBackslash
+//
+//  Ensure the given string ends with a backslash
+//***************************************************************************
+
+void AppendBackslash
+    (LPWCHAR lpwsz)
+
+{
+    UINT uLen;
+
+    // Get the incoming string length
+    uLen = lstrlenW (lpwsz);
+
+    // If there's no trailing backslash, ...
+    if (uLen && lpwsz[uLen - 1] NE WC_SLOPE)
+        // Append one
+        lstrcatW (lpwsz, WS_SLOPE);
+} // End AppendBackslash
 
 
 //***************************************************************************
@@ -463,6 +490,101 @@ void SaveRecentWSID
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
 } // End SaveRecentWSID
+
+
+//***************************************************************************
+//  $CheckCommandLine
+//
+//  Check a system command line for switches
+//***************************************************************************
+
+UBOOL CheckCommandLine
+    (LPWCHAR   lpwszTail,               // Ptr to command line (after the command itself)
+     LPUINT    lpuArgCnt,               // Ptr to # args
+     LPWCHAR **lplplpwszArgs,           // Ptr to ptr to ptr to args
+     LPWCHAR  *lplpwszLeadRange,        // Ptr to ptr to leading range
+     LPWCHAR  *lplpwszTailRange,        // ...           trailing range
+                                        //              (may point to NULL if no separator)
+     UBOOL     bLibCmd)                 // TRUE iff )LIB
+
+{
+    LPWCHAR lpwszSwitch = NULL,         // Ptr to switch
+            lpw;                        // Temporary ptr
+    UINT    uCnt;                       // Loop counter
+
+    // If there's a command tail, ...
+    if (lpwszTail[0])
+        // Convert the argument line to argc/argv format
+        *lplplpwszArgs =
+          CommandLineToArgvW (lpwszTail, lpuArgCnt);
+    else
+        *lpuArgCnt = 0;
+
+    // If it's the )LIB command,
+    if (bLibCmd)
+    {
+        // Check for LIBCMD_SWITCH parameters
+        for (uCnt = 0; uCnt < *lpuArgCnt; uCnt++)
+        if ((*lplplpwszArgs)[uCnt][0] EQ LIBCMD_SWITCH)
+            // Skip over the leading slash
+            lpwszSwitch = &(*lplplpwszArgs)[uCnt][1];
+        // Check for too much on the line
+        switch (*lpuArgCnt)
+        {
+            case 0:             // No args
+            case 1:             // Dir or switch
+                break;
+
+            case 2:             // Dir and switch
+                // If there's a switch specified, ...
+                if (lpwszSwitch)
+                    break;
+
+                // Fall through to error code
+
+            default:
+                IncorrectCommand ();
+
+                return FALSE;
+        } // End SWITCH
+    } else
+    {
+        if (*lpuArgCnt)
+            lpwszSwitch = (*lplplpwszArgs)[0];
+
+        // Check for too much on the line
+        if (*lpuArgCnt > 1)
+        {
+            IncorrectCommand ();
+
+            return FALSE;
+        } // End IF
+    } // End IF/ELSE
+
+    // If there's a switch, ...
+    if (lpwszSwitch)
+    {
+        // Set a ptr to the first part
+        *lplpwszLeadRange = lpwszSwitch;
+
+        // Look for a separator
+        lpw = strchrW (lpwszSwitch, L'-');
+
+        // If it's present, ...
+        if (lpw)
+        {
+            // Zap it, terminating the first range
+            *lpw = WC_EOS;
+
+            // Set a ptr to the second part
+            *lplpwszTailRange = &lpw[1];
+        } else
+            *lplpwszTailRange = NULL;
+    } else
+        *lplpwszLeadRange = *lplpwszTailRange = L"";
+
+    return TRUE;
+} // End CheckCommandLine
 
 
 //***************************************************************************

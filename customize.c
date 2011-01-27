@@ -30,11 +30,14 @@
 
 #define STRICT
 #define OEMRESOURCE                     // Necessary to get OBM checkboxes
+#define CINTERFACE                      // To define the C (not C++) interface
+#define COBJMACROS                      // To define the C macros for IMalloc, etc.
 #include <windows.h>
 #include <windowsx.h>
 #include <stdio.h>
 #include <uxtheme.h>                    // Theme specific stuff
 #include <tmschema.h>                   // ...
+#include <shlobj.h>                     // For SHBrowseForFolder
 
 #include "headers.h"
 
@@ -327,6 +330,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 {
     static HFONT        hFontCWS = NULL;        // Font for CLEARWS Values
     static HWND         hWndGroupBox,           // Dialog GroupBox window handle
+                        hWndDirsComboBox,       // Directories ComboBox window handle
                         hWndKeybComboBox,       // Keyboard Layout ComboBox window handle
                         hWndKeycapC,            // Keyboard letter C window handle
                         hWndKeycapX,            // ...             X ...
@@ -476,13 +480,28 @@ APLU3264 CALLBACK CustomizeDlgProc
                       lpwResetText = L"When one of the following System Variables is assigned a simple empty vector, "
                                      L"the system assigns to it a value which is either the workspace CLEAR WS "
                                      L"value (User-controlled) or the System Default value (Fixed).  This dialog "
-                                     L"allows you to choose which value is used.";
+                                     L"allows you to choose which value is used.",
+                      lpwDirsText  = L"The Library Directories are used when searching for workspaces (*.ws.nars) or "
+                                     L"transfer files (*.atf).  To include a new directory in the list, click on "
+                                     L"Browse and select a directory.  To delete a directory from the list, select "
+                                     L"it and then click on Delete."
+                                     ;
 
     static TOOLINFOW tti = {sizeof (tti)};  // For Tooltip Ctrl
     static CHOOSEFONTW cfKB = {0};
 
     WCHAR        wszStr[KEYB_UNICODE_LIMIT + 1];
     LPWCHAR      lpwszStr;              // Temporary string ptr
+
+    //***************************************************************************
+    // LibDirs-specific data
+    //***************************************************************************
+
+    LPWSZLIBDIRS lpwszLibDirs;          // Ptr to LibDirs
+    static BROWSEINFOW bi = {0};        // Browse info for Dirs
+    static LPITEMIDLIST pidl;
+    static WCHAR wszBrowsePath[_MAX_PATH];
+    static COMBOBOXINFO cbi = {sizeof (cbi)};
 
     static HTHEME hThemeKeybs = NULL;   // Handle to default theme for Keybs
 
@@ -922,15 +941,53 @@ APLU3264 CALLBACK CustomizeDlgProc
                         break;
                     } // End IDD_PROPPAGE_CLEARWS_VALUES
 
-////////////////////case IDD_PROPPAGE_DIRS:                             // MYWM_INITDIALOG
-////////////////////    DbgBrk ();      // ***FINISHME***
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////    break;
+                    case IDD_PROPPAGE_DIRS:                             // MYWM_INITDIALOG
+                    {
+                        HFONT    hFont;
+                        LOGFONTW lf;
+
+                        // Get the ComboBox window handle
+                        hWndDirsComboBox = GetDlgItem (hWndProp, IDC_DIRS_CB_LIBDIRS);
+
+                        // Get the ComboBox info
+                        SendMessageW (hWndDirsComboBox, CB_GETCOMBOBOXINFO, 0, (LPARAM) &cbi);
+
+                        // Lock the memory to get a ptr to it
+                        lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
+
+                        // Populate the Combobox
+                        for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
+                            SendMessageW (hWndDirsComboBox, CB_ADDSTRING, 0, (LPARAM) lpwszLibDirs[uCnt]);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbLibDirs); lpwszLibDirs = NULL;
+
+                        // Set the text for the top instructions
+                        SendMessageW (GetDlgItem (hWndProp, IDC_DIRS_LT1), WM_SETTEXT, 0, (LPARAM) lpwDirsText);
+
+                        // Change the font for the "Library Directories" to bold
+
+                        // Get the font used for the text
+                        hFont = (HFONT)
+                          SendMessageW (GetDlgItem (hWndProp, IDC_DIRS_LT2), WM_GETFONT, 0, 0);
+
+                        // Get the current LOGFONTW struc and make it bold
+                        GetObjectW (hFont, sizeof (lf), &lf);
+
+                        // Set the new weight
+                        lf.lfWeight = FW_BOLD;
+
+                        // Create a new HFONT from the changed LOGFONTW
+                        hFont = MyCreateFontIndirectW (&lf);
+
+                        // Save as the new font for the text
+                        SendMessageW (GetDlgItem (hWndProp, IDC_DIRS_LT2), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFont, MAKELPARAM (TRUE, 0));
+
+                        // We no longer need this handle
+                        DeleteObject (hFont); hFont = NULL;
+
+                        break;
+                    } // End IDD_PROPPAGE_DIRS
 
                     case IDD_PROPPAGE_FONTS:                            // MYWM_INITDIALOG
                         // Initialize the instructions
@@ -2535,21 +2592,47 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // DIRECTORIES -- Apply
                     //***************************************************************
 
-////////////////////// Get the Property Page index
-////////////////////uCnt = IDD_PROPPAGE_DIRS - IDD_PROPPAGE_START;
-////////////////////if (custStruc[uCnt].bInitialized)
-////////////////////{
-////////////////////    // Get the associated item data (window handle of the Property Page)
-////////////////////    hWndProp = (HWND)
-////////////////////      SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
-////////////////////
-////////////////////    DbgBrk ();      // ***FINISHME***
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////
-////////////////////} // End IF
+                    // Get the Property Page index
+                    uCnt = IDD_PROPPAGE_DIRS - IDD_PROPPAGE_START;
+                    if (custStruc[uCnt].bInitialized)
+                    {
+                        HGLOBAL hGlb;
+
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+                        // Get the # entries in the Dirs ComboBox
+                        uCnt = (UINT)
+                          SendMessageW (hWndDirsComboBox, CB_GETCOUNT, 0, 0);
+
+                        // Allocate space for the LibDirs
+                        hGlb =
+                          MyGlobalAlloc (GHND, uCnt * _MAX_PATH * sizeof (WCHAR));
+
+                        if (hGlb EQ NULL)
+                            MessageBoxW (NULL, L"Unable to allocate enough memory for Library Directories", WS_APPNAME, MB_OK | MB_ICONSTOP);
+                        else
+                        {
+                            // Lock the memory to get a ptr to it
+                            lpwszLibDirs = MyGlobalLock (hGlb);
+
+                            // Save the count
+                            uNumLibDirs = uCnt;
+
+                            // Loop through the entries
+                            for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
+                                // Get the next string
+                                SendMessageW (hWndDirsComboBox, CB_GETLBTEXT, uCnt, (LPARAM) lpwszLibDirs[uCnt]);
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlb); lpwszLibDirs = NULL;
+
+                            // Free the old memory
+                            MyGlobalFree (hGlbLibDirs); hGlbLibDirs = NULL;
+
+                            // Save the global memory handle
+                            hGlbLibDirs = hGlb;
+                        } // End IF/ELSE
+                    } // End IF
 
 
                     //***************************************************************
@@ -2919,6 +3002,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Return dialog result
                     DlgMsgDone (hDlg);              // We handled the msg
 
+
                 //***************************************************************
                 // CLEAR WS VALUES -- WM_COMMAND
                 //***************************************************************
@@ -3121,9 +3205,112 @@ APLU3264 CALLBACK CustomizeDlgProc
                 // DIRECTORIES -- WM_COMMAND
                 //***************************************************************
 
+                case IDC_DIRS_BN_BROWSE:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_DIRS - IDD_PROPPAGE_START, 0);
 
+                        // Fill in BROWSEINFO parameters
+                        bi.hwndOwner      = hWndProp;               // Owner window handle
+                        bi.pidlRoot       = NULL;                   // Allow root at Desktop
+                        bi.pszDisplayName = wszBrowsePath;          // Return result here
+////////////////////////bi.lpszTitle      =                         // No title
+                        bi.ulFlags        = 0                       // Flags
+                                          | BIF_EDITBOX
+                                          | BIF_VALIDATE
+                                          | BIF_NEWDIALOGSTYLE
+                                          ;
+                        bi.lpfn           = DirsBrowseCallbackProc; // Callback
+////////////////////////bi.lParams        =                         // Used with .lpfn only
+////////////////////////bi.iImage         =                         // Returns index of image associated with selected folder
 
+                        // Initialize the ptr to the ID list
+                        pidl = SHBrowseForFolderW (&bi);
 
+                        // If it's valid, ...
+                        if (pidl)
+                        {
+                            IMalloc *iMalloc = 0;
+
+                            // Get the name of the folder and save it in the ComboBox's Edit Ctrl
+                            SHGetPathFromIDListW (pidl, wszBrowsePath);
+
+                            // Save the path into the ComboBox's Edit Ctrl
+                            SendMessageW (cbi.hwndItem, WM_SETTEXT, 0, (LPARAM) wszBrowsePath);
+
+                            // Free memory used
+                            if (SUCCEEDED (SHGetMalloc (&iMalloc)))
+                            {
+                                IMalloc_Free (iMalloc, pidl); pidl = NULL;
+                                IMalloc_Release (iMalloc); iMalloc = NULL;
+                            } // End IF
+
+                            // Check for error
+                            if (wszBrowsePath[0] EQ WC_EOS)
+                                // Sound the alarum!
+                                MessageBeep (MB_ICONERROR);
+                            else
+                            {
+                                // Check for duplicates
+                                uCnt = (UINT)
+                                  SendMessageW (hWndDirsComboBox, CB_FINDSTRINGEXACT, -1, (LPARAM) wszBrowsePath);
+                                if (uCnt NE CB_ERR)
+                                    // Sound the alarum!
+                                    MessageBeep (MB_ICONERROR);
+                                else
+                                {
+                                    // Save the path in the ComboBox
+                                    SendMessageW (hWndDirsComboBox, CB_ADDSTRING, 0, (LPARAM) wszBrowsePath);
+
+                                    // Select it into the Edit Ctrl
+                                    SendMessageW (hWndDirsComboBox, CB_SELECTSTRING, -1, (LPARAM) wszBrowsePath);
+                                } // End IF/ELSE
+                            } // End IF/ELSE
+
+                            // Enable the Apply button
+                            EnableWindow (hWndApply, TRUE);
+                        } // End IF
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                 case IDC_DIRS_BN_DEL:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_DIRS - IDD_PROPPAGE_START, 0);
+
+                        // Get the path from the ComboBox's Edit Ctrl
+                        SendMessageW (cbi.hwndItem, WM_GETTEXT, countof (wszBrowsePath), (LPARAM) wszBrowsePath);
+
+                        // Get the index of the string in the ComboBox Edit Ctrl
+                        uCnt = (UINT)
+                          SendMessageW (hWndDirsComboBox, CB_FINDSTRINGEXACT, -1, (LPARAM) wszBrowsePath);
+                        // Check for error
+                        if (uCnt EQ CB_ERR)
+                            // Sound the alarum!
+                            MessageBeep (MB_ICONERROR);
+                        else
+                        {
+                            // Delete the string from the ComboBox
+                            SendMessageW (hWndDirsComboBox, CB_DELETESTRING, uCnt, 0);
+
+                            // Remove it from the Edit Ctrl
+                            SendMessageW (hWndDirsComboBox, CB_SETCURSEL, -1, 0);
+                        } // End IF/ELSE
+
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
 
 
                 //***************************************************************
@@ -5450,6 +5637,90 @@ int GetLogPixelsY
 
     return iLogPixelsY;
 } // End GetLogPixelsY
+
+
+//***************************************************************************
+//  $DirsBrowseCallbackProc
+//
+//  Callback proc for Dirs browse function
+//***************************************************************************
+
+int CALLBACK DirsBrowseCallbackProc
+    (HWND   hWnd,           // Window handle
+     UINT   uMsg,           // Type of message (BFFM_xxx)
+     LPARAM lParam,         // Additional information (based upon uMsg)
+     LPARAM lpData)         // ...                    (from BROWSEINFOW.lParam)
+
+{
+    RECT  rc;
+    WCHAR wszTemp[_MAX_PATH + 256];
+    HWND  hWndProp = NULL;
+////static IUnknown    *iUnknown;
+////static LPITEMIDLIST pidl;
+////static IMalloc     *iMalloc;
+////       WCHAR        wszBrowsePath[_MAX_PATH];
+
+    // Split cases based upon the message
+    switch (uMsg)
+    {
+        case BFFM_INITIALIZED:      // lParam = NULL
+            // Get the screen coords of the browse dialog
+            GetWindowRect (hWnd, &rc);
+
+            // Reposition it to the top of the screen
+            //   because it often displays with the bottom
+            //   of the dialog below the bottom of the screen.
+            SetWindowPos (hWnd,                         // Window handle to position
+                          NULL,                         // Placement order handle (ignored due to SWP_NOZORDER)
+                          rc.left,                      // X-position
+                          0,                            // Y-...
+                          0,                            // Width (ignored due to SWP_NOSIZE)
+                          0,                            // Height ...
+                          0                             // Flags
+                        | SWP_NOZORDER
+                        | SWP_NOSIZE
+                         );
+            break;
+
+        case BFFM_IUNKNOWN:         // lParam = ptr to an IUnknown interface
+////////////iUnknown = (IUnknown *) lParam;
+////////////iUnknown->lpVtbl->QueryInterface ();
+////////////iUnknown->lpVtbl->AddRef         ();
+////////////iUnknown->lpVtbl->Release        ();
+
+            break;
+
+        case BFFM_SELCHANGED:       // lParam = PIDL identifying the newly selected item
+////////////pidl = (LPITEMIDLIST) lParam;
+////////////
+////////////// Get the name of the folder
+////////////SHGetPathFromIDListW (pidl, wszBrowsePath);
+////////////
+////////////// Free memory used
+////////////if (SUCCEEDED (SHGetMalloc (&iMalloc)))
+////////////{
+////////////    IMalloc_Free (iMalloc, pidl); pidl = NULL;
+////////////    IMalloc_Release (iMalloc); iMalloc = NULL;
+////////////} // End IF
+
+            break;
+
+        case BFFM_VALIDATEFAILEDW:  // lParam = ptr to string containing the invalid name
+            // Construct the error message
+            wsprintfW (wszTemp,
+                       L"The directory \"%s\" is not present.  Use \"Make New Folder\" to create it.",
+                       lParam);
+            MessageBoxW (hWndProp, wszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+
+            return TRUE;            // Keep the dialog up
+
+        case BFFM_VALIDATEFAILEDA:  // lParam = ptr to string containing the invalid name
+        defstop
+            break;
+    } // End SWITCH
+
+    return FALSE;
+} // End DirsBrowseCallbackProc
 
 
 //***************************************************************************

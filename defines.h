@@ -283,6 +283,8 @@
 
 #define PAGESIZE        (4 * 1024)
 
+#define LIBCMD_SWITCH   L'?'
+
 
 //***************************************************************************
 //  Debugging
@@ -474,6 +476,7 @@ default:        \
 
 #define strchrW         wcschr
 #define strncmpW        wcsncmp
+#define strncmpiW       _wcsnicmp
 #define strpbrkW        wcspbrk
 #define strspnW         wcsspn
 #define strtolW         wcstol

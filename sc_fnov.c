@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 //***************************************************************************
 //  $CmdFns_EM
 //
-//  Execute system command:  )FNS [first][-][last]
+//  Execute the system command:  )FNS  [first][-][last]
 //***************************************************************************
 
 UBOOL CmdFns_EM
@@ -62,7 +62,7 @@ UBOOL IzitFNS
 //***************************************************************************
 //  $CmdNms_EM
 //
-//  Execute system command:  )NMS [first][-][last]
+//  Execute the system command:  )NMS  [first][-][last]
 //***************************************************************************
 
 UBOOL CmdNms_EM
@@ -90,7 +90,7 @@ UBOOL IzitNMS
 //***************************************************************************
 //  $CmdOps_EM
 //
-//  Execute system command:  )OPS [first][-][last]
+//  Execute the system command:  )OPS  [first][-][last]
 //***************************************************************************
 
 UBOOL CmdOps_EM
@@ -118,7 +118,7 @@ UBOOL IzitOPS
 //***************************************************************************
 //  $CmdVars_EM
 //
-//  Execute system command:  )VARS [first][-][last]
+//  Execute the system command:  )VARS [first][-][last]
 //***************************************************************************
 
 UBOOL CmdVars_EM
@@ -146,7 +146,10 @@ UBOOL IzitVARS
 //***************************************************************************
 //  $CmdFNOV_EM
 //
-//  Execute system command:  )FNS, )NMS, )OPS, or )VARS
+//  Execute the system command:  )FNS  [first][-][last]
+//                               )NMS  [first][-][last]
+//                               )OPS  [first][-][last]
+//                            or )VARS [first][-][last]
 //***************************************************************************
 
 UBOOL CmdFNOV_EM
@@ -156,7 +159,11 @@ UBOOL CmdFNOV_EM
 
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+    LPWCHAR      lpwszFormat,       // Ptr to formatting save area
+                 lpwszLeadRange,    // Ptr to the leading range
+                 lpwszTailRange,    // ...        trailing ... (after the separator)
+                                    //                         (may be NULL if no separator)
+                *lplpwszArgs;       // Ptr to ptr to args
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
     LPAPLCHAR    lpMemName;         // Ptr to name global memory
     LPSYMENTRY  *lpSymSort;         // Ptr to LPSYMENTRYs for sorting
@@ -165,8 +172,27 @@ UBOOL CmdFNOV_EM
                  uLineChar,         // Current char # in output line
                  uNameLen,          // Length of the current name
                  uQuadPW,           // Current value of []PW
+                 uArgCnt,           // # args after the system command
+                 uLeadRangeLen,     // Length of lpwszLeadRange
+                 uTailRangeLen,     // ...       lpwszTailRange
                  uMaxNameLen = 0;   // Length of longest name
     UBOOL        bLineCont;         // TRUE iff this line is a continuation
+
+    // Check for command line switches
+    if (!CheckCommandLine (lpwszTail,           // Ptr to command line (after the command itself)
+                          &uArgCnt,             // Ptr to # args
+                          &lplpwszArgs,         // Ptr to ptr to ptr to args
+                          &lpwszLeadRange,      // Ptr to ptr to leading range
+                          &lpwszTailRange,      // ...           trailing range
+                           FALSE))              // TRUE iff )LIB
+        return FALSE;
+
+    // Set the range lengths
+    uLeadRangeLen = lstrlenW (lpwszLeadRange);
+    if (lpwszTailRange)
+        uTailRangeLen = lstrlenW (lpwszTailRange);
+    else
+        uTailRangeLen = 0;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -190,7 +216,6 @@ UBOOL CmdFNOV_EM
       || lpSymEntry->stFlags.DfnLabel)
      && (*IzitFVO) (lpSymEntry->stFlags.stNameType))
     {
-        // ***FIXME*** -- Make sensitive to [first][-][last] in lpwszTail
         LPSYMENTRY lpGlbEntry;
 
         // Find a ptr to the global SYMENTRY (stPrvEntry EQ NULL)
@@ -202,20 +227,30 @@ UBOOL CmdFNOV_EM
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (lpGlbEntry->stHshEntry->htGlbName);
 
-        // Get the name length
-        uNameLen = lstrlenW (lpMemName) + bNMS * NMSLEN;
+        // Check against leading and trailing ranges
+        if ((lpwszLeadRange[0] EQ WC_EOS
+          || strncmpiW (lpMemName, lpwszLeadRange, uLeadRangeLen) >= 0)
+         && (lpwszTailRange NE NULL
+          || strncmpiW (lpMemName, lpwszLeadRange, uLeadRangeLen) EQ 0)
+         && (lpwszTailRange EQ NULL
+          || lpwszTailRange[0] EQ WC_EOS
+          || strncmpiW (lpMemName, lpwszTailRange, uTailRangeLen) <= 0))
+        {
+            // Get the name length
+            uNameLen = lstrlenW (lpMemName) + bNMS * NMSLEN;
 
-        // Find the longest name
-        uMaxNameLen = max (uMaxNameLen, uNameLen);
+            // Find the longest name
+            uMaxNameLen = max (uMaxNameLen, uNameLen);
+
+            // Save the LPSYMENTRY ptr for later use
+            lpSymSort[uSymCnt] = lpGlbEntry;
+
+            // Count in another matching name
+            uSymCnt++;
+        } // End IF
 
         // We no longer need this ptr
         MyGlobalUnlock (lpGlbEntry->stHshEntry->htGlbName); lpMemName = NULL;
-
-        // Save the LPSYMENTRY ptr for later use
-        lpSymSort[uSymCnt] = lpGlbEntry;
-
-        // Count in another matching name
-        uSymCnt++;
     } // End FOR/IF
 
     // Sort the HGLOBALs

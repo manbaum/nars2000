@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,7 +57,11 @@
 
 // Extensions
 #define WS_WKSEXT               L".ws.nars"
-#define WS_WKSEXT_LEN           ((sizeof (WS_WKSEXT) / sizeof (WS_WKSEXT[0])) - 1)
+#define WS_WKSEXT_LEN           (strcountof (WS_WKSEXT))
+#define WS_ATFEXT               L".atf"
+#define WS_ATFEXT_LEN           (strcountof (WS_ATFEXT))
+#define WS_BAKEXT               L".bak"
+#define WS_BAKEXT_LEN           (strcountof (WS_BAKEXT))
 
 #define LOADBAK_EXT             L".load.bak" WS_WKSEXT
 #define SAVEBAK_EXT             L".save.bak" WS_WKSEXT

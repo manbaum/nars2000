@@ -42,6 +42,7 @@
 #define SECTNAME_RECENTFILES            L"RecentFiles"
 #define SECTNAME_KEYBOARDS              L"Keyboards"
 #define SECTNAME_KEYBPREFIX             L"KeybLayout-"
+#define SECTNAME_LIBDIRS                L"LibDirs"
 
 // Key names
 #define KEYNAME_VERSION                 L"Version"
@@ -469,8 +470,61 @@ UBOOL ReadIniFileGlb
                   uCol;                             // ...
     WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
     LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
+    LPWSZLIBDIRS  lpwszLibDirs;                     // Ptr to LibDirs
 
 #define TEMPBUFLEN      countof (wszTemp)
+
+    //***************************************************************
+    // Read in the [LibDirs] section
+    //***************************************************************
+
+    // Get the # LibDirs
+    uNumLibDirs =
+      GetPrivateProfileIntW (SECTNAME_LIBDIRS,      // Ptr to the section name
+                             KEYNAME_COUNT,         // Ptr to the key name
+                             0,                     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Allocate space for the LibDirs
+    hGlbLibDirs =
+      MyGlobalAlloc (GHND, max (uNumLibDirs, 2) * _MAX_PATH * sizeof (WCHAR));
+    if (hGlbLibDirs EQ NULL)
+    {
+        MessageBoxW (NULL, L"Unable to allocate enough memory for Library Directories", WS_APPNAME, MB_OK | MB_ICONSTOP);
+
+        return FALSE;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
+
+    // Check for no LibDirs
+    if (uNumLibDirs EQ 0)
+    {
+        // Use the default count
+        uNumLibDirs = 2;
+
+        // Append the two default dirs
+        lstrcpyW (lpwszLibDirs[0], L".");
+        lstrcpyW (lpwszLibDirs[1], lpwszWorkDir);
+    } else
+    // Loop through the LibDirs
+    for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
+    {
+        // Format the keyname
+        wsprintfW (wszKey,
+                   L"%u",
+                   uCnt);
+        // Read in the next LibDir
+        GetPrivateProfileStringW (SECTNAME_LIBDIRS,     // Ptr to the section name
+                                  wszKey,               // Ptr to the key name
+                                  L"",                  // Ptr to the default value
+                                  lpwszLibDirs[uCnt],   // Ptr to the output buffer
+                                  _MAX_PATH,            // Count of the output buffer
+                                  lpwszIniFile);        // Ptr to the file name
+    } // End IF/ELSE/FOR
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbLibDirs); lpwszLibDirs = NULL;
 
     //***************************************************************
     // Read in the [Fonts] section
@@ -1695,6 +1749,40 @@ void SaveIniFile
     APLNELM       aplNELMObj;                       // Object NELM
     WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
     LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
+    LPWSZLIBDIRS  lpwszLibDirs;                     // Ptr to LibDirs
+
+    //*********************************************************
+    // Write out [LibDirs] section entries
+    //*********************************************************
+
+    // Format the # LibDirs
+    wsprintfW (wszKey,
+               L"%u",
+               uNumLibDirs);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_LIBDIRS,           // Ptr to the section name
+                                KEYNAME_COUNT,              // Ptr to the key name
+                                wszKey,                     // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Lock the memory to get a ptr to it
+    lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
+
+    // Loop through the LibDirs
+    for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
+    {
+        // Format the keyname
+        wsprintfW (wszKey,
+                   L"%u",
+                   uCnt);
+        // Write it out
+        WritePrivateProfileStringW (SECTNAME_LIBDIRS,       // Ptr to the section name
+                                    wszKey,                 // Ptr to the key name
+                                    lpwszLibDirs[uCnt],     // Ptr to the key value
+                                    lpwszIniFile);          // Ptr to the file name
+    } // End FOR
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbLibDirs); lpwszLibDirs = NULL;
 
     //*********************************************************
     // Write out [General] section entries

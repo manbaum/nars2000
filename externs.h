@@ -1804,7 +1804,7 @@ CUSTOMIZE custStruc[]
 #ifdef DEFINE_VALUES
  =
 {   {L"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
-////{L"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
+    {L"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
     {L"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
     {L"Keyboards"               , IDD_PROPPAGE_KEYBS            ,  FALSE},  // 03
     {L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 04
@@ -1929,6 +1929,20 @@ UINT uNumRecentFiles;           // # current recent files
 
 EXTERN
 WNDPROC lpfnOldChooseFontSampleWndProc; // Save area for old Sample Text Window procedure
+
+
+//***************************************************************************
+//  Library and Other Directories
+//***************************************************************************
+
+EXTERN
+HGLOBAL hGlbLibDirs;                // LibDirs global memory handle
+
+EXTERN
+UINT uNumLibDirs;                   // # LibDirs
+
+typedef WCHAR (*LPWSZLIBDIRS)[_MAX_PATH];   // Ptr to LibDirs
+
 
 #define ENUMS_DEFINED
 #undef  EXTERN

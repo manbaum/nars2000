@@ -73,14 +73,14 @@
 
 // The following defines must be in sequence
 #define IDD_PROPPAGE_CLEARWS_VALUES              150
-#define IDD_PROPPAGE_DIRS                               157 // Not implemented as yet
-#define IDD_PROPPAGE_FONTS                       151
-#define IDD_PROPPAGE_KEYBS                       152
-#define IDD_PROPPAGE_RANGE_LIMITS                153
-#define IDD_PROPPAGE_SYNTAX_COLORING             154
-#define IDD_PROPPAGE_SYSTEM_VAR_RESET            155
+#define IDD_PROPPAGE_DIRS                        151
+#define IDD_PROPPAGE_FONTS                       152
+#define IDD_PROPPAGE_KEYBS                       153
+#define IDD_PROPPAGE_RANGE_LIMITS                154
+#define IDD_PROPPAGE_SYNTAX_COLORING             155
+#define IDD_PROPPAGE_SYSTEM_VAR_RESET            156
 #define IDD_PROPPAGE_TAB_COLORS                         158 // Not implemented as yet
-#define IDD_PROPPAGE_USER_PREFS                  156
+#define IDD_PROPPAGE_USER_PREFS                  157
 
 // Message IDs
 #define IDM_EXIT                                 102
@@ -953,6 +953,13 @@
 #define IDC_FONTS_LT7                           5006
 #define IDC_FONTS_LT8                           5007
 #define IDC_FONTS_LT_LAST                        IDC_FONTS_LT8
+
+#define IDC_DIRS_CB_LIBDIRS                     5100
+#define IDC_DIRS_BN_BROWSE                      5101
+#define IDC_DIRS_BN_ADD                         5102
+#define IDC_DIRS_BN_DEL                         5103
+#define IDC_DIRS_LT1                            5104
+#define IDC_DIRS_LT2                            5105
 
 #define IDC_STATIC                                -1
 

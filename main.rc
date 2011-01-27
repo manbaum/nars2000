@@ -324,7 +324,12 @@ IDD_PROPPAGE_DIRS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
 STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "TBD",IDC_STATIC,5,10,143,78
+    LTEXT           ""               ,IDC_DIRS_LT1        ,  5, 10,285, 27
+    LTEXT           "Library Directories"
+                                     ,IDC_DIRS_LT2        ,  5, 42,100, 14
+    PUSHBUTTON      "Browse"         ,IDC_DIRS_BN_BROWSE  ,105, 40, 45, 14
+    PUSHBUTTON      "Delete"         ,IDC_DIRS_BN_DEL     ,155, 40, 45, 14
+    COMBOBOX                          IDC_DIRS_CB_LIBDIRS ,  5, 60,285,150, CBS_DROPDOWNLIST | WS_TABSTOP
 END
 
 IDD_PROPPAGE_FONTS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1741,7 +1741,7 @@ NORMAL_EXIT:
                 case VK_F4:             // Display symbol table entries
                                         //   with non-zero reference counts
                     // If it's Shift-, then display all
-                    if (GetKeyState (VK_SHIFT) & 0x8000)
+                    if (GetKeyState (VK_SHIFT) & BIT15)
                         DisplaySymTab (&lpMemPTD->htsPTD, TRUE);
                     else
                         DisplaySymTab (&lpMemPTD->htsPTD, FALSE);
@@ -1751,11 +1751,11 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F5:             // Display outstanding global memory objects
                     // If it's Shift-, then display all
-                    if (GetKeyState (VK_SHIFT) & 0x8000)
+                    if (GetKeyState (VK_SHIFT) & BIT15)
                         DisplayGlobals (2);
                     else
                     // If it's Ctl-, then display non-sysvars
-                    if (GetKeyState (VK_CONTROL) & 0x8000)
+                    if (GetKeyState (VK_CONTROL) & BIT15)
                         DisplayGlobals (1);
                     else
                     // Otherwise, then display non-permanent non-sysvars
@@ -1834,7 +1834,7 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F12:            // Clear the debugging display
                     // If it's Shift-, then set the gDbgLvl to 9
-                    if (GetKeyState (VK_SHIFT) & 0x8000)
+                    if (GetKeyState (VK_SHIFT) & BIT15)
                         gDbgLvl = 9;
                     else
                         // Clear the debugger listbox
@@ -2059,6 +2059,14 @@ void MoveToLine
     // Allocate space for the line including a terminating zero
     lpMemPTD->hGlbCurLine =
       MyGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
+
+    // Check for error
+    if (lpMemPTD->hGlbCurLine EQ NULL)
+    {
+        MBW (L"MoveToLine:  Unable to allocate memory for a new line in the Session Manager");
+
+        _exit (-1);
+    } // End IF
 
     // Lock the memory to get a ptr to it
     lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);

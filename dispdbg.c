@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2116,7 +2116,7 @@ void DisplayUndo
     DbgMsgW (L"********** Undo Buffer *********************************");
 
     // Get the shift key state
-    bShift = (GetKeyState (VK_SHIFT) & 0x8000);
+    bShift = (GetKeyState (VK_SHIFT) & BIT15);
 
     // Get the char position of the caret
     uCharPos = GetCurCharPos (hWnd);

@@ -25,6 +25,7 @@
 #include <windowsx.h>
 #include "headers.h"
 #include "unitranstab.h"
+#include "scancodes.h"
 
 
 // ToDo
@@ -1690,6 +1691,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                  uLineNum,                  // Line #
                  uLineLen,                  // Line length
                  uSpaces,                   // # spaces to insert
+                 uTmp,                      // Temporary var
                  uGroupIndex;               // Group index
     WCHAR        wChar[TABSTOP + 1],        // Array of blanks for converting tabs to spaces
                  uChar;                     // Loop counter
@@ -1700,7 +1702,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                             //   line #s after calling the original handler
     HANDLE       hGlbClip;                  // Handle to the clipboard
     LPWCHAR      lpMemClip;                 // Memory ptr
-    UINT         ksShft,                    // TRUE iff VK_CONTROL is pressed (either Ctrl- key)
+    UBOOL        ksShft,                    // TRUE iff VK_CONTROL is pressed (either Ctrl- key)
                  ksCtrl,                    // ...      VK_SHIFT   ...                Shift-...
                  ksMenu;                    // ...      VK_MENU    ...                Alt-  ...
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
@@ -2113,13 +2115,45 @@ LRESULT WINAPI LclEditCtrlWndProc
   #define nVirtKey      ((int) wParam)
   #define keyData       (*(LPKEYDATA) &lParam)
 #endif
-            nVirtKey = nVirtKey;        // Respecify to avoid compiler error (unreferenced var)
-            keyData = keyData;
-
             // Get the key states
-            ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
-            ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
-            ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
+            ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
+            ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
+            ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
+
+            // If the virtual key is alphabetic,
+            //   and the Alt key is up,
+            //   and the Ctrl key is up,
+            //   and the CapsLock key is set, ...
+            if ('A' <= nVirtKey
+             &&        nVirtKey <= 'Z'
+             && !ksMenu
+             && !ksCtrl
+             && (GetKeyState (VK_CAPITAL) & BIT0))
+                // Toggle the shift state
+                ksShft ^= TRUE;
+
+            // Handle Numlock key
+            if (GetKeyState (VK_NUMLOCK) & BIT0)
+            {
+                if (VK_NUMPAD0 <= nVirtKey
+                 &&               nVirtKey <= VK_NUMPAD9)
+                {
+                    // Convert to origin-0
+                    uTmp = nVirtKey - VK_NUMPAD0;
+
+                    // Convert to scancode for '1' to '9', '0'
+                    keyData.scanCode = (uTmp EQ 0) ? SCANCODE_0 : (SCANCODE_1 + uTmp - 1);
+
+                    // Convert to virtkey  for '0' to '9'
+                    nVirtKey += '0' - VK_NUMPAD0;
+                } else
+                if (nVirtKey EQ VK_DECIMAL)
+                {
+                    keyData.scanCode = SCANCODE_DECIMAL;
+                    nVirtKey         = '.';
+                } // End IF/ELSE
+            } // End IF
+
 #ifdef DEBUG_WM_KEYDOWN
             dprintfWL0 (L"WM_KEYDOWN:     nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
                         nVirtKey,
@@ -2371,8 +2405,7 @@ LRESULT WINAPI LclEditCtrlWndProc
   #define nVirtKey      ((int) wParam)
   #define keyData       (*(LPKEYDATA) &lParam)
 #endif
-            nVirtKey = nVirtKey;        // Respecify to avoid compiler error (unreferenced var)
-            keyData = keyData;
+            keyData = keyData;          // Respecify to avoid compiler error (unreferenced var)
 
 #ifdef DEBUG_WM_KEYUP
             dprintfWL0 (L"WM_KEYUP:       nVirtKey = %02X(%c), ScanCode = %02X, SCMA = %u%u%u%u", nVirtKey, nVirtKey, keyData.scanCode);
@@ -2439,13 +2472,45 @@ LRESULT WINAPI LclEditCtrlWndProc
   #define nVirtKey      ((int) wParam)
   #define keyData       (*(LPKEYDATA) &lParam)
 #endif
-            nVirtKey = nVirtKey;        // Respecify to avoid compiler error (unreferenced var)
-            keyData = keyData;
-
             // Get the key states
-            ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
-            ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
-            ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
+            ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
+            ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
+            ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
+
+            // If the virtual key is alphabetic,
+            //   and the Alt key is up,
+            //   and the Ctrl key is up,
+            //   and the CapsLock key is set, ...
+            if ('A' <= nVirtKey
+             &&        nVirtKey <= 'Z'
+             && !ksMenu
+             && !ksCtrl
+             && (GetKeyState (VK_CAPITAL) & BIT0))
+                // Toggle the shift state
+                ksShft ^= TRUE;
+
+            // Handle Numlock key
+            if (GetKeyState (VK_NUMLOCK) & BIT0)
+            {
+                if (VK_NUMPAD0 <= nVirtKey
+                 &&               nVirtKey <= VK_NUMPAD9)
+                {
+                    // Convert to origin-0
+                    uTmp = nVirtKey - VK_NUMPAD0;
+
+                    // Convert to scancode for '1' to '9', '0'
+                    keyData.scanCode = (uTmp EQ 0) ? SCANCODE_0 : (SCANCODE_1 + uTmp - 1);
+
+                    // Convert to virtkey  for '0' to '9'
+                    nVirtKey += '0' - VK_NUMPAD0;
+                } else
+                if (nVirtKey EQ VK_DECIMAL)
+                {
+                    keyData.scanCode = SCANCODE_DECIMAL;
+                    nVirtKey         = '.';
+                } // End IF/ELSE
+            } // End IF
+
 #ifdef DEBUG_WM_KEYDOWN
             dprintfWL0 (L"WM_SYSKEYDOWN:  nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
                         nVirtKey,
@@ -2573,13 +2638,40 @@ LRESULT WINAPI LclEditCtrlWndProc
 ////   #define nVirtKey      ((int) wParam)
 ////   #define keyData       (*(LPKEYDATA) &lParam)
 //// #endif
-////             nVirtKey = nVirtKey;        // Respecify to avoid compiler error (unreferenced var)
-////             keyData = keyData;
-////
 ////             // Get the key states
-////             ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
-////             ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
-////             ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
+////             ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
+////             ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
+////             ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
+////
+////             // If the virtual key is alphabetic,
+////             //   and the Alt key is up,
+////             //   and the Ctrl key is up,
+////             //   and the CapsLock key is set, ...
+////             if ('A' <= nVirtKey
+////              &&        nVirtKey <= 'Z'
+////              && !ksMenu
+////              && !ksCtrl
+////              && (GetKeyState (VK_CAPITAL) & BIT0))
+////                 // Toggle the shift state
+////                 ksShft ^= TRUE;
+////
+////            // Handle Numlock key
+////            if (GetKeyState (VK_NUMLOCK) & BIT0
+////             && VK_NUMPAD0 <= nVirtKey
+////             &&               nVirtKey <= VK_NUMPAD9)
+////            {
+////                UINT uTmp;
+////
+////                // Convert to origin-0
+////                uTmp = nVirtKey - VK_NUMPAD0;
+////
+////                // Convert to scancode for '1' to '9', '0'
+////                keyData.scanCode = (uTmp EQ 0) ? SCANCODE_0 : (SCANCODE_1 + uTmp - 1);
+////
+////                // Convert to virtkey  for '0' to '9'
+////                nVirtKey += '0' - VK_NUMPAD0;
+////            } // End IF
+////
 //// #ifdef DEBUG_WM_KEYUP
 ////             dprintfWL0 (L"WM_SYSKEYUP:    nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u%u",
 ////                         nVirtKey,
@@ -2603,18 +2695,21 @@ LRESULT WINAPI LclEditCtrlWndProc
   #define wchCharCode   ((WCHAR) wParam)
   #define keyData       (*(LPKEYDATA) &lParam)
 #endif
-            wchCharCode = wchCharCode;  // Respecify to avoid compiler error (unreferenced var)
-            keyData = keyData;
-
             // If the transition state is set, then this char
             //   seems to come from the secondary char generated
             //   by Alt-nnnn
             if (keyData.transitionState)
                 return FALSE;
+
             // Get the key states
-            ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
-            ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
-            ksMenu = (GetKeyState (VK_MENU )   & 0x8000) ? TRUE : FALSE;
+            // Note that the shift state (L- and R-shift and CapsLock)
+            //   has already been taken into consideration, so there's
+            //   no need to obtain the shift state., and if the Alt key
+            //   is down, then WM_SYSCHAR is called, not WM_CHAR.
+////////////ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
+            ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
+////////////ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
+
 #ifdef DEBUG_WM_CHAR
             dprintfWL0 (L"WM_CHAR:      CharCode = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
                          wchCharCode,

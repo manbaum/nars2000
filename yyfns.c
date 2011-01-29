@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -652,6 +652,10 @@ LPPL_YYSTYPE YYCopyFcn
             } // End IF
         } // End IF/ELSE
 
+        // If this array is YYCopyArray'ed, ...
+        if (lpYYArg[i].YYCopyArray)
+            YYFreeArray (&lpYYArg[i]);
+
         // Accumulate into the total token count
         TotalTknCount += TknCount;
     } // End FOR
@@ -906,13 +910,17 @@ void YYFreeArray
             // Get the global memory handle or function address if direct
             hGlbFcn = lpYYArg[uCnt].tkToken.tkData.tkGlbData;
 
-            // stData is a valid HGLOBAL function array
-            //   or user-defined function/operator
-            Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
-                 || IsGlbTypeDfnDir_PTB (hGlbFcn));
+            // If it hasn't already been erased, ...
+            if (!PtrReusedDir (hGlbFcn))
+            {
+                // stData is a valid HGLOBAL function array
+                //   or user-defined function/operator
+                Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
+                     || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
-            // Recurse through the function array
-            YYFreeGlbFcn (hGlbFcn);
+                // Recurse through the function array
+                YYFreeGlbFcn (hGlbFcn);
+            } // End IF
         } // End IF
 
         if (lpYYArg[uCnt].YYCopyArray
@@ -958,8 +966,6 @@ void YYFreeGlbFcn
             // Skip over the header to the data
             lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
 
-            // If this function array is not a Train, ...
-            if (lpMemHdrFcn->fnNameType NE NAMETYPE_TRN)
             // Loop through the function array
             for (uCnt = 0; uCnt < uLen; uCnt++, lpMemFcn++)
             {

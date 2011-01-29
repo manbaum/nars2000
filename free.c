@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -126,14 +126,21 @@ void FreeResNNU
 {
     DBGENTER;
 
+    if (!IsTknTypeNamedFcnOpr (lpYYRes->tkToken.tkFlags.TknType))
+    {
 #ifdef DEBUG
-    // If the arg was YYCopyArray'ed, ...
-    if (lpYYRes->YYCopyArray)
+        // If the arg was YYCopyArray'ed, ...
+        if (lpYYRes->YYCopyArray)
 #endif
-        // Clear the flag
-        lpYYRes->YYCopyArray = FALSE;
-
-    FreeResultSub (&lpYYRes->tkToken, FALSE, TRUE);
+            // Clear the flag
+            lpYYRes->YYCopyArray = FALSE;
+        FreeResultSub (&lpYYRes->tkToken, FALSE, TRUE);
+#ifdef DEBUG
+    } else
+    {
+        DbgBrk ();
+#endif
+    } // End IF
 
     DBGLEAVE;
 } // End FreeResNNU
@@ -198,7 +205,7 @@ void FreeResultSub
                               ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
                               FNLN);
 #endif
-                    lptkRes->tkData.tkSym->stData.stGlbData = NULL;
+                    lptkRes->tkData.tkSym->stData.stGlbData = PTR_REUSED;
                 } // End IF
             } // End IF
 
@@ -257,7 +264,7 @@ void FreeResultSub
                               ClrPtrTypeDir (hGlbData),
                               FNLN);
 #endif
-                    lptkRes->tkData.tkSym->stData.stGlbData = NULL;
+                    lptkRes->tkData.tkSym->stData.stGlbData = PTR_REUSED;
                 } // End IF
             } // End IF
 
@@ -311,7 +318,7 @@ void FreeResultSub
                               ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
                               FNLN);
 #endif
-                    lptkRes->tkData.tkGlbData = NULL;
+                    lptkRes->tkData.tkGlbData = PTR_REUSED;
                 } // End IF
             } // End IF
 
@@ -569,7 +576,7 @@ UBOOL FreeResultGlobalVarSub
                                           ClrPtrTypeInd (lpMem),
                                           FNLN);
 #endif
-                                *((LPVOID *) lpMem) = NULL;
+                                *((LPVOID *) lpMem) = PTR_REUSED;
                             } // End IF
 
                             break;
@@ -709,7 +716,7 @@ UBOOL FreeResultGlobalFcn
                               hGlbLcl,
                               FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                    lpYYToken->tkToken.tkData.tkGlbData = PTR_REUSED;
                 } // End IF
 
                 break;
@@ -735,7 +742,7 @@ UBOOL FreeResultGlobalFcn
                               hGlbLcl,
                               FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                    lpYYToken->tkToken.tkData.tkGlbData = PTR_REUSED;
                 } // End IF
 
                 break;
@@ -762,7 +769,7 @@ UBOOL FreeResultGlobalFcn
                               hGlbLcl,
                               FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                    lpYYToken->tkToken.tkData.tkGlbData = PTR_REUSED;
                 } // End IF
 
                 break;
@@ -792,7 +799,7 @@ UBOOL FreeResultGlobalFcn
                                   hGlbLcl,
                                   FNLN);
 #endif
-                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = NULL;
+                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = PTR_REUSED;
                     } // End IF
                 } // End IF
 

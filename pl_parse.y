@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -935,6 +935,7 @@ StmtSing:
 ////
 ////                                              lpplLocalVars->lpYYRes =
 ////                                                ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+////                                              YYFreeArray (lpplLocalVars->lpYYFcn);
 ////                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 ////
 ////                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -1228,11 +1229,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -1264,11 +1267,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -1300,11 +1305,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -1335,11 +1342,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -1370,11 +1379,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -1406,11 +1417,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -1463,11 +1476,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYRes);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$4);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYRes);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
@@ -1526,11 +1541,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$4);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYRes);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
@@ -1593,11 +1610,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYRes);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$4);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYRes);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
@@ -1660,11 +1679,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYRes);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$4);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYRes);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
@@ -1727,11 +1748,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYRes);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$4);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYRes);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
@@ -1794,11 +1817,13 @@ FcnSpec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYRes);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$4);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYRes);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  FreeYYFcn1 (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
@@ -1839,12 +1864,14 @@ Op1Spec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1);
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -1904,6 +1931,7 @@ Op1Spec:
 ////                                         else
 ////                                             lpplLocalVars->bRet =
 ////                                               AssignName_EM (&$4.tkToken, &lpplLocalVars->lpYYRes->tkToken);
+//// ////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYRes);
 //// ////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;     // DO NOT FREE:  Passed on as result
 //// ////////////////////////////////////////FreeResult (&$4);                       // Validation only
 ////
@@ -1943,11 +1971,13 @@ Op2Spec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -2119,12 +2149,14 @@ Op3Spec:
                                              else
                                                  lpplLocalVars->bRet =
                                                    AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
+/////////////////////////////////////////////YYFreeArray (lpplLocalVars->lpYYFcn);
 /////////////////////////////////////////////FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;     // DO NOT FREE:  Passed on as result
 /////////////////////////////////////////////FreeResult (&$3);                       // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
                                                  FreeResult (&$1);
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  YYERROR3
                                              } // End IF
@@ -2195,6 +2227,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2222,6 +2255,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2253,6 +2287,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2293,6 +2328,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2341,6 +2377,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2438,6 +2475,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2491,6 +2529,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2537,6 +2576,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -2585,6 +2625,7 @@ ArrExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3335,6 +3376,7 @@ SimpExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, FALSE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3393,6 +3435,7 @@ SimpExpr:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (&$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, FALSE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3472,6 +3515,7 @@ SimpExpr:
 
                                                  if (lpplLocalVars->lpYYFcn)         // If defined, free it
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYFcn);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  } // End IF
 
@@ -3485,6 +3529,7 @@ SimpExpr:
                                                  lpplLocalVars->bRet =
                                                    ModifyAssignNameVals_EM (&lpplLocalVars->lpYYStrN->tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1);                       // DO NOT FREE:  Passed on as result
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                              FreeYYFcn1 (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
 
@@ -3544,6 +3589,7 @@ SimpExpr:
 
                                                  if (lpplLocalVars->lpYYFcn)         // If defined, free it
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYFcn);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                                  } // End IF
 
@@ -3557,6 +3603,7 @@ SimpExpr:
                                                  lpplLocalVars->bRet =
                                                    ModifyAssignNameVals_EM (&lpplLocalVars->lpYYStrN->tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1);                       // DO NOT FREE:  Passed on as result
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn);  lpplLocalVars->lpYYFcn = NULL;
                                              FreeYYFcn1 (lpplLocalVars->lpYYStrN); lpplLocalVars->lpYYStrN = NULL;
 
@@ -3619,6 +3666,7 @@ SimpExpr:
                                                  lpplLocalVars->bRet =
                                                    ArrayIndexFcnSet_EM (&$5.tkToken, &$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1);                       // DO NOT FREE:  Passed on as result
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$4);
 /////////////////////////////////////////////FreeResult (&$5);                       // Validation only
@@ -3694,6 +3742,7 @@ SimpExpr:
                                                  lpplLocalVars->bRet =
                                                    ArrayIndexFcnSet_EM (&$5.tkToken, &$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1);                       // DO NOT FREE:  Passed on as result
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$4);
 /////////////////////////////////////////////FreeResult (&$5);                       // Validation only
@@ -3755,6 +3804,7 @@ SelectSpec:
                                              // Check on Selective Specification first (and only) name
                                              if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1);
                                                  YYERROR3
@@ -3765,6 +3815,7 @@ SelectSpec:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3791,6 +3842,7 @@ SelectSpec:
                                              // Check on Selective Specification first (and only) name
                                              if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1);
                                                  YYERROR3
@@ -3801,6 +3853,7 @@ SelectSpec:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3826,6 +3879,7 @@ SelectSpec:
                                              // Check on Selective Specification first (and only) name
                                              if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1);
                                                  YYERROR3
@@ -3836,6 +3890,7 @@ SelectSpec:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3861,6 +3916,7 @@ SelectSpec:
                                              // Check on Selective Specification first (and only) name
                                              if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1);
                                                  YYERROR3
@@ -3871,6 +3927,7 @@ SelectSpec:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (NULL, lpplLocalVars->lpYYFcn, &$1.tkToken, FALSE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3907,6 +3964,7 @@ SelectSpec:
                                              // Check on Selective Specification first (and only) name
                                              if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1);
                                                  FreeResult (&$3);
@@ -3918,6 +3976,7 @@ SelectSpec:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -3954,6 +4013,7 @@ SelectSpec:
                                              // Check on Selective Specification first (and only) name
                                              if (!CheckSelSpec_EM (lpplLocalVars, &$1.tkToken))
                                              {
+                                                 YYFreeArray (lpplLocalVars->lpYYFcn);
                                                  FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                                  FreeResult (&$1);
                                                  FreeResult (&$3);
@@ -3965,6 +4025,7 @@ SelectSpec:
                                              else
                                                  lpplLocalVars->lpYYRes =
                                                    ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken, TRUE, TRUE);
+                                             YYFreeArray (lpplLocalVars->lpYYFcn);
                                              FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
@@ -5956,11 +6017,13 @@ Train:
 
                                                  if (lpplLocalVars->lpYYLft)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYLft);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  } // End IF
 
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYRht);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
@@ -6033,11 +6096,13 @@ Train:
 
                                                  if (lpplLocalVars->lpYYLft)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYLft);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  } // End IF
 
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYRht);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
@@ -6110,11 +6175,13 @@ Train:
 
                                                  if (lpplLocalVars->lpYYLft)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYLft);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  } // End IF
 
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYRht);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
@@ -6187,11 +6254,13 @@ Train:
 
                                                  if (lpplLocalVars->lpYYLft)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYLft);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                                  } // End IF
 
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYRht);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
@@ -6270,6 +6339,7 @@ Train:
 
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYRht);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
@@ -6292,6 +6362,7 @@ Train:
 
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYRht);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
@@ -6336,6 +6407,7 @@ Train:
 
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYRht);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 
@@ -6358,6 +6430,7 @@ Train:
 
                                                  if (lpplLocalVars->lpYYRht)
                                                  {
+                                                     YYFreeArray (lpplLocalVars->lpYYRht);
                                                      FreeYYFcn1 (lpplLocalVars->lpYYRht); lpplLocalVars->lpYYRht = NULL;
                                                  } // End IF
 

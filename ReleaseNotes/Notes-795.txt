@@ -1,7 +1,7 @@
 Build #795 -- Version 0.0.2.21
 ------------------------------
 
-* Fix Bug:  Quad Input NotHandled Correctly
+* Fix Bug:  Quad Input Not Handled Correctly
 
 Directory trunk:
 

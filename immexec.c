@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -576,13 +576,13 @@ DWORD WINAPI ImmExecStmtInThread
                 break;
 
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
-            case EXITTYPE_DISPLAY:      // ...
             case EXITTYPE_NONE:         // ...
             case EXITTYPE_ERROR:        // ...
             case EXITTYPE_RETURNxLX:    // ...
                 break;
 
             case EXITTYPE_NODISPLAY:    // Signal previous SI layer's semaphore if it's Quad input
+            case EXITTYPE_DISPLAY:      // ...
             case EXITTYPE_NOVALUE:      // ...
                 // If the previous layer in the SI stack is Quad input, ...
                 if (lpSISPrv

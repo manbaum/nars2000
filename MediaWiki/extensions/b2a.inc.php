@@ -72,6 +72,8 @@ $br2a = array (
 
 'yen'                   => 0x00A5,
 
+'section'               => 0x00A7,
+
 'each'                  => 0x00A8,
 'dieresis'              => 0x00A8,
 'with'                  => 0x00A8,
@@ -139,6 +141,7 @@ $br2a = array (
 
 'jot'                   => 0x2218,
 'null'                  => 0x2218,
+'compose'               => 0x2218,
 
 'infinity'              => 0x221E,
 
@@ -419,8 +422,10 @@ $br2a = array (
 'hoof'                  => 0x2365,
 'upon'                  => 0x2365,
 'holler'                => 0x2365,
+'composition'           => 0x2365,
 
 'downshoestile'         => 0x2366,
+'multiset'              => 0x2366,
 
 'leftshoestile'         => 0x2367,
 

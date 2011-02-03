@@ -2248,7 +2248,7 @@ typedef struct tagLANGCHARS
 ////////{UTF16_DIERESISDEL        , {0}, L""},       // ...
 ////////{UTF16_DIERESISDOWNTACK   , {0}, L""},       // ...
         {UTF16_DIERESISCIRCLE     , {0}, L"DieresisCircle",
-                                         L"Compose Operator:  L f" WS_UTF16_DIERESISCIRCLE L"g R\n\n"
+                                         L"Composition Operator:  L f" WS_UTF16_DIERESISCIRCLE L"g R\n\n"
                                          L"Keyboard:  Alt-'O' or Alt-shift-'o'\n\n"
                                          L"Unicode:  0x2365 or 9061"},
 ////////{UTF16_CIRCLESTILE        , {0}, L""},       // ...
@@ -2258,10 +2258,10 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  '.'\n\n"
                                          L"Unicode:  0x002E or 46"},
         {UTF16_JOT                , {0}, L"Jot",
-                                         L"Composition Operator:  f" WS_UTF16_JOT L"g  R\n"
-                                         L"                      (a" WS_UTF16_JOT L"g) R\n"
-                                         L"                      (f" WS_UTF16_JOT L"b) R\n"
-                                         L"                     L f" WS_UTF16_JOT L"g  R\n\n"
+                                         L"Compose Operator:  f" WS_UTF16_JOT L"g  R\n"
+                                         L"                  (a" WS_UTF16_JOT L"g) R\n"
+                                         L"                  (f" WS_UTF16_JOT L"b) R\n"
+                                         L"                 L f" WS_UTF16_JOT L"g  R\n\n"
                                          L"Keyboard:  Alt-'j'\n\n"
                                          L"Unicode:  0x2218 or 8728"},
         LANGCHARS_SEPARATOR

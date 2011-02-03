@@ -88,7 +88,7 @@
 #define UTF16_DEL                0x2207         // Alt-'g' - del
 #define UTF16_DELTA              0x2206         // Alt-'h' - delta
 #define UTF16_IOTA               0x2373         // Alt-'i' - iota
-#define UTF16_JOT                0x2218         // Alt-'j' - jot
+#define UTF16_JOT                0x2218         // Alt-'j' - Compose operator (jot)
 #define UTF16_APOSTROPHE         0x0027         // Alt-'k' - single quote
 #define UTF16_QUAD               0x2395         // Alt-'l' - quad (not 0x25AF)
 #define UTF16_STILE              0x2223         // Alt-'m' - modulus
@@ -121,7 +121,7 @@
 #define UTF16_SQUAD              0x2337         // Alt-'L' - squad
 #define UTF16_STILETILDE         0x236D         // Alt-'M' - Partition operator   (dagger)
 #define UTF16_DIERESISDOWNTACK   0x2361         // Alt-'N' - Convolution operator (snout)
-#define UTF16_DIERESISCIRCLE     0x2365         // Alt-'O' - Compose              (holler)
+#define UTF16_DIERESISCIRCLE     0x2365         // Alt-'O' - Composition operator (holler)
 #define UTF16_DIERESISSTAR       0x2363         // Alt-'P' - Power operator       (sourpuss)
 //efine UTF16_                                  // Alt-'Q' - (none)
 //efine UTF16_                                  // Alt-'R' - (none)
@@ -300,7 +300,7 @@
 #define WS_UTF16_DEL                L"\x2207"   // Alt-'g' - del
 #define WS_UTF16_DELTA              L"\x2206"   // Alt-'h' - delta
 #define WS_UTF16_IOTA               L"\x2373"   // Alt-'i' - iota
-#define WS_UTF16_JOT                L"\x2218"   // Alt-'j' - jot
+#define WS_UTF16_JOT                L"\x2218"   // Alt-'j' - Compose operator (jot)
 #define WS_UTF16_APOSTROPHE         L"\x0027"   // Alt-'k' - single quote
 #define WS_UTF16_QUAD               L"\x2395"   // Alt-'l' - quad (not \x25AF)
 #define WS_UTF16_STILE              L"\x2223"   // Alt-'m' - modulus
@@ -333,11 +333,10 @@
 #define WS_UTF16_SQUAD              L"\x2337"   // Alt-'L' - squad
 #define WS_UTF16_STILETILDE         L"\x236D"   // Alt-'M' - Partition operator   (dagger)
 #define WS_UTF16_DIERESISDOWNTACK   L"\x2361"   // Alt-'N' - Convolution operator (snout)
-#define WS_UTF16_DIERESISCIRCLE     L"\x2365"   // Alt-'O' - Compose              (holler)
+#define WS_UTF16_DIERESISCIRCLE     L"\x2365"   // Alt-'O' - Composition operator (holler)
 #define WS_UTF16_DIERESISSTAR       L"\x2363"   // Alt-'P' - Power operator       (sourpuss)
 //efine WS_UTF16_                               // Alt-'Q' - (none)
 //efine WS_UTF16_                               // Alt-'R' - (none)
-//efine WS_UTF16_                               // Alt-'S' - (none)
 #define WS_UTF16_SECTION            L"\x00A7"   // Alt-'S' - Multiset Symmetric Difference (section)
 #define WS_UTF16_DIERESISTILDE      L"\x2368"   // Alt-'T' - Commute operator     (frown)
 //efine WS_UTF16_                               // Alt-'U' - (none)

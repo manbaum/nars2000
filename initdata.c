@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ void InitPrimFns
 ////                                                                        // Alt-'g' - del
 ////                                                                        // Alt-'h' - delta
     InitPrimFn (UTF16_IOTA              , &PrimFnIota_EM_YY              ); // Alt-'i' - iota
-    InitPrimFn (UTF16_JOT               , (LPPRIMFNS) -1                 ); // Alt-'j' - jot
+    InitPrimFn (UTF16_JOT               , (LPPRIMFNS) -1                 ); // Alt-'j' - jot (compose)
 ////                                                                        // Alt-'k' - single quote
 ////                                                                        // Alt-'l' - quad
     InitPrimFn (UTF16_STILE             , &PrimFnStile_EM_YY             ); // Alt-'m' - stile
@@ -231,7 +231,7 @@ void InitPrimFns
     InitPrimFn (UTF16_SQUAD             , &PrimFnSquad_EM_YY             ); // Alt-'L' - squad
     InitPrimFn (UTF16_STILETILDE        , (LPPRIMFNS) -1                 ); // Alt-'M' - stile-tilde (partition)
     InitPrimFn (UTF16_DIERESISDOWNTACK  , (LPPRIMFNS) -1                 ); // Alt-'N' - dieresis-downtack (convolution)
-    InitPrimFn (UTF16_DIERESISCIRCLE    , (LPPRIMFNS) -1                 ); // Alt-'O' - dieresis-circle (compose)
+    InitPrimFn (UTF16_DIERESISCIRCLE    , (LPPRIMFNS) -1                 ); // Alt-'O' - dieresis-circle (composition)
     InitPrimFn (UTF16_DIERESISSTAR      , (LPPRIMFNS) -1                 ); // Alt-'P' - dieresis-star (power)
 ////                                                                        // Alt-'Q' - (none)
 ////                                                                        // Alt-'R' - (none)
@@ -387,7 +387,7 @@ void InitPrimProtoFns
 ////                                                                                    // Alt-'g' - del
 ////                                                                                    // Alt-'h' - delta
     InitPrimProtoFn (UTF16_IOTA              , &PrimProtoFnIota_EM_YY              );   // Alt-'i' - iota
-    InitPrimProtoOp (UTF16_JOT               , &PrimProtoOpJot_EM_YY               );   // Alt-'j' - jot
+    InitPrimProtoOp (UTF16_JOT               , &PrimProtoOpJot_EM_YY               );   // Alt-'j' - jot (compose)
 ////                                                                                    // Alt-'k' - single quote
 ////                                                                                    // Alt-'l' - quad
     InitPrimProtoFn (UTF16_STILE             , &PrimProtoFnStile_EM_YY             );   // Alt-'m' - stile
@@ -453,7 +453,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_SQUAD             , &PrimProtoFnSquad_EM_YY             );   // Alt-'L' - squad
     InitPrimProtoOp (UTF16_STILETILDE        , &PrimProtoOpStileTilde_EM_YY        );   // Alt-'M' - stile-tilde (partition)
     InitPrimProtoOp (UTF16_DIERESISDOWNTACK  , &PrimProtoOpDieresisDownTack_EM_YY  );   // Alt-'N' - dieresis-downtack (convolution)
-    InitPrimProtoOp (UTF16_DIERESISCIRCLE    , &PrimProtoOpDieresisCircle_EM_YY    );   // Alt-'O' - dieresis-circle (compose)
+    InitPrimProtoOp (UTF16_DIERESISCIRCLE    , &PrimProtoOpDieresisCircle_EM_YY    );   // Alt-'O' - dieresis-circle (composition)
     InitPrimProtoOp (UTF16_DIERESISSTAR      , &PrimProtoOpDieresisStar_EM_YY      );   // Alt-'P' - dieresis-star (power)
 ////                                                                                    // Alt-'Q' - (none)
 ////                                                                                    // Alt-'R' - (none)

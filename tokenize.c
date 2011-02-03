@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4664,7 +4664,7 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_DEL:                 // Alt-'g' - del (TKCOL_UNK)
 ////////case UTF16_DELTA:               // Alt-'h' - delta (TKCOL_ALPHA)
         case UTF16_IOTA:                // Alt-'i' - iota
-////////case UTF16_JOT:                 // Alt-'j' - jot (TKCOL_JOT)
+////////case UTF16_JOT:                 // Alt-'j' - compose (jot) (TKCOL_JOT)
 ////////case UTF16_APOSTROPHE:          // Alt-'k' - single quote (TKCOL_QUOTE1)
 ////////case UTF16_QUAD:                // Alt-'l' - quad (TKCOL_Q_QQ)
         case UTF16_STILE:               // Alt-'m' - stile
@@ -4728,7 +4728,7 @@ TKCOLINDICES CharTransTK
         case UTF16_SQUAD:               // Alt-'L' - squad
 ////////case UTF16_                     // Alt-'M' - (none)
 ////////case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution (TKCOL_PRIM_OP2)
-////////case UTF16_DIERESISCIRCLE:      // Alt-'O' - compose (TKCOL_PRIM_OP2)
+////////case UTF16_DIERESISCIRCLE:      // Alt-'O' - composition (TKCOL_PRIM_OP2)
 ////////case UTF16_DIERESISSTAR:        // Alt-'P' - power  (TKCOL_PRIM_OP2)
 ////////case UTF16_                     // Alt-'Q' - (none)
 ////////case UTF16_                     // Alt-'R' - (none)
@@ -4777,11 +4777,11 @@ TKCOLINDICES CharTransTK
         case UTF16_DIERESISDEL:         // Alt-'G' - dual
         case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot)
         case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution
-        case UTF16_DIERESISCIRCLE:      // Alt-'O' - compose (holler)
+        case UTF16_DIERESISCIRCLE:      // Alt-'O' - composition (holler)
         case UTF16_DIERESISSTAR:        // Alt-'P' - power
             return TKCOL_PRIM_OP2;
 
-        case UTF16_JOT:                 // Alt-'j' - jot
+        case UTF16_JOT:                 // Alt-'j' - compose (jot)
             return TKCOL_JOT;
 
         case UTF16_APOSTROPHE:          // Alt-'k' - single quote

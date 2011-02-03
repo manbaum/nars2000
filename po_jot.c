@@ -29,7 +29,7 @@
 //  $PrimOpJot_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    dyadic operator Jot ("composition" and "composition")
+//    dyadic operator Jot ("compose" and "compose")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -61,7 +61,7 @@ LPPL_YYSTYPE PrimOpJot_EM_YY
 //***************************************************************************
 //  $PrimProtoOpJot_EM_YY
 //
-//  Generate a prototype for the derived functions from Jot ("composition")
+//  Generate a prototype for the derived functions from Jot ("compose")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimProtoOpJot_EM_YY
@@ -84,7 +84,7 @@ LPPL_YYSTYPE PrimProtoOpJot_EM_YY
 //  $PrimOpJotCommon_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    dyadic operator Jot ("composition" and "composition")
+//    dyadic operator Jot ("compose" and "compose")
 //***************************************************************************
 
 #ifdef DEBUG

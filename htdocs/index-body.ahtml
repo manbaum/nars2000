@@ -89,7 +89,7 @@ Welcome to NARS2000</h1>
               <span class="APL">R[L]</span>,
               <span class="APL">R[L]{is}A</span>,
           and <span class="APL">R[L]<i>f</i>{is}A</span></li>
-        <li>Dyadic operator jot (<span class="APL"><i>f</i>{jot}<i>g</i></span>) (composition) (e.g.,
+        <li>Dyadic operator jot (<span class="APL"><i>f</i>{jot}<i>g</i></span>) (Compose) (e.g.,
           <span class="APL">f{is},{jot}{gradeup}{jot}{gradeup}{jot},</span>)</li>
         <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
           <span class="APL">1 2+[1] 2 3{rho}R</span>)</li>
@@ -175,7 +175,7 @@ Welcome to NARS2000</h1>
         <li>Primitive monadic function right caret (<span class="APL">&gt;R</span>) (Tally)</li>
         <li>Primitive dyadic function not equal underbar (<span class="APL">L{mismatch}R</span>) (Mismatch)</li>
         <li>Primitive monadic function down tack (<span class="APL">{downtack}R</span>) (Type)</li>
-        <li>Primitive dyadic operator dieresis circle (<span class="APL">L f{circledieresis}g R</span>) (Compose)</li>
+        <li>Primitive dyadic operator dieresis circle (<span class="APL">L f{circledieresis}g R</span>) (Composition)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>

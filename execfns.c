@@ -5,7 +5,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1067,7 +1067,7 @@ LPPL_YYSTYPE ExecOp2_EM_YY
             return PrimOpJot_EM_YY    (lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
                                        lpYYFcnStrOpr,       // Ptr to operator function strand
                                        lptkRhtArg);         // Ptr to right arg token
-        case UTF16_DIERESISCIRCLE:  // Compose
+        case UTF16_DIERESISCIRCLE:  // Composition
             return PrimOpDieresisCircle_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
                                                lpYYFcnStrOpr,   // Ptr to operator function strand
                                                lptkRhtArg);     // Ptr to right arg token

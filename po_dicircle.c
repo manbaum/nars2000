@@ -29,7 +29,7 @@
 //  $PrimOpDieresisCircle_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    dyadic operator DieresisCircle (ERROR and "compose")
+//    dyadic operator DieresisCircle (ERROR and "composition")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -69,7 +69,7 @@ LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
 //***************************************************************************
 //  $PrimProtoOpDieresisCircle_EM_YY
 //
-//  Generate a prototype for the derived functions from DieresisCircle ("compose")
+//  Generate a prototype for the derived functions from DieresisCircle ("composition")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -148,7 +148,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
 //***************************************************************************
 //  $PrimOpDydDieresisCircle_EM_YY
 //
-//  Primitive operator for dyadic derived function from DieresisCircle ("compose")
+//  Primitive operator for dyadic derived function from DieresisCircle ("composition")
 //***************************************************************************
 
 #ifdef DEBUG

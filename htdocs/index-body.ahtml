@@ -541,6 +541,16 @@ Welcome to NARS2000</h1>
 </div>
 
 <div class="section">
+  <h2 id="Changes">Changes</h2>
+
+  <p>Rather than gather email addresses, maintain a mailing list, deal with
+    privacy issues, etc., I'd prefer that if you are interested in being
+    notified when a new version is released that you sign up with a (free)
+    service that does this such as the one linked to at the bottom of this
+    page (for new features) and/or the download page (for new releases).</p>
+</div>
+
+<div class="section">
   <h2 id="Author">Author</h2>
 
   <p>This project was started by
@@ -551,5 +561,5 @@ Welcome to NARS2000</h1>
 </div>
 
 <!--#include virtual="/ValidXHTML-CSS.html" -->
-<!--#include virtual="/footer.html" -->
+<!--#include virtual="/footer-mon.html" -->
 </body></html>

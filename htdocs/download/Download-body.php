@@ -283,9 +283,20 @@ var gAllFiles = false;
 
 <div class="section">
   <h2 id="Statistics">Statistics On The Most Current File Release</h2>
+
   <pre style="margin-left: 1em;"><?php readfile ($DirName . "linestat.txt");?></pre>
 </div>
 
+<div class="section">
+  <h2 id="Changes">Changes</h2>
+
+  <p>Rather than gather email addresses, maintain a mailing list, deal with
+    privacy issues, etc., I'd prefer that if you are interested in being
+    notified when a new version is released that you sign up with a (free)
+    service that does this such as the one linked to at the bottom of this
+    page (for new releases) and/or the main page (for new features).</p>
+</div>
+
 <?php include "/www/htdocs/ValidXHTML-CSS.html" ?>
-<?php include "../footer.html" ?>
+<?php include "../footer-mon.html" ?>
 </body></html>

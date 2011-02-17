@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -210,22 +210,22 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                              lptkFunc);     // Ptr to function token
         else
         //***************************************************************
-        // If the name arg is scalar, do reach indexing (special case).
+        // If the name arg is immediate, do reach indexing (special case).
         // The list arg item must be a nested array of simple empty numeric
         //   or char vectors.
         //***************************************************************
-        if (IsScalar (aplRankNam))
+        if (hGlbNam EQ NULL)
             lpYYRes =
-              ArrayIndexRefNamScalar_EM_YY (hGlbNam,        // Name arg global memory handle
-                                            lpMemNam,       // Ptr to name arg global memory
-                                            aplTypeNam,     // Name arg storage type
-                                            aplLongestNam,  // Name arg immediate value
-                                            hGlbLst,        // List arg global memory handle
-                                            lpMemSub,       // Ptr to list arg item global memory
-                                            aplTypeSub,     // List arg item storage type
-                                            aplNELMSub,     // List arg item NELM
-                                            aplRankSub,     // List arg item rank
-                                            lptkFunc);      // Ptr to function token
+              ArrayIndexRefNamImmed_EM_YY (hGlbNam,         // Name arg global memory handle
+                                           lpMemNam,        // Ptr to name arg global memory
+                                           aplTypeNam,      // Name arg storage type
+                                           aplLongestNam,   // Name arg immediate value
+                                           hGlbLst,         // List arg global memory handle
+                                           lpMemSub,        // Ptr to list arg item global memory
+                                           aplTypeSub,      // List arg item storage type
+                                           aplNELMSub,      // List arg item NELM
+                                           aplRankSub,      // List arg item rank
+                                           lptkFunc);       // Ptr to function token
         else
         {
             //***************************************************************
@@ -1080,18 +1080,18 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $ArrayIndexRefNamScalar_EM_YY
+//  $ArrayIndexRefNamImmed_EM_YY
 //
-//  Array index reference for scalar name arg
+//  Array index reference for immediate name arg
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexRefNamScalar_EM_YY"
+#define APPEND_NAME     L" -- ArrayIndexRefNamImmed_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
+LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
     (HGLOBAL    hGlbNam,            // Name arg global memory handle
      LPVOID     lpMemNam,           // Ptr to name arg global memory (points to header)
      APLSTYPE   aplTypeNam,         // Name arg storage type
@@ -1263,7 +1263,7 @@ ERROR_EXIT:
     } // End IF
 NORMAL_EXIT:
     return lpYYRes;
-} // End ArrayIndexRefNamScalar_EM_YY
+} // End ArrayIndexRefNamImmed_EM_YY
 #undef  APPEND_NAME
 
 
@@ -1280,40 +1280,79 @@ NORMAL_EXIT:
 #endif
 
 UBOOL ArrayIndexValidZilde_EM
-    (LPVOID  lpMemNdx,              // Ptr to index arg global memory
-     APLNELM aplNELMNdx,            // Index arg NELM
+    (LPVOID  lpMemLst,              // Ptr to index list global memory
+     APLNELM aplNELMLst,            // Index list NELM
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    APLUINT  uNdx;                  // Loop counter
-    APLSTYPE aplTypeSub;            // Index arg item storage type
-    APLNELM  aplNELMSub;            // ...            NELM
-    APLRANK  aplRankSub;            // ...            rank
+    APLUINT  uLst,                  // Loop counter
+             uSub;                  // ...
+    HGLOBAL  hGlbSub = NULL;        // Index arg item global memory handle
+    LPVOID   lpMemSub = NULL;       // Ptr to index arg item global memory
+    APLSTYPE aplTypeSub,            // Index arg item storage type
+             aplTypeNdx;            // ...
+    APLNELM  aplNELMSub,            // ...            NELM
+             aplNELMNdx;            // ...
+    APLRANK  aplRankSub,            // ...            rank
+             aplRankNdx;            // ...
 
     // Loop through the list arg looking for simple empty vectors
-    for (uNdx = 0; uNdx < aplNELMNdx; uNdx++)
+    for (uLst = 0; uLst < aplNELMLst; uLst++)
     // Split cases based upon the list arg item ptr type
-    switch (GetPtrTypeDir (((LPAPLNESTED) lpMemNdx)[uNdx]))
+    switch (GetPtrTypeDir (((LPAPLNESTED) lpMemLst)[uLst]))
     {
         case PTRTYPE_STCONST:       // Immediates are NELM 1, Rank 0
             // It's not a vector, so signal a RANK ERROR
             goto RANK_EXIT;
 
         case PTRTYPE_HGLOBAL:
+            // Get the index arg item global memory handle
+            hGlbSub = ((LPAPLNESTED) lpMemLst)[uLst];
+
             // Get the attributes (Type, NELM, and Rank) of the list arg item
-            AttrsOfGlb (((LPAPLNESTED) lpMemNdx)[uNdx], &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
+            AttrsOfGlb (hGlbSub, &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
-            // Check for RANK ERROR
-            if (!IsVector (aplRankSub))
-                goto RANK_EXIT;
+            // Clear the ptr type bits
+            hGlbSub = ClrPtrTypeDir (hGlbSub);
 
-            // Check for LENGTH ERROR
-            if (!IsEmpty (aplNELMSub))
-                goto LENGTH_EXIT;
+            // Lock the memory to get a ptr to it
+            lpMemSub = MyGlobalLock (hGlbSub);
 
-            // Check for DOMAIN ERROR
-            if (!IsSimple (aplTypeSub))
-                goto DOMAIN_EXIT;
+            // Skip over the header and dimensions to the data
+            lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+
+            // Loop through the items of this list arg index
+            for (uSub = 0; uSub < aplNELMSub; uSub++)
+            // Split cases based upon the ptr type
+            switch (GetPtrTypeDir (((LPAPLNESTED) lpMemSub)[uSub]))
+            {
+                case PTRTYPE_STCONST:
+                    // It's not a vector, so signal a RANK ERROR
+                    goto RANK_EXIT;
+
+                case PTRTYPE_HGLOBAL:
+                    // Get the attributes (Type, NELM, and Rank) of the list arg item
+                    AttrsOfGlb (((LPAPLNESTED) lpMemSub)[uSub], &aplTypeNdx, &aplNELMNdx, &aplRankNdx, NULL);
+
+                    // Check for RANK ERROR
+                    if (!IsVector (aplRankNdx))
+                        goto RANK_EXIT;
+
+                    // Check for LENGTH ERROR
+                    if (!IsEmpty (aplNELMNdx))
+                        goto LENGTH_EXIT;
+
+                    // Check for DOMAIN ERROR
+                    if (!IsSimple (aplTypeNdx))
+                        goto DOMAIN_EXIT;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 
             break;
 
@@ -1326,16 +1365,25 @@ UBOOL ArrayIndexValidZilde_EM
 RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                lptkFunc);
-    return FALSE;
+    goto ERROR_EXIT;
 
 LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkFunc);
-    return FALSE;
+    goto ERROR_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbSub && lpMemSub)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbSub); lpMemSub= NULL;
+    } // End IF
+
     return FALSE;
 } // End ArrayIndexValidZilde_EM
 #undef  APPEND_NAME
@@ -1734,25 +1782,24 @@ UBOOL ArrayIndexSet_EM
         goto SYNTAX_EXIT;
 
     // Split cases based upon whether or not the name
-    //   var is scalar (this also covers immediates)
-    if (IsScalar (aplRankNam))
+    //   var is immediate
+    if (hGlbNam EQ NULL)
     {
         //***************************************************************
-        // The name arg value is a scalar
+        // The name arg value is an immediate
         //***************************************************************
-
-        if (!ArrayIndexSetNamScalar_EM (lptkNamArg,         // Ptr to name arg token
-                                        lptkLstArg,         // Ptr to list ...
-                                        lptkRhtArg,         // Ptr to right ...
-                                        bSysVar,            // TRUE iff indexed assignment into a SysVar
-                                        lptkFunc))          // Ptr to function ...
+        if (!ArrayIndexSetNamImmed_EM (lptkNamArg,          // Ptr to name arg token
+                                       lptkLstArg,          // Ptr to list ...
+                                       lptkRhtArg,          // Ptr to right ...
+                                       bSysVar,             // TRUE iff indexed assignment into a SysVar
+                                       lptkFunc))           // Ptr to function ...
             goto ERROR_EXIT;
         else
             goto NORMAL_EXIT;
     } else
     {
         //***************************************************************
-        // The name arg value is a non-scalar global handle
+        // The name arg value is a global handle
         //***************************************************************
 
         //***************************************************************
@@ -1855,19 +1902,18 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $ArrayIndexSetNamScalar_EM
+//  $ArrayIndexSetNamImmed_EM
 //
-//  Array index assignment where the name arg is a scalar
-//    (possibly an immediate)
+//  Array index assignment where the name arg is an immediate
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexSetNamScalar_EM"
+#define APPEND_NAME     L" -- ArrayIndexSetNamImmed_EM"
 #else
 #define APPEND_NAME
 #endif
 
-UBOOL ArrayIndexSetNamScalar_EM
+UBOOL ArrayIndexSetNamImmed_EM
     (LPTOKEN    lptkNamArg,         // Ptr to name arg token
      LPTOKEN    lptkLstArg,         // Ptr to list ...
      LPTOKEN    lptkRhtArg,         // Ptr to right ...
@@ -2139,7 +2185,7 @@ NORMAL_EXIT:
     } // End IF
 
     return bRet;
-} // End ArrayIndexSetNamScalar_EM
+} // End ArrayIndexSetNamImmed_EM
 #undef  APPEND_NAME
 
 

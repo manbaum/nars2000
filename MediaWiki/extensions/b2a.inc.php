@@ -220,6 +220,12 @@ $br2a = array (
 'link'                  => 0x2283,
 '>'                     => 0x2283,
 
+'leftshoeunderbar'      => 0x2286,
+'leftshoe_'             => 0x2286,
+
+'rightshoeunderbar'     => 0x2287,
+'rightshoe_'            => 0x2287,
+
 'reversebar'            => 0x2296,
 'rotatebar'             => 0x2296,
 'circlebar'             => 0x2296,
@@ -324,6 +330,7 @@ $br2a = array (
 '|:'                    => 0x2349,
 
 'decodeunderbar'        => 0x234A,
+'decode_'               => 0x234A,
 
 'gradeup'               => 0x234B,
 'upgrade'               => 0x234B,
@@ -368,16 +375,20 @@ $br2a = array (
 'quaddown'              => 0x2357,
 
 'quoteunderbar'         => 0x2358,
+'quote_'                => 0x2358,
 
-'delta_'                => 0x2359,
 'deltaunderscore'       => 0x2359,
 'deltaunderbar'         => 0x2359,
+'delta_'                => 0x2359,
 
 'diamondunderbar'       => 0x235A,
+'diamond_'              => 0x235A,
 
 'jotunderbar'           => 0x235B,
+'jot_'                  => 0x235B,
 
 'circleunderbar'        => 0x235C,
+'circle_'               => 0x235C,
 
 'lamp'                  => 0x235D,
 'comment'               => 0x235D,
@@ -448,6 +459,7 @@ $br2a = array (
 'stiletilde'            => 0x236D,
 
 'semicolonunderbar'     => 0x236E,
+'semicolon_'            => 0x236E,
 
 'quadnotequal'          => 0x236F,
 
@@ -472,17 +484,19 @@ $br2a = array (
 'omega'                 => 0x2375,
 
 'alphaunderbar'         => 0x2376,
+'alpha_'                => 0x2376,
 
 'find'                  => 0x2377,
-'epsilon_'              => 0x2377,
 'epsilonunderscore'     => 0x2377,
 'epsilonunderbar'       => 0x2377,
+'epsilon_'              => 0x2377,
 
-'iota_'                 => 0x2378,
 'iotaunderscore'        => 0x2378,
 'iotaunderbar'          => 0x2378,
+'iota_'                 => 0x2378,
 
 'omegaunderbar'         => 0x2379,
+'omega_'                => 0x2379,
 
 'alpha'                 => 0x237A,
 

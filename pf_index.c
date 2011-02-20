@@ -1751,7 +1751,7 @@ UBOOL ArrayIndexSet_EM
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    HGLOBAL      hGlbNam = NULL,    // Name arg global memory handle
+    HGLOBAL      hGlbNam,           // Name arg global memory handle
                  hGlbRes = NULL;    // Result   ...
     APLNELM      aplNELMLst;        // List NELM
     APLRANK      aplRankNam;        // Name arg rank
@@ -1780,6 +1780,9 @@ UBOOL ArrayIndexSet_EM
      && lptkNamArg->tkData.tkSym->stFlags.DfnSysLabel)
         // Signal a SYNTAX ERROR
         goto SYNTAX_EXIT;
+
+    // Get name arg global ptr
+    hGlbNam = GetGlbHandle (lptkNamArg);
 
     // Split cases based upon whether or not the name
     //   var is immediate
@@ -1855,9 +1858,6 @@ UBOOL ArrayIndexSet_EM
                     goto ERROR_EXIT;
             } // End IF/ELSE/...
         } // End IF/ELSE/...
-
-        // Get name arg global ptr
-        hGlbNam = GetGlbHandle (lptkNamArg);
 
         // If the handles are different, ...
         if (hGlbRes NE hGlbNam)

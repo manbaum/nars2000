@@ -4676,7 +4676,7 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_JOT:                 // Alt-'j' - compose (jot) (TKCOL_JOT)
 ////////case UTF16_APOSTROPHE:          // Alt-'k' - single quote (TKCOL_QUOTE1)
 ////////case UTF16_QUAD:                // Alt-'l' - quad (TKCOL_Q_QQ)
-        case UTF16_STILE:               // Alt-'m' - stile
+////////case UTF16_DOWNSHOESTILE:       // Alt-'m' - down-shoe-stile (TKCOL_PRIM_OP1)
         case UTF16_DOWNTACK:            // Alt-'n' - down tack
         case UTF16_CIRCLE:              // Alt-'o' - circle
         case UTF16_STAR:                // Alt-'p' - star
@@ -4741,14 +4741,14 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_DIERESISSTAR:        // Alt-'P' - power  (TKCOL_PRIM_OP2)
 ////////case UTF16_                     // Alt-'Q' - (none)
 ////////case UTF16_                     // Alt-'R' - (none)
-////////case UTF16_                     // Alt-'S' - (none)
+        case UTF16_SECTION:             // Alt-'S' - section (multiset symmetric difference)
 ////////case UTF16_DIERESISTILDE:       // Alt-'T' - commute (TKCOL_PRIM_OP1)
 ////////case UTF16_                     // Alt-'U' - (none)
 ////////case UTF16_                     // Alt-'V' - (none)
 ////////case UTF16_                     // Alt-'W' - (none)
-////////case UTF16_                     // Alt-'X' - (none)
+        case UTF16_RIGHTSHOEUNDERBAR:   // Alt-'X' - right-shoe-underbar
 ////////case UTF16_                     // Alt-'Y' - (none)
-////////case UTF16_                     // Alt-'Z' - (none)
+        case UTF16_LEFTSHOEUNDERBAR:    // Alt-'Z' - left-shoe-underbar
 ////////case UTF16_LEFTARROW:           // Alt-'[' - left arrow (TKCOL_ASSIGN)
         case UTF16_LEFTTACK:            // Alt-'\' - left tack
         case UTF16_RIGHTARROW:          // Alt-']' - right arrow
@@ -4766,6 +4766,7 @@ TKCOLINDICES CharTransTK
         case UTF16_BAR:                 //     '-' - bar
 ////////case UTF16_EQUAL:               //     '=' - equal
         case UTF16_PLUS:                //     '+' - plus
+        case UTF16_STILE:               //     '|' - stile
         case UTF16_STILE2:              //     '|' - stile2
         case UTF16_COMMA:               //     ',' - comma
 ////////case UTF16_LEFTCARET:           //     '<' - left caret
@@ -4778,6 +4779,7 @@ TKCOLINDICES CharTransTK
         case UTF16_SLASH:               //     '/' - slash
         case UTF16_SLASHBAR:            // Alt-'/' - slash-bar
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
+        case UTF16_DOWNSHOESTILE:       // Alt-'m' - down-shoe-stile
         case UTF16_STILETILDE:          // Alt-'M' - partition (dagger)
         case UTF16_DIERESISTILDE:       // Alt-'T' - commute/duplicate
         case UTF16_CIRCLEMIDDLEDOT:     // Alt-'?' - circle-middle-dot

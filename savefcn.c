@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1896,6 +1896,12 @@ UBOOL GetSpecialLabelNums
                         if (lpMemDfnHdr->nSysLblInv)
                             goto ERROR_EXIT;
                         lpMemDfnHdr->nSysLblInv = uLineNum + 1;
+                    } else
+                    if (lstrcmpiW (lpMemName, $QUAD_MS ) EQ 0)
+                    {
+                        if (lpMemDfnHdr->nSysLblMs )
+                            goto ERROR_EXIT;
+                        lpMemDfnHdr->nSysLblMs  = uLineNum + 1;
                     } else
                     if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
                     {

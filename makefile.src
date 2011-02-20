@@ -4,7 +4,7 @@
 #
 #/***************************************************************************
 #    NARS2000 -- An Experimental APL Interpreter
-#    Copyright (C) 2006-2010 Sudley Place Software
+#    Copyright (C) 2006-2011 Sudley Place Software
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -93,6 +93,7 @@ $(O)pf_iotaund.???      \
 $(O)pf_lcaret.???       \
 $(O)pf_lcaretund.???    \
 $(O)pf_lshoe.???        \
+$(O)pf_lshoeund.???     \
 $(O)pf_ltack.???        \
 $(O)pf_ndcaret.???      \
 $(O)pf_nequal.???       \
@@ -104,7 +105,9 @@ $(O)pf_rcaret.???       \
 $(O)pf_rcaretund.???    \
 $(O)pf_rho.???          \
 $(O)pf_rshoe.???        \
+$(O)pf_rshoeund.???     \
 $(O)pf_rtack.???        \
+$(O)pf_section.???      \
 $(O)pf_slash.???        \
 $(O)pf_slope.???        \
 $(O)pf_squad.???        \
@@ -114,6 +117,7 @@ $(O)pf_tilde.???        \
 $(O)pf_times.???        \
 $(O)pf_uarrow.???       \
 $(O)pf_ucaret.???       \
+$(O)pf_ushoe.???        \
 $(O)pf_ustile.???       \
 $(O)pf_utack.???        \
 $(O)pf_utackjot.???     \
@@ -125,6 +129,7 @@ $(O)po_ditilde.???      \
 $(O)po_dot.???          \
 $(O)po_jot.???          \
 $(O)po_jotdot.???       \
+$(O)po_multiset.???     \
 $(O)po_slash.???        \
 $(O)po_slope.???        \
 $(O)primfns.???         \

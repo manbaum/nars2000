@@ -91,7 +91,7 @@
 #define UTF16_JOT                0x2218         // Alt-'j' - Compose operator (jot)
 #define UTF16_APOSTROPHE         0x0027         // Alt-'k' - single quote
 #define UTF16_QUAD               0x2395         // Alt-'l' - quad (not 0x25AF)
-#define UTF16_STILE              0x2223         // Alt-'m' - modulus
+#define UTF16_DOWNSHOESTILE      0x2366         // Alt-'m' - down-shoe-stile
 #define UTF16_DOWNTACK           0x22A4         // Alt-'n' - representation
 #define UTF16_CIRCLE             0x25CB         // Alt-'o' - circle
 #define UTF16_STAR               0x002A         // Alt-'p' - power
@@ -221,6 +221,7 @@
 #define UTF16_RIGHTBRACE         0x007D         // Right brace
 #define UTF16_TILDE2             0x007E         // Tilde (a.k.a. 0x223C)
 #define UTF16_COPYRIGHT          0x00A9         // Copyright
+#define UTF16_STILE              0x2223         // Stile
 
 #define UTF16_A_                 0xE036         // A underbar
 #define UTF16_B_                 0xE037         // B underbar
@@ -303,7 +304,7 @@
 #define WS_UTF16_JOT                L"\x2218"   // Alt-'j' - Compose operator (jot)
 #define WS_UTF16_APOSTROPHE         L"\x0027"   // Alt-'k' - single quote
 #define WS_UTF16_QUAD               L"\x2395"   // Alt-'l' - quad (not \x25AF)
-#define WS_UTF16_STILE              L"\x2223"   // Alt-'m' - modulus
+#define WS_UTF16_DOWNSHOESTILE      L"\x2366"   // Alt-'m' - down-shoe-stile
 #define WS_UTF16_DOWNTACK           L"\x22A4"   // Alt-'n' - representation
 #define WS_UTF16_CIRCLE             L"\x25CB"   // Alt-'o' - circle
 #define WS_UTF16_STAR               L"\x002A"   // Alt-'p' - power
@@ -433,6 +434,7 @@
 #define WS_UTF16_RIGHTBRACE         L"\x007D"   // Right brace
 #define WS_UTF16_TILDE2             L"\x007E"   // Tilde (a.k.a. \x223C)
 #define WS_UTF16_COPYRIGHT          L"\x00A9"   // Copyright
+#define WS_UTF16_STILE              L"\x2223"   // Stile
 
 #define WS_UTF16_A_                 L"\xE036"   // A underbar
 #define WS_UTF16_B_                 L"\xE037"   // B underbar

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -238,6 +238,19 @@ typedef struct tagSTART_ADDRESSES
 
     // free.c
     "FreeResultName"            , (LPUCHAR) &FreeResultName             ,
+    "FreeResult"                , (LPUCHAR) &FreeResult                 ,
+    "FreeResultTkn"             , (LPUCHAR) &FreeResultTkn              ,
+    "FreeResNNU"                , (LPUCHAR) &FreeResNNU                 ,
+    "FreeResultSub"             , (LPUCHAR) &FreeResultSub              ,
+    "FreeResultGlobalDFLV"      , (LPUCHAR) &FreeResultGlobalDFLV       ,
+    "FreeResultGlobalLst"       , (LPUCHAR) &FreeResultGlobalLst        ,
+    "FreeResultGlobalVar"       , (LPUCHAR) &FreeResultGlobalVar        ,
+    "FreeResultGlobalIncompleteVar", (LPUCHAR) &FreeResultGlobalIncompleteVar,
+    "FreeResultGlobalVarSub"    , (LPUCHAR) &FreeResultGlobalVarSub     ,
+    "FreeResultGlobalFcn"       , (LPUCHAR) &FreeResultGlobalFcn        ,
+    "FreeResultGlobalDfn"       , (LPUCHAR) &FreeResultGlobalDfn        ,
+    "FreeResultGlobalDfnStruc"  , (LPUCHAR) &FreeResultGlobalDfnStruc   ,
+    "FreeYYFcn1"                , (LPUCHAR) &FreeYYFcn1                 ,
 
     // getfns.c
     "GetFirstItemToken"         , (LPUCHAR) &GetFirstItemToken          ,

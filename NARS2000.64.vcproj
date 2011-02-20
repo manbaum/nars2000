@@ -569,6 +569,10 @@
                 >
             </File>
             <File
+                RelativePath=".\pf_lshoeund.c"
+                >
+            </File>
+            <File
                 RelativePath=".\pf_ltack.c"
                 >
             </File>
@@ -613,7 +617,15 @@
                 >
             </File>
             <File
+                RelativePath=".\pf_rshoeund.c"
+                >
+            </File>
+            <File
                 RelativePath=".\pf_rtack.c"
+                >
+            </File>
+            <File
+                RelativePath=".\pf_section.c"
                 >
             </File>
             <File
@@ -650,6 +662,10 @@
             </File>
             <File
                 RelativePath=".\pf_ucaret.c"
+                >
+            </File>
+            <File
+                RelativePath=".\pf_ushoe.c"
                 >
             </File>
             <File
@@ -742,6 +758,10 @@
             </File>
             <File
                 RelativePath=".\po_jotdot.c"
+                >
+            </File>
+            <File
+                RelativePath=".\po_multiset.c"
                 >
             </File>
             <File

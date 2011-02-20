@@ -163,6 +163,36 @@ typedef enum tagEXIT_TYPES
 } EXIT_TYPES, *LPEXITTYPES;
 
 
+typedef enum tagERROR_CODES     // Error codes
+{
+    ERRORCODE_NONE = 0,         // 00:  No error
+    ERRORCODE_ALX,              // 01:  Signal []ALX
+    ERRORCODE_ELX,              // 02:  Signal []ELX
+} ERROR_CODES, *LPERROR_CODES;
+
+
+typedef enum tagLINE_NUMS       // Starting line #s
+{
+    LINENUM_ONE = 0,            // 00:  Line #1
+    LINENUM_ID ,                // 01:  Line []ID
+    LINENUM_INV,                // 02:  Line []INV
+    LINENUM_MS ,                // 03:  Line []MS
+    LINENUM_PRO,                // 04:  Line []PRO
+    LINENUM_SGL,                // 05:  Line []SGL
+} LINE_NUMS, *LPLINE_NUMS;
+
+
+typedef enum tagFLT_DISP_FMT    // Floating Point Display Formats
+{
+    FLTDISPFMT_E = 0,           // 00:  E-format to nDigits significant digits
+    FLTDISPFMT_F,               // 01:  F-format with nDigits to the right of the decimal point
+    FLTDISPFMT_RAWINT,          // 02:  Raw integer format to nDigits significant digits
+    FLTDISPFMT_RAWFLT,          // 03:  Raw float format to nDigits significant digits -- switch
+                                //      to E-format if more than []PP digits required
+    FLTDISPFMT_LENGTH,          // 04:  # entries in this enum
+} FLTDISPFMT, *LPFLTDISPFMT;
+
+
 //***************************************************************************
 //  End of File: enums.h
 //***************************************************************************

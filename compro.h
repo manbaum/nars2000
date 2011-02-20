@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -86,6 +86,7 @@
   #include "pf_lcaret.pro"
   #include "pf_lcaretund.pro"
   #include "pf_lshoe.pro"
+  #include "pf_lshoeund.pro"
   #include "pf_ltack.pro"
   #include "pf_ndcaret.pro"
   #include "pf_nequal.pro"
@@ -97,7 +98,9 @@
   #include "pf_rcaretund.pro"
   #include "pf_rho.pro"
   #include "pf_rshoe.pro"
+  #include "pf_rshoeund.pro"
   #include "pf_rtack.pro"
+  #include "pf_section.pro"
   #include "pf_slash.pro"
   #include "pf_slope.pro"
   #include "pf_squad.pro"
@@ -107,6 +110,7 @@
   #include "pf_times.pro"
   #include "pf_uarrow.pro"
   #include "pf_ucaret.pro"
+  #include "pf_ushoe.pro"
   #include "pf_ustile.pro"
   #include "pf_utack.pro"
   #include "pf_utackjot.pro"
@@ -120,6 +124,7 @@
   #include "po_dot.pro"
   #include "po_jot.pro"
   #include "po_jotdot.pro"
+  #include "po_multiset.pro"
   #include "po_slash.pro"
   #include "po_slope.pro"
   #include "primfns.pro"

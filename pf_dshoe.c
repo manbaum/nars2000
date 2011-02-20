@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 //***************************************************************************
 //  $PrimFnDownShoe_EM_YY
 //
-//  Primitive function for monadic and dyadic DownShoe ("unique" and ERROR)
+//  Primitive function for monadic and dyadic DownShoe ("unique" and "union")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -101,6 +101,78 @@ LPPL_YYSTYPE PrimProtoFnDownShoe_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDownShoe_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimIdentFnDownShoe_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic DownShoe
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimIdentFnDownShoe_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimIdentFnDownShoe_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLRANK      aplRankRht;        // Right arg rank
+    LPPL_YYSTYPE lpYYRes;           // Ptr to result
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // The (left/right) identity function for dyadic DownShoe
+    //   (L {downshoe} R) ("union") is
+    //   {zilde}.
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+    // Check for RANK ERROR
+    if (IsMultiRank (aplRankRht))
+        goto DOMAIN_EXIT;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbZilde);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimIdentFnDownShoe_EM_YY
 #undef  APPEND_NAME
 
 
@@ -282,7 +354,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             {
                 // Get a mask to isolate the active bits in the last byte
                 //   0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F
-                aplMask = (1 << aplMask) - 1;
+                aplMask = (BIT0 << aplMask) - 1;
 
                 if ((aplComp & aplMask) NE (aplLastByte & aplMask))
                     aplNELMRes++;
@@ -759,7 +831,7 @@ MAGIC_FCNOPR MFO_MonDnShoe =
 //***************************************************************************
 //  $PrimFnDydDownShoe_EM_YY
 //
-//  Primitive function for dyadic DownShoe (ERROR)
+//  Primitive function for dyadic DownShoe (Union)
 //***************************************************************************
 
 #ifdef DEBUG
@@ -775,9 +847,98 @@ LPPL_YYSTYPE PrimFnDydDownShoe_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht;        // Right ...
+    HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, and Rank) of the left & right args
+    AttrsOfToken (lptkLftArg, NULL, NULL, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+    // Check for LEFT/RIGHT RANK ERRORs
+    if (IsMultiRank (aplRankLft))
+        goto LEFT_RANK_EXIT;
+
+    if (IsMultiRank (aplRankRht))
+        goto RIGHT_RANK_EXIT;
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Get the magic function/operator global memory handle
+    hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydDnShoe];
+
+    //  Return the elements in L or in R.
+    //  Use an internal magic function.
+    lpYYRes =
+      ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
+                                  lptkFunc,     // Ptr to function token
+                                  NULL,         // Ptr to function strand
+                                  lptkRhtArg,   // Ptr to right arg token
+                                  lptkAxis,     // Ptr to axis token
+                                  hGlbMFO,      // Magic function/operator global memory handle
+                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                  LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+    goto NORMAL_EXIT;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    return NULL;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    return lpYYRes;
 } // End PrimFnDydDownShoe_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  Magic function for dyadic DownShoe
+//
+//  Dyadic Down Shoe -- Union
+//
+//  Return the elements in L or in R.
+//***************************************************************************
+
+static APLCHAR DydHeader[] =
+  L"Z" $IS L"L " MFON_DydDnShoe L" R";
+
+static APLCHAR DydLine1[] =
+  L"Z" $IS L"L,R~L";
+
+static LPAPLCHAR DydBody[] =
+{DydLine1,
+};
+
+MAGIC_FCNOPR MFO_DydDnShoe =
+{DydHeader,
+ DydBody,
+ countof (DydBody),
+};
 
 
 //***************************************************************************

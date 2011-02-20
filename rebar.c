@@ -2015,7 +2015,7 @@ typedef struct tagLANGCHARS
         {UTF16_STILE              , {0}, L"Stile",
                                          L"Magnitude:  |R\n"
                                          L"Modulus:   L|R  or  L|[X] R\n\n"
-                                         L"Keyboard:  '|' or Shift-'\\' or Alt-'m'\n\n"
+                                         L"Keyboard:  '|' or Shift-'\\'\n\n"
                                          L"Unicode:  0x2223 or 8739"},
         {UTF16_UPSTILE            , {0}, L"UpStile",
                                          L"Ceiling:   " WS_UTF16_UPSTILE L"R\n"
@@ -2073,12 +2073,14 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'6'\n\n"
                                          L"Unicode:  0x2265 or 8805"},
         {UTF16_EQUALUNDERBAR      , {0}, L"EqualUnderbar",
-                                         L"Depth:   " WS_UTF16_EQUALUNDERBAR L"R\n"
-                                         L"Match:  L" WS_UTF16_EQUALUNDERBAR L"R\n\n"
+                                         L"Depth:                   " WS_UTF16_EQUALUNDERBAR L"R\n"
+                                         L"Match:                  L" WS_UTF16_EQUALUNDERBAR L"R\n"
+                                         L"Multiset (Identical):   L" WS_UTF16_EQUALUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'!'  or  Alt-Shift-'1'\n\n"
                                          L"Unicode:  0x2261 or 8801"},
         {UTF16_NOTEQUALUNDERBAR   , {0}, L"NotEqualUnderbar",
-                                         L"Mismatch:  L" WS_UTF16_NOTEQUALUNDERBAR L"R\n\n"
+                                         L"Mismatch:                   L" WS_UTF16_NOTEQUALUNDERBAR L"R\n"
+                                         L"Multiset (Not Identical):   L" WS_UTF16_NOTEQUALUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'@'  or  Alt-Shift-'2'\n\n"
                                          L"Unicode:  0x2262 or 8802"},
         LANGCHARS_SEPARATOR
@@ -2134,13 +2136,15 @@ typedef struct tagLANGCHARS
                                          L"Unicode:  0x2352 or 9042"},
         LANGCHARS_SEPARATOR
         {UTF16_IOTA               , {0}, L"Iota",
-                                         L"Index Generator:  "  WS_UTF16_IOTA L"R\n"
-                                         L"Index Of:        L"  WS_UTF16_IOTA L"R\n\n"
+                                         L"Index Generator:       " WS_UTF16_IOTA L"R\n"
+                                         L"Index Of:             L" WS_UTF16_IOTA L"R\n"
+                                         L"Multiset (Index Of):  L" WS_UTF16_IOTA WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'i'\n\n"
                                          L"Unicode:  0x2373 or 9075"},
         {UTF16_EPSILON            , {0}, L"Epsilon",
-                                         L"Enlist:      "  WS_UTF16_EPSILON L"R\n"
-                                         L"Member Of:  L"  WS_UTF16_EPSILON L"R\n\n"
+                                         L"Enlist:                 " WS_UTF16_EPSILON L"R\n"
+                                         L"Member Of:             L" WS_UTF16_EPSILON L"R\n"
+                                         L"Multiset (Member Of):  L" WS_UTF16_EPSILON WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'e'\n\n"
                                          L"Unicode:  0x220A or 8714"},
         {UTF16_IOTAUNDERBAR       , {0}, L"IotaUnderbar",
@@ -2152,19 +2156,35 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'E' or Alt-Shift-'e'\n\n"
                                          L"Unicode:  0x2377 or 9079"},
         {UTF16_DOWNSHOE           , {0}, L"DownShoe",
-                                         L"Unique:  " WS_UTF16_DOWNSHOE L"R\n"
-                                         L"Union:  L" WS_UTF16_DOWNSHOE L"R\n\n"
+                                         L"Unique:             " WS_UTF16_DOWNSHOE L"R\n"
+                                         L"Union:             L" WS_UTF16_DOWNSHOE L"R\n"
+                                         L"Multiset (Union):  L" WS_UTF16_DOWNSHOE WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'v'\n\n"
                                          L"Unicode:  0x222A or 8746"},
         {UTF16_UPSHOE             , {0}, L"UpShoe",
-                                         L"Intersection:  L" WS_UTF16_UPSHOE L"R\n\n"
+                                         L"Intersection:             L" WS_UTF16_UPSHOE L"R\n"
+                                         L"Multiset (Intersection):  L" WS_UTF16_UPSHOE WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'c'\n\n"
                                          L"Unicode:  0x2229 or 8745"},
+        {UTF16_LEFTSHOEUNDERBAR   , {0}, L"LeftShoeUnderbar",
+                                         L"Multiset (Subset):  L" WS_UTF16_LEFTSHOEUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                         L"Keyboard:  Alt-'Z'\n\n"
+                                         L"Unicode:  0x2286 or 8838"},
+        {UTF16_RIGHTSHOEUNDERBAR  , {0}, L"RightShoeUnderbar",
+                                         L"Multiset (Superset):  L" WS_UTF16_RIGHTSHOEUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                         L"Keyboard:  Alt-'X'\n\n"
+                                         L"Unicode:  0x2287 or 8839"},
         {UTF16_TILDE              , {0}, L"Tilde",
-                                         L"Not:       " WS_UTF16_TILDE L"R\n"
-                                         L"Without:  L" WS_UTF16_TILDE L"R\n\n"
+                                         L"Not:                                " WS_UTF16_TILDE L"R\n"
+                                         L"Without:                           L" WS_UTF16_TILDE L"R\n"
+                                         L"Multiset (Asymmetric Difference):  L" WS_UTF16_TILDE WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  '" WS_UTF16_TILDE L"' or Shift-'`' or Alt-'t'\n\n"
                                          L"Unicode:  0x223C or 8764"},
+        {UTF16_SECTION            , {0}, L"Section",
+                                         L"Symmetric Difference:             L" WS_UTF16_SECTION L"R\n"
+                                         L"Multiset (Symmetric Difference):  L" WS_UTF16_SECTION WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                         L"Keyboard:  Alt-'S' or Alt-Shift-'s'\n\n"
+                                         L"Unicode:  0x00A7 or 167"},
         LANGCHARS_SEPARATOR
         {UTF16_COMMA              , {0}, L"Comma",
                                          L"Ravel:      ,R  or   ,[X] R\n"
@@ -2243,6 +2263,11 @@ typedef struct tagLANGCHARS
                                          L"              L (f" WS_UTF16_DIERESISJOT L"[X] Y) R\n\n"
                                          L"Keyboard:  Alt-'J' or Alt-Shift-'j'\n\n"
                                          L"Unicode:  0x2364 or 9060"},
+        {UTF16_DOWNSHOESTILE      , {0}, L"Multiset",
+                                         L"Multiset Operator:  f" WS_UTF16_DOWNSHOESTILE L"R\n"
+                                         L"                  L f" WS_UTF16_DOWNSHOESTILE L"R\n"
+                                         L"Keyboard:  Alt-'m'\n\n"
+                                         L"Unicode:  0x2366 or 9062"},
 ////////{UTF16_DIERESISSTAR       , {0}, L""},       // Uncomment when implemented
 ////////{UTF16_DIERESISDOT        , {0}, L""},       // ...
 ////////{UTF16_DIERESISDEL        , {0}, L""},       // ...

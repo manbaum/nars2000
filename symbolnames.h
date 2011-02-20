@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -119,8 +119,8 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_JOT                  , L"{jot}"                },  // Alt-'j' - jot
   {UTF16_APOSTROPHE           , L"{apostrophe}"         },  // Alt-'k' - single-quote
   {UTF16_QUAD                 , L"{quad}"               },  // Alt-'l' - quad (9109??)
-  {UTF16_STILE                , L"{stile}"              },  // Alt-'m' - modulus
-  {UTF16_STILE                , L"{mod}"                },  // ...
+  {UTF16_DOWNSHOESTILE        , L"{downshoestile}"      },  // Alt-'m' - down-shoe-stile
+  {UTF16_DOWNSHOESTILE        , L"{multiset}"           },  // ...
   {UTF16_DOWNTACK             , L"{downtack}"           },  // Alt-'n' - representation
   {UTF16_DOWNTACK             , L"{represent}"          },  // ...
   {UTF16_CIRCLE               , L"{circle}"             },  // Alt-'o' - circle
@@ -176,14 +176,17 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_DIERESISSTAR         , L"{dieresisstar}"       },  // Alt-'P' - Power operator       (sourpuss)
 //{UTF16_                     ,                         },  // Alt-'Q' - (none)
 //{UTF16_                     ,                         },  // Alt-'R' - (none)
-//{UTF16_                     ,                         },  // Alt-'S' - (none)
+  {UTF16_SECTION              , L"{section}"            },  // Alt-'S' - Multiset Symmetric Difference
+  {UTF16_SECTION              , L"{msd}"                },  // ...
   {UTF16_DIERESISTILDE        , L"{dieresistilde}"      },  // Alt-'T' - Commute operator     (frown)
 //{UTF16_                     ,                         },  // Alt-'U' - (none)
 //{UTF16_                     ,                         },  // Alt-'V' - (none)
 //{UTF16_                     ,                         },  // Alt-'W' - (none)
-//{UTF16_                     ,                         },  // Alt-'X' - (none)
+  {UTF16_RIGHTSHOEUNDERBAR    , L"{rightshoeunderbar}"  },  // Alt-'X' - right-shoe-underbar
+  {UTF16_RIGHTSHOEUNDERBAR    , L"{rightshoe_}"         },  // ...
 //{UTF16_                     ,                         },  // Alt-'Y' - (none)
-//{UTF16_                     ,                         },  // Alt-'Z' - (none)
+  {UTF16_LEFTSHOEUNDERBAR     , L"{leftshoeunderbar}"   },  // Alt-'Z' - left-shoe-underbar
+  {UTF16_LEFTSHOEUNDERBAR     , L"{leftshoe_}"          },  // ...
 
 // Top row, unshifted
   {UTF16_DIAMOND              , L"{diamond}"            },  // Alt-'`' - diamond (9674??)
@@ -279,16 +282,18 @@ SYMBOLNAMES aSymbolNames[]
   {L' '                       , L"{space}"              },
 
 // Non-Alt key equivalents (these are the only ones we need for SaveWS)
-  {UTF16_DOUBLEQUOTE          , L"{doublequote}"        },  // 22:  Double quote
-  {UTF16_POUND                , L"{pound}"              },  // 23:  Pound
-  {UTF16_COMMA                , L"{comma}"              },  // 2C:  Comma
-  {UTF16_SLOPE                , L"{slope}"              },  // 5C:  Slope
-  {UTF16_SLOPE                , L"{backslash}"          },  // 5C:  ...
-  {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // 5E:  Circumflex
-  {UTF16_LEFTBRACE            , L"{leftbrace}"          },  // 7B:  Left brace
-  {UTF16_STILE2               , L"{stile2}"             },  // 7C:  Stile (a.k.a. 0x2223)
-  {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 7D:  Right brace
-  {UTF16_TILDE2               , L"{tilde2}"             },  // 7E:  Stile (a.k.a. 0x223C)
+  {UTF16_DOUBLEQUOTE          , L"{doublequote}"        },  // 0022:  Double quote
+  {UTF16_POUND                , L"{pound}"              },  // 0023:  Pound
+  {UTF16_COMMA                , L"{comma}"              },  // 002C:  Comma
+  {UTF16_SLOPE                , L"{slope}"              },  // 005C:  Slope
+  {UTF16_SLOPE                , L"{backslash}"          },  // 005C:  ...
+  {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // 005E:  Circumflex
+  {UTF16_LEFTBRACE            , L"{leftbrace}"          },  // 007B:  Left brace
+  {UTF16_STILE                , L"{stile}"              },  // 2223:   Modulus
+  {UTF16_STILE                , L"{mod}"                },  // ...
+  {UTF16_STILE2               , L"{stile2}"             },  // 007C:  Stile (a.k.a. 0x2223)
+  {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 007D:  Right brace
+  {UTF16_TILDE2               , L"{tilde2}"             },  // 007E:  Tilde (a.k.a. 0x223C)
 }
 #endif
 ;

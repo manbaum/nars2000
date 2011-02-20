@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,8 @@ typedef enum tagSYSLBL_CON
 typedef enum tagSYSLBL_VAR              // System Label Variant
 {
     SYSLBL_VAR_INV,                     // 00:  System Label Variant:  []INV
-    SYSLBL_VAR_LENGTH                   // 01:  # entries in this enum
+    SYSLBL_VAR_MS,                      // 01:  ...                    []MS
+    SYSLBL_VAR_LENGTH                   // 02:  # entries in this enum
 } SYSLBL_VAR, *LPSYSLBL_VAR;
 
 // User-defined function/operator header signature
@@ -111,38 +112,39 @@ typedef struct tagDFN_HEADER            // Function header structure
                      ListLft:1,         //      00000800:  TRUE iff the left arg is a list
                      ListRht:1,         //      00001000:  TRUE iff the right arg is a list
                      MonOn:1,           //      00002000:  TRUE iff function line monitoring is on for this function
-                     SaveSTEFlags:1,    //      00004000:  TRUE iff on free were to save the function name STE flags
+                     SaveSTEFlags:1,    //      00004000:  TRUE iff on free we are to save the function name STE flags
                      SkipRefCntIncr:1,  //      00008000:  Skip the next RefCnt increment
                      :16;               //      FFFF0000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
                      nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
                      nSysLblId,         // 14:  Line # of the []INV label (0 if not present)
-                     nSysLblPro,        // 18:  Line # of the []PRO label (0 if not present)
-                     nSysLblSgl,        // 1C:  Line # of the []SGL label (0 if not present)
-                     nSysLblPair        // 20:  Line # of the System Label pairs (Context vs. Variant) (12 bytes)
+                     nSysLblMs,         // 18:  Line # of the []MS  label (0 if not present)
+                     nSysLblPro,        // 1C:  Line # of the []PRO label (0 if not present)
+                     nSysLblSgl,        // 20:  Line # of the []SGL label (0 if not present)
+                     nSysLblPair        // 24:  Line # of the System Label pairs (Context vs. Variant) (12 bytes)
                        [SYSLBL_CON_LENGTH][SYSLBL_VAR_LENGTH],
-                     numResultSTE,      // 2C:  # result STEs (may be zero if no result)
-                     offResultSTE,      // 30:  Offset to result STEs (ignored if numResultSTE is zero)
-                     numLftArgSTE,      // 34:  # left arg STEs (may be zero if niladic/monadic)
-                     offLftArgSTE,      // 38:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
-                     numRhtArgSTE,      // 3C:  # right arg STEs (may be zero if niladic)
-                     offRhtArgSTE,      // 40   Offset to right arg STEs (ignored if numRhtArgSTE is zero)
-                     numLocalsSTE,      // 44:  # right arg STEs (may be zero if niladic)
-                     offLocalsSTE,      // 48:  Offset to start of function lines (FCNLINE[nLines])
-                     numFcnLines,       // 4C:  # lines in the function (not counting the header)
-                     offFcnLines;       // 50:  Offset to start of function lines (FCNLINE[nLines])
-    LPSYMENTRY       steLftOpr,         // 54:  Left operand STE (may be NULL if not an operator)
-                     steFcnName,        // 58:  Function name STE
-                     steAxisOpr,        // 5C:  Axis operator STE
-                     steRhtOpr;         // 60:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,        // 64:  Text of function header (APLCHAR) global memory handle
-                     hGlbTknHdr,        // 68:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff,      // 6C:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-                     hGlbMonInfo;       // 70:  Function line monitor info (MONINFO)
-    FILETIME         ftCreation,        // 74:  Time of creation (8 bytes)
-                     ftLastMod;         // 7C:  Time of last modification (8 bytes)
-                                        // 84:  Length
-                                        // 84:  Array of function line structures (FCNLINE[nLines])
+                     numResultSTE,      // 30:  # result STEs (may be zero if no result)
+                     offResultSTE,      // 34:  Offset to result STEs (ignored if numResultSTE is zero)
+                     numLftArgSTE,      // 38:  # left arg STEs (may be zero if niladic/monadic)
+                     offLftArgSTE,      // 3C:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
+                     numRhtArgSTE,      // 40:  # right arg STEs (may be zero if niladic)
+                     offRhtArgSTE,      // 44:  Offset to right arg STEs (ignored if numRhtArgSTE is zero)
+                     numLocalsSTE,      // 48:  # right arg STEs (may be zero if niladic)
+                     offLocalsSTE,      // 4C:  Offset to start of function lines (FCNLINE[nLines])
+                     numFcnLines,       // 50:  # lines in the function (not counting the header)
+                     offFcnLines;       // 54:  Offset to start of function lines (FCNLINE[nLines])
+    LPSYMENTRY       steLftOpr,         // 58:  Left operand STE (may be NULL if not an operator)
+                     steFcnName,        // 5C:  Function name STE
+                     steAxisOpr,        // 60:  Axis operator STE
+                     steRhtOpr;         // 64:  Right operand STE (may be NULL if monadic operator or not an operator)
+    HGLOBAL          hGlbTxtHdr,        // 68:  Text of function header (APLCHAR) global memory handle
+                     hGlbTknHdr,        // 6C:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff,      // 70:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo;       // 74:  Function line monitor info (MONINFO)
+    FILETIME         ftCreation,        // 78:  Time of creation (8 bytes)
+                     ftLastMod;         // 80:  Time of last modification (8 bytes)
+                                        // 88:  Length
+                                        // 88:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a

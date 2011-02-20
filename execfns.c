@@ -1004,6 +1004,10 @@ LPPL_YYSTYPE ExecOp1_EM_YY
 
             return NULL;
 
+        case UTF16_DOWNSHOESTILE:   // Multiset
+            return PrimOpDownShoeStile_EM_YY (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+                                              lpYYFcnStrOpr,    // Ptr to operator function strand
+                                              lptkRhtArg);      // Ptr to right arg token
         case UTF16_DIERESIS:        // Each
             return PrimOpDieresis_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
                                          lpYYFcnStrOpr,         // Ptr to operator function strand

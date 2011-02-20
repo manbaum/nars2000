@@ -176,6 +176,9 @@ Welcome to NARS2000</h1>
         <li>Primitive dyadic function not equal underbar (<span class="APL">L{mismatch}R</span>) (Mismatch)</li>
         <li>Primitive monadic function down tack (<span class="APL">{downtack}R</span>) (Type)</li>
         <li>Primitive dyadic operator dieresis circle (<span class="APL">L f{circledieresis}g R</span>) (Composition)</li>
+        <li>Primitive monadic operator (<span class="APL"><i>f</i>{multiset}</span>) (Multiset)</li>
+        <li>Primitive dyadic function (<span class="APL">L{leftshoe_}R</span>) (Subset Of)</li>
+        <li>Primitive dyadic function (<span class="APL">L{rightshoe_}R</span>) (Superset Of)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
@@ -275,7 +278,6 @@ Welcome to NARS2000</h1>
     <li>Primitive dyadic operator dieresis-downtack (<span class="APL"><i>f</i>{downtackdieresis}<i>g</i></span>) (Convolution)</li>
     <li>Primitive dyadic operator stile-tilde (<span class="APL"><i>f</i>{stiletilde}</span>) (Partition)</li>
     <li>Selective assignment (e.g., <span class="APL">(1 1{transpose}M){is}0</span>)</li>
-    <li>Primitive monadic operator (<span class="APL"><i>f</i>$</span>) (Multiset)</li>
   </ul>
 </div>
 
@@ -369,6 +371,7 @@ Welcome to NARS2000</h1>
       <b>Alt-9735</b> is a lightning bolt (<span class="APL">&#9735;</span>)</li>
     <li>Available as either a 32- or 64-bit executable</li>
     <li>Language bar</li>
+    <li>User-defined keyboard layout support (copied with minor changes from APL2)</li>
   </ul>
 
   <h3>Wish List of Miscellaneous Features</h3>

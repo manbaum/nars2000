@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,19 +23,33 @@
 // Magic Function/Operator Enum
 typedef enum tagMFO
 {
-    MFOE_MonIota    ,           // 00:  Extended Monadic Iota
-    MFOE_DydIota    ,           // 01:  Extended Dyadic Iota
-    MFOE_MonDnShoe  ,           // 02:  Monadic Down Shoe
-    MFOE_DydTilde   ,           // 03:  Dyadic Tilde
-    MFOE_MonRank    ,           // 04:  Monadic Derived Function from Rank Operator
-    MFOE_DydRank    ,           // 05:  Dyadic  ...
-    MFOE_Conform    ,           // 06:  Conform  (for Rank Operator)
-    MFOE_MonFMT     ,           // 07:  Monadic []FMT
-    MFOE_Box        ,           // 08:  Box (for monadic []FMT)
-    MFOE_MonVR      ,           // 09:  Monadic []VR
-    MFOE_IdnDot     ,           // 0A:  Identity function for Inner Product
-    MFOE_IdnJotDot  ,           // 0B:  Identity function for Outer Product
-    MFOE_LENGTH                 // 0C:  # entries in this enum
+    MFOE_MonIota      ,         // 00:  Extended Monadic Iota
+    MFOE_DydIota      ,         // 01:  Extended Dyadic Iota
+    MFOE_MonDnShoe    ,         // 02:  Monadic Down Shoe
+    MFOE_DydTilde     ,         // 03:  Dyadic Tilde
+    MFOE_MonRank      ,         // 04:  Monadic Derived Function from Rank Operator
+    MFOE_DydRank      ,         // 05:  Dyadic  ...
+    MFOE_Conform      ,         // 06:  Conform  (for Rank Operator)
+    MFOE_MonFMT       ,         // 07:  Monadic []FMT
+    MFOE_Box          ,         // 08:  Box (for monadic []FMT)
+    MFOE_MonVR        ,         // 09:  Monadic []VR
+    MFOE_IdnDot       ,         // 0A:  Identity function for Inner Product
+    MFOE_IdnJotDot    ,         // 0B:  Identity function for Outer Product
+    MFOE_MAD          ,         // 0C:  Multiset Asymmetric Difference
+    MFOE_MSD          ,         // 0D:  Multiset Symmetric Difference
+    MFOE_MU           ,         // 0E:  Multiset Union
+    MFOE_MI           ,         // 0F:  Multiset Intersection
+    MFOE_MIO          ,         // 10:  Multiset Index Of
+    MFOE_MEO          ,         // 11:  Multiset Element Of
+    MFOE_MM           ,         // 12:  Multiset Match
+    MFOE_MLRS         ,         // 13:  Multiset LeftShoe
+    MFOE_MLRSU        ,         // 14:  Multiset LeftShoeUnderbar
+    MFOE_MMUL         ,         // 15:  Multiset Multiplicities
+    MFOE_DydDnShoe    ,         // 16:  Dyadic Down Shoe
+    MFOE_DydUpShoe    ,         // 17:  Dyadic Up Shoe
+    MFOE_DydLRShoeUnd ,         // 18:  Dyadic Left/Right Shoe Underbar
+    MFOE_SD           ,         // 19:  Symmetric Difference
+    MFOE_LENGTH                 // 1A:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -51,9 +65,25 @@ typedef enum tagMFO
 #define MFON_MonVR          L"#MonVR"
 #define MFON_IdnDot         L"#IdnDot"
 #define MFON_IdnJotDot      L"#IdnJotDot"
+#define MFON_MAD            L"#MAD"
+#define MFON_MSD            L"#MSD"
+#define MFON_MU             L"#MU"
+#define MFON_MI             L"#MI"
+#define MFON_MIO            L"#MIO"
+#define MFON_MEO            L"#MEO"
+#define MFON_MM             L"#MM"
+#define MFON_MLRS           L"#MLRS"
+#define MFON_MLRSU          L"#MLRSU"
+#define MFON_MMUL           L"#MMUL"
+#define MFON_DydDnShoe      L"#DydDnShoe"
+#define MFON_DydUpShoe      L"#DydUpShoe"
+#define MFON_DydLRShoeUnd   L"#DydLRShoeUnd"
+#define MFON_SD             L"#SD"
 
 // Magic Function/Operator Variables
+#define $AND            WS_UTF16_UPCARET
 #define $COMMABAR       WS_UTF16_COMMABAR
+#define $COMMENT        WS_UTF16_LAMP
 #define $COMMUTE        WS_UTF16_DIERESISTILDE
 #define $DECODE         WS_UTF16_UPTACK
 #define $DIAMOND        WS_UTF16_DIAMOND
@@ -71,7 +101,13 @@ typedef enum tagMFO
 #define $FORMAT         WS_UTF16_DOWNTACKJOT
 #define $GE             WS_UTF16_RIGHTCARETUNDERBAR
 #define $GOTO           WS_UTF16_RIGHTARROW
+#define $GRADEDN        WS_UTF16_DELSTILE
+#define $GRADEUP        WS_UTF16_DELTASTILE
+#define $GDN            WS_UTF16_DELSTILE
+#define $GUP            WS_UTF16_DELTASTILE
+#define $HASH           WS_UTF16_POUND
 #define $IOTA           WS_UTF16_IOTA
+#define $IOTAUND        WS_UTF16_IOTAUNDERBAR
 #define $IS             WS_UTF16_LEFTARROW
 #define $JOT            WS_UTF16_JOT
 #define $LDC_LT_HORZ    WS_UTF16_LDC_LT_HORZ
@@ -87,8 +123,16 @@ typedef enum tagMFO
 #define $MATCH          WS_UTF16_EQUALUNDERBAR
 #define $MAX            WS_UTF16_UPSTILE
 #define $MIN            WS_UTF16_DOWNSTILE
+#define $MISMATCH       WS_UTF16_NOTEQUALUNDERBAR
+#define $MULTISET       WS_UTF16_DOWNSHOESTILE
+#define $NE             WS_UTF16_NOTEQUAL
 #define $NEG            WS_UTF16_OVERBAR
 #define $NOTEQUAL       WS_UTF16_NOTEQUAL
+#define $OR             WS_UTF16_DOWNCARET
+#define $PARENT         WS_UTF16_POUND WS_UTF16_POUND
+#define $POUND          WS_UTF16_POUND
+#define $PSUBSET        WS_UTF16_LEFTSHOE
+#define $PSUPERSET      WS_UTF16_RIGHTSHOE
 #define $QUAD           WS_UTF16_QUAD
 #define $QUAD_ALX       WS_UTF16_QUAD L"ALX"
 #define $QUAD_DM        WS_UTF16_QUAD L"DM"
@@ -105,6 +149,8 @@ typedef enum tagMFO
 #define $REVERSE        WS_UTF16_CIRCLESTILE
 #define $ROTATE         WS_UTF16_CIRCLESTILE
 #define $RHO            WS_UTF16_RHO
+#define $SUBSET         WS_UTF16_LEFTSHOEUNDERBAR
+#define $SUPERSET       WS_UTF16_RIGHTSHOEUNDERBAR
 #define $TAKE           WS_UTF16_UPARROW
 #define $TILDE          WS_UTF16_TILDE
 #define $TIMES          WS_UTF16_TIMES

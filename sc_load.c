@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1297,8 +1297,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
             } // End FOR
 
             // Clear all array properties
-            lpHeader->PV0        =
-            lpHeader->PV1        = FALSE;
+            lpHeader->PV0   =
+            lpHeader->PV1   =
+            lpHeader->All2s = FALSE;
 
             // Check for array properties
             if (*lpwSrc EQ L'(')
@@ -1320,6 +1321,11 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     {
                         lpHeader->PV1 = TRUE;
                         lpwSrc += strcountof (AP_PV1);
+                    } else
+                    if (strncmpW (lpwSrc, AP_ALL2S, strcountof (AP_ALL2S)) EQ 0)
+                    {
+                        lpHeader->All2s = TRUE;
+                        lpwSrc += strcountof (AP_ALL2S);
                     } else
                     {
                         MBC ("Unknown array property when loading workspace -- Load terminated.");

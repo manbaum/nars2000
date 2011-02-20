@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -861,6 +861,17 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         } // End IF
 
         lstrcatW (wszTemp, L" " AP_PV1);
+    } // End IF
+
+    if (IsAll2s (lpHeader))
+    {
+        if (!bInit)
+        {
+            lstrcatW (wszTemp, L" --");
+            bInit = TRUE;
+        } // End IF
+
+        lstrcatW (wszTemp, L" " AP_ALL2S);
     } // End IF
 
     // If the ptr is valid, ...

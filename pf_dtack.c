@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -360,7 +360,10 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                   uLftCol,          // Loop counter
                   uLftRst,          // Loop counter
                   uRht;             // Loop counter
-    APLINT        iLftRow;          // Loop counter
+    APLINT        iLftRow,          // Loop counter
+                  uLft,             // ...
+                  uRes,             // ...
+                  aplIntRht;        // Temporary integer
     LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
@@ -394,6 +397,10 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     if (IsSimpleFlt (aplTypeLft)
      || IsSimpleFlt (aplTypeRht))
         aplTypeRes = ARRAY_FLOAT;
+    else
+    if (IsAll2s ((LPVARARRAY_HEADER) lpMemLft)
+     || (lpMemLft EQ NULL && aplLongestLft EQ 2))
+        aplTypeRes = ARRAY_BOOL;
     else
         aplTypeRes = ARRAY_INT;
 
@@ -483,6 +490,54 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     // Skip over the dimensions to the data
     lpMemRes = lpMemDimRes;
 
+    // If the result is Boolean, ...
+    if (IsSimpleBool (aplTypeRes))
+    {
+        // Trundle through the right arg
+        for (uRht = 0; uRht < aplNELMRht; uRht++)
+        {
+            // Get the next right arg value
+            if (hGlbRht)
+                aplLongestRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
+
+            // The left arg is treated as a three-dimensional array of shape
+            //   aplRestLft aplRowsLft aplColsLft
+
+            // Trundle through the left arg remaining dimensions & cols
+            for (uLftRst = 0; uLftRst < aplRestLft; uLftRst++)
+            for (uLftCol = 0; uLftCol < aplColsLft; uLftCol++)
+            {
+                // Initialize the right arg value
+                aplIntRht = aplLongestRht;
+
+                // Trundle through the left arg rows from back to front
+                for (iLftRow = aplRowsLft - 1; iLftRow >= 0; iLftRow--)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Get left arg index
+                    uLft = 1 * uLftCol + aplColsLft * (1 * iLftRow + aplRowsLft * uLftRst);
+
+                    // Get result index
+                    uRes = 1 * uRht + aplNELMRht * uLft;
+
+                    // Calculate the result item
+                    if (aplIntRht & BIT0)
+                        // Save in the result
+                        ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= BIT0 << (MASKLOG2NBIB & (UINT) uRes);
+
+                    // Subtract from the right arg item and shift right
+                    aplIntRht >>= 1;
+
+                    // If the right arg is zero, we're finished with this row
+                    if (aplIntRht EQ 0)
+                        break;
+                } // End FOR
+            } // End FOR/FOR
+        } //End FOR
+    }else
     // Trundle through the right arg
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
@@ -496,12 +551,11 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
         // The left arg is treated as a three-dimensional array of shape
         //   aplRestLft aplRowsLft aplColsLft
 
-        // Trundle through the left arg remaning dimensions & cols
+        // Trundle through the left arg remaining dimensions & cols
         for (uLftRst = 0; uLftRst < aplRestLft; uLftRst++)
         for (uLftCol = 0; uLftCol < aplColsLft; uLftCol++)
         {
             APLFLOAT aplFloatRht;
-            APLINT   aplIntRht;
 
             if (IsSimpleFlt (aplTypeRes))
             {
@@ -516,9 +570,6 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
             // Trundle through the left arg rows from back to front
             for (iLftRow = aplRowsLft - 1; iLftRow >= 0; iLftRow--)
             {
-                APLUINT  uLft,
-                         uRes;
-
                 // Check for Ctrl-Break
                 if (CheckCtrlBreak (*lpbCtrlBreak))
                     goto ERROR_EXIT;
@@ -529,6 +580,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                 // Get result index
                 uRes = 1 * uRht + aplNELMRht * uLft;
 
+                // If the result is simple float, ...
                 if (IsSimpleFlt (aplTypeRes))
                 {
                     APLFLOAT aplFloatLft,
@@ -549,6 +601,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                     // Subtract from the right arg item
                     aplFloatRht = (aplFloatRht - aplFloatRes) / aplFloatLft;
                 } else
+                // Otherwise it's simple integer
                 {
                     APLINT aplIntLft,
                            aplIntRes;
@@ -568,7 +621,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                     // If the modulus is zero, we're finished with this row
                     if (aplIntLft EQ 0)
                         break;
-                    // Subtract from the right arg item
+                    // Subtract from the right arg item and shift right
                     aplIntRht = (aplIntRht - aplIntRes) / aplIntLft;
                 } // End IF/ELSE
             } // End FOR

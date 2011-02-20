@@ -376,25 +376,26 @@ NORMAL_EXIT:
 #endif
 
 LPPL_YYSTYPE PrimFnDydRho_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                    // Ptr to left arg token
+     LPTOKEN lptkFunc,                      // Ptr to function token
+     LPTOKEN lptkRhtArg,                    // Ptr to right arg token
+     LPTOKEN lptkAxis)                      // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht,        // Right arg storage type
-                 aplTypeRes;        // Result    ...
-    APLNELM      aplNELMRht,        // Right arg NELM
-                 aplNELMRes;        // Result ...
-    APLRANK      aplRankRes;        // Result rank
-    HGLOBAL      hGlbRes = NULL,    // Handle of result's global memory
-                 hSymGlbProto;      // ...                prototype
-    LPVOID       lpMemRes = NULL;   // Ptr to result's global memory
-    UBOOL        bRet = TRUE,       // TRUE iff result is valid
-                 bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
-                 bPrototype = FALSE; // TRUE iff we're to generate a prototype
-    APLUINT      ByteRes;           // # bytes in the result
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    APLSTYPE          aplTypeRht,           // Right arg storage type
+                      aplTypeRes;           // Result    ...
+    APLNELM           aplNELMRht,           // Right arg NELM
+                      aplNELMRes;           // Result ...
+    APLRANK           aplRankRes;           // Result rank
+    HGLOBAL           hGlbRes = NULL,       // Handle of result's global memory
+                      hSymGlbProto;         // ...                prototype
+    LPVOID            lpMemRes = NULL;      // Ptr to result's global memory
+    LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result global memory header
+    UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
+                      bPrototype = FALSE;   // TRUE iff we're to generate a prototype
+    APLUINT           ByteRes;              // # bytes in the result
+    LPPL_YYSTYPE      lpYYRes;              // Ptr to the result
 
     //***************************************************************
     // Validate the left arg token
@@ -551,7 +552,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -584,7 +585,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
-        // Get the first value from the right arg
+        // Get the first (and only) value from the right arg
         GetFirstValueToken (lptkRhtArg, // Ptr to right arg token
                            &lpAPA->Off, // Ptr to integer result
                             NULL,       // Ptr to float ...
@@ -594,6 +595,9 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                             NULL,       // Ptr to ...immediate type ...
                             NULL);      // Ptr to array type ...
         lpAPA->Mul = 0;
+
+        // Save the All2s state
+        lpMemHdrRes->All2s = (lpAPA->Off EQ 2);
 #undef  lpAPA
     } else
     //***************************************************************

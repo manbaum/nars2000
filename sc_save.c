@@ -1611,6 +1611,14 @@ LPAPLCHAR AppendArrayHeader
             *lpaplChar++ = L' ';
         } // End IF
 
+        // Check for array property:  All2s
+        if (lpHeader->All2s)
+        {
+            lstrcpyW (lpaplChar, AP_ALL2S);
+            lpaplChar += strcountof (AP_ALL2S);
+            *lpaplChar++ = L' ';
+        } // End IF
+
         if (lpaplChar[-1] NE L'(')
         {
             // Append trailing separator

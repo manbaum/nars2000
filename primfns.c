@@ -1700,9 +1700,10 @@ HGLOBAL CopyArray_EM
                 // Set the RefCnt
                 lpHeader->RefCnt = 1;
 
-                // Clear the PermVec bits
-                lpHeader->PV0 =
-                lpHeader->PV1 = FALSE;
+                // Clear all array properties
+                lpHeader->PV0   =
+                lpHeader->PV1   =
+                lpHeader->All2s = FALSE;
 
                 // Recurse through the array, copying all the global ptrs
                 aplType = lpHeader->ArrType;

@@ -3080,21 +3080,23 @@ UBOOL MergeNumbers
      LPUBOOL       lpbRet)              // Ptr to TRUE iff the result is valid
 
 {
-    LPTOKEN    lptkPrv;                 // Ptr to previous token
-    APLSTYPE   aplTypePrv,              // Previous token storage type
-               aplTypeNew,              // New            ...
-               aplTypeRes;              // Result         ...
-    APLNELM    aplNELMPrv;              // Previous token NELM
-    APLRANK    aplRankPrv;              // Previous token rank
-    APLUINT    ByteRes,                 // # bytes in the result
-               uPrv;                    // Loop counter
-    HGLOBAL    hGlbRes,                 // Result global memory handle
-               hGlbPrv = NULL;          // Previous token ...
-    LPVOID     lpMemRes,                // Ptr to result global memory
-               lpMemPrv = NULL;         // Ptr to previous token ...
-    APLLONGEST aplLongestPrv;           // Previous token immediate value
-    UINT       uBitMask;                // Bit mask for looping through Booleans
-    UBOOL      bMerge = FALSE;          // TRUE iff we merged with the previous token
+    LPTOKEN           lptkPrv;          // Ptr to previous token
+    APLSTYPE          aplTypePrv,       // Previous token storage type
+                      aplTypeNew,       // New            ...
+                      aplTypeRes;       // Result         ...
+    APLNELM           aplNELMPrv;       // Previous token NELM
+    APLRANK           aplRankPrv;       // Previous token rank
+    APLUINT           ByteRes,          // # bytes in the result
+                      uPrv;             // Loop counter
+    HGLOBAL           hGlbRes,          // Result global memory handle
+                      hGlbPrv = NULL;   // Previous token ...
+    LPVOID            lpMemRes,         // Ptr to result global memory
+                      lpMemPrv = NULL;  // Ptr to previous token ...
+    LPVARARRAY_HEADER lpMemHdrRes,      // Ptr to result global memory header
+                      lpMemHdrPrv;      // Ptr to previous ...
+    APLLONGEST        aplLongestPrv;    // Previous token immediate value
+    UINT              uBitMask;         // Bit mask for looping through Booleans
+    UBOOL             bMerge = FALSE;   // TRUE iff we merged with the previous token
 
     // Get a ptr to the previous token (if any)
     lptkPrv = &lptkLocalVars->lptkNext[-1];
@@ -3209,6 +3211,9 @@ UBOOL MergeNumbers
             // Lock the previous token and get a ptr to it
             aplLongestPrv = GetGlbPtrs_LOCK (lptkPrv, &hGlbPrv, &lpMemPrv);
 
+            // Save the ptr to the header
+            lpMemHdrPrv = lpMemPrv;
+
             // Get the new storage type
             // Split cases based upon the storage type
             switch (lppnLocalVars->chType)
@@ -3253,7 +3258,7 @@ UBOOL MergeNumbers
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemHdrRes = lpMemRes = MyGlobalLock (hGlbRes);
 
             // Fill in the header
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
@@ -3334,6 +3339,10 @@ UBOOL MergeNumbers
                     // Save the new value as an integer
                     ((LPAPLINT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplInteger;
 
+                    // If the previous value(s) are 2s, ...
+                    if (IsAll2s (lpMemHdrPrv)
+                     || (lpMemHdrPrv EQ NULL && aplLongestPrv EQ 2))
+                        lpMemHdrRes->All2s = (lppnLocalVars->aplInteger EQ 2);
                     break;
 
                 case ARRAY_FLOAT:

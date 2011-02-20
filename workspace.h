@@ -69,6 +69,7 @@
 // Array Properties
 #define AP_PV0                  L"PV0"
 #define AP_PV1                  L"PV1"
+#define AP_ALL2S                L"All2s"
 
 
 typedef struct tagSAVEDWSGLBVARPARM

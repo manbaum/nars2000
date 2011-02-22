@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,6 +63,16 @@ PRIMSPEC PrimSpecStile = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydStileFisIvI, -- Can't happen w/Stile
     &PrimFnDydStileFisFvF,
+
+    NULL,   // &PrimFnMonStileB64isB64, -- Can't happen w/Stile
+    NULL,   // &PrimFnMonStileB32isB32, -- Can't happen w/Stile
+    NULL,   // &PrimFnMonStileB16isB16, -- Can't happen w/Stile
+    NULL,   // &PrimFnMonStileB08isB08, -- Can't happen w/Stile
+
+    &PrimFnDydLeftCaretB64isB64vB64,
+    &PrimFnDydLeftCaretB32isB32vB32,
+    &PrimFnDydLeftCaretB16isB16vB16,
+    &PrimFnDydLeftCaretB08isB08vB08,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecStile};

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -134,78 +134,86 @@ typedef UBOOL APARESULT_DYD
 typedef APARESULT_DYD *LPAPARESULT_DYD;
 
 
-typedef APLBOOL  BISB   (APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISI   (APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISF   (APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISC   (APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISI   (APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISF   (APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISC   (APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISI   (APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISF   (APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISC   (APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISB         (APLBOOL           , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISI         (APLINT            , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISF         (APLFLOAT          , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISC         (APLCHAR           , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISI         (APLINT            , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISF         (APLFLOAT          , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISC         (APLCHAR           , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISI         (APLINT            , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISF         (APLFLOAT          , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISC         (APLCHAR           , struct tagPRIMSPEC *lpPrimSpec);
 
+typedef APLB64   B64ISB64     (APLB64            , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLB32   B32ISB32     (APLB32            , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLB16   B16ISB16     (APLB16            , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLB08   B08ISB08     (APLB08            , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLBOOL  BISBVB (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISBVI (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISBVF (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISBVC (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISBVB       (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISBVI       (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISBVF       (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISBVC       (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLBOOL  BISIVB (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISIVI (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISIVF (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISIVC (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISIVB       (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISIVI       (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISIVF       (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISIVC       (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLBOOL  BISFVB (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISFVI (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISFVF (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISFVC (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISFVB       (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISFVI       (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISFVF       (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISFVC       (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLBOOL  BISCVB (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISCVI (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISCVF (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISCVC (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISCVB       (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISCVI       (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISCVF       (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLBOOL  BISCVC       (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLINT   IISBVB (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISBVI (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISBVF (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISBVC (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISBVB       (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISBVI       (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISBVF       (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISBVC       (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLINT   IISIVB (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISIVI (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISIVF (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISIVC (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISIVB       (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISIVI       (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISIVF       (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISIVC       (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLINT   IISFVB (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISFVI (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISFVF (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISFVC (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISFVB       (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISFVI       (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISFVF       (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISFVC       (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLINT   IISCVB (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISCVI (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISCVF (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISCVC (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISCVB       (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISCVI       (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISCVF       (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLINT   IISCVC       (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLFLOAT FISBVB (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISBVI (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISBVF (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISBVC (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISBVB       (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISBVI       (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISBVF       (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISBVC       (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLFLOAT FISIVB (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISIVI (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISIVF (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISIVC (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISIVB       (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISIVI       (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISIVF       (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISIVC       (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLFLOAT FISFVB (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISFVI (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISFVF (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISFVC (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISFVB       (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISFVI       (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISFVF       (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISFVC       (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
-typedef APLFLOAT FISCVB (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISCVI (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISCVF (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISCVC (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISCVB       (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISCVI       (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISCVF       (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
+typedef APLFLOAT FISCVC       (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
+typedef APLB64   B64ISB64VB64 (APLB64  , APLB64  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLB32   B32ISB32VB32 (APLB32  , APLB32  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLB16   B16ISB16VB16 (APLB16  , APLB16  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLB08   B08ISB08VB08 (APLB08  , APLB08  , struct tagPRIMSPEC *lpPrimSpec);
 
 // General structure passed to all primitive functions
 typedef struct tagPRIMSPEC
@@ -244,6 +252,17 @@ typedef struct tagPRIMSPEC
 ////FISBVB             *FisBvB;             // Handled via type promotion (to FisFvF)
     FISIVI             *FisIvI;             // Dyadic F {is} I vs I
     FISFVF             *FisFvF;             // ...           F vs F
+
+    B64ISB64           *B64isB64;           // Monadic B64 {is} B64
+    B32ISB32           *B32isB32;           // Monadic B32 {is} B32
+    B16ISB16           *B16isB16;           // Monadic B16 {is} B16
+    B08ISB08           *B08isB08;           // Monadic B08 {is} B08
+
+    B64ISB64VB64       *B64isB64vB64;       // Dyadic B64 {is} B64 v B64
+    B32ISB32VB32       *B32isB32vB32;       // Dyadic B32 {is} B32 v B32
+    B16ISB16VB16       *B16isB16vB16;       // Dyadic B16 {is} B16 v B16
+    B08ISB08VB08       *B08isB08vB08;       // Dyadic B08 {is} B08 v B08
+
     APLUINT             QuadRL;             // []RL for atomicity
 } PRIMSPEC, *LPPRIMSPEC;
 

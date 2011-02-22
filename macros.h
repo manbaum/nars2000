@@ -186,6 +186,9 @@
 // Define macro for detecting simple APA array type
 #define IsSimpleAPA(ArrType)            ((ArrType) EQ ARRAY_APA)
 
+// Define macro for detecting Boolean APAs
+#define IsBooleanAPA(lpAPA)             (lpAPA && (lpAPA->Mul EQ 0) && IsBooleanValue (lpAPA->Off))
+
 // Define macro for detecting simple float array type
 #define IsSimpleFlt(ArrType)            ((ArrType) EQ ARRAY_FLOAT)
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,6 +61,16 @@ PRIMSPEC PrimSpecDownCaretTilde = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydDownCaretTildeFisIvI, -- Can't happen w/DownCaretTilde
     NULL,   // &PrimFnDydDownCaretTildeFisFvF, -- Can't happen w/DownCaretTilde
+
+    NULL,   // &PrimFnMonDownCaretTildeB64isB64, -- Can't happen w/DownCaretTilde
+    NULL,   // &PrimFnMonDownCaretTildeB32isB32, -- Can't happen w/DownCaretTilde
+    NULL,   // &PrimFnMonDownCaretTildeB16isB16, -- Can't happen w/DownCaretTilde
+    NULL,   // &PrimFnMonDownCaretTildeB08isB08, -- Can't happen w/DownCaretTilde
+
+    &PrimFnDydDownCaretTildeB64isB64vB64,
+    &PrimFnDydDownCaretTildeB32isB32vB32,
+    &PrimFnDydDownCaretTildeB16isB16vB16,
+    &PrimFnDydDownCaretTildeB08isB08vB08,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownCaretTilde};
@@ -149,6 +159,70 @@ APLBOOL PrimFnDydDownCaretTildeBisBvB
 {
     return !(aplBooleanLft | aplBooleanRht);
 } // End PrimFnDydDownCaretTildeBisBvB
+
+
+//***************************************************************************
+//  $PrimFnDydDownCaretTildeB64isB64vB64
+//
+//  Primitive scalar function dyadic DownCaretTilde:  B64 {is} B64 fn B64
+//***************************************************************************
+
+APLB64 PrimFnDydDownCaretTildeB64isB64vB64
+    (APLB64     aplBooleanLft,
+     APLB64     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~(aplBooleanLft | aplBooleanRht);
+} // End PrimFnDydDownCaretTildeB64isB64vB64
+
+
+//***************************************************************************
+//  $PrimFnDydDownCaretTildeB32isB32vB32
+//
+//  Primitive scalar function dyadic DownCaretTilde:  B32 {is} B32 fn B32
+//***************************************************************************
+
+APLB32 PrimFnDydDownCaretTildeB32isB32vB32
+    (APLB32     aplBooleanLft,
+     APLB32     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~(aplBooleanLft | aplBooleanRht);
+} // End PrimFnDydDownCaretTildeB32isB32vB32
+
+
+//***************************************************************************
+//  $PrimFnDydDownCaretTildeB16isB16vB16
+//
+//  Primitive scalar function dyadic DownCaretTilde:  B16 {is} B16 fn B16
+//***************************************************************************
+
+APLB16 PrimFnDydDownCaretTildeB16isB16vB16
+    (APLB16     aplBooleanLft,
+     APLB16     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~(aplBooleanLft | aplBooleanRht);
+} // End PrimFnDydDownCaretTildeB16isB16vB16
+
+
+//***************************************************************************
+//  $PrimFnDydDownCaretTildeB08isB08vB08
+//
+//  Primitive scalar function dyadic DownCaretTilde:  B08 {is} B08 fn B08
+//***************************************************************************
+
+APLB08 PrimFnDydDownCaretTildeB08isB08vB08
+    (APLB08     aplBooleanLft,
+     APLB08     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~(aplBooleanLft | aplBooleanRht);
+} // End PrimFnDydDownCaretTildeB08isB08vB08
 
 
 //***************************************************************************

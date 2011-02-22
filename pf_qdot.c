@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,6 +70,16 @@ PRIMSPEC PrimSpecQuoteDot =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydQuoteDotFisIvI,
     &PrimFnDydQuoteDotFisFvF,
+
+    NULL,   // &PrimFnMonQuoteDotB64isB64, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnMonQuoteDotB32isB32, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnMonQuoteDotB16isB16, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnMonQuoteDotB08isB08, -- Can't happen w/QuoteDot
+
+    &PrimFnDydLeftCaretUnderbarB64isB64vB64,
+    &PrimFnDydLeftCaretUnderbarB32isB32vB32,
+    &PrimFnDydLeftCaretUnderbarB16isB16vB16,
+    &PrimFnDydLeftCaretUnderbarB08isB08vB08,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuoteDot};

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1406,9 +1406,9 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
     // Check for Boolean result
     if ((IsSimpleBool (aplTypeLft)
-      && IsBooleanAPA (lptkRhtArg))
+      && IsTknBooleanAPA (lptkRhtArg))
      || (IsSimpleBool (aplTypeRht)
-      && IsBooleanAPA (lptkLftArg)))
+      && IsTknBooleanAPA (lptkLftArg)))
         aplTypeRes = ARRAY_BOOL;
 
     // Check for APA result

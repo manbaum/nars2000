@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,6 +62,16 @@ PRIMSPEC PrimSpecRightCaretUnderbar = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydRightCaretUnderbarFisIvI, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnDydRightCaretUnderbarFisFvF, -- Can't happen w/RightCaretUnderbar
+
+    NULL,   // &PrimFnMonRightCaretUnderbarB64isB64, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarB32isB32, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarB16isB16, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarB08isB08, -- Can't happen w/RightCaretUnderbar
+
+    &PrimFnDydRightCaretUnderbarB64isB64vB64,
+    &PrimFnDydRightCaretUnderbarB32isB32vB32,
+    &PrimFnDydRightCaretUnderbarB16isB16vB16,
+    &PrimFnDydRightCaretUnderbarB08isB08vB08,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecRightCaretUnderbar};
@@ -150,6 +160,70 @@ APLBOOL PrimFnDydRightCaretUnderbarBisBvB
 {
     return (aplBooleanLft >= aplBooleanRht);
 } // End PrimFnDydRightCaretUnderbarBisBvB
+
+
+//***************************************************************************
+//  $PrimFnDydRightCaretUnderbarB64isB64vB64
+//
+//  Primitive scalar function dyadic RightCaretUnderbar:  B64 {is} B64 fn B64
+//***************************************************************************
+
+APLB64 PrimFnDydRightCaretUnderbarB64isB64vB64
+    (APLB64     aplBooleanLft,
+     APLB64     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~((~aplBooleanLft) & aplBooleanRht);
+} // End PrimFnDydRightCaretUnderbarB64isB64vB64
+
+
+//***************************************************************************
+//  $PrimFnDydRightCaretUnderbarB32isB32vB32
+//
+//  Primitive scalar function dyadic RightCaretUnderbar:  B32 {is} B32 fn B32
+//***************************************************************************
+
+APLB32 PrimFnDydRightCaretUnderbarB32isB32vB32
+    (APLB32     aplBooleanLft,
+     APLB32     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~((~aplBooleanLft) & aplBooleanRht);
+} // End PrimFnDydRightCaretUnderbarB32isB32vB32
+
+
+//***************************************************************************
+//  $PrimFnDydRightCaretUnderbarB16isB16vB16
+//
+//  Primitive scalar function dyadic RightCaretUnderbar:  B16 {is} B16 fn B16
+//***************************************************************************
+
+APLB16 PrimFnDydRightCaretUnderbarB16isB16vB16
+    (APLB16     aplBooleanLft,
+     APLB16     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~((~aplBooleanLft) & aplBooleanRht);
+} // End PrimFnDydRightCaretUnderbarB16isB16vB16
+
+
+//***************************************************************************
+//  $PrimFnDydRightCaretUnderbarB08isB08vB08
+//
+//  Primitive scalar function dyadic RightCaretUnderbar:  B08 {is} B08 fn B08
+//***************************************************************************
+
+APLB08 PrimFnDydRightCaretUnderbarB08isB08vB08
+    (APLB08     aplBooleanLft,
+     APLB08     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~((~aplBooleanLft) & aplBooleanRht);
+} // End PrimFnDydRightCaretUnderbarB08isB08vB08
 
 
 //***************************************************************************

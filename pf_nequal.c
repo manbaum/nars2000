@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,6 +61,16 @@ PRIMSPEC PrimSpecNotEqual = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydNotEqualFisIvI, -- Can't happen w/NotEqual
     NULL,   // &PrimFnDydNotEqualFisFvF, -- Can't happen w/NotEqual
+
+    NULL,   // &PrimFnMonNotEqualB64isB64, -- Can't happen w/NotEqual
+    NULL,   // &PrimFnMonNotEqualB32isB32, -- Can't happen w/NotEqual
+    NULL,   // &PrimFnMonNotEqualB16isB16, -- Can't happen w/NotEqual
+    NULL,   // &PrimFnMonNotEqualB08isB08, -- Can't happen w/NotEqual
+
+    &PrimFnDydNotEqualB64isB64vB64,
+    &PrimFnDydNotEqualB32isB32vB32,
+    &PrimFnDydNotEqualB16isB16vB16,
+    &PrimFnDydNotEqualB08isB08vB08,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecNotEqual};
@@ -149,6 +159,70 @@ APLBOOL PrimFnDydNotEqualBisBvB
 {
     return (aplBooleanLft NE aplBooleanRht);
 } // End PrimFnDydNotEqualBisBvB
+
+
+//***************************************************************************
+//  $PrimFnDydNotEqualB64isB64vB64
+//
+//  Primitive scalar function dyadic NotEqual:  B64 {is} B64 fn B64
+//***************************************************************************
+
+APLB64 PrimFnDydNotEqualB64isB64vB64
+    (APLB64     aplBooleanLft,
+     APLB64     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return (aplBooleanLft ^ aplBooleanRht);
+} // End PrimFnDydNotEqualB64isB64vB64
+
+
+//***************************************************************************
+//  $PrimFnDydNotEqualB32isB32vB32
+//
+//  Primitive scalar function dyadic NotEqual:  B32 {is} B32 fn B32
+//***************************************************************************
+
+APLB32 PrimFnDydNotEqualB32isB32vB32
+    (APLB32     aplBooleanLft,
+     APLB32     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return (aplBooleanLft ^ aplBooleanRht);
+} // End PrimFnDydNotEqualB32isB32vB32
+
+
+//***************************************************************************
+//  $PrimFnDydNotEqualB16isB16vB16
+//
+//  Primitive scalar function dyadic NotEqual:  B16 {is} B16 fn B16
+//***************************************************************************
+
+APLB16 PrimFnDydNotEqualB16isB16vB16
+    (APLB16     aplBooleanLft,
+     APLB16     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return (aplBooleanLft ^ aplBooleanRht);
+} // End PrimFnDydNotEqualB16isB16vB16
+
+
+//***************************************************************************
+//  $PrimFnDydNotEqualB08isB08vB08
+//
+//  Primitive scalar function dyadic NotEqual:  B08 {is} B08 fn B08
+//***************************************************************************
+
+APLB08 PrimFnDydNotEqualB08isB08vB08
+    (APLB08     aplBooleanLft,
+     APLB08     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return (aplBooleanLft ^ aplBooleanRht);
+} // End PrimFnDydNotEqualB08isB08vB08
 
 
 //***************************************************************************

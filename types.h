@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,11 @@ typedef struct tagSYMENTRY *APLHETERO;  // ...         ...           a HETERO ar
 typedef struct tagTOKEN APLLIST;        // ...                       a list
 typedef UCHAR       APLSTYPE;           // Storage type (see ARRAY_TYPES)
 
+typedef ULONGLONG   APLB64;             // Boolean 64 bits
+typedef uint32_t    APLB32;             // ...     32 ...
+typedef uint16_t    APLB16;             // ...     16 ...
+typedef uint8_t     APLB08;             // ...      8 ...
+
 #if defined (_WIN64)
   typedef          __int64 APLI3264;    // Widest native signed value
   typedef unsigned __int64 APLU3264;    // ...           unsigned ...
@@ -76,6 +81,11 @@ typedef APLNESTED * LPAPLNESTED;
 typedef APLLIST   * LPAPLLIST;
 typedef APLFLOAT  * LPAPLFLOAT;
 typedef APLHETERO * LPAPLHETERO;
+
+typedef APLB64    * LPAPLB64;
+typedef APLB32    * LPAPLB32;
+typedef APLB16    * LPAPLB16;
+typedef APLB08    * LPAPLB08;
 
 typedef APLLONGEST* LPAPLLONGEST;
 

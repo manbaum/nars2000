@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,6 +64,16 @@ PRIMSPEC PrimSpecStar =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydStarFisIvI,
     &PrimFnDydStarFisFvF,
+
+    NULL,   // &PrimFnMonStarB64isB64, -- Can't happen w/Star
+    NULL,   // &PrimFnMonStarB32isB32, -- Can't happen w/Star
+    NULL,   // &PrimFnMonStarB16isB16, -- Can't happen w/Star
+    NULL,   // &PrimFnMonStarB08isB08, -- Can't happen w/Star
+
+    &PrimFnDydStarB64isB64vB64,
+    &PrimFnDydStarB32isB32vB32,
+    &PrimFnDydStarB16isB16vB16,
+    &PrimFnDydStarB08isB08vB08,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecStar};
@@ -230,6 +240,146 @@ APLBOOL PrimFnDydStarBisBvB
 
     return (aplBooleanLft >= aplBooleanRht);
 } // End PrimFnDydStarBisBvB
+
+
+//***************************************************************************
+//  $PrimFnDydStarB64isB64vB64
+//
+//  Primitive scalar function dyadic Star:  B64 {is} B64 fn B64
+//***************************************************************************
+
+APLB64 PrimFnDydStarB64isB64vB64
+    (APLB64     aplBooleanLft,
+     APLB64     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLFLOAT aplFloatRes;
+
+    // Check for indeterminates:  0 * 0
+    if (aplBooleanLft EQ 0
+     && aplBooleanRht EQ 0)
+    {
+        // See what the []IC oracle has to say
+        aplFloatRes = TranslateQuadICIndex (ICNDX_0EXP0);
+
+        // If the result is Boolean
+        if (aplFloatRes EQ 0)
+            return 0x0000000000000000;
+        else
+        if (aplFloatRes EQ 1)
+            return 0xFFFFFFFFFFFFFFFF;
+        else
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    } // End IF
+
+    return ~((~aplBooleanLft) & aplBooleanRht);
+} // End PrimFnDydStarB64isB64vB64
+
+
+//***************************************************************************
+//  $PrimFnDydStarB32isB32vB32
+//
+//  Primitive scalar function dyadic Star:  B32 {is} B32 fn B32
+//***************************************************************************
+
+APLB32 PrimFnDydStarB32isB32vB32
+    (APLB32     aplBooleanLft,
+     APLB32     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLFLOAT aplFloatRes;
+
+    // Check for indeterminates:  0 * 0
+    if (aplBooleanLft EQ 0
+     && aplBooleanRht EQ 0)
+    {
+        // See what the []IC oracle has to say
+        aplFloatRes = TranslateQuadICIndex (ICNDX_0EXP0);
+
+        // If the result is Boolean
+        if (aplFloatRes EQ 0)
+            return 0x00000000;
+        else
+        if (aplFloatRes EQ 1)
+            return 0xFFFFFFFF;
+        else
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    } // End IF
+
+    return ~((~aplBooleanLft) & aplBooleanRht);
+} // End PrimFnDydStarB32isB32vB32
+
+
+//***************************************************************************
+//  $PrimFnDydStarB16isB16vB16
+//
+//  Primitive scalar function dyadic Star:  B16 {is} B16 fn B16
+//***************************************************************************
+
+APLB16 PrimFnDydStarB16isB16vB16
+    (APLB16     aplBooleanLft,
+     APLB16     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLFLOAT aplFloatRes;
+
+    // Check for indeterminates:  0 * 0
+    if (aplBooleanLft EQ 0
+     && aplBooleanRht EQ 0)
+    {
+        // See what the []IC oracle has to say
+        aplFloatRes = TranslateQuadICIndex (ICNDX_0EXP0);
+
+        // If the result is Boolean
+        if (aplFloatRes EQ 0)
+            return 0x0000;
+        else
+        if (aplFloatRes EQ 1)
+            return 0xFFFF;
+        else
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    } // End IF
+
+    return ~((~aplBooleanLft) & aplBooleanRht);
+} // End PrimFnDydStarB16isB16vB16
+
+
+//***************************************************************************
+//  $PrimFnDydStarB08isB08vB08
+//
+//  Primitive scalar function dyadic Star:  B08 {is} B08 fn B08
+//***************************************************************************
+
+APLB08 PrimFnDydStarB08isB08vB08
+    (APLB08     aplBooleanLft,
+     APLB08     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLFLOAT aplFloatRes;
+
+    // Check for indeterminates:  0 * 0
+    if (aplBooleanLft EQ 0
+     && aplBooleanRht EQ 0)
+    {
+        // See what the []IC oracle has to say
+        aplFloatRes = TranslateQuadICIndex (ICNDX_0EXP0);
+
+        // If the result is Boolean
+        if (aplFloatRes EQ 0)
+            return 0x00;
+        else
+        if (aplFloatRes EQ 1)
+            return 0xFF;
+        else
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    } // End IF
+
+    return ~((~aplBooleanLft) & aplBooleanRht);
+} // End PrimFnDydStarB08isB08vB08
 
 
 //***************************************************************************

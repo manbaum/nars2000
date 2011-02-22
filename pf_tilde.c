@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,6 +62,16 @@ PRIMSPEC PrimSpecTilde =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydTildeFisIvI, -- Can't happen w/Tilde
     NULL,   // &PrimFnDydTildeFisFvF, -- Can't happen w/Tilde
+
+    &PrimFnMonTildeB64isB64,
+    &PrimFnMonTildeB32isB32,
+    &PrimFnMonTildeB16isB16,
+    &PrimFnMonTildeB08isB08,
+
+    NULL,   // &PrimFnDydTildeB64isB64vB64, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeB32isB32vB32, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeB16isB16vB16, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeB08isB08vB08, -- Can't happen w/Tilde
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecTilde};
@@ -269,6 +279,66 @@ APLBOOL PrimFnMonTildeBisB
 
 
 //***************************************************************************
+//  $PrimFnMonTildeB64isB64
+//
+//  Primitive scalar function monadic Tilde:  B64 {is} fn B64
+//***************************************************************************
+
+APLB64 PrimFnMonTildeB64isB64
+    (APLB64     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~aplBooleanRht;
+} // End PrimFnMonTildeB64isB64
+
+
+//***************************************************************************
+//  $PrimFnMonTildeB32isB32
+//
+//  Primitive scalar function monadic Tilde:  B32 {is} fn B32
+//***************************************************************************
+
+APLB32 PrimFnMonTildeB32isB32
+    (APLB32     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~aplBooleanRht;
+} // End PrimFnMonTildeB32isB32
+
+
+//***************************************************************************
+//  $PrimFnMonTildeB16isB16
+//
+//  Primitive scalar function monadic Tilde:  B16 {is} fn B16
+//***************************************************************************
+
+APLB16 PrimFnMonTildeB16isB16
+    (APLB16     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~aplBooleanRht;
+} // End PrimFnMonTildeB16isB16
+
+
+//***************************************************************************
+//  $PrimFnMonTildeB08isB08
+//
+//  Primitive scalar function monadic Tilde:  B08 {is} fn B08
+//***************************************************************************
+
+APLB08 PrimFnMonTildeB08isB08
+    (APLB08     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return ~aplBooleanRht;
+} // End PrimFnMonTildeB08isB08
+
+
+//***************************************************************************
 //  $PrimFnMonTildeBisI
 //
 //  Primitive scalar function monadic Tilde:  B {is} fn I
@@ -393,20 +463,20 @@ NORMAL_EXIT:
 //  Return the elements in L not in R.
 //***************************************************************************
 
-static APLCHAR Header[] =
+static APLCHAR DydHeader[] =
   L"Z" $IS L"L " MFON_DydTilde L" R";
 
-static APLCHAR Line1[] =
+static APLCHAR DydLine1[] =
   L"Z" $IS L"(~L" $EPSILON L"R)/L";
 
-static LPAPLCHAR Body[] =
-{Line1,
+static LPAPLCHAR DydBody[] =
+{DydLine1,
 };
 
 MAGIC_FCNOPR MFO_DydTilde =
-{Header,
- Body,
- countof (Body),
+{DydHeader,
+ DydBody,
+ countof (DydBody),
 };
 
 

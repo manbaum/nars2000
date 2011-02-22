@@ -1499,7 +1499,9 @@ HGLOBAL PrimFnMonGlb_EM
                   hGlbSub;          // Subarray ...
     APLSTYPE      aplTypeRht,       // Right arg storage type
                   aplTypeRes;       // Result    ...
-    APLNELM       aplNELMRht;       // # elements in the array
+    APLNELM       aplNELMRht,       // # elements in the array
+                  aplNELMTmp,       // Temporary NELM
+                  aplNELMRem;       // Remaining NELM
     APLRANK       aplRankRht;       // The rank of the array
     APLINT        uRes,             // Result loop counter
                   apaOffRht,        // Right arg APA offset
@@ -1677,10 +1679,75 @@ RESTART_EXCEPTION:
                 switch (aplTypeRht)
                 {
                     case ARRAY_BOOL:    // Res = BOOL, Rht = BOOL
-                        // ***FIXME*** -- Optimize by chunking
+                        // Initialize # remaining NELM
+                        aplNELMRem = aplNELMRht;
+
+                        // Check for optimized chunking
+                        if (lpPrimSpec->B64isB64)
+                        {
+                            // Calculate the # 64-bit chunks
+                            aplNELMTmp  = aplNELMRem / 64;
+                            aplNELMRem -= aplNELMTmp * 64;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB64) lpMemRes)++ =
+                                  (*lpPrimSpec->B64isB64) (*((LPAPLB64) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 32-bit chunks
+                            aplNELMTmp  = aplNELMRem / 32;
+                            aplNELMRem -= aplNELMTmp * 32;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB32) lpMemRes)++ =
+                                  (*lpPrimSpec->B32isB32) (*((LPAPLB32) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 16-bit chunks
+                            aplNELMTmp  = aplNELMRem / 16;
+                            aplNELMRem -= aplNELMTmp * 16;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB16) lpMemRes)++ =
+                                  (*lpPrimSpec->B16isB16) (*((LPAPLB16) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining  8-bit chunks
+                            aplNELMTmp  = aplNELMRem /  8;
+                            aplNELMRem -= aplNELMTmp *  8;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB08) lpMemRes)++ =
+                                  (*lpPrimSpec->B08isB08) (*((LPAPLB08) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+                        } // End IF
 
                         // Loop through the right arg/result
-                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRem; uRes++)
                         {
                             // Check for Ctrl-Break
                             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -1723,8 +1790,84 @@ RESTART_EXCEPTION:
                         break;
 
                     case ARRAY_APA:     // Res = BOOL, Rht = APA
+                        // Initialize # remaining NELM
+                        aplNELMRem = aplNELMRht;
+
+                        // Check for Boolean APA and optimized chunking
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                        if (IsBooleanAPA (lpAPA)
+                         && lpPrimSpec->B64isB64)
+                        {
+                            APLB64 aplB64APA;
+
+                            if (lpAPA->Off)
+                                aplB64APA = 0xFFFFFFFFFFFFFFFF;
+                            else
+                                aplB64APA = 0x0000000000000000;
+#undef  lpAPA
+                            // Calculate the # 64-bit chunks
+                            aplNELMTmp  = aplNELMRem / 64;
+                            aplNELMRem -= aplNELMTmp * 64;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB64) lpMemRes)++ =
+                                  (*lpPrimSpec->B64isB64) ((APLB64) aplB64APA, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 32-bit chunks
+                            aplNELMTmp  = aplNELMRem / 32;
+                            aplNELMRem -= aplNELMTmp * 32;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB32) lpMemRes)++ =
+                                  (*lpPrimSpec->B32isB32) ((APLB32) aplB64APA, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 16-bit chunks
+                            aplNELMTmp  = aplNELMRem / 16;
+                            aplNELMRem -= aplNELMTmp * 16;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB16) lpMemRes)++ =
+                                  (*lpPrimSpec->B16isB16) ((APLB16) aplB64APA, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining  8-bit chunks
+                            aplNELMTmp  = aplNELMRem /  8;
+                            aplNELMRem -= aplNELMTmp *  8;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB08) lpMemRes)++ =
+                                  (*lpPrimSpec->B08isB08) ((APLB08) aplB64APA, lpPrimSpec);
+                            } // End FOR
+                        } // End IF
+
                         // Loop through the right arg/result
-                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRem; uRes++)
                         {
                             // Check for Ctrl-Break
                             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -3718,6 +3861,8 @@ UBOOL PrimFnDydSingMult_EM
     APLINT        uRes;
     UBOOL         bRet = FALSE;     // TRUE iff the result is valid
     APLRANK       aplRankRes;       // Temp var for DydAllocate
+    APLNELM       aplNELMTmp,       // Temporary NELM
+                  aplNELMRem;       // Remaining NELM
     UINT          uBitIndex = 0;
     LPVOID        lpMemRhtStart,
                   lpMemRes;
@@ -3963,10 +4108,82 @@ RESTART_EXCEPTION:
                 case ARRAY_BOOL:            // Res = BOOL, Lft = BOOL(S)
                     if (IsSimpleBool (aplTypeRht))
                     {
-                        // ***FIXME*** -- Optimize by chunking
+                        // Initialize # remaining NELM
+                        aplNELMRem = aplNELMRes;
+
+                        // Check for optimized chunking
+                        if (lpPrimSpec->B64isB64vB64)
+                        {
+                            APLB64 aplB64Lft;
+
+                            if (aplIntegerLft)
+                                aplB64Lft = 0xFFFFFFFFFFFFFFFF;
+                            else
+                                aplB64Lft = 0x0000000000000000;
+
+                            // Calculate the # 64-bit chunks
+                            aplNELMTmp  = aplNELMRem / 64;
+                            aplNELMRem -= aplNELMTmp * 64;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB64) lpMemRes)++ =
+                                  (*lpPrimSpec->B64isB64vB64) ((APLB64) aplB64Lft, *((LPAPLB64) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 32-bit chunks
+                            aplNELMTmp  = aplNELMRem / 32;
+                            aplNELMRem -= aplNELMTmp * 32;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB32) lpMemRes)++ =
+                                  (*lpPrimSpec->B32isB32vB32) ((APLB32) aplB64Lft, *((LPAPLB32) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 16-bit chunks
+                            aplNELMTmp  = aplNELMRem / 16;
+                            aplNELMRem -= aplNELMTmp * 16;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB16) lpMemRes)++ =
+                                  (*lpPrimSpec->B16isB16vB16) ((APLB16) aplB64Lft, *((LPAPLB16) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining  8-bit chunks
+                            aplNELMTmp  = aplNELMRem /  8;
+                            aplNELMRem -= aplNELMTmp *  8;
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB08) lpMemRes)++ =
+                                  (*lpPrimSpec->B08isB08vB08) ((APLB08) aplB64Lft, *((LPAPLB08) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+                        } // End IF
 
                         // Loop through the right arg/result
-                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRem; uRes++)
                         {
                             // Check for Ctrl-Break
                             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -3986,7 +4203,35 @@ RESTART_EXCEPTION:
                         } // End FOR
 
                         break;
-                    } // End IF
+                    } else
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                    // Check for right arg Boolean APA and optimized chunking
+                    if (IsSimpleAPA (aplTypeRht)
+                     && IsBooleanAPA (lpAPA)
+                     && lpPrimSpec->B64isB64vB64)
+                    {
+                        APLB64 aplB64Lft,
+                               aplB64APA;
+                        APLB08 aplB08Res;
+
+                        if (lpAPA->Off)
+                            aplB64APA = 0xFFFFFFFFFFFFFFFF;
+                        else
+                            aplB64APA = 0x0000000000000000;
+#undef  lpAPA
+                        if (aplIntegerLft)
+                            aplB64Lft = 0xFFFFFFFFFFFFFFFF;
+                        else
+                            aplB64Lft = 0x0000000000000000;
+
+                        // Calculate one byte of the result
+                        aplB08Res = (*lpPrimSpec->B08isB08vB08) ((APLB08) aplB64Lft, (APLB08) aplB64APA, lpPrimSpec);
+
+                        // If it's not all zero, ...
+                        if (aplB08Res)
+                            FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), aplB08Res);
+                        break;
+                    } // End IF/ELSE
 
                     // Fall through to common code
 
@@ -4797,6 +5042,8 @@ UBOOL PrimFnDydMultSing_EM
     APLINT        uRes;                     // Loop counter
     UBOOL         bRet = FALSE;             // TRUE iff the result is valid
     APLRANK       aplRankRes;               // Temp var for DydAllocate
+    APLNELM       aplNELMTmp,               // Temporary NELM
+                  aplNELMRem;               // Remaining NELM
     UINT          uBitIndex = 0;
     LPVOID        lpMemLftStart,
                   lpMemRes;
@@ -5042,10 +5289,82 @@ RESTART_EXCEPTION:
                 case ARRAY_BOOL:            // Res = BOOL,                  Rht = BOOL(S)
                     if (IsSimpleBool (aplTypeLft))
                     {
-                        // ***FIXME*** -- Optimize by chunking
+                        // Initialize # remaining NELM
+                        aplNELMRem = aplNELMRes;
 
-                        // Loop through the result
-                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                        // Check for optimized chunking
+                        if (lpPrimSpec->B64isB64vB64)
+                        {
+                            APLB64 aplB64Rht;
+
+                            if (aplIntegerRht)
+                                aplB64Rht = 0xFFFFFFFFFFFFFFFF;
+                            else
+                                aplB64Rht = 0x0000000000000000;
+
+                            // Calculate the # 64-bit chunks
+                            aplNELMTmp  = aplNELMRem / 64;
+                            aplNELMRem -= aplNELMTmp * 64;
+
+                            // Loop through the left arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB64) lpMemRes)++ =
+                                  (*lpPrimSpec->B64isB64vB64) (*((LPAPLB64) lpMemLft)++, (APLB64) aplB64Rht, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 32-bit chunks
+                            aplNELMTmp  = aplNELMRem / 32;
+                            aplNELMRem -= aplNELMTmp * 32;
+
+                            // Loop through the left arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB32) lpMemRes)++ =
+                                  (*lpPrimSpec->B32isB32vB32) (*((LPAPLB32) lpMemLft)++, (APLB32) aplB64Rht, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 16-bit chunks
+                            aplNELMTmp  = aplNELMRem / 16;
+                            aplNELMRem -= aplNELMTmp * 16;
+
+                            // Loop through the left arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB16) lpMemRes)++ =
+                                  (*lpPrimSpec->B16isB16vB16) (*((LPAPLB16) lpMemLft)++, (APLB16) aplB64Rht, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining  8-bit chunks
+                            aplNELMTmp  = aplNELMRem /  8;
+                            aplNELMRem -= aplNELMTmp *  8;
+
+                            // Loop through the left arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB08) lpMemRes)++ =
+                                  (*lpPrimSpec->B08isB08vB08) (*((LPAPLB08) lpMemLft)++, (APLB08) aplB64Rht, lpPrimSpec);
+                            } // End FOR
+                        } // End IF
+
+                        // Loop through the left arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRem; uRes++)
                         {
                             // Check for Ctrl-Break
                             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -5065,7 +5384,35 @@ RESTART_EXCEPTION:
                         } // End FOR
 
                         break;
-                    } // End IF
+                    } else
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+                    // Check for left arg Boolean APA and optimized chunking
+                    if (IsSimpleAPA (aplTypeLft)
+                     && IsBooleanAPA (lpAPA)
+                     && lpPrimSpec->B64isB64vB64)
+                    {
+                        APLB64 aplB64Rht,
+                               aplB64APA;
+                        APLB08 aplB08Res;
+
+                        if (lpAPA->Off)
+                            aplB64APA = 0xFFFFFFFFFFFFFFFF;
+                        else
+                            aplB64APA = 0x0000000000000000;
+#undef  lpAPA
+                        if (aplIntegerRht)
+                            aplB64Rht = 0xFFFFFFFFFFFFFFFF;
+                        else
+                            aplB64Rht = 0x0000000000000000;
+
+                        // Calculate one byte of the result
+                        aplB08Res = (*lpPrimSpec->B08isB08vB08) ((APLB08) aplB64APA, (APLB08) aplB64Rht, lpPrimSpec);
+
+                        // If it's not all zero, ...
+                        if (aplB08Res)
+                            FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), aplB08Res);
+                        break;
+                    } // End IF/ELSE
 
                     // Fall through to common code
 
@@ -6459,6 +6806,8 @@ UBOOL PrimFnDydSimpSimp_EM
                       aplCharRht;
     LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLNELM           aplNELMTmp,       // Temporary NELM
+                      aplNELMRem;       // Remaining NELM
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -7565,10 +7914,75 @@ RESTART_EXCEPTION_NOAXIS:
                     if (IsSimpleBool (aplTypeLft)
                      && IsSimpleBool (aplTypeRht))  // Res = BOOL(No Axis), Lft = BOOL, Rht = BOOL
                     {
-                        // ***FIXME*** -- Optimize by chunking
+                        // Initialize # remaining NELM
+                        aplNELMRem = aplNELMRes;
+
+                        // Check for optimized chunking
+                        if (lpPrimSpec->B64isB64vB64)
+                        {
+                            // Calculate the # 64-bit chunks
+                            aplNELMTmp  = aplNELMRem / 64;
+                            aplNELMRem -= aplNELMTmp * 64;
+
+                            // Loop through the left/right args/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB64) lpMemRes)++ =
+                                  (*lpPrimSpec->B64isB64vB64) (*((LPAPLB64) lpMemLft)++, *((LPAPLB64) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 32-bit chunks
+                            aplNELMTmp  = aplNELMRem / 32;
+                            aplNELMRem -= aplNELMTmp * 32;
+
+                            // Loop through the left/right args/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB32) lpMemRes)++ =
+                                  (*lpPrimSpec->B32isB32vB32) (*((LPAPLB32) lpMemLft)++, *((LPAPLB32) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining 16-bit chunks
+                            aplNELMTmp  = aplNELMRem / 16;
+                            aplNELMRem -= aplNELMTmp * 16;
+
+                            // Loop through the left/right args/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB16) lpMemRes)++ =
+                                  (*lpPrimSpec->B16isB16vB16) (*((LPAPLB16) lpMemLft)++, *((LPAPLB16) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+
+                            // Calculate the # remaining  8-bit chunks
+                            aplNELMTmp  = aplNELMRem /  8;
+                            aplNELMRem -= aplNELMTmp *  8;
+
+                            // Loop through the left/right args/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                *((LPAPLB08) lpMemRes)++ =
+                                  (*lpPrimSpec->B08isB08vB08) (*((LPAPLB08) lpMemLft)++, *((LPAPLB08) lpMemRht)++, lpPrimSpec);
+                            } // End FOR
+                        } // End IF
 
                         // Loop through the left/right args/result
-                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRem; uRes++)
                         {
                             // Check for Ctrl-Break
                             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -7585,6 +7999,172 @@ RESTART_EXCEPTION_NOAXIS:
                                 ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
                             } // End IF
                         } // End FOR
+                    } else
+                    // If the left arg is Boolean APA and the right arg is BOOL, ...
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+                    if (IsSimpleAPA  (aplTypeLft)
+                     && IsBooleanAPA (lpAPA)
+                     && lpPrimSpec->B64isB64vB64
+                     && IsSimpleBool (aplTypeRht))  // Res = BOOL(No Axis), Lft = APA , Rht = BOOL
+                    {
+                        APLB64 aplB64APA;
+
+                        if (lpAPA->Off)
+                            aplB64APA = 0xFFFFFFFFFFFFFFFF;
+                        else
+                            aplB64APA = 0x0000000000000000;
+#undef  lpAPA
+                        // Initialize # remaining NELM
+                        aplNELMRem = aplNELMRht;
+
+                        // Calculate the # 64-bit chunks
+                        aplNELMTmp  = aplNELMRem / 64;
+                        aplNELMRem -= aplNELMTmp * 64;
+
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLB64) lpMemRes)++ =
+                              (*lpPrimSpec->B64isB64vB64) ((APLB64) aplB64APA, *((LPAPLB64) lpMemRht)++, lpPrimSpec);
+                        } // End FOR
+
+                        // Calculate the # remaining 32-bit chunks
+                        aplNELMTmp  = aplNELMRem / 32;
+                        aplNELMRem -= aplNELMTmp * 32;
+
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLB32) lpMemRes)++ =
+                              (*lpPrimSpec->B32isB32vB32) ((APLB32) aplB64APA, *((LPAPLB32) lpMemRht)++, lpPrimSpec);
+                        } // End FOR
+
+                        // Calculate the # remaining 16-bit chunks
+                        aplNELMTmp  = aplNELMRem / 16;
+                        aplNELMRem -= aplNELMTmp * 16;
+
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLB16) lpMemRes)++ =
+                              (*lpPrimSpec->B16isB16vB16) ((APLB16) aplB64APA, *((LPAPLB16) lpMemRht)++, lpPrimSpec);
+                        } // End FOR
+
+                        // Calculate the # remaining  8-bit chunks
+                        aplNELMTmp  = aplNELMRem /  8;
+                        aplNELMRem -= aplNELMTmp *  8;
+
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLB08) lpMemRes)++ =
+                              (*lpPrimSpec->B08isB08vB08) ((APLB08) aplB64APA, *((LPAPLB08) lpMemRht)++, lpPrimSpec);
+                        } // End FOR
+
+                        // If any bits remain, ...
+                        if (aplNELMRem)
+                            *((LPAPLB08) lpMemRes) =
+                              (*lpPrimSpec->B08isB08vB08) ((APLB08) aplB64APA, *(LPAPLB08) lpMemRht, lpPrimSpec)
+                            & (BIT0 << (UINT) aplNELMRem) - 1;
+                    } else
+                    // If the left arg is BOOL and the right arg is Boolean APA, ...
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                    if (IsSimpleAPA  (aplTypeRht)
+                     && IsBooleanAPA (lpAPA)
+                     && lpPrimSpec->B64isB64vB64
+                     && IsSimpleBool (aplTypeLft))  // Res = BOOL(No Axis), Lft = BOOL, Rht = APA
+                    {
+                        APLB64 aplB64APA;
+
+                        if (lpAPA->Off)
+                            aplB64APA = 0xFFFFFFFFFFFFFFFF;
+                        else
+                            aplB64APA = 0x0000000000000000;
+#undef  lpAPA
+                        // Initialize # remaining NELM
+                        aplNELMRem = aplNELMRht;
+
+                        // Calculate the # 64-bit chunks
+                        aplNELMTmp  = aplNELMRem / 64;
+                        aplNELMRem -= aplNELMTmp * 64;
+
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLB64) lpMemRes)++ =
+                              (*lpPrimSpec->B64isB64vB64) (*((LPAPLB64) lpMemLft)++, (APLB64) aplB64APA, lpPrimSpec);
+                        } // End FOR
+
+                        // Calculate the # remaining 32-bit chunks
+                        aplNELMTmp  = aplNELMRem / 32;
+                        aplNELMRem -= aplNELMTmp * 32;
+
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLB32) lpMemRes)++ =
+                              (*lpPrimSpec->B32isB32vB32) (*((LPAPLB32) lpMemLft)++, (APLB32) aplB64APA, lpPrimSpec);
+                        } // End FOR
+
+                        // Calculate the # remaining 16-bit chunks
+                        aplNELMTmp  = aplNELMRem / 16;
+                        aplNELMRem -= aplNELMTmp * 16;
+
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLB16) lpMemRes)++ =
+                              (*lpPrimSpec->B16isB16vB16) (*((LPAPLB16) lpMemLft)++, (APLB16) aplB64APA, lpPrimSpec);
+                        } // End FOR
+
+                        // Calculate the # remaining  8-bit chunks
+                        aplNELMTmp  = aplNELMRem /  8;
+                        aplNELMRem -= aplNELMTmp *  8;
+
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLB08) lpMemRes)++ =
+                              (*lpPrimSpec->B08isB08vB08) (*((LPAPLB08) lpMemLft)++, (APLB08) aplB64APA, lpPrimSpec);
+                        } // End FOR
+
+                        // If any bits remain, ...
+                        if (aplNELMRem)
+                            *((LPAPLB08) lpMemRes) =
+                              (*lpPrimSpec->B08isB08vB08) (*(LPAPLB08) lpMemLft, (APLB08) aplB64APA, lpPrimSpec)
+                            & (BIT0 << (UINT) aplNELMRem) - 1;
                     } else
                     // If both arguments are integer-like (BOOL, INT, or APA),
                     //   use BisIvI
@@ -8199,12 +8779,12 @@ APLFLOAT TranslateQuadICIndex
 
 
 //***************************************************************************
-//  $IsBooleanAPA
+//  $IsTknBooleanAPA
 //
 //  Return TRUE iff the token is a Boolean APA
 //***************************************************************************
 
-UBOOL IsBooleanAPA
+UBOOL IsTknBooleanAPA
     (LPTOKEN lptkArg)               // Ptr to token arg
 
 {
@@ -8229,8 +8809,7 @@ UBOOL IsBooleanAPA
     lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
 
     // Check for Boolean APA
-    bRet = (IsBooleanValue (lpMemArg->Off)
-         && lpMemArg->Mul EQ 0);
+    bRet = IsBooleanAPA (lpMemArg);
 NORMAL_EXIT:
     if (hGlbArg && lpMemArg)
     {
@@ -8239,7 +8818,7 @@ NORMAL_EXIT:
     } // End IF
 
     return bRet;
-} // End IsBooleanAPA
+} // End IsTknBooleanAPA
 
 
 //***************************************************************************

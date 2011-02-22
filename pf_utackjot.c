@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -363,17 +363,20 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     {
         case EXITTYPE_DISPLAY:
         case EXITTYPE_NODISPLAY:
-            Assert (lpMemPTD->YYResExec.YYInuse);
+            if (lpMemPTD->YYResExec.YYInuse)
+            {
+                // Allocate a new YYRes
+                lpYYRes = YYAlloc ();
 
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
+                // Copy the result
+                *lpYYRes = lpMemPTD->YYResExec;
+                lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
+                ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
 
-            // Copy the result
-            *lpYYRes = lpMemPTD->YYResExec;
-            lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
-            ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+                break;
+            } // End IF
 
-            break;
+            // Fall through to NoValue code
 
         case EXITTYPE_GOTO_ZILDE:
         case EXITTYPE_GOTO_LINE:

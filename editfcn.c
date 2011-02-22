@@ -2888,9 +2888,12 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Get the handle of the parent window
             hWndParent = GetParent (hWnd);
 
-            // Get the ptr to our Undo Buffer
+            // Get the ptrs to our Undo Buffer
+            lpUndoBeg = (LPUNDO_BUF) GetWindowLongPtrW (hWndParent, GWLSF_UNDO_BEG);
             lpUndoNxt = (LPUNDO_BUF) GetWindowLongPtrW (hWndParent, GWLSF_UNDO_NXT);
 
+            // If there's more to Undo, ...
+            if (lpUndoBeg < lpUndoNxt)
             do
             {
                 // Split cases based upon the previous Undo Action

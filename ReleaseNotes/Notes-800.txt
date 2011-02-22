@@ -10,7 +10,7 @@ PF_INDEX.C:
   Call <ArrayIndexRefNamImmed_EM_YY> only if the name arg is an immediate.
   In <ArrayIndexValidZilde_EM>, loop through the list arg items as well as
     their contents.
-  Call <ArrayIndexSetNamImmed_EM_YY> only if the name arg is an immediate.
+  Call <ArrayIndexSetNamImmed_EM> only if the name arg is an immediate.
 
 
 Directory trunk\MediaWiki\extensions:

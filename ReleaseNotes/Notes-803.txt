@@ -6,5 +6,5 @@ Build #803 -- Version 0.0.2.22
 Directory trunk:
 
 PF_INDEX.C:
-  Fix Bug:  In <ArrayIndexSet_EM>, a local var was not properly
+  Fix Bug:  In <ArrayIndexSetNamImmed_EM>, a local var was not properly
     initialized before it was referenced.

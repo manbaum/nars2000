@@ -56,7 +56,9 @@ void MakeWorkspaceNameCanonical
     //   doesn't start at the root or a dot, prepend the
     //   default dir
     if (wszInp[0] NE WC_EOS     // Non-empty,
-     && wszInp[0] NE L'.'       // and not current dir,
+     && ((wszInp[0] EQ L'.'
+       && wszInp[1] EQ L'.')    // and up one dir
+      || wszInp[0] NE L'.')     // or not current dir,
      && wszInp[0] NE WC_SLOPE   // and not root dir,
      && wszInp[1] NE L':')      // and no drive letter
     {

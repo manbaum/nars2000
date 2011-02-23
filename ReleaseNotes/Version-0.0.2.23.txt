@@ -1,6 +1,17 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #807 -- Version 0.0.2.23
+------------------------------
+
+* Fix Bug:  )LIB Command May List .atf Files Too Many Times
+
+Directory trunk:
+
+SC_LIB.C:
+  Use default dir when tail contains L".." but not L'.'.
+
+
 Build #806 -- Version 0.0.2.23
 ------------------------------
 

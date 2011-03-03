@@ -487,7 +487,6 @@ APLFLOAT PrimFnDydQuoteDotFisIvI
                 } // End IF/ELSE
             } // End FOR
 
-            DbgStop ();         // This should never happen
             return (APLFLOAT) ZI;
 
         case 4*0 + 2*0 + 1*1:   // 0

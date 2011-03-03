@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -494,7 +494,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     {
         // If the result is nested, copy the prototype from the right arg
         if (IsNested (aplTypeRes))
-            *((LPAPLNESTED) lpMemRes) = *(LPAPLNESTED) lpMemRht;
+            *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (*(LPAPLNESTED) lpMemRht);
         goto YYALLOC_EXIT;
     } // End IF
 

@@ -129,6 +129,7 @@ LPPL_YYSTYPE PrimFnMonRightCaret_EM_YY
 {
     HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
     LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    APLRANK      aplRankRht;        // Right arg rank
     APLINT       aplIntegerRes;     // The result value
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
@@ -143,11 +144,15 @@ LPPL_YYSTYPE PrimFnMonRightCaret_EM_YY
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
+    // Get the attributes (Type, NELM, Rank)
+    //   of the arg
+    AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
     // Get right arg's global ptr
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // If the right arg is a global, ...
-    if (hGlbRht)
+    // If the right arg is a non-scalar, ...
+    if (!IsScalar (aplRankRht))
         // Skip over the header to the dimensions and
         //   extract the first dimension
         aplIntegerRes = *VarArrayBaseToDim (lpMemRht);

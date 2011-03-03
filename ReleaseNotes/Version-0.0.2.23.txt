@@ -1,6 +1,17 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #809 -- Version 0.0.2.23
+------------------------------
+
+* Fix Bug:  Tally Fails On Nested Scalars
+
+Directory trunk:
+
+PF_CARET.C:
+  Fix Bug:  Handle nested scalars.
+
+
 Build #808 -- Version 0.0.2.23
 ------------------------------
 

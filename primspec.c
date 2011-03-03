@@ -1017,6 +1017,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
     APLRANK      aplRankRht;        // Right arg rank
     APLNELM      aplNELMRht;        // Right arg NELM
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    PRIMSPEC     LclPrimSpec;       // Writable copy of PRIMSPEC
 
     DBGENTER;
 
@@ -1027,6 +1028,9 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
     // Check for axis present
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
+
+    // Save a writable copy of PRIMSPEC
+    LclPrimSpec = *lpPrimSpec;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -1065,13 +1069,13 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir_PTB (hGlbRes));
 
-                // In order to make roll atomic, save the current []RL into lpPrimSpec
-                SavePrimSpecRL (lpPrimSpec);
+                // In order to make roll atomic, save the current []RL into LclPrimSpec
+                SavePrimSpecRL (&LclPrimSpec);
 
                 // Handle via subroutine
                 hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDir (hGlbRes),
                                            lptkFunc,
-                                           lpPrimSpec);
+                                          &LclPrimSpec);
                 if (!hGlbRes)
                 {
                     YYFree (lpYYRes); lpYYRes = NULL;
@@ -1079,8 +1083,8 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                     return NULL;
                 } // End IF
 
-                // Restore the value of []RL from lpPrimSpec
-                RestPrimSpecRL (lpPrimSpec);
+                // Restore the value of []RL from LclPrimSpec
+                RestPrimSpecRL (&LclPrimSpec);
 
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -1103,8 +1107,8 @@ RESTART_EXCEPTION_VARNAMED:
 ////////////lpYYRes->tkToken.tkData            =        // Filled in below
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-            // In order to make roll atomic, save the current []RL into lpPrimSpec
-            SavePrimSpecRL (lpPrimSpec);
+            // In order to make roll atomic, save the current []RL into LclPrimSpec
+            SavePrimSpecRL (&LclPrimSpec);
 
             __try
             {
@@ -1118,19 +1122,19 @@ RESTART_EXCEPTION_VARNAMED:
                             case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkBoolean  =
                                   (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkSym->stData.stBoolean & BIT0,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_INT:   // Res = BOOL, Rht = INT
                                 lpYYRes->tkToken.tkData.tkBoolean  =
                                   (*lpPrimSpec->BisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
                                 lpYYRes->tkToken.tkData.tkBoolean  =
                                   (*lpPrimSpec->BisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             defstop
@@ -1146,19 +1150,19 @@ RESTART_EXCEPTION_VARNAMED:
                             case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkInteger  =
                                   (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean & BIT0,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_INT:   // Res = INT, Rht = INT
                                 lpYYRes->tkToken.tkData.tkInteger  =
                                   (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
                                 lpYYRes->tkToken.tkData.tkInteger  =
                                   (*lpPrimSpec->IisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             defstop
@@ -1174,19 +1178,19 @@ RESTART_EXCEPTION_VARNAMED:
                             case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkFloat  =
                                   (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean & BIT0,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
                                 lpYYRes->tkToken.tkData.tkFloat  =
                                   (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
                                 lpYYRes->tkToken.tkData.tkFloat  =
                                   (*lpPrimSpec->FisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             defstop
@@ -1246,8 +1250,8 @@ RESTART_EXCEPTION_VARNAMED:
                 } // End SWITCH
             } // End __try/__except
 
-            // Restore the value of []RL from lpPrimSpec
-            RestPrimSpecRL (lpPrimSpec);
+            // Restore the value of []RL from LclPrimSpec
+            RestPrimSpecRL (&LclPrimSpec);
 
             DBGLEAVE;
 
@@ -1255,8 +1259,8 @@ RESTART_EXCEPTION_VARNAMED:
 
         case TKT_VARIMMED:
 RESTART_EXCEPTION_VARIMMED:
-            // In order to make roll atomic, save the current []RL into lpPrimSpec
-            SavePrimSpecRL (lpPrimSpec);
+            // In order to make roll atomic, save the current []RL into LclPrimSpec
+            SavePrimSpecRL (&LclPrimSpec);
 
             __try
             {
@@ -1270,19 +1274,19 @@ RESTART_EXCEPTION_VARIMMED:
                             case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkBoolean =
                                   (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkBoolean & BIT0,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_INT:   // Res = BOOL, Rht = INT
                                 lpYYRes->tkToken.tkData.tkBoolean =
                                   (*lpPrimSpec->BisI) (lptkRhtArg->tkData.tkInteger,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
                                 lpYYRes->tkToken.tkData.tkBoolean =
                                   (*lpPrimSpec->BisF) (lptkRhtArg->tkData.tkFloat,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             defstop
@@ -1298,19 +1302,19 @@ RESTART_EXCEPTION_VARIMMED:
                             case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkInteger =
                                   (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkBoolean & BIT0,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_INT:   // Res = INT, Rht = INT
                                 lpYYRes->tkToken.tkData.tkInteger =
                                   (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkInteger,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
                                 lpYYRes->tkToken.tkData.tkInteger =
                                   (*lpPrimSpec->IisF) (lptkRhtArg->tkData.tkFloat,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             defstop
@@ -1326,19 +1330,19 @@ RESTART_EXCEPTION_VARIMMED:
                             case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
                                 lpYYRes->tkToken.tkData.tkFloat   =
                                   (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkBoolean & BIT0,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
                                 lpYYRes->tkToken.tkData.tkFloat   =
                                   (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkInteger,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
                                 lpYYRes->tkToken.tkData.tkFloat   =
                                   (*lpPrimSpec->FisF) (lptkRhtArg->tkData.tkFloat,
-                                                       lpPrimSpec);
+                                                      &LclPrimSpec);
                                 break;
 
                             defstop
@@ -1398,8 +1402,8 @@ RESTART_EXCEPTION_VARIMMED:
                 } // End SWITCH
             } // End __try/__except
 
-            // Restore the value of []RL from lpPrimSpec
-            RestPrimSpecRL (lpPrimSpec);
+            // Restore the value of []RL from LclPrimSpec
+            RestPrimSpecRL (&LclPrimSpec);
 
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
@@ -1419,13 +1423,13 @@ RESTART_EXCEPTION_VARIMMED:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (hGlbRes));
 
-            // In order to make roll atomic, save the current []RL into lpPrimSpec
-            SavePrimSpecRL (lpPrimSpec);
+            // In order to make roll atomic, save the current []RL into LclPrimSpec
+            SavePrimSpecRL (&LclPrimSpec);
 
             // Handle via subroutine
             hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDir (hGlbRes),
                                        lptkFunc,
-                                       lpPrimSpec);
+                                      &LclPrimSpec);
             if (!hGlbRes)
             {
                 YYFree (lpYYRes); lpYYRes = NULL;
@@ -1433,8 +1437,8 @@ RESTART_EXCEPTION_VARIMMED:
                 return NULL;
             } // End IF
 
-            // Restore the value of []RL from lpPrimSpec
-            RestPrimSpecRL (lpPrimSpec);
+            // Restore the value of []RL from LclPrimSpec
+            RestPrimSpecRL (&LclPrimSpec);
 
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -2117,8 +2121,6 @@ RESTART_EXCEPTION:
                                                 break;
 
                                             case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                                                DbgBrk ();  // ***TESTME*** -- No such primitive
-
                                                 lpSymDst->stData.stBoolean =
                                                   (*lpPrimSpec->BisI) (lpSymSrc->stData.stInteger,
                                                                        lpPrimSpec);
@@ -2381,12 +2383,16 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     LPPRIMFN_DYD_SNvSN lpPrimFn;        // Ptr to dyadic scalar SimpNest vs. SimpNest function
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
     LPPRIMFLAGS  lpPrimFlags;           // Ptr to function PrimFlags entry
+    PRIMSPEC     LclPrimSpec;           // Writable copy of PRIMSPEC
 
     DBGENTER;
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
         return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
+
+    // Save a writable copy of PRIMSPEC
+    LclPrimSpec = *lpPrimSpec;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -2501,7 +2507,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                              aplNELMLft,
                                              aplNELMRht,
                                              aplInteger,
-                                             lpPrimSpec))
+                                            &LclPrimSpec))
             goto ERROR_EXIT;
         else
             goto NORMAL_EXIT;
@@ -2582,7 +2588,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                       aplNELMAxis,
                       bLftIdent,
                       bRhtIdent,
-                      lpPrimSpec))
+                     &LclPrimSpec))
         goto ERROR_EXIT;
     else
         goto NORMAL_EXIT;
@@ -4603,8 +4609,6 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = BOOL/INT(S), Rht = FLOAT(M)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -4631,8 +4635,6 @@ RESTART_EXCEPTION:
                     switch (aplTypeRht)
                     {
                         case ARRAY_BOOL:    // Res = INT, Lft = FLOAT(S), Rht = BOOL(M)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -4655,8 +4657,6 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_INT:     // Res = INT, Lft = FLOAT(S), Rht = INT(M)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -4673,8 +4673,6 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_APA:     // Res = INT, Lft = FLOAT(S), Rht = APA(M)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -4691,8 +4689,6 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(S), Rht = FLOAT(M)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5784,8 +5780,6 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(M),   Rht = BOOL/INT(S)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5812,8 +5806,6 @@ RESTART_EXCEPTION:
                     switch (aplTypeLft)
                     {
                         case ARRAY_BOOL:    // Res = INT, Lft = BOOL (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5836,8 +5828,6 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_INT:     // Res = INT, Lft = INT  (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5854,8 +5844,6 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_APA:     // Res = INT, Lft = APA  (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5872,8 +5860,6 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME*** -- No such primitive
-
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -6627,8 +6613,6 @@ RESTART_EXCEPTION_IMMED:
                 if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
                  || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
                 {
-                    DbgBrk ();      // ***TESTME*** -- No such primitive
-
                     lptkRes->tkData.tkInteger  =
                       (*lpPrimSpec->IisFvF) (aplFloatLft,
                                              aplFloatRht,
@@ -6975,8 +6959,6 @@ RESTART_EXCEPTION_SINGLETON:
                     if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
                      || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
                     {
-                        DbgBrk ();      // ***TESTME*** -- No such primitive
-
                         *((LPAPLINT)   lpMemRes) =
                           (*lpPrimSpec->IisFvF) (aplFloatLft,
                                                  aplFloatRht,
@@ -7705,8 +7687,6 @@ RESTART_EXCEPTION_AXIS:
                     if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT(Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
                      || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT(Axis), Rht = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
-                        DbgBrk ();      // ***TESTME*** -- No such primitive
-
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
@@ -8448,8 +8428,6 @@ RESTART_EXCEPTION_NOAXIS:
                     if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
                      || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
-                        DbgBrk ();      // ***TESTME*** -- No such primitive
-
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {

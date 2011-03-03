@@ -771,11 +771,11 @@ BEGIN
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR23,160,240, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
 ////AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS23,215,240,  8, 10
 
-    AUTOCHECKBOX    "Enable Function Coloring"  , IDC_SYNTCLR_XB_CLRFCNS,  5,255, 85, 10
-    AUTOCHECKBOX    "Enable Session Coloring"   , IDC_SYNTCLR_XB_CLRSESS,  5,265, 85, 10
+    AUTOCHECKBOX    "Enable Function Coloring"  , IDC_SYNTCLR_XB_CLRFCNS,  5,255,130, 10
+    AUTOCHECKBOX    "Enable Session Coloring"   , IDC_SYNTCLR_XB_CLRSESS,  5,265,130, 10
     AUTOCHECKBOX "Enable Coloring When Printing", IDC_SYNTCLR_XB_CLRPRNT,  5,275,130, 10
 
-    PUSHBUTTON      "Restore Defaults"          , IDC_SYNTCLR_BN_RESTORE,105,258, 70, 14
+    PUSHBUTTON      "Restore Defaults"          , IDC_SYNTCLR_BN_RESTORE,140,258, 70, 14
 END
 
 IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY

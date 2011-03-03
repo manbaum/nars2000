@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 //***************************************************************************
 //  $PrimFnRightTack_EM_YY
 //
-//  Primitive function for monadic and dyadic RightTack (ERROR and "right")
+//  Primitive function for monadic and dyadic RightTack ("right" and "right")
 //***************************************************************************
 
 #ifdef DEBUG

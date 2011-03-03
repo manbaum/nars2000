@@ -1490,7 +1490,6 @@ APLLONGEST GetGlbPtrs
      HGLOBAL *lphGlb)           // Ptr to ptr to HGLOBAL
 
 {
-
     // Get the global handle & longest w/o locking it
     return GetGlbPtrs_LOCK (lpToken, lphGlb, NULL);
 } // End GetGlbPtrs

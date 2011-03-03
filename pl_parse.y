@@ -198,6 +198,9 @@ StmtMult:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              Assert (YYResIsEmpty ());
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 YYERROR3
                                          } // End IF
                                         }
       // All multiple stmt errors propagate up to this point where we ABORT -- this ensures

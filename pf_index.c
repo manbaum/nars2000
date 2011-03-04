@@ -1651,35 +1651,47 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
     {
         TOKEN tkLftArg = {0};       // Left arg token
 
-        // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-
-        // Split cases based upon the left arg item ptr type
-        switch (GetPtrTypeInd (lpMemLft))
+        // If the left arg is a global, ...
+        if (hGlbLft)
         {
-            case PTRTYPE_STCONST:
-                // Fill in the new left arg token
-                tkLftArg.tkFlags.TknType   = TKT_VARIMMED;
-                tkLftArg.tkFlags.ImmType   = (*(LPAPLHETERO) lpMemLft)->stFlags.ImmType;
-////////////////tkLftArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
-                tkLftArg.tkData.tkLongest  = (*(LPAPLHETERO) lpMemLft)->stData.stLongest;
-                tkLftArg.tkCharIndex       = lptkFunc->tkCharIndex;
+            // Skip over the header and dimensions to the data
+            lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
-                break;
+            // Split cases based upon the left arg item ptr type
+            switch (GetPtrTypeInd (lpMemLft))
+            {
+                case PTRTYPE_STCONST:
+                    // Fill in the new left arg token
+                    tkLftArg.tkFlags.TknType   = TKT_VARIMMED;
+                    tkLftArg.tkFlags.ImmType   = (*(LPAPLHETERO) lpMemLft)->stFlags.ImmType;
+////////////////////tkLftArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
+                    tkLftArg.tkData.tkLongest  = (*(LPAPLHETERO) lpMemLft)->stData.stLongest;
+                    tkLftArg.tkCharIndex       = lptkFunc->tkCharIndex;
 
-            case PTRTYPE_HGLOBAL:
-                // Fill in the new left arg token
-                tkLftArg.tkFlags.TknType   = TKT_VARARRAY;
-////////////////tkLftArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
-////////////////tkLftArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-                tkLftArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLft);   // *(LPAPLNESTED) lpMemLft;
-                tkLftArg.tkCharIndex       = lptkFunc->tkCharIndex;
+                    break;
 
-                break;
+                case PTRTYPE_HGLOBAL:
+                    // Fill in the new left arg token
+                    tkLftArg.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////tkLftArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////////////////tkLftArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+                    tkLftArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLft);   // *(LPAPLNESTED) lpMemLft;
+                    tkLftArg.tkCharIndex       = lptkFunc->tkCharIndex;
 
-            defstop
-                break;
-        } // End SWITCH
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } else
+            {
+            // Fill in the new left arg token
+            tkLftArg.tkFlags.TknType   = TKT_VARIMMED;
+            tkLftArg.tkFlags.ImmType   = lptkLftArg->tkFlags.ImmType;
+////////////tkLftArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
+            tkLftArg.tkData.tkLongest  = lptkLftArg->tkData.tkLongest;
+            tkLftArg.tkCharIndex       = lptkFunc->tkCharIndex;
+        } // End IF/ELSE
 
         // Calculate the resulting index
         lpYYRes =

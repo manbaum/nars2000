@@ -344,6 +344,20 @@ typedef struct tagSTART_ADDRESSES
 
     // pf_index.c
     "ArrayIndexRef_EM_YY"       , (LPUCHAR) &ArrayIndexRef_EM_YY        ,
+    "ArrayIndexRefLstImm_EM_YY" , (LPUCHAR) &ArrayIndexRefLstImm_EM_YY  ,
+    "ArrayIndexRefLstSimpGlb_EM_YY", (LPUCHAR) &ArrayIndexRefLstSimpGlb_EM_YY,
+    "ArrayIndexRefNamImmed_EM_YY", (LPUCHAR) &ArrayIndexRefNamImmed_EM_YY,
+    "ArrayIndexValidZilde_EM"   , (LPUCHAR) &ArrayIndexValidZilde_EM    ,
+    "ArrayIndexRefRect_EM_YY"   , (LPUCHAR) &ArrayIndexRefRect_EM_YY    ,
+    "ListIndexRef_EM_YY"        , (LPUCHAR) &ListIndexRef_EM_YY         ,
+    "ArrayIndexSet_EM"          , (LPUCHAR) &ArrayIndexSet_EM           ,
+    "ArrayIndexSetNamImmed_EM"  , (LPUCHAR) &ArrayIndexSetNamImmed_EM   ,
+    "ArrayIndexSetNoLst_EM"     , (LPUCHAR) &ArrayIndexSetNoLst_EM      ,
+    "ArrayIndexSetSingLst_EM"   , (LPUCHAR) &ArrayIndexSetSingLst_EM    ,
+    "ArrayIndexSetVector_EM"    , (LPUCHAR) &ArrayIndexSetVector_EM     ,
+    "ArrayIndexSetRect_EM"      , (LPUCHAR) &ArrayIndexSetRect_EM       ,
+    "ArrayIndexReplace_EM"      , (LPUCHAR) &ArrayIndexReplace_EM       ,
+    "ArrayIndexFcnSet_EM"       , (LPUCHAR) &ArrayIndexFcnSet_EM        ,
 
     // pf_plus.c
     "PrimFnPlus_EM_YY"          , (LPUCHAR) &PrimFnPlus_EM_YY           ,

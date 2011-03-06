@@ -1888,9 +1888,6 @@ RESTART_ALLOC:
 ////////tkLftArg.tkData.tkGlbData  =            // To be filled in below
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 RESTART_EXCEPTION:
-        // Initialize index into the result
-        uRes = 0;
-
         // Loop through the right arg calling the
         //   function strand between data, storing in the
         //   result.
@@ -2050,6 +2047,9 @@ RESTART_EXCEPTION:
                     } // End FOR
                 } // End IF/ELSE
 
+                // Initialize index into the result
+                uRes = uDimRht + uAx * uDimHi;;
+
                 // Split cases based upon the token type of the right arg (result)
                 switch (tkRhtArg.tkFlags.TknType)
                 {
@@ -2144,9 +2144,6 @@ RESTART_EXCEPTION:
                     defstop
                         break;
                 } // End SWITCH
-
-                // Skip to the next element in the result
-                uRes++;
             } // End FOR
         } // End FOR/FOR
     } // End IF/ELSE/.../FOR/FOR

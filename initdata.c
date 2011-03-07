@@ -43,6 +43,7 @@ extern PRIMSPEC PrimSpecQuoteDot;
 extern PRIMSPEC PrimSpecQuery;
 extern PRIMSPEC PrimSpecRightCaret;
 extern PRIMSPEC PrimSpecRightCaretUnderbar;
+extern PRIMSPEC PrimSpecRoot;
 extern PRIMSPEC PrimSpecStar;
 extern PRIMSPEC PrimSpecStile;
 extern PRIMSPEC PrimSpecTilde;
@@ -234,7 +235,7 @@ void InitPrimFns
 ////                                                                        // Alt-'O' - dieresis-circle (composition)
 ////                                                                        // Alt-'P' - dieresis-star (power)
 ////                                                                        // Alt-'Q' - (none)
-////                                                                        // Alt-'R' - (none)
+    InitPrimFn (UTF16_ROOT              , &PrimFnRoot_EM_YY              ); // Alt-'R' - root
     InitPrimFn (UTF16_SECTION           , &PrimFnSection_EM_YY           ); // Alt-'S' - section (symmetric difference)
 ////                                                                        // Alt-'T' - dieresis-tilde (commute/duplicate)
 ////                                                                        // Alt-'U' - (none)
@@ -341,6 +342,7 @@ LPPL_YYSTYPE PrimFn_EM
 #define PrimProtoFnQuoteDot_EM_YY               PrimProtoFnScalar_EM_YY
 #define PrimProtoFnRightCaret_EM_YY             PrimProtoFnScalar_EM_YY
 #define PrimProtoFnRightCaretUnderbar_EM_YY     PrimProtoFnScalar_EM_YY
+#define PrimProtoFnRoot_EM_YY                   PrimProtoFnScalar_EM_YY
 #define PrimProtoFnStar_EM_YY                   PrimProtoFnScalar_EM_YY
 #define PrimProtoFnStile_EM_YY                  PrimProtoFnScalar_EM_YY
 #define PrimProtoFnTimes_EM_YY                  PrimProtoFnScalar_EM_YY
@@ -456,7 +458,7 @@ void InitPrimProtoFns
     InitPrimProtoOp (UTF16_DIERESISCIRCLE    , &PrimProtoOpDieresisCircle_EM_YY    );   // Alt-'O' - dieresis-circle (composition)
     InitPrimProtoOp (UTF16_DIERESISSTAR      , &PrimProtoOpDieresisStar_EM_YY      );   // Alt-'P' - dieresis-star (power)
 ////                                                                                    // Alt-'Q' - (none)
-////                                                                                    // Alt-'R' - (none)
+    InitPrimProtoFn (UTF16_ROOT              , &PrimProtoFnRoot_EM_YY              );   // Alt-'R' - root
     InitPrimProtoFn (UTF16_SECTION           , &PrimProtoFnSection_EM_YY           );   // Alt-'S' - section (multiset symmetric difference)
     InitPrimProtoOp (UTF16_DIERESISTILDE     , &PrimProtoOpDieresisTilde_EM_YY     );   // Alt-'T' - dieresis-tilde (commute/duplicate)
 ////                                                                                    // Alt-'U' - (none)
@@ -614,6 +616,7 @@ void InitPrimSpecs
     Init1PrimSpec (UTF16_QUERY             , &PrimSpecQuery             );
     Init1PrimSpec (UTF16_RIGHTCARET        , &PrimSpecRightCaret        );
     Init1PrimSpec (UTF16_RIGHTCARETUNDERBAR, &PrimSpecRightCaretUnderbar);
+    Init1PrimSpec (UTF16_ROOT              , &PrimSpecRoot              );
     Init1PrimSpec (UTF16_STAR              , &PrimSpecStar              );
     Init1PrimSpec (UTF16_STILE             , &PrimSpecStile             );
     Init1PrimSpec (UTF16_STILE2            , &PrimSpecStile             );
@@ -714,6 +717,7 @@ void InitPrimFlags
     Init1PrimFlag (UTF16_RIGHTCARET        , PF_FB                         | PF_MS | PF_DS | PF_ID         | PF_RI | PF_INDEX_MORE     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
     Init1PrimFlag (UTF16_RIGHTCARETUNDERBAR, PF_FB                         | PF_MS | PF_DS | PF_ID         | PF_RI | PF_INDEX_MOREEQ   , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
     Init1PrimFlag (UTF16_RIGHTSHOE         , 0                                             | PF_ID | PF_LI                             , (LPPRIMOPS) PrimIdentFnRightShoe_EM_YY     );
+    Init1PrimFlag (UTF16_ROOT              , 0                             | PF_MS | PF_DS | PF_ID | PF_LI         | PF_INDEX_ROOT     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
     Init1PrimFlag (UTF16_SECTION           , 0                                             | PF_ID         | PF_RI                     , (LPPRIMOPS) PrimIdentFnSection_EM_YY       );
     Init1PrimFlag (UTF16_SQUAD             , 0                                             | PF_ID | PF_LI                             , (LPPRIMOPS) PrimIdentFnSquad_EM_YY         );
     Init1PrimFlag (UTF16_STAR              , PF_FB                         | PF_MS | PF_DS | PF_ID         | PF_RI | PF_INDEX_MOREEQ   , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
@@ -771,6 +775,8 @@ void InitIdentityElements
     Init1IdentityElement (PF_INDEX_EQUAL   , 1.0);
     Init1IdentityElement (PF_INDEX_MOREEQ  , 1.0);
     Init1IdentityElement (PF_INDEX_MORE    , 0.0);
+
+    Init1IdentityElement (PF_INDEX_ROOT    , 1.0);
 
     Init1IdentityElement (PF_INDEX_NOTEQUAL, 0.0);
 } // End InitIdentityElements

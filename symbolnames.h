@@ -175,7 +175,7 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_DIERESISCIRCLE       , L"{hoof}"               },  // ...
   {UTF16_DIERESISSTAR         , L"{dieresisstar}"       },  // Alt-'P' - Power operator       (sourpuss)
 //{UTF16_                     ,                         },  // Alt-'Q' - (none)
-//{UTF16_                     ,                         },  // Alt-'R' - (none)
+  {UTF16_ROOT                 , L"{root}"               },  // Alt-'R' - Root
   {UTF16_SECTION              , L"{section}"            },  // Alt-'S' - Multiset Symmetric Difference
   {UTF16_SECTION              , L"{msd}"                },  // ...
   {UTF16_DIERESISTILDE        , L"{dieresistilde}"      },  // Alt-'T' - Commute operator     (frown)

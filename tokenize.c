@@ -4740,7 +4740,7 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_DIERESISCIRCLE:      // Alt-'O' - composition (TKCOL_PRIM_OP2)
 ////////case UTF16_DIERESISSTAR:        // Alt-'P' - power  (TKCOL_PRIM_OP2)
 ////////case UTF16_                     // Alt-'Q' - (none)
-////////case UTF16_                     // Alt-'R' - (none)
+        case UTF16_ROOT:                // Alt-'R' - root
         case UTF16_SECTION:             // Alt-'S' - section (multiset symmetric difference)
 ////////case UTF16_DIERESISTILDE:       // Alt-'T' - commute (TKCOL_PRIM_OP1)
 ////////case UTF16_                     // Alt-'U' - (none)

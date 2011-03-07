@@ -124,7 +124,7 @@
 #define UTF16_DIERESISCIRCLE     0x2365         // Alt-'O' - Composition operator (holler)
 #define UTF16_DIERESISSTAR       0x2363         // Alt-'P' - Power operator       (sourpuss)
 //efine UTF16_                                  // Alt-'Q' - (none)
-//efine UTF16_                                  // Alt-'R' - (none)
+#define UTF16_ROOT               0x221A         // Alt-'R' - Root
 #define UTF16_SECTION            0x00A7         // Alt-'S' - Multiset Symmetric Difference (section)
 #define UTF16_DIERESISTILDE      0x2368         // Alt-'T' - Commute operator     (frown)
 //efine UTF16_                                  // Alt-'U' - (none)
@@ -337,7 +337,7 @@
 #define WS_UTF16_DIERESISCIRCLE     L"\x2365"   // Alt-'O' - Composition operator (holler)
 #define WS_UTF16_DIERESISSTAR       L"\x2363"   // Alt-'P' - Power operator       (sourpuss)
 //efine WS_UTF16_                               // Alt-'Q' - (none)
-//efine WS_UTF16_                               // Alt-'R' - (none)
+#define WS_UTF16_ROOT               L"\x221A"   // Alt-'R' - Root
 #define WS_UTF16_SECTION            L"\x00A7"   // Alt-'S' - Multiset Symmetric Difference (section)
 #define WS_UTF16_DIERESISTILDE      L"\x2368"   // Alt-'T' - Commute operator     (frown)
 //efine WS_UTF16_                               // Alt-'U' - (none)

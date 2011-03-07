@@ -2011,6 +2011,11 @@ typedef struct tagLANGCHARS
                                          L"Deal:  L?R\n\n"
                                          L"Keyboard:  '?' or Shift-'/' or Alt-'q'\n\n"
                                          L"Unicode:  0x003F or 63"},
+        {UTF16_ROOT               , {0}, L"Root",
+                                         L"Square Root:  " WS_UTF16_ROOT L"R\n"
+                                         L"Nth Root:    L" WS_UTF16_ROOT L"R\n\n"
+                                         L"Keyboard:  Alt-'R' or Alt-Shift-'r'\n\n"
+                                         L"Unicode:  0x221A or 8730"},
         LANGCHARS_SEPARATOR
         {UTF16_STILE              , {0}, L"Stile",
                                          L"Magnitude:  |R\n"

@@ -97,6 +97,7 @@
   #include "pf_rcaret.pro"
   #include "pf_rcaretund.pro"
   #include "pf_rho.pro"
+  #include "pf_root.pro"
   #include "pf_rshoe.pro"
   #include "pf_rshoeund.pro"
   #include "pf_rtack.pro"

@@ -78,14 +78,16 @@ typedef enum tagIC_INDICES
     ICNDX_PiDIVPi,          // 06:  _ {div} _   (same sign)
     ICNDX_NiDIVPi,          // 07:  _ {div} _   (different sign)
     ICNDX_InfSUBInf,        // 08:  _ - _ or _ + -_ or ...
-    ICNDX_NMODInf,          // 09:  L   |   ±Inf
+    ICNDX_NMODInf,          // 09:  L   |   ±_
     ICNDX_0EXP0,            // 0A:  0   *   0
     ICNDX_NEXPPi,           // 0B:  L   *   _ for L <= -1
     ICNDX_0LOG0,            // 0C:  0 {log} 0
     ICNDX_0LOG1,            // 0D:  0 {log} 1
     ICNDX_1LOG0,            // 0E:  1 {log} 0
     ICNDX_1LOG1,            // 0F:  1 {log} 1
-    ICNDX_LENGTH,           // 10:  # entries in this enum
+    ICNDX_0EXPPi,           // 10:  0   *   +_
+    ICNDX_0EXPNi,           // 11:  0   *   -_
+    ICNDX_LENGTH            // 12:  # entries in this enum
 } IC_INDICES;
 
 // N.B.:  Whenever changing the above enum (IC_INDICES),
@@ -104,13 +106,15 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
     ICVAL_DOMAIN_ERROR ,    // 06:  _ {div} _   (same sign)
     ICVAL_DOMAIN_ERROR ,    // 07:  _ {div} _   (different sign)
     ICVAL_DOMAIN_ERROR ,    // 08:  _ - _ or _ + -_ or ...
-    ICVAL_DOMAIN_ERROR ,    // 09:  L   |   ±Inf
+    ICVAL_DOMAIN_ERROR ,    // 09:  L   |   ±_
     ICVAL_ONE          ,    // 0A:  0   *   0
     ICVAL_DOMAIN_ERROR ,    // 0B:  L   *   _ for L <= -1
     ICVAL_ONE          ,    // 0C:  0 {log} 0
     ICVAL_DOMAIN_ERROR ,    // 0D:  0 {log} 1
     ICVAL_DOMAIN_ERROR ,    // 0E:  1 {log} 0
     ICVAL_ONE          ,    // 0F:  1 {log} 1
+    ICVAL_ZERO         ,    // 10:  0   *   +_
+    ICVAL_POS_INFINITY ,    // 11:  0   *   -_
    }
 #endif
 ;
@@ -409,17 +413,17 @@ LPPRIMSPEC PrimSpecTab[PRIMTAB_LEN];    // The table of corresponding LPPRIMSPEC
                                         //   for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
-    APLU3264  Index    :4,              // 00:  0000000F:  Function index (see FBFN_INDS)
-              IdentElem:1,              //      00000010:  TRUE iff this function has an identity element
-              bLftIdent:1,              //      00000020:  TRUE iff the identity function is a left identity
-              bRhtIdent:1,              //      00000040:  ...                                 right ...
-              DydScalar:1,              //      00000080:  ...                    is scalar dyadic
-              MonScalar:1,              //      00000100:  ...                       ...    monadic
-              Alter    :1,              //      00000200:  ...                       alternating
-              AssocBool:1,              //      00000400:  ...                       associative on Booleans only
-              AssocNumb:1,              //      00000800:  ...                       associative on all numbers
-              FastBool :1,              //      00001000:  Boolean function w/reduction & scan can be sped up
-                       :19;             //      FFFFE000:  Available flag bits
+    APLU3264  Index    :5,              // 00:  00000010:  Function index (see FBFN_INDS)
+              IdentElem:1,              //      00000020:  TRUE iff this function has an identity element
+              bLftIdent:1,              //      00000040:  TRUE iff the identity function is a left identity
+              bRhtIdent:1,              //      00000080:  ...                                 right ...
+              DydScalar:1,              //      00000100:  ...                    is scalar dyadic
+              MonScalar:1,              //      00000200:  ...                       ...    monadic
+              Alter    :1,              //      00000400:  ...                       alternating
+              AssocBool:1,              //      00000800:  ...                       associative on Booleans only
+              AssocNumb:1,              //      00001000:  ...                       associative on all numbers
+              FastBool :1,              //      00002000:  Boolean function w/reduction & scan can be sped up
+                       :18;             //      FFFFC000:  Available flag bits
     LPPRIMOPS lpPrimOps;                // 04:  Ptr to PRIMOPS entry of the identity function (or NULL if it's a scalar fcn)
 } PRIMFLAGS, *LPPRIMFLAGS;
 
@@ -448,10 +452,8 @@ typedef enum tagFBFN_INDS               // Fast Boolean function indices
     PF_INDEX_PLUS    ,                  // 0D = ...       "plus"  ...
     PF_INDEX_MINUS   ,                  // 0E = ...       "minus" ...
     PF_INDEX_DIVIDE  ,                  // 0F = ...       "divide" ...
-    PF_INDEX_NEXT                       // No available entries (4 bits)
-                                        // If another entry is made, be sure
-                                        //   to increase Index:4 to Index:5
-                                        //   in tagPRIMFLAGS
+    PF_INDEX_ROOT    ,                  // 10 = ...       "root" ...
+    PF_INDEX_NEXT                       // 11-1F = Available entries (5 bits)
 } FBFN_INDS;
 
 // N.B.:  Whenever changing the above enum (FBFN_INDS),

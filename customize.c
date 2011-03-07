@@ -67,13 +67,15 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
    WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L" (same sign)",               // 06:  _ {div} _   (same sign)
    WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L" (diff sign)",               // 07:  _ {div} _   (different sign)
    WS_UTF16_INFINITY L"-"              WS_UTF16_INFINITY L" (and related)",             // 08:  _ - _ or _ + -_ or ...
-   L"L|±" WS_UTF16_INFINITY,                                                            // 09:  L   |   ±Inf
+   L"L|±" WS_UTF16_INFINITY,                                                            // 09:  L   |   ±_
    L"0*0",                                                                              // 0A:  0   *   0
    L"L*" WS_UTF16_INFINITY L"for L" WS_UTF16_LEFTCARETUNDERBAR WS_UTF16_OVERBAR L"1",   // 0B:  L   *   _ for L <= -1
    L"0" WS_UTF16_CIRCLESTAR L"0",                                                       // 0C:  0 {log} 0
    L"0" WS_UTF16_CIRCLESTAR L"1",                                                       // 0D:  0 {log} 1
    L"1" WS_UTF16_CIRCLESTAR L"0",                                                       // 0E:  1 {log} 0
    L"1" WS_UTF16_CIRCLESTAR L"1",                                                       // 0F:  1 {log} 1
+   L"0*" WS_UTF16_INFINITY,                                                             // 10:  0   *   +_
+   L"0*" WS_UTF16_OVERBAR WS_UTF16_INFINITY                                             // 11:  0   *   -_
   };
 
 // []IC Index Values -- these must be in the same order as the IC_VALUES enum.
@@ -165,7 +167,7 @@ WCHAR awKTC_APL[KTC_TXT_CY][KTC_TXT_CX]
    {UTF16_JOT           , UTF16_DIERESISJOT     , UTF16_DIERESISDOWNTACK, UTF16_DIERESISSTAR     , UTF16_DIERESIS         , 0                       },
    {UTF16_UPSTILE       , UTF16_DOWNSTILE       , UTF16_STILE           , UTF16_STILETILDE       , UTF16_DOWNSHOESTILE    , 0                       },
    {UTF16_LEFTSHOE      , UTF16_RIGHTSHOE       , UTF16_LEFTSHOEUNDERBAR, UTF16_RIGHTSHOEUNDERBAR, UTF16_UPSHOE           , UTF16_DOWNSHOE          },
-   {UTF16_IOTA          , UTF16_IOTAUNDERBAR    , UTF16_EPSILON         , UTF16_EPSILONUNDERBAR  , UTF16_RHO              , 0                       },
+   {UTF16_IOTA          , UTF16_IOTAUNDERBAR    , UTF16_EPSILON         , UTF16_EPSILONUNDERBAR  , UTF16_RHO              , UTF16_ROOT              },
    {UTF16_CIRCLE        , UTF16_CIRCLESTILE     , UTF16_CIRCLEBAR       , UTF16_CIRCLESLOPE      , UTF16_CIRCLESTAR       , UTF16_DIERESISCIRCLE    },
    {UTF16_SLASH         , UTF16_SLASHBAR        , UTF16_SLOPE           , UTF16_SLOPEBAR         , UTF16_NOTEQUAL         , UTF16_SECTION           },
    {UTF16_EQUALUNDERBAR , UTF16_NOTEQUALUNDERBAR, UTF16_ALPHA           , UTF16_OMEGA            , UTF16_LEFTCARETUNDERBAR, UTF16_RIGHTCARETUNDERBAR},

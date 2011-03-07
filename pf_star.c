@@ -466,6 +466,16 @@ APLFLOAT PrimFnDydStarFisFvF
      && aplFloatRht EQ 0)
         return TranslateQuadICIndex (ICNDX_0EXP0);
 
+    // Check for indeterminates:  0 * +_
+    if (aplFloatLft EQ 0
+     && aplFloatRht EQ PosInfinity)
+        return TranslateQuadICIndex (ICNDX_0EXPPi);
+
+    // Check for indeterminates:  0 * -_
+    if (aplFloatLft EQ 0
+     && aplFloatRht EQ NegInfinity)
+        return TranslateQuadICIndex (ICNDX_0EXPNi);
+
     // Check for indeterminates:  L * _ for L <= -1
     if (aplFloatLft <= -1
      && aplFloatRht EQ PosInfinity)

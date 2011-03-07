@@ -613,6 +613,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\pf_root.c"
+				>
+			</File>
+			<File
 				RelativePath=".\pf_rshoe.c"
 				>
 			</File>

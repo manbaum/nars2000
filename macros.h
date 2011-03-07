@@ -331,6 +331,8 @@
 
 #define GetSignatureMem(a)          (((LPHEADER_SIGNATURE) (a))->nature)
 
+#define GetImmTypeFcn(a)            IMMTYPE_PRIMFCN
+
 
 // Macros to get countof for arrays and constant strings
 #define countof(a)                  (sizeof (a) / sizeof ((a)[0]))

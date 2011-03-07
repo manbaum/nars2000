@@ -20,6 +20,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#define ERRMSG_ASSERTION_ERROR                  L"ASSERTION ERROR"
 #define ERRMSG_AXIS_ERROR                       L"AXIS ERROR"
 #define ERRMSG_CORRUPT_WS                       L"CORRUPT WS"
 #define ERRMSG_DESTINATION_ERROR                L"DESTINATION ERROR"

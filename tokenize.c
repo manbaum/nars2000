@@ -4164,9 +4164,11 @@ void Untokenize
             case TKT_LINECONT:          // Line continuation (data is NULL)
             case TKT_INPOUT:            // Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
             case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
+            case TKT_CS_ASSERT:         // ...                 ASSERT
             case TKT_CS_CASE:           // ...                 CASE
             case TKT_CS_CASELIST:       // ...                 CASELIST
             case TKT_CS_CONTINUE:       // ...                 CONTINUE
+            case TKT_CS_CONTINUEIF:     // ...                 CONTINUEIF
             case TKT_CS_ELSE:           // ...                 ELSE
             case TKT_CS_ELSEIF:         // ...                 ELSEIF
             case TKT_CS_END:            // ...                 END
@@ -4184,6 +4186,7 @@ void Untokenize
             case TKT_CS_IF2:            // ...                 IF2
             case TKT_CS_IN:             // ...                 IN
             case TKT_CS_LEAVE:          // ...                 LEAVE
+            case TKT_CS_LEAVEIF:        // ...                 LEAVEIF
             case TKT_CS_ORIF:           // ...                 ORIF
             case TKT_CS_REPEAT:         // ...                 REPEAT
             case TKT_CS_REPEAT2:        // ...                 REPEAT2
@@ -4358,29 +4361,29 @@ UBOOL AppendNewToken_EM
     // Split cases based upon the token type
     switch (lptkFlags->TknType)
     {
-        case TKT_VARNAMED    :
-        case TKT_CHRSTRAND   :
-        case TKT_NUMSTRAND   :
-        case TKT_VARIMMED    :
-        case TKT_ASSIGN      :
-        case TKT_LISTSEP     :
-        case TKT_COLON       :
-        case TKT_FCNIMMED    :
-        case TKT_OP1IMMED    :
-        case TKT_OP2IMMED    :
-        case TKT_OP3IMMED    :
-        case TKT_OPJOTDOT    :
-        case TKT_LEFTPAREN   :
-        case TKT_RIGHTPAREN  :
-        case TKT_LEFTBRACKET :
-        case TKT_RIGHTBRACKET:
-        case TKT_LEFTBRACE   :
-        case TKT_RIGHTBRACE  :
-        case TKT_LINECONT    :
-        case TKT_INPOUT      :
-        case TKT_VARARRAY    :
-        case TKT_SYS_NS      :
-        case TKT_FILLJOT     :
+        case TKT_VARNAMED      :
+        case TKT_CHRSTRAND     :
+        case TKT_NUMSTRAND     :
+        case TKT_VARIMMED      :
+        case TKT_ASSIGN        :
+        case TKT_LISTSEP       :
+        case TKT_COLON         :
+        case TKT_FCNIMMED      :
+        case TKT_OP1IMMED      :
+        case TKT_OP2IMMED      :
+        case TKT_OP3IMMED      :
+        case TKT_OPJOTDOT      :
+        case TKT_LEFTPAREN     :
+        case TKT_RIGHTPAREN    :
+        case TKT_LEFTBRACKET   :
+        case TKT_RIGHTBRACKET  :
+        case TKT_LEFTBRACE     :
+        case TKT_RIGHTBRACE    :
+        case TKT_LINECONT      :
+        case TKT_INPOUT        :
+        case TKT_VARARRAY      :
+        case TKT_SYS_NS        :
+        case TKT_FILLJOT       :
             // Append the NEC token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (TKT_CS_NEC,
@@ -4392,13 +4395,13 @@ UBOOL AppendNewToken_EM
                                  lptkLocalVars->uChar);
             break;
 
-        case TKT_SYNTERR     :
+        case TKT_SYNTERR       :
             break;
 
-        case TKT_LABELSEP    :
-        case TKT_EOS         :
-        case TKT_EOL         :
-        case TKT_SOS         :
+        case TKT_LABELSEP      :
+        case TKT_EOS           :
+        case TKT_EOL           :
+        case TKT_SOS           :
             // Append the EOS token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (lptkFlags->TknType,
@@ -4410,36 +4413,38 @@ UBOOL AppendNewToken_EM
                                  lptkLocalVars->uChar);
             break;
 
-        case TKT_CS_ANDIF    :
-        case TKT_CS_CASE     :
-        case TKT_CS_CASELIST :
-        case TKT_CS_CONTINUE :
-        case TKT_CS_ELSE     :
-        case TKT_CS_ELSEIF   :
-        case TKT_CS_END      :
-        case TKT_CS_ENDFOR   :
-        case TKT_CS_ENDFORLCL:
-        case TKT_CS_ENDIF    :
-        case TKT_CS_ENDREPEAT:
-        case TKT_CS_ENDSELECT:
-        case TKT_CS_ENDWHILE :
-        case TKT_CS_FOR      :
-        case TKT_CS_FOR2     :
-        case TKT_CS_FORLCL   :
-        case TKT_CS_IF       :
-        case TKT_CS_IF2      :
-        case TKT_CS_IN       :
-        case TKT_CS_LEAVE    :
-        case TKT_CS_ORIF     :
-        case TKT_CS_REPEAT   :
-        case TKT_CS_REPEAT2  :
-        case TKT_CS_SELECT   :
-        case TKT_CS_SELECT2  :
-        case TKT_CS_UNTIL    :
-        case TKT_CS_WHILE    :
-        case TKT_CS_WHILE2   :
-        case TKT_CS_SKIPCASE :
-        case TKT_CS_SKIPEND  :
+        case TKT_CS_ANDIF      :
+        case TKT_CS_CASE       :
+        case TKT_CS_CASELIST   :
+        case TKT_CS_CONTINUE   :
+        case TKT_CS_CONTINUEIF :
+        case TKT_CS_ELSE       :
+        case TKT_CS_ELSEIF     :
+        case TKT_CS_END        :
+        case TKT_CS_ENDFOR     :
+        case TKT_CS_ENDFORLCL  :
+        case TKT_CS_ENDIF      :
+        case TKT_CS_ENDREPEAT  :
+        case TKT_CS_ENDSELECT  :
+        case TKT_CS_ENDWHILE   :
+        case TKT_CS_FOR        :
+        case TKT_CS_FOR2       :
+        case TKT_CS_FORLCL     :
+        case TKT_CS_IF         :
+        case TKT_CS_IF2        :
+        case TKT_CS_IN         :
+        case TKT_CS_LEAVE      :
+        case TKT_CS_LEAVEIF    :
+        case TKT_CS_ORIF       :
+        case TKT_CS_REPEAT     :
+        case TKT_CS_REPEAT2    :
+        case TKT_CS_SELECT     :
+        case TKT_CS_SELECT2    :
+        case TKT_CS_UNTIL      :
+        case TKT_CS_WHILE      :
+        case TKT_CS_WHILE2     :
+        case TKT_CS_SKIPCASE   :
+        case TKT_CS_SKIPEND    :
 #define lptdAnon    ((ANON_CTRL_STRUC *) lptkData)
             // Append the Ctrl Struc token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
@@ -4453,12 +4458,13 @@ UBOOL AppendNewToken_EM
 #undef  lptdAnon
             break;
 
-        case TKT_CS_GOTO     :  // Ignore these tokens
-        case TKT_CS_RETURN   :
+        case TKT_CS_ASSERT     :    // Ignore these tokens
+        case TKT_CS_GOTO       :
+        case TKT_CS_RETURN     :
             break;
 
-        case TKT_CS_NEC      :
-        case TKT_CS_EOL      :
+        case TKT_CS_NEC        :
+        case TKT_CS_EOL        :
         defstop
             break;
     } // End SWITCH
@@ -4843,33 +4849,36 @@ TKCOLINDICES CharTransTK
 
             // Check the next few chars to see if they match any
             //   Control Structures
-            if (CtrlStrucCmpi (lptkLocalVars, L":andif"    , TKT_CS_ANDIF    )
-             || CtrlStrucCmpi (lptkLocalVars, L":case"     , TKT_CS_CASE     )
-             || CtrlStrucCmpi (lptkLocalVars, L":caselist" , TKT_CS_CASELIST )
-             || CtrlStrucCmpi (lptkLocalVars, L":continue" , TKT_CS_CONTINUE )
-             || CtrlStrucCmpi (lptkLocalVars, L":else"     , TKT_CS_ELSE     )
-             || CtrlStrucCmpi (lptkLocalVars, L":elseif"   , TKT_CS_ELSEIF   )
-             || CtrlStrucCmpi (lptkLocalVars, L":end"      , TKT_CS_END      )
-             || CtrlStrucCmpi (lptkLocalVars, L":endfor"   , TKT_CS_ENDFOR   )
-             || CtrlStrucCmpi (lptkLocalVars, L":endforlcl", TKT_CS_ENDFORLCL)
-             || CtrlStrucCmpi (lptkLocalVars, L":endif"    , TKT_CS_ENDIF    )
-             || CtrlStrucCmpi (lptkLocalVars, L":endrepeat", TKT_CS_ENDREPEAT)
-             || CtrlStrucCmpi (lptkLocalVars, L":endselect", TKT_CS_ENDSELECT)
-             || CtrlStrucCmpi (lptkLocalVars, L":endswitch", TKT_CS_ENDSELECT)
-             || CtrlStrucCmpi (lptkLocalVars, L":endwhile" , TKT_CS_ENDWHILE )
-             || CtrlStrucCmpi (lptkLocalVars, L":for"      , TKT_CS_FOR      )
-             || CtrlStrucCmpi (lptkLocalVars, L":forlcl"   , TKT_CS_FORLCL   )
-             || CtrlStrucCmpi (lptkLocalVars, L":goto"     , TKT_CS_GOTO     )
-             || CtrlStrucCmpi (lptkLocalVars, L":if"       , TKT_CS_IF       )
-             || CtrlStrucCmpi (lptkLocalVars, L":in"       , TKT_CS_IN       )
-             || CtrlStrucCmpi (lptkLocalVars, L":leave"    , TKT_CS_LEAVE    )
-             || CtrlStrucCmpi (lptkLocalVars, L":orif"     , TKT_CS_ORIF     )
-             || CtrlStrucCmpi (lptkLocalVars, L":repeat"   , TKT_CS_REPEAT   )
-             || CtrlStrucCmpi (lptkLocalVars, L":return"   , TKT_CS_RETURN   )
-             || CtrlStrucCmpi (lptkLocalVars, L":select"   , TKT_CS_SELECT   )
-             || CtrlStrucCmpi (lptkLocalVars, L":switch"   , TKT_CS_SELECT   )
-             || CtrlStrucCmpi (lptkLocalVars, L":until"    , TKT_CS_UNTIL    )
-             || CtrlStrucCmpi (lptkLocalVars, L":while"    , TKT_CS_WHILE    ))
+            if (CtrlStrucCmpi (lptkLocalVars, L":andif"      , TKT_CS_ANDIF      )
+             || CtrlStrucCmpi (lptkLocalVars, L":assert"     , TKT_CS_ASSERT     )
+             || CtrlStrucCmpi (lptkLocalVars, L":case"       , TKT_CS_CASE       )
+             || CtrlStrucCmpi (lptkLocalVars, L":caselist"   , TKT_CS_CASELIST   )
+             || CtrlStrucCmpi (lptkLocalVars, L":continue"   , TKT_CS_CONTINUE   )
+             || CtrlStrucCmpi (lptkLocalVars, L":continueif" , TKT_CS_CONTINUEIF )
+             || CtrlStrucCmpi (lptkLocalVars, L":else"       , TKT_CS_ELSE       )
+             || CtrlStrucCmpi (lptkLocalVars, L":elseif"     , TKT_CS_ELSEIF     )
+             || CtrlStrucCmpi (lptkLocalVars, L":end"        , TKT_CS_END        )
+             || CtrlStrucCmpi (lptkLocalVars, L":endfor"     , TKT_CS_ENDFOR     )
+             || CtrlStrucCmpi (lptkLocalVars, L":endforlcl"  , TKT_CS_ENDFORLCL  )
+             || CtrlStrucCmpi (lptkLocalVars, L":endif"      , TKT_CS_ENDIF      )
+             || CtrlStrucCmpi (lptkLocalVars, L":endrepeat"  , TKT_CS_ENDREPEAT  )
+             || CtrlStrucCmpi (lptkLocalVars, L":endselect"  , TKT_CS_ENDSELECT  )
+             || CtrlStrucCmpi (lptkLocalVars, L":endswitch"  , TKT_CS_ENDSELECT  )
+             || CtrlStrucCmpi (lptkLocalVars, L":endwhile"   , TKT_CS_ENDWHILE   )
+             || CtrlStrucCmpi (lptkLocalVars, L":for"        , TKT_CS_FOR        )
+             || CtrlStrucCmpi (lptkLocalVars, L":forlcl"     , TKT_CS_FORLCL     )
+             || CtrlStrucCmpi (lptkLocalVars, L":goto"       , TKT_CS_GOTO       )
+             || CtrlStrucCmpi (lptkLocalVars, L":if"         , TKT_CS_IF         )
+             || CtrlStrucCmpi (lptkLocalVars, L":in"         , TKT_CS_IN         )
+             || CtrlStrucCmpi (lptkLocalVars, L":leave"      , TKT_CS_LEAVE      )
+             || CtrlStrucCmpi (lptkLocalVars, L":leaveif"    , TKT_CS_LEAVEIF    )
+             || CtrlStrucCmpi (lptkLocalVars, L":orif"       , TKT_CS_ORIF       )
+             || CtrlStrucCmpi (lptkLocalVars, L":repeat"     , TKT_CS_REPEAT     )
+             || CtrlStrucCmpi (lptkLocalVars, L":return"     , TKT_CS_RETURN     )
+             || CtrlStrucCmpi (lptkLocalVars, L":select"     , TKT_CS_SELECT     )
+             || CtrlStrucCmpi (lptkLocalVars, L":switch"     , TKT_CS_SELECT     )
+             || CtrlStrucCmpi (lptkLocalVars, L":until"      , TKT_CS_UNTIL      )
+             || CtrlStrucCmpi (lptkLocalVars, L":while"      , TKT_CS_WHILE      ))
                 return TKCOL_CTRLSTRUC;
             else
                 return TKCOL_COLON;

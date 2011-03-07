@@ -97,9 +97,11 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 %token LBRACE RBRACE
 %token UNK EOL
 %token CS_ANDIF
+%token CS_ASSERT
 %token CS_CASE
 %token CS_CASELIST
 %token CS_CONTINUE
+%token CS_CONTINUEIF
 %token CS_ELSE
 %token CS_ELSEIF
 %token CS_ENDFOR
@@ -111,6 +113,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 %token CS_IF
 %token CS_IN
 %token CS_LEAVE
+%token CS_LEAVEIF
 %token CS_ORIF
 %token CS_SELECT
 %token CS_SKIPCASE
@@ -272,6 +275,32 @@ StmtSing:
                                              // No return value needed
                                          } // End IF
                                         }
+    | error   CS_ASSERT                 {DbgMsgWP (L"%%StmtSing:  CS_ASSERT error");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             YYERROR3
+                                         else
+                                             YYERROR2
+                                        }
+    | ArrValu CS_ASSERT                 {DbgMsgWP (L"%%StmtSing:  CS_ASSERT ArrValu");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle ASSERT statement
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_ASSERT_Stmt_EM (lpplLocalVars, &$1);
+                                             FreeResult (&$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR3
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF
+                                        }
     | error   CS_CASE                   {DbgMsgWP (L"%%StmtSing:  CS_CASE error");
                                          if (!lpplLocalVars->bLookAhead)
                                              YYERROR3
@@ -333,6 +362,25 @@ StmtSing:
                                              else
                                                  lpplLocalVars->bRet =
                                                    CS_CONTINUE_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR3
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF
+                                        }
+    | ArrValu CS_CONTINUEIF             {DbgMsgWP (L"%%StmtSing:  CS_CONTINUEIF ArrValu");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle CONTINUEIF statement
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_CONTINUEIF_Stmt_EM (lpplLocalVars, &$2, &$1);
 
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR3
@@ -539,6 +587,25 @@ StmtSing:
                                              else
                                                  lpplLocalVars->bRet =
                                                    CS_LEAVE_Stmt (lpplLocalVars, &$1);
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR3
+                                             else
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;          // Stop executing this line
+
+                                             // No return value needed
+                                         } // End IF
+                                        }
+    | ArrValu CS_LEAVEIF                {DbgMsgWP (L"%%StmtSing:  CS_LEAVEIF ArrValu");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Handle LEAVEIF statement
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->bRet = FALSE;
+                                             else
+                                                 lpplLocalVars->bRet =
+                                                   CS_LEAVEIF_Stmt_EM (lpplLocalVars, &$2, &$1);
 
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR3
@@ -8206,9 +8273,11 @@ char LookaheadAdjacent
         case TKT_RIGHTBRACE:
         case TKT_SOS:
         case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
+        case TKT_CS_ASSERT:         // ...                 ASSERT
         case TKT_CS_CASE:           // ...                 CASE
         case TKT_CS_CASELIST:       // ...                 CASELIST
         case TKT_CS_CONTINUE:       // ...                 CONTINUE
+        case TKT_CS_CONTINUEIF:     // ...                 CONTINUEIF
         case TKT_CS_ELSE:           // ...                 ELSE
         case TKT_CS_ELSEIF:         // ...                 ELSEIF
         case TKT_CS_END:            // ...                 END
@@ -8226,6 +8295,7 @@ char LookaheadAdjacent
         case TKT_CS_IF2:            // ...                 IF2
         case TKT_CS_IN:             // ...                 IN
         case TKT_CS_LEAVE:          // ...                 LEAVE
+        case TKT_CS_LEAVEIF:        // ...                 LEAVEIF
         case TKT_CS_ORIF:           // ...                 ORIF
         case TKT_CS_REPEAT:         // ...                 REPEAT
         case TKT_CS_REPEAT2:        // ...                 REPEAT2
@@ -8309,9 +8379,11 @@ UBOOL LookaheadDyadicOp
         case TKT_VARARRAY:
         case TKT_INPOUT:
         case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
+        case TKT_CS_ASSERT:         // ...                 ASSERT
         case TKT_CS_CASE:           // ...                 CASE
         case TKT_CS_CASELIST:       // ...                 CASELIST
         case TKT_CS_CONTINUE:       // ...                 CONTINUE
+        case TKT_CS_CONTINUEIF:     // ...                 CONTINUEIF
         case TKT_CS_ELSE:           // ...                 ELSE
         case TKT_CS_ELSEIF:         // ...                 ELSEIF
         case TKT_CS_END:            // ...                 END
@@ -8329,6 +8401,7 @@ UBOOL LookaheadDyadicOp
         case TKT_CS_IF2:            // ...                 IF2
         case TKT_CS_IN:             // ...                 IN
         case TKT_CS_LEAVE:          // ...                 LEAVE
+        case TKT_CS_LEAVEIF:        // ...                 LEAVEIF
         case TKT_CS_ORIF:           // ...                 ORIF
         case TKT_CS_REPEAT:         // ...                 REPEAT
         case TKT_CS_REPEAT2:        // ...                 REPEAT2
@@ -8457,9 +8530,11 @@ UBOOL LookbehindOp
         case TKT_VARARRAY:
         case TKT_INPOUT:
         case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
+        case TKT_CS_ASSERT:         // ...                 ASSERT
         case TKT_CS_CASE:           // ...                 CASE
         case TKT_CS_CASELIST:       // ...                 CASELIST
         case TKT_CS_CONTINUE:       // ...                 CONTINUE
+        case TKT_CS_CONTINUEIF:     // ...                 CONTINUEIF
         case TKT_CS_ELSE:           // ...                 ELSE
         case TKT_CS_ELSEIF:         // ...                 ELSEIF
         case TKT_CS_END:            // ...                 END
@@ -8477,6 +8552,7 @@ UBOOL LookbehindOp
         case TKT_CS_IF2:            // ...                 IF2
         case TKT_CS_IN:             // ...                 IN
         case TKT_CS_LEAVE:          // ...                 LEAVE
+        case TKT_CS_LEAVEIF:        // ...                 LEAVEIF
         case TKT_CS_ORIF:           // ...                 ORIF
         case TKT_CS_REPEAT:         // ...                 REPEAT
         case TKT_CS_REPEAT2:        // ...                 REPEAT2
@@ -9064,6 +9140,9 @@ PL_YYLEX_START:
         case TKT_CS_ANDIF:          // Control structure:  ANDIF
             return CS_ANDIF;
 
+        case TKT_CS_ASSERT:         // Control Structure:  ASSERT
+            return CS_ASSERT;
+
         case TKT_CS_CASE:           // Control Structure:  CASE
             return CS_CASE;
 
@@ -9072,6 +9151,9 @@ PL_YYLEX_START:
 
         case TKT_CS_CONTINUE:       // Control Structure:  CONTINUE
             return CS_CONTINUE;
+
+        case TKT_CS_CONTINUEIF:     // Control Structure:  CONTINUEIF
+            return CS_CONTINUEIF;
 
         case TKT_CS_ELSE:           // Control Structure:  ELSE
             return CS_ELSE;
@@ -9108,6 +9190,9 @@ PL_YYLEX_START:
 
         case TKT_CS_LEAVE:          // Control Structure:  LEAVE
             return CS_LEAVE;
+
+        case TKT_CS_LEAVEIF:        // Control Structure:  LEAVEIF
+            return CS_LEAVEIF;
 
         case TKT_CS_ORIF:           // Control Structure:  ORIF
             return CS_ORIF;

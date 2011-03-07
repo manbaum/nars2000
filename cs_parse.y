@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,11 +71,40 @@ TOKEN       tkTmp;
 %name-prefix="cs_yy"
 %parse-param {LPCSLOCALVARS lpcsLocalVars}
 %lex-param   {LPCSLOCALVARS lpcsLocalVars}
-%token  ANDIF       CASE        CASELIST    CONTINUE    ELSE        ELSEIF      END
-%token  ENDFOR      ENDFORLCL   ENDIF       ENDREPEAT   ENDSELECT   ENDWHILE    EOS
-%token  FOR         FORLCL      GOTO        IF          INFOR       LEAVE       NEC
-%token  ORIF        REPEAT      RETURN      SELECT      SKIPCASE    SKIPEND     SOS
-%token  UNK         UNTIL       WHILE
+%token  ANDIF
+%token  ASSERT
+%token  CASE
+%token  CASELIST
+%token  CONTINUE
+%token  CONTINUEIF
+%token  ELSE
+%token  ELSEIF
+%token  END
+%token  ENDFOR
+%token  ENDFORLCL
+%token  ENDIF
+%token  ENDREPEAT
+%token  ENDSELECT
+%token  ENDWHILE
+%token  EOS
+%token  FOR
+%token  FORLCL
+%token  GOTO
+%token  IF
+%token  INFOR
+%token  LEAVE
+%token  LEAVEIF
+%token  NEC
+%token  ORIF
+%token  REPEAT
+%token  RETURN
+%token  SELECT
+%token  SKIPCASE
+%token  SKIPEND
+%token  SOS
+%token  UNK
+%token  UNTIL
+%token  WHILE
 
 %start CtrlStruc
 
@@ -110,7 +139,17 @@ CtrlStruc:
   ;
 
 CSRec:
-          ForStmt                                               {DbgMsgWP (L"%%CSRec:  ForStmt");
+          AssertStmt                                            {DbgMsgWP (L"%%CSRec:  AssertStmt");
+                                                                    // Ensure there is no unmatched ContinueLeave in $1
+                                                                    if ($1.lptkCL1st)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$1.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    $$ = $1;
+                                                                }
+  |       ForStmt                                               {DbgMsgWP (L"%%CSRec:  ForStmt");
                                                                     // Ensure there is no unmatched ContinueLeave in $1
                                                                     if ($1.lptkCL1st)
                                                                     {
@@ -184,6 +223,17 @@ CSRec:
 
                                                                     $$ = $1;
                                                                 }
+  | CSRec AssertStmt                                            {DbgMsgWP (L"%%CSRec:  CSRec AssertStmt");
+                                                                    // Ensure there is no unmatched ContinueLeave in $2
+                                                                    if ($2.lptkCL1st)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    // There can't be an unmatched CONTINUE/LEAVE in $2, so ignore it
+                                                                    $$ = $1;
+                                                                }
   | CSRec ForStmt                                               {DbgMsgWP (L"%%CSRec:  CSRec ForStmt");
                                                                     // Ensure there is no unmatched ContinueLeave in $2
                                                                     if ($2.lptkCL1st)
@@ -229,7 +279,9 @@ CSRec:
                                                                         if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                         {
                                                                             Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                             // If it's not ENDIF, ...
@@ -316,7 +368,9 @@ CSCLCSRec:
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -344,7 +398,9 @@ CSCLCSRec:
                                                                     if (lptk1st->tkData.uCLIndex EQ $1.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -366,7 +422,9 @@ CSCLCSRec:
                                                                     if (lptk1st->tkData.uCLIndex EQ $1.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -383,7 +441,9 @@ CSCLCSRec:
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -623,6 +683,22 @@ CLRec:
 
                                                                     $$ = $1;
                                                                 }
+  |             CONTINUEIF NSS                                  {DbgMsgWP (L"%%CLRec:  CONTINUEIF NSS");
+                                                                    // Ensure the CONTINUEIF token is SOS
+                                                                    if (!$1.lptkCur->tkData.bSOS)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$1.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    // Save the starting index common to this stmt
+                                                                    $1.uCLIndex                 =
+                                                                    $1.lptkCur->tkData.uCLIndex = lpcsLocalVars->lptkCSLink->tkData.uCLIndex;
+                                                                    lpcsLocalVars->lptkCSLink->tkData.uCLIndex = 0;
+                                                                    $1.lptkCL1st = $1.lptk1st = $1.lptkCur;
+
+                                                                    $$ = $1;
+                                                                }
   |             LEAVE    SOSStmts                               {DbgMsgWP (L"%%CLRec:  LEAVE SOSStmts");
                                                                     // Ensure the LEAVE token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
@@ -639,8 +715,41 @@ CLRec:
 
                                                                     $$ = $1;
                                                                 }
+  |             LEAVEIF NSS                                     {DbgMsgWP (L"%%CLRec:  LEAVEIF NSS");
+                                                                    // Ensure the LEAVEIF token is SOS
+                                                                    if (!$1.lptkCur->tkData.bSOS)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$1.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    // Save the starting index common to this stmt
+                                                                    $1.uCLIndex                 =
+                                                                    $1.lptkCur->tkData.uCLIndex = lpcsLocalVars->lptkCSLink->tkData.uCLIndex;
+                                                                    lpcsLocalVars->lptkCSLink->tkData.uCLIndex = 0;
+                                                                    $1.lptkCL1st = $1.lptk1st = $1.lptkCur;
+
+                                                                    $$ = $1;
+                                                                }
   | CLRec       CONTINUE SOSStmts                               {DbgMsgWP (L"%%CLRec:  CLRec CONTINUE SOSStmts");
                                                                     // Ensure the CONTINUE token is SOS
+                                                                    if (!$2.lptkCur->tkData.bSOS)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    // In this partial sequence, pass on down a ptr to the first entry
+                                                                    //   and the index common to this group
+                                                                    $2.lptkCL1st                =
+                                                                    $2.lptk1st                  = $1.lptkCL1st;
+                                                                    $2.uCLIndex                 =
+                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
+
+                                                                    $$ = $2;
+                                                                }
+  | CLRec       CONTINUEIF NSS                                  {DbgMsgWP (L"%%CLRec:  CLRec CONTINUEIF NSS");
+                                                                    // Ensure the CONTINUEIF token is SOS
                                                                     if (!$2.lptkCur->tkData.bSOS)
                                                                     {
                                                                         lpcsLocalVars->tkCSErr = *$2.lptkCur;
@@ -680,7 +789,53 @@ CLRec:
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
+
+                                                                        // If it's not ENDIF, ...
+                                                                        if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
+                                                                            // Convert to $1's CLIndex so they are all the same
+                                                                            lptk1st->tkData.uCLIndex = $1.uCLIndex;
+                                                                    } // End IF/FOR/IF
+
+                                                                    // In this partial sequence, pass on down a ptr to the first entry
+                                                                    //   and the index common to this group
+                                                                    $3.lptkCL1st                =
+                                                                    $3.lptk1st                  = $1.lptkCL1st;
+                                                                    $3.uCLIndex                 =
+                                                                    $3.lptkCur->tkData.uCLIndex = $1.uCLIndex;
+
+                                                                    $$ = $3;
+                                                                }
+  | CLRec CSRec CONTINUEIF NSS                                  {DbgMsgWP (L"%%CLRec:  CLRec CSRec CONTINUEIF NSS");
+                                                                    // Note that righthand CSRec is never executed
+
+                                                                    // Ensure the CONTINUEIF token is SOS
+                                                                    if (!$3.lptkCur->tkData.bSOS)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$3.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    // If $2 has unmatched ContinueLeave, ...
+                                                                    if ($2.lptkCL1st)
+                                                                    {
+                                                                        Assert ($2.lptkCur->tkFlags.TknType EQ TKT_CS_IF);
+                                                                    } // End IF
+
+                                                                    // If $2 has unmatched ContinueLeave, ...
+                                                                    if ($2.lptkCL1st)
+                                                                    // Loop through $2's unmatched ContinueLeave
+                                                                    for (lptk1st = $2.lptkCL1st; lptk1st <= $2.lptkCur; lptk1st++)
+                                                                    // If it's a ContinueLeave, ...
+                                                                    if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
+                                                                    {
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -700,6 +855,23 @@ CLRec:
                                                                 }
   | CLRec       LEAVE    SOSStmts                               {DbgMsgWP (L"%%CLRec:  CLRec LEAVE SOSStmts");
                                                                     // Ensure the LEAVE token is SOS
+                                                                    if (!$2.lptkCur->tkData.bSOS)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    // In this partial sequence, pass on down a ptr to the first entry
+                                                                    //   and the index common to this group
+                                                                    $2.lptkCL1st                =
+                                                                    $2.lptk1st                  = $1.lptkCL1st;
+                                                                    $2.uCLIndex                 =
+                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
+
+                                                                    $$ = $2;
+                                                                }
+  | CLRec       LEAVEIF NSS                                     {DbgMsgWP (L"%%CLRec:  CLRec LEAVEIF NSS");
+                                                                    // Ensure the LEAVEIF token is SOS
                                                                     if (!$2.lptkCur->tkData.bSOS)
                                                                     {
                                                                         lpcsLocalVars->tkCSErr = *$2.lptkCur;
@@ -739,7 +911,9 @@ CLRec:
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -756,6 +930,63 @@ CLRec:
                                                                     $3.lptkCur->tkData.uCLIndex = $1.uCLIndex;
 
                                                                     $$ = $3;
+                                                                }
+  | CLRec CSRec LEAVEIF NSS                                     {DbgMsgWP (L"%%CLRec:  CLRec CSRec LEAVEIF NSS");
+                                                                    // Note that righthand CSRec is never executed
+
+                                                                    // Ensure the LEAVEIF token is SOS
+                                                                    if (!$3.lptkCur->tkData.bSOS)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$3.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    // If $2 has unmatched ContinueLeave, ...
+                                                                    if ($2.lptkCL1st)
+                                                                    {
+                                                                        Assert ($2.lptkCur->tkFlags.TknType EQ TKT_CS_IF);
+                                                                    } // End IF
+
+                                                                    // If $2 has unmatched ContinueLeave, ...
+                                                                    if ($2.lptkCL1st)
+                                                                    // Loop through $2's unmatched ContinueLeave
+                                                                    for (lptk1st = $2.lptkCL1st; lptk1st <= $2.lptkCur; lptk1st++)
+                                                                    // If it's a ContinueLeave, ...
+                                                                    if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
+                                                                    {
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
+
+                                                                        // If it's not ENDIF, ...
+                                                                        if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
+                                                                            // Convert to $1's CLIndex so they are all the same
+                                                                            lptk1st->tkData.uCLIndex = $1.uCLIndex;
+                                                                    } // End IF/FOR/IF
+
+                                                                    // In this partial sequence, pass on down a ptr to the first entry
+                                                                    //   and the index common to this group
+                                                                    $3.lptkCL1st                =
+                                                                    $3.lptk1st                  = $1.lptkCL1st;
+                                                                    $3.uCLIndex                 =
+                                                                    $3.lptkCur->tkData.uCLIndex = $1.uCLIndex;
+
+                                                                    $$ = $3;
+                                                                }
+  ;
+
+AssertStmt:
+    ASSERT NSS                                                  {DbgMsgWP (L"%%AssertStmt:  ASSERT NSS");
+                                                                    // Ensure the ASSERT token is SOS
+                                                                    if (!$1.lptkCur->tkData.bSOS)
+                                                                    {
+                                                                        lpcsLocalVars->tkCSErr = *$1.lptkCur;
+                                                                        YYERROR;
+                                                                    } // End IF
+
+                                                                    $$ = $1;
                                                                 }
   ;
 
@@ -785,7 +1016,9 @@ ForStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $5.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -842,7 +1075,9 @@ ForLclStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $5.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -1027,7 +1262,9 @@ ElseIfRec:
                                                                         if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                         {
                                                                             Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                             // If it's not ENDIF, ...
@@ -1121,7 +1358,9 @@ ElseIfElse:
                                                                         if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                         {
                                                                             Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                             // If it's not ENDIF, ...
@@ -1201,7 +1440,9 @@ IfStmt:
                                                                         if (lptk1st->tkData.uCLIndex EQ $5.uCLIndex)
                                                                         {
                                                                             Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                             // If it's not ENDIF, ...
@@ -1260,7 +1501,9 @@ IfStmt:
                                                                         if (lptk1st->tkData.uCLIndex EQ $5.uCLIndex)
                                                                         {
                                                                             Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                             // If it's not ENDIF, ...
@@ -1348,7 +1591,9 @@ IfStmt:
                                                                         if (lptk1st->tkData.uCLIndex EQ $6.uCLIndex)
                                                                         {
                                                                             Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                             // If it's not ENDIF, ...
@@ -1410,7 +1655,9 @@ IfStmt:
                                                                         if (lptk1st->tkData.uCLIndex EQ $6.uCLIndex)
                                                                         {
                                                                             Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                                 || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                                  || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                             // If it's not ENDIF, ...
@@ -1501,7 +1748,9 @@ RepeatStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -1536,7 +1785,9 @@ RepeatStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -1638,10 +1889,14 @@ CCListRec:
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                     {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF);
 
-                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE)
+                                                                        // If it's CONTINUE or CONTINUEIF, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                         || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF)
                                                                         {
                                                                             lpcsLocalVars->tkCSErr = *lptk1st;
                                                                             YYERROR;
@@ -1692,10 +1947,14 @@ CCListRec:
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                     {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF);
 
-                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE)
+                                                                        // If it's CONTINUE or CONTINUEIF, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                         || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF)
                                                                         {
                                                                             lpcsLocalVars->tkCSErr = *lptk1st;
                                                                             YYERROR;
@@ -1730,10 +1989,14 @@ CCListCS:
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
                                                                     {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF);
 
-                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE)
+                                                                        // If it's CONTINUE or CONTINUEIF, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                         || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF)
                                                                         {
                                                                             lpcsLocalVars->tkCSErr = *lptk1st;
                                                                             YYERROR;
@@ -1775,10 +2038,12 @@ SelectStmt:
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
 
-                                                                        // If it's LEAVE, ...
-                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
+                                                                        // If it's LEAVE or LEAVEIF, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                         || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF)
                                                                             // Chain together lptk1st and the EndSelect token
                                                                             CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $4.lptk1st);
                                                                         else
@@ -1826,10 +2091,12 @@ SelectStmt:
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
 
-                                                                        // If it's LEAVE, ...
-                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
+                                                                        // If it's LEAVE or LEAVEIF, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                         || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF)
                                                                             // Chain together lptk1st and the EndSelect token
                                                                             CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $6.lptk1st);
                                                                         else
@@ -1887,10 +2154,12 @@ SelectStmt:
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE);
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
 
-                                                                        // If it's LEAVE, ...
-                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE)
+                                                                        // If it's LEAVE or LEAVEIF, ...
+                                                                        if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                         || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF)
                                                                             // Chain together lptk1st and the EndSelect token
                                                                             CS_ChainTokens (lpcsLocalVars, &lptk1st->tkData, $7.lptk1st);
                                                                         else
@@ -1936,7 +2205,9 @@ WhileStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -1977,7 +2248,9 @@ WhileStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $4.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -2033,7 +2306,9 @@ WhileStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -2074,7 +2349,9 @@ WhileStmt:
                                                                     if (lptk1st->tkData.uCLIndex EQ $4.uCLIndex)
                                                                     {
                                                                         Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
+                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
                                                                              || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
 
                                                                         // If it's not ENDIF, ...
@@ -2267,9 +2544,11 @@ CS_YYLEX_START:
             //   then skip this token and return the next token.
             // This avoids having to insert an EOS before almost every token.
             if (TknType EQ TKT_CS_ANDIF
+             || TknType EQ TKT_CS_ASSERT
              || TknType EQ TKT_CS_CASE
              || TknType EQ TKT_CS_CASELIST
              || TknType EQ TKT_CS_CONTINUE
+             || TknType EQ TKT_CS_CONTINUEIF
              || TknType EQ TKT_CS_ELSE
              || TknType EQ TKT_CS_ELSEIF
              || TknType EQ TKT_CS_END
@@ -2284,6 +2563,7 @@ CS_YYLEX_START:
              || TknType EQ TKT_CS_GOTO
              || TknType EQ TKT_CS_IF
              || TknType EQ TKT_CS_LEAVE
+             || TknType EQ TKT_CS_LEAVEIF
              || TknType EQ TKT_CS_ORIF
              || TknType EQ TKT_CS_REPEAT
              || TknType EQ TKT_CS_RETURN
@@ -2302,6 +2582,9 @@ CS_YYLEX_START:
         case TKT_CS_ANDIF:                  // Control structure:  ANDIF     (Data is Line/Stmt #)
             return ANDIF;
 
+        case TKT_CS_ASSERT:                 // ...                 ASSERT
+            return ASSERT;
+
         case TKT_CS_CASE:                   // ...                 CASE
             return CASE;
 
@@ -2310,6 +2593,9 @@ CS_YYLEX_START:
 
         case TKT_CS_CONTINUE:               // ...                 CONTINUE
             return CONTINUE;
+
+        case TKT_CS_CONTINUEIF:             // ...                 CONTINUEIF
+            return CONTINUEIF;
 
         case TKT_CS_ELSE:                   // ...                 ELSE
             return ELSE;
@@ -2364,6 +2650,9 @@ CS_YYLEX_START:
 
         case TKT_CS_LEAVE:                  // ...                 LEAVE
             return LEAVE;
+
+        case TKT_CS_LEAVEIF:                // ...                 LEAVEIF
+            return LEAVEIF;
 
         case TKT_CS_ORIF:                   // ...                 ORIF
             return ORIF;

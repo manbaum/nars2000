@@ -295,6 +295,106 @@ void CS_SetTokenCLIndex
 
 
 //***************************************************************************
+//  $CS_ASSERT_Stmt_EM
+//
+//  Process ASSERT stmt (pl_yyparse)
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CS_ASSERT_Stmt_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL CS_ASSERT_Stmt_EM
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
+
+{
+    APLSTYPE   aplTypeRht;              // Right arg storage type
+    APLNELM    aplNELMRht;              // Right arg NELM
+    APLRANK    aplRankRht;              // Right arg rank
+    APLLONGEST aplLongestRht;           // Right arg longest if immediate
+
+    // The arg to the ASSERT stmt must be a Boolean-valued scalar or
+    //   one-element vector.
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (&lpYYRhtArg->tkToken, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for RANK ERROR
+    if (IsMultiRank (aplRankRht))
+        goto RANK_EXIT;
+
+    // Check for LENGTH ERROR
+    if (!IsSingleton (aplNELMRht))
+        goto LENGTH_EXIT;
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+            GetFirstItemToken (&lpYYRhtArg->tkToken,
+                               &aplLongestRht,
+                                NULL,
+                                NULL);
+            // If the storage type is float, ...
+            if (IsSimpleFlt (aplTypeRht))
+            {
+                UBOOL bRet;                 // TRUE iff the result is valid
+
+                // Attempt to convert the float to an integer using System CT
+                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+            } // End IF
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            goto DOMAIN_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Check for DOMAIN ERROR
+    if (!IsBooleanValue (aplLongestRht))
+         goto DOMAIN_EXIT;
+
+    if (aplLongestRht EQ 0)
+        ErrorMessageIndirectToken (ERRMSG_ASSERTION_ERROR APPEND_NAME,
+                                  &lpYYRhtArg->tkToken);
+    return (UBOOL) aplLongestRht;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return FALSE;
+} // End CS_ASSERT_Stmt_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $CS_CASE_Stmt
 //
 //  Process CASE/CASELIST stmt (pl_yyparse)
@@ -357,6 +457,107 @@ UBOOL CS_CONTINUE_Stmt
 
     return TRUE;
 } // End CS_CONTINUE_Stmt
+
+
+//***************************************************************************
+//  $CS_CONTINUEIF_Stmt_EM
+//
+//  Process CONTINUEIF stmt (pl_yyparse)
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CS_CONTINUEIF_Stmt_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL CS_CONTINUEIF_Stmt_EM
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPPL_YYSTYPE  lpYYContinueIfArg,   // Ptr to CONTINUEIF arg
+     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
+
+{
+    APLSTYPE   aplTypeRht;              // Right arg storage type
+    APLNELM    aplNELMRht;              // Right arg NELM
+    APLRANK    aplRankRht;              // Right arg rank
+    APLLONGEST aplLongestRht;           // Right arg longest if immediate
+
+    // The arg to the CONTINUEIF stmt must be a Boolean-valued scalar or
+    //   one-element vector.
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (&lpYYRhtArg->tkToken, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for RANK ERROR
+    if (IsMultiRank (aplRankRht))
+        goto RANK_EXIT;
+
+    // Check for LENGTH ERROR
+    if (!IsSingleton (aplNELMRht))
+        goto LENGTH_EXIT;
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+            GetFirstItemToken (&lpYYRhtArg->tkToken,
+                               &aplLongestRht,
+                                NULL,
+                                NULL);
+            // If the storage type is float, ...
+            if (IsSimpleFlt (aplTypeRht))
+            {
+                UBOOL bRet;                 // TRUE iff the result is valid
+
+                // Attempt to convert the float to an integer using System CT
+                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+            } // End IF
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            goto DOMAIN_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Check for DOMAIN ERROR
+    if (!IsBooleanValue (aplLongestRht))
+         goto DOMAIN_EXIT;
+
+    if (aplLongestRht)
+        CS_CONTINUE_Stmt (lpplLocalVars, lpYYContinueIfArg);
+
+    return TRUE;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return FALSE;
+} // End CS_CONTINUEIF_Stmt_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1136,6 +1337,107 @@ UBOOL CS_LEAVE_Stmt
 
     return TRUE;
 } // End CS_LEAVE_Stmt
+
+
+//***************************************************************************
+//  $CS_LEAVEIF_Stmt_EM
+//
+//  Process LEAVEIF stmt (pl_yyparse)
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CS_LEAVEIF_Stmt_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL CS_LEAVEIF_Stmt_EM
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
+     LPPL_YYSTYPE  lpYYLeaveIfArg,      // Ptr to LEAVEIF arg
+     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
+
+{
+    APLSTYPE   aplTypeRht;              // Right arg storage type
+    APLNELM    aplNELMRht;              // Right arg NELM
+    APLRANK    aplRankRht;              // Right arg rank
+    APLLONGEST aplLongestRht;           // Right arg longest if immediate
+
+    // The arg to the LEAVEIF stmt must be a Boolean-valued scalar or
+    //   one-element vector.
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (&lpYYRhtArg->tkToken, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for RANK ERROR
+    if (IsMultiRank (aplRankRht))
+        goto RANK_EXIT;
+
+    // Check for LENGTH ERROR
+    if (!IsSingleton (aplNELMRht))
+        goto LENGTH_EXIT;
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+            GetFirstItemToken (&lpYYRhtArg->tkToken,
+                               &aplLongestRht,
+                                NULL,
+                                NULL);
+            // If the storage type is float, ...
+            if (IsSimpleFlt (aplTypeRht))
+            {
+                UBOOL bRet;                 // TRUE iff the result is valid
+
+                // Attempt to convert the float to an integer using System CT
+                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+            } // End IF
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            goto DOMAIN_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Check for DOMAIN ERROR
+    if (!IsBooleanValue (aplLongestRht))
+         goto DOMAIN_EXIT;
+
+    if (aplLongestRht)
+        CS_LEAVE_Stmt (lpplLocalVars, lpYYLeaveIfArg);
+
+    return TRUE;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYRhtArg->tkToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return FALSE;
+} // End CS_LEAVEIF_Stmt
+#undef  APPEND_NAME
 
 
 //***************************************************************************

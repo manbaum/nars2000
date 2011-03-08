@@ -35,7 +35,7 @@ PRIMSPEC PrimSpecTilde =
 
     &PrimFnMonTildeBisB,
     &PrimFnMonTildeBisI,
-    &PrimFnMonTildeBisF,
+    NULL,   // &PrimFnMonTildeBisF, -- Can't happen w/Tilde
 
 ////               IisB,     // Handled via type promotion (to IisI)
     NULL,   // &PrimFnMonTildeIisI, -- Can't happen w/Tilde
@@ -43,7 +43,7 @@ PRIMSPEC PrimSpecTilde =
 
 ////               FisB,     // Handled via type promotion (to FisI)
     NULL,   // &PrimFnMonTildeFisI, -- Can't happen w/Tilde
-    NULL,   // &PrimFnMonTildeFisF, -- can't happen w/Tilde
+    &PrimFnMonTildeFisF,
 
     // Dyadic functions
     NULL,   // &PrimFnDyd_EM_YY, -- Can't happen w/Tilde
@@ -253,8 +253,10 @@ APLSTYPE PrimSpecTildeStorageTypeMon
 
     // The storage type of the result is
     //   the same as that of the right arg
-    //   except SimpleNum goes to BOOL
-    if (IsSimpleNum (*lpaplTypeRht))
+    //   except SimpleFlt stays the same
+    //   and SimpleNum goes to BOOL
+    if (IsSimpleNum (*lpaplTypeRht)
+     && !IsSimpleFlt (*lpaplTypeRht))
         aplTypeRes = ARRAY_BOOL;
     else
         aplTypeRes = *lpaplTypeRht;
@@ -356,26 +358,26 @@ APLBOOL PrimFnMonTildeBisI
 
 
 //***************************************************************************
-//  $PrimFnMonTildeBisF
+//  $PrimFnMonTildeFisF
 //
-//  Primitive scalar function monadic Tilde:  B {is} fn F
+//  Primitive scalar function monadic Tilde:  F {is} fn F
 //***************************************************************************
 
-APLBOOL PrimFnMonTildeBisF
+APLFLOAT PrimFnMonTildeFisF
     (APLFLOAT   aplFloatRht,
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLINT aplIntRht;
-    UBOOL  bRet;
+    // If the float is between 0 and 1, ...
+    if (0.0 <= aplFloatRht
+     &&        aplFloatRht <= 1.0)
+        // Return the complement in 1.0
+        return 1.0 - aplFloatRht;
 
-    // Attempt to convert the float to an integer using System CT
-    aplIntRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-    if ((!bRet) || !IsBooleanValue (aplIntRht))
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    return !(APLBOOL) aplIntRht;
-} // End PrimFnMonTildeBisF
+    return 0.0;             // To keep the compiler happy
+} // End PrimFnMonTildeFisF
 
 
 //***************************************************************************
@@ -398,9 +400,9 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
 
 {
     APLRANK      aplRankLft;        // Left arg rank
-    HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL,    // Ptr to the result
+                 lpYYRes1;          // Ptr to temporary result
+    TOKEN        tkFunc = {0};      // Function token
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
@@ -420,23 +422,59 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
 
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
+    // Setup the Epsilon function token
+    tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFunc.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
+    tkFunc.tkData.tkChar     = UTF16_EPSILON;
+    tkFunc.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    // Get the magic function/operator global memory handle
-    hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydTilde];
-
-    //  Return the elements in L not in R.
-    //  Use an internal magic function/operator.
+    // Execute L {epsilon} R
     lpYYRes =
-      ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
-                                  lptkFunc,     // Ptr to function token
-                                  NULL,         // Ptr to function strand
-                                  lptkRhtArg,   // Ptr to right arg token
-                                  lptkAxis,     // Ptr to axis token
-                                  hGlbMFO,      // Magic function/operator global memory handle
-                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
-                                  LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+      PrimFnDydEpsilon_EM_YY (lptkLftArg,       // Ptr to left arg token
+                             &tkFunc,           // Ptr to function token
+                              lptkRhtArg,       // Ptr to right arg token
+                              NULL);            // Ptr to axis token (may be NULL)
+    // If it failed, ...
+    if (lpYYRes EQ NULL)
+        goto ERROR_EXIT;
+
+    // Setup the Tilde function token
+////tkFunc.tkFlags.TknType   = TKT_FCNIMMED;    // Already set above
+////tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN; // Already set above
+////tkFunc.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
+    tkFunc.tkData.tkChar     = UTF16_TILDE;
+////tkFunc.tkCharIndex       = lptkFunc->tkCharIndex;   // Already set above
+
+    // Execute ~Z
+    lpYYRes1 =
+      PrimFnMon_EM_YY (&tkFunc,                 // Ptr to function token
+                       &lpYYRes->tkToken,       // Ptr to right arg token
+                        NULL,                   // Ptr to axis token (may be NULL)
+                        lpPrimSpec);            // Ptr to local PRIMSPEC
+    // We no longer need this storage
+    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+    // If it failed, ...
+    if (lpYYRes1 EQ NULL)
+        goto ERROR_EXIT;
+
+    // Setup the Slash function token
+////tkFunc.tkFlags.TknType   = TKT_FCNIMMED;    // Already set above
+////tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN; // Already set above
+////tkFunc.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
+    tkFunc.tkData.tkChar     = UTF16_SLASH;
+////tkFunc.tkCharIndex       = lptkFunc->tkCharIndex;   // Already set above
+
+    // Execute Z/L
+    lpYYRes =
+      PrimFnDydSlash_EM_YY (&lpYYRes1->tkToken, // Ptr to left arg token
+                            &tkFunc,            // Ptr to function token
+                             lptkLftArg,        // Ptr to right arg token
+                             NULL);             // Ptr to axis token (may be NULL)
+    // We no longer need this storage
+    FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
+
     goto NORMAL_EXIT;
 
 AXIS_SYNTAX_EXIT:
@@ -453,31 +491,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnDydTilde_EM_YY
-
-
-//***************************************************************************
-//  Magic function/operator for dyadic Tilde
-//
-//  Dyadic Tilde -- Without
-//
-//  Return the elements in L not in R.
-//***************************************************************************
-
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydTilde L" R";
-
-static APLCHAR DydLine1[] =
-  L"Z" $IS L"(~L" $EPSILON L"R)/L";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
-};
-
-MAGIC_FCNOPR MFO_DydTilde =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
 
 
 //***************************************************************************

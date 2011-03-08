@@ -26,37 +26,35 @@ typedef enum tagMFO
     MFOE_MonIota      ,         // 00:  Extended Monadic Iota
     MFOE_DydIota      ,         // 01:  Extended Dyadic Iota
     MFOE_MonDnShoe    ,         // 02:  Monadic Down Shoe
-    MFOE_DydTilde     ,         // 03:  Dyadic Tilde
-    MFOE_MonRank      ,         // 04:  Monadic Derived Function from Rank Operator
-    MFOE_DydRank      ,         // 05:  Dyadic  ...
-    MFOE_Conform      ,         // 06:  Conform  (for Rank Operator)
-    MFOE_MonFMT       ,         // 07:  Monadic []FMT
-    MFOE_Box          ,         // 08:  Box (for monadic []FMT)
-    MFOE_MonVR        ,         // 09:  Monadic []VR
-    MFOE_IdnDot       ,         // 0A:  Identity function for Inner Product
-    MFOE_IdnJotDot    ,         // 0B:  Identity function for Outer Product
-    MFOE_MAD          ,         // 0C:  Multiset Asymmetric Difference
-    MFOE_MSD          ,         // 0D:  Multiset Symmetric Difference
-    MFOE_MU           ,         // 0E:  Multiset Union
-    MFOE_MI           ,         // 0F:  Multiset Intersection
-    MFOE_MIO          ,         // 10:  Multiset Index Of
-    MFOE_MEO          ,         // 11:  Multiset Element Of
-    MFOE_MM           ,         // 12:  Multiset Match
-    MFOE_MLRS         ,         // 13:  Multiset LeftShoe
-    MFOE_MLRSU        ,         // 14:  Multiset LeftShoeUnderbar
-    MFOE_MMUL         ,         // 15:  Multiset Multiplicities
-    MFOE_DydDnShoe    ,         // 16:  Dyadic Down Shoe
-    MFOE_DydUpShoe    ,         // 17:  Dyadic Up Shoe
-    MFOE_DydLRShoeUnd ,         // 18:  Dyadic Left/Right Shoe Underbar
-    MFOE_SD           ,         // 19:  Symmetric Difference
-    MFOE_LENGTH                 // 1A:  # entries in this enum
+    MFOE_MonRank      ,         // 03:  Monadic Derived Function from Rank Operator
+    MFOE_DydRank      ,         // 04:  Dyadic  ...
+    MFOE_Conform      ,         // 05:  Conform  (for Rank Operator)
+    MFOE_MonFMT       ,         // 06:  Monadic []FMT
+    MFOE_Box          ,         // 07:  Box (for monadic []FMT)
+    MFOE_MonVR        ,         // 08:  Monadic []VR
+    MFOE_IdnDot       ,         // 09:  Identity function for Inner Product
+    MFOE_IdnJotDot    ,         // 0A:  Identity function for Outer Product
+    MFOE_MAD          ,         // 0B:  Multiset Asymmetric Difference
+    MFOE_MSD          ,         // 0C:  Multiset Symmetric Difference
+    MFOE_MU           ,         // 0D:  Multiset Union
+    MFOE_MI           ,         // 0E:  Multiset Intersection
+    MFOE_MIO          ,         // 0F:  Multiset Index Of
+    MFOE_MEO          ,         // 10:  Multiset Element Of
+    MFOE_MM           ,         // 11:  Multiset Match
+    MFOE_MLRS         ,         // 12:  Multiset LeftShoe
+    MFOE_MLRSU        ,         // 13:  Multiset LeftShoeUnderbar
+    MFOE_MMUL         ,         // 14:  Multiset Multiplicities
+    MFOE_DydDnShoe    ,         // 15:  Dyadic Down Shoe
+    MFOE_DydUpShoe    ,         // 16:  Dyadic Up Shoe
+    MFOE_DydLRShoeUnd ,         // 17:  Dyadic Left/Right Shoe Underbar
+    MFOE_SD           ,         // 18:  Symmetric Difference
+    MFOE_LENGTH                 // 19:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
 #define MFON_MonIota        L"#MonIota"
 #define MFON_DydIota        L"#DydIota"
 #define MFON_MonDnShoe      L"#MonDnShoe"
-#define MFON_DydTilde       L"#DydTilde"
 #define MFON_MonRank        L"#MonRank"
 #define MFON_DydRank        L"#DydRank"
 #define MFON_Conform        L"#Conform"

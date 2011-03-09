@@ -65,7 +65,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 #define  LPYYSTYPE   LPPL_YYSTYPE
 #define tagYYSTYPE  tagPL_YYSTYPE
 
-// The following #defines are needed to allow multiple parses
+// The following #defines are needed to allow multiple parsers
 //   to coexist in the same file
 #define yy_symbol_print         pl_yy_symbol_print
 #define yy_symbol_value_print   pl_yy_symbol_value_print
@@ -966,7 +966,7 @@ StmtSing:
 
                                              // Mark the result as already displayed
                                              lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
-                                         } // End IF/ELSE/IF
+                                         } // End IF
                                         }
 ////     | ArrExpr NAMEOP3                   {DbgMsgWP (L"%%StmtSing:  NAMEOP3 ArrExpr");
 ////                                              DbgBrk ();
@@ -1875,6 +1875,8 @@ Op3Spec:
 // Array expression w/value
 ArrValu:
       ArrExpr                           {DbgMsgWP (L"%%ArrValu:  ArrExpr");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
                                              if (IsTokenNoValue (&$1.tkToken))
                                              {
                                                  PrimFnValueError_EM (&$1.tkToken APPEND_NAME_ARG);
@@ -1882,6 +1884,7 @@ ArrValu:
                                              } // End IF
 
                                              $$ = $1;
+                                         } // End IF
                                         }
     ;
 
@@ -1936,7 +1939,7 @@ ArrExpr:
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                         } // End IF/ELSE/...
+                                         } // End IF
                                         }
     | ArrValu LeftMonOper               {DbgMsgWP (L"%%ArrExpr:  LeftMonOper ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -1968,7 +1971,7 @@ ArrExpr:
 
                                              $$ = *lpplLocalVars->lpYYRes;
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                         } // End IF/ELSE/...
+                                         } // End IF
                                         }
     | ArrValu LeftOper                  {DbgMsgWP (L"%%ArrExpr:  LeftOper ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing

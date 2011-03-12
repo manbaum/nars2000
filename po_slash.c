@@ -2048,7 +2048,7 @@ RESTART_EXCEPTION:
                 } // End IF/ELSE
 
                 // Initialize index into the result
-                uRes = uDimRht + uAx * uDimHi;;
+                uRes = uHi + uDimHi * (uAx + uDimAxRes * uLo);;
 
                 // Split cases based upon the token type of the right arg (result)
                 switch (tkRhtArg.tkFlags.TknType)

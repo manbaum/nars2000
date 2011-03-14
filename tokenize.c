@@ -394,7 +394,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
  },
     // TKROW_JOTAMBIG Ambiguous jot:  either TKROW_OUTAMBIG or normal w/fnJotDone ('J')
  {{TKROW_POINTNOT, fnJotDone   , fnPointAcc  },     // '0123456789'
-  {TKROW_OUTAMBIG, fnSyntPrm   , fnPointAcc  },     // '.'
+  {TKROW_OUTAMBIG, NULL        , fnPointAcc  },     // '.'
   {TKROW_ALPHA   , fnJotDone   , fnAlpInit   },     // 'a..zA..Z'
   {TKROW_POINTNOT, fnJotDone   , fnPointAcc  },     // Overbar
   {TKROW_INIT    , fnJotDone   , fnDirIdent  },     // Alpha or Omega
@@ -2279,6 +2279,17 @@ UBOOL fnOutDone
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
+        // First, for the {jot}
+
+        // Save the column index
+        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_PRIM_OP1;
+
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColorName[SC_PRIMOP1].syntClr;
+
+        // Next, for the {dot}
+
         // Save the column index
         lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_PRIM_OP1;
 
@@ -2954,8 +2965,8 @@ UBOOL GroupDoneCom
         // If there's no previous grouping symbol, ...
         if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
         {
-////////////// Save the column index
-////////////lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_???;
+            // Save the column index
+            lptkLocalVars->lpMemClrNxt->colIndex = tknTypeCurr;
 
             // Save the color and skip over it
             lptkLocalVars->lpMemClrNxt++->syntClr =
@@ -2965,8 +2976,8 @@ UBOOL GroupDoneCom
             // Check for improper nesting
             if (lptkLocalVars->lpGrpSeqIni[uPrevGroup].TknType NE tknTypePrev)
             {
-////////////////// Save the column index
-////////////////lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_???;
+            // Save the column index
+            lptkLocalVars->lpMemClrNxt->colIndex = tknTypeCurr;
 
                 // Save the color and skip over it
                 lptkLocalVars->lpMemClrNxt++->syntClr =
@@ -2987,8 +2998,8 @@ UBOOL GroupDoneCom
                 // Get the matching level color index
                 uMatchGrp = aMatchGrp[uCount % NUM_MATCHGRPS];
 
-////////////////// Save the column index
-////////////////lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_???;
+                // Save the column index
+                lptkLocalVars->lpMemClrNxt->colIndex = tknTypeCurr;
 
                 // Save the color and skip over it
                 lptkLocalVars->lpMemClrNxt++->syntClr =
@@ -3554,35 +3565,6 @@ UBOOL fnSyntWhite
     // Mark as successful
     return TRUE;
 } // End fnSyntWhite
-
-
-//***************************************************************************
-//  $fnSyntPrm
-//
-//  Accumulate a primitive symbol color if Syntax Coloring is active.
-//***************************************************************************
-
-UBOOL fnSyntPrm
-    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
-
-{
-    // Check for Syntax Coloring
-    if (lptkLocalVars->lpMemClrNxt)
-    {
-        // Save the column index
-        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_PRIM_FN;
-
-        // Save the color
-        lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMFCN].syntClr;
-
-        // Save the name type
-        lptkLocalVars->scNameType = SC_NAMETYPE_PRIMITIVE;
-    } // End IF
-
-    // Mark as successful
-    return TRUE;
-} // End fnSyntPrm
 
 
 //***************************************************************************

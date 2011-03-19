@@ -40,8 +40,8 @@ typedef struct tagEXTMONINFO            // External function line monitoring inf
 
 typedef struct tagFCNLINE               // Function line structure, one per function line
 {
-    HGLOBAL hGlbTxtLine,                // 00:  Text of the line (APLCHAR) global memory handle
-            hGlbTknLine;                // 04:  Tokenized line (TOKEN)     ...
+    HGLOBAL hGlbTxtLine;                // 00:  Text of the line (APLCHAR) global memory handle
+    UINT    offTknLine;                 // 04:  Offset to tokenized line (TOKEN_HEADER)
     UINT    bStop:1,                    // 08:  00000001:  Stop on this line
             bTrace:1,                   //      00000002:  Trace this line
             bEmpty:1,                   //      00000004:  Empty line
@@ -132,19 +132,20 @@ typedef struct tagDFN_HEADER            // Function header structure
                      numLocalsSTE,      // 48:  # right arg STEs (may be zero if niladic)
                      offLocalsSTE,      // 4C:  Offset to start of function lines (FCNLINE[nLines])
                      numFcnLines,       // 50:  # lines in the function (not counting the header)
-                     offFcnLines;       // 54:  Offset to start of function lines (FCNLINE[nLines])
-    LPSYMENTRY       steLftOpr,         // 58:  Left operand STE (may be NULL if not an operator)
-                     steFcnName,        // 5C:  Function name STE
-                     steAxisOpr,        // 60:  Axis operator STE
-                     steRhtOpr;         // 64:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,        // 68:  Text of function header (APLCHAR) global memory handle
-                     hGlbTknHdr,        // 6C:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff,      // 70:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-                     hGlbMonInfo;       // 74:  Function line monitor info (MONINFO)
-    FILETIME         ftCreation,        // 78:  Time of creation (8 bytes)
-                     ftLastMod;         // 80:  Time of last modification (8 bytes)
-                                        // 88:  Length
-                                        // 88:  Array of function line structures (FCNLINE[nLines])
+                     offFcnLines,       // 54:  Offset to start of function lines (FCNLINE[nLines])
+                     offTknLines;       // 58:  Offset to start of tokenized function lines
+    LPSYMENTRY       steLftOpr,         // 5C:  Left operand STE (may be NULL if not an operator)
+                     steFcnName,        // 60:  Function name STE
+                     steAxisOpr,        // 64:  Axis operator STE
+                     steRhtOpr;         // 68:  Right operand STE (may be NULL if monadic operator or not an operator)
+    HGLOBAL          hGlbTxtHdr,        // 6C:  Text of function header (APLCHAR) global memory handle
+                     hGlbTknHdr,        // 70:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff,      // 74:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo;       // 78:  Function line monitor info (MONINFO)
+    FILETIME         ftCreation,        // 7C:  Time of creation (8 bytes)
+                     ftLastMod;         // 84:  Time of last modification (8 bytes)
+                                        // 8C:  Length
+                                        // 8C:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a
@@ -174,38 +175,38 @@ typedef struct tagFH_YYSTYPE        // YYSTYPE for Function Header parser
 
 typedef struct tagFHLOCALVARS       // Function Header Local Vars
 {
-    HWND         hWndEC;            // 00:  Window handle for Edit Ctrl
-    HGLOBAL      hGlbTknHdr,        // 04:  Tokenized header global memory handle
-                 hGlbUndoBuff;      // 08:  Undo buffer      ...
-    UNION_TOKEN  t2;                // 0C:  Locked base of hGlbToken
-    LPTOKEN      lptkStart,         // 10:  First available entry after the header
-                 lptkNext,          // 14:  Next  ...
-                 lptkStop;          // 18:  Stopping token
-    UINT         tkErrorCharIndex;  // 1C:  Error char index
-    UINT         DfnType:4,         // 20:  0000000F:  User-defined function/operator type (see DFN_TYPES)
-                 FcnValence:3,      //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
-                 DfnAxis:1,         //      00000080:  User-defined function/operator accepts axis value
-                 DisplayErr:1,      //      00000100:  TRUE iff we should display error messages
-                 NoDispRes:1,       //      00000200:  TRUE iff the result is non-displayable
-                 ListRes:1,         //      00000400:  TRUE iff the result is a list
-                 ListLft:1,         //      00000800:  TRUE iff the left arg ...
-                 ListRht:1,         //      00001000:  TRUE iff the right arg ...
-                 ParseFcnName:1,    //      00002000:  TRUE iff we're parsing the function name
-                 fhNameType:4,      //      0003C000:  Function name type (see NAME_TYPES)
-                 :14;               //      FFFC0000:  Available bits
-    LPFH_YYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)
-                 lpYYStrandBase,    // 28:  ...          base (dynamic)
-                 lpYYStrandNext,    // 2C:  ...          next token (dynamic)
-                 lpYYResult,        // 30:  Ptr to result name or list
-                 lpYYLftArg,        // 34:  ...    left arg name or list
-                 lpYYLftOpr,        // 38:  ...    left operand name
-                 lpYYFcnName,       // 3C:  ...    function/operator name
-                 lpYYAxisOpr,       // 40:  ...    axis operator name
-                 lpYYRhtOpr,        // 44:  ...    right operand name
-                 lpYYRhtArg,        // 48:  ...    right arg name or list
-                 lpYYLocals;        // 4C:  ...    locals name or list
-    WCHAR        wszErrMsg[256];    // 50:  Save area for error message
-                                    //250:  Length
+    HWND           hWndEC;              // 00:  Window handle for Edit Ctrl
+    HGLOBAL        hGlbTknHdr,          // 04:  Tokenized header global memory handle
+                   hGlbUndoBuff;        // 08:  Undo buffer      ...
+    LPTOKEN_HEADER lpHeader;            // 0C:  Ptr to tokenized line header in global memory
+    LPTOKEN        lptkStart,           // 10:  First available entry after the header
+                   lptkNext,            // 14:  Next  ...
+                   lptkStop;            // 18:  Stopping token
+    UINT           tkErrorCharIndex;    // 1C:  Error char index
+    UINT           DfnType:4,           // 20:  0000000F:  User-defined function/operator type (see DFN_TYPES)
+                   FcnValence:3,        //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
+                   DfnAxis:1,           //      00000080:  User-defined function/operator accepts axis value
+                   DisplayErr:1,        //      00000100:  TRUE iff we should display error messages
+                   NoDispRes:1,         //      00000200:  TRUE iff the result is non-displayable
+                   ListRes:1,           //      00000400:  TRUE iff the result is a list
+                   ListLft:1,           //      00000800:  TRUE iff the left arg ...
+                   ListRht:1,           //      00001000:  TRUE iff the right arg ...
+                   ParseFcnName:1,      //      00002000:  TRUE iff we're parsing the function name
+                   fhNameType:4,        //      0003C000:  Function name type (see NAME_TYPES)
+                   :14;                 //      FFFC0000:  Available bits
+    LPFH_YYSTYPE   lpYYStrandStart,     // 24:  Strand stack start (static)
+                   lpYYStrandBase,      // 28:  ...          base (dynamic)
+                   lpYYStrandNext,      // 2C:  ...          next token (dynamic)
+                   lpYYResult,          // 30:  Ptr to result name or list
+                   lpYYLftArg,          // 34:  ...    left arg name or list
+                   lpYYLftOpr,          // 38:  ...    left operand name
+                   lpYYFcnName,         // 3C:  ...    function/operator name
+                   lpYYAxisOpr,         // 40:  ...    axis operator name
+                   lpYYRhtOpr,          // 44:  ...    right operand name
+                   lpYYRhtArg,          // 48:  ...    right arg name or list
+                   lpYYLocals;          // 4C:  ...    locals name or list
+    WCHAR          wszErrMsg[256];      // 50:  Save area for error message
+                                        //250:  Length
 } FHLOCALVARS, *LPFHLOCALVARS;
 
 

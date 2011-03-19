@@ -7397,16 +7397,16 @@ IndexListWE2:
 #endif
 
 EXIT_TYPES ParseLine
-    (HWND         hWndSM,               // Session Manager window handle
-     HGLOBAL      hGlbTknLine,          // Tokenized line global memory handle (may be NULL)
-     HGLOBAL      hGlbTxtLine,          // Text      ...
-     LPWCHAR      lpwszLine,            // Ptr to the line text (may be NULL)
-     LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
-     UINT         uLineNum,             // Function line #
-     UINT         uTknNum,              // Starting token # in the above function line
-     HGLOBAL      hGlbDfnHdr,           // User-defined function/operator global memory handle (NULL = execute/immexec)
-     UBOOL        bActOnErrors,         // TRUE iff errors are acted upon
-     UBOOL        bExec1Stmt)           // TRUE iff executing only one stmt
+    (HWND           hWndSM,             // Session Manager window handle
+     LPTOKEN_HEADER lpMemTknHdr,        // Ptr to tokenized line global memory header
+     HGLOBAL        hGlbTxtLine,        // Text of tokenized line global memory handle
+     LPWCHAR        lpwszLine,          // Ptr to the line text (may be NULL)
+     LPPERTABDATA   lpMemPTD,           // Ptr to PerTabData global memory
+     UINT           uLineNum,           // Function line #
+     UINT           uTknNum,            // Starting token # in the above function line
+     HGLOBAL        hGlbDfnHdr,         // User-defined function/operator global memory handle (NULL = execute/immexec)
+     UBOOL          bActOnErrors,       // TRUE iff errors are acted upon
+     UBOOL          bExec1Stmt)         // TRUE iff executing only one stmt
 
 {
     PLLOCALVARS   plLocalVars = {0};    // ParseLine local vars
@@ -7459,8 +7459,8 @@ EXIT_TYPES ParseLine
     // Initialize the error code
     uError = ERRORCODE_NONE;
 
-    // If we don't have a valid handle, ...
-    if (!hGlbTknLine)
+    // If we don't have a valid ptr, ...
+    if (!lpMemTknHdr)
     {
         plLocalVars.ExitType = EXITTYPE_ERROR;
 
@@ -7468,14 +7468,14 @@ EXIT_TYPES ParseLine
     } // End IF
 #ifdef DEBUG
     // Display the tokens so far
-    DisplayTokens (hGlbTknLine);
+    DisplayTokens (lpMemTknHdr);
 #endif
 
     // Save values in the LocalVars
     plLocalVars.lpMemPTD    = lpMemPTD;
     plLocalVars.hWndSM      = hWndSM;
     plLocalVars.hGlbTxtLine = hGlbTxtLine;
-    plLocalVars.hGlbTknLine = hGlbTknLine;
+    plLocalVars.lpMemTknHdr = lpMemTknHdr;
     plLocalVars.lpwszLine   = lpwszLine;
     plLocalVars.bLookAhead  = FALSE;
     plLocalVars.ExitType    = EXITTYPE_NONE;
@@ -7483,11 +7483,8 @@ EXIT_TYPES ParseLine
     plLocalVars.hGlbDfnHdr  = hGlbDfnHdr;
     plLocalVars.bExec1Stmt  = bExec1Stmt;
 
-    // Lock the memory to get a ptr to it, and set the variables
-    UTLockAndSet (plLocalVars.hGlbTknLine, &plLocalVars.t2);
-
     // Get # tokens in the line
-    plLocalVars.uTokenCnt = ((LPTOKEN_HEADER) plLocalVars.t2.lpBase)->TokenCnt;
+    plLocalVars.uTokenCnt = plLocalVars.lpMemTknHdr->TokenCnt;
 
     // If the starting token # is outside the token count, ...
     if (uTknNum >= plLocalVars.uTokenCnt)
@@ -7499,7 +7496,7 @@ EXIT_TYPES ParseLine
     } // End IF
 
     // Skip over TOKEN_HEADER
-    plLocalVars.lptkStart = TokenBaseToStart (plLocalVars.t2.lpBase);
+    plLocalVars.lptkStart = TokenBaseToStart (plLocalVars.lpMemTknHdr);
     plLocalVars.lptkEnd   = &plLocalVars.lptkStart[plLocalVars.uTokenCnt];
 
     Assert (plLocalVars.lptkStart->tkFlags.TknType EQ TKT_EOL
@@ -7782,9 +7779,6 @@ EXIT_TYPES ParseLine
         uError = ERRORCODE_ELX;
     } // End IF
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (plLocalVars.hGlbTknLine); plLocalVars.t2.lpBase   = NULL;
-
     EnterCriticalSection (&CSOPL);
 
     // Unlink this plLocalVars from the chain of such objects

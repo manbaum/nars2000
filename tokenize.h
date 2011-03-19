@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -126,43 +126,44 @@ typedef struct tagCLR_COL
 
 typedef struct tagTKLOCALVARS
 {
-    HGLOBAL      hGlbToken;         // 00:  Global memory handle
-    UNION_TOKEN  t2;                // 04:  Locked base of hGlbToken
-    LPTOKEN      lptkStart,         // 08:  First available entry after the header
-                 lptkNext,          // 0C:  Next  ...
-                 lptkLastEOS;       // 10:  Ptr to last EOS token
-    TKROWINDICES State[3];          // 14:  Current state (TKROW__xxx) (12 bytes)
-    UINT         uChar,             // 20:  ...     index into lpwszLine
-                 uCharStart,        // 24:  Initial ...                  (static)
-                 uCharIni,          // 28:  ...                          (dynamic)
-                 uActLen;           // 2C:  Actual length of lpwszLine (may be shorter than lstrlenW)
-    LPWCHAR      lpwszOrig,         // 30:  Ptr to original lpwszLine
-                 lpwszCur;          // 34:  ...    current WCHAR in ...
-    TOKEN_TYPES  CtrlStrucTknType;  // 38:  Control Structure token type
-    UINT         CtrlStrucStrLen;   // 3C:  ...               string length
-    ANON_CTRL_STRUC;                // 40:  Ctrl Struc data (8 bytes)
-    LPCLRCOL     lpMemClrIni,       // 48:  Ptr to initial array of Syntax Colors (NULL = not coloring) (static)
-                 lpMemClrNxt;       // 4C:  Ptr to next    ...                                          (dynamic)
-    LPSCINDICES  lpGrpSeqIni,       // 50:  Ptr to initial syntax coloring grouping sequence (static)
-                 lpGrpSeqNxt;       // 54:  Ptr to next    ...                               (dynamic)
-    UINT         PrevGroup,         // 58:  Current index in lpGrpSeq of the previous grouping symbol
-                                    //      (NO_PREVIOUS_GROUPING_SYMBOL = none)
-                 NameInit;          // 5C:  Index in lpMemClrIni of Start of name (including sysnames)
-                                    //      (NO_PREVIOUS_NAME = none)
-    SCNAMETYPE   scNameType;        // 60:  Type of name starting at NameInit
-    HWND         hWndEC;            // 64:  Window handle of Edit Ctrl (parent is SM or FE)
-    TKCOLINDICES colIndex;          // 68:  Current TKCOL_xxx value
-    UINT         uSyntClrLen;       // 6C:  # Syntax Color entries
-    HGLOBAL      hGlbNum,           // 70:  NumAlp global memory handle
-                 hGlbStr;           // 74:  NumAlp global memory handle
-    int          iNumLen,           // 78:  # chars in lpszNumAlp
-                 iStrLen,           // 7C:  ...        lpwszString
-                 iNumLim,           // 80:  Current limit for lpszNumAlp
-                 iStrLim;           // 84:  ...               lpwszString
-    UINT         bMFO:1,            // 88:  00000001:  TRUE iff this is a Magic Function/Operator
-                 :31;               //      FFFFFFFE:  Available bits
-    struct tagPERTABDATA *lpMemPTD; // 8C:  Ptr to PerTabData global memory
-                                    // 90:  Length
+    HGLOBAL        hGlbToken;           // 00:  Global memory handle
+    LPTOKEN_HEADER lpHeader;            // 04:  Ptr to tokenize3d header in global memory
+    LPTOKEN        lptkStart,           // 08:  First available entry after the header
+                   lptkNext,            // 0C:  Next  ...
+                   lptkLastEOS;         // 10:  Ptr to last EOS token
+    TKROWINDICES   State[3];            // 14:  Current state (TKROW__xxx) (12 bytes)
+    UINT           uChar,               // 20:  ...     index into lpwszLine
+                   uCharStart,          // 24:  Initial ...                  (static)
+                   uCharIni,            // 28:  ...                          (dynamic)
+                   uActLen;             // 2C:  Actual length of lpwszLine (may be shorter than lstrlenW)
+    LPWCHAR        lpwszOrig,           // 30:  Ptr to original lpwszLine
+                   lpwszCur;            // 34:  ...    current WCHAR in ...
+    TOKEN_TYPES    CtrlStrucTknType;    // 38:  Control Structure token type
+    UINT           CtrlStrucStrLen;     // 3C:  ...               string length
+    ANON_CTRL_STRUC;                    // 40:  Ctrl Struc data (8 bytes)
+    LPCLRCOL       lpMemClrIni,         // 48:  Ptr to initial array of Syntax Colors (NULL = not coloring) (static)
+                   lpMemClrNxt;         // 4C:  Ptr to next    ...                                          (dynamic)
+    LPSCINDICES    lpGrpSeqIni,         // 50:  Ptr to initial syntax coloring grouping sequence (static)
+                   lpGrpSeqNxt;         // 54:  Ptr to next    ...                               (dynamic)
+    UINT           PrevGroup,           // 58:  Current index in lpGrpSeq of the previous grouping symbol
+                                        //      (NO_PREVIOUS_GROUPING_SYMBOL = none)
+                   NameInit;            // 5C:  Index in lpMemClrIni of Start of name (including sysnames)
+                                        //      (NO_PREVIOUS_NAME = none)
+    SCNAMETYPE     scNameType;          // 60:  Type of name starting at NameInit
+    HWND           hWndEC;              // 64:  Window handle of Edit Ctrl (parent is SM or FE)
+    TKCOLINDICES   colIndex;            // 68:  Current TKCOL_xxx value
+    UINT           uSyntClrLen;         // 6C:  # Syntax Color entries
+    HGLOBAL        hGlbNum,             // 70:  NumAlp global memory handle
+                   hGlbStr;             // 74:  NumAlp global memory handle
+    int            iNumLen,             // 78:  # chars in lpszNumAlp
+                   iStrLen,             // 7C:  ...        lpwszString
+                   iNumLim,             // 80:  Current limit for lpszNumAlp
+                   iStrLim;             // 84:  ...               lpwszString
+    UINT           bMFO:1,              // 88:  00000001:  TRUE iff this is a Magic Function/Operator
+                   :31;                 //      FFFFFFFE:  Available bits
+    struct tagPERTABDATA
+                  *lpMemPTD;            // 8C:  Ptr to PerTabData global memory
+                                        // 90:  Length
 } TKLOCALVARS, *LPTKLOCALVARS;
 
 typedef UBOOL (*TK_ACTION) (LPTKLOCALVARS);

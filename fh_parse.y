@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -588,15 +588,15 @@ UBOOL ParseFcnHeader
         // Save the token header global memory handle
         lpfhLocalVars->hGlbTknHdr = hGlbTknHdr;
 
-        // Lock the handle to get a ptr to it, and set the variables
-        UTLockAndSet (lpfhLocalVars->hGlbTknHdr, &lpfhLocalVars->t2);
+        // Lock the memory to get a ptr to it
+        lpfhLocalVars->lpHeader  = MyGlobalLock (lpfhLocalVars->hGlbTknHdr);
 
         // Initialize the base & next strand ptrs
         lpfhLocalVars->lpYYStrandBase =
         lpfhLocalVars->lpYYStrandNext = lpfhLocalVars->lpYYStrandStart;
 
         // Skip over TOKEN_HEADER
-        lpfhLocalVars->lptkStart = TokenBaseToStart (lpfhLocalVars->t2.lpBase);
+        lpfhLocalVars->lptkStart = TokenBaseToStart (lpfhLocalVars->lpHeader);
 
         // Skip over the starting EOL
         lpfhLocalVars->lptkNext  = &lpfhLocalVars->lptkStart[1];
@@ -650,7 +650,7 @@ UBOOL ParseFcnHeader
     lpfhLocalVars->DisplayErr = OldDisplayErr;
 
     // We no longer need this ptr
-    MyGlobalUnlock (lpfhLocalVars->hGlbTknHdr); lpfhLocalVars->t2.lpBase = NULL;
+    MyGlobalUnlock (lpfhLocalVars->hGlbTknHdr); lpfhLocalVars->lpHeader = NULL;
 
     return bRet;
 } // End ParseFcnHeader

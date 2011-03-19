@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@ EXIT_TYPES GotoLine_EM
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL        hGlbTknLine;     // Tokenized line global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
     EXIT_TYPES     exitType;        // Return value
     APLSTYPE       aplTypeRht;      // Right arg storage type
@@ -135,19 +134,23 @@ EXIT_TYPES GotoLine_EM
          || lpSISCur->DfnType EQ DFNTYPE_EXEC))
         lpSISCur = lpSISCur->lpSISPrv;
 
-    if (lpSISCur EQ NULL
-     || bExecEC)
-        hGlbTknLine = NULL;
-    else
-        // Get the the corresponding tokenized line's global memory handle
-        hGlbTknLine = GetTokenLineHandle (lpSISCur->hGlbDfnHdr, aplIntegerRht);
-    if (hGlbTknLine)
+    if (lpSISCur NE NULL
+     && !bExecEC
+     && aplIntegerRht > 0)
     {
-        UINT uStmtLen,
-             TokenCnt;
+        UINT         uStmtLen,          // Statement length (in TOKENs)
+                     TokenCnt;          // Token count in this line
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
+        LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknLine);
+        lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
+
+        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+        // Get a ptr to the corresponding tokenized line's global memory
+        lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[aplIntegerRht - 1].offTknLine);
 
         // Get the token count
         TokenCnt = lpMemTknHdr->TokenCnt;
@@ -173,7 +176,7 @@ EXIT_TYPES GotoLine_EM
         TknType = tkNxt.tkFlags.TknType;
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+        MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         // Check for branch to non-restartable Control Structure tokens:
         //   CASE, CASELIST (both covered by SKIPCASE)

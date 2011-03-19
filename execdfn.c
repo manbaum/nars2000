@@ -777,8 +777,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPPL_YYSTYPE   lpYYRes = NULL;  // Ptr to the result
     LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header
     HGLOBAL        hGlbDfnHdr,      // User-defined function/operator global memory handle
-                   hGlbTxtLine,     // Line text global memory handle
-                   hGlbTknLine;     // Tokenized line global memory handle
+                   hGlbTxtLine;     // Line text global memory handle
     LPPERTABDATA   lpMemPTD = NULL; // Ptr to PerTabData global memory
     LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
     HWND           hWndSM;          // Session Manager window handle
@@ -853,16 +852,10 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
         // Get the starting line's token & text global memory handles
         hGlbTxtLine = lpFcnLines[uLineNum - 1].hGlbTxtLine;
-        hGlbTknLine = lpFcnLines[uLineNum - 1].hGlbTknLine;
-
-        // Lock the memory to get a ptr to it
-        lpMemTknLine = MyGlobalLock (hGlbTknLine);
+        lpMemTknLine = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[uLineNum - 1].offTknLine);
 
         // Get the token count of this line
         uTokenCnt = lpMemTknLine->TokenCnt;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
 
         // If the starting token # is outside the token count, ...
         if (uTknNum >= uTokenCnt)
@@ -874,14 +867,11 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         if (lpMemDfnHdr->MonOn)
             StartStopMonInfo (lpMemDfnHdr, uLineNum, TRUE);
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-
         // Execute the line
         exitType =
           ParseLine (hWndSM,                // Session Manager window handle
-                     hGlbTknLine,           // Tokenized line global memory handle
-                     hGlbTxtLine,           // Text      ...
+                     lpMemTknLine,          // Ptr to tokenized line global memory
+                     hGlbTxtLine,           // Text of function line global memory ahndle
                      NULL,                  // Ptr to line text global memory
                      lpMemPTD,              // Ptr to PerTabData global memory
                      uLineNum,              // Function line # (1 for execute or immexec)
@@ -889,9 +879,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                      hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
                      TRUE,                  // TRUE iff errors are acted upon
                      FALSE);                // TRUE iff executing only one stmt
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
-
         // If line monitoring is enabled, stop it for this line
         if (lpMemDfnHdr->MonOn)
             StartStopMonInfo (lpMemDfnHdr, uLineNum, FALSE);
@@ -1004,22 +991,26 @@ NEXTLINE:
             //   the multiple results have no value, ...
             if (CheckDfnExitError_EM (lpMemPTD))
             {
-                LPWCHAR lpwszLine = L":return";
-                HGLOBAL hGlbTkn;
+                LPWCHAR        lpwszLine = L":return";
+                HGLOBAL        hGlbTknHdr;
+                LPTOKEN_HEADER lpMemTknHdr;
 
                 // Tokenize the line
-                hGlbTkn =
+                hGlbTknHdr =
                   Tokenize_EM (lpwszLine,               // The line to tokenize (not necessarily zero-terminated)
                                lstrlenW (lpwszLine),    // NELM of lpwszLine
                                NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                1,                       // Function line # (0 = header)
                                NULL,                    // Ptr to error handling function (may be NULL)
                                FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator
+                // Lock the memory to get a ptr to it
+                lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
                 // Execute the line
                 exitType =
                   ParseLine (hWndSM,                    // Session Manager window handle
-                             hGlbTkn,                   // Tokenized line global memory handle
-                             lpMemDfnHdr->hGlbTxtHdr,   // Text      ...
+                             lpMemTknHdr,               // Ptr to tokenized line header global memory
+                             lpMemDfnHdr->hGlbTxtHdr,   // Text of tokenized line global memory handle
                              NULL,                      // Ptr to line text global memory
                              lpMemPTD,                  // Ptr to PerTabData global memory
                              1,                         // Function line # (1 for execute or immexec)
@@ -1027,8 +1018,11 @@ NEXTLINE:
                              hGlbDfnHdr,                // User-defined function/operator global memory handle (NULL = execute/immexec)
                              TRUE,                      // TRUE iff errors are acted upon
                              FALSE);                    // TRUE iff executing only one stmt
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
+
                 // We no longer need this resource
-                MyGlobalFree (hGlbTkn); hGlbTkn = NULL;
+                MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 
                 goto RESTART_AFTER_ERROR;
             } // End IF
@@ -1293,7 +1287,7 @@ UBOOL CheckDfnExitError_EM
                 lptkHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
 
                 // Get ptr to the tokens in the line
-                lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
+                lptkLine = TokenBaseToStart (lptkHdr);
 
                 // Loop 'til we point to the first named token
                 while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
@@ -1316,7 +1310,7 @@ UBOOL CheckDfnExitError_EM
             lptkHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
 
             // Get ptr to the tokens in the line
-            lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
+            lptkLine = TokenBaseToStart (lptkHdr);
 
             // Loop 'til we point to the first named token
             while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
@@ -1584,14 +1578,14 @@ LPSYMENTRY LocalizeLabels
     {
         UINT numTokens;     // # tokens in the line
 
-        // Lock the memory to get a ptr to it
-        lptkHdr = MyGlobalLock (lpFcnLines->hGlbTknLine);
+        // Get a ptr to the token header
+        lptkHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine);
 
         // Get the # tokens in the line
         numTokens = lptkHdr->TokenCnt;
 
         // Get ptr to the tokens in the line
-        lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
+        lptkLine = TokenBaseToStart (lptkHdr);
 
         Assert (lptkLine[0].tkFlags.TknType EQ TKT_EOL
              || lptkLine[0].tkFlags.TknType EQ TKT_EOS);
@@ -1644,9 +1638,6 @@ LPSYMENTRY LocalizeLabels
                 lpSymEntryNxt++;
             } // End IF
         } // End IF
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpFcnLines->hGlbTknLine); lptkHdr = NULL; lptkLine = NULL;
 
         // Skip to the next struct
         lpFcnLines++;

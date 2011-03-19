@@ -285,7 +285,6 @@ typedef struct tagSTART_ADDRESSES
     "RestPrimSpecRL"            , (LPUCHAR) &RestPrimSpecRL             ,
     "GetPrototypeFcnPtr"        , (LPUCHAR) &GetPrototypeFcnPtr         ,
     "GetPrimFlagsPtr"           , (LPUCHAR) &GetPrimFlagsPtr            ,
-    "GetTokenLineHandle"        , (LPUCHAR) &GetTokenLineHandle         ,
     "GetImmedType"              , (LPUCHAR) &GetImmedType               ,
     "GetSignatureGlb"           , (LPUCHAR) &GetSignatureGlb            ,
 
@@ -431,9 +430,22 @@ typedef struct tagSTART_ADDRESSES
     "LookaheadSurround"         , (LPUCHAR) &LookaheadSurround          ,
     "LookaheadAdjacent"         , (LPUCHAR) &LookaheadAdjacent          ,
     "LookaheadDyadicOp"         , (LPUCHAR) &LookaheadDyadicOp          ,
+    "LookbehindOp"              , (LPUCHAR) &LookbehindOp               ,
+    "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
+    "CheckNullOp3"              , (LPUCHAR) &CheckNullOp3               ,
+    "pl_yyerror"                , (LPUCHAR) &pl_yyerror                 ,
+    "pl_yyfprintf"              , (LPUCHAR) &pl_yyfprintf               ,
     "WaitForInput"              , (LPUCHAR) &WaitForInput               ,
     "AmbOpSwap_EM"              , (LPUCHAR) &AmbOpSwap_EM               ,
     "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                 ,
+    "AmbOpToOp1"                , (LPUCHAR) &AmbOpToOp1                 ,
+    "ArrExprCheckCaller"        , (LPUCHAR) &ArrExprCheckCaller         ,
+    "CheckSelSpec_EM"           , (LPUCHAR) &CheckSelSpec_EM            ,
+    "IsSelectSpec"              , (LPUCHAR) &IsSelectSpec               ,
+    "MakeTempCopy"              , (LPUCHAR) &MakeTempCopy               ,
+    "GetEOSIndex"               , (LPUCHAR) &GetEOSIndex                ,
+    "IsLastStmt"                , (LPUCHAR) &IsLastStmt                 ,
+
 
     // po_cmiddot.c
     "PrimOpDydCircleMiddleDotCommon_EM_YY", (LPUCHAR) &PrimOpDydCircleMiddleDotCommon_EM_YY,
@@ -635,7 +647,6 @@ typedef struct tagSTART_ADDRESSES
     "CreateNewTabInThread"      , (LPUCHAR) &CreateNewTabInThread       ,
 
     // tokenize.c
-    "UTLockAndSet"              , (LPUCHAR) &UTLockAndSet               ,
     "Tokenize_EM"               , (LPUCHAR) &Tokenize_EM                ,
     "Untokenize"                , (LPUCHAR) &Untokenize                 ,
 

@@ -1,10 +1,14 @@
 int pl_yyparse (LPPLLOCALVARS lpplLocalVars);
-EXIT_TYPES ParseLine (HWND hWndSM, HGLOBAL hGlbTknLine, HGLOBAL hGlbTxtLine, LPWCHAR lpwszLine, LPPERTABDATA lpMemPTD, UINT uLineNum, UINT uTknNum, HGLOBAL hGlbDfnHdr, UBOOL bActOnErrors, UBOOL bExec1Stmt);
+EXIT_TYPES ParseLine (HWND hWndSM, LPTOKEN_HEADER lpMemTknHdr, HGLOBAL hGlbTxtLine, LPWCHAR lpwszLine, LPPERTABDATA lpMemPTD, UINT uLineNum, UINT uTknNum, HGLOBAL hGlbDfnHdr, UBOOL bActOnErrors, UBOOL bExec1Stmt);
 char SymbTypeVFO (LPTOKEN lptkNext);
 char LookaheadSurround (LPPLLOCALVARS lpplLocalVars);
 char LookaheadAdjacent (LPPLLOCALVARS lpplLocalVars, UBOOL bSkipBrackets, UBOOL bCheckLeft);
 UBOOL LookaheadDyadicOp (LPPLLOCALVARS lpplLocalVars, LPTOKEN lptkNext);
+UBOOL LookbehindOp (LPPLLOCALVARS lpplLocalVars, LPTOKEN lptkPrev);
+int pl_yylex (LPPL_YYSTYPE  lpYYLval, LPPLLOCALVARS lpplLocalVars);
 UBOOL CheckNullOp3 (LPPLLOCALVARS lpplLocalVars);
+void pl_yyerror (LPPLLOCALVARS lpplLocalVars, LPCHAR s);
+void pl_yyfprintf (FILE *hfile, LPCHAR lpszFmt, ...);
 LPPL_YYSTYPE WaitForInput (HWND hWndSM, UBOOL bQuoteQuad, LPTOKEN lptkFunc);
 UBOOL AmbOpSwap_EM (LPPL_YYSTYPE lpYYFcn);
 void AmbOpToFcn (LPPL_YYSTYPE lpYYFcn);

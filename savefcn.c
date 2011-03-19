@@ -1154,7 +1154,7 @@ UBOOL SaveFunctionCom
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             SetFocus (GetParent (hWndEC));
         } else
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
+            ErrorMessageIndirectToken (ERRMSG_NOT_SAVED_FILE_ERROR APPEND_NAME,
                                        lpSF_Fcns->lptkFunc);
         goto ERROR_EXIT;
     } // End IF
@@ -1325,6 +1325,11 @@ UBOOL SaveFunctionCom
         // Get # lines in the function (excluding the header)
         numFcnLines = (*lpSF_Fcns->SF_NumLines) (hWndEC, lpSF_Fcns->LclParams);
 
+        // Get size of tokenization of all lines (excluding the header)
+        for (uOffset = uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+            // Size a function line
+            if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
+                goto ERROR_EXIT;
         // Allocate global memory for the function header
         lpSF_Fcns->hGlbDfnHdr =
         hGlbDfnHdr =
@@ -1333,7 +1338,8 @@ UBOOL SaveFunctionCom
                                                      + numLftArgSTE
                                                      + numRhtArgSTE
                                                      + numLocalsSTE)
-                              + sizeof (FCNLINE) * numFcnLines);
+                              + sizeof (FCNLINE) * numFcnLines
+                              + uOffset);
         if (!hGlbDfnHdr)
         {
             if (hWndFE)
@@ -1466,93 +1472,28 @@ UBOOL SaveFunctionCom
             lpMemDfnHdr->offLocalsSTE = 0;
 
         // Save offset to start of function line structs
-        if (lpMemDfnHdr->numFcnLines)
-            lpMemDfnHdr->offFcnLines = uOffset;
-        else
-            lpMemDfnHdr->offFcnLines = 0;
+        lpMemDfnHdr->offFcnLines = uOffset;
+
+        // Save offset to tokenized lines
+        lpMemDfnHdr->offTknLines = uOffset + numFcnLines * sizeof (FCNLINE);
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
+        // Initialize the offset of where to start saving the tokenized lines
+        uOffset = lpMemDfnHdr->offTknLines;
+
         // Loop through the lines
         for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
         {
-            HGLOBAL hGlbTxtLine;    // Line text global memory handle
-
-            // Get the length of the function line
-            uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1);
-
-            // Allocate global memory to hold this text
-            // The "sizeof (uLineLen) + " is for the leading length
-            //   and the "+ 1" is for the terminating zero
-            //   as well as to handle GlobalLock's aversion to locking
-            //   zero-length arrays
-            hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (APLCHAR));
-            if (!hGlbTxtLine)
-            {
-                if (hWndFE)
-                {
-                    // Display the error message
-                    MessageBoxW (hWndEC,
-                                 L"Insufficient memory to save a function line!!",
-                                 lpwszAppName,
-                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                    SetFocus (GetParent (hWndEC));
-                } else
-                    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                               lpSF_Fcns->lptkFunc);
+            // Save a function line
+            uLineLen =
+              SaveFunctionLine (lpSF_Fcns, NULL, lpMemDfnHdr, uLineNum, lpFcnLines, hWndEC, hWndFE, &uOffset);
+            if (uLineLen EQ -1)
                 goto ERROR_EXIT;
-            } // End IF
-
-            // Save the global memory handle
-            lpFcnLines->hGlbTxtLine = hGlbTxtLine;
-
-            // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
-
-            // Save the line length
-            lpMemTxtLine->U = uLineLen;
-
-            // The following test isn't an optimzation, but avoids
-            //   overwriting the allocation limits of the buffer
-            //   when filling in the leading WORD with uLineLen
-            //   on the call to EM_GETLINE.
-
-            // If the line is non-empty, ...
-            if (uLineLen)
-            {
-                // Tell EM_GETLINE maximum # chars in the buffer
-                lpMemTxtLine->W = (WORD) uLineLen;
-
-                // Read in the line text
-                (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1, &lpMemTxtLine->C);
-
-                // Tokenize the line
-                lpFcnLines->hGlbTknLine =
-                  Tokenize_EM (&lpMemTxtLine->C,    // The line to tokenize (not necessarily zero-terminated)
-                                uLineLen,           // NELM of lpwszLine
-                                hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                                uLineNum + 1,       // Function line # (0 = header)
-                               &ErrorHandler,       // Ptr to error handling function (may be NULL)
-                                FALSE);             // TRUE iff we're tokenizing a Magic Function/Operator
-            } else
-                // Tokenize the (empty) line
-                lpFcnLines->hGlbTknLine =
-                  Tokenize_EM (L"",                 // The line to tokenize (not necessarily zero-terminated)
-                               0,                   // NELM of lpwszLine
-                               hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                               uLineNum + 1,        // Function line # (0 = header)
-                              &ErrorHandler,        // Ptr to error handling function (may be NULL)
-                               FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator
-            // Check the line for empty
-            lpFcnLines->bEmpty =
-              IsLineEmpty (lpFcnLines->hGlbTknLine);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
             // If tokenization failed, ...
-            if (!lpFcnLines->hGlbTknLine)
+            if (!lpFcnLines->offTknLine)
             {
                 if (hWndFE)
                 {
@@ -1725,8 +1666,16 @@ ERROR_EXIT:
 
     if (hGlbTknHdr)
     {
+        LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
         // Free the tokens
-        Untokenize (hGlbTknHdr);
+        Untokenize (lpMemTknHdr);
+
+        // We no Longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 
         // We no longer need this storage
         DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
@@ -1758,24 +1707,201 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $SaveFunctionLine
+//
+//  Save one function line or
+//    size one function line
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SaveFunctionLine"
+#else
+#define APPEND_NAME
+#endif
+
+UINT SaveFunctionLine
+    (LPSF_FCNS      lpSF_Fcns,              // Ptr to common struc (may be NULL if Magic Function)
+     LPMAGIC_FCNOPR lpMagicFcnOpr,          // Ptr to magic function/operator struc (is not NULL if Magic Functions)
+     LPDFN_HEADER   lpMemDfnHdr,            // Ptr to user-defined function/operator header (may be NULL if sizing)
+     UINT           uLineNum,               // Current line # in the Edit Ctrl
+     LPFCNLINE      lpFcnLines,             // Ptr to array of function line structs (FCNLINE[numFcnLines]) (may be NULL if sizing)
+     HWND           hWndEC,                 // Edit Ctrl Window handle (FE only)
+     HWND           hWndFE,                 // Function Editor window handle (FE only, NULL otherwise)
+     LPUINT         lpOffNextTknLine)       // Ptr to offset of next tokenized line
+
+{
+    UINT           uLineLen,                // Line length
+                   uTknSize;                // Token size
+    HGLOBAL        hGlbTxtLine,             // Line text global memory handle
+                   hGlbTknHdr;              // Tokenized line text global memory handle
+    LPTOKEN_HEADER lpMemTknHdr;             // Ptr to tokenized line header global memory
+    LPMEMTXT_UNION lpMemTxtLine;            // Ptr to header/line text global memory
+    LPAPLCHAR      lpwszLine;               // Ptr to function line text
+    WCHAR          wszTemp[1024];           // Save area for error message text
+    LPPERTABDATA   lpMemPTD;                // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // If it's a Magic Function, ...
+    if (lpMagicFcnOpr)
+        // Get the line length of the line
+        uLineLen = lstrlenW (lpMagicFcnOpr->Body[uLineNum]);
+    else
+        // Get the length of the function line
+        uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1);
+
+    // Allocate global memory to hold this text
+    // The "sizeof (lpMemTxtLine->U) + " is for the leading length
+    //   and the "+ 1" is for the terminating zero
+    //   as well as to handle GlobalLock's aversion to locking
+    //   zero-length arrays
+    hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (APLCHAR));
+    if (!hGlbTxtLine)
+    {
+        if (hWndFE)
+        {
+            // Display the error message
+            MessageBoxW (hWndEC,
+                         L"Insufficient memory to save a function line!!",
+                         lpwszAppName,
+                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            SetFocus (GetParent (hWndEC));
+        } else
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lpSF_Fcns->lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // If we're not sizing, ...
+    if (lpFcnLines)
+        // Save the global memory handle
+        lpFcnLines->hGlbTxtLine = hGlbTxtLine;
+
+    // Lock the memory to get a ptr to it
+    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+
+    // Save the line length
+    lpMemTxtLine->U = uLineLen;
+
+    // The following test isn't an optimzation, but avoids
+    //   overwriting the allocation limits of the buffer
+    //   when filling in the leading WORD with uLineLen
+    //   on the call to EM_GETLINE.
+
+    // If the line is non-empty, ...
+    if (uLineLen)
+    {
+        // Tell EM_GETLINE maximum # chars in the buffer
+        lpMemTxtLine->W = (WORD) uLineLen;
+
+        // If it's a Magic Function, ...
+        if (lpMagicFcnOpr)
+            // Copy the line text to global memory
+            CopyMemoryW (&lpMemTxtLine->C, lpMagicFcnOpr->Body[uLineNum], uLineLen);
+        else
+            // Read in the line text
+            (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1, &lpMemTxtLine->C);
+
+        // Point to the start of the line
+        lpwszLine = &lpMemTxtLine->C;
+    } else
+        lpwszLine = L"";
+
+    // Tokenize the line
+    hGlbTknHdr =
+      Tokenize_EM (lpwszLine,               // The line to tokenize (not necessarily zero-terminated)
+                   uLineLen,                // NELM of lpwszLine
+                   hWndEC,                  // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                   uLineNum + 1,            // Function line # (0 = header)
+                  &ErrorHandler,            // Ptr to error handling function (may be NULL)
+                   lpMagicFcnOpr NE NULL);  // TRUE iff we're tokenizing a Magic Function/Operator
+    // If tokenization failed, ...
+    if (!hGlbTknHdr)
+    {
+        // Mark the line in error
+        lpSF_Fcns->uErrLine = uLineNum + 1;
+
+        if (hWndFE)
+        {
+            // Format the error message
+            wsprintfW (wszTemp,
+                       ERRMSG_SYNTAX_ERROR_IN_FUNCTION_LINE APPEND_NAME,
+                       uLineNum + 1,
+                       lpMemPTD->uCaret);
+            // Display the error message
+            MessageBoxW (hWndEC,
+                        wszTemp,
+                        lpwszAppName,
+                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            SetFocus (GetParent (hWndEC));
+        } else
+            ErrorMessageIndirectToken (ERRMSG_NOT_SAVED_FILE_ERROR APPEND_NAME,
+                                       lpSF_Fcns->lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // If we're not sizing, ...
+    if (lpFcnLines)
+        // Check the line for empty
+        lpFcnLines->bEmpty =
+          IsLineEmpty (hGlbTknHdr);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+
+    // Save the token size
+    uTknSize = (UINT) MyGlobalSize (hGlbTknHdr);
+
+    // If we're not sizing, ...
+    if (lpFcnLines)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
+        // Copy the tokens to the end of the function header
+        CopyMemory (ByteAddr (lpMemDfnHdr, *lpOffNextTknLine), lpMemTknHdr, uTknSize);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
+
+        // Save the offset
+        lpFcnLines->offTknLine = *lpOffNextTknLine;
+    } // End IF
+
+    // We no longer need this storage
+    MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+
+    // Account for these tokens
+    *lpOffNextTknLine += uTknSize;
+
+    return uLineLen;
+
+ERROR_EXIT:
+    return -1;
+} // End SaveFunctionLine
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $IsLineEmpty
 //
 //  Determine whether or not a line of tokens is empty
 //***************************************************************************
 
 UBOOL IsLineEmpty
-    (HGLOBAL hGlbTknLine)               // Token line global memory handle
+    (HGLOBAL hGlbTknHdr)                // Token line header global memory handle
 
 {
     LPTOKEN lptkLine;                   // Ptr to line of tokens
     UBOOL   bRet = FALSE;               // TRUE iff the line is empty
 
     // Handle tokenize error
-    if (hGlbTknLine EQ NULL)
+    if (hGlbTknHdr EQ NULL)
         return TRUE;
 
     // Lock the memory to get a ptr to it
-    lptkLine = MyGlobalLock (hGlbTknLine);
+    lptkLine = MyGlobalLock (hGlbTknHdr);
 
     // Skip over the TOKEN_HEADER
     lptkLine = TokenBaseToStart (lptkLine);
@@ -1814,7 +1940,7 @@ UBOOL IsLineEmpty
         bRet = TRUE;
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknLine); lptkLine = NULL;
+    MyGlobalUnlock (hGlbTknHdr); lptkLine = NULL;
 
     return bRet;
 } // End IsLineEmpty
@@ -1846,18 +1972,18 @@ UBOOL GetSpecialLabelNums
 
     // Loop through the function lines
     for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
-    if (lpFcnLines->hGlbTknLine)
+    if (lpFcnLines->offTknLine)
     {
         UINT numTokens;     // # tokens in the line
 
         // Lock the memory to get a ptr to it
-        lptkHdr = MyGlobalLock (lpFcnLines->hGlbTknLine);
+        lptkHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine);
 
         // Get the # tokens in the line
         numTokens = lptkHdr->TokenCnt;
 
         // Get ptr to the tokens in the line
-        lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
+        lptkLine = TokenBaseToStart (lptkHdr);
 
         Assert (lptkLine[0].tkFlags.TknType EQ TKT_EOL
              || lptkLine[0].tkFlags.TknType EQ TKT_EOS);
@@ -1921,9 +2047,6 @@ UBOOL GetSpecialLabelNums
                 } // End IF
             } // End IF
         } // End IF
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpFcnLines->hGlbTknLine); lptkHdr = NULL; lptkLine = NULL;
 
         // Skip to the next struct
         lpFcnLines++;

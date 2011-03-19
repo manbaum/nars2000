@@ -447,11 +447,12 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
      LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
-    HGLOBAL       hGlbToken = NULL;     // Tokenized line global memory handle
-    HANDLE        hSigaphore = NULL;    // Semaphore handle to signal (NULL if none)
-    EXIT_TYPES    exitType;             // Return code from ParseLine
-    LPTOKEN       lptkCSBeg;            // Ptr to next token on the CS stack
-    CSLOCALVARS   csLocalVars = {0};    // CS local vars
+    HGLOBAL        hGlbTknHdr;          // Tokenized line header global memory handle
+    HANDLE         hSigaphore = NULL;   // Semaphore handle to signal (NULL if none)
+    EXIT_TYPES     exitType;            // Return code from ParseLine
+    LPTOKEN        lptkCSBeg;           // Ptr to next token on the CS stack
+    CSLOCALVARS    csLocalVars = {0};   // CS local vars
+    LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
 
     // Save the ptr to the next token on the CS stack
     //   as our beginning
@@ -460,7 +461,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     // Tokenize, parse, and untokenize the line
 
     // Tokenize the line
-    hGlbToken =
+    hGlbTknHdr =
       Tokenize_EM (lpwszCompLine,               // The line to tokenize (not necessarily zero-terminated)
                    lstrlenW (lpwszCompLine),    // NELM of lpwszLine
                    hWndEC,                      // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
@@ -468,7 +469,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
                   &ErrorMessageDirect,          // Ptr to error handling function (may be NULL)
                    FALSE);                      // TRUE iff we're tokenizing a Magic Function/Operator
     // If it's invalid, ...
-    if (hGlbToken EQ NULL)
+    if (hGlbTknHdr EQ NULL)
     {
         exitType = EXITTYPE_ERROR;              // Mark as failed Tokenize_EM
 
@@ -482,7 +483,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     csLocalVars.lptkCSNxt   = lptkCSBeg;
     csLocalVars.lptkCSLink  = NULL;
     csLocalVars.hGlbDfnHdr  = NULL;
-    csLocalVars.hGlbImmExec = hGlbToken;
+    csLocalVars.hGlbImmExec = hGlbTknHdr;
 
     // Parse the tokens on the CS stack
     if (!ParseCtrlStruc_EM (&csLocalVars))
@@ -503,10 +504,13 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
         goto ERROR_EXIT;
     } // End IF
 
+    // Lock the memory to get a ptr to it
+    lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
     // Fill the SIS struc, execute the line via ParseLine, and cleanup
     exitType =
       PrimFnMonUpTackJotPLParse (lpMemPTD,          // Ptr to PerTabData global memory
-                                 hGlbToken,         // Tokenized line global memory handle
+                                 lpMemTknHdr,       // Ptr to tokenized line header global memory
                                  NULL,              // Text      ...
                                  lpwszCompLine,     // Ptr to text of line to execute
                                 &hSigaphore,        // Ptr to semaphore handle to signal
@@ -515,8 +519,13 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
                                  bActOnErrors,      // TRUE iff we should act on errors
                                  FALSE);            // TRUE iff executing only one stmt
     // Untokenize the temporary line and free its memory
-    Untokenize (hGlbToken);
-    MyGlobalFree (hGlbToken); hGlbToken = NULL;
+    Untokenize (lpMemTknHdr);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
+
+    // We no longer need this storage
+    MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 ERROR_EXIT:
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;
@@ -545,15 +554,15 @@ ERROR_EXIT:
 //***************************************************************************
 
 EXIT_TYPES PrimFnMonUpTackJotPLParse
-    (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
-     HGLOBAL      hGlbToken,            // Tokenized line global memory handle
-     HGLOBAL      hGlbTxtLine,          // Text      ...
-     LPAPLCHAR    lpwszCompLine,        // Ptr to text of line to execute
-     HANDLE      *lphSigaphore,         // Ptr to Semaphore handle to signal (NULL if none)
-     UINT         uLineNum,             // Function line #
-     UINT         uTknNum,              // Starting token # in the above function line
-     UBOOL        bActOnErrors,         // TRUE iff we should act on errors
-     UBOOL        bExec1Stmt)           // TRUE iff executing only one stmt
+    (LPPERTABDATA   lpMemPTD,           // Ptr to PerTabData global memory
+     LPTOKEN_HEADER lpMemTknHdr,        // Ptr to tokenized line header global memory
+     HGLOBAL        hGlbTxtLine,        // Text of tokenized line global memory handle
+     LPAPLCHAR      lpwszCompLine,      // Ptr to text of line to execute
+     HANDLE        *lphSigaphore,       // Ptr to Semaphore handle to signal (NULL if none)
+     UINT           uLineNum,           // Function line #
+     UINT           uTknNum,            // Starting token # in the above function line
+     UBOOL          bActOnErrors,       // TRUE iff we should act on errors
+     UBOOL          bExec1Stmt)         // TRUE iff executing only one stmt
 
 {
     EXIT_TYPES    exitType;             // Return code from ParseLine
@@ -570,8 +579,8 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
     // Execute the line
     exitType =
       ParseLine (lpMemPTD->hWndSM,      // Session Manager window handle
-                 hGlbToken,             // Tokenized line global memory handle
-                 hGlbTxtLine,           // Text      ...
+                 lpMemTknHdr,           // Ptr to tokenized line header global memory
+                 hGlbTxtLine,           // Text of tokenized line global memory handle
                  lpwszCompLine,         // Ptr to the complete line
                  lpMemPTD,              // Ptr to PerTabData global memory
                  uLineNum,              // Function line # (1 for execute or immexec)

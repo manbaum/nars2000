@@ -371,24 +371,25 @@ DWORD WINAPI ImmExecStmtInThread
     (LPIE_THREAD lpieThread)            // Ptr to IE_THREAD struc
 
 {
-    HANDLE        hSigaphore = NULL;    // Semaphore handle to signal (NULL if none)
-    LPWCHAR       lpwszCompLine;        // Ptr to complete line
-    APLNELM       aplNELM;              // NELM of lpwszCompLine
-    HGLOBAL       hGlbToken,            // Handle of tokenized line
-                  hGlbWFSO;             // WaitForSingleObject callback global memory handle
-    HWND          hWndEC,               // Handle of Edit Ctrl window
-                  hWndSM;               // ...       Session Manager ...
-    LPPERTABDATA  lpMemPTD;             // Ptr to this window's PerTabData
-    RESET_FLAGS   resetFlag;            // Reset flag (see RESET_FLAGS)
-    UBOOL         bFreeLine,            // TRUE iff we should free lpszCompLine on completion
-                  bWaitUntilFini,       // TRUE iff wait until finished
-                  bResetAll = FALSE,    // TRUE iff )RESET about to finish
-                  bActOnErrors;         // TRUE iff errors are acted upon
-    EXIT_TYPES    exitType;             // Return code from ParseLine
-    LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
-    LPSIS_HEADER  lpSISPrv;             // Ptr to previous SIS header
-    LPTOKEN       lptkCSBeg;            // Ptr to next token on the CS stack
-    CSLOCALVARS   csLocalVars = {0};    // CS local vars
+    HANDLE         hSigaphore = NULL;   // Semaphore handle to signal (NULL if none)
+    LPWCHAR        lpwszCompLine;       // Ptr to complete line
+    APLNELM        aplNELM;             // NELM of lpwszCompLine
+    HGLOBAL        hGlbTknHdr,          // Handle of tokenized line header
+                   hGlbWFSO;            // WaitForSingleObject callback global memory handle
+    HWND           hWndEC,              // Handle of Edit Ctrl window
+                   hWndSM;              // ...       Session Manager ...
+    LPPERTABDATA   lpMemPTD;            // Ptr to this window's PerTabData
+    RESET_FLAGS    resetFlag;           // Reset flag (see RESET_FLAGS)
+    UBOOL          bFreeLine,           // TRUE iff we should free lpszCompLine on completion
+                   bWaitUntilFini,      // TRUE iff wait until finished
+                   bResetAll = FALSE,   // TRUE iff )RESET about to finish
+                   bActOnErrors;        // TRUE iff errors are acted upon
+    EXIT_TYPES     exitType;            // Return code from ParseLine
+    LPWFSO         lpMemWFSO;           // Ptr to WFSO global memory
+    LPSIS_HEADER   lpSISPrv;            // Ptr to previous SIS header
+    LPTOKEN        lptkCSBeg;           // Ptr to next token on the CS stack
+    CSLOCALVARS    csLocalVars = {0};   // CS local vars
+    LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
 
     __try
     {
@@ -431,7 +432,7 @@ DWORD WINAPI ImmExecStmtInThread
         // Tokenize, parse, and untokenize the line
 
         // Tokenize the line
-        hGlbToken =
+        hGlbTknHdr =
           Tokenize_EM (lpwszCompLine,       // The line to tokenize (not necessarily zero-terminated)
                        aplNELM,             // NELM of lpwszLine
                        hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
@@ -439,7 +440,7 @@ DWORD WINAPI ImmExecStmtInThread
                       &ErrorMessageDirect,  // Ptr to error handling function (may be NULL)
                        FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator
         // If it's invalid, ...
-        if (hGlbToken EQ NULL)
+        if (hGlbTknHdr EQ NULL)
         {
             // If we should act on this error, ...
             exitType = bActOnErrors ? ActOnError (hWndSM, lpMemPTD) : EXITTYPE_ERROR;
@@ -454,7 +455,7 @@ DWORD WINAPI ImmExecStmtInThread
         csLocalVars.lptkCSNxt   = lptkCSBeg;
         csLocalVars.lptkCSLink  = NULL;
         csLocalVars.hGlbDfnHdr  = NULL;
-        csLocalVars.hGlbImmExec = hGlbToken;
+        csLocalVars.hGlbImmExec = hGlbTknHdr;
 
         // Parse the tokens on the CS stack
         if (!ParseCtrlStruc_EM (&csLocalVars))
@@ -484,11 +485,14 @@ DWORD WINAPI ImmExecStmtInThread
             // Set the cursor to indicate the new state
             ForceSendCursorMsg (hWndEC, TRUE);
 
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
         // Execute the line
         exitType =
           ParseLine (hWndSM,                // Session Manager window handle
-                     hGlbToken,             // Tokenized line global memory handle
-                     NULL,                  // Text      ...
+                     lpMemTknHdr,           // Ptr to tokenized line header global memory
+                     NULL,                  // Text of tokenized line global mamory handle
                      lpwszCompLine,         // Ptr to the complete line
                      lpMemPTD,              // Ptr to PerTabData global memory
                      1,                     // Function line #  (1 for execute or immexec)
@@ -498,6 +502,9 @@ DWORD WINAPI ImmExecStmtInThread
                      FALSE);                // TRUE iff executing only one stmt
         // The matching <ForceSendCursorMsg (hWndEC, FALSE)> is
         //   in <DisplayPrompt>.
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 
         // Start with the preceding layer (if any)
         lpSISPrv = lpMemPTD->lpSISCur->lpSISPrv;
@@ -668,9 +675,17 @@ DWORD WINAPI ImmExecStmtInThread
         // Get the reset flag
         resetFlag = lpMemPTD->lpSISCur->ResetFlag;
 UNTOKENIZE_EXIT:
-        // Untokenize the temporary line and free its memory
-        Untokenize (hGlbToken);
-        MyGlobalFree (hGlbToken); hGlbToken = NULL;
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
+        // Free the tokens
+        Untokenize (lpMemTknHdr);
+
+        // We no Longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
+
+        // We no Longer need this storage
+        MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 ERROR_EXIT:
         // Unlocalize the STEs on the innermost level
         //   and strip off one level

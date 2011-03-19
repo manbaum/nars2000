@@ -969,14 +969,9 @@ void FreeResultGlobalDfnStruc
             DbgGlobalFree (lpFcnLines->hGlbTxtLine); lpFcnLines->hGlbTxtLine = NULL;
         } // End IF
 
-        if (lpFcnLines->hGlbTknLine)
-        {
+        if (lpFcnLines->offTknLine)
             // Free the tokens
-            Untokenize (lpFcnLines->hGlbTknLine);
-
-            // We no longer need this storage
-            DbgGlobalFree (lpFcnLines->hGlbTknLine); lpFcnLines->hGlbTknLine = NULL;
-        } // End IF
+            Untokenize ((LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine));
 
         // Skip to the next struct
         lpFcnLines++;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,10 +37,11 @@ void CS_ChangeTokenType
      TOKEN_TYPES   TknType)             // New token type
 
 {
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
+    LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+    LPTOKEN        lpMemTknLine;        // Ptr to tokenized line global memory
+    LPDFN_HEADER   lpMemDfnHdr;         // Ptr to user-defined function/operator global memory
+    LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    HGLOBAL        hGlbTknHdr = NULL;   // Tokenized line header global memory handle
 
     // If this is execute or immexec, ...
     if (lpcsLocalVars->hGlbImmExec NE NULL)
@@ -48,7 +49,10 @@ void CS_ChangeTokenType
         Assert (lptkArg1->tkData.Orig.c.uLineNum EQ 1);
 
         // Get the execute/immexec global memory handle
-        hGlbTknLine = lpcsLocalVars->hGlbImmExec;
+        hGlbTknHdr = lpcsLocalVars->hGlbImmExec;
+
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
     } else
     // It's a defined function/operator
     {
@@ -60,18 +64,12 @@ void CS_ChangeTokenType
 
         Assert (lptkArg1->tkData.Orig.c.uLineNum > 0);
 
-        // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptkArg1->tkData.Orig.c.uLineNum - 1].hGlbTknLine;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+        // Get the ptr to the given line's tokenized header global memory
+        lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[lptkArg1->tkData.Orig.c.uLineNum - 1].offTknLine);
     } // End IF/ELSE
 
-    // Lock the memory to get a ptr to it
-    lpMemTknLine = MyGlobalLock (hGlbTknLine);
-
     // Skip over the header to the data
-    lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+    lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
 
     // Change the given token number's type
     lpMemTknLine[lptkArg1->tkData.Orig.c.uTknNum].tkFlags.TknType = TknType;
@@ -79,8 +77,18 @@ void CS_ChangeTokenType
     // Change the value on the CS stack
     lptkArg1->tkFlags.TknType = TknType;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+    if (hGlbTknHdr)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknLine = NULL;
+    } // End IF
+
+    // If this is NOT execute or immexec, ...
+    if (lpcsLocalVars->hGlbImmExec EQ NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
 } // End CS_ChangeTokenType
 
 
@@ -96,10 +104,11 @@ void CS_ChainTokens
      LPTOKEN       lptkArg2)            // Ptr to 2nd argument TOKEN      (Setting Next)
 
 {
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
+    LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+    LPTOKEN        lpMemTknLine;        // Ptr to tokenized line global memory
+    LPDFN_HEADER   lpMemDfnHdr;         // Ptr to user-defined function/operator global memory
+    LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    HGLOBAL        hGlbTknHdr = NULL;   // Tokenized line header global memory handle
 
     // If this is execute or immexec, ...
     if (lpcsLocalVars->hGlbImmExec NE NULL)
@@ -108,7 +117,10 @@ void CS_ChainTokens
              && lptkArg2->tkData.Orig.c.uLineNum EQ 1);
 
         // Get the execute/immexec global memory handle
-        hGlbTknLine = lpcsLocalVars->hGlbImmExec;
+        hGlbTknHdr = lpcsLocalVars->hGlbImmExec;
+
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
     } else
     // It's a defined function/operator
     {
@@ -121,17 +133,11 @@ void CS_ChainTokens
         Assert (lptdArg1->Orig.c.uLineNum > 0);
 
         // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg1->Orig.c.uLineNum - 1].hGlbTknLine;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+        lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[lptdArg1->Orig.c.uLineNum - 1].offTknLine);
     } // End IF/ELSE
 
-    // Lock the memory to get a ptr to it
-    lpMemTknLine = MyGlobalLock (hGlbTknLine);
-
     // Skip over the header to the data
-    lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+    lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
 
 #ifdef DEBUG
     // Check debug level
@@ -156,8 +162,18 @@ void CS_ChainTokens
     lptdArg1->Next.uStmtNum = lptkArg2->tkData.Orig.c.uStmtNum;
     lptdArg1->Next.uTknNum  = lptkArg2->tkData.Orig.c.uTknNum;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+    if (hGlbTknHdr)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknLine = NULL;
+    } // End IF
+
+    // If this is NOT execute or immexec, ...
+    if (lpcsLocalVars->hGlbImmExec EQ NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
 } // End CS_ChainTokens
 
 
@@ -243,10 +259,11 @@ void CS_SetTokenCLIndex
      UINT          uCLIndex)            // The CLIndex to use
 
 {
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine;           // Tokenized line global memory handle
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
+    LPDFN_HEADER   lpMemDfnHdr;         // Ptr to user-defined function/operator global memory
+    LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    HGLOBAL        hGlbTknHdr = NULL;   // Tokenized line header global memory handle
+    LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+    LPTOKEN        lpMemTknLine;        // Ptr to tokenized line global memory
 
     // If this is execute or immexec, ...
     if (lpcsLocalVars->hGlbImmExec NE NULL)
@@ -254,7 +271,10 @@ void CS_SetTokenCLIndex
         Assert (lptdArg->Orig.c.uLineNum EQ 1);
 
         // Get the execute/immexec global memory handle
-        hGlbTknLine = lpcsLocalVars->hGlbImmExec;
+        hGlbTknHdr = lpcsLocalVars->hGlbImmExec;
+
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
     } else
     // It's a defined function/operator
     {
@@ -267,23 +287,27 @@ void CS_SetTokenCLIndex
         Assert (lptdArg->Orig.c.uLineNum > 0);
 
         // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lptdArg->Orig.c.uLineNum - 1].hGlbTknLine;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+        lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[lptdArg->Orig.c.uLineNum - 1].offTknLine);
     } // End IF/ELSE
 
-    // Lock the memory to get a ptr to it
-    lpMemTknLine = MyGlobalLock (hGlbTknLine);
-
     // Skip over the header to the data
-    lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+    lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
 
     // Set the CLIndex
     lpMemTknLine[lptdArg->Orig.c.uTknNum].tkData.uCLIndex = uCLIndex;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
+    if (hGlbTknHdr)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknLine = NULL;
+    } // End IF
+
+    // If this is NOT execute or immexec, ...
+    if (lpcsLocalVars->hGlbImmExec EQ NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpcsLocalVars->hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
 } // End CS_SetTokenCLIndex
 
 
@@ -1458,15 +1482,16 @@ UBOOL CS_SELECT_Stmt_EM
      LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
 
 {
-    APLNELM      aplNELMCL;             // CASELIST NELM
-    TOKEN_DATA   tdNxt,                 // TOKEN_DATA of the next stmt
-                 tdSOS;                 // ...               SOS  ...
-    TOKEN        tkNxt;                 // TOKEN of next stmt
-    HGLOBAL      hGlbTknLine,           // Tokenized line global memory handle
-                 hGlbTxtLine;           // Text      ...
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYTmp;               // Ptr to right arg
-    UBOOL        bCmp;                  // TRUE iff the comparison is TRUE
+    APLNELM        aplNELMCL;           // CASELIST NELM
+    TOKEN_DATA     tdNxt,               // TOKEN_DATA of the next stmt
+                   tdSOS;               // ...               SOS  ...
+    TOKEN          tkNxt;               // TOKEN of next stmt
+    LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+    HGLOBAL        hGlbTxtLine;         // Text of function line global memory handle
+    LPPERTABDATA   lpMemPTD;            // Ptr to PerTabData global memory
+    LPPL_YYSTYPE   lpYYTmp;             // Ptr to right arg
+    UBOOL          bCmp;                // TRUE iff the comparison is TRUE
+    UINT           offTknHdr;           // Offset from dfn header to tokenized line header
 
     // Get ptr to PerTabData global memory
     lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
@@ -1482,12 +1507,14 @@ UBOOL CS_SELECT_Stmt_EM
 
         // Get the contents of the token pointed to by
         //   the SELECT/CASE/CASELIST token
-        CS_GetTokenGlb_NEXT (lpplLocalVars, &tdNxt, &tkNxt, &hGlbTknLine, &hGlbTxtLine);
+        CS_GetTokenGlb_NEXT (lpplLocalVars, &tdNxt, &tkNxt, &lpMemTknHdr, &offTknHdr, &hGlbTxtLine);
 
         // Split cases based upon the token type
         switch (tkNxt.tkFlags.TknType)
         {
-            EXIT_TYPES exitType;
+            EXIT_TYPES   exitType;
+            HGLOBAL      hGlbDfnHdr;                // User-defined function/operator ...
+            LPDFN_HEADER lpMemDfnHdr;               // Ptr to user-defined function/operator global memory
 
             case TKT_CS_CASE:
             case TKT_CS_CASELIST:
@@ -1500,19 +1527,39 @@ UBOOL CS_SELECT_Stmt_EM
                 // Point to the SOS token
                 CS_PointToSOSToken_NEXT (lpplLocalVars, &tdSOS);
 
+                // If the offset from dfn header to tokenized line header is valid, ...
+                if (offTknHdr)
+                {
+                    // Get the corresponding user-defined function/operator global memory handle
+                    hGlbDfnHdr = GetDfnHdrHandle (lpplLocalVars);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+                    // Get the given line's tokenized global memory handle
+                    lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, offTknHdr);
+                } // End IF
+
                 // Execute the stmt and compare the result with lpYYRhtArg
 
                 // Fill the SIS struc, execute the line via ParseLine, and cleanup
                 exitType =
                   PrimFnMonUpTackJotPLParse (lpMemPTD,              // Ptr to PerTabData global memory
-                                             hGlbTknLine,           // Tokenized line global memory handle
-                                             hGlbTxtLine,           // Text      ...
+                                             lpMemTknHdr,           // Ptr to tokenized line header global memory
+                                             hGlbTxtLine,           // Text of function line global memory handle
                                              NULL,                  // Ptr to text of line to execute
                                              NULL,                  // Ptr to Semaphore handle to signal (NULL if none)
                                              tdSOS.Next.uLineNum,   // Function line #
                                              tdSOS.Next.uTknNum,    // Starting token # in the above function line
                                              TRUE,                  // TRUE iff we should act on errors
                                              TRUE);                 // TRUE iff executing only one stmt
+                // If the offset from dfn header to tokenized line header is valid, ...
+                if (offTknHdr)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+                } // End IF
+
                 // Split cases based upon the exit type
                 switch (exitType)
                 {
@@ -1738,7 +1785,7 @@ void CS_GetToken_ORIG
 
 {
     // Call common routine with Orig.c arg
-    CS_GetToken_COM (lpplLocalVars, &lptdArg->Orig.c, lptkRes, NULL, NULL);
+    CS_GetToken_COM (lpplLocalVars, &lptdArg->Orig.c, lptkRes, NULL, NULL, NULL);
 } // End CS_GetToken_ORIG
 
 
@@ -1756,7 +1803,7 @@ void CS_GetToken_NEXT
 
 {
     // Call common routine with Next arg
-    CS_GetToken_COM (lpplLocalVars, &lptdArg->Next, lptkRes, NULL, NULL);
+    CS_GetToken_COM (lpplLocalVars, &lptdArg->Next, lptkRes, NULL, NULL, NULL);
 } // End CS_GetToken_NEXT
 
 
@@ -1768,15 +1815,17 @@ void CS_GetToken_NEXT
 //***************************************************************************
 
 void CS_GetTokenGlb_NEXT
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPTOKEN_DATA  lptdArg,             // Ptr to arg TOKEN_DATA
-     LPTOKEN       lptkRes,             // Ptr to result token
-     HGLOBAL      *lphGlbTknLine,       // Ptr to result tokenized line global memory handle (may be NULL)
-     HGLOBAL      *lphGlbTxtLine)       // Ptr to result text      ...
+    (LPPLLOCALVARS   lpplLocalVars,     // Ptr to PL local vars
+     LPTOKEN_DATA    lptdArg,           // Ptr to arg TOKEN_DATA
+     LPTOKEN         lptkRes,           // Ptr to result token
+     LPTOKEN_HEADER *lplpMemTknHdr,     // Ptr to ptr to result tokenized line header global memory (may be NULL)
+     LPUINT          lpOffTknHdr,       // Ptr to offset from dfn header to tokenized line header
+                                        //   (may be zero if *lplpMemTknHdr is not NULL)
+     HGLOBAL        *lphGlbTxtLine)     // Ptr to result text global memory handle
 
 {
     // Call common routine with Next arg
-    CS_GetToken_COM (lpplLocalVars, &lptdArg->Next, lptkRes, lphGlbTknLine, lphGlbTxtLine);
+    CS_GetToken_COM (lpplLocalVars, &lptdArg->Next, lptkRes, lplpMemTknHdr, lpOffTknHdr, lphGlbTxtLine);
 } // End CS_GetTokenGlb_NEXT
 
 
@@ -1787,19 +1836,23 @@ void CS_GetTokenGlb_NEXT
 //***************************************************************************
 
 void CS_GetToken_COM
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPCLOCATION   lpLoc,               // Ptr to arg CLOCATION
-     LPTOKEN       lptkRes,             // Ptr to result token
-     HGLOBAL      *lphGlbTknLine,       // Ptr to result tokenized line global memory handle (may be NULL)
-     HGLOBAL      *lphGlbTxtLine)       // Ptr to result text      ...
+    (LPPLLOCALVARS   lpplLocalVars,     // Ptr to PL local vars
+     LPCLOCATION     lpLoc,             // Ptr to arg CLOCATION
+     LPTOKEN         lptkRes,           // Ptr to result token
+     LPTOKEN_HEADER *lplpMemTknHdr,     // Ptr to ptr to result tokenized line header global memory (may be NULL)
+     LPUINT          lpOffTknHdr,       // Ptr to offset from dfn header to tokenized line header
+                                        //   (may be zero if *lplpMemTknHdr is not NULL)
+     HGLOBAL        *lphGlbTxtLine)     // Ptr to result text global memory handle
 
 {
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator global memory
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine,           // Tokenized line global memory handle
-                 hGlbTxtLine,           // Text line      ...
-                 hGlbDfnHdr;            // User-defined function/operator ...
-    LPTOKEN      lpMemTknLine;          // Ptr to tokenized line global memory
+    LPDFN_HEADER   lpMemDfnHdr;         // Ptr to user-defined function/operator global memory
+    LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    HGLOBAL        hGlbTknHdr = NULL,   // Tokenized line header global memory handle
+                   hGlbTxtLine,         // Text line      ...
+                   hGlbDfnHdr;          // User-defined function/operator ...
+    LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+    LPTOKEN        lpMemTknLine;        // Ptr to tokenized line global memory
+    UINT           offTknHdr;           // Offset from dfn header to tokenized line header
 
     Assert (lpLoc->uLineNum NE 0);
 
@@ -1809,8 +1862,13 @@ void CS_GetToken_COM
         // Get the token
         *lptkRes = lpplLocalVars->lptkStart[lpLoc->uTknNum];
 
-        // Copy the tokenized line's global memory handle
-        hGlbTknLine = lpplLocalVars->hGlbTknLine;
+        // Copy the ptr to the tokenized line's header global memory
+        lpMemTknHdr = lpplLocalVars->lpMemTknHdr;
+
+        // If the caller wants the offset to the tokenized line header, ...
+        if (lpOffTknHdr)
+            // Zap the offset as we have a legit lpMemTknHdr
+            *lpOffTknHdr = 0;
 
         // Copy the text line's global memory handle
         hGlbTxtLine = lpplLocalVars->hGlbTxtLine;
@@ -1827,35 +1885,40 @@ void CS_GetToken_COM
 
         Assert (lpLoc->uLineNum > 0);
 
+        // Save the offset to the tokenized line header
+        offTknHdr = lpFcnLines[lpLoc->uLineNum - 1].offTknLine;
+
+        // If the caller wants the offset to the tokenized line header, ...
+        if (lpOffTknHdr)
+            *lpOffTknHdr = offTknHdr;
+
         // Get the given line's tokenized global memory handle
-        hGlbTknLine = lpFcnLines[lpLoc->uLineNum - 1].hGlbTknLine;
+        lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, offTknHdr);
 
         // Copy the text line's global memory handle
         hGlbTxtLine = lpFcnLines[lpLoc->uLineNum - 1].hGlbTxtLine;
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-
-        // Lock the memory to get a ptr to it
-        lpMemTknLine = MyGlobalLock (hGlbTknLine);
-
         // Skip over the header to the data
-        lpMemTknLine = TokenBaseToStart (lpMemTknLine);
+        lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
 
         // Get the given token
         *lptkRes = lpMemTknLine[lpLoc->uTknNum];
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTknLine); lpMemTknLine = NULL;
     } // End IF/ELSE
 
     // If the caller wants the tokenized line's global memory handle, ...
-    if (lphGlbTknLine)
-        *lphGlbTknLine = hGlbTknLine;
+    if (lplpMemTknHdr)
+        *lplpMemTknHdr = lpMemTknHdr;
 
     // If the caller wants the text line's global memory handle, ...
     if (lphGlbTxtLine)
         *lphGlbTxtLine = hGlbTxtLine;
+
+    // If the stmts are NOT on the same line, ...
+    if (lpLoc->uLineNum NE lpplLocalVars->uLineNum)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
 } // End CS_GetToken_COM
 
 

@@ -497,25 +497,9 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
 
 
 //***************************************************************************
-//  $UTLockAndSet
-//
-//  Lock and set the variables in a UNION_TOKEN
-//***************************************************************************
-
-void UTLockAndSet
-    (HGLOBAL       hGlbToken,
-     LPUNION_TOKEN lpUT)
-
-{
-    // Lock the memory to get a ptr to it
-    lpUT->lpBase = MyGlobalLock (hGlbToken);
-} // End UTLockAndSet
-
-
-//***************************************************************************
 //  $UTRelockAndSet
 //
-//  Relock and set the variables in a UNION_TOKEN
+//  Relock and set the variables in a token header
 //***************************************************************************
 
 void UTRelockAndSet
@@ -524,9 +508,9 @@ void UTRelockAndSet
 
 {
     // Lock the memory to get a ptr to it
-    UTLockAndSet (lptkLocalVars->hGlbToken, &lptkLocalVars->t2);
-    lptkLocalVars->lptkStart = TokenBaseToStart (lptkLocalVars->t2.lpBase);   // Skip over TOKEN_HEADER
-    lptkLocalVars->lptkNext  = &lptkLocalVars->lptkStart[lptkLocalVars->t2.lpHeader->TokenCnt];
+    lptkLocalVars->lpHeader  = MyGlobalLock (lptkLocalVars->hGlbToken);
+    lptkLocalVars->lptkStart = TokenBaseToStart (lptkLocalVars->lpHeader);  // Skip over TOKEN_HEADER
+    lptkLocalVars->lptkNext  = &lptkLocalVars->lptkStart[lptkLocalVars->lpHeader->TokenCnt];
 } // End UTRelockAndSet
 
 
@@ -2861,13 +2845,13 @@ UBOOL GroupInitCom
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    tkData.tkIndex = lptkLocalVars->t2.lpHeader->PrevGroup;
+    tkData.tkIndex = lptkLocalVars->lpHeader->PrevGroup;
     bRet = AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
                              &tkData,
                               0);
     // Save as location of previous left grouping symbol
-    lptkLocalVars->t2.lpHeader->PrevGroup = (UINT) (lptkNext - lptkLocalVars->lptkStart);
+    lptkLocalVars->lpHeader->PrevGroup = (UINT) (lptkNext - lptkLocalVars->lptkStart);
 
     return bRet;
 } // End GroupInitCom
@@ -2973,12 +2957,12 @@ UBOOL GroupDoneCom
               gSyntaxColorName[SC_UNMATCHGRP].syntClr;
         } else
         {
-            // Check for improper nesting
-            if (lptkLocalVars->lpGrpSeqIni[uPrevGroup].TknType NE tknTypePrev)
-            {
             // Save the column index
             lptkLocalVars->lpMemClrNxt->colIndex = tknTypeCurr;
 
+            // Check for improper nesting
+            if (lptkLocalVars->lpGrpSeqIni[uPrevGroup].TknType NE tknTypePrev)
+            {
                 // Save the color and skip over it
                 lptkLocalVars->lpMemClrNxt++->syntClr =
                   gSyntaxColorName[SC_UNNESTED].syntClr;
@@ -3026,7 +3010,7 @@ UBOOL GroupDoneCom
     } // End IF
 
     // Get the index of the previous grouping symbol
-    uPrevGroup = lptkLocalVars->t2.lpHeader->PrevGroup;
+    uPrevGroup = lptkLocalVars->lpHeader->PrevGroup;
 
     // Ensure proper nesting
     if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL
@@ -3058,7 +3042,7 @@ UBOOL GroupDoneCom
                                  &tkData,
                                   0);
         // Save index of previous grouping symbol
-        lptkLocalVars->t2.lpHeader->PrevGroup = lptkLocalVars->lptkStart[uPrevGroup].tkData.tkIndex;
+        lptkLocalVars->lpHeader->PrevGroup = lptkLocalVars->lptkStart[uPrevGroup].tkData.tkIndex;
     } // End IF/ELSE
 
     goto NORMAL_EXIT;
@@ -3103,7 +3087,7 @@ UBOOL MergeNumbers
                       hGlbPrv = NULL;   // Previous token ...
     LPVOID            lpMemRes,         // Ptr to result global memory
                       lpMemPrv = NULL;  // Ptr to previous token ...
-    LPVARARRAY_HEADER lpMemHdrRes,      // Ptr to result global memory header
+    LPVARARRAY_HEADER lpMemHdrRes,      // Ptr to result header global memory
                       lpMemHdrPrv;      // Ptr to previous ...
     APLLONGEST        aplLongestPrv;    // Previous token immediate value
     UINT              uBitMask;         // Bit mask for looping through Booleans
@@ -3113,7 +3097,7 @@ UBOOL MergeNumbers
     lptkPrv = &lptkLocalVars->lptkNext[-1];
 
     // Check for :CONSTANT during )COPY/)LOAD
-    if (lptkLocalVars->t2.lpHeader->TokenCnt
+    if (lptkLocalVars->lpHeader->TokenCnt
      && lptkPrv->tkFlags.TknType EQ TKT_COLON
      && lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv)
     {
@@ -3203,7 +3187,7 @@ UBOOL MergeNumbers
         bMerge = TRUE;
     } else
     // See if we can merge this with the previous token
-    if (lptkLocalVars->t2.lpHeader->TokenCnt
+    if (lptkLocalVars->lpHeader->TokenCnt
      && (lptkPrv->tkFlags.TknType EQ TKT_VARIMMED
       || lptkPrv->tkFlags.TknType EQ TKT_NUMSTRAND))
     {
@@ -3730,20 +3714,20 @@ HGLOBAL Tokenize_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    UTLockAndSet (tkLocalVars.hGlbToken, &tkLocalVars.t2);
+    tkLocalVars.lpHeader  = MyGlobalLock (tkLocalVars.hGlbToken);
 
-    // Set variables in the UNION_TOKEN
-    tkLocalVars.t2.lpHeader->Sig.nature = TOKEN_HEADER_SIGNATURE;
-    tkLocalVars.t2.lpHeader->Version    = 1;            // Initialize version # of this header
-    tkLocalVars.t2.lpHeader->TokenCnt   = 0;            // ...        count of tokens
-    tkLocalVars.t2.lpHeader->PrevGroup  = NO_PREVIOUS_GROUPING_SYMBOL;  // Initialize index of previous grouping symbol
-    tkLocalVars.lptkStart               = TokenBaseToStart (tkLocalVars.t2.lpBase); // Skip over TOKEN_HEADER
-    tkLocalVars.lptkNext                = &tkLocalVars.lptkStart[tkLocalVars.t2.lpHeader->TokenCnt];
-    tkLocalVars.lpwszOrig               = lpwszLine;    // Save ptr to start of input line
+    // Set variables in the token header
+    tkLocalVars.lpHeader->Sig.nature = TOKEN_HEADER_SIGNATURE;
+    tkLocalVars.lpHeader->Version    = 1;            // Initialize version # of this header
+    tkLocalVars.lpHeader->TokenCnt   = 0;            // ...        count of tokens
+    tkLocalVars.lpHeader->PrevGroup  = NO_PREVIOUS_GROUPING_SYMBOL;  // Initialize index of previous grouping symbol
+    tkLocalVars.lptkStart            = TokenBaseToStart (tkLocalVars.lpHeader); // Skip over TOKEN_HEADER
+    tkLocalVars.lptkNext             = &tkLocalVars.lptkStart[tkLocalVars.lpHeader->TokenCnt];
+    tkLocalVars.lpwszOrig            = lpwszLine;    // Save ptr to start of input line
 
     // Initialize EOS
-    tkLocalVars.lptkLastEOS             = tkLocalVars.lptkStart;
-    tkLocalVars.lpwszCur                = &lpwszLine[0];// Just so it has a known value
+    tkLocalVars.lptkLastEOS          = tkLocalVars.lptkStart;
+    tkLocalVars.lpwszCur             = &lpwszLine[0];// Just so it has a known value
 
     // Set initial limit for hGlbNum
     tkLocalVars.iNumLim = DEF_NUM_INITNELM;
@@ -3912,8 +3896,7 @@ HGLOBAL Tokenize_EM
 
                 // We no longer need this ptr
                 MyGlobalUnlock (tkLocalVars.hGlbToken);
-                tkLocalVars.t2.lpBase   = NULL;
-////////////////tkLocalVars.t2.lpHeader = NULL;
+                tkLocalVars.lpHeader    = NULL;
                 tkLocalVars.lptkStart   = NULL;
                 tkLocalVars.lptkNext    = NULL;
                 tkLocalVars.lptkLastEOS = NULL;
@@ -3958,8 +3941,7 @@ ERROR_EXIT:
     {
         // We no longer need this ptr
         MyGlobalUnlock (tkLocalVars.hGlbToken);
-        tkLocalVars.t2.lpBase   = NULL;
-////////tkLocalVars.t2.lpHeader = NULL;
+        tkLocalVars.lpHeader    = NULL;
         tkLocalVars.lptkStart   = NULL;
         tkLocalVars.lptkNext    = NULL;
         tkLocalVars.lptkLastEOS = NULL;
@@ -4031,7 +4013,7 @@ UBOOL CheckGroupSymbols_EM
 
 {
     if ((!OptionFlags.bCheckGroup)
-     || lptkLocalVars->t2.lpHeader->PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
+     || lptkLocalVars->lpHeader->PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
         return TRUE;
 
     // Save the error caret position
@@ -4058,165 +4040,146 @@ UBOOL CheckGroupSymbols_EM
 #endif
 
 void Untokenize
-    (HGLOBAL hGlbToken)                 // Token global memory handle
+    (LPTOKEN_HEADER lptkHdr)    // Ptr to token header global memory
 
 {
-    LPTOKEN lpToken;
-    int     i, iLen;
+    LPTOKEN lpToken;            // Ptr to token global memory
+    int     i,                  // Loop counter
+            iLen;               // # tokens in the current line
 
-    // Lock the memory to get a ptr to it
-    if (hGlbToken && (lpToken = MyGlobalLock (hGlbToken)))
+    // It's a token header
+    Assert (lptkHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
+
+    // Get the # tokens
+    iLen = lptkHdr->TokenCnt;
+
+    lpToken = TokenBaseToStart (lptkHdr);   // Skip over TOKEN_HEADER
+
+    for (i = 0; i < iLen; i++, lpToken++)
+    switch (lpToken->tkFlags.TknType)
     {
+        case TKT_VARNAMED:          // Symbol table name (data is LPSYMENTRY)
+        case TKT_FCNNAMED:          // ...
+        case TKT_OP1NAMED:          // ...
+        case TKT_OP2NAMED:          // ...
+        case TKT_OP3NAMED:          // ...
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-#define lpHeader    ((LPTOKEN_HEADER) lpToken)
-        // It's a token
-        Assert (lpHeader->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
-
-        // Get the # tokens
-        iLen = lpHeader->TokenCnt;
-#undef  lpHeader
-
-        lpToken = TokenBaseToStart (lpToken);   // Skip over TOKEN_HEADER
-
-        for (i = 0; i < iLen; i++, lpToken++)
-        switch (lpToken->tkFlags.TknType)
-        {
-            case TKT_VARNAMED:          // Symbol table name (data is LPSYMENTRY)
-            case TKT_FCNNAMED:          // ...
-            case TKT_OP1NAMED:          // ...
-            case TKT_OP2NAMED:          // ...
-            case TKT_OP3NAMED:          // ...
-                // tkData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-                // Skip it if a variable with no value
-                if (lpToken->tkFlags.TknType EQ TKT_VARNAMED
-                 && !lpToken->tkData.tkSym->stFlags.Value)
-                    break;
-
-                // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
-                if (!lpToken->tkData.tkSym->stFlags.Imm)
-                {
-                    // stData is an internal function, a valid HGLOBAL variable or function array,
-                    //   or user-defined function/operator
-                    Assert (lpToken->tkData.tkSym->stFlags.FcnDir
-                         || IsGlbTypeVarDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
-                         || IsGlbTypeFcnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
-                         || IsGlbTypeDfnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData));
-                } // End IF
-
-                // Don't free a name's contents
+            // Skip it if a variable with no value
+            if (lpToken->tkFlags.TknType EQ TKT_VARNAMED
+             && !lpToken->tkData.tkSym->stFlags.Value)
                 break;
 
-            case TKT_CHRSTRAND:         // Character strand  (data is HGLOBAL)
-            case TKT_NUMSTRAND:         // Numeric   ...
-            case TKT_VARARRAY:          // Array of data (data is HGLOBAL)
-                // Free the array and all elements of it
-                if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
-                {
-#ifdef DEBUG_ZAP
-                    dprintfWL9 (L"**Zapping in Untokenize: %p (%d) (%S#%d)",
-                              ClrPtrTypeDir (lpToken->tkData.tkGlbData),
-                              FNLN);
-#endif
-                    lpToken->tkData.tkGlbData = NULL;
-                } // End IF
-
-                break;
-
-            case TKT_ASSIGN:            // Assignment symbol (data is UTF16_LEFTARROW)
-            case TKT_LISTSEP:           // List separator    (...     ';')
-            case TKT_LABELSEP:          // Label ...         (...     ':')
-            case TKT_COLON:             // Colon             (...     ':')
-            case TKT_VARIMMED:          // Immediate data (data is immediate)
-            case TKT_FCNIMMED:          // Immediate primitive function (any valence) (data is UTF16_***)
-            case TKT_OP1IMMED:          // ...       Monadic primitive operator (data is UTF16_***)
-            case TKT_OP2IMMED:          // ...       Dyadic  ...
-            case TKT_OP3IMMED:          // ...       Ambiguous  ...
-            case TKT_OPJOTDOT:          // Outer product (data is NULL)
-            case TKT_LEFTPAREN:         // Left paren (data is TKT_***)
-            case TKT_RIGHTPAREN:        // Right ...   ...
-            case TKT_LEFTBRACKET:       // Left bracket ...
-            case TKT_RIGHTBRACKET:      // Right ...   ...
-            case TKT_LEFTBRACE:         // Left brace  ...
-            case TKT_RIGHTBRACE:        // Right ...   ...
-            case TKT_EOS:               // End-of-Stmt (data is length of stmt including this token)
-            case TKT_EOL:               // End-of-Line (data is NULL)
-            case TKT_SOS:               // Start-of-Stmt (data is NULL)
-            case TKT_LINECONT:          // Line continuation (data is NULL)
-            case TKT_INPOUT:            // Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
-            case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
-            case TKT_CS_ASSERT:         // ...                 ASSERT
-            case TKT_CS_CASE:           // ...                 CASE
-            case TKT_CS_CASELIST:       // ...                 CASELIST
-            case TKT_CS_CONTINUE:       // ...                 CONTINUE
-            case TKT_CS_CONTINUEIF:     // ...                 CONTINUEIF
-            case TKT_CS_ELSE:           // ...                 ELSE
-            case TKT_CS_ELSEIF:         // ...                 ELSEIF
-            case TKT_CS_END:            // ...                 END
-            case TKT_CS_ENDFOR:         // ...                 ENDFOR
-            case TKT_CS_ENDFORLCL:      // ...                 ENDFORLCL
-            case TKT_CS_ENDIF:          // ...                 ENDIF
-            case TKT_CS_ENDREPEAT:      // ...                 ENDREPEAT
-            case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
-            case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
-            case TKT_CS_FOR:            // ...                 FOR
-            case TKT_CS_FOR2:           // ...                 FOR2
-            case TKT_CS_FORLCL:         // ...                 FORLCL
-            case TKT_CS_GOTO:           // ...                 GOTO
-            case TKT_CS_IF:             // ...                 IF
-            case TKT_CS_IF2:            // ...                 IF2
-            case TKT_CS_IN:             // ...                 IN
-            case TKT_CS_LEAVE:          // ...                 LEAVE
-            case TKT_CS_LEAVEIF:        // ...                 LEAVEIF
-            case TKT_CS_ORIF:           // ...                 ORIF
-            case TKT_CS_REPEAT:         // ...                 REPEAT
-            case TKT_CS_REPEAT2:        // ...                 REPEAT2
-            case TKT_CS_RETURN:         // ...                 RETURN
-            case TKT_CS_SELECT:         // ...                 SELECT
-            case TKT_CS_SELECT2:        // ...                 SELECT2
-            case TKT_CS_UNTIL:          // ...                 UNTIL
-            case TKT_CS_WHILE:          // ...                 WHILE
-            case TKT_CS_WHILE2:         // ...                 WHILE2
-            case TKT_CS_SKIPCASE:       // ...                 Special token
-            case TKT_CS_SKIPEND:        // ...                 Special token
-            case TKT_SYS_NS:            // System namespace
-            case TKT_SYNTERR:           // Syntax Error
-            case TKT_FILLJOT:           // Fill jot
-                break;                  // Nothing to do
-
-            case TKT_CS_NEC:            // ...                 Special token
-            case TKT_CS_EOL:            // ...                 Special token
-            case TKT_LSTIMMED:          // List in brackets, single element, immediate
-            case TKT_LSTARRAY:          // List in brackets, single element, array
-            case TKT_LSTMULT:           // List in brackets, multiple elements
-            defstop
-#ifdef DEBUG
+            // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
-                WCHAR wszTemp[1024];    // Ptr to temporary output area
+                // stData is an internal function, a valid HGLOBAL variable or function array,
+                //   or user-defined function/operator
+                Assert (lpToken->tkData.tkSym->stFlags.FcnDir
+                     || IsGlbTypeVarDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
+                     || IsGlbTypeFcnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
+                     || IsGlbTypeDfnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData));
+            } // End IF
 
-                wsprintfW (wszTemp,
-                           L"Untokenize:  *** Unknown Token Value:  %d",
-                           lpToken->tkFlags.TknType);
-                DbgMsgW (wszTemp);
-            }
+            // Don't free a name's contents
+            break;
+
+        case TKT_CHRSTRAND:         // Character strand  (data is HGLOBAL)
+        case TKT_NUMSTRAND:         // Numeric   ...
+        case TKT_VARARRAY:          // Array of data (data is HGLOBAL)
+            // Free the array and all elements of it
+            if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
+            {
+#ifdef DEBUG_ZAP
+                dprintfWL9 (L"**Zapping in Untokenize: %p (%d) (%S#%d)",
+                          ClrPtrTypeDir (lpToken->tkData.tkGlbData),
+                          FNLN);
 #endif
-                break;
-        } // End FOR/SWITCH
+                lpToken->tkData.tkGlbData = NULL;
+            } // End IF
 
-        // Unlock the handle
-        MyGlobalUnlock (hGlbToken); lpToken = NULL;
-    } else
-    {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-        WCHAR wszTemp[1024];            // Ptr to temporary output area
+            break;
 
-        wsprintfW (wszTemp,
-                   L"Untokenize:  hGlobToken (%p) is invalid.",
-                   hGlbToken);
-        DbgMsgW (wszTemp);
+        case TKT_ASSIGN:            // Assignment symbol (data is UTF16_LEFTARROW)
+        case TKT_LISTSEP:           // List separator    (...     ';')
+        case TKT_LABELSEP:          // Label ...         (...     ':')
+        case TKT_COLON:             // Colon             (...     ':')
+        case TKT_VARIMMED:          // Immediate data (data is immediate)
+        case TKT_FCNIMMED:          // Immediate primitive function (any valence) (data is UTF16_***)
+        case TKT_OP1IMMED:          // ...       Monadic primitive operator (data is UTF16_***)
+        case TKT_OP2IMMED:          // ...       Dyadic  ...
+        case TKT_OP3IMMED:          // ...       Ambiguous  ...
+        case TKT_OPJOTDOT:          // Outer product (data is NULL)
+        case TKT_LEFTPAREN:         // Left paren (data is TKT_***)
+        case TKT_RIGHTPAREN:        // Right ...   ...
+        case TKT_LEFTBRACKET:       // Left bracket ...
+        case TKT_RIGHTBRACKET:      // Right ...   ...
+        case TKT_LEFTBRACE:         // Left brace  ...
+        case TKT_RIGHTBRACE:        // Right ...   ...
+        case TKT_EOS:               // End-of-Stmt (data is length of stmt including this token)
+        case TKT_EOL:               // End-of-Line (data is NULL)
+        case TKT_SOS:               // Start-of-Stmt (data is NULL)
+        case TKT_LINECONT:          // Line continuation (data is NULL)
+        case TKT_INPOUT:            // Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+        case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
+        case TKT_CS_ASSERT:         // ...                 ASSERT
+        case TKT_CS_CASE:           // ...                 CASE
+        case TKT_CS_CASELIST:       // ...                 CASELIST
+        case TKT_CS_CONTINUE:       // ...                 CONTINUE
+        case TKT_CS_CONTINUEIF:     // ...                 CONTINUEIF
+        case TKT_CS_ELSE:           // ...                 ELSE
+        case TKT_CS_ELSEIF:         // ...                 ELSEIF
+        case TKT_CS_END:            // ...                 END
+        case TKT_CS_ENDFOR:         // ...                 ENDFOR
+        case TKT_CS_ENDFORLCL:      // ...                 ENDFORLCL
+        case TKT_CS_ENDIF:          // ...                 ENDIF
+        case TKT_CS_ENDREPEAT:      // ...                 ENDREPEAT
+        case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
+        case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
+        case TKT_CS_FOR:            // ...                 FOR
+        case TKT_CS_FOR2:           // ...                 FOR2
+        case TKT_CS_FORLCL:         // ...                 FORLCL
+        case TKT_CS_GOTO:           // ...                 GOTO
+        case TKT_CS_IF:             // ...                 IF
+        case TKT_CS_IF2:            // ...                 IF2
+        case TKT_CS_IN:             // ...                 IN
+        case TKT_CS_LEAVE:          // ...                 LEAVE
+        case TKT_CS_LEAVEIF:        // ...                 LEAVEIF
+        case TKT_CS_ORIF:           // ...                 ORIF
+        case TKT_CS_REPEAT:         // ...                 REPEAT
+        case TKT_CS_REPEAT2:        // ...                 REPEAT2
+        case TKT_CS_RETURN:         // ...                 RETURN
+        case TKT_CS_SELECT:         // ...                 SELECT
+        case TKT_CS_SELECT2:        // ...                 SELECT2
+        case TKT_CS_UNTIL:          // ...                 UNTIL
+        case TKT_CS_WHILE:          // ...                 WHILE
+        case TKT_CS_WHILE2:         // ...                 WHILE2
+        case TKT_CS_SKIPCASE:       // ...                 Special token
+        case TKT_CS_SKIPEND:        // ...                 Special token
+        case TKT_SYS_NS:            // System namespace
+        case TKT_SYNTERR:           // Syntax Error
+        case TKT_FILLJOT:           // Fill jot
+            break;                  // Nothing to do
+
+        case TKT_CS_NEC:            // ...                 Special token
+        case TKT_CS_EOL:            // ...                 Special token
+        case TKT_LSTIMMED:          // List in brackets, single element, immediate
+        case TKT_LSTARRAY:          // List in brackets, single element, array
+        case TKT_LSTMULT:           // List in brackets, multiple elements
+        defstop
+#ifdef DEBUG
+        {
+            WCHAR wszTemp[1024];    // Ptr to temporary output area
+
+            wsprintfW (wszTemp,
+                       L"Untokenize:  *** Unknown Token Value:  %d",
+                       lpToken->tkFlags.TknType);
+            DbgMsgW (wszTemp);
+        }
 #endif
-    } // End IF/ELSE
+            break;
+    } // End FOR/SWITCH
 } // End Untokenize
 #undef  APPEND_NAME
 
@@ -4292,7 +4255,7 @@ UBOOL AppendNewToken_EM
 
 {
     // Check for TOKEN TABLE FULL
-    if (((lptkLocalVars->t2.lpHeader->TokenCnt + 1) * sizeof (TOKEN) + sizeof (TOKEN_HEADER))
+    if (((lptkLocalVars->lpHeader->TokenCnt + 1) * sizeof (TOKEN) + sizeof (TOKEN_HEADER))
       > (int) MyGlobalSize (lptkLocalVars->hGlbToken))
     {
         HGLOBAL hGlbToken;
@@ -4301,9 +4264,9 @@ UBOOL AppendNewToken_EM
 
         // Unlock the global handle so we can resize it
         MyGlobalUnlock (lptkLocalVars->hGlbToken);
-        lptkLocalVars->t2.lpBase   = NULL;
-        lptkLocalVars->lptkStart   = NULL;
-        lptkLocalVars->lptkNext    = NULL;
+        lptkLocalVars->lpHeader  = NULL;
+        lptkLocalVars->lptkStart = NULL;
+        lptkLocalVars->lptkNext  = NULL;
 
         // Increase the size by DEF_TOKEN_RESIZE
         hGlbToken = MyGlobalReAlloc (lptkLocalVars->hGlbToken,
@@ -4333,7 +4296,7 @@ UBOOL AppendNewToken_EM
     lptkLocalVars->lptkNext->tkCharIndex = iCharOffset + (UINT) (lptkLocalVars->lpwszCur - lptkLocalVars->lpwszOrig);
 
     // Count in another token
-    lptkLocalVars->t2.lpHeader->TokenCnt++;
+    lptkLocalVars->lpHeader->TokenCnt++;
 
     // Skip to next token
     lptkLocalVars->lptkNext++;
@@ -4480,6 +4443,8 @@ UBOOL AppendNewCSToken_EM
         // Coalesce CS_NEC ... CS_NEC -> CS_NEC
         //          EOS SOS           -> <empty>
         //          NEC LABELSEP      -> LABELSEP
+        //          EOS NEC SOS       -> ENS
+        //          ENS ENS           -> ENS
 
         // Check for duplicate CS_NEC tokens
         if (TKT_CS_NEC EQ TknType
@@ -4496,11 +4461,33 @@ UBOOL AppendNewCSToken_EM
             goto SKIP_EXIT;
         } // End IF
 
+        // Check for NEC LABELSEP pair
         if (TKT_LABELSEP EQ TknType
          && TKT_CS_NEC EQ lpMemPTD->lptkCSNxt[-1].tkFlags.TknType)
         {
             // Delete the preceding NEC
             lpMemPTD->lptkCSNxt--;
+
+            goto SKIP_EXIT;
+        } // End IF
+
+        // Check for EOS NEC SOS triplet
+        if (TKT_SOS EQ TknType
+         && TKT_CS_NEC EQ lpMemPTD->lptkCSNxt[-1].tkFlags.TknType
+         && lpMemPTD->lptkCSNxt >= &lpMemPTD->lptkCSIni[2]
+         && TKT_EOS EQ lpMemPTD->lptkCSNxt[-2].tkFlags.TknType)
+        {
+            // Delete the preceding NEC
+            lpMemPTD->lptkCSNxt--;
+
+            // Check for preceding ENS
+            if (lpMemPTD->lptkCSNxt >= &lpMemPTD->lptkCSIni[2]
+              && TKT_CS_ENS EQ lpMemPTD->lptkCSNxt[-2].tkFlags.TknType)
+                // Delete the preceding EOS
+                lpMemPTD->lptkCSNxt--;
+            else
+                // Change the preceding EOS to ENS
+                lpMemPTD->lptkCSNxt[-1].tkFlags.TknType = TKT_CS_ENS;
 
             goto SKIP_EXIT;
         } // End IF

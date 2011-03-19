@@ -4936,8 +4936,16 @@ NORMAL_EXIT:
 
     if (hGlbTknHdr)
     {
+        LPTOKEN_HEADER lpMemTknHdr;
+
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
         // Free the tokens
-        Untokenize (hGlbTknHdr);
+        Untokenize (lpMemTknHdr);
+
+        // We no Longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 
         // We no longer need this storage
         DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;

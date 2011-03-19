@@ -780,14 +780,14 @@ void DisplayGlobals
 //***************************************************************************
 
 void DisplayTokens
-    (HGLOBAL hGlbToken)
+    (LPTOKEN_HEADER lpMemTknHdr)    // Ptr to header of tokenized line
 
 {
-    LPTOKEN      lpToken;           // Ptr to temporary token
     int          i,                 // Loop counter
                  iLen;              // Token count
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
+    LPTOKEN      lpMemTknLine;      // Ptr to tokenized line
 
     // Check debug level
     if (gDbgLvl < 3)
@@ -796,48 +796,40 @@ void DisplayTokens
     DbgMsgW (L"********** Tokens **************************************");
 
     // Ensure it's valid
-    if (!hGlbToken)
+    if (!lpMemTknHdr)
     {
-        DbgMsgW (L"DisplayTokens:  ***INAVLID HANDLE***:  hGlbToken EQ 0");
+        DbgMsgW (L"DisplayTokens:  ***INAVLID HANDLE***:  lpMemTknHdr EQ 0");
         return;
     } // End IF
-
-    // Lock the memory to get a ptr to it
-    lpToken = MyGlobalLock (hGlbToken);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-#define lpHeader    ((LPTOKEN_HEADER) lpToken)
     wsprintfW (wszTemp,
-               L"lpToken = %p, Version # = %d, TokenCnt = %d, PrevGroup = %d",
-               lpToken,
-               lpHeader->Version,
-               lpHeader->TokenCnt,
-               lpHeader->PrevGroup);
+               L"lpMemTknLine = %p, Version # = %d, TokenCnt = %d, PrevGroup = %d",
+               lpMemTknHdr,
+               lpMemTknHdr->Version,
+               lpMemTknHdr->TokenCnt,
+               lpMemTknHdr->PrevGroup);
     DbgMsgW (wszTemp);
 
-    iLen = lpHeader->TokenCnt;
-#undef  lpHeader
+    iLen = lpMemTknHdr->TokenCnt;
 
-    lpToken = TokenBaseToStart (lpToken);   // Skip over TOKEN_HEADER
+    lpMemTknLine = TokenBaseToStart (lpMemTknHdr);   // Skip over TOKEN_HEADER
 
-    for (i = 0; i < iLen; i++, lpToken++)
+    for (i = 0; i < iLen; i++, lpMemTknLine++)
     {
         wsprintfW (wszTemp,
                    L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S",
                    i,
-                   *(LPAPLINT) &lpToken->tkData.tkFloat,
-                   lpToken->tkCharIndex,
-                   GetTokenTypeName (lpToken->tkFlags.TknType));
+                   *(LPAPLINT) &lpMemTknLine->tkData.tkFloat,
+                   lpMemTknLine->tkCharIndex,
+                   GetTokenTypeName (lpMemTknLine->tkFlags.TknType));
         DbgMsgW (wszTemp);
     } // End FOR
 
     DbgMsgW (L"********** End Tokens **********************************");
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbToken); lpToken = NULL;
-} // End DisplayTokens
+} // End DisplayTokensSub
 #endif
 
 
@@ -859,89 +851,94 @@ typedef struct tagTOKENNAMES
 } TOKENNAMES, *LPTOKENNAMES;
 
 static TOKENNAMES tokenNames[] =
-{{"VARNAMED"    , TKT_VARNAMED      },  // 01: Symbol table entry for a named var (data is LPSYMENTRY)
- {"CHRSTRAND"   , TKT_CHRSTRAND     },  // 02: Character strand  (data is HGLOBAL)
- {"NUMSTRAND"   , TKT_NUMSTRAND     },  // 03: Numeric   ...     (data is HGLOBAL)
- {"VARIMMED"    , TKT_VARIMMED      },  // 04: Immediate data (data is immediate)
- {"ASSIGN"      , TKT_ASSIGN        },  // 05: Assignment symbol (data is UTF16_LEFTARROW)
- {"LISTSEP"     , TKT_LISTSEP       },  // 06: List separator    (data is ';')
- {"LABELSEP"    , TKT_LABELSEP      },  // 07: Label ...         (data is ':')
- {"COLON"       , TKT_COLON         },  // 08: Colon             (data is ':')
- {"FCNIMMED"    , TKT_FCNIMMED      },  // 09: Primitive function (any valence) (data is UTF16_***)
- {"OP1IMMED"    , TKT_OP1IMMED      },  // 0A: Monadic primitive operator (data is UTF16_***)
- {"OP2IMMED"    , TKT_OP2IMMED      },  // 0B: Dyadic  ...
- {"OP3IMMED"    , TKT_OP3IMMED      },  // 0C: Ambiguous ...
- {"OPJOTDOT"    , TKT_OPJOTDOT      },  // 0D: Outer product monadic operator (with right scope) (data is NULL)
- {"LEFTPAREN"   , TKT_LEFTPAREN     },  // 0E: Left paren (data is TKT_LEFTPAREN)
- {"RIGHTPAREN"  , TKT_RIGHTPAREN    },  // 0F: Right ...   ...         RIGHTPAREN
- {"LEFTBRACKET" , TKT_LEFTBRACKET   },  // 10: Left bracket ...        LEFTBRACKET
- {"RIGHTBRACKET", TKT_RIGHTBRACKET  },  // 11: Right ...   ...         RIGHTBRACKET
- {"LEFTBRACE"   , TKT_LEFTBRACE     },  // 12: Left bracket ...        LEFTBRACKET
- {"RIGHTBRACE"  , TKT_RIGHTBRACE    },  // 13: Right ...   ...         RIGHTBRACKET
- {"EOS"         , TKT_EOS           },  // 14: End-of-Stmt (data is length of stmt including this token)
- {"EOL"         , TKT_EOL           },  // 15: End-of-Line  ...
- {"SOS"         , TKT_SOS           },  // 16: Start-of-Stmt (data is NULL)
- {"LINECONT"    , TKT_LINECONT      },  // 17: Line continuation (data is NULL)
- {"INPOUT"      , TKT_INPOUT        },  // 18: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
- {"VARARRAY"    , TKT_VARARRAY      },  // 19: Array of data (data is HGLOBAL)
- {"CS_ANDIF"    , TKT_CS_ANDIF      },  // 1A: Control Structure:  ANDIF     (Data is Line/Stmt #)
- {"CS_CASE"     , TKT_CS_CASE       },  // 1B: ...                 CASE       ...
- {"CS_CASELIST" , TKT_CS_CASELIST   },  // 1C: ...                 CASELIST   ...
- {"CS_CONTINUE" , TKT_CS_CONTINUE   },  // 1D: ...                 CONTINUE   ...
- {"CS_ELSE"     , TKT_CS_ELSE       },  // 1E: ...                 ELSE       ...
- {"CS_ELSEIF"   , TKT_CS_ELSEIF     },  // 1F: ...                 ELSEIF     ...
- {"CS_END"      , TKT_CS_END        },  // 20: ...                 END        ...
- {"CS_ENDFOR"   , TKT_CS_ENDFOR     },  // 21: ...                 ENDFOR     ...
- {"CS_ENDFORLCL", TKT_CS_ENDFORLCL  },  // 22: ...                 ENDFORLCL  ...
- {"CS_ENDIF"    , TKT_CS_ENDIF      },  // 23: ...                 ENDIF      ...
- {"CS_ENDREPEAT", TKT_CS_ENDREPEAT  },  // 24: ...                 ENDREPEAT  ...
- {"CS_ENDSELECT", TKT_CS_ENDSELECT  },  // 25: ...                 ENDSELECT  ...
- {"CS_ENDWHILE" , TKT_CS_ENDWHILE   },  // 26: ...                 ENDWHILE   ...
- {"CS_FOR"      , TKT_CS_FOR        },  // 27: ...                 FOR        ...
- {"CS_FOR2"     , TKT_CS_FOR2       },  // 28: ...                 FOR2       ...
- {"CS_FORLCL"   , TKT_CS_FORLCL     },  // 29: ...                 FORLCL     ...
- {"CS_GOTO"     , TKT_CS_GOTO       },  // 2A: ...                 GOTO       ...
- {"CS_IF"       , TKT_CS_IF         },  // 2B: ...                 IF         ...
- {"CS_IF2"      , TKT_CS_IF2        },  // 2C: ...                 IF2        ...
- {"CS_IN"       , TKT_CS_IN         },  // 2D: ...                 IN         ...
- {"CS_LEAVE"    , TKT_CS_LEAVE      },  // 2E: ...                 LEAVE      ...
- {"CS_ORIF"     , TKT_CS_ORIF       },  // 2F: ...                 ORIF       ...
- {"CS_REPEAT"   , TKT_CS_REPEAT     },  // 30: ...                 REPEAT     ...
- {"CS_REPEAT2"  , TKT_CS_REPEAT2    },  // 31: ...                 REPEAT2    ...
- {"CS_RETURN"   , TKT_CS_RETURN     },  // 32: ...                 RETURN     ...
- {"CS_SELECT"   , TKT_CS_SELECT     },  // 33: ...                 SELECT     ...
- {"CS_SELECT2"  , TKT_CS_SELECT2    },  // 34: ...                 SELECT2    ...
- {"CS_UNTIL"    , TKT_CS_UNTIL      },  // 35: ...                 UNTIL      ...
- {"CS_WHILE"    , TKT_CS_WHILE      },  // 36: ...                 WHILE      ...
- {"CS_WHILE2"   , TKT_CS_WHILE2     },  // 37: ...                 WHILE2     ...
- {"CS_SKIPCASE" , TKT_CS_SKIPCASE   },  // 38: ...                 Special token
- {"CS_SKIPEND"  , TKT_CS_SKIPEND    },  // 39: ...                 Special token
- {"SYS_NS"      , TKT_SYS_NS        },  // 3A: System namespace
- {"SYNTERR"     , TKT_SYNTERR       },  // 3B: Syntax Error
- {"STRAND"      , TKT_STRAND        },  // 3C: Strand accumulating (data is LPTOKEN)
- {"LISTINT"     , TKT_LISTINT       },  // 3D: List in parens    (data is HGLOBAL)
- {"LISTPAR"     , TKT_LISTPAR       },  // 3E: List in parens    (data is HGLOBAL)
- {"LSTIMMED"    , TKT_LSTIMMED      },  // 3F: List in brackets, single element, immed (data is immediate)
- {"LSTARRAY"    , TKT_LSTARRAY      },  // 40: List in brackets, single element, array (data is HGLOBAL)
- {"LSTMULT"     , TKT_LSTMULT       },  // 41: List in brackets, multiple elements (data is HGLOBAL)
- {"FCNARRAY"    , TKT_FCNARRAY      },  // 42: Array of functions (data is HGLOBAL)
- {"FCNNAMED"    , TKT_FCNNAMED      },  // 43: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED"   , TKT_AXISIMMED     },  // 44: An immediate axis specification (data is immediate)
- {"AXISARRAY"   , TKT_AXISARRAY     },  // 45: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"    , TKT_OP1NAMED      },  // 46: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"    , TKT_OP2NAMED      },  // 47: ...     dyadic  ...
- {"OP3NAMED"    , TKT_OP3NAMED      },  // 48: ...     ambiguous ...
- {"STRNAMED"    , TKT_STRNAMED      },  // 49: ...     strand  ...
- {"CS_NEC"      , TKT_CS_NEC        },  // 4A: Control Structure:  Special token
- {"CS_EOL"      , TKT_CS_EOL        },  // 4B: ...                 Special token
- {"FILLJOT"     , TKT_FILLJOT       },  // 4C: Fill jot
+{{"UNUSED"        , TKT_UNUSED        },    // 00: Unused token type -- an error if encounteredLPSYMENTRY)
+ {"VARNAMED"      , TKT_VARNAMED      },    // 01: Symbol table entry for a named var (data is LPSYMENTRY)
+ {"CHRSTRAND"     , TKT_CHRSTRAND     },    // 02: Character strand  (data is HGLOBAL)
+ {"NUMSTRAND"     , TKT_NUMSTRAND     },    // 03: Numeric   ...     (data is HGLOBAL)
+ {"VARIMMED"      , TKT_VARIMMED      },    // 04: Immediate data (data is immediate)
+ {"ASSIGN"        , TKT_ASSIGN        },    // 05: Assignment symbol (data is UTF16_LEFTARROW)
+ {"LISTSEP"       , TKT_LISTSEP       },    // 06: List separator    (data is ';')
+ {"LABELSEP"      , TKT_LABELSEP      },    // 07: Label ...         (data is ':')
+ {"COLON"         , TKT_COLON         },    // 08: Colon             (data is ':')
+ {"FCNIMMED"      , TKT_FCNIMMED      },    // 09: Primitive function (any valence) (data is UTF16_***)
+ {"OP1IMMED"      , TKT_OP1IMMED      },    // 0A: Monadic primitive operator (data is UTF16_***)
+ {"OP2IMMED"      , TKT_OP2IMMED      },    // 0B: Dyadic  ...
+ {"OP3IMMED"      , TKT_OP3IMMED      },    // 0C: Ambiguous ...
+ {"OPJOTDOT"      , TKT_OPJOTDOT      },    // 0D: Outer product monadic operator (with right scope) (data is NULL)
+ {"LEFTPAREN"     , TKT_LEFTPAREN     },    // 0E: Left paren (data is TKT_LEFTPAREN)
+ {"RIGHTPAREN"    , TKT_RIGHTPAREN    },    // 0F: Right ...   ...         RIGHTPAREN
+ {"LEFTBRACKET"   , TKT_LEFTBRACKET   },    // 10: Left bracket ...        LEFTBRACKET
+ {"RIGHTBRACKET"  , TKT_RIGHTBRACKET  },    // 11: Right ...   ...         RIGHTBRACKET
+ {"LEFTBRACE"     , TKT_LEFTBRACE     },    // 12: Left bracket ...        LEFTBRACKET
+ {"RIGHTBRACE"    , TKT_RIGHTBRACE    },    // 13: Right ...   ...         RIGHTBRACKET
+ {"EOS"           , TKT_EOS           },    // 14: End-of-Stmt (data is length of stmt including this token)
+ {"EOL"           , TKT_EOL           },    // 15: End-of-Line  ...
+ {"SOS"           , TKT_SOS           },    // 16: Start-of-Stmt (data is NULL)
+ {"LINECONT"      , TKT_LINECONT      },    // 17: Line continuation (data is NULL)
+ {"INPOUT"        , TKT_INPOUT        },    // 18: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+ {"VARARRAY"      , TKT_VARARRAY      },    // 19: Array of data (data is HGLOBAL)
+ {"CS_ANDIF"      , TKT_CS_ANDIF      },    // 1A: Control Structure:  ANDIF     (Data is Line/Stmt #)
+ {"CS_ASSERT"     , TKT_CS_ASSERT     },    // 1B: ...                 ASSERT     ...
+ {"CS_CASE"       , TKT_CS_CASE       },    // 1C: ...                 CASE       ...
+ {"CS_CASELIST"   , TKT_CS_CASELIST   },    // 1D: ...                 CASELIST   ...
+ {"CS_CONTINUE"   , TKT_CS_CONTINUE   },    // 1E: ...                 CONTINUE   ...
+ {"CS_CONTINUEIF" , TKT_CS_CONTINUEIF },    // 1F: ...                 CONTINUEIF ...
+ {"CS_ELSE"       , TKT_CS_ELSE       },    // 20: ...                 ELSE       ...
+ {"CS_ELSEIF"     , TKT_CS_ELSEIF     },    // 21: ...                 ELSEIF     ...
+ {"CS_END"        , TKT_CS_END        },    // 22: ...                 END        ...
+ {"CS_ENDFOR"     , TKT_CS_ENDFOR     },    // 23: ...                 ENDFOR     ...
+ {"CS_ENDFORLCL"  , TKT_CS_ENDFORLCL  },    // 24: ...                 ENDFORLCL  ...
+ {"CS_ENDIF"      , TKT_CS_ENDIF      },    // 25: ...                 ENDIF      ...
+ {"CS_ENDREPEAT"  , TKT_CS_ENDREPEAT  },    // 26: ...                 ENDREPEAT  ...
+ {"CS_ENDSELECT"  , TKT_CS_ENDSELECT  },    // 27: ...                 ENDSELECT  ...
+ {"CS_ENDWHILE"   , TKT_CS_ENDWHILE   },    // 28: ...                 ENDWHILE   ...
+ {"CS_FOR"        , TKT_CS_FOR        },    // 29: ...                 FOR        ...
+ {"CS_FOR2"       , TKT_CS_FOR2       },    // 2A: ...                 FOR2       ...
+ {"CS_FORLCL"     , TKT_CS_FORLCL     },    // 2B: ...                 FORLCL     ...
+ {"CS_GOTO"       , TKT_CS_GOTO       },    // 2C: ...                 GOTO       ...
+ {"CS_IF"         , TKT_CS_IF         },    // 2D: ...                 IF         ...
+ {"CS_IF2"        , TKT_CS_IF2        },    // 2E: ...                 IF2        ...
+ {"CS_IN"         , TKT_CS_IN         },    // 2F: ...                 IN         ...
+ {"CS_LEAVE"      , TKT_CS_LEAVE      },    // 30: ...                 LEAVE      ...
+ {"CS_LEAVEIF"    , TKT_CS_LEAVEIF    },    // 31: ...                 LEAVEIF    ...
+ {"CS_ORIF"       , TKT_CS_ORIF       },    // 32: ...                 ORIF       ...
+ {"CS_REPEAT"     , TKT_CS_REPEAT     },    // 33: ...                 REPEAT     ...
+ {"CS_REPEAT2"    , TKT_CS_REPEAT2    },    // 34: ...                 REPEAT2    ...
+ {"CS_RETURN"     , TKT_CS_RETURN     },    // 35: ...                 RETURN     ...
+ {"CS_SELECT"     , TKT_CS_SELECT     },    // 36: ...                 SELECT     ...
+ {"CS_SELECT2"    , TKT_CS_SELECT2    },    // 37: ...                 SELECT2    ...
+ {"CS_UNTIL"      , TKT_CS_UNTIL      },    // 38: ...                 UNTIL      ...
+ {"CS_WHILE"      , TKT_CS_WHILE      },    // 39: ...                 WHILE      ...
+ {"CS_WHILE2"     , TKT_CS_WHILE2     },    // 3A: ...                 WHILE2     ...
+ {"CS_SKIPCASE"   , TKT_CS_SKIPCASE   },    // 3B: ...                 Special token
+ {"CS_SKIPEND"    , TKT_CS_SKIPEND    },    // 3C: ...                 Special token
+ {"SYS_NS"        , TKT_SYS_NS        },    // 3D: System namespace
+ {"SYNTERR"       , TKT_SYNTERR       },    // 3E: Syntax Error
+ {"STRAND"        , TKT_STRAND        },    // 3F: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"       , TKT_LISTINT       },    // 40: List intermediate (data is HGLOBAL)
+ {"LISTPAR"       , TKT_LISTPAR       },    // 41: List in parens    (data is HGLOBAL)
+ {"LSTIMMED"      , TKT_LSTIMMED      },    // 42: List in brackets, single element, immed (data is immediate)
+ {"LSTARRAY"      , TKT_LSTARRAY      },    // 43: List in brackets, single element, array (data is HGLOBAL)
+ {"LSTMULT"       , TKT_LSTMULT       },    // 44: List in brackets, multiple elements (data is HGLOBAL)
+ {"FCNARRAY"      , TKT_FCNARRAY      },    // 45: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"      , TKT_FCNNAMED      },    // 46: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED"     , TKT_AXISIMMED     },    // 47: An immediate axis specification (data is immediate)
+ {"AXISARRAY"     , TKT_AXISARRAY     },    // 48: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"      , TKT_OP1NAMED      },    // 49: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"      , TKT_OP2NAMED      },    // 4A: ...     dyadic  ...
+ {"OP3NAMED"      , TKT_OP3NAMED      },    // 4B: ...     ambiguous ...
+ {"STRNAMED"      , TKT_STRNAMED      },    // 4C: ...     strand  ...
+ {"CS_NEC"        , TKT_CS_NEC        },    // 4D: Control Structure:  Special token (cs_yyparse only)
+ {"CS_EOL"        , TKT_CS_EOL        },    // 4E: ...                 Special token (cs_yyparse only)
+ {"CS_ENS"        , TKT_CS_ENS        },    // 4F: ...                 Special token (cs_yyparse only)
+ {"FILLJOT"       , TKT_FILLJOT       },    // 50: Fill jot
 };
 
 // The # rows in the above table
 #define TOKENNAMES_NROWS    countof (tokenNames)
 
-    if (TOKENNAMES_NROWS > (uType - TKT_FIRST))
-        return tokenNames[uType - TKT_FIRST].lpsz;
+    if (TOKENNAMES_NROWS > uType)
+        return tokenNames[uType].lpsz;
     else
     {
         static char szTemp[64];

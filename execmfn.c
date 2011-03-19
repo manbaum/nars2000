@@ -230,7 +230,7 @@ HGLOBAL Init1MagicFunction
 
             // Allocate virtual memory for the hash table
             if (!AllocHshTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
-                               lpInitMFO->lpHTS,                                            // Ptr ot this HSHTABSTR
+                               lpInitMFO->lpHTS,                                            // Ptr to this HSHTABSTR
                                128,                                                         // Initial # blocks in HshTab (@ EPB HTEs per block)
                                16,                                                          // # HTEs by which to resize when low
                                1024))                                                       // Maximum # HTEs
@@ -429,6 +429,11 @@ HGLOBAL Init1MagicFunction
         // Get # lines in the function
         numFcnLines = lpMagicFcnOpr->numFcnLines;
 
+        // Get size of tokenization of all lines (excluding the header)
+        for (uOffset = uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+            // Size a function line
+            if (SaveFunctionLine (NULL, lpMagicFcnOpr, NULL, uLineNum, NULL, hWndEC, NULL, &uOffset) EQ -1)
+                goto ERROR_EXIT;
         // Allocate global memory for the function header
         hGlbDfnHdr =
           MyGlobalAlloc (GHND, sizeof (DFN_HEADER)
@@ -436,7 +441,8 @@ HGLOBAL Init1MagicFunction
                                                     + numLftArgSTE
                                                     + numRhtArgSTE
                                                     + numLocalsSTE)
-                             + sizeof (FCNLINE) * numFcnLines);
+                             + sizeof (FCNLINE) * numFcnLines
+                             + uOffset);
         if (!hGlbDfnHdr)
         {
             MessageBox (hWndEC,
@@ -555,94 +561,25 @@ HGLOBAL Init1MagicFunction
             lpMemDfnHdr->offLocalsSTE = 0;
 
         // Save offset to start of function line structs
-        if (lpMemDfnHdr->numFcnLines)
-            lpMemDfnHdr->offFcnLines = uOffset;
-        else
-            lpMemDfnHdr->offFcnLines = 0;
+        lpMemDfnHdr->offFcnLines = uOffset;
+
+        // Save offset to tokenized lines
+        lpMemDfnHdr->offTknLines = uOffset + numFcnLines * sizeof (FCNLINE);
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
+        // Initialize the offset of where to start saving the tokenized lines
+        uOffset = lpMemDfnHdr->offTknLines;
+
         // Loop through the lines
         for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
         {
-            HGLOBAL hGlbTxtLine;    // Line text global memory handle
-
-            // Get the line length of the line
-            uLineLen = lstrlenW (lpMagicFcnOpr->Body[uLineNum]);
-
-            // Allocate global memory to hold this text
-            // The "sizeof (uLineLen) + " is for the leading length
-            //   and the "+ 1" is for the terminating zero
-            //   as well as to handle GlobalLock's aversion to locking
-            //   zero-length arrays
-            hGlbTxtLine = MyGlobalAlloc (GHND, sizeof (uLineLen) + (uLineLen + 1) * sizeof (APLCHAR));
-            if (!hGlbTxtLine)
-            {
-                MessageBox (hWndEC,
-                            "Insufficient memory to save a function line!!",
-                            lpszAppName,
-                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            // Save a function line
+            uLineLen =
+              SaveFunctionLine (NULL, lpMagicFcnOpr, lpMemDfnHdr, uLineNum, lpFcnLines, hWndEC, hWndEC, &uOffset);
+            if (uLineLen EQ -1)
                 goto ERROR_EXIT;
-            } // End IF
-
-            // Save the global memory handle
-            lpFcnLines->hGlbTxtLine = hGlbTxtLine;
-
-            // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
-
-            // Save the line length
-            lpMemTxtLine->U = uLineLen;
-
-            // The following test isn't an optimzation, but avoids
-            //   overwriting the allocation limits of the buffer
-            //   when filling in the leading WORD with uLineLen
-            //   on the call to EM_GETLINE.
-
-            // If the line is non-empty, ...
-            if (uLineLen)
-            {
-                // Tell EM_GETLINE maximum # chars in the buffer
-                lpMemTxtLine->W = (WORD) uLineLen;
-
-                // Copy the line text to global memory
-                CopyMemoryW (&lpMemTxtLine->C, lpMagicFcnOpr->Body[uLineNum], uLineLen);
-
-                // Tokenize the line
-                lpFcnLines->hGlbTknLine =
-                  Tokenize_EM (&lpMemTxtLine->C,    // The line to tokenize (not necessarily zero-terminated)
-                                uLineLen,           // NELM of lpwszLine
-                                hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                                uLineNum + 1,       // Function line # (0 = header)
-                               &ErrorHandler,       // Ptr to error handling function (may be NULL)
-                                TRUE);              // TRUE iff we're tokenizing a Magic Function/Operator
-            } else
-                // Tokenize the (empty) line
-                lpFcnLines->hGlbTknLine =
-                  Tokenize_EM (L"",                 // The line to tokenize (not necessarily zero-terminated)
-                               0,                   // NELM of lpwszLine
-                               hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                               uLineNum + 1,        // Function line # (0 = header)
-                              &ErrorHandler,        // Ptr to error handling function (may be NULL)
-                               TRUE);               // TRUE iff we're tokenizing a Magic Function/Operator
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-
-            // If tokenization failed, ...
-            if (!lpFcnLines->hGlbTknLine)
-            {
-                DbgBrk ();      // ***FINISHME*** -- What to do if Tokenize_EM fails??
-
-                // We can display a MessageBox with an error msg
-                //   as we have the error message text in
-                //   lpMemPTD->lpwszErrorMessage, the line in hGlbTxtLine,
-                //   and the caret position in lpMemPTD->uCaret.
-
-
-
-
-            } // End IF
 
             // Transfer Stop & Trace info
             lpFcnLines->bStop  =
@@ -708,8 +645,16 @@ ERROR_EXIT:
 
     if (hGlbTknHdr)
     {
+        LPTOKEN_HEADER lpMemTknHdr;
+
+        // Lock the memory to get a ptr to it
+        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
         // Free the tokens
-        Untokenize (hGlbTknHdr);
+        Untokenize (lpMemTknHdr);
+
+        // We no Longer need this ptr
+        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 
         // We no longer need this storage
         DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;

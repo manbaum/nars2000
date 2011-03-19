@@ -2078,42 +2078,6 @@ LPPRIMFLAGS GetPrimFlagsPtr
 
 
 //***************************************************************************
-//  $GetTokenLineHandle
-//
-//  Return the global memory handle of a given
-//***************************************************************************
-
-HGLOBAL GetTokenLineHandle
-    (HGLOBAL hGlbDfnHdr,                // User-defined function/operator global memory handle
-     APLINT  aplLineNum)                // Target line #
-
-{
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
-    LPFCNLINE    lpFcnLines;            // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    HGLOBAL      hGlbTknLine = NULL;    // Target tokenized line global memory handle
-
-    // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
-
-    // Ensure the line # is within range
-    if (aplLineNum < 1
-     || aplLineNum > lpMemDfnHdr->numFcnLines)
-        goto ERROR_EXIT;
-
-    // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
-
-    // Get the starting line's token global memory handles
-    hGlbTknLine = lpFcnLines[aplLineNum - 1].hGlbTknLine;
-ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-
-    return hGlbTknLine;
-} // End GetTokenLineHandle
-
-
-//***************************************************************************
 //  $GetImmedType
 //
 //  Get the immediate type from a token

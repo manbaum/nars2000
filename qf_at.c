@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -931,8 +931,16 @@ APLINT CalcSymEntrySize
                 if (lpFcnLines->hGlbTxtLine)
                     aplGlbSize += MyGlobalSize (lpFcnLines->hGlbTxtLine);
 
-                if (lpFcnLines->hGlbTknLine)
-                    aplGlbSize += MyGlobalSize (lpFcnLines->hGlbTknLine);
+                if (lpFcnLines->offTknLine)
+                {
+                    LPTOKEN_HEADER lpTokenHdr;      // Ptr to token header
+
+                    // Get a ptr to the TOKEN_HEADER
+                    lpTokenHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine);
+
+                    // Add in the token header and tokens all in bytes
+                    aplGlbSize += sizeof (TOKEN_HEADER) + lpTokenHdr->TokenCnt * sizeof (TOKEN);
+                } // End IF
 
                 // Skip to the next struct
                 lpFcnLines++;

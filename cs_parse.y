@@ -86,6 +86,7 @@ TOKEN       tkTmp;
 %token  ENDREPEAT
 %token  ENDSELECT
 %token  ENDWHILE
+%token  ENS
 %token  EOS
 %token  FOR
 %token  FORLCL
@@ -489,11 +490,11 @@ NSS:
   ;
 
 Stmts:
-          EOS NEC SOS                                           {DbgMsgWP (L"%%Stmts:  EOS NEC SOS");
+          ENS                                                   {DbgMsgWP (L"%%Stmts:  ENS");
                                                                     // No return value needed
                                                                     $$ = $1;
                                                                 }
-  | Stmts EOS NEC SOS                                           {DbgMsgWP (L"%%Stmts:  Stmts EOS NEC SOS");
+  | Stmts ENS                                                   {DbgMsgWP (L"%%Stmts:  Stmts ENS");
                                                                     // No return value needed
                                                                     $$ = $1;
                                                                 }
@@ -2531,6 +2532,9 @@ CS_YYLEX_START:
     {
         case TKT_CS_EOL:
             return '\0';
+
+        case TKT_CS_ENS:
+            return ENS;
 
         case TKT_EOS:
         case TKT_EOL:

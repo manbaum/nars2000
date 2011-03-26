@@ -604,56 +604,56 @@ LRESULT WINAPI LclTabCtrlWndProc
 ////        // In order to reduce screen flicker, we handle erase background
 ////        // in the WM_PAINT message for the individual tabs
 ////        return TRUE;            // We erased the background
-#if 0
-        case WM_MOUSEMOVE:          // fwKeys = wParam;         // Key flags
-                                    // xPos = LOSHORT (lParam); // Horizontal position of cursor in CA
-                                    // yPos = HISHORT (lParam); // Vertical position of cursor  in CA
-            if (!bCaptured)
-            {
-                SetCapture (hWnd);
-                bCaptured = TRUE;
-            } // End IF
-
-            // Save the client coordinates
-            tcHit.pt.x = LOSHORT (lParam);
-            tcHit.pt.y = HISHORT (lParam);
-
-            // Ask the Tab Control if we're over a tab
-            iTmpTabIndex = TabCtrl_HitTest (hWnd, &tcHit);
-
-            // Ensure we're over a tab
-            if (iTmpTabIndex EQ -1)
-            {
-                SendMessageW (hWnd, WM_MOUSELEAVE, wParam, lParam);
-                ReleaseCapture ();
-                bCaptured = FALSE;
-
-                break;
-            } // End IF
-
-            // If it's not the same tab, restore the state of the previous one
-            if (iTmpTabIndex NE gOverTabIndex)
-                SendMessageW (hWnd, WM_MOUSELEAVE, wParam, lParam);
-
-            gOverTabIndex = iTmpTabIndex;
-
-            // Draw the tab with the text highlighted
-            SetTabTextState (gOverTabIndex, TRUE);
-            InvalidateRect (hWnd, NULL, FALSE);
-
-            break;
-
-        case WM_MOUSELEAVE:
-            // If the tab index is invalid, ignore this message
-            if (gOverTabIndex EQ -1)
-                break;
-
-            // Draw the tab with the text normal
-            SetTabTextState (gOverTabIndex, FALSE);
-            InvalidateRect (hWnd, NULL, FALSE);
-
-            break;
-#endif
+//// #if 0
+////         case WM_MOUSEMOVE:          // fwKeys = wParam;         // Key flags
+////                                     // xPos = LOSHORT (lParam); // Horizontal position of cursor in CA
+////                                     // yPos = HISHORT (lParam); // Vertical position of cursor  in CA
+////             if (!bCaptured)
+////             {
+////                 SetCapture (hWnd);
+////                 bCaptured = TRUE;
+////             } // End IF
+////
+////             // Save the client coordinates
+////             tcHit.pt.x = LOSHORT (lParam);
+////             tcHit.pt.y = HISHORT (lParam);
+////
+////             // Ask the Tab Control if we're over a tab
+////             iTmpTabIndex = TabCtrl_HitTest (hWnd, &tcHit);
+////
+////             // Ensure we're over a tab
+////             if (iTmpTabIndex EQ -1)
+////             {
+////                 SendMessageW (hWnd, WM_MOUSELEAVE, wParam, lParam);
+////                 ReleaseCapture ();
+////                 bCaptured = FALSE;
+////
+////                 break;
+////             } // End IF
+////
+////             // If it's not the same tab, restore the state of the previous one
+////             if (iTmpTabIndex NE gOverTabIndex)
+////                 SendMessageW (hWnd, WM_MOUSELEAVE, wParam, lParam);
+////
+////             gOverTabIndex = iTmpTabIndex;
+////
+////             // Draw the tab with the text highlighted
+////             SetTabTextState (gOverTabIndex, TRUE);
+////             InvalidateRect (hWnd, NULL, FALSE);
+////
+////             break;
+////
+////         case WM_MOUSELEAVE:
+////             // If the tab index is invalid, ignore this message
+////             if (gOverTabIndex EQ -1)
+////                 break;
+////
+////             // Draw the tab with the text normal
+////             SetTabTextState (gOverTabIndex, FALSE);
+////             InvalidateRect (hWnd, NULL, FALSE);
+////
+////             break;
+//// #endif
         case WM_RBUTTONDOWN:                // fwKeys = wParam;         // Key flags
                                             // xPos = LOSHORT (lParam); // Horizontal position of cursor
                                             // yPos = HISHORT (lParam); // Vertical position of cursor

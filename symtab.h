@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,7 +65,11 @@ http://portal.acm.org/citation.cfm?id=3324
 #define DEF_HSHTAB_EPB         8
 
 // Maximum hash table size (# entries)
-#define DEF_HSHTAB_MAXNELM  (  64 * 1024 * DEF_HSHTAB_EPB)
+#ifdef _WIN64
+  #define DEF_HSHTAB_MAXNELM  ( 256 * 1024 * DEF_HSHTAB_EPB)
+#else
+  #define DEF_HSHTAB_MAXNELM  (  64 * 1024 * DEF_HSHTAB_EPB)
+#endif
 
 // Starting hash table size (# entries)
 #define DEF_HSHTAB_INITNELM (DEF_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
@@ -174,7 +178,11 @@ typedef struct tagHSHTABSTR
 //********************* SYMBOL TABLE ****************************************
 
 // Maximum symbol table size (# entries)
-#define DEF_SYMTAB_MAXNELM  (  64*1024)
+#ifdef _WIN64
+  #define DEF_SYMTAB_MAXNELM  ( 256*1024)
+#else
+  #define DEF_SYMTAB_MAXNELM  (  64*1024)
+#endif
 
 // Starting symbol table size (# entries)
 #define DEF_SYMTAB_INITNELM (   4*1024)

@@ -311,7 +311,12 @@ void AttrsOfGlb
     switch (GetSignatureMem (lpMemData))
     {
         case LSTARRAY_HEADER_SIGNATURE:
-#define lpHeader    ((LPLSTARRAY_HEADER) lpMemData)
+        {
+#ifdef DEBUG
+            LPLSTARRAY_HEADER lpHeader = (LPLSTARRAY_HEADER) lpMemData;
+#else
+  #define lpHeader    ((LPLSTARRAY_HEADER) lpMemData)
+#endif
             if (lpaplType)
                 *lpaplType = ARRAY_LIST;
             if (lpaplNELM)
@@ -320,11 +325,20 @@ void AttrsOfGlb
                 *lpaplRank = 1;
             if (lpaplCols)
                 *lpaplCols = lpHeader->NELM;
-#undef  lpHeader
+
             break;
+        } // End LSTARRAY_HEADER_SIGNATURE
+#ifndef DEBUG
+  #undef  lpHeader
+#endif
 
         case VARARRAY_HEADER_SIGNATURE:
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemData)
+        {
+#ifdef DEBUG
+            LPVARARRAY_HEADER lpHeader = (LPVARARRAY_HEADER) lpMemData;
+#else
+  #define lpHeader    ((LPVARARRAY_HEADER) lpMemData)
+#endif
             if (lpaplType)
                 *lpaplType = lpHeader->ArrType;
             if (lpaplNELM)
@@ -339,8 +353,12 @@ void AttrsOfGlb
                 else
                     *lpaplCols = 1;
             } // End IF
-#undef  lpHeader
+
             break;
+        } // End VARARRAY_HEADER_SIGNATURE
+#ifndef DEBUG
+  #undef  lpHeader
+#endif
 
         case DFN_HEADER_SIGNATURE:
         case FCNARRAY_HEADER_SIGNATURE:

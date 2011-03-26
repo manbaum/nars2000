@@ -2068,11 +2068,12 @@ LRESULT APIENTRY MFWndProc
                     //   disallow this change so as to avoid
                     //   screen flicker
                     if (ClickOnClose ())
-                        return TRUE;
+                        return TRUE;        // Prevent the selection from changing
+
                     // Save the index of the outgoing tab
                     gLstTabID = TranslateTabIndexToID (TabCtrl_GetCurSel (hWndTC));
 
-                    return FALSE;
+                    return FALSE;           // Allow the selection to change
 
                 case TCN_SELCHANGE:         // idTabCtl = (int) LOWORD(wParam);
                                             // lpnmhdr = (LPNMHDR) lParam;

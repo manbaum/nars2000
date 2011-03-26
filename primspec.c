@@ -8431,6 +8431,10 @@ RESTART_EXCEPTION_NOAXIS:
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
                             *((LPAPLINT)   lpMemRes)++ =
                               (*lpPrimSpec->IisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uRes),
                                                      GetNextFloat (lpMemRht, aplTypeRht, uRes),

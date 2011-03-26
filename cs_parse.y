@@ -667,9 +667,27 @@ EndWhile:
                                                                 }
   ;
 
+ContinueAndIf:
+                CONTINUE SOSStmts                               {DbgMsgWP (L"%%ContinueAndIf:  CONTINUE SOSStmts");
+                                                                    $$ = $1;
+                                                                }
+  |             CONTINUEIF NSS                                  {DbgMsgWP (L"%%ContinueAndIf:  CONTINUEIF NSS");
+                                                                    $$ = $1;
+                                                                }
+  ;
+
+LeaveAndIf:
+                LEAVE    SOSStmts                               {DbgMsgWP (L"%%LeaveAndIf:  LEAVE SOSStmts");
+                                                                    $$ = $1;
+                                                                }
+  |             LEAVEIF NSS                                     {DbgMsgWP (L"%%LeaveAndIf:  LEAVEIF NSS");
+                                                                    $$ = $1;
+                                                                }
+  ;
+
 CLRec:
-                CONTINUE SOSStmts                               {DbgMsgWP (L"%%CLRec:  CONTINUE SOSStmts");
-                                                                    // Ensure the CONTINUE token is SOS
+                ContinueAndIf                                   {DbgMsgWP (L"%%CLRec:  ContinueAndIf");
+                                                                    // Ensure the CONTINUE/CONTINUEIF token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
                                                                         lpcsLocalVars->tkCSErr = *$1.lptkCur;
@@ -684,8 +702,8 @@ CLRec:
 
                                                                     $$ = $1;
                                                                 }
-  |             CONTINUEIF NSS                                  {DbgMsgWP (L"%%CLRec:  CONTINUEIF NSS");
-                                                                    // Ensure the CONTINUEIF token is SOS
+  |             LeaveAndIf                                      {DbgMsgWP (L"%%CLRec:  LeaveAndIf");
+                                                                    // Ensure the LEAVE/LEAVEIF token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
                                                                         lpcsLocalVars->tkCSErr = *$1.lptkCur;
@@ -700,40 +718,8 @@ CLRec:
 
                                                                     $$ = $1;
                                                                 }
-  |             LEAVE    SOSStmts                               {DbgMsgWP (L"%%CLRec:  LEAVE SOSStmts");
-                                                                    // Ensure the LEAVE token is SOS
-                                                                    if (!$1.lptkCur->tkData.bSOS)
-                                                                    {
-                                                                        lpcsLocalVars->tkCSErr = *$1.lptkCur;
-                                                                        YYERROR;
-                                                                    } // End IF
-
-                                                                    // Save the starting index common to this stmt
-                                                                    $1.uCLIndex                 =
-                                                                    $1.lptkCur->tkData.uCLIndex = lpcsLocalVars->lptkCSLink->tkData.uCLIndex;
-                                                                    lpcsLocalVars->lptkCSLink->tkData.uCLIndex = 0;
-                                                                    $1.lptkCL1st = $1.lptk1st = $1.lptkCur;
-
-                                                                    $$ = $1;
-                                                                }
-  |             LEAVEIF NSS                                     {DbgMsgWP (L"%%CLRec:  LEAVEIF NSS");
-                                                                    // Ensure the LEAVEIF token is SOS
-                                                                    if (!$1.lptkCur->tkData.bSOS)
-                                                                    {
-                                                                        lpcsLocalVars->tkCSErr = *$1.lptkCur;
-                                                                        YYERROR;
-                                                                    } // End IF
-
-                                                                    // Save the starting index common to this stmt
-                                                                    $1.uCLIndex                 =
-                                                                    $1.lptkCur->tkData.uCLIndex = lpcsLocalVars->lptkCSLink->tkData.uCLIndex;
-                                                                    lpcsLocalVars->lptkCSLink->tkData.uCLIndex = 0;
-                                                                    $1.lptkCL1st = $1.lptk1st = $1.lptkCur;
-
-                                                                    $$ = $1;
-                                                                }
-  | CLRec       CONTINUE SOSStmts                               {DbgMsgWP (L"%%CLRec:  CLRec CONTINUE SOSStmts");
-                                                                    // Ensure the CONTINUE token is SOS
+  | CLRec       ContinueAndIf                                   {DbgMsgWP (L"%%CLRec:  CLRec ContinueAndIf");
+                                                                    // Ensure the CONTINUE/CONTINUEIF token is SOS
                                                                     if (!$2.lptkCur->tkData.bSOS)
                                                                     {
                                                                         lpcsLocalVars->tkCSErr = *$2.lptkCur;
@@ -749,27 +735,10 @@ CLRec:
 
                                                                     $$ = $2;
                                                                 }
-  | CLRec       CONTINUEIF NSS                                  {DbgMsgWP (L"%%CLRec:  CLRec CONTINUEIF NSS");
-                                                                    // Ensure the CONTINUEIF token is SOS
-                                                                    if (!$2.lptkCur->tkData.bSOS)
-                                                                    {
-                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCur;
-                                                                        YYERROR;
-                                                                    } // End IF
-
-                                                                    // In this partial sequence, pass on down a ptr to the first entry
-                                                                    //   and the index common to this group
-                                                                    $2.lptkCL1st                =
-                                                                    $2.lptk1st                  = $1.lptkCL1st;
-                                                                    $2.uCLIndex                 =
-                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $2;
-                                                                }
-  | CLRec CSRec CONTINUE SOSStmts                               {DbgMsgWP (L"%%CLRec:  CLRec CSRec CONTINUE SOSStmts");
+  | CLRec CSRec ContinueAndIf                                   {DbgMsgWP (L"%%CLRec:  CLRec CSRec ContinueAndIf");
                                                                     // Note that righthand CSRec is never executed
 
-                                                                    // Ensure the CONTINUE token is SOS
+                                                                    // Ensure the CONTINUE/CONTINUEIF token is SOS
                                                                     if (!$3.lptkCur->tkData.bSOS)
                                                                     {
                                                                         lpcsLocalVars->tkCSErr = *$3.lptkCur;
@@ -810,52 +779,8 @@ CLRec:
 
                                                                     $$ = $3;
                                                                 }
-  | CLRec CSRec CONTINUEIF NSS                                  {DbgMsgWP (L"%%CLRec:  CLRec CSRec CONTINUEIF NSS");
-                                                                    // Note that righthand CSRec is never executed
-
-                                                                    // Ensure the CONTINUEIF token is SOS
-                                                                    if (!$3.lptkCur->tkData.bSOS)
-                                                                    {
-                                                                        lpcsLocalVars->tkCSErr = *$3.lptkCur;
-                                                                        YYERROR;
-                                                                    } // End IF
-
-                                                                    // If $2 has unmatched ContinueLeave, ...
-                                                                    if ($2.lptkCL1st)
-                                                                    {
-                                                                        Assert ($2.lptkCur->tkFlags.TknType EQ TKT_CS_IF);
-                                                                    } // End IF
-
-                                                                    // If $2 has unmatched ContinueLeave, ...
-                                                                    if ($2.lptkCL1st)
-                                                                    // Loop through $2's unmatched ContinueLeave
-                                                                    for (lptk1st = $2.lptkCL1st; lptk1st <= $2.lptkCur; lptk1st++)
-                                                                    // If it's a ContinueLeave, ...
-                                                                    if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
-                                                                    {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
-
-                                                                        // If it's not ENDIF, ...
-                                                                        if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
-                                                                            // Convert to $1's CLIndex so they are all the same
-                                                                            lptk1st->tkData.uCLIndex = $1.uCLIndex;
-                                                                    } // End IF/FOR/IF
-
-                                                                    // In this partial sequence, pass on down a ptr to the first entry
-                                                                    //   and the index common to this group
-                                                                    $3.lptkCL1st                =
-                                                                    $3.lptk1st                  = $1.lptkCL1st;
-                                                                    $3.uCLIndex                 =
-                                                                    $3.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $3;
-                                                                }
-  | CLRec       LEAVE    SOSStmts                               {DbgMsgWP (L"%%CLRec:  CLRec LEAVE SOSStmts");
-                                                                    // Ensure the LEAVE token is SOS
+  | CLRec       LeaveAndIf                                      {DbgMsgWP (L"%%CLRec:  CLRec LeaveAndIf");
+                                                                    // Ensure the LEAVE/LEAVEIF token is SOS
                                                                     if (!$2.lptkCur->tkData.bSOS)
                                                                     {
                                                                         lpcsLocalVars->tkCSErr = *$2.lptkCur;
@@ -871,71 +796,10 @@ CLRec:
 
                                                                     $$ = $2;
                                                                 }
-  | CLRec       LEAVEIF NSS                                     {DbgMsgWP (L"%%CLRec:  CLRec LEAVEIF NSS");
-                                                                    // Ensure the LEAVEIF token is SOS
-                                                                    if (!$2.lptkCur->tkData.bSOS)
-                                                                    {
-                                                                        lpcsLocalVars->tkCSErr = *$2.lptkCur;
-                                                                        YYERROR;
-                                                                    } // End IF
-
-                                                                    // In this partial sequence, pass on down a ptr to the first entry
-                                                                    //   and the index common to this group
-                                                                    $2.lptkCL1st                =
-                                                                    $2.lptk1st                  = $1.lptkCL1st;
-                                                                    $2.uCLIndex                 =
-                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $2;
-                                                                }
-  | CLRec CSRec LEAVE    SOSStmts                               {DbgMsgWP (L"%%CLRec:  CLRec CSRec LEAVE SOSStmts");
+  | CLRec CSRec LeaveAndIf                                      {DbgMsgWP (L"%%CLRec:  CLRec CSRec LeaveAndIf");
                                                                     // Note that righthand CSRec is never executed
 
-                                                                    // Ensure the LEAVE token is SOS
-                                                                    if (!$3.lptkCur->tkData.bSOS)
-                                                                    {
-                                                                        lpcsLocalVars->tkCSErr = *$3.lptkCur;
-                                                                        YYERROR;
-                                                                    } // End IF
-
-                                                                    // If $2 has unmatched ContinueLeave, ...
-                                                                    if ($2.lptkCL1st)
-                                                                    {
-                                                                        Assert ($2.lptkCur->tkFlags.TknType EQ TKT_CS_IF);
-                                                                    } // End IF
-
-                                                                    // If $2 has unmatched ContinueLeave, ...
-                                                                    if ($2.lptkCL1st)
-                                                                    // Loop through $2's unmatched ContinueLeave
-                                                                    for (lptk1st = $2.lptkCL1st; lptk1st <= $2.lptkCur; lptk1st++)
-                                                                    // If it's a ContinueLeave, ...
-                                                                    if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
-                                                                    {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CONTINUEIF
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_ENDIF);
-
-                                                                        // If it's not ENDIF, ...
-                                                                        if (lptk1st->tkFlags.TknType NE TKT_CS_ENDIF)
-                                                                            // Convert to $1's CLIndex so they are all the same
-                                                                            lptk1st->tkData.uCLIndex = $1.uCLIndex;
-                                                                    } // End IF/FOR/IF
-
-                                                                    // In this partial sequence, pass on down a ptr to the first entry
-                                                                    //   and the index common to this group
-                                                                    $3.lptkCL1st                =
-                                                                    $3.lptk1st                  = $1.lptkCL1st;
-                                                                    $3.uCLIndex                 =
-                                                                    $3.lptkCur->tkData.uCLIndex = $1.uCLIndex;
-
-                                                                    $$ = $3;
-                                                                }
-  | CLRec CSRec LEAVEIF NSS                                     {DbgMsgWP (L"%%CLRec:  CLRec CSRec LEAVEIF NSS");
-                                                                    // Note that righthand CSRec is never executed
-
-                                                                    // Ensure the LEAVEIF token is SOS
+                                                                    // Ensure the LEAVE/LEAVEIF token is SOS
                                                                     if (!$3.lptkCur->tkData.bSOS)
                                                                     {
                                                                         lpcsLocalVars->tkCSErr = *$3.lptkCur;

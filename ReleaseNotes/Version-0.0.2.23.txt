@@ -1,6 +1,17 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #828 -- Version 0.0.2.23
+------------------------------
+
+* Fix Bug:  Memory Leak When Sizing Tokenized Lines
+
+Directory trunk:
+
+SAVEFCN.C:
+  Fix Bug:  Memory leak when sizing tokenized lines.
+
+
 Build #827 -- Version 0.0.2.23
 ------------------------------
 

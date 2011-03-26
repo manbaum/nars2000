@@ -1330,6 +1330,10 @@ UBOOL SaveFunctionCom
             // Size a function line
             if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
                 goto ERROR_EXIT;
+        // Restore the ptr to the next token on the CS stack
+        //   because we advanced it during the above sizing
+        lpMemPTD->lptkCSNxt = lptkCSBeg;
+
         // Allocate global memory for the function header
         lpSF_Fcns->hGlbDfnHdr =
         hGlbDfnHdr =
@@ -1816,6 +1820,16 @@ UINT SaveFunctionLine
                    uLineNum + 1,            // Function line # (0 = header)
                   &ErrorHandler,            // Ptr to error handling function (may be NULL)
                    lpMagicFcnOpr NE NULL);  // TRUE iff we're tokenizing a Magic Function/Operator
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+
+    // If we're sizing, ...
+    if (!lpFcnLines)
+    {
+        // We no longer need this storage
+        MyGlobalFree (hGlbTxtLine); hGlbTxtLine = NULL;
+    } // End IF
+
     // If tokenization failed, ...
     if (!hGlbTknHdr)
     {
@@ -1846,9 +1860,6 @@ UINT SaveFunctionLine
         // Check the line for empty
         lpFcnLines->bEmpty =
           IsLineEmpty (hGlbTknHdr);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
     // Save the token size
     uTknSize = (UINT) MyGlobalSize (hGlbTknHdr);

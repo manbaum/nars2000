@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1065,12 +1065,16 @@ LPAPLCHAR FormatFloatFC
                  iSigDig,               // # significant digits
                  sign;                  // TRUE iff the number is negative
         UBOOL    bPowerOfTwo;           // TRUE iff the # is a power of two
+        LPWCHAR  lpaplCharIni;          // Initial ptr to output save area
 
         // Get the corresponding DTOA mode
         // DTOAMODE_SHORT_RND = 0,              // 0 = shortest string with rounding, e.g., 1e23
         // DTOAMODE_SHORT_NORND,                // 1 = shortest string without rounding. e.g., 9.999999999999999e22
         // DTOAMODE_SIGDIGS,                    // 2 = # significant digits
         // DTOAMODE_FRACTDIGS,                  // 3 = # fractional digits (past decimal point)
+
+        // Save the initial ptr to the oputput save area
+        lpaplCharIni = lpaplChar;
 
         // If this is raw float formatting, ...
         if (nDigits EQ 0 && fltDispFmt EQ FLTDISPFMT_RAWFLT)
@@ -1154,15 +1158,22 @@ LPAPLCHAR FormatFloatFC
                         decpt++;
                     } // End WHILE
 
-                    // Copy the remaining digits (or underflow chars) to the result
-                    //   converting from one-byte ASCII to two-byte UTF16
-                    while (nDigits > 0
-                        && *s)
-                    {
-                        *lpaplChar++ = (iSigDig > 0) ? *s++ : L'_';
-                        nDigits--;
-                        iSigDig--;
-                    } // End WHILE
+                    // If there are no more significant digits
+                    //   and the sign is negative, ...
+                    if (nDigits EQ 0
+                     && sign)
+                        // Move the number down over the sign so we don't return {neg}0
+                        CopyMemoryW (lpaplCharIni, &lpaplCharIni[1], lpaplChar-- - lpaplCharIni);
+                    else
+                        // Copy the remaining digits (or underflow chars) to the result
+                        //   converting from one-byte ASCII to two-byte UTF16
+                        while (nDigits > 0
+                            && *s)
+                        {
+                            *lpaplChar++ = (iSigDig > 0) ? *s++ : L'_';
+                            nDigits--;
+                            iSigDig--;
+                        } // End WHILE
                 } else
                 {
                     // Copy no more than decpt digits to the result

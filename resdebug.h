@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,10 +35,10 @@
   #define MyDeleteObject(a)               _MyDeleteObject(a,__LINE__)
   #define MyGetDC(a)                      _MyGetDC(a,__LINE__)
   #define MyGetWindowDC(a)                _MyGetWindowDC(a,__LINE__)
-  #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(a,b,FNLN)
-  #define MyGlobalLock(a)                 _MyGlobalLock(a,FNLN)
-  #define MyGlobalHandle(a)               _MyGlobalHandle(a)
-  #define MyGlobalUnlock(a)               _MyGlobalUnlock(a,__LINE__)
+  #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(GPTR,b,FNLN)
+  #define MyGlobalLock(a)                 (a) // _MyGlobalLock(a,FNLN)
+  #define MyGlobalHandle(a)               (a) // _MyGlobalHandle(a)
+  #define MyGlobalUnlock(a)                   // _MyGlobalUnlock(a,__LINE__)
   #define MyGlobalSize(a)                 _MyGlobalSize(a,__LINE__)
   #define MyGlobalFlags(a)                _MyGlobalFlags(a,__LINE__)
   #define MyGlobalReAlloc(a,b,c)          _MyGlobalReAlloc(a,b,c,__LINE__)
@@ -69,10 +69,10 @@
   #define MyDeleteObject(a)               DeleteObject(a)
   #define MyGetDC(a)                      GetDC(a)
   #define MyGetWindowDC(a)                GetWindowDC(a)
-  #define MyGlobalAlloc(a,b)              GlobalAlloc(a,b)
-  #define MyGlobalHandle(a)               GlobalHandle(a)
-  #define MyGlobalLock(a)                 GlobalLock(a)
-  #define MyGlobalUnlock(a)               GlobalUnlock(a)
+  #define MyGlobalAlloc(a,b)              GlobalAlloc(GPTR,b)
+  #define MyGlobalHandle(a)               (a) // GlobalHandle(a)
+  #define MyGlobalLock(a)                 (a) // GlobalLock(a)
+  #define MyGlobalUnlock(a)                   // GlobalUnlock(a)
   #define MyGlobalSize(a)                 GlobalSize(a)
   #define MyGlobalFlags(a)                GlobalFlags(a)
   #define MyGlobalReAlloc(a,b,c)          GlobalReAlloc(a,b,c)

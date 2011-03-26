@@ -1,6 +1,17 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #830 -- Version 0.0.2.23
+------------------------------
+
+* Improve Performance By Allocating Ptrs Instead Of Handles
+
+Directory trunk:
+
+RESDEBUG.H:
+  Switch from global memory handle allocations to global memory ptrs.
+
+
 Build #829 -- Version 0.0.2.23
 ------------------------------
 

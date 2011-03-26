@@ -51,29 +51,38 @@ typedef struct tagPDIE
             Used :1;                // TRUE iff it's been used
 } PDIE, *LPPDIE;
 
-typedef void (*LPMEOCOM) (APLSTYPE,     // Left arg storage type
-                          LPVOID,       // Ptr to left arg global memory
-                          LPPDIE,       // Ptr to left arg grade-up global memory
-                          APLINT,       // Loop counter
-                          APLSTYPE,     // Right arg storage type
-                          APLNELM,      // Right arg NELM
-                          LPVOID,       // Ptr to right arg global memory
-                          LPPDIE,       // Ptr to right arg grade-up global memory
-                          APLFLOAT,     // []CT
-                          LPAPLBOOL);   // Ptr to result global memory
+typedef void (*LPMEOCOM) (APLSTYPE,         // Left arg storage type
+                          LPVOID,           // Ptr to left arg global memory
+                          LPPDIE,           // Ptr to left arg grade-up global memory
+                          APLINT,           // Loop counter
+                          APLSTYPE,         // Right arg storage type
+                          APLNELM,          // Right arg NELM
+                          LPVOID,           // Ptr to right arg global memory
+                          LPPDIE,           // Ptr to right arg grade-up global memory
+                          APLFLOAT,         // []CT
+                          LPAPLBOOL);       // Ptr to result global memory
 
-typedef void (*LPMIOCOM) (APLSTYPE,     // Left arg storage type
-                          APLNELM,      // Left arg NELM
-                          LPVOID,       // Ptr to left arg global memory
-                          LPPDIE,       // Ptr to left arg grade-up global memory
-                          APLSTYPE,     // Right arg storage type
-                          LPVOID,       // Ptr to right arg global memory
-                          LPPDIE,       // Ptr to right arg grade-up global memory
-                          APLINT,       // Loop counter
-                          UBOOL,        // []IO
-                          APLFLOAT,     // []CT
-                          APLUINT,      // Not found value
-                          LPAPLUINT);   // Ptr to result global memory
+typedef void (*LPMIOCOM) (APLSTYPE,         // Left arg storage type
+                          APLNELM,          // Left arg NELM
+                          LPVOID,           // Ptr to left arg global memory
+                          LPPDIE,           // Ptr to left arg grade-up global memory
+                          APLSTYPE,         // Right arg storage type
+                          LPVOID,           // Ptr to right arg global memory
+                          LPPDIE,           // Ptr to right arg grade-up global memory
+                          APLINT,           // Loop counter
+                          UBOOL,            // []IO
+                          APLFLOAT,         // []CT
+                          APLUINT,          // Not found value
+                          LPAPLUINT);       // Ptr to result global memory
+
+typedef APLBOOL (*LPMMCOM) (APLSTYPE ,      // Left arg storage type
+                            APLNELM  ,      // Left arg NELM
+                            LPVOID   ,      // Ptr to left arg global memory
+                            LPPDIE   ,      // Ptr to left arg grade-up global memory
+                            APLSTYPE ,      // Right arg storage type
+                            LPVOID   ,      // Ptr to right arg global memory
+                            LPPDIE   ,      // Ptr to right arg grade-up global memory
+                            LPUBOOL  );     // Ptr to Ctrl-Break flag
 
 
 //***************************************************************************

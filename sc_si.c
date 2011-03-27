@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -178,6 +178,9 @@ UBOOL CmdSiSinlCom_EM
                     {
                         // Copy the STE name to local storage
                         lpw = CopySteName (lpwszTemp, &lpSymEntryNxt[numSym], &uNameLen);
+
+                        // Ensure properly terminated
+                        *lpw = WC_EOS;
 
                         // Get the name length plus two leading blanks
                         uNameLen += 2;

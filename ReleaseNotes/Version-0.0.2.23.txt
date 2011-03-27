@@ -1,6 +1,18 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #832 -- Version 0.0.2.23
+------------------------------
+
+* Fix Bug:  )SINL Displays Local Vars Incorrectly
+
+Directory trunk:
+
+SC_SI.C:
+  Update copyright year.
+  Fix Bug:  After <CopySTEName>, be sure to terminate the string.
+
+
 Build #831 -- Version 0.0.2.23
 ------------------------------
 

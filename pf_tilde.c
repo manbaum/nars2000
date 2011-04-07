@@ -201,7 +201,7 @@ LPPL_YYSTYPE PrimIdentFnTilde_EM_YY
 
     // Check for RANK ERROR
     if (IsMultiRank (aplRankRht))
-        goto DOMAIN_EXIT;
+        goto RANK_EXIT;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -220,8 +220,8 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 
-DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                lptkFunc);
     return NULL;
 } // End PrimIdentFnTilde_EM_YY

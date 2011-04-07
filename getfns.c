@@ -2016,7 +2016,8 @@ LPPRIMFLAGS GetPrimFlagsPtr
     HGLOBAL      hGlbFcn;                   // Function array global memory handle
     LPPL_YYSTYPE lpMemFcn;                  // Ptr to function array global memory
     LPPRIMFLAGS  lpPrimFlags;               // Ptr to result
-    static PRIMFLAGS DfnIdentFns =
+    static PRIMFLAGS
+      DfnIdentFns =
     {
         FALSE,                              // Index
         FALSE,                              // IdentElem
@@ -2029,7 +2030,8 @@ LPPRIMFLAGS GetPrimFlagsPtr
         FALSE,                              // AssocNumb
         FALSE,                              // FastBool
         (LPPRIMOPS) ExecDfnGlbIdent_EM_YY,  // Ptr to PRIMOPS
-    };
+    },
+      PrimFlagsNone = {0};
 
     // Split cases based upon the token type of the function strand's first item
     switch (lptkFunc->tkFlags.TknType)
@@ -2040,6 +2042,13 @@ LPPRIMFLAGS GetPrimFlagsPtr
         case TKT_OP3IMMED:
         case TKT_OPJOTDOT:
             return &PrimFlags[SymTrans (lptkFunc)];
+
+        case TKT_FCNNAMED:
+            // If this is a direct function, ...
+            if (lptkFunc->tkData.tkSym->stFlags.FcnDir)
+                return &PrimFlagsNone;
+            else
+                DbgStop ();
 
         case TKT_FCNARRAY:
             // Split cases based upon the function array signature
@@ -2136,15 +2145,25 @@ UINT GetSignatureGlb_PTB
     LPHEADER_SIGNATURE lpMemLcl;            // Ptr to signature global memory
     UINT               Sig;                 // The signature
     HGLOBAL            hGlbLcl;             // Global memory handle
+#ifdef DEBUG
+    LPSYMENTRY         lpSymEntry = lpSymGlbLcl;
+#else
+  #define lpSymEntry    ((LPSYMENTRY) lpSymGlbLcl)
+#endif
 
     // Split cases based upon the ptr bits
     switch (GetPtrTypeDir (lpSymGlbLcl))
     {
         case PTRTYPE_STCONST:
-            Assert (((LPSYMENTRY) lpSymGlbLcl)->stFlags.Imm EQ FALSE);
+            // If it's a direct function, ...
+            if (lpSymEntry->stFlags.FcnDir)
+                // Return a pseudo-signature
+                return SYSFN_HEADER_SIGNATURE;
+
+            Assert (lpSymEntry->stFlags.Imm EQ FALSE);
 
             // Clear the ptr type bits
-            hGlbLcl = ClrPtrTypeDir (((LPSYMENTRY) lpSymGlbLcl)->stData.stGlbData);
+            hGlbLcl = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
 
             break;
 
@@ -2168,6 +2187,9 @@ UINT GetSignatureGlb_PTB
     MyGlobalUnlock (hGlbLcl); lpMemLcl = NULL;
 
     return Sig;
+#ifndef DEBUG
+  #undef  lpSymEntry
+#endif
 } // End GetSignatureGlb_PTB
 
 

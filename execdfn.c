@@ -1925,7 +1925,7 @@ UBOOL InitFcnSTEs
     STFLAGS stFlagsClr = {0};   // Flags for clearing an STE
     UINT    TknCount;           // Token count
 
-    // Set the Inuse flag
+    // Keep the Inuse flag
     stFlagsClr.Inuse = TRUE;
 
     // If the token is defined, ...
@@ -1939,32 +1939,26 @@ UBOOL InitFcnSTEs
         // Split cases based upon the function count
         if (TknCount EQ 1)
         {
-            // Clear the STE flags & data
-            *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
-
-            // Set common values
-            (*lplpSymEntry)->stFlags.Value      = TRUE;
-            (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
-            (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
-
             // If the function is immediate, ...
             if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNIMMED)
             {
+                // Clear the STE flags
+                *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
+
                 (*lplpSymEntry)->stFlags.Imm        = TRUE;
                 (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
-////////////////(*lplpSymEntry)->stFlags.Value      = TRUE;             // Set above
-////////////////(*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;      // ...
-////////////////(*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;    // ...
+                (*lplpSymEntry)->stFlags.Value      = TRUE;
+                (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
 ////////////////(*lplpSymEntry)->stFlags.UsrDfn     = FALSE;            // Already zero from above
+////////////////(*lplpSymEntry)->stFlags.DfnAxis    = FALSE;            // Already zero from above
+////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
                 (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
             } else
             {
-////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;            // Already zero from above
-////////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;    // Already zero from above
-////////////////(*lplpSymEntry)->stFlags.Value      = TRUE;             // Set above
-////////////////(*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;      // ...
-////////////////(*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;    // ...
-                (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkSym) EQ DFN_HEADER_SIGNATURE);
+                Assert (IsTknTypeNamedFcnOpr (lpYYArg->tkToken.tkFlags.TknType));
+
+                (*lplpSymEntry)->stFlags            = lpYYArg->tkToken.tkData.tkSym->stFlags;
                 (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
             } // End IF/ELSE
         } else
@@ -2067,7 +2061,7 @@ UBOOL InitFcnSTEs
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-            // Clear the STE flags & data
+            // Clear the STE flags
             *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 ////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from above
 ////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;// Already zero from above

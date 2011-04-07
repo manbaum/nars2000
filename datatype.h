@@ -279,6 +279,8 @@ typedef union tagVFOHDRPTRS
                       lpMemDfn;         // 00:  ...      UDFO
 } VFOHDRPTRS, *LPVFOHDRPTRS;
 
+#define SYSFN_HEADER_SIGNATURE      'FSYS'      // Pseudo-signature
+
 // Distinguish between immediate LPSYMENTRY and HGLOBAL in an array
 typedef enum tagPTR_TYPES
 {

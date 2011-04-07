@@ -1619,6 +1619,10 @@ HGLOBAL CopySymGlbDir_PTB
     switch (GetPtrTypeDir (lpSymGlb))
     {
         case PTRTYPE_STCONST:
+            // If the SYMENTRY is an internal function, ...
+            if (lpSymGlb->stFlags.FcnDir)
+                return lpSymGlb->stData.stGlbData;
+
             // If the SYMENTRY is named, ...
             if (lpSymGlb->stHshEntry->htGlbName)
                 // Copy it to an unnamed value-specific entry

@@ -1969,7 +1969,7 @@ typedef struct tagLANGCHARS
         {UTF16_STAR               , {0}, L"Star",
                                          L"Power of e:   *R\n"
                                          L"Power of L:  L*R  or  L*[X] R\n\n"
-                                         L"Keyboard:  '*' or Shift-'8' or Alt-'p'\n\n"
+                                         L"Keyboard:  '*' or Shift-'8'\n\n"
                                          L"Unicode:  0x002A or 42"},
         {UTF16_CIRCLESTAR         , {0}, L"CircleStar",
                                          L"Log base e:   " WS_UTF16_CIRCLESTAR L"R\n"
@@ -2190,6 +2190,19 @@ typedef struct tagLANGCHARS
                                          L"Multiset (Symmetric Difference):  L" WS_UTF16_SECTION WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'S' or Alt-Shift-'s'\n\n"
                                          L"Unicode:  0x00A7 or 167"},
+        {UTF16_PI                 , {0}, L"Pi",
+                                         L"Prime decomposition:      " WS_UTF16_PI L"R\n"
+                                         L"Divisor Count Function:  0" WS_UTF16_PI L"R\n"
+                                         L"Divisor Sum Function:    1" WS_UTF16_PI L"R\n"
+                                         L"Primality Test:          2" WS_UTF16_PI L"R\n"
+                                         L"Next Prime:              3" WS_UTF16_PI L"R\n"
+                                         L"Previous Prime:          4" WS_UTF16_PI L"R\n"
+                                         L"Nth Prime:               5" WS_UTF16_PI L"R\n"
+                                         L"Number of Primes:        6" WS_UTF16_PI L"R\n"
+                                         L"M" L"\x00F6" L"bius Function:         7" WS_UTF16_PI L"R\n"
+                                         L"Totient Function:        8" WS_UTF16_PI L"R\n\n"
+                                         L"Keyboard:  Alt-'p'\n\n"
+                                         L"Unicode:  0x03C0 or 960"},
         LANGCHARS_SEPARATOR
         {UTF16_COMMA              , {0}, L"Comma",
                                          L"Ravel:      ,R  or   ,[X] R\n"

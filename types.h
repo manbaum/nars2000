@@ -26,6 +26,10 @@ typedef unsigned int   uint32_t;
 typedef unsigned short uint16_t;
 typedef unsigned char  uint8_t;
 
+typedef unsigned __int8  uint8;
+typedef unsigned __int16 uint16;
+typedef unsigned __int32 uint32;
+typedef unsigned __int64 uint64;
 
 typedef ULONGLONG   APLRANK;            // The type of the rank element in an array
 typedef  LONGLONG   APLRANKSIGN;        // ...             rank element ... (signed)

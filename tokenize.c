@@ -4654,7 +4654,7 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_DOWNSHOESTILE:       // Alt-'m' - down-shoe-stile (TKCOL_PRIM_OP1)
         case UTF16_DOWNTACK:            // Alt-'n' - down tack
         case UTF16_CIRCLE:              // Alt-'o' - circle
-        case UTF16_STAR:                // Alt-'p' - star
+        case UTF16_PI:                  // Alt-'p' - pi
         case UTF16_QUERY:               // Alt-'q' - question mark
         case UTF16_RHO:                 // Alt-'r' - rho
         case UTF16_UPSTILE:             // Alt-'s' - up stile
@@ -4737,7 +4737,7 @@ TKCOLINDICES CharTransTK
         case UTF16_TILDE2:              //     '~' - tilde
 ////////case UTF16_QUOTEDOT:            //     '!' - shriek
         case UTF16_CIRCUMFLEX:          //     '^' - up caret
-////////case UTF16_STAR:                //     '*' - star
+        case UTF16_STAR:                //     '*' - star
         case UTF16_BAR:                 //     '-' - bar
 ////////case UTF16_EQUAL:               //     '=' - equal
         case UTF16_PLUS:                //     '+' - plus

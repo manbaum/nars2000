@@ -63,6 +63,7 @@ DEBUG=0
 A=Images\                       # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
+MS=$(NARSROOT)msieve\           # Msieve source
 GMP=$(NARSROOT)gmp-static\      # GMP headers & libs
 OLDPATH=$(PATH)                 # Save the current path
 GSLINC=$(NARSROOT)gsl\include\  # Directory of GSL includes
@@ -70,7 +71,7 @@ GSLINC=$(NARSROOT)gsl\include\  # Directory of GSL includes
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(GSLINC);$(QDEBUG)
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS);$(GSLINC);$(QDEBUG)
 
 MV=makever
 
@@ -197,6 +198,15 @@ INITIAL_EXE:
         @if exist $@ del $@
         @$(RC) $(RCFLAGS) $(RCDEFINES) -r -fo$@ %s
 
+{$(MS)}.c{$(O)}.obj:
+        @Set INCLUDE=$(MS);$(GMP);$(MSVC)include;$(SDK)include;.
+        @if exist $@ del $@
+!if "$(WIN)" == "64"
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32 /D WIN64 /D __x86_64__ /D "UNICODE" %s
+!else
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32                        /D "UNICODE" %s
+!endif
+
 {}.y{$(O)}.c:
         @Set INCLUDE=$(I98);$(O)
         $(PARGEN) -o$(O)$(@B).c -v -r all -l %s
@@ -243,6 +253,10 @@ DEP:    DIR                     \
         @echo $(@F)
         @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(WS)=$$(WS) %s > $@
 
+{$(MS)}.c{$(O)}.dep:
+        @echo $(@F)
+        @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(MS)=$$(MS) %s > $@
+
 {}.c{$(O)}.dep:
         @echo $(@F)
         @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
@@ -270,6 +284,10 @@ PRO:    DIR                     \
         @php $(MAKEPRO) %s $@
 
 {$(WS)}.c{$(O)}.pro:
+        @echo $(@F)
+        @php $(MAKEPRO) %s $@
+
+{$(MS)}.c{$(O)}.pro:
         @echo $(@F)
         @php $(MAKEPRO) %s $@
 
@@ -321,6 +339,16 @@ $(O)pn_parse.obj:       $(O)$(@B).c     $(PN_PARSE_DEP)
 
 ## WineHQ-specific files
 $(O)editctrl.obj:       $(WS)$(@B).c    $(EDITCTRL_DEP)     $(WS)local.h
+
+## Msieve-specific files
+$(O)mp.obj:             $(MS)$(@B).c    $(MP_DEP)           $(MS)mp.h
+$(O)prime_delta.obj:    $(MS)$(@B).c    $(PRIME_DELTA_DEP)  $(MS)common.h
+$(O)smallfact.obj:      $(MS)$(@B).c    $(SMALLFACT_DEP)    $(MS)common.h
+$(O)squfof.obj:         $(MS)$(@B).c    $(SQUFOF_DEP)       $(MS)common.h
+$(O)tinyqs.obj:         $(MS)$(@B).c    $(TINYQS_DEP)       $(MS)common.h
+
+$(MS)common.h:          $(MS)msieve.h
+$(MS)mp.h:              $(MS)util.h
 
 ## NARS-specific files
 $(O)assign.obj:         $(@B).c         $(ASSIGN_DEP)
@@ -385,6 +413,7 @@ $(O)pf_ltack.obj:       $(@B).c         $(PF_LTACK_DEP)
 $(O)pf_ndcaret.obj:     $(@B).c         $(PF_NDCARET_DEP)
 $(O)pf_nequal.obj:      $(@B).c         $(PF_NEQUAL_DEP)
 $(O)pf_nucaret.obj:     $(@B).c         $(PF_NUCARET_DEP)
+$(O)pf_pi.obj:          $(@B).c         $(PF_PI_DEP)
 $(O)pf_plus.obj:        $(@B).c         $(PF_PLUS_DEP)
 $(O)pf_qdot.obj:        $(@B).c         $(PF_QDOT_DEP)
 $(O)pf_query.obj:       $(@B).c         $(PF_QUERY_DEP)

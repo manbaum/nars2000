@@ -969,6 +969,16 @@ void YYFreeGlbFcn
             // Loop through the function array
             for (uCnt = 0; uCnt < uLen; uCnt++, lpMemFcn++)
             {
+                // If the token is named, ...
+                if (IsTknTypeNamed (lpMemFcn->tkToken.tkFlags.TknType))
+                {
+                    // If it's a direct function, ...
+                    if (lpMemFcn->tkToken.tkData.tkSym->stFlags.FcnDir)
+                        continue;
+                    else
+                        DbgStop ();
+                } // End IF
+
                 // Split off immediates so as not to double count TKT_OP1IMMED/INDEX_OPTRAINs
                 if (!IsTknImmed (&lpMemFcn->tkToken))
                     // Recurse down through this function array item

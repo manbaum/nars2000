@@ -66,7 +66,6 @@ typedef struct tagVKSTATE
 //     Alt-'F'
 //     Alt-'K'
 //     Alt-'Q'
-//     Alt-'S'
 //     Alt-'U'
 //     Alt-'V'
 //     Alt-'W'
@@ -80,7 +79,6 @@ typedef struct tagVKSTATE
 //
 //     Symbol & Name              Keystroke
 //     --------------------------------------------------
-//     * Asterisk                 Alt-'p'
 //     = Equal                    Alt-'5'
 //     < Left Caret               Alt-'3'
 //     ? Question Mark            Alt-'q'
@@ -134,7 +132,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[0x4E + 1]
  {L'u', UTF16_DOWNARROW         , 0, 0, L'U', 0                       , 0, 0},    // 16:  'u'
  {L'i', UTF16_IOTA              , 0, 0, L'I', UTF16_IOTAUNDERBAR      , 0, 0},    // 17:  'i'
  {L'o', UTF16_CIRCLE            , 0, 0, L'O', UTF16_DIERESISCIRCLE    , 0, 0},    // 18:  'o'
- {L'p', UTF16_STAR              , 0, 0, L'P', UTF16_DIERESISSTAR      , 0, 0},    // 19:  'p'
+ {L'p', UTF16_PI                , 0, 0, L'P', UTF16_DIERESISSTAR      , 0, 0},    // 19:  'p'
  {L'[', UTF16_LEFTARROW         , 0, 0, L'{', UTF16_QUOTEQUAD         , 0, 0},    // 1A:  '['
  {L']', UTF16_RIGHTARROW        , 0, 0, L'}', UTF16_ZILDE             , 0, 0},    // 1B:  ']'
  {  0 },                                                                          // 1C:  CR
@@ -249,7 +247,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[0x4E + 1]
  {L'u', 0, UTF16_DOWNARROW         , 0, L'U', 0, 0                       , 0},    // 16:  'u'
  {L'i', 0, UTF16_IOTA              , 0, L'I', 0, UTF16_IOTAUNDERBAR      , 0},    // 17:  'i'
  {L'o', 0, UTF16_CIRCLE            , 0, L'O', 0, UTF16_DIERESISCIRCLE    , 0},    // 18:  'o'
- {L'p', 0, UTF16_STAR              , 0, L'P', 0, UTF16_DIERESISSTAR      , 0},    // 19:  'p'
+ {L'p', 0, UTF16_PI                , 0, L'P', 0, UTF16_DIERESISSTAR      , 0},    // 19:  'p'
  {L'[', 0, UTF16_LEFTARROW         , 0, L'{', 0, UTF16_QUOTEQUAD         , 0},    // 1A:  '['
  {L']', 0, UTF16_RIGHTARROW        , 0, L'}', 0, UTF16_ZILDE             , 0},    // 1B:  ']'
  {  0 },                                                                          // 1C:  CR

@@ -91,6 +91,7 @@
   #include "pf_ndcaret.pro"
   #include "pf_nequal.pro"
   #include "pf_nucaret.pro"
+  #include "pf_pi.pro"
   #include "pf_plus.pro"
   #include "pf_qdot.pro"
   #include "pf_query.pro"

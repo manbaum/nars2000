@@ -465,6 +465,19 @@
 				>
 			</File>
 			<File
+				RelativePath="$(NARSROOT)msieve\mp.c"
+				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						PreprocessorDefinitions="/D WIN32"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\perfmon.c"
 				>
 			</File>
@@ -475,6 +488,14 @@
 			<File
 				RelativePath=".\pf_circle.c"
 				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\pf_colonbar.c"
@@ -511,6 +532,14 @@
 			<File
 				RelativePath=".\pf_domino.c"
 				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\pf_dshoe.c"
@@ -589,12 +618,32 @@
 				>
 			</File>
 			<File
+				RelativePath=".\pf_pi.c"
+				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\pf_plus.c"
 				>
 			</File>
 			<File
 				RelativePath=".\pf_qdot.c"
 				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\pf_query.c"
@@ -775,6 +824,19 @@
 			<File
 				RelativePath=".\po_slope.c"
 				>
+			</File>
+			<File
+				RelativePath="$(NARSROOT)msieve\prime_delta.c"
+				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						PreprocessorDefinitions="/D WIN32"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\primfns.c"
@@ -969,8 +1031,32 @@
 				>
 			</File>
 			<File
+				RelativePath="$(NARSROOT)msieve\smallfact.c"
+				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\sort.c"
 				>
+			</File>
+			<File
+				RelativePath="$(NARSROOT)msieve\squfof.c"
+				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\strand.c"
@@ -995,6 +1081,19 @@
 			<File
 				RelativePath=".\tabctrl.c"
 				>
+			</File>
+			<File
+				RelativePath="$(NARSROOT)msieve\tinyqs.c"
+				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						PreprocessorDefinitions="/D WIN32"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tokenize.c"

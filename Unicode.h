@@ -94,7 +94,7 @@
 #define UTF16_DOWNSHOESTILE      0x2366         // Alt-'m' - down-shoe-stile
 #define UTF16_DOWNTACK           0x22A4         // Alt-'n' - representation
 #define UTF16_CIRCLE             0x25CB         // Alt-'o' - circle
-#define UTF16_STAR               0x002A         // Alt-'p' - power
+#define UTF16_PI                 0x03C0         // Alt-'p' - pi
 #define UTF16_QUERY              0x003F         // Alt-'q' - question-mark
 #define UTF16_RHO                0x2374         // Alt-'r' - rho
 #define UTF16_UPSTILE            0x2308         // Alt-'s' - ceiling
@@ -202,6 +202,7 @@
 #define UTF16_SINGLEQUOTE        0x0027         // Single quote (a.k.a. Apostrophe)
 #define UTF16_LEFTPAREN          0x0028         // Left paren
 #define UTF16_RIGHTPAREN         0x0029         // Right paren
+#define UTF16_STAR               0x002A         // Star
 #define UTF16_PLUS               0x002B         // Plus
 #define UTF16_COMMA              0x002C         // Comma
 #define UTF16_BAR                0x002D         // Bar
@@ -307,7 +308,7 @@
 #define WS_UTF16_DOWNSHOESTILE      L"\x2366"   // Alt-'m' - down-shoe-stile
 #define WS_UTF16_DOWNTACK           L"\x22A4"   // Alt-'n' - representation
 #define WS_UTF16_CIRCLE             L"\x25CB"   // Alt-'o' - circle
-#define WS_UTF16_STAR               L"\x002A"   // Alt-'p' - power
+#define WS_UTF16_PI                 L"\x03C0"   // Alt-'p' - pi
 #define WS_UTF16_QUERY              L"\x003F"   // Alt-'q' - question-mark
 #define WS_UTF16_RHO                L"\x2374"   // Alt-'r' - rho
 #define WS_UTF16_UPSTILE            L"\x2308"   // Alt-'s' - ceiling
@@ -415,6 +416,7 @@
 #define WS_UTF16_SINGLEQUOTE        L"\x0027"   // Single quote (a.k.a. Apostrophe)
 #define WS_UTF16_LEFTPAREN          L"\x0028"   // Left paren
 #define WS_UTF16_RIGHTPAREN         L"\x0029"   // Right paren
+#define WS_UTF16_STAR               L"\x002A"   // Star
 #define WS_UTF16_PLUS               L"\x002B"   // Plus
 #define WS_UTF16_COMMA              L"\x002C"   // Comma
 #define WS_UTF16_BAR                L"\x002D"   // Bar

@@ -18,6 +18,18 @@
 
 # Include file common to makefile.w32 and makefile.w64
 
+!ifndef O
+!error Macro O= not defined.
+!endif
+
+!ifndef WIN
+!error Macro WIN= not defined.
+!endif
+
+!ifndef DEBUG
+!error Macro DEBUG= not defined.
+!endif
+
 !ifndef ZIPPRG
 !error Environment variable ZIPPRG= not defined.
 !endif
@@ -41,6 +53,19 @@
 !ifndef NARSROOT
 !error Environment variable NARSROOT= not defined.
 !endif
+
+.SUFFIXES: .DEP .DEV .PRO .Y
+
+NAME=NARS2000                   # Directory name
+ENAME=NARS2000                  # Executable name
+BIN=binaries\                   # Binaries directory
+DEBUG=0
+A=Images\                       # Images & artwork
+BC=$(BIN)COM\                   # Directory for common binaries
+WS=WineHQ\                      # Wine source
+GMP=$(NARSROOT)gmp-static\      # GMP headers & libs
+OLDPATH=$(PATH)                 # Save the current path
+GSLINC=$(NARSROOT)gsl\include\  # Directory of GSL includes
 
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
@@ -118,17 +143,10 @@ RCDEFINES = /D $(WDEF)
 ASM=masm
 AFLAGS=/Mu /DDEBUG=$(DEBUG)
 
-!if "$(VS)" == "1"
-O=DEBUG\                        # define output directory for intermediate files
-B=$(BIN)D$(WIN)\                # ...                         binaries
-!else
 !if "$(DEBUG)" == "1"
-O=RET\D$(WIN)\                  # define output directory for intermediate files
-B=$(BIN)D$(WIN)\                # ...                         binaries
+B=$(BIN)D$(WIN)\                # Define output directory for binaries
 !else
-O=RET\ND$(WIN)\                 # define output directory for intermediate files
-B=$(BIN)ND$(WIN)\               # ...                         binaries
-!endif
+B=$(BIN)ND$(WIN)\               # Define output directory for binaries
 !endif
 OC=RET\COM\                     # Define output directory for common intermediate files
 
@@ -152,12 +170,6 @@ MAKEVER:                    \
         $(OC)$(MV).exe      \
         $(BC)$(MV).exe      \
         $(ENAME).ver
-
-CLEAN:
-        @del /Q $(O)*.*
-
-DEL:
-        @del /Q $(O)*.*
 
 DELPRO:
         @del /Q $(O)*.pro
@@ -239,14 +251,6 @@ DEP:    DIR                     \
         @echo $(@F)
         @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
 
-!if !exist ($(O)dep.txt)
-!    message ***File $(O)dep.txt is missing:  Creating it...
-!    if [if not exist $(O)  mkdir $(O)]
-!    endif
-!    if [nmake /f makefile.dep O=$(O)]
-!    endif
-!endif
-
 !include $(O)dep.txt
 
 
@@ -316,7 +320,7 @@ $(O)pn_parse.c:         $(@B).y
 $(O)pn_parse.obj:       $(O)$(@B).c     $(PN_PARSE_DEP)
 
 ## WineHQ-specific files
-$(O)editctrl.obj:       $(WS)$(@B).c    $(EDITCTRL_DEP) $(WS)local.h
+$(O)editctrl.obj:       $(WS)$(@B).c    $(EDITCTRL_DEP)     $(WS)local.h
 
 ## NARS-specific files
 $(O)assign.obj:         $(@B).c         $(ASSIGN_DEP)

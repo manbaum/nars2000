@@ -2,7 +2,7 @@
 
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2010 Sudley Place Software
+#     Copyright (C) 2006-2011 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -18,21 +18,9 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ***************************************************************************/
 
-.SUFFIXES: .DEP .DEV .PRO .Y
-
-NAME=NARS2000                   # Directory name
-ENAME=NARS2000                  # Executable name
-BIN=binaries\                   # Binaries directory
-DEBUG=0
-A=Images\                       # Images & artwork
-BC=$(BIN)COM\                   # Directory for common binaries
-WS=WineHQ\                      # Wine source
-OLDPATH=$(PATH)                 # Save the current path
-GSLINC=$(NARSROOT)gsl\include\  # Directory of GSL includes
-QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
-
 WIN=64
 
+QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
 L98=$(SDK)Lib\x64;$(MSVC)lib\amd64;$(QDEBUG)
 
 LD="$(MSVC)bin\amd64\link.exe"

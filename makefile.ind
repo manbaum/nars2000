@@ -18,16 +18,31 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ***************************************************************************/
 
-WIN=32
+!if "$(DEBUG)" == "1"
+O=RET\D$(WIN)\                  # Define output directory for intermediate files
+!else
+O=RET\ND$(WIN)\                 # Define output directory for intermediate files
+!endif
 
-QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
-L98=$(SDK)LIB;$(MSVC)LIB;$(QDEBUG)
+!if "$(DEL_SW)" == "1"
+!    if [if not exist $(O)          mkdir $(O)]
+!    endif
+!    if [del /Q $(O)*.*]
+!    endif
+!    if [if not exist $(O)dep.txt   nmake /f makefile.dep O=$(O)]
+!    endif
+!endif
 
-LD="$(MSVC)bin\link.exe"
-CC="$(MSVC)bin\cl.exe"
-RC="$(SDK)Bin\rc.exe"
-ML="$(MSVC)bin\ml.exe"
+!if !exist ($(O)dep.txt)
+!    message ***File $(O)dep.txt is missing:  Creating it...
+!    if [if not exist $(O)  mkdir $(O)]
+!    endif
+!    if [nmake /f makefile.dep O=$(O)]
+!    endif
+!endif
 
-ASMOPTS=/coff /DIS_32
+!if [nmake /f makefile.w$(WIN) /nologo $(NMAKE_SWS) O=$(O) WIN=$(WIN) DEBUG=$(DEBUG)]
+!endif
 
-!include makefile.inc
+DEL:                            # Do nothing but absorb the target acted on above
+

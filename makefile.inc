@@ -172,11 +172,13 @@ MAKEVER:                    \
         $(BC)$(MV).exe      \
         $(ENAME).ver
 
+DEL:
+
 DELPRO:
-        @del /Q $(O)*.pro
+        @if exist $(O)*.pro del /Q $(O)*.pro
 
 DELDEP:
-        @del /Q $(O)*.dep
+        @if exist $(O)*.dep del /Q $(O)*.dep
 
 DIR:
         @if not exist $(O)  mkdir $(O)

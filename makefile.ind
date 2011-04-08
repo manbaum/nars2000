@@ -43,6 +43,3 @@ O=RET\ND$(WIN)\                 # Define output directory for intermediate files
 
 !if [nmake /f makefile.w$(WIN) /nologo $(NMAKE_SWS) O=$(O) WIN=$(WIN) DEBUG=$(DEBUG)]
 !endif
-
-DEL:                            # Do nothing but absorb the target acted on above
-

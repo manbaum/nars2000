@@ -579,8 +579,16 @@ APLNELM PrimFnPiCommon
 
         // If this prime divides N, ...
         if (uPrimeCnt)
+        {
+#ifdef DEBUG
+            if (uPrimeCnt EQ 1)
+                dprintfWL0 (L"trial:   %I64u", uPrime);
+            else
+                dprintfWL0 (L"trial:   %I64u" WS_UTF16_RHO L"%I64u", uPrimeCnt, uPrime);
+#endif
             // Process this prime factor
             ProcessPrime (uPrime, uPrimeCnt, &procPrime);
+        } // End IF
     } // End FOR
 
     // Check against the smallest # not factorable by trial division
@@ -595,6 +603,9 @@ APLNELM PrimFnPiCommon
          // Count it in
          aplNELMRes++;
 
+#ifdef DEBUG
+        dprintfWL0 (L"prime:   %I64u", aplIntegerRht);
+#endif
         // Process this prime factor
         ProcessPrime (aplIntegerRht, 1, &procPrime);
     } else
@@ -718,9 +729,17 @@ APLUINT PrimeFactor
                 case 1:
                     // Try Pollard's Rho
                     if (rho (mpValue, &mpFactor1, lpProcPrime))
+                    {
+#ifdef DEBUG
+                        dprintfWL0 (L"rho:     %I64u", mp_get (&mpFactor1));
+#endif
                         return PrimeFactor (&mpFactor1, lpProcPrime);
-                    else
+                    } else
                         uVal = tinyqs (mpValue, &mpFactor1, &mpFactor2, lpProcPrime->lpbCtrlBreak);
+#ifdef DEBUG
+                    if (uVal)
+                        dprintfWL0 (L"tinyqs:  %I64u %I64u", mp_get (&mpFactor1), mp_get (&mpFactor2));
+#endif
                     // Check for Ctrl-Break
                     if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
                         goto ERROR_EXIT;
@@ -728,17 +747,28 @@ APLUINT PrimeFactor
                     break;
 
                 default:
+#ifdef DEBUG
+                    dprintfWL0 (L"squfof:  %I64u", uVal);
+#endif
                     // If the value is within trial division, ...
                     if (uVal < PRECOMPUTED_PRIME_NEXT2)
+                        // It's a prime:  return it
                         return uVal;
 
+                    // Otherwise, it may be composite:  try to factor it
                     mpFactor1.nwords = 1;
                     mpFactor1.val[0] = (uint32) uVal;
 
                     return PrimeFactor (&mpFactor1, lpProcPrime);
             } // End SWITCH
         } else
+        {
             uVal = tinyqs (mpValue, &mpFactor1, &mpFactor2, lpProcPrime->lpbCtrlBreak);
+#ifdef DEBUG
+            if (uVal)
+                dprintfWL0 (L"tinyqs:  %I64u %I64u", mp_get (&mpFactor1), mp_get (&mpFactor2));
+#endif
+        } // End IF
 
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
@@ -757,6 +787,9 @@ APLUINT PrimeFactor
         } // End IF
     } // End IF
 
+#ifdef DEBUG
+    dprintfWL0 (L"prime?:  %I64u", mp_get (mpValue));
+#endif
     return mp_get (mpValue);
 
 ERROR_EXIT:

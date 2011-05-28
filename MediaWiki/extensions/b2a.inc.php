@@ -145,6 +145,8 @@ $br2a = array (
 'null'                  => 0x2218,
 'compose'               => 0x2218,
 
+'root'                  => 0x221A,
+
 'infinity'              => 0x221E,
 
 'and'                   => 0x2227,

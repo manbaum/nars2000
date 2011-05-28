@@ -30,13 +30,21 @@ typedef struct tagINTMONINFO            // Internal function line monitoring inf
                                         // 14:  Length
 } INTMONINFO, *LPINTMONINFO;
 
-typedef struct tagEXTMONINFO            // External function line monitoring info
+typedef struct tagEXTMONINFO_INT        // External function line monitoring info as integers
 {
-    APLINT  IncSubFns,                  // 00:  Total time including subfunctions (8 bytes)
-            ExcSubFns,                  // 08:  ...        excluding ...          (8 bytes)
-            Count;                      // 10:  # times executed                  (8 bytes)
+    APLINT   IncSubFns,                 // 00:  Total time including subfunctions (8 bytes)
+             ExcSubFns,                 // 08:  ...        excluding ...          (8 bytes)
+             Count;                     // 10:  # times executed                  (8 bytes)
                                         // 18:  Length
-} EXTMONINFO, *LPEXTMONINFO;
+} EXTMONINFO_INT, *LPEXTMONINFO_INT;
+
+typedef struct tagEXTMONINFO_FLT        // External function line monitoring info as floats
+{
+    APLFLOAT IncSubFns,                 // 00:  Total time including subfunctions (8 bytes)
+             ExcSubFns,                 // 08:  ...        excluding ...          (8 bytes)
+             Count;                     // 10:  # times executed                  (8 bytes)
+                                        // 18:  Length
+} EXTMONINFO_FLT, *LPEXTMONINFO_FLT;
 
 typedef struct tagFCNLINE               // Function line structure, one per function line
 {

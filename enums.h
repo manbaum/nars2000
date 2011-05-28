@@ -193,6 +193,14 @@ typedef enum tagFLT_DISP_FMT    // Floating Point Display Formats
 } FLTDISPFMT, *LPFLTDISPFMT;
 
 
+typedef enum tagTIMER_SOURCE
+{
+    TIMERSOURCE_MS = 1,         // 01:  Milliseconds
+    TIMERSOURCE_PC    ,         // 02:  Performance Counters
+    TIMERSOURCE_PC2MS ,         // 03:  Performance Counters scaled to Milliseconds
+} TIMER_SOURCE, *LPTIMER_SOURCE;
+
+
 //***************************************************************************
 //  End of File: enums.h
 //***************************************************************************

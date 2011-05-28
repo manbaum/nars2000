@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,12 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+
+typedef union tagLPEXTMONINFO_UNION
+{
+    EXTMONINFO_INT MI_Int[1];
+    EXTMONINFO_FLT MI_Flt[1];
+} *LPEXTMONINFO_UNION;
 
 
 //***************************************************************************
@@ -81,36 +87,39 @@ AXIS_SYNTAX_EXIT:
 #endif
 
 LPPL_YYSTYPE SysFnMonMF_EM_YY
-    (LPTOKEN lptkFunc,                  // Ptr to function token
-     LPTOKEN lptkRhtArg,                // Ptr to right arg token (should be NULL)
-     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkFunc,                          // Ptr to function token
+     LPTOKEN lptkRhtArg,                        // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)                          // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeRht;           // Right arg storage type
-    APLNELM       aplNELMRht;           // Right arg NELM
-    APLRANK       aplRankRht;           // Right arg rank
-    APLLONGEST    aplLongestRht;        // Right arg as immediate
-    HGLOBAL       hGlbRht = NULL,       // Right arg global memory handle
-                  hGlbDfnHdr = NULL,    // Function  ...
-                  hGlbMonInfo = NULL,   // MonInfo   ...
-                  hGlbRes = NULL;       // Result    ...
-    LPAPLCHAR     lpMemRht = NULL;      // Ptr to right arg global memory
-    LPEXTMONINFO  lpMemRes = NULL;      // Ptr to result    ...
-    LPDFN_HEADER  lpMemDfnHdr = NULL;   // Ptr to function header global memory
-    LPINTMONINFO  lpMemMonInfo;         // Ptr to function line monitoring info
-    STFLAGS       stFlags = {0};        // Symbol Table Flags used to limit the lookup
-    LPSYMENTRY    lpSymEntry;           // Ptr to SYMENTRY if found
-    APLUINT       ByteRes,              // # bytes in the result
-                  aplRowsRes,           // # rows in the result
-                  aplColsRes;           // # cols ...
-    LARGE_INTEGER aplTickCnt;           // Current tick count
-    UINT          uCnt;                 // Loop counter
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    APLSTYPE           aplTypeRht,              // Right arg storage type
+                       aplTypeRes;              // Result    ...
+    APLNELM            aplNELMRht;              // Right arg NELM
+    APLRANK            aplRankRht;              // Right arg rank
+    APLLONGEST         aplLongestRht;           // Right arg as immediate
+    HGLOBAL            hGlbRht = NULL,          // Right arg global memory handle
+                       hGlbDfnHdr = NULL,       // Function  ...
+                       hGlbMonInfo = NULL,      // MonInfo   ...
+                       hGlbRes = NULL;          // Result    ...
+    LPAPLCHAR          lpMemRht = NULL;         // Ptr to right arg global memory
+    LPEXTMONINFO_UNION lpMemResUnion = NULL;    // Ptr to result    ...           as integers
+    LPDFN_HEADER       lpMemDfnHdr = NULL;      // Ptr to function header global memory
+    LPINTMONINFO       lpMemMonInfo;            // Ptr to function line monitoring info
+    STFLAGS            stFlags = {0};           // Symbol Table Flags used to limit the lookup
+    LPSYMENTRY         lpSymEntry;              // Ptr to SYMENTRY if found
+    APLUINT            ByteRes,                 // # bytes in the result
+                       aplRowsRes,              // # rows in the result
+                       aplColsRes;              // # cols ...
+    LARGE_INTEGER      aplTickCnt,              // Current tick count
+                       aplTicksPerSec;          // # ticks per second
+    UINT               uCnt;                    // Loop counter
+    LPPL_YYSTYPE       lpYYRes = NULL;          // Ptr to the result
+    APLFLOAT           aplScale;                // Scale factor if TIMERSOURCE_PC2MS
 
     // The right arg may be of three forms:
     //   1.  a scalar name  as in 'a'
     //   2.  a vector name  as in 1{rho}'a' (not 'a b c')
-    //   3.  a scalar or one-element vector number as in -2, -1, 1, or 2
+    //   3.  a scalar or one-element vector number as in -2, -1, or TIMERSOURCE_xxx
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -220,11 +229,21 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     } else
         aplRowsRes = 0;
 
+    // If the result is empty, ...
+    if (aplRowsRes EQ 0)
+        aplTypeRes = ARRAY_BOOL;
+    else
+    // If the timer source is scaled, ...
+    if (GetMemPTD ()->uQuadMF EQ TIMERSOURCE_PC2MS)
+        aplTypeRes = ARRAY_FLOAT;
+    else
+        aplTypeRes = ARRAY_INT;
+
     // Calculate the result cols
-    aplColsRes = (sizeof (lpMemRes[0]) / sizeof (lpMemRes[0].IncSubFns));
+    aplColsRes = (sizeof (lpMemResUnion->MI_Int[0]) / sizeof (lpMemResUnion->MI_Int[0].IncSubFns));
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_INT, aplRowsRes * aplColsRes, 2);
+    ByteRes = CalcArraySize (aplTypeRes, aplRowsRes * aplColsRes, 2);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -235,12 +254,12 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     if (!hGlbRes)
         goto WSFULL_EXIT;
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemResUnion = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemResUnion)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_INT;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -249,40 +268,66 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
 #undef  lpHeader
 
     // Fill in the dimensions
-    (VarArrayBaseToDim (lpMemRes))[0] = aplRowsRes;
-    (VarArrayBaseToDim (lpMemRes))[1] = aplColsRes;
+    (VarArrayBaseToDim (lpMemResUnion))[0] = aplRowsRes;
+    (VarArrayBaseToDim (lpMemResUnion))[1] = aplColsRes;
 
     // If the result is non-empty, ...
     if (aplRowsRes NE 0)
     {
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, 2);
+        lpMemResUnion = VarArrayBaseToData (lpMemResUnion, 2);
 
         // Lock the memory to get a ptr to it
         lpMemMonInfo = MyGlobalLock (hGlbMonInfo);
 
-        // Copy the function counter
-        lpMemRes[0].Count = lpMemMonInfo[0].Count;
+        if (IsSimpleInt (aplTypeRes))
+            // Copy the function counter
+            lpMemResUnion->MI_Int[0].Count = lpMemMonInfo[0].Count;
+        else
+        {
+            // Get # ticks per second
+            QueryPerformanceFrequency (&aplTicksPerSec);
+
+            // Copy the function counter
+            lpMemResUnion->MI_Flt[0].Count = lpMemMonInfo[0].Count;
+
+            aplScale = 1000.0 / (APLFLOAT) (APLINT) aplTicksPerSec.QuadPart;
+        } // End IF/ELSE
 
         // Get the current tick count
         GetPerformanceCount (&aplTickCnt);
 
         // Copy the data to the result
         for (uCnt = 1; uCnt < aplRowsRes; uCnt++)
+        if (IsSimpleInt (aplTypeRes))
         {
-            lpMemRes[uCnt].IncSubFns = lpMemMonInfo[uCnt].IncSubFns;
-////////////lpMemRes[uCnt].ExcSubFns = lpMemMonInfo[uCnt].ExcSubFns;
-            lpMemRes[uCnt].Count     = lpMemMonInfo[uCnt].Count;
+            lpMemResUnion->MI_Int[uCnt].IncSubFns = lpMemMonInfo[uCnt].IncSubFns;
+////////////lpMemResUnion->MI_Int[uCnt].ExcSubFns = lpMemMonInfo[uCnt].ExcSubFns;
+            lpMemResUnion->MI_Int[uCnt].Count     = lpMemMonInfo[uCnt].Count;
 
             if (lpMemMonInfo[uCnt].IncActive)
-                lpMemRes[uCnt].IncSubFns += aplTickCnt.QuadPart;
+                lpMemResUnion->MI_Int[uCnt].IncSubFns += aplTickCnt.QuadPart;
 
 ////////////if (lpMemMonInfo[uCnt].ExcActive)
-////////////    lpMemRes[uCnt].ExcSubFns += aplTickCnt.QuadPart;
+////////////    lpMemResUnion->MI_Int[uCnt]->ExcSubFns += aplTickCnt.QuadPart;
 
             // Add into overall sum
-            lpMemRes[0].IncSubFns += lpMemRes[uCnt].IncSubFns;
-        } // End FOR
+            lpMemResUnion->MI_Int[0].IncSubFns += lpMemResUnion->MI_Int[uCnt].IncSubFns;
+        } else
+        {
+            lpMemResUnion->MI_Flt[uCnt].IncSubFns = ((APLFLOAT) lpMemMonInfo[uCnt].IncSubFns) * aplScale;
+////////////lpMemResUnion->MI_Flt[uCnt].ExcSubFns = ((APLFLOAT) lpMemMonInfo[uCnt].ExcSubFns) * aplScale;
+            lpMemResUnion->MI_Flt[uCnt].Count     =  (APLFLOAT) lpMemMonInfo[uCnt].Count;
+
+            if (lpMemMonInfo[uCnt].IncActive)
+                lpMemResUnion->MI_Flt[uCnt].IncSubFns += aplTickCnt.QuadPart * aplScale;
+
+////////////if (lpMemMonInfo[uCnt].ExcActive)
+////////////    lpMemResUnion->MI_Flt[uCnt].ExcSubFns += aplTickCnt.QuadPart * aplScale;
+
+            // Add into overall sum
+            lpMemResUnion->MI_Flt[0].IncSubFns += lpMemResUnion->MI_Flt[uCnt].IncSubFns;
+        } // End FOR/IF
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbMonInfo); lpMemMonInfo = NULL;
@@ -318,10 +363,10 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes)
     {
-        if (lpMemRes)
+        if (lpMemResUnion)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemResUnion = NULL;
         } // End IF
 
         // We no longer need this storage
@@ -334,10 +379,10 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes && lpMemResUnion)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemResUnion = NULL;
     } // End IF
 
     return lpYYRes;
@@ -383,13 +428,14 @@ LPPL_YYSTYPE SysFnMonMF_Numeric_EM
             // Split cases based upon the []MF timer source
             switch (lpMemPTD->uQuadMF)
             {
-                case 1:
+                case TIMERSOURCE_MS:
                     // Get # milliseconds per tick
                     aplFloatRes = 1.0;
 
                     break;
 
-                case 2:
+                case TIMERSOURCE_PC:
+                case TIMERSOURCE_PC2MS:
                     // Get # ticks per second
                     QueryPerformanceFrequency (&aplTicksPerSec);
 
@@ -404,13 +450,15 @@ LPPL_YYSTYPE SysFnMonMF_Numeric_EM
 
             goto FLOAT_EXIT;
 
-        case  1:
-        case  2:
+        case  TIMERSOURCE_MS:           // Set new timer source
+        case  TIMERSOURCE_PC:           // ...
+        case  TIMERSOURCE_PC2MS:        // ...
             // Save the previous value
             aplIntegerRes = lpMemPTD->uQuadMF;
 
             // Set to timer source #1 (millisecond timer), or
-            //                     #2 (performance timer)
+            //                     #2 (performance timer), or
+            //                     #3 (performance timer, scaled to milliseconds)
             lpMemPTD->uQuadMF = aplIntegerRht;
 
             goto INTEGER_EXIT;
@@ -547,6 +595,10 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
         if (!bRet)
             goto LEFT_DOMAIN_EXIT;
     } // End IF
+
+    // Check for LEFT DOMAIN ERROR
+    if (!IsBooleanValue (aplLongestLft))
+        goto LEFT_DOMAIN_EXIT;
 
     // Calculate the # identifiers in the argument
     //   allowing for vector and matrix with multiple names
@@ -712,7 +764,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -926,21 +978,17 @@ void GetPerformanceCount
     (LARGE_INTEGER *lpaplTickCnt)           // Ptr to current tick count
 
 {
-    LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // Split cases based upon the timer source
-    switch (lpMemPTD->uQuadMF)
+    switch (GetMemPTD ()->uQuadMF)
     {
-        case 1:             // Millisecond counter
+        case TIMERSOURCE_MS:    // Millisecond counter
             // Get current tick count
             lpaplTickCnt->QuadPart = GetTickCount ();
 
             break;
 
-        case 2:             // QueryPerformance counter
+        case TIMERSOURCE_PC:    // QueryPerformance counter
+        case TIMERSOURCE_PC2MS: // QueryPerformance counter, scaled to ms
             // Get current tick count
             QueryPerformanceCounter (lpaplTickCnt);
 

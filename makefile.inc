@@ -63,15 +63,15 @@ DEBUG=0
 A=Images\                       # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
-MS=$(NARSROOT)msieve\           # Msieve source
 GMP=$(NARSROOT)gmp-static\      # GMP headers & libs
 OLDPATH=$(PATH)                 # Save the current path
-GSLINC=$(NARSROOT)gsl\include\  # Directory of GSL includes
+GSL_INC=$(GSL_DIR)include\      # Directory of GSL includes
+GSL_LIB=$(GSL_DIR)libgsl$(WIN)-double.lib # GSL library
 
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS);$(GSLINC);$(QDEBUG)
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS);$(GSL_INC);$(QDEBUG)
 
 MV=makever
 

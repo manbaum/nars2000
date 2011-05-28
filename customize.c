@@ -58,12 +58,12 @@ WCHAR wszCancelMessage[] = L"You have made changes to the Customize settings.  S
 
 // []IC Index Names -- these must be in the same order as the IC_INDICES enum.
 LPWCHAR icIndexNames[ICNDX_LENGTH]
-= {WS_UTF16_COLONBAR L"0",                                                              // 00:    {div} 0
-   WS_UTF16_CIRCLESTAR L"0",                                                            // 01:    {log} 0
-   L"!N for integer N < 0",                                                             // 02:      !N for integer N < 0
+= {WS_UTF16_COLONBAR L"0"                                                             , // 00:    {div} 0
+   WS_UTF16_CIRCLESTAR L"0"                                                           , // 01:    {log} 0
+   L"!N for integer N < 0"                                                            , // 02:      !N for integer N < 0
    L"0" WS_UTF16_TIMES WS_UTF16_INFINITY,                                               // 03:  0 {times} _
    L"0" WS_UTF16_TIMES WS_UTF16_OVERBAR WS_UTF16_INFINITY,                              // 04:  0 {times} {neg}_
-   L"0" WS_UTF16_COLONBAR L"0",                                                         // 05:  0 {div} 0
+   L"0" WS_UTF16_COLONBAR L"0"                                                        , // 05:  0 {div} 0
    WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L" (same sign)",               // 06:  _ {div} _   (same sign)
    WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L" (diff sign)",               // 07:  _ {div} _   (different sign)
    WS_UTF16_INFINITY L"-"              WS_UTF16_INFINITY L" (and related)",             // 08:  _ - _ or _ + -_ or ...
@@ -80,10 +80,10 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
 
 // []IC Index Values -- these must be in the same order as the IC_VALUES enum.
 LPWCHAR icIndexValues[ICVAL_LENGTH]
-= {WS_UTF16_OVERBAR L"1",
-   L"0",
-   L"1",
-   L"DOMAIN ERROR",
+= {WS_UTF16_OVERBAR L"1"    ,
+   L"0"                     ,
+   L"1"                     ,
+   L"DOMAIN ERROR"          ,
    WS_UTF16_INFINITY,
    WS_UTF16_OVERBAR WS_UTF16_INFINITY,
   };
@@ -896,6 +896,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Append the possible values
                         SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) L"Millisecond Timer");
                         SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) L"High Resolution Timer");
+                        SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) L"High Resolution Timer, scaled to ms");
 
                         // Set the current selection to the CLEAR WS value
                         SendMessageW (hWndProp1, CB_SETCURSEL, (APLU3264) uQuadMF_CWS - 1, 0);

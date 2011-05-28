@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 #define DEF_QUADIC_CWS      aplDefaultIC
 #define DEF_QUADIC_GLB      hGlbQuadIC_SYS
 #define DEF_QUADIO_CWS          1
-#define DEF_QUADMF_CWS          2
+#define DEF_QUADMF_CWS      TIMERSOURCE_PC2MS
 #define DEF_QUADPP_CWS         10
 #define DEF_QUADPW_CWS         80
 #define DEF_QUADRL_CWS      16807
@@ -65,11 +65,11 @@
 #define DEF_MIN_QUADIO      0                   // Minimum value for []IO
 #define DEF_MAX_QUADIO      1                   // Maximum ...
 
-#define DEF_MIN_QUADPP      1                   // Minimum value for []PP
+#define DEF_MIN_QUADPP       1                  // Minimum value for []PP
 #define DEF_MAX_QUADPP     17                   // Maximum ...
 
-#define DEF_MIN_QUADPW     30                   // Minimum value for []PW
-#define DEF_MAX_QUADPW    255                   // Maximum ...
+#define DEF_MIN_QUADPW       30                 // Minimum value for []PW
+#define DEF_MAX_QUADPW      255                 // Maximum ...
 
 #define DEF_MIN_QUADRL      1                   // Minimum value for []RL
 #define DEF_MAX_QUADRL      (QUADRL_MODULUS - 1)// Maximum ...

@@ -1956,10 +1956,42 @@ UBOOL InitFcnSTEs
                 (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
             } else
             {
-                Assert (IsTknTypeNamedFcnOpr (lpYYArg->tkToken.tkFlags.TknType));
+                // If the token type is a named function/operator, ...
+                if (IsTknTypeNamedFcnOpr (lpYYArg->tkToken.tkFlags.TknType))
+                {
+                    (*lplpSymEntry)->stFlags            = lpYYArg->tkToken.tkData.tkSym->stFlags;
+                    (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
+                // If the token type is named, ...
+                } else
+                // If the token type is an unnamed function/operator, ...
+                if (IsTknTypeFcnOpr (lpYYArg->tkToken.tkFlags.TknType))
+                {
+                    HGLOBAL      hGlbDfnHdr;
+                    LPDFN_HEADER lpMemDfnHdr;
 
-                (*lplpSymEntry)->stFlags            = lpYYArg->tkToken.tkData.tkSym->stFlags;
-                (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
+                    // Clear the ptr type bits
+                    hGlbDfnHdr = ClrPtrTypeDir (lpYYArg->tkToken.tkData.tkGlbData);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+                    // Clear the STE flags
+                    *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
+
+////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;            // Already zero from above
+////////////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;    // ...
+                    (*lplpSymEntry)->stFlags.Value      = TRUE;
+                    (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                    (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
+                    (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkGlbData) EQ DFN_HEADER_SIGNATURE);
+                    (*lplpSymEntry)->stFlags.DfnAxis    = (*lplpSymEntry)->stFlags.UsrDfn ? lpMemDfnHdr->DfnAxis : FALSE;
+////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
+                    (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+                } else
+                    DbgStop ();     // We shoudl never get here
             } // End IF/ELSE
         } else
         {

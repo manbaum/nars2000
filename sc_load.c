@@ -486,71 +486,89 @@ UBOOL LoadWorkspace_EM
                 lpSymEntry =
                   SymTabLookupName (lpwSrcStart, &stFlags);
 
-                // If the name is not found, it must be a user name
-                Assert ((stFlags.ObjName EQ OBJNAME_USR) || lpSymEntry NE NULL);
-
-                // If the name is not found, append it as a user name
-                if (lpSymEntry EQ NULL)
+                // If the name is not found and is a system name, ...
+                if (lpSymEntry EQ NULL
+                 && stFlags.ObjName EQ OBJNAME_SYS)
                 {
-                    // Append the name to get a new LPSYMENTRY
-                    lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
+                    // Append the name as new to get a new LPSYMENTRY
+                    lpSymEntry = SymTabAppendNewName_EM (lpwSrcStart, &stFlags);
                     if (!lpSymEntry)
                         goto ERROR_EXIT;
 
-                    // Mark the SYMENTRY as immediate so we don't free the
-                    //   (non-existant) stGlbData
-                    // Set other flags as appropriate
-                    lpSymEntry->stFlags.Imm        = TRUE;
-                } // End IF
-
-                // If the entry has not already been loaded or is a system name, ...
-                // This can happen if a previous Function Array included it as a global (:nnn).
-                if (!lpSymEntry->stFlags.Value
-                 || lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
+                    // Set the common values
+////////////////////lpSymEntry->stFlags.Imm        =                // Already set from stFlags
+////////////////////lpSymEntry->stFlags.Value      = FALSE;         // ...
+////////////////////lpSymEntry->stFlags.ObjName    = OBJNAME_SYS;   // ...
+                    lpSymEntry->stFlags.stNameType = NAMETYPE_UNK;
+////////////////////lpSymEntry->stData.stGlbData   = NULL;          // Already set from stFlags
+                } else
                 {
-                    // Clear so we save a clean value
-                    aplLongestObj = 0;
+                    // If the name is not found, it must be a user name
+                    Assert ((stFlags.ObjName EQ OBJNAME_USR) || lpSymEntry NE NULL);
 
-                    // Set this value as lpaplLongestObj is incremented by ParseSavedWsVar_EM
-                    lpaplLongestObj = &aplLongestObj;
-
-                    // Parse the value into aplLongestObj and aplTypeObj
-                    lpwSrc =
-                      ParseSavedWsVar_EM (lpwSrc,           // Ptr to input buffer
-                                          uMaxSize,         // Maximum size of lpwSrc
-                                         &lpaplLongestObj,  // Ptr to ptr to output element
-                                         &aplTypeObj,       // Ptr to storage type (may be NULL)
-                                         &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
-                                          FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
-                                          hWndEC,           // Edit Ctrl window handle
-                                         &lpSymLink,        // Ptr to ptr to SYMENTRY link
-                                          wszVersion,       // Workspace version text
-                                          lpDict,           // Ptr to workspace dictionary
-                                         &lpwErrMsg);       // Ptr to ptr to (constant error message text)
-                    if (lpwSrc EQ NULL)
-                        goto ERRMSG_EXIT;
-
-                    // Out with the old
-                    // Release the current value of the STE
-                    //   if it's a global and has a value
-                    if (!lpSymEntry->stFlags.Imm
-                     &&  lpSymEntry->stFlags.Value)
+                    // If the name is not found, append it as a user name
+                    if (lpSymEntry EQ NULL)
                     {
-                        FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
+                        // Append the name to get a new LPSYMENTRY
+                        lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
+                        if (!lpSymEntry)
+                            goto ERROR_EXIT;
+
+                        // Mark the SYMENTRY as immediate so we don't free the
+                        //   (non-existant) stGlbData
+                        // Set other flags as appropriate
+                        lpSymEntry->stFlags.Imm        = TRUE;
                     } // End IF
 
-                    // In with the new
-                    if (bImmed)
-                        lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
-                    else
-                        lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
-                    // Set the common values
-                    lpSymEntry->stFlags.Imm        = bImmed;
-                    lpSymEntry->stFlags.Value      = TRUE;
-                    lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
-                    lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
-                    lpSymEntry->stData.stLongest   = aplLongestObj;
-                } // End IF
+                    // If the entry has not already been loaded or is a system name, ...
+                    // This can happen if a previous Function Array included it as a global (:nnn).
+                    if (!lpSymEntry->stFlags.Value
+                     || lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
+                    {
+                        // Clear so we save a clean value
+                        aplLongestObj = 0;
+
+                        // Set this value as lpaplLongestObj is incremented by ParseSavedWsVar_EM
+                        lpaplLongestObj = &aplLongestObj;
+
+                        // Parse the value into aplLongestObj and aplTypeObj
+                        lpwSrc =
+                          ParseSavedWsVar_EM (lpwSrc,           // Ptr to input buffer
+                                              uMaxSize,         // Maximum size of lpwSrc
+                                             &lpaplLongestObj,  // Ptr to ptr to output element
+                                             &aplTypeObj,       // Ptr to storage type (may be NULL)
+                                             &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
+                                              FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
+                                              hWndEC,           // Edit Ctrl window handle
+                                             &lpSymLink,        // Ptr to ptr to SYMENTRY link
+                                              wszVersion,       // Workspace version text
+                                              lpDict,           // Ptr to workspace dictionary
+                                             &lpwErrMsg);       // Ptr to ptr to (constant error message text)
+                        if (lpwSrc EQ NULL)
+                            goto ERRMSG_EXIT;
+
+                        // Out with the old
+                        // Release the current value of the STE
+                        //   if it's a global and has a value
+                        if (!lpSymEntry->stFlags.Imm
+                         &&  lpSymEntry->stFlags.Value)
+                        {
+                            FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
+                        } // End IF
+
+                        // In with the new
+                        if (bImmed)
+                            lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
+                        else
+                            lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
+                        // Set the common values
+                        lpSymEntry->stFlags.Imm        = bImmed;
+                        lpSymEntry->stFlags.Value      = TRUE;
+                        lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
+                        lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+                        lpSymEntry->stData.stLongest   = aplLongestObj;
+                    } // End IF
+                } // End IF/ELSE
 
                 // Restore the original value
                 *lpwCharEnd = L'=';

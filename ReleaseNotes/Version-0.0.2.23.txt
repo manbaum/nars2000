@@ -1,6 +1,18 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #840 -- Version 0.0.2.23
+------------------------------
+
+* Fix Bug In []CR: Fails On Leading/Trailing Blanks
+
+Directory trunk:
+
+QF_CR.C:
+  Update copyright year.
+  Fix Bug:  Delete leading/trailing blanks from function name.
+
+
 Build #839 -- Version 0.0.2.23
 ------------------------------
 

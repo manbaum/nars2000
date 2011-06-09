@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -164,6 +164,17 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     else
         // Point to the right arg data
         lpMemRht = (LPAPLCHAR) &aplLongestRht;
+
+    // Delete leading blanks
+    while (isspaceW (*lpMemRht))
+    {
+        lpMemRht++;
+        aplNELMRht--;
+    } // End WHILE
+
+    // Delete trailing blanks
+    while (aplNELMRht && isspaceW (lpMemRht[aplNELMRht - 1]))
+        aplNELMRht--;
 
     // Lookup the name in the symbol table
     // SymTabLookupName sets the .ObjName enum,

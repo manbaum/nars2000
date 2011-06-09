@@ -1306,10 +1306,13 @@ WM_NCCREATE_FAIL:
             {
                 // Display leading Copyright text and disclaimer
                 AppendLine (WS_APPNAME L" " LVER_COPYRIGHT1_STR L".", FALSE, TRUE);
-                AppendLine (L"This program comes with ABSOLUTELY NO WARRANTY; for details visit",        TRUE , TRUE);
-                AppendLine (L"  http://www.nars2000.org/License.html, or click on Help > About.",        TRUE , TRUE);
-                AppendLine (L"This is free software, and you are welcome to redistribute it",            TRUE , TRUE);
-                AppendLine (L"  under certain conditions; visit the above link for details.",            TRUE , TRUE);
+                AppendLine (L"This program comes with ABSOLUTELY NO WARRANTY; for details visit"            ,    TRUE , TRUE);
+                AppendLine (L"  http://www.nars2000.org/License.html, or click on Help > About."            ,    TRUE , TRUE);
+                AppendLine (L"This is free software, and you are welcome to redistribute it"                ,    TRUE , TRUE);
+                AppendLine (L"  under certain conditions; visit the above link for details."                ,    TRUE , TRUE);
+                AppendLine (L"To suppress this message, select Edit | Customize from the main"              ,    TRUE , TRUE);
+                AppendLine (L"  menu, then in the User Preferences category, check the box marked"          ,    TRUE , TRUE);
+                AppendLine (L"  \"Suppress copyright message at startup\"."                                 ,    TRUE , TRUE);
 
                 // Mark as displayed so we don't do it again
                 bLoadMsgDisp = TRUE;

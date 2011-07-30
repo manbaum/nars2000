@@ -57,6 +57,7 @@
 
 #define ERRMSG_FILE_EXISTS                      L"FILE EXISTS"
 #define ERRMSG_FILE_NOT_FOUND                   L"FILE NOT FOUND"
+#define ERRMSG_PATH_NOT_FOUND                   L"PATH NOT FOUND"
 
 #define ERRMSG_NOT_ERASED                       L"NOT ERASED:"
 

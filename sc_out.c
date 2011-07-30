@@ -113,7 +113,7 @@ UBOOL CmdOut_EM
     // If not found, ...
     if (fStream EQ NULL)
     {
-        ReplaceLastLineCRPmt (ERRMSG_FILE_NOT_FOUND APPEND_NAME);
+        ReplaceLastLineCRPmt (ERRMSG_PATH_NOT_FOUND APPEND_NAME);
 
         goto ERROR_EXIT;
     } // End IF

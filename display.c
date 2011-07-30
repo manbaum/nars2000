@@ -1078,11 +1078,8 @@ LPAPLCHAR FormatFloatFC
 
         // If this is raw float formatting, ...
         if (nDigits EQ 0 && fltDispFmt EQ FLTDISPFMT_RAWFLT)
-        {
             nDigits  = GetQuadPP ();            // []PP
-            dtoaMode = DTOAMODE_SIGDIGS;        // Display up to []PP digits
-        } else
-            dtoaMode = gDTOA_Mode[fltDispFmt];
+        dtoaMode = gDTOA_Mode[fltDispFmt];
 
         // If this is RAWINT, ...
         if (fltDispFmt EQ FLTDISPFMT_RAWINT)
@@ -1116,6 +1113,21 @@ LPAPLCHAR FormatFloatFC
         // Convert aplFloat to an ASCII string
         // Use David Gay's routines
         s = s0 = dtoa (aplFloat, dtoaMode, (UINT) nDigits, &decpt, &sign, NULL);
+
+        // If we're displaying short round, ensure that we display no more digits
+        //   than nDigits.
+        if (fltDispFmt EQ FLTDISPFMT_RAWFLT
+         && dtoaMode EQ DTOAMODE_SHORT_RND
+         && nDigits NE 0
+         && nDigits < lstrlen (s))
+        {
+            // Free the temporary storage
+            freedtoa (s0);
+
+            // Try again with SIGDIGS
+            dtoaMode = DTOAMODE_SIGDIGS;        // Display up to []PP digits
+            s = s0 = dtoa (aplFloat, dtoaMode, (UINT) nDigits, &decpt, &sign, NULL);
+        } // End IF
 
         // Handle the sign
         if (sign)

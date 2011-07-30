@@ -1877,7 +1877,7 @@ UBOOL fnPointDone
     UBOOL        bRet,                  // TRUE iff result is valid
                  bMerge;                // TRUE iff we merged with the previous token
     LPCHAR       lpszNum;               // Ptr to Num global memory
-    PNLOCALVARS  pnLocalVars;           // PN Local vars
+    PNLOCALVARS  pnLocalVars = {0};     // PN Local vars
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
 
@@ -1989,15 +1989,33 @@ UBOOL fnPointDone
                                       0);
         } // End IF
     } else
+    {
         // Save the error character index
         lptkLocalVars->uChar = pnLocalVars.uCharIndex;
+
+        // Mark the data as a SYNTAX ERROR
+        tkFlags.TknType = TKT_SYNTERR;
+        tkFlags.ImmType = IMMTYPE_ERROR;
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        tkData.tkChar = *lptkLocalVars->lpwszCur;
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                 &tkData,
+                                  0);
+    } // End IF/ELSE
 
     goto NORMAL_EXIT;
 
 NONCE_EXIT:
     // Set new state
     lptkLocalVars->State[0] = TKROW_NONCE;
+
+    goto ERROR_EXIT;
+
 NORMAL_EXIT:
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbNum); lpszNum = NULL;
 
@@ -2196,7 +2214,7 @@ UBOOL fnJotDone0
 
 UBOOL fnJotDoneSub
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
-     UBOOL         bInitAcc)            // TRUE iff we shoudl initialize the accumulator vars
+     UBOOL         bInitAcc)            // TRUE iff we should initialize the accumulator vars
 
 {
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM

@@ -1,6 +1,21 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #847 -- Version 0.0.2.23
+------------------------------
+
+* Handle Error In Point Notation At Execution Time, Not Tokenization Time
+
+Directory trunk:
+
+TOKENIZE.C:
+  In <fnPointDone>, clear <pnLocalVars> at initialization so we can assume
+    its initial state.
+  In <fnPointDone>, if <ParsePointNotation> fails, treat as execution time
+    error instead of at tokenization time.
+  Improve comments.
+
+
 Build #846 -- Version 0.0.2.23
 ------------------------------
 

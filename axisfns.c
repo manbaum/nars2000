@@ -642,7 +642,7 @@ UBOOL CheckAxisGlb
     } // End IF
 
     // If we allow duplicates, ...
-    if (bRet && bAllowDups)
+    if (bRet && bAllowDups && aplRankCmp NE 0)
         // If so (it's slicing dyadic transpose), so the axes
         //   must be contiguous starting at []IO.
         bRet = (*lpDup & BIT0);

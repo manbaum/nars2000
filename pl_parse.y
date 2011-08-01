@@ -805,6 +805,40 @@ StmtSing:
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR3
 
+                                             // If the exit type is RESET_ONE_INIT, ...
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_RESET_ONE_INIT)
+                                             {
+                                                 LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+                                                 LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
+
+                                                 // Get ptr to PerTabData global memory
+                                                 lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+                                                 // Get a ptr to the current SIS layer
+                                                 lpSISCur = lpMemPTD->lpSISCur;
+
+                                                 // Peel back to the first non-Exec layer
+                                                 while (lpSISCur->DfnType EQ DFNTYPE_EXEC)
+                                                    lpSISCur = lpSISCur->lpSISPrv;
+
+                                                 // Set the reset flag to ONE if user-defined function/operator
+                                                 //   as we'll stop at the next ImmExec
+                                                 if (lpSISCur->DfnType EQ DFNTYPE_OP1
+                                                  || lpSISCur->DfnType EQ DFNTYPE_OP2
+                                                  || lpSISCur->DfnType EQ DFNTYPE_FCN)
+                                                 {
+                                                     lpSISCur->ResetFlag = RESETFLAG_ONE;
+                                                     lpplLocalVars->ExitType = EXITTYPE_RESET_ONE;
+                                                 } else
+                                                 {
+                                                     if (!lpSISCur->ItsEC)
+                                                         lpSISCur->ResetFlag = RESETFLAG_ONE_INIT;
+                                                     lpplLocalVars->ExitType = EXITTYPE_RESET_ONE_INIT;
+                                                 } // End IF/ELSE
+
+                                                 YYACCEPT;              // Stop executing this line
+                                             } // End IF
+
                                              // If we're resetting all levels, ...
                                              if (lpSISCur->ResetFlag EQ RESETFLAG_ALL)
                                                  lpplLocalVars->ExitType = EXITTYPE_RESET_ALL;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,24 +107,25 @@ LPPL_YYSTYPE SysFnMonES_EM_YY
 #endif
 
 LPPL_YYSTYPE SysFnDydES_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if called monadically)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                // Ptr to left arg token (may be NULL if called monadically)
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // Right ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    APLRANK      aplRankLft,        // Left arg Rank
-                 aplRankRht;        // Right ...
-    APLLONGEST   aplLongestRht1,    // Right arg longest if immediate, 1st
-                 aplLongestRht2;    // ...                             2nd
+    APLSTYPE     aplTypeLft,            // Left arg storage type
+                 aplTypeRht;            // Right ...
+    APLNELM      aplNELMLft,            // Left arg NELM
+                 aplNELMRht;            // Right ...
+    APLRANK      aplRankLft,            // Left arg Rank
+                 aplRankRht;            // Right ...
+    APLLONGEST   aplLongestRht1,        // Right arg longest if immediate, 1st
+                 aplLongestRht2;        // ...                             2nd
     HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
-    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
+    LPVOID       lpMemRht = NULL;       // Ptr to right arg global memory
+    UBOOL        bEventClear = FALSE;   // TRUE if we're to clear the event type/msg
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to result
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -178,7 +179,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
             lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = WC_EOS;
         } else
         {
-            UBOOL       bRet;               // TRUE iff result is valid
+            UBOOL bRet;                     // TRUE iff result is valid
             EVENT_TYPES EventType;          // Event type
 
             // Check for RIGHT LENGTH ERROR
@@ -344,18 +345,58 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
 
                 // Copy the error message to temporary storage
                 CopyMemoryW (lpMemPTD->lpwszQuadErrorMsg, lpwErrMsg, lstrlenW (lpwErrMsg) + 1);
+
+                bEventClear = (EventType EQ EVENTTYPE_NOERROR);
             } // End IF/ELSE
         } // End IF/ELSE
 
-        // Save in PTD -- note that the tkCharIndex in the
-        //   function token passed here isn't used unless this is
-        //   immediate execution mode; normally, the tkCharIndex of the
-        //   caller's is used.
-        ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
-        lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
+        // If we're to reset the error type/message, ...
+        if (bEventClear)
+        {
+            LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
+            HGLOBAL     *lphGlbQuadEM;      // Ptr to active hGlbQuadEM (in either lpSISCur or lpMemPTD)
 
-        // Set the reset flag
-        lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
+            // Clear []ET and []EM
+
+            // Get ptr to current SIS header
+            lpSISCur = lpMemPTD->lpSISCur;
+
+            while (lpSISCur
+                && lpSISCur->DfnType NE DFNTYPE_FCN
+                && lpSISCur->DfnType NE DFNTYPE_OP1
+                && lpSISCur->DfnType NE DFNTYPE_OP2
+                && lpSISCur->DfnType NE DFNTYPE_ERRCTRL)
+                lpSISCur = lpSISCur->lpSISPrv;
+
+            if (lpSISCur)
+                lpSISCur->EventType = EVENTTYPE_NOERROR;
+
+            // Get a ptr to either the global (in lpMemPTD)
+            lphGlbQuadEM = (lpSISCur EQ NULL) ? &lpMemPTD->hGlbQuadEM
+            //                                  or the active hGlbQuadEM (in either lpSISCur or lpMemPTD)
+                                              : GetPtrQuadEM (lpMemPTD);
+            // Out wth the old
+            FreeResultGlobalVar (*lphGlbQuadEM); *lphGlbQuadEM = NULL;
+            FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
+
+            // In with the new
+            *lphGlbQuadEM = hGlbQuadEM_DEF;
+            lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+
+            // Return as NoValue
+            lpYYRes = MakeNoValue_YY (lptkFunc);
+        } else
+        {
+            // Save in PTD -- note that the tkCharIndex in the
+            //   function token passed here isn't used unless this is
+            //   immediate execution mode; normally, the tkCharIndex of the
+            //   caller's is used.
+            ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
+            lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
+
+            // Set the reset flag
+            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     goto NORMAL_EXIT;

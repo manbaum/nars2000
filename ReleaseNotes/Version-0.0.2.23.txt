@@ -1,6 +1,17 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #849 -- Version 0.0.2.23
+------------------------------
+
+* Fix Bug:  []ES 0 0 Should Clear []EM/[]ET
+
+Directory trunk:
+
+QF_ES.C:
+  If the event type is 0 0, clear []EM and []ET.
+
+
 Build #848 -- Version 0.0.2.23
 ------------------------------
 

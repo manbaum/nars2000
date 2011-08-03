@@ -162,6 +162,9 @@ APLFLOAT PrimFnMonRootFisI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    if (aplIntegerRht < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
     return sqrt ((APLFLOAT) aplIntegerRht);
 } // End PrimFnMonRootFisI
 
@@ -177,6 +180,9 @@ APLFLOAT PrimFnMonRootFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    if (aplFloatRht < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
     return sqrt (aplFloatRht);
 } // End PrimFnMonRootFisF
 
@@ -369,6 +375,8 @@ APLFLOAT PrimFnDydRootFisIvI
 ////if (!_finite (aplIntegerLft)
 //// && aplIntegerRht EQ 0)
 ////    return TranslateQuadICIndex (ICNDX_0EXP0);
+    if (aplIntegerRht < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Calculate the root
     aplFloatRes = pow ((APLFLOAT) aplIntegerRht, 1 / (APLFLOAT) aplIntegerLft);
@@ -436,6 +444,9 @@ APLFLOAT PrimFnDydRootFisFvF
     if (!_finite (aplFloatLft)
      && aplFloatRht EQ 0)
         return TranslateQuadICIndex (ICNDX_0EXP0);
+
+    if (aplFloatRht < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Calculate the root
     aplFloatRes = pow (aplFloatRht, 1 / aplFloatLft);

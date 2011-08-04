@@ -909,7 +909,7 @@ LPAPLCHAR CompileArrFloat
             // Format the float
             lpaplChar =
               FormatFloat (lpwszOut = lpaplChar,    // Ptr to output save area
-                           *((LPAPLFLOAT) lpMem)++, // The floating point value
+                           *lpMem++,                // The floating point value
                            0);                      // Use default significant digits
             // Zap the trailing blank
             lpaplChar[-1] = WC_EOS;
@@ -3080,10 +3080,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                             NULL);              // ...        array type:  ARRAY_TYPES (may be NULL)
         // If it's float, ...
         if (IsSimpleFlt (aplTypeLft))
-            // Attempt to convert the float to an integer using System CT
-            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-        if (!bRet)
-            goto DOMAIN_EXIT;
+                // Attempt to convert the float to an integer using System CT
+                aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
 
         // Save as actual precision
         lpMemWidPrc[0].iPrc = aplLongestLft;
@@ -3355,7 +3355,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         // The item must be a char vector
 
                         // Lock the memory to get a ptr to it
-                        lpMemItmRht = MyGlobalLock (ClrPtrTypeDir (hGlbItmRht));
+                        lpMemItmRht = MyGlobalLock (hGlbItmRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemItmRht)
                         // Get the array parameters
@@ -3375,7 +3375,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         *lpaplChar++ = WC_EOS;
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (ClrPtrTypeDir (hGlbItmRht)); lpMemItmRht = NULL;
+                        MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
                     } else
                     // Split cases based upon the immediate type
                     switch (immTypeRht)
@@ -3566,9 +3566,11 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     (LPVOID) lpMemRes = VarArrayBaseToDim (lpMemRes);
 
     // Fill in the dimensions
-    if (IsMatrix (aplRankRes))
-        *((LPAPLDIM) lpMemRes)++ = aplDimNRows;
-    *((LPAPLDIM) lpMemRes)++ = uTotWid;
+    CopyMemory (lpMemRes, lpMemDimRht, (APLU3264) (aplRankRes - 1) * sizeof (APLDIM));
+    ((LPAPLDIM) lpMemRes)[aplRankRes - 1] = uTotWid;
+
+    // Skip over the dimensions to the data
+    lpMemRes = VarArrayDimToData (lpMemRes, aplRankRes);
 
     // Initialize the output save area ptr
     lpaplChar = lpwszFormat;

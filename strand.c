@@ -442,7 +442,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                     // Lock the memory to get a ptr to it
-                    lpMemStr = MyGlobalLock (ClrPtrTypeDir (hGlbData));
+                    lpMemStr = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
                     if (IsScalar (lpHeader->Rank))
@@ -451,7 +451,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         cStrandNxtType = STRAND_NESTED;
 #undef  lpHeader
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDir (hGlbData)); lpMemStr = NULL;
+                    MyGlobalUnlock (hGlbData); lpMemStr = NULL;
 
                     break;
                 } // End IF
@@ -799,9 +799,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Skip over the header and dimensions to the data
                         lpMemNum = VarArrayBaseToData (lpMemNum, 1);
 
-                        // Clear the ptr type bits
-                        hGlbNum = ClrPtrTypeDir (hGlbNum);
-
                         // Loop through the numeric strand
                         for (uNum = 0; uNum < aplNELMNum; uNum++)
                         {
@@ -891,9 +888,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
                     // Skip over the header and dimensions to the data
                     lpMemNum = VarArrayBaseToData (lpMemNum, 1);
-
-                    // Clear the ptr type bits
-                    hGlbNum = ClrPtrTypeDir (hGlbNum);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1060,9 +1054,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // Skip over the header and dimensions to the data
                     lpMemNum = VarArrayBaseToData (lpMemNum, 1);
 
-                    // Clear the ptr type bits
-                    hGlbNum = ClrPtrTypeDir (hGlbNum);
-
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
                     {
@@ -1173,9 +1164,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
                     // Get the numeric strand immediate type
                     immTypeNum = TranslateArrayTypeToImmType (aplTypeNum);
-
-                    // Clear the ptr type bits
-                    hGlbData = ClrPtrTypeDir (hGlbData);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1449,8 +1437,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         HGLOBAL           hGlbFcnArr;       // Function array global memory handle
         LPFCNARRAY_HEADER lpHeader;         // Ptr to function array header
 
-        // Clear the ptr type bits
-        hGlbFcnArr = ClrPtrTypeDir (hGlbStr);
+        // Copy the HGLOBAL
+        hGlbFcnArr = hGlbStr;
 
         // Lock the memory to get a ptr to it
         lpHeader = MyGlobalLock (hGlbFcnArr);

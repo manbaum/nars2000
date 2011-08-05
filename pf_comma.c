@@ -265,7 +265,7 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
             return NULL;
     } // End SWITCH
 
-    return PrimFnMonCommaGlb_EM_YY (ClrPtrTypeDir (hGlbRht),    // HGLOBAL
+    return PrimFnMonCommaGlb_EM_YY (hGlbRht,                    // HGLOBAL
                                     lptkAxis,                   // Ptr to axis token (may be NULL)
                                     lptkFunc);                  // Ptr to function token
 AXIS_SYNTAX_EXIT:
@@ -642,22 +642,14 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     // If we're reordering and the right arg is ARRAY_APA,
     //   calculate the array size based upon APLINTs
     if (bReorder && IsSimpleAPA (aplTypeRht))
-    {
         // Set the array storage type for the result
         aplTypeRes = ARRAY_INT;
-
-        // Calculate space needed for the result
-        ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRes);
-    } else
-    {
+    else
         // Set the array storage type for the result
         aplTypeRes = aplTypeRht;
 
-        // The # bytes in the result is the same as the right argument
-        //   minus its dimensions plus the result's dimensions
-        ByteRes = MyGlobalSize (hGlbRht)
-                + sizeof (APLDIM) * (aplRankRes - aplRankRht);
-    } // End IF/ELSE
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRes);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -751,23 +743,23 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     {
         APLNELM aplNELM;
 
-        // We're about to copy the entries from the right arg
-        //   into the result.  If the right arg is ARRAY_NESTED,
-        //   we need to increment each HGLOBAL's reference count.
+                // We're about to copy the entries from the right arg
+                //   into the result.  If the right arg is ARRAY_NESTED,
+                //   we need to increment each HGLOBAL's reference count.
         if (IsNested (aplTypeRht))
         {
-            // In case the right arg is empty, include its prototype
-            aplNELM = max (aplNELMRht, 1);
+                // In case the right arg is empty, include its prototype
+                aplNELM = max (aplNELMRht, 1);
 
-            // Loop through the right arg
-            for (uRht = 0; uRht < aplNELM; uRht++)
-                DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELM; uRht++)
+                    DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
         } // End IF
 
-        // Account for the header and dimensions
-        ByteRes -= sizeof (VARARRAY_HEADER)
-                 + sizeof (APLDIM) * aplRankRes;
-        CopyMemory (lpMemRes, lpMemRht, (APLU3264) ByteRes);
+                // Account for the header and dimensions
+                ByteRes -= sizeof (VARARRAY_HEADER)
+                         + sizeof (APLDIM) * aplRankRes;
+                CopyMemory (lpMemRes, lpMemRht, (APLU3264) ByteRes);
     } else
     // Reorder the right arg into the result
     {

@@ -343,9 +343,6 @@ LRESULT APIENTRY FEWndProc
                     // Get the global memory handle
                     hGlbDfnHdr = lpSymName->stData.stGlbData;
 
-                    // Clear the ptr type bits
-                    hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
-
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
                 } // End IF/ELSE
@@ -413,8 +410,8 @@ LRESULT APIENTRY FEWndProc
                 SIZE_T     uUndoSize;       // Size of Undo Buffer in bytes
                 HGLOBAL    hGlbUndoBuff;
 
-                // Get the handle and clear the ptr type bits
-                hGlbUndoBuff = ClrPtrTypeDir (lpMemDfnHdr->hGlbUndoBuff);
+                // Get the handle
+                hGlbUndoBuff = lpMemDfnHdr->hGlbUndoBuff;
 
                 // Get the size in bytes
                 uUndoSize = MyGlobalSize (hGlbUndoBuff);
@@ -1136,10 +1133,16 @@ UBOOL SyntaxColor
         uChar = tkLocalVars.uChar;
     } // End FOR
 
-    // We should never get here as we process the
-    //   trailing zero in the input line which should
-    //   exit from one of the actions with TKROW_EXIT.
-    DbgStop ();
+////// We should never get here as we process the
+//////   trailing zero in the input line which should
+//////   exit from one of the actions with TKROW_EXIT.
+////DbgStop ();
+
+    // In rare circumstances we fall through to this point.
+    // I think what is happening is that the mouse selects
+    //   parts of more than one line and moves during the WM_PAINT
+    //   message such that the line-to-be-colored is changes.  I think.
+    goto NORMAL_EXIT;
 
 FREEGLB_EXIT:
     // Tell the caller to free the global

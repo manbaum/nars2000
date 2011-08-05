@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -238,9 +238,6 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
             // It's a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
-            // Clear the ptr type bits
-            hGlbRht = ClrPtrTypeDir (hGlbRht);
-
             // Lock the memory to get a ptr to it
             lpMemRht = MyGlobalLock (hGlbRht);
 
@@ -272,7 +269,7 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    // Split cases based on the ptr type of the element
+                    // Split cases based upon the ptr type of the element
                     switch (GetPtrTypeDir (lpMemRht[uRht]))
                     {
                         case PTRTYPE_STCONST:
@@ -436,40 +433,40 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
              && IsScalar (aplRankRht))
             {
                 // Ensure Numeric vs. Numeric or Char vs. Char
-                bNumLft = IsSimpleNum (aplTypeLft);
-                bNumRht = IsSimpleNum (aplTypeRht);
-                if (bNumLft NE bNumRht)
-                    break;
+                    bNumLft = IsSimpleNum (aplTypeLft);
+                    bNumRht = IsSimpleNum (aplTypeRht);
+                    if (bNumLft NE bNumRht)
+                        break;
 
-                // Get the respective first values
-                GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
-                                   &aplIntegerLft,  // Ptr to integer result
-                                   &aplFloatLft,    // Ptr to float ...
-                                   &aplCharLft,     // Ptr to WCHAR ...
-                                    NULL,           // Ptr to longest ...
-                                    NULL,           // Ptr to lpSym/Glb ...
-                                    NULL,           // Ptr to ...immediate type ...
-                                    NULL);          // Ptr to array type ...
-                GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
-                                   &aplIntegerRht,  // Ptr to integer result
-                                   &aplFloatRht,    // Ptr to float ...
-                                   &aplCharRht,     // Ptr to WCHAR ...
-                                    NULL,           // Ptr to longest ...
-                                    NULL,           // Ptr to lpSym/Glb ...
-                                    NULL,           // Ptr to ...immediate type ...
-                                    NULL);          // Ptr to array type ...
-                // Split cases into Numeric and Char
-                if (bNumLft)
-                {               // Both are numeric
-                    if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeRht))
-                        aplIntegerRes = (aplIntegerLft EQ aplIntegerRht);
-                    else
-                        aplIntegerRes = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
-                } else          // Both are char
-                    // Compare the values
-                    aplIntegerRes = (aplCharLft EQ aplCharRht);
-                break;
+                    // Get the respective first values
+                    GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
+                                       &aplIntegerLft,  // Ptr to integer result
+                                       &aplFloatLft,    // Ptr to float ...
+                                       &aplCharLft,     // Ptr to WCHAR ...
+                                        NULL,           // Ptr to longest ...
+                                        NULL,           // Ptr to lpSym/Glb ...
+                                        NULL,           // Ptr to ...immediate type ...
+                                        NULL);          // Ptr to array type ...
+                    GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                                       &aplIntegerRht,  // Ptr to integer result
+                                       &aplFloatRht,    // Ptr to float ...
+                                       &aplCharRht,     // Ptr to WCHAR ...
+                                        NULL,           // Ptr to longest ...
+                                        NULL,           // Ptr to lpSym/Glb ...
+                                        NULL,           // Ptr to ...immediate type ...
+                                        NULL);          // Ptr to array type ...
+                    // Split cases into Numeric and Char
+                    if (bNumLft)
+                    {               // Both are numeric
+                        if (IsSimpleInt (aplTypeLft)
+                         && IsSimpleInt (aplTypeRht))
+                            aplIntegerRes = (aplIntegerLft EQ aplIntegerRht);
+                        else
+                            aplIntegerRes = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
+                    } else          // Both are char
+                        // Compare the values
+                        aplIntegerRes = (aplCharLft EQ aplCharRht);
+                    break;
             } // End IF
 
             aplIntegerRes =
@@ -1068,23 +1065,23 @@ UBOOL PrimFnDydEqualUnderbarSimple
                         // Split cases based upon the left hetero's storage type
                         switch (aplTypeLft)
                         {
-                            case ARRAY_BOOL:            // Lft = BOOL,  Rht = BOOL/INT/FLOAT/CHAR
-                            case ARRAY_INT:             // Lft = INT,   Rht = BOOL/INT/FLOAT/CHAR
+                            case ARRAY_BOOL:            // Lft = HETERO:BOOL,  Rht = HETERO:BOOL/INT/FLOAT/CHAR
+                            case ARRAY_INT:             // Lft = HETERO:INT,   Rht = HETERO:BOOL/INT/FLOAT/CHAR
                                 // Split cases based upon the right hetero's storage type
                                 switch (aplTypeRht)
                                 {
-                                    case ARRAY_BOOL:    // Lft = BOOL,  Rht = BOOL
-                                    case ARRAY_INT:     // Lft = BOOL,  Rht = INT
+                                    case ARRAY_BOOL:    // Lft = HETERO:BOOL,  Rht = HETERO:BOOL
+                                    case ARRAY_INT:     // Lft = HETERO:BOOL,  Rht = HETERO:INT
                                         if (aplIntegerLft NE aplIntegerRht)
                                             return FALSE;
                                         break;
 
-                                    case ARRAY_FLOAT:   // Lft = BOOL,  Rht = FLOAT
+                                    case ARRAY_FLOAT:   // Lft = HETERO:BOOL,  Rht = HETERO:FLOAT
                                         if ((APLFLOAT) aplIntegerLft NE aplFloatRht)
                                             return FALSE;
                                         break;
 
-                                    case ARRAY_CHAR:    // Lft = BOOL,  Rht = CHAR
+                                    case ARRAY_CHAR:    // Lft = HETERO:BOOL,  Rht = HETERO:CHAR
                                         return FALSE;
 
                                     defstop
@@ -1093,22 +1090,22 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                                 break;
 
-                            case ARRAY_FLOAT:           // Lft = FLOAT, Rht = BOOL/INT/FLOAT/CHAR
+                            case ARRAY_FLOAT:           // Lft = HETERO:FLOAT, Rht = HETERO:BOOL/INT/FLOAT/CHAR
                                 // Split cases based upon the right hetero's storage type
                                 switch (aplTypeRht)
                                 {
-                                    case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL
-                                    case ARRAY_INT:     // Lft = FLOAT, Rht = INT
+                                    case ARRAY_BOOL:    // Lft = HETERO:FLOAT, Rht = HETERO:BOOL
+                                    case ARRAY_INT:     // Lft = HETERO:FLOAT, Rht = HETERO:INT
                                         if (aplFloatLft NE (APLFLOAT) aplIntegerRht)
                                             return FALSE;
                                         break;
 
-                                    case ARRAY_FLOAT:   // Lft = FLOAT, Rht = FLOAT
+                                    case ARRAY_FLOAT:   // Lft = HETERO:FLOAT, Rht = HETERO:FLOAT
                                         if (aplFloatLft NE aplFloatRht)
                                             return FALSE;
                                         break;
 
-                                    case ARRAY_CHAR:    // Lft = FLOAT, Rht = CHAR
+                                    case ARRAY_CHAR:    // Lft = HETERO:FLOAT, Rht = HETERO:CHAR
                                         return FALSE;
 
                                     defstop
@@ -1117,16 +1114,16 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                                 break;
 
-                            case ARRAY_CHAR:            // Lft = CHAR,  Rht = BOOL/INT/FLOAT/CHAR
+                            case ARRAY_CHAR:            // Lft = HETERO:CHAR,  Rht = HETERO:BOOL/INT/FLOAT/CHAR
                                 // Split cases based upon the right hetero's storage type
                                 switch (aplTypeRht)
                                 {
-                                    case ARRAY_BOOL:    // Lft = CHAR,  Rht = BOOL
-                                    case ARRAY_INT:     // Lft = CHAR,  Rht = INT
-                                    case ARRAY_FLOAT:   // Lft = CHAR,  Rht = FLOAT
+                                    case ARRAY_BOOL:    // Lft = HETERO:CHAR,  Rht = HETERO:BOOL
+                                    case ARRAY_INT:     // Lft = HETERO:CHAR,  Rht = HETERO:INT
+                                    case ARRAY_FLOAT:   // Lft = HETERO:CHAR,  Rht = HETERO:FLOAT
                                         return FALSE;
 
-                                    case ARRAY_CHAR:    // Lft = CHAR,  Rht = CHAR
+                                    case ARRAY_CHAR:    // Lft = HETERO:CHAR,  Rht = HETERO:CHAR
                                         if (aplCharLft NE aplCharRht)
                                             return FALSE;
                                         break;

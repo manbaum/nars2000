@@ -172,9 +172,6 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
                  lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
 
-    // Clear the ptr type bits
-    hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
-
     // If there's a function strand, ...
     if (lpYYFcnStr NE NULL)
         // Check for axis operator
@@ -1071,8 +1068,11 @@ NEXTLINE:
     switch (numResultSTE)
     {
         case 0:         // No result
-            // Make a PL_YYSTYPE NoValue entry
-            lpYYRes = MakeNoValue_YY (lptkFunc);
+            // If it's not already NoValue, ...
+            if (lpYYRes EQ NULL
+             || !IsTokenNoValue (&lpYYRes->tkToken))
+                // Make a PL_YYSTYPE NoValue entry
+                lpYYRes = MakeNoValue_YY (lptkFunc);
 
             break;
 
@@ -1760,7 +1760,7 @@ void InitVarSTEs
                      apaMulArg;             // ... multiplier
 
             // Lock the memory to get a ptr to it
-            lpMemArg = MyGlobalLock (ClrPtrTypeDir (hGlbArg));
+            lpMemArg = MyGlobalLock (hGlbArg);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
             aplTypeArg = lpHeader->ArrType;
@@ -1898,7 +1898,7 @@ void InitVarSTEs
             } // End FOR
 
             // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDir (hGlbArg)); lpMemArg = NULL;
+            MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
         } // End IF/ELSE
     } // End IF
 } // End InitVarSTEs
@@ -1969,8 +1969,8 @@ UBOOL InitFcnSTEs
                     HGLOBAL      hGlbDfnHdr;
                     LPDFN_HEADER lpMemDfnHdr;
 
-                    // Clear the ptr type bits
-                    hGlbDfnHdr = ClrPtrTypeDir (lpYYArg->tkToken.tkData.tkGlbData);
+                    // Copy the HGLOBAL
+                    hGlbDfnHdr = lpYYArg->tkToken.tkData.tkGlbData;
 
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -1983,10 +1983,10 @@ UBOOL InitFcnSTEs
                     (*lplpSymEntry)->stFlags.Value      = TRUE;
                     (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                     (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
-                    (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkGlbData) EQ DFN_HEADER_SIGNATURE);
+                    (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (hGlbDfnHdr) EQ DFN_HEADER_SIGNATURE);
                     (*lplpSymEntry)->stFlags.DfnAxis    = (*lplpSymEntry)->stFlags.UsrDfn ? lpMemDfnHdr->DfnAxis : FALSE;
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
-                    (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
+                    (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (hGlbDfnHdr);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;

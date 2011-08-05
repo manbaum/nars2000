@@ -642,9 +642,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                 break;
 
             case PTRTYPE_HGLOBAL:
-                // Get the global memory handle and
-                //   clear the ptr type bits
-                hGlbItm = ClrPtrTypeDir (((LPAPLNESTED) lpMemRht)[uCnt]);
+                // Get the global memory handle
+                hGlbItm = ((LPAPLNESTED) lpMemRht)[uCnt];
 
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the right arg item
@@ -922,9 +921,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                 break;
 
             case PTRTYPE_HGLOBAL:
-                // Get the global memory handle and
-                //   clear the ptr type bits
-                hGlbItm = ClrPtrTypeDir (((LPAPLNESTED) lpMemRht)[uCnt]);
+                // Get the global memory handle
+                hGlbItm = ((LPAPLNESTED) lpMemRht)[uCnt];
 
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the right arg item
@@ -1945,11 +1943,11 @@ void QFMT_CommonEFI
             int iExpCnt;                                // Loop counter
 
             lpwEnd =
-              FormatFloatFC (lpwszFormat,               // Ptr to output save area
-                             aplFltItm,                 // The value to format
-                             fsDig,                     // Precision for F-format, significant digits for E-format
-                             UTF16_DOT,                 // Char to use as decimal separator
-                             UTF16_OVERBAR,             // Char to use as overbar
+              FormatFloatFC (lpwszFormat,           // Ptr to output save area
+                             aplFltItm,             // The value to format
+                             fsDig,                 // Precision for F-format, significant digits for E-format
+                             UTF16_DOT,             // Char to use as decimal separator
+                             UTF16_OVERBAR,         // Char to use as overbar
                              FLTDISPFMT_E);             // Float display format
             // Append enough blanks to the result to fill
             //   out the exponent to full width ("E-100")
@@ -1965,11 +1963,11 @@ void QFMT_CommonEFI
 
         case FMTSPECVAL_F:
             lpwEnd =
-              FormatFloatFC (lpwszFormat,               // Ptr to output save area
-                             aplFltItm,                 // The value to format
-                             fsDig,                     // Precision for F-format, significant digits for E-format
-                             UTF16_DOT,                 // Char to use as decimal separator
-                             UTF16_OVERBAR,             // Char to use as overbar
+              FormatFloatFC (lpwszFormat,           // Ptr to output save area
+                             aplFltItm,             // The value to format
+                             fsDig,                 // Precision for F-format, significant digits for E-format
+                             UTF16_DOT,             // Char to use as decimal separator
+                             UTF16_OVERBAR,         // Char to use as overbar
                              FLTDISPFMT_F);             // Float display format
             // Ensure properly terminated
             *--lpwEnd = WC_EOS;

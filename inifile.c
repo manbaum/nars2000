@@ -1521,9 +1521,6 @@ HGLOBAL GetPrivateProfileGlbComW
 
         // Copy the global memory handle
         hGlbRes = CopySymGlbDirAsGlb (hGlbChk);
-
-        // Clear the ptr type bits
-        hGlbRes = ClrPtrTypeDir (hGlbRes);
     } // End IF
 
     return hGlbRes;

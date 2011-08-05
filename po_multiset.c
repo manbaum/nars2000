@@ -169,7 +169,7 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
     // Check for a multiset-sensitive function
     if (lpYYFcnStrLft->TknCount EQ 1)
     {
-        // Get the current value of QuadCT
+        // Get the current value of []CT
         fQuadCT = GetQuadCT ();
 
         // Split cases based upon the function symbol
@@ -528,7 +528,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupLft = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -560,7 +560,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupRht = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -580,11 +580,14 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
     ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMLft, 1);
 
     //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLUINT to UINT.
+    //  Check for overflow
     //***************************************************************
     if (ByteRes NE (APLU3264) ByteRes)
         goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         goto WSFULL_EXIT;
@@ -1190,7 +1193,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupLft = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -1222,7 +1225,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupRht = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -1853,7 +1856,7 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupLft = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -1880,7 +1883,7 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupRht = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;

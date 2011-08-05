@@ -521,12 +521,9 @@ UBOOL IsValidHandle
     (HGLOBAL hGlbSrc)
 
 {
-    // Clear the ptr type bits
-    hGlbSrc = ClrPtrTypeDir (hGlbSrc);
-
     __try
     {
-        return ((hGlbSrc NE NULL) && (GlobalFlags (hGlbSrc) NE GMEM_INVALID_HANDLE));
+        return ((hGlbSrc NE NULL) && (GlobalFlags (ClrPtrTypeDir (hGlbSrc)) NE GMEM_INVALID_HANDLE));
     } __except (EXCEPTION_EXECUTE_HANDLER)
     {
         return FALSE;

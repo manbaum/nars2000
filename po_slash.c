@@ -1552,18 +1552,18 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             aplTypeRes = ARRAY_NESTED;
         else
         {
-        // Get the corresponding lpPrimSpecLft
-        lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+            // Get the corresponding lpPrimSpecLft
+            lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
-        // Calculate the storage type of the result
-        aplTypeRes =
-          (*lpPrimSpecLft->StorageTypeDyd) (1,
-                                           &aplTypeRht,
-                                           &lpYYFcnStrLft->tkToken,
-                                            1,
-                                           &aplTypeRht);
-        if (aplTypeRes EQ ARRAY_ERROR)
-            goto DOMAIN_EXIT;
+            // Calculate the storage type of the result
+            aplTypeRes =
+              (*lpPrimSpecLft->StorageTypeDyd) (1,
+                                               &aplTypeRht,
+                                               &lpYYFcnStrLft->tkToken,
+                                                1,
+                                               &aplTypeRht);
+            if (aplTypeRes EQ ARRAY_ERROR)
+                goto DOMAIN_EXIT;
         } // End IF/ELSE
     } else
         // Assume that the result storage type is nested
@@ -2130,10 +2130,10 @@ RESTART_EXCEPTION:
                         break;
 
                     case TKT_VARARRAY:
-                        // Save in the result as an HGLOBAL
-                        ((LPAPLNESTED) lpMemRes)[uRes] = tkRhtArg.tkData.tkGlbData;
+                                // Save in the result as an HGLOBAL
+                                ((LPAPLNESTED) lpMemRes)[uRes] = tkRhtArg.tkData.tkGlbData;
 
-                        break;
+                                break;
 
                     case TKT_VARNAMED:
                         // Check for NoValue
@@ -2367,9 +2367,6 @@ UBOOL PrimOpDydSlashInsertDim_EM
     hGlbTmp = lpYYRes->tkToken.tkData.tkGlbData;
 
     Assert (IsGlbTypeVarDir_PTB (hGlbTmp));
-
-    // Clear the ptr type bits
-    hGlbTmp = ClrPtrTypeDir (hGlbTmp);
 
     // The result is the same as lpYYRes except we need
     //   to insert a unit dimension between aplAxis and

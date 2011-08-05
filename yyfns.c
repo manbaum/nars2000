@@ -286,7 +286,7 @@ UINT YYCountFcnStr
              && !lpToken->tkData.tkSym->stFlags.FcnDir) // not an internal function
             {
                 // Get the global memory handle
-                hGlbFcn = ClrPtrTypeDir (lpToken->tkData.tkSym->stData.stGlbData);
+                hGlbFcn = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
                 lpMemHdrFcn = MyGlobalLock (hGlbFcn);
@@ -324,9 +324,6 @@ UINT YYCountFcnGlb
     UINT              TknCount = 0;     // The result
     LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to function array header global memory
     LPPL_YYSTYPE      lpMemFcn;         // Ptr to function array global memory
-
-    // Clear the ptr type bits
-    hGlbFcn = ClrPtrTypeDir (hGlbFcn);
 
     // Lock the memory to get a ptr to it
     lpMemHdrFcn = MyGlobalLock (hGlbFcn);
@@ -441,7 +438,7 @@ UBOOL YYIsFcnStrAxis
 
         case TKT_FCNARRAY:
             // Get the global memory handle
-            hGlbFcn = ClrPtrTypeDir (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
+            hGlbFcn = lpYYArg->tkToken.tkData.tkSym->stData.stGlbData;
 
             // Lock the memory to get a ptr to it
             lpMemHdrFcn = MyGlobalLock (hGlbFcn);
@@ -733,9 +730,6 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
             // In case this is a Train with SRCIFlag set, ...
             DbgIncrRefCntDir_PTB (hGlbFcn);
 
-            // Clear the ptr type bits
-            hGlbFcn = ClrPtrTypeDir (hGlbFcn);
-
             // Lock the memory to get a ptr to it
             lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
@@ -954,9 +948,6 @@ void YYFreeGlbFcn
             break;
 
         case FCNARRAY_HEADER_SIGNATURE:
-            // Clear the ptr type bits
-            hGlbFcn = ClrPtrTypeDir (hGlbFcn);
-
             // Lock the memory to get a ptr to it
             lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
@@ -970,14 +961,10 @@ void YYFreeGlbFcn
             for (uCnt = 0; uCnt < uLen; uCnt++, lpMemFcn++)
             {
                 // If the token is named, ...
-                if (IsTknTypeNamed (lpMemFcn->tkToken.tkFlags.TknType))
-                {
-                    // If it's a direct function, ...
-                    if (lpMemFcn->tkToken.tkData.tkSym->stFlags.FcnDir)
-                        continue;
-                    else
-                        DbgStop ();
-                } // End IF
+                //   and it's a direct function, ...
+                if (IsTknTypeNamed (lpMemFcn->tkToken.tkFlags.TknType)
+                 && lpMemFcn->tkToken.tkData.tkSym->stFlags.FcnDir)
+                    continue;
 
                 // Split off immediates so as not to double count TKT_OP1IMMED/INDEX_OPTRAINs
                 if (!IsTknImmed (&lpMemFcn->tkToken))
@@ -988,7 +975,7 @@ void YYFreeGlbFcn
                  && !lpMemFcn->YYIndirect)
                     // Free the storage
                     FreeResult (lpMemFcn);
-            } // End IF/FOR
+            } // End FOR
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL; lpMemFcn = NULL;
@@ -1016,8 +1003,7 @@ void IncrFcnTkn
     LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to function array header global memory
 
     // Get the global memory handle
-    //   and clear the ptr type bits
-    hGlbFcn = ClrPtrTypeDir (lptkSrc->tkData.tkGlbData);
+    hGlbFcn = lptkSrc->tkData.tkGlbData;
 
     // Lock the memory to get a ptr to it
     lpMemHdrFcn = MyGlobalLock (hGlbFcn);
@@ -1073,9 +1059,6 @@ void IncrFcnMem
                     // Increment the reference count
                     DbgIncrRefCntDir_PTB (hGlbItm);
 
-                    // Clear the ptr type bits
-                    hGlbItm = ClrPtrTypeDir (hGlbItm);
-
                     // Lock the memory to get a ptr to it
                     lpMemItm = MyGlobalLock (hGlbItm);
 
@@ -1105,9 +1088,6 @@ void IncrFcnMem
 
                     // Increment the reference count
                     DbgIncrRefCntDir_PTB (hGlbItm);
-
-                    // Clear the ptr type bits
-                    hGlbItm = ClrPtrTypeDir (hGlbItm);
 
                     // Lock the memory to get a ptr to it
                     lpMemItm = MyGlobalLock (hGlbItm);

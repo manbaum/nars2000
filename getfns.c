@@ -223,7 +223,7 @@ void GetNextValueTokenIntoToken
     {
         // Fill in the result token
         lptkRes->tkFlags.TknType   = TKT_VARARRAY;
-        lptkRes->tkFlags.ImmType   = IMMTYPE_ERROR;
+        lptkRes->tkFlags.ImmType   = immType;
 ////////lptkRes->tkFlags.NoDisplay =                    // Filled in above
         lptkRes->tkData.tkGlbData  = hGlbSub;
 ////////lptkRes->tkCharIndex       =                    // Filled in above
@@ -369,7 +369,7 @@ void GetNextValueTokenIntoNamedVarToken
 ////////lptkRes->tkFlags.ImmType                  =     // Filled in above
 ////////lptkRes->tkFlags.NoDisplay                =     // Filled in above
         lptkRes->tkData.tkSym->stFlags.Imm        = FALSE;
-        lptkRes->tkData.tkSym->stFlags.ImmType    = IMMTYPE_ERROR;
+        lptkRes->tkData.tkSym->stFlags.ImmType    = immType;
         lptkRes->tkData.tkSym->stFlags.Value      = TRUE;
         lptkRes->tkData.tkSym->stFlags.ObjName    = OBJNAME_USR;
         lptkRes->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
@@ -688,9 +688,6 @@ void GetFirstValueGlb
     APLCHAR    aplChar;             // ...  char
     LPSYMENTRY lpSym;               // Ptr to SYMENTRY in HETERO or NESTED cases
 
-    // Clear the type bits in case they are set on the way in
-    hGlbData = ClrPtrTypeDir (hGlbData);
-
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
@@ -911,6 +908,12 @@ void GetFirstValueGlb
                         *lpaplLongest = 0;
                     if (lpSymGlb)
                         *lpSymGlb     = *(LPAPLNESTED) lpMem;
+                    if (lpImmType)
+                    {
+                        AttrsOfGlb (*(LPAPLNESTED) lpMem, &aplType, NULL, NULL, NULL);
+                        *lpImmType    = TranslateArrayTypeToImmType (aplType);
+                    } // End IF
+
                     break;
 
                 defstop
@@ -1208,9 +1211,6 @@ void GetNextValueGlb
     APLRANK   aplRankSub;                   // Item rank
     LPVOID    lpMemSub;                     // Ptr to item global memory
 
-    // Clear the ptr type bits
-    hGlbSub = ClrPtrTypeDir (hGlbSub);
-
     // Lock the memory to get a ptr to it
     lpMemSub = MyGlobalLock (hGlbSub);
 
@@ -1401,7 +1401,7 @@ void GetNextValueMemSub
                     if (lpimmTypeRes)
                         *lpimmTypeRes    = IMMTYPE_ERROR;
                     if (lphGlbRes)
-                        *lphGlbRes       = ClrPtrTypeDir (lptkList->tkData.tkGlbData);
+                        *lphGlbRes       = lptkList->tkData.tkGlbData;
                     break;
 
                 defstop
@@ -1419,16 +1419,6 @@ void GetNextValueMemSub
             switch (GetPtrTypeDir (lpSymSub))
             {
                 case PTRTYPE_STCONST:
-                    // If an immediate result is allowed, we never return the LPSYMENTRY
-                    if (lphGlbRes && lpimmTypeRes EQ NULL)
-                    {
-                        *lphGlbRes = lpSymSub;
-                        Assert (lpaplLongestRes EQ NULL);       // ***DEBUG***
-#ifdef DEBUG
-                        DbgBrk ();                              // ***DEBUG***
-#endif
-                    } // End IF
-
                     // Extract the immediate type & value
                     if (lpaplLongestRes)
                         *lpaplLongestRes = lpSymSub->stData.stLongest;
@@ -1439,7 +1429,8 @@ void GetNextValueMemSub
                 case PTRTYPE_HGLOBAL:
                     if (lphGlbRes)
                         *lphGlbRes       = lpSymSub;
-
+                    if (lpimmTypeRes)
+                        *lpimmTypeRes    = GetImmTypeGlb (lpSymSub);
                     break;
 
                 defstop
@@ -1471,9 +1462,9 @@ HGLOBAL GetGlbHandle
     else
     // If it's a named object, ...
     if (IsTknTypeNamed (lpToken->tkFlags.TknType))
-        return ClrPtrTypeDir (lpToken->tkData.tkSym->stData.stGlbData);
+        return lpToken->tkData.tkSym->stData.stGlbData;
     else
-        return ClrPtrTypeDir (lpToken->tkData.tkGlbData);
+        return lpToken->tkData.tkGlbData;
 } // End GetGlbHandle
 
 
@@ -1532,9 +1523,6 @@ APLLONGEST GetGlbPtrs_LOCK
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir_PTB (*lphGlb));
 
-                // Handle the HGLOBAL case
-                *lphGlb = ClrPtrTypeDir (*lphGlb);
-
                 // Lock the memory to get a ptr to it
                 lpMem = MyGlobalLock (*lphGlb);
 
@@ -1566,9 +1554,6 @@ APLLONGEST GetGlbPtrs_LOCK
                 // stData is a valid HGLOBAL function array
                 Assert (IsGlbTypeFcnDir_PTB (*lphGlb)
                      || IsGlbTypeDfnDir_PTB (*lphGlb));
-
-                // Handle the HGLOBAL case
-                *lphGlb = ClrPtrTypeDir (*lphGlb);
 
                 // Lock the memory to get a ptr to it
                 lpMem = MyGlobalLock (*lphGlb);
@@ -1602,9 +1587,6 @@ APLLONGEST GetGlbPtrs_LOCK
         case TKT_FCNARRAY:
             *lphGlb = lpToken->tkData.tkGlbData;
 
-            // Handle the HGLOBAL case
-            *lphGlb = ClrPtrTypeDir (*lphGlb);
-
             // Lock the memory to get a ptr to it
             lpMem = MyGlobalLock (*lphGlb);
 
@@ -1623,9 +1605,6 @@ APLLONGEST GetGlbPtrs_LOCK
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (*lphGlb));
 
-            // Handle the HGLOBAL case
-            *lphGlb = ClrPtrTypeDir (*lphGlb);
-
             // Lock the memory to get a ptr to it
             lpMem = MyGlobalLock (*lphGlb);
 
@@ -1641,9 +1620,6 @@ APLLONGEST GetGlbPtrs_LOCK
 
             // tkData is a valid HGLOBAL list array
             Assert (IsGlbTypeLstDir_PTB (*lphGlb));
-
-            // Handle the HGLOBAL case
-            *lphGlb = ClrPtrTypeDir (*lphGlb);
 
             // Lock the memory to get a ptr to it
             lpMem = MyGlobalLock (*lphGlb);
@@ -1972,7 +1948,7 @@ LPPRIMFNS GetPrototypeFcnPtr
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Get the function global memory handle
-                    hGlbFcn = ClrPtrTypeDir (lptkFunc->tkData.tkGlbData);
+                    hGlbFcn = lptkFunc->tkData.tkGlbData;
 
                     // Lock the memory to get a ptr to it
                     lpMemFcn = MyGlobalLock (hGlbFcn);
@@ -2056,7 +2032,7 @@ LPPRIMFLAGS GetPrimFlagsPtr
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Get the function global memory handle
-                    hGlbFcn = ClrPtrTypeDir (lptkFunc->tkData.tkGlbData);
+                    hGlbFcn = lptkFunc->tkData.tkGlbData;
 
                     // Lock the memory to get a ptr to it
                     lpMemFcn = MyGlobalLock (hGlbFcn);
@@ -2104,6 +2080,32 @@ IMM_TYPES GetImmedType
 
 
 //***************************************************************************
+//  $GetImmTypeGlb
+//
+//  Get the immediate type from a global
+//***************************************************************************
+
+IMM_TYPES GetImmTypeGlb
+    (HGLOBAL hGlbArg)               // Ptr to token
+
+{
+    LPVARARRAY_HEADER lpMemArg;
+    IMM_TYPES         immTypeArg;
+
+    // Lock the memory to get a ptr to it
+    lpMemArg = MyGlobalLock (hGlbArg);
+
+    // Get the immediate type
+    immTypeArg = TranslateArrayTypeToImmType (lpMemArg->ArrType);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+
+    return immTypeArg;
+} // End GetImmTypeGlb
+
+
+//***************************************************************************
 //  $GetSignatureGlb
 //
 //  Get the signature of a global object
@@ -2115,9 +2117,6 @@ UINT GetSignatureGlb
 {
     LPHEADER_SIGNATURE lpMemLcl;            // Ptr to signature global memory
     UINT               Sig;                 // The signature
-
-    // Clear the type bits in case they are set on the way in
-    hGlbLcl = ClrPtrTypeDir (hGlbLcl);
 
     // Lock the memory to get a ptr to it
     lpMemLcl = MyGlobalLock (hGlbLcl);
@@ -2163,13 +2162,13 @@ UINT GetSignatureGlb_PTB
             Assert (lpSymEntry->stFlags.Imm EQ FALSE);
 
             // Clear the ptr type bits
-            hGlbLcl = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+            hGlbLcl = lpSymEntry->stData.stGlbData;
 
             break;
 
         case PTRTYPE_HGLOBAL:
-            // Clear the ptr type bits
-            hGlbLcl = ClrPtrTypeDir (lpSymGlbLcl);
+            // Copy the HGLOBAL
+            hGlbLcl = lpSymGlbLcl;
 
             break;
 

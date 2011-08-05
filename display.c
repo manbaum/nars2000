@@ -90,7 +90,7 @@ UBOOL ArrayDisplay_EM
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
                     return
-                      DisplayGlbArr_EM (ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
+                      DisplayGlbArr_EM (lptkRes->tkData.tkSym->stData.stGlbData,
                                         bEndingCR,          // TRUE iff last line has CR
                                         lpbCtrlBreak,       // Ptr to Ctrl-Break flag
                                         lptkRes);           // Ptr to function token
@@ -142,7 +142,7 @@ UBOOL ArrayDisplay_EM
 
                 case PTRTYPE_HGLOBAL:
                     return
-                      DisplayGlbArr_EM (ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
+                      DisplayGlbArr_EM (lptkRes->tkData.tkGlbData,
                                         bEndingCR,          // TRUE iff last line has CR
                                         lpbCtrlBreak,       // Ptr to Ctrl-Break flag
                                         lptkRes);           // Ptr to function token
@@ -230,7 +230,7 @@ UBOOL DisplayGlbArr_EM
     // Get ptr to formatting save area
     lpwszFormat = lpMemPTD->lpwszFormat;
 
-    // Get the current value of PW
+    // Get the current value of []PW
     uQuadPW = GetQuadPW ();
 
     // Allocate space for the display
@@ -686,7 +686,7 @@ LPAPLCHAR FormatImmed
      LPAPLLONGEST lpaplLongest)
 
 {
-    WCHAR wc;
+    WCHAR             wc;
 
     // Split cases based upon the immediate type
     switch (ImmType)
@@ -775,7 +775,7 @@ LPAPLCHAR FormatImmedFC
     (LPWCHAR      lpaplChar,        // Ptr to input string
      UINT         ImmType,          // Immediate type
      LPAPLLONGEST lpaplLongest,     // Ptr to value to format
-     UINT         nDigits,          // # significant digits
+     APLUINT      nDigits,          // # significant digits
      APLCHAR      aplCharDecimal,   // Char to use as decimal separator
      APLCHAR      aplCharOverbar,   // Char to use as overbar
      FLTDISPFMT   fltDispFmt)       // Float display format
@@ -1062,8 +1062,8 @@ LPAPLCHAR FormatFloatFC
         DTOAMODE dtoaMode;              // DTOA mode corresponding to fltDispFmt
         LPCHAR   s, s0;                 // Ptr to output from dtoa
         int      decpt,                 // Exponent from dtoa
-                 iSigDig,               // # significant digits
                  sign;                  // TRUE iff the number is negative
+        APLINT   iSigDig;               // # significant digits
         UBOOL    bPowerOfTwo;           // TRUE iff the # is a power of two
         LPWCHAR  lpaplCharIni;          // Initial ptr to output save area
 
@@ -1073,12 +1073,14 @@ LPAPLCHAR FormatFloatFC
         // DTOAMODE_SIGDIGS,                    // 2 = # significant digits
         // DTOAMODE_FRACTDIGS,                  // 3 = # fractional digits (past decimal point)
 
-        // Save the initial ptr to the oputput save area
+        // Save the initial ptr to the output save area
         lpaplCharIni = lpaplChar;
 
         // If this is raw float formatting, ...
         if (nDigits EQ 0 && fltDispFmt EQ FLTDISPFMT_RAWFLT)
-            nDigits  = GetQuadPP ();            // []PP
+            // Use the current value of []PP
+            nDigits  = GetQuadPP ();
+        // Get the corresponding DTOAMODE_xxx
         dtoaMode = gDTOA_Mode[fltDispFmt];
 
         // If this is RAWINT, ...
@@ -1415,7 +1417,7 @@ LPAPLCHAR FormatExpFmt
 {
     UBOOL     bExact;                       // TRUE iff to be formatted with exactly
                                             // nDigits significant digits
-    int       iSigDig;                      // # significant digits
+    APLINT    iSigDig;                      // # significant digits
 
     // Check for exactly nDigits significant digits
     bExact = (nDigits < 0);
@@ -1470,8 +1472,9 @@ LPAPLCHAR FormatExpFmt
             *lpaplChar++ = (iSigDig > 0) ? *s++ : L'_';
             nDigits--;
             iSigDig--;
-        } // End WHILE
+        } // End IF/WHILE
 
+        // If we're being exact, ...
         if (bExact)
         // While there are more digits, ...
         while (nDigits > 0)
@@ -1654,9 +1657,6 @@ LPWCHAR DisplayTransferGlb2
     APLRANK  aplRankArg;                    // Arg item rank
     APLUINT  uCnt;                          // Loop counter
     UBOOL    bNeedParens = FALSE;           // TRUE iff this level needs surrounding parens
-
-    // Clear the type bits
-    hGlbArg = ClrPtrTypeDir (hGlbArg),
 
     // Lock the memory to get a ptr to it
     lpMemArg = MyGlobalLock (hGlbArg);
@@ -1883,7 +1883,7 @@ LPWCHAR DisplayTransferFcn2
         lpwszTemp = &lpwszTemp[lstrlenW (lpwszTemp)];
 
         // Get the user-defined function/operator global memory handle
-        hGlbDfnHdr = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+        hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -1997,7 +1997,7 @@ APLCHAR GetQuadFCValue
     lpMemPTD = GetMemPTD ();
 
     // Get the []FC global memory handle
-    hGlbQuadFC = ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FC]->stData.stGlbData);
+    hGlbQuadFC = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
     lpMemQuadFC = MyGlobalLock (hGlbQuadFC);
@@ -2048,7 +2048,7 @@ APLINT GetQuadICValue
     lpMemPTD = GetMemPTD ();
 
     // Get the []IC global memory handle
-    hGlbQuadIC = ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IC]->stData.stGlbData);
+    hGlbQuadIC = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
     lpMemQuadIC = MyGlobalLock (hGlbQuadIC);

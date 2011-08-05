@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -229,7 +229,7 @@ LPPL_YYSTYPE PrimIdentFnSquad_EM_YY
     else
     {
         // Get the right arg global memory handle
-        hGlbRht = ClrPtrTypeDir (lpYYRht->tkToken.tkData.tkGlbData);
+        hGlbRht = lpYYRht->tkToken.tkData.tkGlbData;
 
         // Lock the memory to get a ptr to it
         lpMemRht = MyGlobalLock (hGlbRht);
@@ -407,9 +407,6 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
-                // Clear the ptr type bits
-                hGlbRht = ClrPtrTypeDir (hGlbRht);
-
                 return PrimFnDydSquadGlb_EM_YY
                        (lptkLftArg,         // Ptr to left arg token
                        &hGlbRht,            // Ptr to right arg global memory handle
@@ -441,9 +438,6 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (hGlbRht));
-
-            // Clear the ptr type bits
-            hGlbRht = ClrPtrTypeDir (hGlbRht);
 
             return PrimFnDydSquadGlb_EM_YY
                    (lptkLftArg,         // Ptr to left arg token
@@ -725,7 +719,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 if (lptkSetArg && aplRankSub)
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemDimSub = MyGlobalLock (ClrPtrTypeDir (hGlbSub));
+                    lpMemDimSub = MyGlobalLock (hGlbSub);
 
                     // Skip over the header to the dimensions
                     lpMemDimSub = VarArrayBaseToDim (lpMemDimSub);
@@ -735,7 +729,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                         aplRankN1Res +=  !IsUnitDim (*lpMemDimSub++);
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDir (hGlbSub)); lpMemDimSub = NULL;
+                    MyGlobalUnlock (hGlbSub); lpMemDimSub = NULL;
                 } // End IF
             } else
             // The left arg item is immediate (in <aplLongestSub> and of type <immTypeSub>)
@@ -906,7 +900,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     AttrsOfGlb (hGlbSub, NULL, &aplNELMSub, &aplRankSub, NULL);
 
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (ClrPtrTypeDir (hGlbSub));
+                    lpMemSub = MyGlobalLock (hGlbSub);
 
                     // Skip over the header to the dimensions
                     lpMemSub = VarArrayBaseToDim (lpMemSub);
@@ -943,7 +937,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     } // End IF/ELSE/FOR
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDir (hGlbSub)); lpMemSub = NULL;
+                    MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 
                     // Check for error
                     if (!bRet)
@@ -1008,24 +1002,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
     // If we're not assigning, ...
     if (lptkSetArg EQ NULL)
-    {
         // Skip over the header and dimensions to the data
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
-
-        // If the result is nested or hetero, fill the data with PTR_REUSED
-        //   in case we fail along the way
-        if (IsSimpleHet (aplTypeRes)
-         || IsNested (aplTypeRes))
-        {
-            // Fill in first one in case of nested prototypes
-            if (IsNested (aplTypeRes))
-                ((LPAPLNESTED) lpMemRes)[0] = PTR_REUSED;
-
-            // Loop through the rest of the items
-            for (uRes = 0; uRes < aplNELMRes; uRes++)
-                ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
-        } // End IF
-    } else
+    else
     // We are assigning
     {
         if (lpMemSet)

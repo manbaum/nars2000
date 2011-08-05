@@ -612,9 +612,6 @@ UBOOL TransferInverseFcn2_EM
 
             Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
-            // Clear the type bits for lock/unlock
-            hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
-
             // Lock the memory to get a ptr to it
             lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 

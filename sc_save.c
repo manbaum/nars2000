@@ -88,7 +88,7 @@ UBOOL CmdSave_EM
     lpwszTemp   = lpMemPTD->lpwszTemp;
 
     // Lock the memory to get a ptr to it
-    lpMemOldWSID = MyGlobalLock (ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData));
+    lpMemOldWSID = MyGlobalLock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemOldWSID)
     // Get the NELM and Rank
@@ -156,7 +156,7 @@ UBOOL CmdSave_EM
             } // End IF
 
             // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData)); lpMemOldWSID = NULL;
+            MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
 
             // Set the value of the new []WSID as wszTailDPFE
             if (!SaveNewWsid_EM (wszTailDPFE))
@@ -181,7 +181,7 @@ UBOOL CmdSave_EM
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData)); lpMemOldWSID = NULL;
+        MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
     } // End IF
 
     // The full workspace name to save to is in lpMemSaveWSID
@@ -294,8 +294,8 @@ UBOOL CmdSave_EM
                 HGLOBAL hGlbWSID;
                 LPWCHAR lpMemWSID;
 
-                // Get the global memory handle and clear the ptr type bits
-                hGlbWSID = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+                // Get the global memory handle
+                hGlbWSID = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
                 lpMemWSID = MyGlobalLock (hGlbWSID);
@@ -573,7 +573,7 @@ NORMAL_EXIT:
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData)); lpMemOldWSID = NULL;
+        MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
     } // End IF
 
     if (hGlbCnt)
@@ -730,9 +730,6 @@ LPAPLCHAR SavedWsFormGlbFcn
 
     // Save ptr to start of buffer
     lpaplCharStart = lpaplChar;
-
-    // Clear the ptr type bits
-    hGlbObj = ClrPtrTypeDir (hGlbObj);
 
     // Format the hGlbObj
     wsprintfW (wszGlbObj,
@@ -1201,9 +1198,6 @@ LPAPLCHAR SavedWsFormGlbVar
     Assert (IsGlbTypeVarDir_PTB (hGlbObj)
          || bUsrDfn);
 
-    // Clear the ptr type bits
-    hGlbObj = ClrPtrTypeDir (hGlbObj);
-
     // Lock the memory to get a ptr to it
     lpMemObj = MyGlobalLock (hGlbObj);
 
@@ -1304,7 +1298,7 @@ LPAPLCHAR SavedWsFormGlbVar
                     // Format the value
                     lpaplChar =
                       FormatAplintFC (lpaplChar,            // Ptr to output save area
-                                      *(LPAPLINT) lpMemObj, // The value to format
+                                     *(LPAPLINT) lpMemObj,  // The value to format
                                       UTF16_BAR);           // Char to use as overbar
                 break;
 
@@ -1313,11 +1307,11 @@ LPAPLCHAR SavedWsFormGlbVar
                 for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLFLOAT) lpMemObj)++)
                     // Format the value
                     lpaplChar =
-                      FormatFloatFC (lpaplChar,                                     // Ptr to output save area
-                                     *(LPAPLFLOAT) lpMemObj,                        // The value to format
+                      FormatFloatFC (lpaplChar,             // Ptr to output save area
+                                    *(LPAPLFLOAT) lpMemObj, // The value to format
                                      DEF_MAX_QUADPP,                                // Precision to use
-                                     UTF16_DOT,                                     // Char to use as decimal separator
-                                     UTF16_BAR,                                     // Char to use as overbar
+                                     UTF16_DOT,             // Char to use as decimal separator
+                                     UTF16_BAR,             // Char to use as overbar
                                      FLTDISPFMT_RAWFLT);                            // Float display format
                 break;
 

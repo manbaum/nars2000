@@ -269,7 +269,7 @@ UBOOL CheckAxisGlb
     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (ClrPtrTypeDir (hGlbData));
+    lpMem = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
     // Get the Array Type, NELM, and Rank
@@ -671,7 +671,7 @@ NORMAL_EXIT:
     } // End IF
 
     // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDir (hGlbData)); lpMem = NULL;
+    MyGlobalUnlock (hGlbData); lpMem = NULL;
 
     return bRet;
 } // End CheckAxisGlb

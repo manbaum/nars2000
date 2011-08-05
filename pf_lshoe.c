@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
                 Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
                 return PrimFnMonLeftShoeGlb_EM_YY
-                       (ClrPtrTypeDir (hGlbRht),    // Right arg global memory handle
+                       (hGlbRht,                    // Right arg global memory handle
                         lptkAxis,                   // Ptr to axis token (may be NULL)
                         lptkFunc);                  // Ptr to function token
             } // End IF
@@ -155,7 +155,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
             Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
             return PrimFnMonLeftShoeGlb_EM_YY
-                   (ClrPtrTypeDir (hGlbRht),    // Right arg global memory handle
+                   (hGlbRht,                    // Right arg global memory handle
                     lptkAxis,                   // Ptr to axis token (may be NULL)
                     lptkFunc);                  // Ptr to function token
         defstop
@@ -534,11 +534,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             goto NORMAL_EXIT;
         } // End IF
 
-        // Fill nested result with PTR_REUSED
-        //   in case we fail part way through
-        for (uRes = 0; uRes < aplNELMRes; uRes++)
-            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
-
         //***************************************************************
         // Check for empty subarrays
         //***************************************************************
@@ -686,11 +681,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                                                    aplNELMAxis,
                                                    aplRankRes,
                                                    aplRankRht,
-                                                   ((LPAPLNESTED) lpMemRes)++,
+                                    ((LPAPLNESTED) lpMemRes)++,
                                                    lpMemDimRht,
                                                    lpMemAxis,
-                                                   &hGlbSub,
-                                                   &lpMemSub,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
                                                    lptkFunc);
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -744,11 +739,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                                                    aplNELMAxis,
                                                    aplRankRes,
                                                    aplRankRht,
-                                                   ((LPAPLNESTED) lpMemRes)++,
+                                    ((LPAPLNESTED) lpMemRes)++,
                                                    lpMemDimRht,
                                                    lpMemAxis,
-                                                   &hGlbSub,
-                                                   &lpMemSub,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
                                                    lptkFunc);
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -797,11 +792,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                                                    aplNELMAxis,
                                                    aplRankRes,
                                                    aplRankRht,
-                                                   ((LPAPLNESTED) lpMemRes)++,
+                                    ((LPAPLNESTED) lpMemRes)++,
                                                    lpMemDimRht,
                                                    lpMemAxis,
-                                                   &hGlbSub,
-                                                   &lpMemSub,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
                                                    lptkFunc);
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -850,11 +845,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                                                    aplNELMAxis,
                                                    aplRankRes,
                                                    aplRankRht,
-                                                   ((LPAPLNESTED) lpMemRes)++,
+                                    ((LPAPLNESTED) lpMemRes)++,
                                                    lpMemDimRht,
                                                    lpMemAxis,
-                                                   &hGlbSub,
-                                                   &lpMemSub,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
                                                    lptkFunc);
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -903,11 +898,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                                                    aplNELMAxis,
                                                    aplRankRes,
                                                    aplRankRht,
-                                                   ((LPAPLNESTED) lpMemRes)++,
+                                    ((LPAPLNESTED) lpMemRes)++,
                                                    lpMemDimRht,
                                                    lpMemAxis,
-                                                   &hGlbSub,
-                                                   &lpMemSub,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
                                                    lptkFunc);
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -958,11 +953,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                                                    aplNELMAxis,
                                                    aplRankRes,
                                                    aplRankRht,
-                                                   ((LPAPLNESTED) lpMemRes)++,
+                                    ((LPAPLNESTED) lpMemRes)++,
                                                    lpMemDimRht,
                                                    lpMemAxis,
-                                                   &hGlbSub,
-                                                   &lpMemSub,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
                                                    lptkFunc);
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -1014,11 +1009,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                                                    aplNELMAxis,
                                                    aplRankRes,
                                                    aplRankRht,
-                                                   ((LPAPLNESTED) lpMemRes)++,
+                                    ((LPAPLNESTED) lpMemRes)++,
                                                    lpMemDimRht,
                                                    lpMemAxis,
-                                                   &hGlbSub,
-                                                   &lpMemSub,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
                                                    lptkFunc);
                 if (!bRet)
                     goto ERROR_EXIT;
@@ -1359,7 +1354,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
                 Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydLeftShoeGlb_EM (lptkLftArg,
-                                                ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                                                lptkRhtArg->tkData.tkSym->stData.stGlbData,
                                                 lptkAxis,
                                                 lptkFunc);
             } // End IF
@@ -1376,7 +1371,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
             Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnDydLeftShoeGlb_EM (lptkLftArg,
-                                            ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),
+                                            lptkRhtArg->tkData.tkGlbData,
                                             lptkAxis,
                                             lptkFunc);
         defstop
@@ -2074,7 +2069,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
                                     &aplLongestRht,     // Ptr to result immediate value (may be NULL)
                                      NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                     // Split cases based upon the right arg storage type
-                    switch (aplTypeItm)
+                    switch (aplTypeRht)
                     {
                         case ARRAY_BOOL:
                             // Save the next element in the item
@@ -2090,6 +2085,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
                             break;
 
                         case ARRAY_INT:
+                        case ARRAY_APA:
                             // Save the next element in the item
                             *((LPAPLINT)   lpMemItm)++ = (APLINT)  aplLongestRht;
 

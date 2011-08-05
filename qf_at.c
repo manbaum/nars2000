@@ -153,16 +153,34 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
     // Get the left arg global handle & longest w/o locking it
     aplLongestLft = GetGlbPtrs (lptkLftArg, &hGlbLft);
 
-    // If the left arg is a float, ...
-    if (IsSimpleFlt (aplTypeLft))
-    {
-        // Attempt to convert the float to an integer using System CT
-        aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+    // If the left arg is a global, ...
+    if (hGlbLft)
+        // Set the ptr type bits
+        hGlbLft = MakePtrTypeGlb (hGlbLft);
 
-        // Check for LEFT DOMAIN ERROR
-        if (!bRet)
-            goto LEFT_DOMAIN_EXIT;
-    } // End IF
+    // Split cases based upon the left arg storage type
+    switch (aplTypeLft)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            bRet = TRUE;
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Attempt to convert the float to an integer using System CT
+            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Check for LEFT DOMAIN ERROR
+    if (!bRet)
+        goto LEFT_DOMAIN_EXIT;
 
     // Check for LEFT DOMAIN ERROR
     switch (aplLongestLft)
@@ -555,9 +573,6 @@ LPAPLUINT AttributeValences
                 // Get the user-defined function/operator global memory handle
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
-                // Clear the ptr type bits
-                hGlbObj = ClrPtrTypeDir (hGlbObj);
-
                 // Lock the memory to get a ptr to it
                 lpMemObj = MyGlobalLock (hGlbObj);
 
@@ -653,9 +668,6 @@ LPAPLUINT AttributeFixTime
             {
                 // Get the user-defined function/operator global memory handle
                 hGlbObj = lpSymEntry->stData.stGlbData;
-
-                // Clear the ptr type bits
-                hGlbObj = ClrPtrTypeDir (hGlbObj);
 
                 // Lock the memory to get a ptr to it
                 lpMemObj = MyGlobalLock (hGlbObj);
@@ -893,9 +905,6 @@ APLINT CalcSymEntrySize
         Assert (IsGlbTypeFcnDir_PTB (hGlbDfnHdr)
              || IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
-        // Clear the ptr type bits
-        hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
-
         // Split cases based upon the user-defined function/operator bit
         if (lpSymEntry->stFlags.UsrDfn)
         {
@@ -1004,8 +1013,6 @@ APLUINT CalcGlbVarSize
     // stData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
-    hGlbData = ClrPtrTypeDir (hGlbData);
-
     aplSize += MyGlobalSize (hGlbData);
 
     // Lock the memory to get a ptr to it
@@ -1075,8 +1082,6 @@ APLUINT CalcGlbFcnSize
 
     // stData is a valid HGLOBAL function array
     Assert (IsGlbTypeFcnDir_PTB (hGlbData));
-
-    hGlbData = ClrPtrTypeDir (hGlbData);
 
     aplSize += MyGlobalSize (hGlbData);
 

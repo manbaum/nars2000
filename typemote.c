@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ void TypeDemote
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // Get the global memory handle
-                hGlbRht = ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData);
+                hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 break;          // Join common global code
             } // End IF
@@ -120,7 +120,7 @@ void TypeDemote
             return;
 
         case TKT_VARARRAY:
-            hGlbRht = ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData);
+            hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
             break;
 
@@ -375,8 +375,8 @@ void TypeDemote
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    // It's nested, so there's no demotion
-                    goto NORMAL_EXIT;
+                        // It's nested, so there's no demotion
+                        goto NORMAL_EXIT;
 
                 defstop
                     break;
@@ -912,8 +912,8 @@ UBOOL TypePromoteGlb_EM
     APLUINT    ByteRes;             // # bytes in the result
     LPSYMENTRY lpSymTmp;            // Ptr to temporary LPSYMENTRY
 
-    // Clear the type bits
-    hGlbArg = ClrPtrTypeDir (*lphGlbArg);
+    // Copy the HGLOBAL
+    hGlbArg = *lphGlbArg;
 
     // Lock the memory to get a ptr to it
     lpMemArg = MyGlobalLock (hGlbArg);

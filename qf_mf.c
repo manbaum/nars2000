@@ -209,9 +209,6 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
 
             Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
-            // Clear the ptr type bits
-            hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
-
             // Lock the memory to get a ptr to it
             lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
@@ -864,9 +861,6 @@ UBOOL ToggleMonInfo
     hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
     Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
-
-    // Clear the ptr type bits
-    hGlbDfnHdr = ClrPtrTypeDir (hGlbDfnHdr);
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);

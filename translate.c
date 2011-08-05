@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -185,43 +185,6 @@ TOKEN_TYPES TranslateImmTypeToTknType
             return -1;              // To keep the compiler happy
     } // End SWITCH
 } // End TranslateImmTypeToTknType
-
-
-//// //***************************************************************************
-//// //  $TranslateImmTypeToTknTypeNamed
-//// //
-//// //  Translate an immediate type (see IMM_TYPES) to
-//// //    a named token type (see TOKEN_TYPES).
-//// //***************************************************************************
-////
-//// TOKEN_TYPES TranslateImmTypeToTknTypeNamed
-////     (IMM_TYPES immType)
-////
-//// {
-////     switch (immType)
-////     {
-////         case IMMTYPE_BOOL:
-////         case IMMTYPE_INT:
-////         case IMMTYPE_CHAR:
-////         case IMMTYPE_FLOAT:
-////             return TKT_VARNAMED;
-////
-////         case IMMTYPE_PRIMFCN:
-////             return TKT_FCNNAMED;
-////
-////         case IMMTYPE_PRIMOP1:
-////             return TKT_OP1NAMED;
-////
-////         case IMMTYPE_PRIMOP2:
-////             return TKT_OP2NAMED;
-////
-////         case IMMTYPE_PRIMOP3:
-////             return TKT_OP3NAMED;
-////
-////         defstop
-////             return -1;              // To keep the compiler happy
-////     } // End SWITCH
-//// } // End TranslateImmTypeToTknTypeNamed
 
 
 //***************************************************************************
@@ -716,6 +679,43 @@ UINT TranslateExitTypeToReturnCode
             return EC_RETCODE_UNK;
     } // End SWITCH
 } // End TranslateExitTypeToReturnCode
+
+
+//***************************************************************************
+//  $TranslateQuadICIndex
+//
+//  Translate a given []IC index into an APLFLOAT return value
+//***************************************************************************
+
+APLFLOAT TranslateQuadICIndex
+    (IC_INDICES icIndex)
+
+{
+    // Split cases based upon the []IC index value
+    switch (GetQuadICValue (icIndex))
+    {
+        case ICVAL_NEG1:
+            return -1;
+
+        case ICVAL_ZERO:
+            return 0;
+
+        case ICVAL_ONE:
+            return 1;
+
+        case ICVAL_DOMAIN_ERROR:
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+        case ICVAL_POS_INFINITY:
+            return PosInfinity;
+
+        case ICVAL_NEG_INFINITY:
+            return NegInfinity;
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // TranslateQuadICIndex
 
 
 //***************************************************************************

@@ -188,9 +188,9 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
             return NULL;
     } // End SWITCH
 
-    return PrimFnMonUpTackJotGlb_EM_YY (ClrPtrTypeDir (hGlbRht),    // HGLOBAL
-                                        lptkAxis,                   // Ptr to axis token (may be NULL)
-                                        lptkFunc);                  // Ptr to function token
+    return PrimFnMonUpTackJotGlb_EM_YY (hGlbRht,                // HGLOBAL
+                                        lptkAxis,               // Ptr to axis token (may be NULL)
+                                        lptkFunc);              // Ptr to function token
 RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                lptkFunc);
@@ -356,7 +356,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
       PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
                                    lpMemPTD,        // Ptr to PerTabData global memory
                                    lpwszCompLine,   // Ptr to text of line to execute
-                                   bActOnErrors,    // TRUE iff we shoudl act on errors
+                                   bActOnErrors,    // TRUE iff we should act on errors
                                    lptkFunc);       // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)
@@ -383,6 +383,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
         case EXITTYPE_RESET_ONE:
         case EXITTYPE_RESET_ONE_INIT:
         case EXITTYPE_RESET_ALL:
+        case EXITTYPE_NONE:
         case EXITTYPE_NOVALUE:
         case EXITTYPE_QUADERROR_INIT:
         case EXITTYPE_QUADERROR_EXEC:
@@ -398,7 +399,6 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 
             // Fall through to error code
 
-        case EXITTYPE_NONE:
         case EXITTYPE_ERROR:
         case EXITTYPE_RETURNxLX:
             // Mark as in error

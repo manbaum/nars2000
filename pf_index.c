@@ -158,7 +158,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplNELMSub    = aplNELMLst;
             aplRankSub    = aplRankLst;
 
-            hGlbSub  = ClrPtrTypeDir (hGlbLst);
+            hGlbSub  = hGlbLst;
             lpMemSub = MyGlobalLock (hGlbSub);
         } // End IF/ELSE
 
@@ -283,18 +283,6 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             // Skip over the header and dimensions to the data
             lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
 
-            // If the result is a HETERO/NESTED result, fill all items with PTR_REUSED
-            //   in case we fail later on
-            if (!IsSimple (aplTypeRes))
-            {
-                // Handle protoype case
-                *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-
-                // Fill remaining result items with PTR_REUSED
-                for (uSub = 1; uSub < aplNELMSub; uSub++)
-                    ((LPAPLNESTED) lpMemRes)[uSub] = PTR_REUSED;
-            } // End IF
-
             // Validate each element of the list arg items as either reach (pick)
             //   or scatter (squad) index reference
 
@@ -399,7 +387,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                 case PTRTYPE_HGLOBAL:
                     // Get the item global memory handle
-                    hGlbItm = ClrPtrTypeDir (((LPAPLNESTED) lpMemSub)[uSub]);
+                    hGlbItm = ((LPAPLNESTED) lpMemSub)[uSub];
 
                     // Get the attributes (Type, NELM, and Rank) of the list arg item
                     AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, NULL);
@@ -892,26 +880,14 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     lpMemRes = VarArrayDimToData (lpMemRes, aplRankLst);
 ////lpMemLst = VarArrayDimToData (lpMemRes, aplRankLst);
 
-    // If the result is a HETERO/NESTED result, fill all items with PTR_REUSED
-    //   in case we fail later on
-    if (!IsSimple (aplTypeRes))
-    {
-        // Handle protoype case
-        if (IsNested (aplTypeRes))
-            *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-        // Fill result items with PTR_REUSED
-        for (uLst = 0; uLst < aplNELMLst; uLst++)
-            ((LPAPLNESTED) lpMemRes)[uLst] = PTR_REUSED;
-    } // End IF
+    // Skip over the header and dimensions to the data
+    lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
 
     // Handle prototypes
     if (IsEmpty (aplNELMLst)
      && IsNested (aplTypeRes))
     {
         HGLOBAL     hSymGlbProto;       // Prototype global memory handle
-
-        // Skip over the header and dimensions to the data
-        lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
 
         // Make a prototype for the result
         hSymGlbProto =
@@ -1311,9 +1287,6 @@ UBOOL ArrayIndexValidZilde_EM
 
             // Get the attributes (Type, NELM, and Rank) of the list arg item
             AttrsOfGlb (hGlbSub, &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
-
-            // Clear the ptr type bits
-            hGlbSub = ClrPtrTypeDir (hGlbSub);
 
             // Lock the memory to get a ptr to it
             lpMemSub = MyGlobalLock (hGlbSub);
@@ -2364,7 +2337,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
         goto ERROR_EXIT;
 
     // Get the global memory handle
-    hGlbRes = ClrPtrTypeDir (lpYYRes2->tkToken.tkData.tkGlbData);
+    hGlbRes = lpYYRes2->tkToken.tkData.tkGlbData;
 
     // Free the second result
     YYFree (lpYYRes2); lpYYRes2 = NULL;
@@ -2512,7 +2485,7 @@ UBOOL ArrayIndexSetSingLst_EM
         case TKT_LSTARRAY:
         case TKT_VARARRAY:              // To handle Selective Specification
             // Set the vars for an HGLOBAL
-            hGlbSubLst = ClrPtrTypeDir (lptkLstArg->tkData.tkGlbData);
+            hGlbSubLst = lptkLstArg->tkData.tkGlbData;
             AttrsOfGlb (hGlbSubLst, &aplTypeSubLst, &aplNELMSubLst, &aplRankSubLst, NULL);
             lpMemSubLst = MyGlobalLock (hGlbSubLst);
 
@@ -2582,11 +2555,13 @@ UBOOL ArrayIndexSetSingLst_EM
         if (hGlbRht)
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        else
+            lpMemRht = &aplLongestRht;
     } // End IF/ELSE
 
     //***************************************************************
-    // From here on, lpMemSubLst points to the data, and if the
-    //   right arg is not immediate, lpMemRht points to its data
+    // From here on, lpMemSubLst points to the data, and lpMemRht
+    //   points to its data
     //***************************************************************
 
     // Handle obvious DOMAIN ERRORs
@@ -2660,6 +2635,9 @@ UBOOL ArrayIndexSetSingLst_EM
             if (!(*SysVarValid) (0, aplTypeRht, &aplLongestRht, NULL, lptkLstArg))
                 goto DOMAIN_EXIT;
 
+            // As we don't promote sysvars, ...
+            aplTypeRes = aplTypeNam;
+
             *lphGlbRes = CopyGlbAsType_EM (hGlbNam, aplTypeNam, lptkNamArg);
         } else
         {
@@ -2670,10 +2648,8 @@ UBOOL ArrayIndexSetSingLst_EM
                 //   no need to make a copy of the array as we can change
                 //   it in place
                 if (GetRefCntGlb (hGlbNam) EQ 1)
-                {
-                    DbgIncrRefCntDir_PTB (hGlbNam);
                     *lphGlbRes = hGlbNam;
-                } else
+                else
                     // Because this operation changes the named array,
                     //   we need to copy the entire array first.  The
                     //   caller of this code deletes the old array.
@@ -2810,9 +2786,6 @@ UBOOL ArrayIndexSetSingLst_EM
       && !TypePromoteGlb_EM (lphGlbRes, aplTypeRes, lptkFunc)))
           goto ERROR_EXIT;
 
-    // Clear the type bits
-    *lphGlbRes = ClrPtrTypeDir (*lphGlbRes);
-
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
 
@@ -2941,7 +2914,6 @@ UBOOL ArrayIndexSetSingLst_EM
                 case PTRTYPE_HGLOBAL:
                     // Get the global memory handle
                     hGlbSubLst2 = ((LPAPLHETERO) lpMemSubLst)[uRes];
-                    hGlbSubLst2 = ClrPtrTypeDir (hGlbSubLst2);
 
                     AttrsOfGlb (hGlbSubLst2, &aplTypeSubLst2, &aplNELMSubLst2, NULL, NULL);
 
@@ -2957,7 +2929,6 @@ UBOOL ArrayIndexSetSingLst_EM
                                                       lptkFunc);            // Ptr to function token
                         // Save just the global memory handle (which we need to free later)
                         hGlbSubLst2 = lpYYItm->tkToken.tkData.tkGlbData;
-                        hGlbSubLst2 = ClrPtrTypeDir (hGlbSubLst2);
 
                         YYFree (lpYYItm); lpYYItm = NULL;
                     } // End IF
@@ -3025,7 +2996,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+        FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (*lphGlbRes && lpMemRes)
@@ -3152,7 +3123,7 @@ UBOOL ArrayIndexSetVector_EM
 
                 case PTRTYPE_HGLOBAL:
                     // Lock the memory to get a ptr to it
-                    lpMemSubLst2 = MyGlobalLock (ClrPtrTypeDir (hGlbSubLst));
+                    lpMemSubLst2 = MyGlobalLock (hGlbSubLst);
 
                     // Get the type and rank
                     aplTypeSubLst2 = ((LPVARARRAY_HEADER) lpMemSubLst2)->ArrType;
@@ -3220,7 +3191,7 @@ UBOOL ArrayIndexSetVector_EM
             if (GetPtrTypeDir (hGlbSubLst) EQ PTRTYPE_HGLOBAL)
             {
                 // We no longer need this ptr
-                MyGlobalUnlock (ClrPtrTypeDir (hGlbSubLst)); lpMemSubLst2 = NULL;
+                MyGlobalUnlock (hGlbSubLst); lpMemSubLst2 = NULL;
             } // End IF
 
             if (!bRet)
@@ -3262,7 +3233,7 @@ UBOOL ArrayIndexSetVector_EM
         case ARRAY_BOOL:
             // Replace the corresponding item in the result
             uBitMask = (BIT0 << (MASKLOG2NBIB & (UINT) aplLongestSubLst));
-            if (aplLongestRht)
+            if (BIT0 & aplLongestRht)
                 ((LPAPLBOOL)    lpMemRes)[aplLongestSubLst >> LOG2NBIB] |= uBitMask;
             else
                 ((LPAPLBOOL)    lpMemRes)[aplLongestSubLst >> LOG2NBIB] &= ~uBitMask;

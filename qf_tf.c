@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -280,7 +280,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
      LPTOKEN lptkRhtArg,                        // Ptr to right arg token
      LPWCHAR lpwszTemp,                         // Ptr to right arg memory as temporary storage
      APLNELM aplNELMRht,                        // Right arg NELM
-     UBOOL   bTranslateAPL2)                    // TRUE iff input/output shoudl be translated to/from APL2
+     UBOOL   bTranslateAPL2)                    // TRUE iff input/output should be translated to/from APL2
 
 {
     APLNELM           aplNELMRes;               // Result    ...
@@ -452,7 +452,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 if (!lpSymEntry->stFlags.Imm)
                 {
                     // Get the global memory handle
-                    hGlbItm = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+                    hGlbItm = lpSymEntry->stData.stGlbData;
 
                     // Lock the memory to get a ptr to it
                     lpMemItm = MyGlobalLock (hGlbItm);
@@ -637,7 +637,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 *lpwszTemp++ = L' ';
 
                 // Get the user-defined function/operator global memory handle
-                hGlbDfnHdr = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+                hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
                 lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -850,7 +850,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
      LPTOKEN lptkRhtArg,                    // Ptr to right arg token
      LPWCHAR lpwszTemp,                     // Ptr to right arg memory as temporary storage
      APLNELM aplNELMRht,                    // Right arg NELM
-     UBOOL   bTranslateAPL2)                    // TRUE iff input/output shoudl be translated to/from APL2
+     UBOOL   bTranslateAPL2)                // TRUE iff input/output should be translated to/from APL2
 
 {
     APLUINT       ByteRes;                  // # bytes in the result

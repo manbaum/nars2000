@@ -1267,10 +1267,11 @@ DWORD _MyGlobalFlags
 //***************************************************************************
 
 HGLOBAL _MyGlobalReAlloc
-    (HGLOBAL hMem,      // Address of the global memory object
-     SIZE_T  dwBytes,   // New size of block
-     UINT    uFlags,    // How to reallocate
-     UINT    uLine)     // Line #
+    (HGLOBAL hMem,          // Address of the global memory object
+     SIZE_T  dwBytes,       // New size of block
+     UINT    uFlags,        // How to reallocate
+     LPCHAR  lpFileName,    // Ptr to filename
+     UINT    uLine)         // Line #
 
 {
     SIZE_T  dwRet;
@@ -1312,7 +1313,14 @@ HGLOBAL _MyGlobalReAlloc
                        NULL);                       // Address of array of message inserts
         MBC (szTemp);
         DbgBrk ();
-    } // End IF
+    } else
+    {
+        if (hGlb NE hMem)
+        {
+            _DeleObj (OBJ_GLBALLOC, hMem);
+            _SaveObj (OBJ_GLBALLOC, hGlb,    lpFileName, uLine);
+        } // End IF
+    } // End IF/ELSE
 
     return hGlb;
 } // End _MyGlobalReAlloc

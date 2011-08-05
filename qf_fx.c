@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             APLNELM   aplNELMItmRht;        // Right arg item NELM
 
                             // Lock the memory to get a ptr to it
-                            lpMemItmRht = MyGlobalLock (ClrPtrTypeDir (hGlbItmRht));
+                            lpMemItmRht = MyGlobalLock (hGlbItmRht);
 
                             // Get the array NELM
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemItmRht)
@@ -181,7 +181,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                                 break;
 
                             // We no longer need this ptr
-                            MyGlobalUnlock (ClrPtrTypeDir (hGlbItmRht)); lpMemItmRht = NULL;
+                            MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
 
                             if (IsEmpty (aplNELMItmRht))
                                 goto RIGHT_DOMAIN_EXIT;

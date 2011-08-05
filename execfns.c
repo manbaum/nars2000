@@ -435,9 +435,6 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
                       lpYYRes;      // Ptr to the result
     LPTOKEN           lptkAxis2;    // Ptr to secondary axis token (may be NULL)
 
-    // Clear the ptr type bits
-    hGlbFcn = ClrPtrTypeDir (hGlbFcn);
-
     // Lock the memory to get a ptr to it
     lpHeader = MyGlobalLock (hGlbFcn);
 

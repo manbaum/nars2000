@@ -375,7 +375,7 @@ UBOOL LoadWorkspace_EM
 ////////////////////if (!lpSymEntry)            // ***FIXME***
 
                     // Get a ptr to the function header
-                    hGlbDfnHdr = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+                    hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -828,9 +828,6 @@ UBOOL ParseSavedWsFcn_EM
         {
             LPDFN_HEADER lpMemDfnHdr;   // Ptr to DFN_HEADER global memory
 
-            // Clear the ptr type bits
-            hGlbOld = ClrPtrTypeDir (hGlbOld);
-
             // Lock the memory to get a ptr to it
             lpMemDfnHdr = MyGlobalLock (hGlbOld);
 
@@ -981,9 +978,6 @@ LPWCHAR ParseSavedWsVar_EM
 
             // stData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (hGlbObj));
-
-            // Clear the type bits
-            hGlbObj = ClrPtrTypeDir (hGlbObj);
 
             // Lock the memory to get a ptr to it
             lpMemObj = MyGlobalLock (hGlbObj);
@@ -1288,8 +1282,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
             lpHeader = lpMemObj;
 
             // Fill in the header
-////////////// Note that the RefCnt is initialized to zero
-////////////// It will be incremented upon each reference
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeObj;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
@@ -1427,9 +1419,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Restore the original value
                         *lpwCharEnd = wcTmp;
 
-                        // Use David Gay's routines
-                        // Save in the result and skip over it
-                        *((LPAPLFLOAT) lpMemObj)++ = strtod ((LPCHAR) lpwszFormat, NULL);
+                            // Use David Gay's routines
+                            // Save in the result and skip over it
+                            *((LPAPLFLOAT) lpMemObj)++ = strtod ((LPCHAR) lpwszFormat, NULL);
 
                         // Skip to the next field
                         lpwSrc = &lpwCharEnd[1];
@@ -1527,9 +1519,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                 // Copy the global memory handle
                 hGlbObj = CopySymGlbDirAsGlb (hGlbChk);
-
-                // Clear the ptr type bits
-                hGlbChk = ClrPtrTypeDir (hGlbChk);
 
                 // Lock the memory to get a ptr to it
                 lpMemChk = MyGlobalLock (hGlbChk);
@@ -1911,10 +1900,6 @@ UBOOL CompareGlobals
     APLNELM           aplNELM;          // ...    NELM
     APLRANK           aplRank;          // ...    rank
     UINT              uCnt;             // Loop counter
-
-    // Clear the ptr type bits
-    hGlb1 = ClrPtrTypeDir (hGlb1);
-    hGlb2 = ClrPtrTypeDir (hGlb2);
 
     if (!IsValidHandle (hGlb1)
      || !IsValidHandle (hGlb2))

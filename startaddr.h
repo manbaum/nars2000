@@ -305,7 +305,33 @@ typedef struct tagSTART_ADDRESSES
     "EnumCallbackPassMsg"       , (LPUCHAR) &EnumCallbackPassMsg        ,
     "MFWndProc"                 , (LPUCHAR) &MFWndProc                  ,
 
-    // pf_*.c
+
+    // pf_bar.c
+    "PrimFnBar_EM_YY"           , (LPUCHAR) &PrimFnBar_EM_YY            ,
+
+    // pf_circle.c
+    "PrimFnCircle_EM_YY"        , (LPUCHAR) &PrimFnCircle_EM_YY         ,
+
+    // pf_colonbar.c
+    "PrimFnColonBar_EM_YY"      , (LPUCHAR) &PrimFnColonBar_EM_YY       ,
+
+    // pf_comma.c
+    "PrimFnComma_EM_YY"         , (LPUCHAR) &PrimFnComma_EM_YY          ,
+
+    // pf_cslope.c
+    "PrimFnCircleSlope_EM_YY"   , (LPUCHAR) &PrimFnCircleSlope_EM_YY    ,
+
+    // pf_cstar.c
+    "PrimFnCircleStar_EM_YY"    , (LPUCHAR) &PrimFnCircleStar_EM_YY     ,
+
+    // pf_cstile.c
+    "PrimFnCircleStile_EM_YY"   , (LPUCHAR) &PrimFnCircleStile_EM_YY    ,
+
+    // pf_darrow.c
+    "PrimFnDownArrow_EM_YY"     , (LPUCHAR) &PrimFnDownArrow_EM_YY      ,
+
+    // pf_dcaret.c
+    "PrimFnDownCaret_EM_YY"     , (LPUCHAR) &PrimFnDownCaret_EM_YY      ,
 
     // pf_deltastile.c
     "PrimFnMonGradeCommon_EM_YY", (LPUCHAR) &PrimFnMonGradeCommon_EM_YY ,
@@ -313,6 +339,15 @@ typedef struct tagSTART_ADDRESSES
     "BoolVecGrade"              , (LPUCHAR) &BoolVecGrade               ,
     "PrimFnDydGradeCommon_EM_YY", (LPUCHAR) &PrimFnDydGradeCommon_EM_YY ,
     "PrimFnGradeCompare"        , (LPUCHAR) &PrimFnGradeCompare         ,
+
+    // pf_domino.c
+    "PrimFnDomino_EM_YY"        , (LPUCHAR) &PrimFnDomino_EM_YY         ,
+
+    // pf_dshoe.c
+    "PrimFnDownShoe_EM_YY"      , (LPUCHAR) &PrimFnDownShoe_EM_YY       ,
+
+    // pf_dstile.c
+    "PrimFnDownStile_EM_YY"     , (LPUCHAR) &PrimFnDownStile_EM_YY      ,
 
     // pf_dtack.c
     "PrimFnDownTack_EM_YY"      , (LPUCHAR) &PrimFnDownTack_EM_YY       ,
@@ -338,6 +373,15 @@ typedef struct tagSTART_ADDRESSES
     "FormatArrNestedCon"        , (LPUCHAR) &FormatArrNestedCon         ,
     "FormatArrNestedGlb"        , (LPUCHAR) &FormatArrNestedGlb         ,
 
+    // pf_epsilon.c
+    "PrimFnEpsilon_EM_YY"       , (LPUCHAR) &PrimFnEpsilon_EM_YY        ,
+
+    // pf_epsund.c
+    "PrimFnEpsilonUnderbar_EM_YY", (LPUCHAR) &PrimFnEpsilonUnderbar_EM_YY,
+
+    // pf_equal.c
+    "PrimFnEqual_EM_YY"         , (LPUCHAR) &PrimFnEqual_EM_YY          ,
+
     // pf_equalund.c
     "PrimFnEqualUnderbar_EM_YY" , (LPUCHAR) &PrimFnEqualUnderbar_EM_YY  ,
 
@@ -358,6 +402,39 @@ typedef struct tagSTART_ADDRESSES
     "ArrayIndexReplace_EM"      , (LPUCHAR) &ArrayIndexReplace_EM       ,
     "ArrayIndexFcnSet_EM"       , (LPUCHAR) &ArrayIndexFcnSet_EM        ,
 
+    // pf_iota.c
+    "PrimFnIota_EM_YY"          , (LPUCHAR) &PrimFnIota_EM_YY           ,
+
+    // pf_iotaund.c
+    "PrimFnIotaUnderbar_EM_YY"  , (LPUCHAR) &PrimFnIotaUnderbar_EM_YY   ,
+
+    // pf_lcaret.c
+    "PrimFnLeftCaret_EM_YY"     , (LPUCHAR) &PrimFnLeftCaret_EM_YY      ,
+
+    // pf_lcaretund.c
+    "PrimFnLeftCaretUnderbar_EM_YY", (LPUCHAR) &PrimFnLeftCaretUnderbar_EM_YY,
+
+    // pf_lshoe.c
+    "PrimFnLeftShoe_EM_YY"      , (LPUCHAR) &PrimFnLeftShoe_EM_YY       ,
+
+    // pf_lshoeund.c
+    "PrimFnLeftShoeUnderbar_EM_YY", (LPUCHAR) &PrimFnLeftShoeUnderbar_EM_YY,
+
+    // pf_ltack.c
+    "PrimFnLeftTack_EM_YY"      , (LPUCHAR) &PrimFnLeftTack_EM_YY       ,
+
+    // pf_ndcaret.c
+    "PrimFnDownCaretTilde_EM_YY", (LPUCHAR) &PrimFnDownCaretTilde_EM_YY ,
+
+    // pf_nequal.c
+    "PrimFnNotEqual_EM_YY"      , (LPUCHAR) &PrimFnNotEqual_EM_YY       ,
+
+    // pf_nucaret.c
+    "PrimFnUpCaretTilde_EM_YY"  , (LPUCHAR) &PrimFnUpCaretTilde_EM_YY   ,
+
+    // pf_pi.c
+    "PrimFnPi_EM_YY"            , (LPUCHAR) &PrimFnPi_EM_YY             ,
+
     // pf_plus.c
     "PrimFnPlus_EM_YY"          , (LPUCHAR) &PrimFnPlus_EM_YY           ,
 
@@ -377,14 +454,26 @@ typedef struct tagSTART_ADDRESSES
     // pf_rho.c
     "PrimFnRho_EM_YY"           , (LPUCHAR) &PrimFnRho_EM_YY            ,
 
+    // pf_root.c
+    "PrimFnRoot_EM_YY"          , (LPUCHAR) &PrimFnRoot_EM_YY           ,
+
     // pf_rshoe.c
     "PrimFnRightShoe_EM_YY"     , (LPUCHAR) &PrimFnRightShoe_EM_YY      ,
+
+    // pf_rshoeund.c
+    "PrimFnRightShoeUnderbar_EM_YY", (LPUCHAR) &PrimFnRightShoeUnderbar_EM_YY,
 
     // pf_rtack.c
     "PrimFnRightTack_EM_YY"     , (LPUCHAR) &PrimFnRightTack_EM_YY      ,
 
+    // pf_section.c
+    "PrimFnSection_EM_YY"       , (LPUCHAR) &PrimFnSection_EM_YY        ,
+
     // pf_slash.c
     "PrimFnDydSlash_EM_YY"      , (LPUCHAR) &PrimFnDydSlash_EM_YY       ,
+
+    // pf_slope.c
+    "PrimFnDydSlope_EM_YY"      , (LPUCHAR) &PrimFnDydSlope_EM_YY       ,
 
     // pf_squad.c
     "PrimFnSquad_EM_YY"         , (LPUCHAR) &PrimFnSquad_EM_YY          ,
@@ -410,6 +499,9 @@ typedef struct tagSTART_ADDRESSES
 
     // pf_ucaret.c
     "PrimFnUpCaret_EM_YY"       , (LPUCHAR) &PrimFnUpCaret_EM_YY        ,
+
+    // pf_ushoe.c
+    "PrimFnUpShoe_EM_YY"        , (LPUCHAR) &PrimFnUpShoe_EM_YY         ,
 
     // pf_ustile.c
     "PrimFnUpStile_EM_YY"       , (LPUCHAR) &PrimFnUpStile_EM_YY        ,
@@ -446,9 +538,14 @@ typedef struct tagSTART_ADDRESSES
     "GetEOSIndex"               , (LPUCHAR) &GetEOSIndex                ,
     "IsLastStmt"                , (LPUCHAR) &IsLastStmt                 ,
 
+    // pn_parse.c/y
+    "pn_yyparse"                , (LPUCHAR) &pn_yyparse                 ,
 
     // po_cmiddot.c
     "PrimOpDydCircleMiddleDotCommon_EM_YY", (LPUCHAR) &PrimOpDydCircleMiddleDotCommon_EM_YY,
+
+    // po_dicircle.c
+    "PrimOpDieresisCircle_EM_YY", (LPUCHAR) &PrimOpDieresisCircle_EM_YY ,
 
     // po_dieresis.c
     "PrimOpDieresis_EM_YY"      , (LPUCHAR) &PrimOpDieresis_EM_YY       ,
@@ -467,6 +564,9 @@ typedef struct tagSTART_ADDRESSES
 
     // po_jotdot.c
     "PrimOpJotDot_EM_YY"        , (LPUCHAR) &PrimOpJotDot_EM_YY         ,
+
+    // po_multiset.c
+    "PrimOpDownShoeStile_EM_YY" , (LPUCHAR) &PrimOpDownShoeStile_EM_YY  ,
 
     // po_slash.c
     "PrimOpSlash_EM_YY"         , (LPUCHAR) &PrimOpSlash_EM_YY          ,
@@ -516,8 +616,45 @@ typedef struct tagSTART_ADDRESSES
 
     // qf_*.c
 
+    // qf_a.c
+    "SysFnA_EM_YY"              , (LPUCHAR) &SysFnA_EM_YY               ,
+
+    // qf_at.c
+    "SysFnAT_EM_YY"             , (LPUCHAR) &SysFnAT_EM_YY              ,
+
+    // qf_av.c
+    "SysFnAV_EM_YY"             , (LPUCHAR) &SysFnAV_EM_YY              ,
+
     // qf_cr.c
+    "SysFnCR_EM_YY"             , (LPUCHAR) &SysFnCR_EM_YY              ,
     "CopySteName"               , (LPUCHAR) &CopySteName                ,
+
+    // qf_dl.c
+    "SysFnDL_EM_YY"             , (LPUCHAR) &SysFnDL_EM_YY              ,
+
+    // qf_dr.c
+    "SysFnDR_EM_YY"             , (LPUCHAR) &SysFnDR_EM_YY              ,
+
+    // qf_ea.c
+    "SysFnEA_EM_YY"             , (LPUCHAR) &SysFnEA_EM_YY              ,
+
+    // qf_ec.c
+    "SysFnEC_EM_YY"             , (LPUCHAR) &SysFnEC_EM_YY              ,
+
+    // qf_em.c
+    "SysFnEM_EM_YY"             , (LPUCHAR) &SysFnEM_EM_YY              ,
+
+    // qf_error.c
+    "SysFnERROR_EM_YY"          , (LPUCHAR) &SysFnERROR_EM_YY           ,
+
+    // qf_es.c
+    "SysFnES_EM_YY"             , (LPUCHAR) &SysFnES_EM_YY              ,
+
+    // qf_et.c
+    "SysFnET_EM_YY"             , (LPUCHAR) &SysFnET_EM_YY              ,
+
+    // qf_ex.c
+    "SysFnEX_EM_YY"             , (LPUCHAR) &SysFnEX_EM_YY              ,
 
     // qf_fmt.c
     "SysFnFMT_EM_YY"            , (LPUCHAR) &SysFnFMT_EM_YY             ,
@@ -530,6 +667,27 @@ typedef struct tagSTART_ADDRESSES
     "QFMT_ThousandSep"          , (LPUCHAR) &QFMT_ThousandsSep          ,
     "QFMT_FillBg"               , (LPUCHAR) &QFMT_FillBg                ,
     "QFMT_SubstValue"           , (LPUCHAR) &QFMT_SubstValue            ,
+
+    // qf_fx.c
+    "SysFnFX_EM_YY"             , (LPUCHAR) &SysFnFX_EM_YY              ,
+
+    // qf_mf.c
+    "SysFnMF_EM_YY"             , (LPUCHAR) &SysFnMF_EM_YY              ,
+
+    // qf_nc.c
+    "SysFnNC_EM_YY"             , (LPUCHAR) &SysFnNC_EM_YY              ,
+
+    // qf_nl.c
+    "SysFnNL_EM_YY"             , (LPUCHAR) &SysFnNL_EM_YY              ,
+
+    // qf_sysid.c
+    "SysFnSYSID_EM_YY"          , (LPUCHAR) &SysFnSYSID_EM_YY           ,
+
+    // qf_sysver.c
+    "SysFnSYSVER_EM_YY"         , (LPUCHAR) &SysFnSYSVER_EM_YY          ,
+
+    // qf_tc.c
+    "SysFnTC_EM_YY"             , (LPUCHAR) &SysFnTC_EM_YY              ,
 
     // qf_tf.c
     "SysFnTF_EM_YY"             , (LPUCHAR) &SysFnTF_EM_YY              ,
@@ -544,12 +702,21 @@ typedef struct tagSTART_ADDRESSES
     "SysFnMonUCS_EM_YY"         , (LPUCHAR) &SysFnMonUCS_EM_YY          ,
     "SysFnDydUCS_EM_YY"         , (LPUCHAR) &SysFnDydUCS_EM_YY          ,
 
+    // qf_vr.c
+    "SysFnVR_EM_YY"             , (LPUCHAR) &SysFnVR_EM_YY              ,
+
+    // qf_wa.c
+    "SysFnWA_EM_YY"             , (LPUCHAR) &SysFnWA_EM_YY              ,
+
     // refcnt.c
 
-    // reg.c
-
+#ifdef DEBUG
     // resdebug.c
+    "_SaveObj"                  , (LPUCHAR) &_SaveObj                   ,
+/// ...
+    "_CheckMemStat"             , (LPUCHAR) &_CheckMemStat              ,
 
+#endif
     // savefcn.c
     "SaveFunction"              , (LPUCHAR) &SaveFunction               ,
     "SaveFunctionCom"           , (LPUCHAR) &SaveFunctionCom            ,

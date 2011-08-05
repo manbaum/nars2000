@@ -216,9 +216,6 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
             // Get the global memory ptr
             hGlbData = lpSymEntry->stData.stGlbData;
 
-            // Clear the ptr type bits
-            hGlbData = ClrPtrTypeDir (hGlbData);
-
             // Lock the memory to get a ptr to it
             lpMemData = MyGlobalLock (hGlbData);
 
@@ -797,6 +794,11 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     // Get left arg's global ptrs
     aplLongestLft = GetGlbPtrs (lptkLftArg, &hGlbLft);
 
+    // If the left arg is a global, ...
+    if (hGlbLft)
+        // Set the ptr type bits
+        hGlbLft = MakePtrTypeGlb (hGlbLft);
+
     //Split cases based upon the left arg storage type
     switch (aplTypeLft)
     {
@@ -804,21 +806,24 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
             // Attempt to convert the float to an integer using System CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
 
-            // Fall through to common code
+            break;
 
         case ARRAY_BOOL:
         case ARRAY_INT:
         case ARRAY_APA:
-            // Check for LEFT DOMAIN ERROR
-            if (!bRet
-             || (aplLongestLft NE 1
-              && aplLongestLft NE 2))
-                goto LEFT_DOMAIN_EXIT;
+            bRet = TRUE;
+
             break;
 
         defstop
             break;
     } // End SWITCH
+
+    // Check for LEFT DOMAIN ERROR
+    if (!bRet
+     || (aplLongestLft NE 1
+      && aplLongestLft NE 2))
+        goto LEFT_DOMAIN_EXIT;
 
     // Call common routine
     return SysFnCR_Common_EM_YY (aplLongestLft,         // Result rank

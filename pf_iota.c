@@ -1224,7 +1224,7 @@ UBOOL PrimFnDydIotaIvI_EM
     if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
     // Get the grade-up global memory handle
-    hGlbGupLft = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+    hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
 
     // Free the YYRes
     YYFree (lpYYRes); lpYYRes = NULL;
@@ -1253,7 +1253,7 @@ UBOOL PrimFnDydIotaIvI_EM
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupRht = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -1462,7 +1462,7 @@ UBOOL PrimFnDydIotaNvN_EM
     if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
     // Get the grade-up global memory handle
-    hGlbGupLft = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+    hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
 
     // Free the YYRes
     YYFree (lpYYRes); lpYYRes = NULL;
@@ -1491,7 +1491,7 @@ UBOOL PrimFnDydIotaNvN_EM
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupRht = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;

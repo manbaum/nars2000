@@ -301,9 +301,6 @@ void AttrsOfGlb
 {
     LPVOID  lpMemData;          // Ptr to global memory
 
-    // Clear the ptr type bits in case set on the way in
-    hGlbData = ClrPtrTypeDir (hGlbData);
-
     // Lock the memory to get a ptr to it
     lpMemData = MyGlobalLock (hGlbData);
 
@@ -400,6 +397,7 @@ APLSTYPE StorageType
     switch (aplTypeRes)
     {
         case ARRAY_ERROR:
+        case ARRAY_NESTED:
             return aplTypeRes;
 
         case ARRAY_HETERO:
@@ -425,9 +423,6 @@ APLSTYPE StorageType
                 return ARRAY_BOOL;
             else
                 return aplTypeRes;
-
-        case ARRAY_NESTED:
-            return aplTypeRes;
 
         case ARRAY_CHAR:
             if (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
@@ -1126,11 +1121,11 @@ HGLOBAL MakeDydPrototype_EM_PTB
 
     // Lock the memory to get a ptr to it
     if (hGlbLft)
-        lpMemLft = MyGlobalLock (ClrPtrTypeDir (hGlbLft));
+        lpMemLft = MyGlobalLock (hGlbLft);
 
     // Lock the memory to get a ptr to it
     if (hGlbRht)
-        lpMemRht = MyGlobalLock (ClrPtrTypeDir (hGlbRht));
+        lpMemRht = MyGlobalLock (hGlbRht);
 
     // Get a ptr to the Primitive Function Flags
     lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
@@ -1476,13 +1471,13 @@ NORMAL_EXIT:
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDir (hGlbRht)); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDir (hGlbLft)); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
     } // End IF
 
     if (hGlbWVec)
@@ -1533,8 +1528,8 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL IsFirstSimpleGlb
-    (HGLOBAL *lphGlbRht,
-     LPCHAR   lpaplTypeRes)
+    (HGLOBAL   *lphGlbRht,
+     LPAPLSTYPE lpaplTypeRes)
 
 {
     LPVOID     lpMemRht;
@@ -1546,8 +1541,6 @@ UBOOL IsFirstSimpleGlb
 
     // It's a valid HGLOBAL array
     Assert (IsGlbTypeVarDir_PTB (*lphGlbRht));
-
-    *lphGlbRht = ClrPtrTypeDir (*lphGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (*lphGlbRht);
@@ -1606,7 +1599,7 @@ UBOOL IsFirstSimpleGlb
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- CopySymGlbDir"
+#define APPEND_NAME     L" -- CopySymGlbDir_PTB"
 #else
 #define APPEND_NAME
 #endif
@@ -1675,9 +1668,6 @@ HGLOBAL CopyArray_EM
     LPPL_YYSTYPE lpMemFcn;                  // Ptr to function array data
     APLNELM      u;
     UBOOL        bRet = TRUE;
-
-    // Clear the ptr type bits
-    hGlbSrc = ClrPtrTypeDir (hGlbSrc);
 
     // Get the size of the global memory object
     dwSize = MyGlobalSize (hGlbSrc);
@@ -2096,8 +2086,8 @@ HGLOBAL CopyGlbAsType_EM
                     apaOffArg = lpAPA->Off;
                     apaMulArg = lpAPA->Mul;
 #undef  lpAPA
-                    // Loop through the arg elements
-                    for (uArg = 0; uArg < aplNELMArg; uArg++)
+            // Loop through the arg elements
+            for (uArg = 0; uArg < aplNELMArg; uArg++)
                         *((LPAPLINT) lpMemRes)++ = apaOffArg + apaMulArg * uArg;
                     break;
 
@@ -2147,8 +2137,8 @@ HGLOBAL CopyGlbAsType_EM
                     apaOffArg = lpAPA->Off;
                     apaMulArg = lpAPA->Mul;
 #undef  lpAPA
-                    // Loop through the arg elements
-                    for (uArg = 0; uArg < aplNELMArg; uArg++)
+            // Loop through the arg elements
+            for (uArg = 0; uArg < aplNELMArg; uArg++)
                         *((LPAPLFLOAT) lpMemRes)++ =
                           (APLFLOAT) (APLINT) (apaOffArg + apaMulArg * uArg);
                     break;
@@ -2174,14 +2164,6 @@ HGLOBAL CopyGlbAsType_EM
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             // Copy the arg to the result
-
-            // Fill nested result with PTR_REUSED
-            //   in case we fail part way through
-
-            // Fill in the prototype
-            *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-            for (uArg = 1; uArg < aplNELMArg; uArg++)
-                ((LPAPLNESTED) lpMemRes)[uArg] = PTR_REUSED;
 
             // Split cases based upon the arg storage type
             switch (aplTypeArg)
@@ -2396,16 +2378,13 @@ UBOOL IsGlobalTypeArray_PTB
             break;
     } // End SWITCH
 
-    // Clear the ptr type bits
-    hGlb = ClrPtrTypeDir (hGlb);
-
     // It's a valid handle
     bRet = bRet && IsValidHandle (hGlb);
 
     if (bRet)
     {
         // Lock the memory to get a ptr to it
-        lpMem = GlobalLock (hGlb); Assert (lpMem NE NULL);
+        lpMem = MyGlobalLock (hGlb); Assert (lpMem NE NULL);
 
         // Split cases based upon the signature
         switch (GetSignatureMem (lpMem))
@@ -2453,7 +2432,7 @@ UBOOL IsGlobalTypeArray_PTB
         } // End SWITCH
 
         // We no longer need this ptr
-        GlobalUnlock (hGlb); lpMem = NULL;
+        MyGlobalUnlock (hGlb); lpMem = NULL;
     } // End IF
 
     return bRet;

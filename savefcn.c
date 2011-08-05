@@ -189,8 +189,8 @@ UINT SF_LineLenN
             break;
 
         case PTRTYPE_HGLOBAL:
-            // Get the global memory handle w/o ptr bits
-            hGlbItmRht = ClrPtrTypeDir (lpMemRht[uLineNum]);
+            // Get the global memory handle
+            hGlbItmRht = lpMemRht[uLineNum];
 
             // Get the right arg item global attrs
             AttrsOfGlb (hGlbItmRht, NULL, &aplNELMItmRht, NULL, NULL);
@@ -422,8 +422,8 @@ void SF_ReadLineN
             break;
 
         case PTRTYPE_HGLOBAL:
-            // Get the global memory handle w/o ptr bits
-            hGlbItmRht = ClrPtrTypeDir (lpMemRht[uLineNum]);
+            // Get the global memory handle
+            hGlbItmRht = lpMemRht[uLineNum];
 
             // Lock the memory to get a ptr to it
             lpMemItmRht = MyGlobalLock (hGlbItmRht);
@@ -948,7 +948,7 @@ HGLOBAL SF_UndoBufferLW
 
             case 4:
                 Assert (lpMemUndoBin->Action NE undoIns
-                     && lpMemUndoBin->Action NE undoRep);
+                     || lpMemUndoBin->Action NE undoRep);
                 break;
 
             case 5:
@@ -1234,9 +1234,6 @@ UBOOL SaveFunctionCom
         if (hGlbOldDfn)
         {
             LPSIS_HEADER lpSISCur;
-
-            // Clear the ptr type bits
-            hGlbOldDfn = ClrPtrTypeDir (hGlbOldDfn);
 
             // Get a ptr to the current SI stack
             lpSISCur = lpMemPTD->lpSISCur;
@@ -1864,21 +1861,23 @@ UINT SaveFunctionLine
     // Save the token size
     uTknSize = (UINT) MyGlobalSize (hGlbTknHdr);
 
+    // Lock the memory to get a ptr to it
+    lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
     // If we're not sizing, ...
     if (lpFcnLines)
     {
-        // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
-
         // Copy the tokens to the end of the function header
         CopyMemory (ByteAddr (lpMemDfnHdr, *lpOffNextTknLine), lpMemTknHdr, uTknSize);
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
         // Save the offset
         lpFcnLines->offTknLine = *lpOffNextTknLine;
-    } // End IF
+    } else
+        // Free the storage in the tokens
+        Untokenize (lpMemTknHdr);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 
     // We no longer need this storage
     MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;

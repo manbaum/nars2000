@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -688,9 +688,9 @@ UBOOL AssignCharScalarCWS
 UBOOL ValidateInteger_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
      LPTOKEN  lptkExpr,             // Ptr to value token
-     UINT     uValidLo,             // Low range value (inclusive)
-     UINT     uDefault,             // Default   ...
-     UINT     uValidHi,             // High range ...
+     APLINT   iValidLo,             // Low range value (inclusive)
+     APLINT   iDefault,             // Default   ...
+     APLINT   iValidHi,             // High range ...
      UBOOL    bRangeLimit)          // TRUE iff an incoming value outside
                                     //   the given range [uValidLo, uValidHi]
                                     //   is adjusted to be the closer range limit
@@ -733,8 +733,8 @@ UBOOL ValidateInteger_EM
 
                     // Test the value
                     bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
-                                                 uValidLo,          // Low range value (inclusive)
-                                                 uValidHi,          // High ...
+                                                 iValidLo,          // Low range value (inclusive)
+                                                 iValidHi,          // High ...
                                                  bRangeLimit);      // TRUE iff we're range limiting
                     break;
 
@@ -744,8 +744,8 @@ UBOOL ValidateInteger_EM
 
                     // Test the value
                     bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
-                                                 uValidLo,          // Low range value (inclusive)
-                                                 uValidHi,          // High ...
+                                                 iValidLo,          // Low range value (inclusive)
+                                                 iValidHi,          // High ...
                                                  bRangeLimit);      // TRUE iff we're range limiting
                     break;
 
@@ -756,8 +756,8 @@ UBOOL ValidateInteger_EM
                     // Test the value
                     if (bRangeLimit || bRet)
                         bRet = ValidateIntegerTest (&aplInteger,    // Ptr to the integer to test
-                                                     uValidLo,      // Low range value (inclusive)
-                                                     uValidHi,      // High ...
+                                                     iValidLo,      // Low range value (inclusive)
+                                                     iValidHi,      // High ...
                                                      bRangeLimit);  // TRUE iff we're range limiting
                     break;
 
@@ -780,8 +780,8 @@ UBOOL ValidateInteger_EM
 
                     // Test the value
                     bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
-                                                 uValidLo,          // Low range value (inclusive)
-                                                 uValidHi,          // High ...
+                                                 iValidLo,          // Low range value (inclusive)
+                                                 iValidHi,          // High ...
                                                  bRangeLimit);      // TRUE iff we're range limiting
                     break;
 
@@ -791,8 +791,8 @@ UBOOL ValidateInteger_EM
 
                     // Test the value
                     bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
-                                                 uValidLo,          // Low range value (inclusive)
-                                                 uValidHi,          // High ...
+                                                 iValidLo,          // Low range value (inclusive)
+                                                 iValidHi,          // High ...
                                                  bRangeLimit);      // TRUE iff we're range limiting
                     break;
 
@@ -803,8 +803,8 @@ UBOOL ValidateInteger_EM
                     // Test the value
                     if (bRangeLimit || bRet)
                         bRet = ValidateIntegerTest (&aplInteger,    // Ptr to the integer to test
-                                                     uValidLo,      // Low range value (inclusive)
-                                                     uValidHi,      // High ...
+                                                     iValidLo,      // Low range value (inclusive)
+                                                     iValidHi,      // High ...
                                                      bRangeLimit);  // TRUE iff we're range limiting
                     break;
 
@@ -835,9 +835,6 @@ UBOOL ValidateInteger_EM
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
-    // Clear the type bits
-    hGlbRht = ClrPtrTypeDir (hGlbRht);
-
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
 
@@ -865,7 +862,7 @@ UBOOL ValidateInteger_EM
         bRet = IsSimple (aplTypeRht);
         if (bRet)
             // Use the system default value
-            aplInteger = uDefault;
+            aplInteger = iDefault;
     } else
     // Split cases based upon the array type
     switch (aplTypeRht)
@@ -876,8 +873,8 @@ UBOOL ValidateInteger_EM
 
             // Test the value
             bRet = ValidateIntegerTest (&aplInteger,                // Ptr to the integer to test
-                                         uValidLo,                  // Low range value (inclusive)
-                                         uValidHi,                  // High ...
+                                         iValidLo,                  // Low range value (inclusive)
+                                         iValidHi,                  // High ...
                                          bRangeLimit);              // TRUE iff we're range limiting
             break;
 
@@ -887,8 +884,8 @@ UBOOL ValidateInteger_EM
 
             // Test the value
             bRet = ValidateIntegerTest (&aplInteger,                // Ptr to the integer to test
-                                         uValidLo,                  // Low range value (inclusive)
-                                         uValidHi,                  // High ...
+                                         iValidLo,                  // Low range value (inclusive)
+                                         iValidHi,                  // High ...
                                          bRangeLimit);              // TRUE iff we're range limiting
             break;
 
@@ -904,8 +901,8 @@ UBOOL ValidateInteger_EM
             // Test the value
             if (bRangeLimit || bRet)
                 bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
-                                             uValidLo,              // Low range value (inclusive)
-                                             uValidHi,              // High ...
+                                             iValidLo,              // Low range value (inclusive)
+                                             iValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
             break;
 
@@ -963,8 +960,8 @@ UNLOCK_EXIT:
 
 UBOOL ValidateIntegerTest
     (LPAPLINT lpaplInteger,         // Ptr to the integer to test
-     APLINT   uValidLo,             // Low range value (inclusive)
-     APLINT   uValidHi,             // High ...
+     APLINT   iValidLo,             // Low range value (inclusive)
+     APLINT   iValidHi,             // High ...
      UBOOL    bRangeLimit)          // TRUE iff an incoming value outside
                                     //   the given range [uValidLo, uValidHi]
                                     //   is adjusted to be the closer range limit
@@ -974,15 +971,15 @@ UBOOL ValidateIntegerTest
     if (bRangeLimit)
     {
         // If it's too small, use the lower limit
-        if (*lpaplInteger < uValidLo)
-            *lpaplInteger = uValidLo;
+        if (*lpaplInteger < iValidLo)
+            *lpaplInteger = iValidLo;
         // If it's too large, use the upper limit
-        if (*lpaplInteger > uValidHi)
-            *lpaplInteger = uValidHi;
+        if (*lpaplInteger > iValidHi)
+            *lpaplInteger = iValidHi;
         return TRUE;
     } else
-        return (uValidLo <= *lpaplInteger
-             &&             *lpaplInteger <= uValidHi);
+        return (iValidLo <= *lpaplInteger
+             &&             *lpaplInteger <= iValidHi);
 } // End ValidateIntegerTest
 
 
@@ -1170,9 +1167,6 @@ UBOOL ValidateFloat_EM
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
-    // Clear the type bits
-    hGlbRht = ClrPtrTypeDir (hGlbRht);
-
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
 
@@ -1229,7 +1223,7 @@ UBOOL ValidateFloat_EM
             break;
 
         case ARRAY_FLOAT:
-            // Convert the value to an integer using System CT
+            // Get the value
             aplFloat = *(LPAPLFLOAT) lpMemRht;
 
             // Test the value
@@ -1275,7 +1269,7 @@ UNLOCK_EXIT:
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDir (hGlbRht)); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
     return bRet;
@@ -1401,9 +1395,6 @@ UBOOL ValidateCharVector_EM
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
-
-    // Clear the type bits
-    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -1769,9 +1760,6 @@ UBOOL ValidateIntegerVector_EM
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
-    // Clear the type bits
-    hGlbRht = ClrPtrTypeDir (hGlbRht);
-
     // Lock the memory to get a ptr to it
     lpMemIniRht = lpMemRht = MyGlobalLock (hGlbRht);
 
@@ -2077,7 +2065,7 @@ UNLOCK_EXIT:
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDir (hGlbRht)); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
     return bRet;
@@ -2154,7 +2142,8 @@ UBOOL ValidSetCT_EM
     return ValidateFloat_EM (lptkNamArg,            // Ptr to name arg token
                              lptkRhtArg,            // Ptr to right arg token
                              DEF_MIN_QUADCT,        // Minimum value
-              bResetVars.CT ? DEF_QUADCT_CWS : fQuadCT_CWS, // Default ...
+             bResetVars.CT ? DEF_QUADCT_CWS
+                           : fQuadCT_CWS,           // Default ...
                              DEF_MAX_QUADCT,        // Maximum ...
                              bRangeLimit.CT);       // TRUE iff range limiting
 } // End ValidSetCT_EM
@@ -2185,9 +2174,6 @@ UBOOL ValidNdxCT
             // The right arg is integer -- convert to float
             *((LPAPLFLOAT) lpaplLongestRht) = (APLFLOAT) (APLINT) *lpaplLongestRht;
 
-            // Set the new immediate type
-            if (lpimmTypeRht)
-                *lpimmTypeRht = IMMTYPE_FLOAT;
             break;
 
         case ARRAY_FLOAT:
@@ -2201,6 +2187,10 @@ UBOOL ValidNdxCT
         defstop
             break;
     } // End SWITCH
+
+    // Set the new immediate type
+    if (lpimmTypeRht)
+        *lpimmTypeRht = IMMTYPE_FLOAT;
 
     // Test the value
     return ValidateFloatTest ((LPAPLFLOAT) lpaplLongestRht,
@@ -2428,7 +2418,7 @@ UBOOL ValidNdxFEATURE
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
-    UBOOL bRet;                             // TRUE iff the result is valid
+    UBOOL bRet = TRUE;                      // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2441,11 +2431,7 @@ UBOOL ValidNdxFEATURE
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if ((!bRangeLimit.FEATURE) && !bRet)
-                return bRet;
-            // Set the new immediate type
-            if (lpimmTypeRht)
-                *lpimmTypeRht = IMMTYPE_INT;
+
             break;
 
         case ARRAY_CHAR:
@@ -2456,6 +2442,13 @@ UBOOL ValidNdxFEATURE
         defstop
             break;
     } // End SWITCH
+
+    if (!bRet)
+        return bRet;
+
+    // Set the new immediate type
+    if (lpimmTypeRht)
+        *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
     bRet =
@@ -2576,7 +2569,7 @@ UBOOL ValidNdxIC
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
-    UBOOL bRet;                             // TRUE iff the result is valid
+    UBOOL bRet = TRUE;                      // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2589,11 +2582,7 @@ UBOOL ValidNdxIC
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if ((!bRangeLimit.IC) && !bRet)
-                return bRet;
-            // Set the new immediate type
-            if (lpimmTypeRht)
-                *lpimmTypeRht = IMMTYPE_INT;
+
             break;
 
         case ARRAY_CHAR:
@@ -2604,6 +2593,13 @@ UBOOL ValidNdxIC
         defstop
             break;
     } // End SWITCH
+
+    if (!bRet)
+        return bRet;
+
+    // Set the new immediate type
+    if (lpimmTypeRht)
+        *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
     return
@@ -2632,7 +2628,8 @@ UBOOL ValidSetIO_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADIO,      // Minimum value
-                bResetVars.IO ? DEF_QUADIO_CWS : bQuadIO_CWS, // Default ...
+               bResetVars.IO ? DEF_QUADIO_CWS
+                             : bQuadIO_CWS,         // Default ...
                                DEF_MAX_QUADIO,      // Maximum ...
                                bRangeLimit.IO);     // TRUE iff range limiting
 } // End ValidSetIO_EM
@@ -2654,7 +2651,7 @@ UBOOL ValidNdxIO
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
-    UBOOL bRet;                             // TRUE iff the result is valid
+    UBOOL bRet = TRUE;                      // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2662,17 +2659,12 @@ UBOOL ValidNdxIO
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if ((!bRangeLimit.IO) && !bRet)
-                return bRet;
 
-            // Fall through to set the new immediate type
+            break;
 
         case ARRAY_BOOL:
         case ARRAY_INT:
         case ARRAY_APA:
-            // Set the new immediate type (in cae it was integer/APA)
-            if (lpimmTypeRht)
-                *lpimmTypeRht = IMMTYPE_BOOL;
             break;
 
         case ARRAY_CHAR:
@@ -2683,6 +2675,13 @@ UBOOL ValidNdxIO
         defstop
             break;
     } // End SWITCH
+
+    if (!bRet)
+        return bRet;
+
+    // Set the new immediate type (in case it was integer/APA)
+    if (lpimmTypeRht)
+        *lpimmTypeRht = IMMTYPE_BOOL;
 
     // Test the value
     return
@@ -2750,7 +2749,7 @@ UBOOL ValidNdxPP
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
-    UBOOL bRet;                             // TRUE iff the result is valid
+    UBOOL bRet = TRUE;                      // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2763,11 +2762,7 @@ UBOOL ValidNdxPP
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if ((!bRangeLimit.PP) && !bRet)
-                return bRet;
-            // Set the new immediate type
-            if (lpimmTypeRht)
-                *lpimmTypeRht = IMMTYPE_INT;
+
             break;
 
         case ARRAY_CHAR:
@@ -2778,6 +2773,13 @@ UBOOL ValidNdxPP
         defstop
             break;
     } // End SWITCH
+
+    if (!bRet)
+        return bRet;
+
+    // Set the new immediate type
+    if (lpimmTypeRht)
+        *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
     return
@@ -2888,9 +2890,6 @@ UBOOL ValidSetPR_EM
     // tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
-    // Clear the type bits
-    hGlbRht = ClrPtrTypeDir (hGlbRht);
-
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
 
@@ -2990,7 +2989,8 @@ UBOOL ValidSetPW_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADPW,      // Minimum value
-                bResetVars.PW ? DEF_QUADPW_CWS : (UINT) uQuadPW_CWS, // Default ...
+               bResetVars.PW ? DEF_QUADPW_CWS
+                             : (UINT) uQuadPW_CWS,  // Default ...
                                DEF_MAX_QUADPW,      // Maximum ...
                                bRangeLimit.PW);     // TRUE iff range limiting
 } // End ValidSetPW_EM
@@ -3012,7 +3012,7 @@ UBOOL ValidNdxPW
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
-    UBOOL bRet;                             // TRUE iff the result is valid
+    UBOOL bRet = TRUE;                      // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -3025,11 +3025,7 @@ UBOOL ValidNdxPW
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if ((!bRangeLimit.PW) && !bRet)
-                return bRet;
-            // Set the new immediate type
-            if (lpimmTypeRht)
-                *lpimmTypeRht = IMMTYPE_INT;
+
             break;
 
         case ARRAY_CHAR:
@@ -3040,6 +3036,13 @@ UBOOL ValidNdxPW
         defstop
             break;
     } // End SWITCH
+
+    if (!bRet)
+        return bRet;
+
+    // Set the new immediate type
+    if (lpimmTypeRht)
+        *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
     return
@@ -3067,7 +3070,8 @@ UBOOL ValidSetRL_EM
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADRL,      // Minimum value
-                bResetVars.RL ? DEF_QUADRL_CWS : (UINT) uQuadRL_CWS, // Default ...
+               bResetVars.RL ? DEF_QUADRL_CWS
+                             : (UINT) uQuadRL_CWS,  // Default ...
                                DEF_MAX_QUADRL,      // Maximum ...
                                bRangeLimit.RL);     // TRUE iff range limiting
 } // End ValidSetRL_EM
@@ -3089,7 +3093,7 @@ UBOOL ValidNdxRL
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
-    UBOOL bRet;                             // TRUE iff the result is valid
+    UBOOL bRet = TRUE;                      // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -3102,11 +3106,7 @@ UBOOL ValidNdxRL
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if ((!bRangeLimit.RL) && !bRet)
-                return bRet;
-            // Set the new immediate type
-            if (lpimmTypeRht)
-                *lpimmTypeRht = IMMTYPE_INT;
+
             break;
 
         case ARRAY_CHAR:
@@ -3117,6 +3117,13 @@ UBOOL ValidNdxRL
         defstop
             break;
     } // End SWITCH
+
+    if (!bRet)
+        return bRet;
+
+    // Set the new immediate type
+    if (lpimmTypeRht)
+        *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
     return
@@ -3202,9 +3209,6 @@ UBOOL ValidSetSA_EM
 
     // tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
-
-    // Clear the type bits
-    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);

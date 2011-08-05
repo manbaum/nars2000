@@ -53,7 +53,7 @@ void DisplayHshTab
     int        i;                   // Loop counter
     WCHAR      wszTemp[1024];       // Ptr to temporary output area
 
-    DbgMsgW (L"********** Hash Table **********************************");
+    DbgMsgW (L"********** Start Hash Table ****************************");
 
     wsprintfW (wszTemp,
                L"lpHshTab = %p, SplitNext = %p, Last = %p",
@@ -210,7 +210,7 @@ void DisplaySymTab
 
     if (bDispAll)
     {
-        DbgMsgW (L"********** Symbol Table ********************************");
+        DbgMsgW (L"********** Start Symbol Table **************************");
     } else
     {
         DbgMsgW (L"********** Symbol Table Referenced Non-SysNames ********");
@@ -440,7 +440,7 @@ void DisplayGlobals
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    DbgMsgW (L"********** Globals *************************************");
+    DbgMsgW (L"********** Start Globals *******************************");
 
 #define MAX_VAL_LEN     12
     for (i = 0; i < MAXOBJ; i++)
@@ -748,7 +748,7 @@ void DisplayGlobals
 
     DbgMsgW (L"********** End Globals *********************************");
 
-////DbgMsgW (L"********** Semaphores **********************************");
+////DbgMsgW (L"********** Start Semaphores ****************************");
 
     for (uValid = FALSE, i = 0; i < MAXOBJ; i++)
     if (hGlb = ahSEMAPHORE[i])
@@ -793,7 +793,7 @@ void DisplayTokens
     if (gDbgLvl < 3)
         return;
 
-    DbgMsgW (L"********** Tokens **************************************");
+    DbgMsgW (L"********** Start Tokens ********************************");
 
     // Ensure it's valid
     if (!lpMemTknHdr)
@@ -1123,9 +1123,6 @@ LPWCHAR DisplayFcnGlb
     UINT              tknNELM;                  // # tokens in the function array
     NAME_TYPES        fnNameType;               // Function array name type
 
-    // Clear the ptr type bits
-    hGlbFcnArr = ClrPtrTypeDir (hGlbFcnArr);
-
     // Lock the memory to get a ptr to it
     lpHeader = MyGlobalLock (hGlbFcnArr);
 
@@ -1418,9 +1415,6 @@ LPWCHAR DisplayFcnSub
                             break;
 
                         case DFN_HEADER_SIGNATURE:
-                            // Clear the ptr type bits
-                            hGlbData = ClrPtrTypeDir (hGlbData);
-
                             // Lock the memory to get a ptr to it
                             lpMemDfnHdr = MyGlobalLock (hGlbData);
 
@@ -1528,9 +1522,6 @@ LPWCHAR DisplayFcnSub
             //   or user-defined function/operator
             Assert (IsGlbTypeFcnDir_PTB (hGlbData)
                  || IsGlbTypeDfnDir_PTB (hGlbData));
-
-            // Clear the ptr type bits
-            hGlbData = ClrPtrTypeDir (hGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemData = MyGlobalLock (hGlbData);
@@ -1737,9 +1728,6 @@ LPWCHAR DisplayVarSub
     // tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
-    // Clear the ptr type bits
-    hGlbData = ClrPtrTypeDir (hGlbData);
-
     // If there's a callback function, use it
     if (lpSavedWsGlbVarConv)
         lpaplChar =
@@ -1882,7 +1870,7 @@ void DisplayFcnArr
     if (gDbgLvl < gFcnLvl)
         return;
 
-    DbgMsgW (L"********** Function Array ******************************");
+    DbgMsgW (L"********** Start Function Array ************************");
 
     DisplayFcnGlb (wszTemp,         // Ptr to output save area
                    hGlbStr,         // Function array global memory handle
@@ -2008,22 +1996,22 @@ void DisplayStrand
     switch (strType)
     {
         case STRAND_VAR:
-            DbgMsgW (L"********** Variable Strands ****************************");
+            DbgMsgW (L"********** Start Variable Strands **********************");
 
             break;
 
         case STRAND_FCN:
-            DbgMsgW (L"********** Function Strands ****************************");
+            DbgMsgW (L"********** Start Function Strands **********************");
 
             break;
 
         case STRAND_LST:
-            DbgMsgW (L"********** List Strands ********************************");
+            DbgMsgW (L"********** Start List Strands **************************");
 
             break;
 
         case STRAND_NAM:
-            DbgMsgW (L"********** Name Strands ********************************");
+            DbgMsgW (L"********** Start Name Strands **************************");
 
             break;
 
@@ -2110,7 +2098,7 @@ void DisplayUndo
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    DbgMsgW (L"********** Undo Buffer *********************************");
+    DbgMsgW (L"********** Start Undo Buffer ***************************");
 
     // Get the shift key state
     bShift = (GetKeyState (VK_SHIFT) & BIT15);

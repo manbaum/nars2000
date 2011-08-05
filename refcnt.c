@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,13 +62,11 @@ int ChangeRefCntDir_PTB
             return 1;
 
         case PTRTYPE_HGLOBAL:
-            // Clear the ptr type bits
-            hGlb = ClrPtrTypeDir (hGlb);
 #ifdef DEBUG
-            if (hGlb EQ ClrPtrTypeDir (hGlbRC1))
+            if (ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC1))
                 DbgBrk ();
 
-            if (hGlb EQ ClrPtrTypeDir (hGlbRC2))
+            if (ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC2))
                 DbgBrk ();
 #endif
             // Lock the memory to get a ptr to it
@@ -116,15 +114,11 @@ int ChangeRefCntDir_PTB
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
 
                     // If we're to skip this RefCnt increment, ...
-                    if (iIncr EQ 1
-                     && lpHeader->SkipRefCntIncr)
+                    if (lpHeader->SkipRefCntIncr)
                         // Clear the flag
                         lpHeader->SkipRefCntIncr = FALSE;
                     else
                     {
-                        // Clear the flag
-                        lpHeader->SkipRefCntIncr = FALSE;
-
                         lpHeader->RefCnt += iIncr;
                     } // End IF/ELSE
 
@@ -347,9 +341,6 @@ UINT GetRefCntGlb
 {
     LPVOID lpMemHdr;            // Ptr to global memory header
     UINT   uRefCnt;             // The array reference count
-
-    // Clear the ptr type bits
-    hGlbArg = ClrPtrTypeDir (hGlbArg);
 
     // Lock the memory to get a ptr to it
     lpMemHdr = MyGlobalLock (hGlbArg);

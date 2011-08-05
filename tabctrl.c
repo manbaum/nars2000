@@ -939,9 +939,8 @@ void FreeGlobalStorage
                 HGLOBAL      hGlbData;          // User-defined function/operator global memory handle
                 LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator struc
 
-                // Get the DFN_HEADER global memory ptr, and
-                //   clear the ptr type bits
-                hGlbData = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+                // Get the DFN_HEADER global memory ptr
+                hGlbData = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
                 lpMemDfnHdr = MyGlobalLock (hGlbData);
@@ -1452,7 +1451,7 @@ LPAPLCHAR PointToWsName
         APLRANK aplRankWSID;    // []WSID rank
 
         // Get the []WSID global memory handle
-        hGlbWSID = ClrPtrTypeDir (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
+        hGlbWSID = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData;
 
         // If the []WSID STE has been setup, ...
         if (hGlbWSID)

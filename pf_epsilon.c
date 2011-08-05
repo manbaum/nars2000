@@ -145,8 +145,8 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
                 Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonEpsilonGlb_EM_YY
-                       (ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData), // HGLOBAL
-                        lptkFunc);                                                  // Ptr to function token
+                       (lptkRhtArg->tkData.tkSym->stData.stGlbData, // HGLOBAL
+                        lptkFunc);                                  // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -164,7 +164,7 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
             Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonEpsilonGlb_EM_YY
-                   (ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),   // HGLOBAL
+                   (lptkRhtArg->tkData.tkGlbData,                   // HGLOBAL
                     lptkFunc);                                      // Ptr to function token
         defstop
             return NULL;
@@ -374,7 +374,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
                                     &lpMemRes,
                                     &uBitIndex,
-                                     ClrPtrTypeDir (hGlbRht),
+                                     hGlbRht,
                                      lptkFunc))
         goto ERROR_EXIT;
     // We no longer need this ptr
@@ -900,7 +900,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         // Split cases based upon the ptr type
                         switch (GetPtrTypeInd (lpMemRht))
                         {
-                            case PTRTYPE_STCONST:       // Res = FLOAT , Rht = NESTED:BOOL/INT/FLOAT/CHAR
+                            case PTRTYPE_STCONST:       // Res = FLOAT , Rht = NESTED:BOOL/INT/FLOAT
                                 // Split cases based upon the right arg's immediate type
                                 switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                                 {
@@ -984,7 +984,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         // Split cases based upon the ptr type
                         switch (GetPtrTypeInd (lpMemRht))
                         {
-                            case PTRTYPE_STCONST:       // Res = CHAR  , Rht = NESTED:BOOL/INT/FLOAT/CHAR
+                            case PTRTYPE_STCONST:       // Res = CHAR  , Rht = NESTED:CHAR
                                 // Split cases based upon the right arg's immediate type
                                 switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                                 {
@@ -2005,7 +2005,7 @@ UBOOL PrimFnDydEpsilonIvI_EM
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupLft = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -2036,7 +2036,7 @@ UBOOL PrimFnDydEpsilonIvI_EM
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupRht = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -2248,7 +2248,7 @@ UBOOL PrimFnDydEpsilonNvN_EM
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupLft = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;
@@ -2279,7 +2279,7 @@ UBOOL PrimFnDydEpsilonNvN_EM
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         // Get the grade-up global memory handle
-        hGlbGupRht = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
 
         // Free the YYRes
         YYFree (lpYYRes); lpYYRes = NULL;

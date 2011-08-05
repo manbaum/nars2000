@@ -456,7 +456,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             if (lpYYRes EQ NULL)
                 goto ERROR_EXIT;
             // Get the grade-up global memory handle
-            hGlbGup = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+            hGlbGup = lpYYRes->tkToken.tkData.tkGlbData;
 
             // Free the YYRes
             YYFree (lpYYRes); lpYYRes = NULL;
@@ -612,7 +612,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             if (lpYYRes EQ NULL)
                 goto ERROR_EXIT;
             // Get the grade-up global memory handle
-            hGlbGup = ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData);
+            hGlbGup = lpYYRes->tkToken.tkData.tkGlbData;
 
             // Free the YYRes
             YYFree (lpYYRes); lpYYRes = NULL;

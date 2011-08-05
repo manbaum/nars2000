@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -184,9 +184,9 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
                 Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonRightShoeGlb_EM_YY
-                       (ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData), // HGLOBAL
-                        lptkAxis,                                                   // Ptr to axis token (may be NULL)
-                        lptkFunc);                                                  // Ptr to function token
+                       (lptkRhtArg->tkData.tkSym->stData.stGlbData, // HGLOBAL
+                        lptkAxis,                                   // Ptr to axis token (may be NULL)
+                        lptkFunc);                                  // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -206,9 +206,9 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
             Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonRightShoeGlb_EM_YY
-                   (ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),   // HGLOBAL
-                    lptkAxis,                                       // Ptr to axis token (may be NULL)
-                    lptkFunc);                                      // Ptr to function token
+                   (lptkRhtArg->tkData.tkGlbData,               // HGLOBAL
+                    lptkAxis,                                   // Ptr to axis token (may be NULL)
+                    lptkFunc);                                  // Ptr to function token
         defstop
             return NULL;
     } // End SWITCH
@@ -507,7 +507,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 if (!IsScalar (aplRankSub))
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (ClrPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]));
+                    lpMemSub = MyGlobalLock (((LPAPLNESTED) lpMemRht)[uRht]);
 
                     // Skip over the header to the dimensions
                     lpMemSub = VarArrayBaseToDim (lpMemSub);
@@ -517,7 +517,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     for (uSub = 0; uSub < aplRankSub; uSub++)
                         lpMemDimCom[uSub] = max (lpMemDimCom[uSub], ((LPAPLDIM) lpMemSub)[uSub]);
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht])); lpMemSub = NULL;
+                    MyGlobalUnlock (((LPAPLNESTED) lpMemRht)[uRht]); lpMemSub = NULL;
                 } // End IF
 
                 break;
@@ -719,6 +719,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             ((LPAPLFLOAT) lpMemRes)[uRht * aplNELMCom] =        aplFloat;
 
                             break;
+
                         case ARRAY_CHAR:
                             // Fill the row with blanks
                             // Loop through the rest of common item's elements
@@ -740,7 +741,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                 case PTRTYPE_HGLOBAL:
                     // Get the item's global handle
-                    hGlbSub = ClrPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]);
+                    hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
 
                     // Lock the memory to get a ptr to it
                     lpMemSub = MyGlobalLock (hGlbSub);
@@ -1003,7 +1004,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                 case PTRTYPE_HGLOBAL:
                     // Get the item's global handle
-                    hGlbSub = ClrPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]);
+                    hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
 
                     // Lock the memory to get a ptr to it
                     lpMemSub = MyGlobalLock (hGlbSub);
@@ -1132,11 +1133,11 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             break;
 
                         case ARRAY_APA:
-    #define lpAPA       ((LPAPLAPA) lpMemSub)
+#define lpAPA       ((LPAPLAPA) lpMemSub)
                             // Get the APA parameters
                             apaOffSub = lpAPA->Off;
                             apaMulSub = lpAPA->Mul;
-    #undef  lpAPA
+#undef  lpAPA
                             // Get the prototype
                             lpSymProto = lpSym0;
 
@@ -1589,7 +1590,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
                 Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
-                                                    ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                                                    lptkRhtArg->tkData.tkSym->stData.stGlbData,
                                                     lptkFunc);
             } // End IF
 
@@ -1611,7 +1612,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
             Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
-                                                ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),
+                                                lptkRhtArg->tkData.tkGlbData,
                                                 lptkFunc);
         defstop
             return NULL;
@@ -1857,7 +1858,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 
                 lpYYRes =
                   PrimFnDydRightShoeGlbGlb_EM_YY
-                  (ClrPtrTypeDir (hGlbLft),                 // Left arg global memory handle
+                  (hGlbLft,                                 // Left arg global memory handle
                    hGlbRht,                                 // Right arg global memory handle
                    lptkFunc,                                // Ptr to function token
                    FALSE,                                   // TRUE iff array assignment
@@ -1895,14 +1896,14 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 
             lpYYRes =
               PrimFnDydRightShoeGlbGlb_EM_YY
-              (ClrPtrTypeDir (hGlbLft),                     // Left arg global memory handle
-               hGlbRht,                                     // Right arg global memory handle
-               lptkFunc,                                    // Ptr to function token
-               FALSE,                                       // TRUE iff array assignment
-               ARRAY_ERROR,                                 // Set arg storage type
-               NULL,                                        // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-               0,                                           // Set arg immediate value
-               lpMemPTD);                                   // Ptr to PerTabData global memory
+              (hGlbLft,                                 // Left arg global memory handle
+               hGlbRht,                                 // Right arg global memory handle
+               lptkFunc,                                // Ptr to function token
+               FALSE,                                   // TRUE iff array assignment
+               ARRAY_ERROR,                             // Set arg storage type
+               NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+               0,                                       // Set arg immediate value
+               lpMemPTD);                               // Ptr to PerTabData global memory
             break;
 
         defstop
@@ -2156,9 +2157,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             APLUINT  aplWValSubLft,             // Left arg item weighting value
                      aplTmpSubLft;              // Left arg item temporary value
 
-            // Clear the ptr type bits
-            hGlbSubLft = ClrPtrTypeDir (hGlbSubLft);
-
             // Get the attributes (Type, NELM, and Rank)
             //   of the left arg item global
             AttrsOfGlb (hGlbSubLft, &aplTypeSubLft, &aplNELMSubLft, &aplRankSubLft, NULL);
@@ -2398,9 +2396,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         // If the right item arg is a global, ...
         if (hGlbSubRht)
         {
-            // Clear the ptr type bits
-            hGlbSubRht = ClrPtrTypeDir (hGlbSubRht);
-
             // If we're assigning a new value
             //   and this is the last element in the
             //   left arg, ...
@@ -2483,9 +2478,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     // Promote the right arg
                     if (!TypePromoteGlb_EM (&hGlbRht, aplTypePro, lptkFunc))
                         goto ERROR_EXIT;
-
-                    // Clear the type bits
-                    hGlbRht = ClrPtrTypeDir (hGlbRht);
 
                     // Save the new type
                     aplTypeRht = aplTypePro;

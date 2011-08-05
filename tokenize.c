@@ -1990,9 +1990,6 @@ UBOOL fnPointDone
         } // End IF
     } else
     {
-        // Save the error character index
-        lptkLocalVars->uChar = pnLocalVars.uCharIndex;
-
         // Mark the data as a SYNTAX ERROR
         tkFlags.TknType = TKT_SYNTERR;
         tkFlags.ImmType = IMMTYPE_ERROR;
@@ -3151,9 +3148,6 @@ UBOOL MergeNumbers
             {
                 LPDFN_HEADER lpMemDfnHdr;
 
-                // Clear the ptr type bits
-                hGlbObj = ClrPtrTypeDir (hGlbObj);
-
                 // Lock the memory to get a ptr to it
                 lpMemDfnHdr = MyGlobalLock (hGlbObj);
 
@@ -3216,7 +3210,7 @@ UBOOL MergeNumbers
         //   it's either an immediate
         //   or non-empty (i.e. not zilde)
         if (IsSimpleNum (aplTypePrv)
-         && (lptkPrv->tkFlags.TknType EQ TKT_VARIMMED
+          && (lptkPrv->tkFlags.TknType EQ TKT_VARIMMED
           || !IsEmpty (aplNELMPrv)))
         {
             // Catentate the current number with the previous token
@@ -3398,7 +3392,7 @@ UBOOL MergeNumbers
                             break;
                     } // End SWITCH
 
-                    // Save the new value as a float
+                            // Save the new value as a float
                     ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplFloat;
 
                     break;

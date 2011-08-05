@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -188,7 +188,7 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
         // The result is a rank (aplRankRht - 1) Boolean array of zeros
 
         // Get the right arg global memory handle
-        hGlbRht = ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData);
+        hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
         // Lock the memory to get a ptr to it
         lpMemRht = MyGlobalLock (hGlbRht);
@@ -768,10 +768,10 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         // If the left arg is float, ...
         if (IsSimpleFlt (aplTypeLft))
         {
-            // Attempt to convert the float to an integer using System CT
-            aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-            if (!bRet)
-                goto DOMAIN_EXIT;
+                // Attempt to convert the float to an integer using System CT
+                aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
         } else
             aplIntegerLft = aplLongestLft;
     } else

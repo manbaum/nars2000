@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -161,12 +161,9 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     APLLONGEST   aplLongestLft,     // Left arg immediate value
                  aplLongestRht;     // Right ...
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    APLINT       apaOffRht,         // Right arg APA offset
-                 apaMulRht;         // Right arg APA multiplier
     APLNELM      uNameLen;          // Length of the current name
     APLUINT      nameClasses = 0;   // Bit flags for each nameclass 1 through (NAMECLASS_LENp1 - 1)
-    UINT         uBitMask,          // Mask for looping through Booleans
-                 uMaxNameLen = 0,   // Length of longest name
+    UINT         uMaxNameLen = 0,   // Length of longest name
                  uSymCnt,           // Count of # matching STEs
                  uSymNum;           // Loop counter
     UBOOL        bRet;              // TRUE iff result is valid
@@ -229,111 +226,43 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     // If the right arg is an HGLOBAL, ...
     if (hGlbRht)
     {
+        // Set the ptr type bits
+        hGlbRht = MakePtrTypeGlb (hGlbRht);
+
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-
-        // Split cases based upon the right arg storage type
-        switch (aplTypeRht)
-        {
-            case ARRAY_BOOL:
-                // Loop through the right arg elements
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
-
-                    // Get the next value
-                    aplLongestRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE;
-
-                    if (aplLongestRht >= NAMECLASS_LENp1
-                     || !ucNameClassValid[aplLongestRht])
-                        goto RIGHT_DOMAIN_EXIT;
-
-                    // Mark as nameclass aplLongestRht
-                    nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
-                } // End FOR
-
-                break;
-
-            case ARRAY_INT:
-                // Loop through the right arg elements
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Get the next value
-                    aplLongestRht = ((LPAPLINT) lpMemRht)[uRht];
-
-                    if (aplLongestRht >= NAMECLASS_LENp1
-                     || !ucNameClassValid[aplLongestRht])
-                        goto RIGHT_DOMAIN_EXIT;
-
-                    // Mark as nameclass aplLongestRht
-                    nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
-                } // End FOR
-
-                break;
-
-            case ARRAY_FLOAT:
-                // Loop through the right arg elements
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Get the next value
-                    // Attempt to convert the float to an integer using System CT
-                    aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
-                    if (!bRet
-                     || aplLongestRht >= NAMECLASS_LENp1
-                     || !ucNameClassValid[aplLongestRht])
-                        goto RIGHT_DOMAIN_EXIT;
-
-                    // Mark as nameclass aplLongestRht
-                    nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
-                } // End FOR
-
-                break;
-
-            case ARRAY_APA:
-#define lpAPA           ((LPAPLAPA) lpMemRht)
-                // Get the APA parameters
-                apaOffRht = lpAPA->Off;
-                apaMulRht = lpAPA->Mul;
-#undef  lpAPA
-                // Loop through the right arg elements
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Get the next value
-                    aplLongestRht = apaOffRht + apaMulRht * uRht;
-
-                    if (aplLongestRht >= NAMECLASS_LENp1
-                     || !ucNameClassValid[aplLongestRht])
-                        goto RIGHT_DOMAIN_EXIT;
-
-                    // Mark as nameclass aplLongestRht
-                    nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
-                } // End FOR
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
     } else
-    // If the right arg is an immediate value
+        lpMemRht = &aplLongestRht;
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
     {
-        // Split cases based upon the right arg storage type
-        switch (aplTypeRht)
-        {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Get the next value as an integer
+                aplLongestRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
+
                 if (aplLongestRht >= NAMECLASS_LENp1
                  || !ucNameClassValid[aplLongestRht])
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
                 nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
 
-                break;
+            break;
 
-            case ARRAY_FLOAT:
+        case ARRAY_FLOAT:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Get the next value
                 // Attempt to convert the float to an integer using System CT
-                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+                aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
                 if (!bRet
                  || aplLongestRht >= NAMECLASS_LENp1
                  || !ucNameClassValid[aplLongestRht])
@@ -341,13 +270,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
                 // Mark as nameclass aplLongestRht
                 nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
 
-                break;
+            break;
 
-            defstop
-                break;
-        } // End SWITCH
-    } // End IF/ELSE
+        defstop
+            break;
+    } // End SWITCH
 
     // Initialize the LPSYMENTRY sort array
     lpSymSort = (LPSYMENTRY *) lpMemPTD->lpwszTemp;

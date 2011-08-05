@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -488,9 +488,6 @@ NAME_TYPES GetNameType
     Assert (IsGlbTypeFcnDir_PTB (hGlbData)
          || IsGlbTypeDfnDir_PTB (hGlbData));
 
-    // Clear the ptr type bits
-    hGlbData = ClrPtrTypeDir (hGlbData);
-
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
@@ -591,7 +588,7 @@ UBOOL AssignNamedVars_EM
     Assert (lptkStr->tkFlags.TknType EQ TKT_STRNAMED);
 
     // Get the global handle
-    hGlbStr = ClrPtrTypeDir (lptkStr->tkData.tkGlbData);
+    hGlbStr = lptkStr->tkData.tkGlbData;
 
     // Lock the memory to get a ptr to it
     lpMemNam = MyGlobalLock (hGlbStr);
@@ -653,9 +650,6 @@ UBOOL AssignNamedVars_EM
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbVal));
-
-    // Clear the ptr type bits
-    hGlbVal = ClrPtrTypeDir (hGlbVal);
 
     // Lock the memory to get a ptr to it
     lpMemVal = MyGlobalLock (hGlbVal);
@@ -948,9 +942,6 @@ UBOOL ModifyAssignNameVals_EM
 
     // tkData is a valid HGLOBAL name strand
     Assert (IsGlbTypeNamDir_PTB (hGlbName));
-
-    // Clear the ptr type bits
-    hGlbName = ClrPtrTypeDir (hGlbName);
 
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLock (hGlbName);

@@ -191,8 +191,8 @@ LPPL_YYSTYPE PrimFnMonRho_EM_YY
                 Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonRhoGlb_EM_YY
-                       (ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData), // HGLOBAL
-                        lptkFunc);                                                  // Ptr to function token
+                       (lptkRhtArg->tkData.tkSym->stData.stGlbData, // HGLOBAL
+                        lptkFunc);                                  // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -207,7 +207,7 @@ LPPL_YYSTYPE PrimFnMonRho_EM_YY
             Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonRhoGlb_EM_YY
-                   (ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),   // HGLOBAL
+                   (lptkRhtArg->tkData.tkGlbData,                   // HGLOBAL
                     lptkFunc);                                      // Ptr to function token
         defstop
             return NULL;
@@ -430,6 +430,11 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
             case ARRAY_FLOAT:
             case ARRAY_APA:
                 aplTypeRes = ARRAY_BOOL;
+
+////////////////ByteRes = 0;
+
+                break;
+
             case ARRAY_CHAR:
 ////////////////ByteRes = 0;
 
@@ -719,7 +724,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDir (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                bRet = PrimFnDydRhoRhtGlbCopyData_EM (lptkRhtArg->tkData.tkSym->stData.stGlbData,
                                                       aplTypeRes,
                                                       aplNELMRes,
                                                       lpMemRes,
@@ -952,7 +957,7 @@ UBOOL PrimFnDydRhoRhtCopyData
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkGlbData));
 
-            bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDir (lptkRhtArg->tkData.tkGlbData),
+            bRet = PrimFnDydRhoRhtGlbCopyData_EM (lptkRhtArg->tkData.tkGlbData,
                                                   aplTypeRes,
                                                   aplNELMRes,
                                                   lpMemRes,
@@ -999,7 +1004,7 @@ void PrimFnDydRhoCopyDim
                 Assert (IsGlbTypeVarDir_PTB (lptkLftArg->tkData.tkSym->stData.stGlbData));
 
                 // Copy the left argument's values to the result's dimensions
-                PrimFnDydRhoLftGlbCopyDim (ClrPtrTypeDir (lptkLftArg->tkData.tkSym->stData.stGlbData),
+                PrimFnDydRhoLftGlbCopyDim (lptkLftArg->tkData.tkSym->stData.stGlbData,
                                            lpDimRes);
                 break;
             } // End IF
@@ -1068,7 +1073,7 @@ void PrimFnDydRhoCopyDim
             Assert (IsGlbTypeVarDir_PTB (lptkLftArg->tkData.tkGlbData));
 
             // Copy the left argument's values to the result's dimensions
-            PrimFnDydRhoLftGlbCopyDim (ClrPtrTypeDir (lptkLftArg->tkData.tkGlbData),
+            PrimFnDydRhoLftGlbCopyDim (lptkLftArg->tkData.tkGlbData,
                                        lpDimRes);
             break;
 
@@ -1119,7 +1124,7 @@ UBOOL PrimFnDydRhoLftValid_EM
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir_PTB (lptkLftArg->tkData.tkSym->stData.stGlbData));
 
-                bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDir (lptkLftArg->tkData.tkSym->stData.stGlbData),
+                bRet = PrimFnDydRhoLftGlbValid_EM (lptkLftArg->tkData.tkSym->stData.stGlbData,
                                                    lpaplRankRes,
                                                    lpaplNELMRes,
                                                    lptkFunc);
@@ -1184,7 +1189,7 @@ UBOOL PrimFnDydRhoLftValid_EM
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (lptkLftArg->tkData.tkGlbData));
 
-            bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDir (lptkLftArg->tkData.tkGlbData),
+            bRet = PrimFnDydRhoLftGlbValid_EM (lptkLftArg->tkData.tkGlbData,
                                                lpaplRankRes,
                                                lpaplNELMRes,
                                                lptkFunc);
@@ -1800,7 +1805,8 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                         break;
 
                     case PTRTYPE_HGLOBAL:
-                        Assert (IsNested (lpHeader->ArrType));
+                        Assert (IsNested    (lpHeader->ArrType)
+                             || IsSimpleHet (lpHeader->ArrType));
 
                         // Data is an valid HGLOBAL array
                         Assert (IsGlbTypeVarInd_PTB (lpMemRhtNext));

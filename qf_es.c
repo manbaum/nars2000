@@ -121,7 +121,9 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                  aplRankRht;            // Right ...
     APLLONGEST   aplLongestRht1,        // Right arg longest if immediate, 1st
                  aplLongestRht2;        // ...                             2nd
-    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
+    HGLOBAL      hGlbRht = NULL,        // Right arg global memory handle
+                 lpSymGlbRht1,          // Ptr to 1st right arg item as global numeric
+                 lpSymGlbRht2;          // ...    2nd ...
     LPVOID       lpMemRht = NULL;       // Ptr to right arg global memory
     UBOOL        bEventClear = FALSE;   // TRUE if we're to clear the event type/msg
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
@@ -142,7 +144,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
         goto LEFT_RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
-    if ((!IsSimpleNH (aplTypeRht))
+    if ((!IsSimpleNHGlbNum (aplTypeRht))
      || (lptkLftArg && IsSimpleChar (aplTypeRht)))
         goto RIGHT_DOMAIN_EXIT;
 
@@ -193,27 +195,56 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
             GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
                              aplTypeRht,        // Right arg storage type
                              0,                 // Right arg index
-                             NULL,              // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                            &lpSymGlbRht1,      // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestRht1,    // Ptr to right arg immediate value
                              NULL);             // Ptr to right arg immediate type
             // Get the second value
             GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
                              aplTypeRht,        // Right arg storage type
                              1,                 // Right arg index
-                             NULL,              // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                            &lpSymGlbRht2,      // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestRht2,    // Ptr to right arg immediate value
                              NULL);             // Ptr to right arg immediate type
-            // If the right arg is float, attempt to convert it to integer
-            if (IsSimpleFlt (aplTypeRht))
+            // Split cases based upon the right arg storage type
+            switch (aplTypeRht)
             {
-                // Attempt to convert the float to an integer using System CT
-                aplLongestRht1 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht1, &bRet);
-                if (bRet)
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                case ARRAY_APA:
+                    bRet = TRUE;
+
+                    break;
+
+                case ARRAY_FLOAT:
                     // Attempt to convert the float to an integer using System CT
-                    aplLongestRht2 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht2, &bRet);
-                if (!bRet)
-                    goto RIGHT_DOMAIN_EXIT;
-            } // End IF
+                    aplLongestRht1 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht1, &bRet);
+                    if (bRet)
+                        // Attempt to convert the float to an integer using System CT
+                        aplLongestRht2 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht2, &bRet);
+                    break;
+
+                case ARRAY_RAT:
+                    // Attempt to convert the RAT to an integer using System CT
+                    aplLongestRht1 = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht1, &bRet);
+                    if (bRet)
+                        // Attempt to convert the RAT to an integer using System CT
+                        aplLongestRht2 = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht2, &bRet);
+                    break;
+
+                case ARRAY_VFP:
+                    // Attempt to convert the VFP to an integer using System CT
+                    aplLongestRht1 = mpf_get_ctsa ((LPAPLVFP) lpSymGlbRht1, &bRet);
+                    if (bRet)
+                        // Attempt to convert the VFP to an integer using System CT
+                        aplLongestRht2 = mpf_get_ctsa ((LPAPLVFP) lpSymGlbRht2, &bRet);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
 
             // Check for RIGHT DOMAIN ERROR
             if (aplLongestRht1 >= (BIT0 << 16)

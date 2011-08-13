@@ -190,6 +190,9 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
     LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
+    HGLOBAL       lpSymGlbLft;      // Ptr to left arg as global numeric
+    APLRAT        aplRatRht = {0};  // Right arg value as RAT
+    APLVFP        aplVfpRht = {0};  // ...                VFP
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -257,7 +260,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     } // End IF
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft)
+    if (!IsNumeric (aplTypeLft)
      && !(IsSimpleChar (aplTypeLft) && IsEmpty (aplNELMLft)))
         goto LEFT_DOMAIN_EXIT;
 
@@ -291,17 +294,42 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                            &aplFloatLft,    // Ptr to float ...
                             NULL,           // Ptr to WCHAR ...
                             NULL,           // Ptr to longest ...
-                            NULL,           // Ptr to lpSym/Glb ...
+                           &lpSymGlbLft,    // Ptr to lpSym/Glb ...
                             NULL,           // Ptr to ...immediate type ...
                             NULL);          // Ptr to array type ...
-        // Attempt to convert FLOAT left arg
-        if (IsSimpleFlt (aplTypeLft))
+        // Split cases based upon the left arg storage type
+        switch (aplTypeLft)
         {
-            // Attempt to convert the float to an integer using System CT
-            aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
-            if (!bRet)
-                goto LEFT_DOMAIN_EXIT;
-        } // End IF
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                break;
+
+            case ARRAY_FLOAT:
+                // Attempt to convert the float to an integer using System CT
+                aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
+                if (!bRet)
+                    goto LEFT_DOMAIN_EXIT;
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an integer using System CT
+                aplIntegerLft = mpq_get_sa ((LPAPLRAT) lpSymGlbLft, &bRet);
+                if (!bRet)
+                    goto LEFT_DOMAIN_EXIT;
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an integer using System CT
+                aplIntegerLft = mpf_get_sa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                if (!bRet)
+                    goto LEFT_DOMAIN_EXIT;
+                break;
+
+            case ARRAY_CHAR:
+            defstop
+                break;
+        } // End SWITCH
 
         // Check the singleton arg
         if (aplIntegerLft < 0)
@@ -429,6 +457,32 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             case ARRAY_CHAR:
                 break;
 
+            case ARRAY_RAT:
+                for (uDim = 0; uDim < aplNELMLft; uDim++)
+                {
+                    aplIntegerLft = mpq_get_sa (((LPAPLRAT) lpMemLft)++, &bRet);
+                    if (!bRet || aplIntegerLft < 0)
+                        goto LEFT_DOMAIN_EXIT;
+                    uDimAxRes += aplIntegerLft;
+
+                    *lpMemRep++ = aplIntegerLft;
+                } // End IF
+
+                break;
+
+            case ARRAY_VFP:
+                for (uDim = 0; uDim < aplNELMLft; uDim++)
+                {
+                    aplIntegerLft = mpf_get_sa (((LPAPLVFP) lpMemLft)++, &bRet);
+                    if (!bRet || aplIntegerLft < 0)
+                        goto LEFT_DOMAIN_EXIT;
+                    uDimAxRes += aplIntegerLft;
+
+                    *lpMemRep++ = aplIntegerLft;
+                } // End IF
+
+                break;
+
             defstop
                 break;
         } // End SWITCH
@@ -550,7 +604,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                         uRes = uDimRes + uAcc * uDimHi;
                         uBitIndex = MASKLOG2NBIB & (UINT) uRes;
                         ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
-                        (IsSingleton (aplNELMRht) ? aplIntegerRht : aplIntegerRep) << uBitIndex;
+                          (IsSingleton (aplNELMRht) ? aplIntegerRht : aplIntegerRep) << uBitIndex;
                     } // End FOR
                 } // End FOR
             } // End FOR/FOR
@@ -582,7 +636,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                             goto ERROR_EXIT;
 
                         ((LPAPLINT) lpMemRes)[uDimRes + uAcc * uDimHi] =
-                        IsSingleton (aplNELMRht) ? aplIntegerRht : aplIntegerRep;
+                          IsSingleton (aplNELMRht) ? aplIntegerRht : aplIntegerRep;
                     } // End FOR
                 } // End FOR
             } // End FOR/FOR
@@ -614,7 +668,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                             goto ERROR_EXIT;
 
                         ((LPAPLFLOAT) lpMemRes)[uDimRes + uAcc * uDimHi] =
-                        IsSingleton (aplNELMRht) ? aplFloatRht : aplFloatRep;
+                          IsSingleton (aplNELMRht) ? aplFloatRht : aplFloatRep;
                     } // End FOR
                 } // End FOR
             } // End FOR/FOR
@@ -646,7 +700,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                             goto ERROR_EXIT;
 
                         ((LPAPLCHAR) lpMemRes)[uDimRes + uAcc * uDimHi] =
-                        IsSingleton (aplNELMRht) ? aplCharRht : aplCharRep;
+                          IsSingleton (aplNELMRht) ? aplCharRht : aplCharRep;
                     } // End FOR
                 } // End FOR
             } // End FOR/FOR
@@ -680,7 +734,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                             goto ERROR_EXIT;
 
                         ((LPAPLINT) lpMemRes)[uDimRes + uAcc * uDimHi] =
-                        IsSingleton (aplNELMRht) ? aplIntegerRht : aplIntegerRep;
+                          IsSingleton (aplNELMRht) ? aplIntegerRht : aplIntegerRep;
                     } // End FOR
                 } // End FOR
             } // End FOR/FOR
@@ -710,7 +764,77 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                             goto ERROR_EXIT;
 
                         ((LPAPLNESTED) lpMemRes)[uDimRes + uAcc * uDimHi] = CopySymGlbDir_PTB
-                       (IsSingleton (aplNELMRht) ? aplNestRht : aplNestRep);
+                          (IsSingleton (aplNELMRht) ? aplNestRht : aplNestRep);
+                    } // End FOR
+                } // End FOR
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_RAT:
+            // Initialize the temp
+            mpq_init (&aplRatRht);
+
+            if (IsSingleton (aplNELMRht))
+                mpq_set (&aplRatRht, (LPAPLRAT) aplNestRht);
+
+            // Loop through the right arg copying the data to the result
+            for (uLo = 0; uLo < uDimLo; uLo++)
+            for (uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDimRht = uLo * uDimHi * uDimAxRht + uHi;
+                uDimRes = uLo * uDimHi * uDimAxRes + uHi;
+                for (uAcc = uAx = 0; uAx < uDimAxRht; uAx++)
+                {
+                    if (IsSingleton (aplNELMLft))
+                        uLen = aplIntegerLft;
+                    else
+                        uLen = lpMemRep[uAx];
+                    if (!IsSingleton (aplNELMRht))
+                        mpq_set (&aplRatRht, &((LPAPLRAT) lpMemRht)[uDimRht + uAx * uDimHi]);
+
+                    for (uRep = 0; uRep < uLen; uRep++, uAcc++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        mpq_init_set (&((LPAPLRAT) lpMemRes)[uDimRes + uAcc * uDimHi], &aplRatRht);
+                    } // End FOR
+                } // End FOR
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_VFP:
+            // Initialize the temp
+            mpf_init (&aplVfpRht);
+
+            if (IsSingleton (aplNELMRht))
+                mpf_set (&aplVfpRht, (LPAPLVFP) aplNestRht);
+
+            // Loop through the right arg copying the data to the result
+            for (uLo = 0; uLo < uDimLo; uLo++)
+            for (uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDimRht = uLo * uDimHi * uDimAxRht + uHi;
+                uDimRes = uLo * uDimHi * uDimAxRes + uHi;
+                for (uAcc = uAx = 0; uAx < uDimAxRht; uAx++)
+                {
+                    if (IsSingleton (aplNELMLft))
+                        uLen = aplIntegerLft;
+                    else
+                        uLen = lpMemRep[uAx];
+                    if (!IsSingleton (aplNELMRht))
+                        mpf_set (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uDimRht + uAx * uDimHi]);
+
+                    for (uRep = 0; uRep < uLen; uRep++, uAcc++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        mpf_init_set (&((LPAPLVFP) lpMemRes)[uDimRes + uAcc * uDimHi], &aplVfpRht);
                     } // End FOR
                 } // End FOR
             } // End FOR/FOR
@@ -776,6 +900,10 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // We no longer need this storage
+    Myf_clear (&aplVfpRht);
+    Myq_clear (&aplRatRht);
+
     if (hGlbRep)
     {
         if (lpMemRep)

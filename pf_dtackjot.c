@@ -407,6 +407,32 @@ __try
                                  TRUE);                         // TRUE iff last (rightmost) col
             break;
 
+        case ARRAY_RAT:
+////////////lpaplChar =
+              CompileArrRat     ((LPAPLRAT)    lpMemRht,        // Ptr to right arg memory
+                                 lpFmtHeader,                   // Ptr to parent header
+                                 lpFmtColStr,                   // Ptr to vector of ColStrs
+                                 lpaplChar,                     // Ptr to compiled output
+                                 aplDimNRows,                   // # rows
+                                 aplDimNCols,                   // # cols
+                                 aplRankRht,                    // Right arg rank
+                                 lpMemDimRht,                   // Ptr to right arg dimensions
+                                 TRUE);                         // TRUE iff top level array
+            break;
+
+        case ARRAY_VFP:
+////////////lpaplChar =
+              CompileArrVfp     ((LPAPLVFP)    lpMemRht,        // Ptr to right arg memory
+                                 lpFmtHeader,                   // Ptr to parent header
+                                 lpFmtColStr,                   // Ptr to vector of ColStrs
+                                 lpaplChar,                     // Ptr to compiled output
+                                 aplDimNRows,                   // # rows
+                                 aplDimNCols,                   // # cols
+                                 aplRankRht,                    // Right arg rank
+                                 lpMemDimRht,                   // Ptr to right arg dimensions
+                                 TRUE);                         // TRUE iff top level array
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -520,6 +546,8 @@ __try
         case ARRAY_CHAR:
         case ARRAY_APA:
         case ARRAY_HETERO:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
 ////////////lpaplChar =
               FormatArrSimple (lpFmtHeader,             // Ptr to FMTHEADER
                                lpFmtColStr,             // Ptr to vector of <aplDimNCols> FMTCOLSTRs
@@ -1428,8 +1456,9 @@ LPAPLCHAR CompileArrHetero
                 lpaplChar =
                   FormatImmed (lpwszOut = lpaplChar,
                                immTypeCur,
-                              &(*lpSymEntry)->stData.stLongest);
-
+                               (GetPtrTypeDir (*lpSymEntry) EQ PTRTYPE_STCONST)
+                              ? &(*lpSymEntry)->stData.stLongest
+                              :   (LPVOID) *lpSymEntry);
                 // Skip to next entry
                 lpSymEntry++;
 
@@ -2014,6 +2043,32 @@ LPAPLCHAR CompileArrNestedGlb
                                  bLstCol);                              // TRUE iff last (rightmost) col
             break;
 
+        case ARRAY_RAT:
+            lpaplChar =
+              CompileArrRat     ((LPAPLRAT)    lpMem,                   // Ptr to right arg memory
+                                 lpFmtHeader,                           // Ptr to parent header
+                                 lpFmtColStr,                           // Ptr to vector of ColStrs
+                                 lpaplChar,                             // Ptr to compiled output
+                                 aplDimNRows,                           // # rows
+                                 aplDimNCols,                           // # cols
+                                 aplRank,                               // Right arg rank
+                                 lpMemDim,                              // Ptr to right arg dimensions
+                                 FALSE);                                // TRUE iff top level array
+            break;
+
+        case ARRAY_VFP:
+            lpaplChar =
+              CompileArrVfp     ((LPAPLVFP)    lpMem,                   // Ptr to right arg memory
+                                 lpFmtHeader,                           // Ptr to parent header
+                                 lpFmtColStr,                           // Ptr to vector of ColStrs
+                                 lpaplChar,                             // Ptr to compiled output
+                                 aplDimNRows,                           // # rows
+                                 aplDimNCols,                           // # cols
+                                 aplRank,                               // Right arg rank
+                                 lpMemDim,                              // Ptr to right arg dimensions
+                                 FALSE);                                // TRUE iff top level array
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -2039,6 +2094,273 @@ LPAPLCHAR CompileArrNestedGlb
 
     return lpaplChar;
 } // End CompileArrNestedGlb
+
+
+//***************************************************************************
+//  $CompileArrRat
+//
+//  Compile an array of Rationals
+//***************************************************************************
+
+LPAPLCHAR CompileArrRat
+    (LPAPLRAT    lpMem,         // Ptr to data to format
+     LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
+     LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
+     LPAPLCHAR   lpaplChar,     // Ptr to next available format position
+     APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
+     APLDIM      aplDimNCols,   // # cols to format
+     APLRANK     aplRank,       // Rank of data to format
+     LPAPLDIM    lpMemDim,      // Ptr to dimension vector
+     UBOOL       bTopLevel)     // TRUE iff top level array
+
+{
+    UINT        uLen;               // Length of integer part
+    APLDIM      aplDimCol,          // Loop counter
+                aplDimRow;          // ...
+    LPAPLCHAR   lpwszOut;           // Ptr to output buffer
+    LPWCHAR     lpwsz;
+    LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to local FMTROWSTR
+
+    // Loop through the cols, setting the column type
+    for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        // Set column type
+        lpFmtColStr[aplDimCol].colType = COLTYPE_NOTCHAR;
+
+    // Loop through the rows
+    for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+    {
+        // Create a new FMTROWSTR
+        lpFmtRowLcl = (LPFMTROWSTR) lpaplChar;
+#ifdef DEBUG
+        lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
+        lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
+#endif
+        lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
+        lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
+        lpFmtRowLcl->uItemCount  = 0;               // Initialize the # items to follow
+        lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
+
+        // Link into the row chain
+        lpFmtHeader->lpFmtRowLst = lpFmtRowLcl;
+
+        // Skip over the FMTROWSTR to the next available position
+        lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
+
+        // Loop through the cols
+        for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        {
+            // Format the Rational
+            lpaplChar =
+              FormatAplRat (lpwszOut = lpaplChar,   // Ptr to output save area
+                           *lpMem++);               // The value to format
+            // Zap the trailing blank
+            lpaplChar[-1] = WC_EOS;
+
+            // Count in another item
+            lpFmtRowLcl->uItemCount++;
+
+            // Include a leading blank if nested or not scalar/vector or not 1st col
+            uLen = (IsMultiRank (aplRank) || aplDimCol NE 0);
+
+            // Max the current leading blanks with this
+            lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
+
+            // Check for rational separator
+            lpwsz = strchrW (lpwszOut, L'r');
+            if (lpwsz)
+            {
+                // Calculate the length of the numerator
+                uLen = (UINT) (lpwsz - lpwszOut);
+
+                // Max the current integer width with this
+                lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
+
+                // Calculate the length of the denominator
+                //   including the rational separator
+                uLen = (UINT) (lpaplChar - lpwsz) - 1;
+
+                // Max the current fractional width with this
+                lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
+            } else  // No rational separator
+            {
+                // Calculate the length of the numerator
+                uLen = (UINT) (lpaplChar - lpwszOut) - 1;
+
+                // Max the current integer width with this
+                lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
+
+////////////////// Calculate the length of the denominator
+////////////////uLen = 0;
+////////////////
+////////////////// Max the current fractional width with this
+////////////////lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
+            } // End IF/ELSE
+
+////////////// Include a trailing blank if nested and last col
+////////////uLen = 0;
+////////////
+////////////// Max the current trailing blanks with this
+////////////lpFmtColStr[aplDimCol].uTrBl = max (lpFmtColStr[aplDimCol].uTrBl, uLen);
+        } // End FOR
+
+        // Save as ptr to next row struc
+        lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
+
+        // If this is not at the top level and not the last row,
+        //   we need to count the interplanar spacing
+        //   as blank rows in the row count
+        if ((!bTopLevel)                        // Not top level
+         && aplDimRow NE (aplDimNRows - 1))     // Not last row
+            lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
+                                          lpMemDim,         // Ptr to item dimensions
+                                          aplRank,          // Item rank
+                                          aplDimRow,        // Item row #
+                                          lpFmtColStr);     // Ptr to item FMTCOLSTR
+    } // End FOR
+
+    // Mark as last row struc
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
+    return lpaplChar;
+} // End CompileArrRat
+
+
+//***************************************************************************
+//  $CompileArrVfp
+//
+//  Compile an array of VFPs
+//***************************************************************************
+
+LPAPLCHAR CompileArrVfp
+    (LPAPLVFP    lpMem,         // Ptr to data to format
+     LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
+     LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
+     LPAPLCHAR   lpaplChar,     // Ptr to next available format position
+     APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
+     APLDIM      aplDimNCols,   // # cols to format
+     APLRANK     aplRank,       // Rank of data to format
+     LPAPLDIM    lpMemDim,      // Ptr to dimension vector
+     UBOOL       bTopLevel)     // TRUE iff top level array
+
+{
+    UINT        uLen;
+    APLDIM      aplDimCol,
+                aplDimRow;
+    LPAPLCHAR   lpwszOut;
+    LPWCHAR     lpwsz;
+    LPFMTROWSTR lpFmtRowLcl = NULL;
+    APLUINT     uQuadPP;        // []PP save area
+
+    // Get the current value of []PP for VFP
+    uQuadPP  = GetQuadPPV ();
+
+    // Loop through the cols, setting the column type
+    for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        // Set column type
+        lpFmtColStr[aplDimCol].colType = COLTYPE_NOTCHAR;
+
+    // Loop through the rows
+    for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+    {
+        // Create a new FMTROWSTR
+        lpFmtRowLcl = (LPFMTROWSTR) lpaplChar;
+#ifdef DEBUG
+        lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
+        lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
+#endif
+        lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
+        lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
+        lpFmtRowLcl->uItemCount  = 0;               // Initialize the # items to follow
+        lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
+
+        // Link into the row chain
+        lpFmtHeader->lpFmtRowLst = lpFmtRowLcl;
+
+        // Skip over the FMTROWSTR to the next available position
+        lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
+
+        // Loop through the cols
+        for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        {
+            // Format the VFP
+            lpaplChar =
+              FormatAplVfp (lpwszOut = lpaplChar,   // Ptr to output save area
+                           *lpMem++,                // The value for format
+                            uQuadPP);               // Use this many significant digits
+            // Zap the trailing blank
+            lpaplChar[-1] = WC_EOS;
+
+            // Count in another item
+            lpFmtRowLcl->uItemCount++;
+
+            // Include a leading blank if nested or not scalar/vector or not 1st col
+            uLen = (IsMultiRank (aplRank) || aplDimCol NE 0);
+
+            // Max the current leading blanks with this
+            lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
+
+            // Check for decimal point
+            lpwsz = strchrW (lpwszOut, L'.');
+            if (lpwsz)
+            {
+                // Calculate the length of the integer part
+                uLen = (UINT) (lpwsz - lpwszOut);
+
+                // Max the current integer width with this
+                lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
+
+                // Calculate the length of the fractional part
+                //   including the decimal point
+                uLen = (UINT) (lpaplChar - lpwsz) - 1;
+
+                // Max the current fractional width with this
+                lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
+            } else  // No decimal point
+            {
+                // Calculate the length of the integer part
+                uLen = (UINT) (lpaplChar - lpwszOut) - 1;
+
+                // Max the current integer width with this
+                lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
+
+////////////////// Calculate the length of the fractional part
+////////////////uLen = 0;
+////////////////
+////////////////// Max the current fractional width with this
+////////////////lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
+            } // End IF/ELSE
+
+////////////// Include a trailing blank if nested and last col
+////////////uLen = 0;
+////////////
+////////////// Max the current trailing blanks with this
+////////////lpFmtColStr[aplDimCol].uTrBl = max (lpFmtColStr[aplDimCol].uTrBl, uLen);
+        } // End FOR
+
+        // Save as ptr to next row struc
+        lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
+
+        // If this is not at the top level and not the last row,
+        //   we need to count the interplanar spacing
+        //   as blank rows in the row count
+        if ((!bTopLevel)                        // Not top level
+         && aplDimRow NE (aplDimNRows - 1))     // Not last row
+            lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
+                                          lpMemDim,         // Ptr to item dimensions
+                                          aplRank,          // Item rank
+                                          aplDimRow,        // Item row #
+                                          lpFmtColStr);     // Ptr to item FMTCOLSTR
+    } // End FOR
+
+    // Mark as last row struc
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
+    return lpaplChar;
+} // End CompileArrVfp
 
 
 //***************************************************************************
@@ -2337,6 +2659,7 @@ LPAPLCHAR FormatArrSimple
     LPFMTROWSTR lpFmtRowStr;        // Ptr to this item's FMTROWSTR
     LPAPLCHAR   lpaplChar = lpaplChar2; // Ptr to moving input string
     APLUINT     uQuadPW;            // []PW
+    WCHAR       wcSep;              // Decimal or rational separator
 
     // Get the current value of []PW
     uQuadPW = GetQuadPW ();
@@ -2349,6 +2672,30 @@ LPAPLCHAR FormatArrSimple
 
     // Format char arrays as one col
     aplChrNCols = (IsSimpleChar (aplType)) ? 1 : aplDimNCols;
+
+    // Set the decimal or rational separator
+
+    // Split cases based upon the array storage type
+    switch (aplType)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+        case ARRAY_VFP:
+        case ARRAY_CHAR:
+            wcSep = L'.';
+
+            break;
+
+        case ARRAY_RAT:
+            wcSep = L'r';
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // Loop through the formatted rows
     for (aplDimRow = aplRealRow = 0;
@@ -2404,7 +2751,7 @@ LPAPLCHAR FormatArrSimple
                     uLead = 0;
                 else
                 {
-                    lpwDec = SkipToCharW (lpaplChar, L'.');
+                    lpwDec = SkipToCharW (lpaplChar, wcSep);
                     lpwExp = SkipToCharW (lpaplChar, L'E');
 
                     // Use the earlier value
@@ -2886,6 +3233,8 @@ LPAPLCHAR FormatArrNestedGlb
         case ARRAY_CHAR:
         case ARRAY_APA:
         case ARRAY_HETERO:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
             lpaplChar =
               FormatArrSimple (lpFmtHeader,     // Ptr to FMTHEADER
                                lpFmtColLcl,     // Ptr to vector of <aplDimNCols> FMTCOLSTRs
@@ -2970,7 +3319,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                  hGlbRht = NULL,    // Right ...
                  hGlbRes = NULL,    // Result   ...
                  hGlbWidPrc = NULL, // Left arg WIDPRC struct ...
-                 hGlbItmRht = NULL; // Right arg item ...
+                 hGlbItmRht = NULL, // Right arg item ...
+                 lpSymGlbLft;       // Ptr to left arg as global numeric
     LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
                  lpMemRht = NULL;   // Ptr to right ...
     LPAPLCHAR    lpMemRes = NULL;   // Ptr to result   ...
@@ -3037,7 +3387,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         goto LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft))
+    if (!IsNumeric (aplTypeLft))
         goto DOMAIN_EXIT;
 
     // Get left and right arg's global ptrs
@@ -3075,15 +3425,46 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                             NULL,               // ...        float (may be NULL)
                             NULL,               // ...        char (may be NULL)
                            &aplLongestLft,      // ...        longest (may be NULL)
-                            NULL,               // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                           &lpSymGlbLft,        // ...        LPSYMENTRY or HGLOBAL (may be NULL)
                             NULL,               // ...        immediate type (see IMM_TYPES) (may be NULL)
                             NULL);              // ...        array type:  ARRAY_TYPES (may be NULL)
-        // If it's float, ...
-        if (IsSimpleFlt (aplTypeLft))
+        // Split cases based upon the left arg storage type
+        switch (aplTypeLft)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                break;
+
+            case ARRAY_FLOAT:
                 // Attempt to convert the float to an integer using System CT
                 aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an integer using System CT
+                aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an integer using System CT
+                aplLongestLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                break;
+
+            case ARRAY_CHAR:
+            case ARRAY_HETERO:
+            case ARRAY_NESTED:
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // Save as actual precision
         lpMemWidPrc[0].iPrc = aplLongestLft;
@@ -3167,6 +3548,36 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
             break;
 
+        case ARRAY_RAT:
+            for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
+            {
+                // Attempt to convert the RAT to an integer using System CT
+                aplIntegerLft = mpq_get_ctsa (((LPAPLRAT) lpMemLft)++, &bRet);
+                if ((!bRet) || ((!uPar) && aplIntegerLft < 0))
+                    goto DOMAIN_EXIT;
+                if (!uPar)
+                    lpMemWidPrc  ->uWid = aplIntegerLft;
+                else
+                    lpMemWidPrc++->iPrc = aplIntegerLft;
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
+            {
+                // Attempt to convert the VFP to an integer using System CT
+                aplIntegerLft = mpf_get_ctsa (((LPAPLVFP) lpMemLft)++, &bRet);
+                if ((!bRet) || ((!uPar) && aplIntegerLft < 0))
+                    goto DOMAIN_EXIT;
+                if (!uPar)
+                    lpMemWidPrc  ->uWid = aplIntegerLft;
+                else
+                    lpMemWidPrc++->iPrc = aplIntegerLft;
+            } // End FOR
+
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -3236,6 +3647,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         case ARRAY_FLOAT:
         case ARRAY_CHAR:
         case ARRAY_APA:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
             break;
 
         case ARRAY_HETERO:
@@ -3263,6 +3676,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                             case ARRAY_INT:
                             case ARRAY_FLOAT:
                             case ARRAY_APA:
+                            case ARRAY_RAT:
+                            case ARRAY_VFP:
                                 // Numeric scalars only
                                 if (!IsScalar (aplRankSubRht))
                                     goto DOMAIN_EXIT;
@@ -3317,6 +3732,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         case ARRAY_FLOAT:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
             // Loop through the right arg col by col
             //   formatting the values into lpwszFormat
             //   and accumulating the widths
@@ -3345,6 +3762,37 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     else
                         immTypeRht = TranslateArrayTypeToImmType (aplTypeRht);
 
+                    // If the item is a global numeric, ...
+                    if (IsGlbNum (aplTypeRht))
+                    {
+                        // hGlbItmRht is actually a ptr to the global numeric data
+                        // Split cases based upon the item storage type
+                        switch (aplTypeRht)
+                        {
+                            case ARRAY_RAT:
+                                lpaplChar =
+                                  FormatAplRat (lpaplChar,                  // Ptr to output save area
+                                               *(LPAPLRAT) hGlbItmRht);     // The value to format
+                                break;
+
+                            case ARRAY_VFP:
+                                lpaplChar =
+                                  FormatAplVfpFC (lpaplChar,                // Ptr to output save area
+                                                 *(LPAPLVFP) hGlbItmRht,    // The value to format
+                                                  iPrc,                     // Use this many significant digits for VFP
+                                                  aplCharDecimal,           // Char to use as decimal separator
+                                                  aplCharOverbar,           // Char to use as overbar
+                                                  TRUE,                     // TRUE iff nDigits is # fractional digits
+                                                  FALSE);                   // TRUE iff we're to substitute text for infinity
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Ensure it's properly terminated
+                        lpaplChar[-1] = WC_EOS;
+                    } else
                     // If the item is an HGLOBAL, ...
                     if (hGlbItmRht)
                     {
@@ -3414,7 +3862,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                  -iPrc,                             // Precision to use
                                                  aplCharDecimal,                    // Char to use as decimal separator
                                                  aplCharOverbar,                    // Char to use as overbar
-                                                 FLTDISPFMT_E);                     // Float display format
+                                                 FLTDISPFMT_E,                      // Float display format
+                                                 FALSE);                            // TRUE iff we're to substitute text for infinity
                                 // Zap the trailing blank
                                 lpaplChar[-1] = WC_EOS;
                             } // End IF/ELSE
@@ -3434,7 +3883,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                  iPrc,                                  // Precision for F-format, significant digits for E-format
                                                  aplCharDecimal,                        // Char to use as decimal separator
                                                  aplCharOverbar,                        // Char to use as overbar
-                                                 FLTDISPFMT_F);                         // Float display format
+                                                 FLTDISPFMT_F,                          // Float display format
+                                                 FALSE);                                // TRUE iff we're to substitute text for infinity
                             else
                             if (iPrc EQ 0)
                                 // Format the number
@@ -3444,7 +3894,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                  DBL_MAX_10_EXP + 2,                    // Precision for F-format, significant digits for E-format
                                                  aplCharDecimal,                        // Char to use as decimal separator
                                                  aplCharOverbar,                        // Char to use as overbar
-                                                 FLTDISPFMT_RAWINT);                    // Float display format
+                                                 FLTDISPFMT_RAWINT,                     // Float display format
+                                                 FALSE);                                // TRUE iff we're to substitute text for infinity
                             else
 ////////////////////////////if (iPrc < 0)
                                 // Format the number
@@ -3454,7 +3905,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                  -iPrc,                                 // Precision for F-format, significant digits for E-format
                                                  aplCharDecimal,                        // Char to use as decimal separator
                                                  aplCharOverbar,                        // Char to use as overbar
-                                                 FLTDISPFMT_E);                         // Float display format
+                                                 FLTDISPFMT_E,                          // Float display format
+                                                 FALSE);                                // TRUE iff we're to substitute text for infinity
                             // Zap the trailing blank
                             lpaplChar[-1] = WC_EOS;
 

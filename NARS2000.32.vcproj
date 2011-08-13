@@ -62,8 +62,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;"
-				PreprocessorDefinitions="DEBUG;RESDEBUG=1;_CRT_SECURE_NO_WARNINGS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=0x0701"
+				AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS)&quot;;&quot;$(MPIR)build.vc10\lib\Win32\Debug&quot;;&quot;$(MPFR)&quot;;&quot;$(FLINT)include32&quot;;&quot;$(GSL_DIR)&quot;"
+				PreprocessorDefinitions="DEBUG;RESDEBUG=1;_WIN32;_CRT_SECURE_NO_WARNINGS;FLINTAVL=1;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;__GMP_BITS_PER_MP_LIMB=32"
 				StringPooling="false"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -73,7 +73,7 @@
 				BrowseInformation="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
+				DebugInformationFormat="1"
 				CompileAs="1"
 			/>
 			<Tool
@@ -89,17 +89,21 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
 				UseLibraryDependencyInputs="false"
-				AdditionalOptions="comctl32.lib Wininet.lib $(NARSROOT)gsl\libgsl32-double.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib qdebug\qdebug32.lib"
-				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib"
+				AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib qdebug\qdebug32.lib mpir32.lib mpfr32.lib $(NARSROOT)Flint\lib\flint32.lib $(GSL_DIR)libgsl32-double.lib"
+				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib;&quot;$(NARSROOT)mpir\OldLibs&quot;"
 				GenerateManifest="false"
+				ManifestFile=""
 				AdditionalManifestDependencies="NARS2000.exe.manifest32"
 				IgnoreAllDefaultLibraries="true"
+				IgnoreDefaultLibraryNames=""
 				IgnoreEmbeddedIDL="true"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile=""
 				GenerateMapFile="true"
 				SubSystem="2"
 				LargeAddressAware="2"
 				OptimizeReferences="2"
+				ProfileGuidedDatabase=""
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="2"
 				TargetMachine="1"
@@ -167,7 +171,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;"
+				AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS)&quot;;&quot;$(MPIR)&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=0x0701"
 				StringPooling="false"
 				MinimalRebuild="false"
@@ -194,8 +198,8 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
 				UseLibraryDependencyInputs="false"
-				AdditionalOptions="comctl32.lib Wininet.lib $(NARSROOT)gsl\libgsl32-double.lib version.lib libcmt.lib oldnames.lib dbghelp.lib"
-				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib"
+				AdditionalOptions="comctl32.lib Wininet.lib libgsl32-double.lib version.lib libcmt.lib oldnames.lib dbghelp.lib"
+				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib;&quot;$(MPIR)&quot;;&quot;$(GSL_DIR)&quot;"
 				GenerateManifest="false"
 				AdditionalManifestDependencies="NARS2000.exe.manifest32"
 				IgnoreAllDefaultLibraries="true"
@@ -465,17 +469,25 @@
 				>
 			</File>
 			<File
-				RelativePath="$(NARSROOT)msieve\mp.c"
+				RelativePath="$(MS)mp.c"
 				>
 				<FileConfiguration
 					Name="Debug32|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
 						PreprocessorDefinitions="/D WIN32"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\mpfns.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mpifns.c"
+				>
 			</File>
 			<File
 				RelativePath=".\perfmon.c"
@@ -625,7 +637,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
 					/>
 				</FileConfiguration>
 			</File>
@@ -826,14 +838,14 @@
 				>
 			</File>
 			<File
-				RelativePath="$(NARSROOT)msieve\prime_delta.c"
+				RelativePath="$(MS)prime_delta.c"
 				>
 				<FileConfiguration
 					Name="Debug32|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
 						PreprocessorDefinitions="/D WIN32"
 					/>
 				</FileConfiguration>
@@ -1031,14 +1043,14 @@
 				>
 			</File>
 			<File
-				RelativePath="$(NARSROOT)msieve\smallfact.c"
+				RelativePath="$(MS)smallfact.c"
 				>
 				<FileConfiguration
 					Name="Debug32|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1047,14 +1059,14 @@
 				>
 			</File>
 			<File
-				RelativePath="$(NARSROOT)msieve\squfof.c"
+				RelativePath="$(MS)squfof.c"
 				>
 				<FileConfiguration
 					Name="Debug32|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1083,14 +1095,14 @@
 				>
 			</File>
 			<File
-				RelativePath="$(NARSROOT)msieve\tinyqs.c"
+				RelativePath="$(MS)tinyqs.c"
 				>
 				<FileConfiguration
 					Name="Debug32|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="$(NARSROOT)msieve;$(NARSROOT)gmp-static"
+						AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
 						PreprocessorDefinitions="/D WIN32"
 					/>
 				</FileConfiguration>

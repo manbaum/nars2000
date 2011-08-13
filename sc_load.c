@@ -908,6 +908,7 @@ LPWCHAR ParseSavedWsVar_EM
     LPSYMENTRY   lpSymEntry,            // Ptr to STE for HGLOBAL
                  lpSymTmp;              // Ptr to temporary LPSYMENTRY
     APLINT       aplInteger;            // Temporary integer
+    APLFLOAT     aplFloat;              // ...       float
     APLSTYPE     aplTypeObj;            // Object storage type
     HGLOBAL      hGlbObj;               // Object global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
@@ -1100,18 +1101,30 @@ LPWCHAR ParseSavedWsVar_EM
                 // Restore the original value
                 *lpwCharEnd = wcTmp;
 
+                // Check for positive infinity
+                if (lstrcmp ((LPCHAR) lpwszFormat, TEXT_INFINITY) EQ 0)
+                    // Save in the result and skip over it
+                    aplFloat = PosInfinity;
+                else
+                // Check for negative infinity
+                if (lstrcmp ((LPCHAR) lpwszFormat, "-" TEXT_INFINITY) EQ 0)
+                    // Save in the result and skip over it
+                    aplFloat = NegInfinity;
+                else
+                    aplFloat = strtod ((LPCHAR) lpwszFormat, NULL);
+
                 // If we're to save the SymTab, ...
                 if (bSymTab)
                 {
                     // Save in the result and skip over it
                     *((LPAPLHETERO) *lplpMemObj)++ =
                     lpSymTmp =
-                      SymTabAppendFloat_EM (strtod ((LPCHAR) lpwszFormat, NULL));
+                      SymTabAppendFloat_EM (aplFloat);
                     if (!lpSymTmp)
                         goto ERROR_EXIT;
                 } else
                     // Save the result directly
-                    *((LPAPLFLOAT) *lplpMemObj) = strtod ((LPCHAR) lpwszFormat, NULL);
+                    *((LPAPLFLOAT) *lplpMemObj) = aplFloat;
 
                 // Skip to the next field
                 lpwSrc = &lpwCharEnd[1];
@@ -1419,10 +1432,19 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Restore the original value
                         *lpwCharEnd = wcTmp;
 
+                        // Check for positive infinity
+                        if (lstrcmp ((LPCHAR) lpwszFormat, TEXT_INFINITY) EQ 0)
+                            // Save in the result and skip over it
+                            *((LPAPLFLOAT) lpMemObj)++ = PosInfinity;
+                        else
+                        // Check for negative infinity
+                        if (lstrcmp ((LPCHAR) lpwszFormat, "-" TEXT_INFINITY) EQ 0)
+                            // Save in the result and skip over it
+                            *((LPAPLFLOAT) lpMemObj)++ = NegInfinity;
+                        else
                             // Use David Gay's routines
                             // Save in the result and skip over it
                             *((LPAPLFLOAT) lpMemObj)++ = strtod ((LPCHAR) lpwszFormat, NULL);
-
                         // Skip to the next field
                         lpwSrc = &lpwCharEnd[1];
                     } // End FOR
@@ -1498,6 +1520,88 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                               lpwszVersion, // Ptr to workspace version text
                                               lpDict,       // Ptr to workspace dictionary
                                               lplpwErrMsg); // Ptr to ptr to (constant error message text
+                    break;
+
+                case ARRAY_RAT:
+                    // Loop through the elements
+                    for (uObj = 0; uObj < aplNELMObj; uObj++)
+                    {
+                        LPWCHAR lpwWS,
+                                lpwStr;
+                        LPCHAR  lpStr;
+                        WCHAR   wc;
+
+                        // Skip to the next white space
+                        lpwWS = SkipToCharW (lpwSrc, L' ');
+
+                        // Convert it to a WC_EOS
+                        wc = *lpwWS; *lpwWS = WC_EOS;
+
+                        // Initialize the save area
+                        mpq_init ((LPAPLRAT) lpMemObj);
+
+                        // Convert the string from WCHAR to char
+                        lpwStr = lpwSrc; lpStr = (LPCHAR) lpwStr;
+                        while (*lpwStr)
+                            *lpStr++ = (char) *lpwStr++;
+                        *lpStr = AC_EOS;
+
+                        // Check for positive infinity
+                        if (lstrcmp ((LPCHAR) lpwSrc, TEXT_INFINITY) EQ 0)
+                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, 1);
+                        else
+                        // Check for negative infinity
+                        if (lstrcmp ((LPCHAR) lpwSrc, "-" TEXT_INFINITY) EQ 0)
+                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, -1);
+                        else
+                            // Convert the string to rational
+                            mpq_set_str (((LPAPLRAT) lpMemObj)++, (LPCHAR) lpwSrc, 10);
+
+                        // Skip to the next field
+                        lpwSrc = &lpwWS[wc EQ L' '];
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Loop through the elements
+                    for (uObj = 0; uObj < aplNELMObj; uObj++)
+                    {
+                        LPWCHAR lpwWS,
+                                lpwStr;
+                        LPCHAR  lpStr;
+                        WCHAR   wc;
+
+                        // Skip to the next white space
+                        lpwWS = SkipToCharW (lpwSrc, L' ');
+
+                        // Convert it to a WC_EOS
+                        wc = *lpwWS; *lpwWS = WC_EOS;
+
+                        // Initialize the save area
+                        mpf_init ((LPAPLVFP) lpMemObj);
+
+                        // Convert the string from WCHAR to char
+                        lpwStr = lpwSrc; lpStr = (LPCHAR) lpwStr;
+                        while (*lpwStr)
+                            *lpStr++ = (char) *lpwStr++;
+                        *lpStr = AC_EOS;
+
+                        // Check for positive infinity
+                        if (lstrcmp ((LPCHAR) lpwSrc, TEXT_INFINITY) EQ 0)
+                            mpf_set_inf (((LPAPLVFP) lpMemObj)++, 1);
+                        else
+                        // Check for negative infinity
+                        if (lstrcmp ((LPCHAR) lpwSrc, "-" TEXT_INFINITY) EQ 0)
+                            mpf_set_inf (((LPAPLVFP) lpMemObj)++, -1);
+                        else
+                            // Convert the string to VFP
+                            mpf_set_str (((LPAPLVFP) lpMemObj)++, (LPCHAR) lpwSrc, 10);
+
+                        // Skip to the next field
+                        lpwSrc = &lpwWS[wc EQ L' '];
+                    } // End FOR
+
                     break;
 
                 defstop

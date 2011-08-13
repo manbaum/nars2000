@@ -46,6 +46,11 @@ PRIMSPEC PrimSpecStile = {
     NULL,   // &PrimFnMonStileFisI, -- Can't happen w/Stile
     &PrimFnMonStileFisF,
 
+    &PrimFnMonStileRisR,
+
+////               VisR,   // Handled via type promotion (to VisV)
+    &PrimFnMonStileVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecStileStorageTypeDyd,
@@ -63,6 +68,13 @@ PRIMSPEC PrimSpecStile = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydStileFisIvI, -- Can't happen w/Stile
     &PrimFnDydStileFisFvF,
+
+    NULL,   // &PrimFnDydStileBisRvR, -- Can't happen w/Stile
+    &PrimFnDydStileRisRvR,
+
+    NULL,   // &PrimFnDydStileBisVvV, -- Can't happen w/Stile
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydStileVisVvV,
 
     NULL,   // &PrimFnMonStileB64isB64, -- Can't happen w/Stile
     NULL,   // &PrimFnMonStileB32isB32, -- Can't happen w/Stile
@@ -195,6 +207,52 @@ APLFLOAT PrimFnMonStileFisF
 
 
 //***************************************************************************
+//  $PrimFnMonStileRisR
+//
+//  Primitive scalar function monadic Stile:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonStileRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Initialize the result
+    mpq_init (&mpqRes);
+
+    // Calculate the absolute value of a Rational
+    mpq_abs (&mpqRes, &aplRatRht);
+
+    return mpqRes;
+} // End PrimFnMonStileRisR
+
+
+//***************************************************************************
+//  $PrimFnMonStileVisV
+//
+//  Primitive scalar function monadic Stile:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonStileVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    // Calculate the absolute value of a Variable FP
+    mpf_abs (&mpfRes, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnMonStileVisV
+
+
+//***************************************************************************
 //  $PrimSpecStileStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
@@ -287,11 +345,59 @@ APLFLOAT PrimFnDydStileFisFvF
     // Handle zero modulus or argument
     if (aplFloatLft EQ 0
      || aplFloatRht EQ 0)
+        // Return the right arg
         return aplFloatRht;
-
-    // If the right arg is infinite, ...
-    if (!_finite (aplFloatRht))
-        return TranslateQuadICIndex (ICNDX_NMODInf);
+    else
+    // If the right arg is negative infinity, ...
+    if (IsNegInfinity (aplFloatRht))
+    {
+        // If the left arg is positive, ...
+        if (aplFloatLft > 0)
+            return TranslateQuadICIndex (aplFloatLft,
+                                         ICNDX_PosMODNi,
+                                         aplFloatRht);
+        // If the left arg is negative, ...
+        if (aplFloatLft < 0)
+            return TranslateQuadICIndex (aplFloatLft,
+                                         ICNDX_NegMODNi,
+                                         aplFloatRht);
+    } else
+    // If the right arg is positive infinity, ...
+    if (IsPosInfinity (aplFloatRht))
+    {
+        // If the left arg is positive, ...
+        if (aplFloatLft > 0)
+            return TranslateQuadICIndex (aplFloatLft,
+                                         ICNDX_PosMODPi,
+                                         aplFloatRht);
+        // If the left arg is negative, ...
+        if (aplFloatLft < 0)
+            return TranslateQuadICIndex (aplFloatLft,
+                                         ICNDX_NegMODPi,
+                                         aplFloatRht);
+    } else
+    // If the left arg is negative infinity, ...
+    if (IsNegInfinity (aplFloatLft))
+    {
+        // If the right arg is positive, ...
+        if (aplFloatRht > 0)
+            return TranslateQuadICIndex (aplFloatLft,
+                                         ICNDX_NiMODPos,
+                                         aplFloatRht);
+        // Return the right arg
+        return aplFloatRht;
+    } else
+    // If the left arg is positive infinity, ...
+    if (IsNegInfinity (aplFloatLft))
+    {
+        // If the right arg is negative, ...
+        if (aplFloatRht < 0)
+            return TranslateQuadICIndex (aplFloatLft,
+                                         ICNDX_PiMODNeg,
+                                         aplFloatRht);
+        // Return the right arg
+        return aplFloatRht;
+    } // End IF
 
     // Ensure both arguments are non-negative
     aplLft = PrimFnMonStileFisF (aplFloatLft, lpPrimSpec);
@@ -314,6 +420,7 @@ APLFLOAT PrimFnDydStileFisFvF
     // Calculate the modulus
     aplTmp = fmod (aplRht, aplLft);
 
+    // Due to differences in fmod and APL's mod as to how they treat signed args, ...
     // If the arguments are of opposite sign
     //   and the result so far is non-zero,
     //   replace the result with its complement
@@ -328,6 +435,219 @@ APLFLOAT PrimFnDydStileFisFvF
     else
         return  aplTmp;
 } // End PrimFnDydStileFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydStileRisRvR
+//
+//  Primitive scalar function dyadic Stile:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydStileRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Handle zero modulus or argument
+    if (IsMpq0 (&aplRatLft)
+     || IsMpq0 (&aplRatRht))
+        // Return the right arg
+        mpq_init_set (&mpqRes, &aplRatRht);
+    else
+    // If the right arg is negative infinity, ...
+    if (IsMpqNegInfinity (&aplRatRht))
+    {
+        // If the left arg is positive, ...
+        if (mpq_sgn (&aplRatLft) > 0)
+            return mpq_QuadICValue (aplRatLft,
+                                    ICNDX_PosMODNi,
+                                    aplRatRht,
+                                    mpqRes);
+        // If the left arg is negative, ...
+        if (mpq_sgn (&aplRatLft) < 0)
+            return mpq_QuadICValue (aplRatLft,
+                                    ICNDX_NegMODNi,
+                                    aplRatRht,
+                                    mpqRes);
+    } else
+    // If the right arg is positive infinity, ...
+    if (IsMpqPosInfinity (&aplRatRht))
+    {
+        // If the left arg is positive, ...
+        if (mpq_sgn (&aplRatLft) > 0)
+            return mpq_QuadICValue (aplRatLft,
+                                    ICNDX_PosMODPi,
+                                    aplRatRht,
+                                    mpqRes);
+        // If the left arg is negative, ...
+        if (mpq_sgn (&aplRatLft) < 0)
+            return mpq_QuadICValue (aplRatLft,
+                                    ICNDX_NegMODPi,
+                                    aplRatRht,
+                                    mpqRes);
+    } else
+    // If the left arg is negative infinity, ...
+    if (IsMpqNegInfinity (&aplRatLft))
+    {
+        // If the right arg is positive, ...
+        if (mpq_sgn (&aplRatRht) > 0)
+            return mpq_QuadICValue (aplRatLft,
+                                    ICNDX_NiMODPos,
+                                    aplRatRht,
+                                    mpqRes);
+        // Initialize the result with the right arg
+        mpq_init_set (&mpqRes, &aplRatRht);
+    } else
+    // If the left arg is positive infinity, ...
+    if (IsMpqPosInfinity (&aplRatLft))
+    {
+        // If the right arg is negative, ...
+        if (mpq_sgn (&aplRatRht) < 0)
+            return mpq_QuadICValue (aplRatLft,
+                                    ICNDX_PiMODNeg,
+                                    aplRatRht,
+                                    mpqRes);
+        // Initialize the result with the right arg
+        mpq_init_set (&mpqRes, &aplRatRht);
+    } else
+    {
+#ifdef RAT_EXACT
+        // Initialize the result to 0/1
+        mpq_init (&mpqRes);
+
+        // Calculate the residue
+        mpq_mod (&mpqRes, &aplRatRht, &aplRatLft);
+#else
+        APLRAT   aplLft = {0},
+                 aplRht = {0},
+                 aplTmp = {0};
+        APLFLOAT fQuadCT;
+
+        // Initialize the temps & result
+        mpq_init (&aplLft);
+        mpq_init (&aplRht);
+        mpq_init (&aplTmp);
+        mpq_init (&mpqRes);
+
+        // Ensure both arguments are non-negative
+        mpq_abs (&aplLft, &aplRatLft);
+        mpq_abs (&aplRht, &aplRatRht);
+
+        // Get the current value of []CT
+        fQuadCT = GetQuadCT ();
+
+        // Calculate right divided-by left
+        mpq_div (&aplTmp, &aplRht, &aplLft);
+
+        // If Rht divided-by Lft is near an integer within CT
+        //   return 0.
+        mpq_floor (&aplLft, &aplTmp);
+        mpq_ceil  (&aplRht, &aplTmp);
+        if (mpq_cmp_ct (aplTmp, aplLft, fQuadCT) NE 0
+         && mpq_cmp_ct (aplTmp, aplRht, fQuadCT) NE 0)
+            // Calculate the residue
+            mpq_mod (&mpqRes, &aplRatRht, &aplRatLft);
+
+        // We no longer need this storage
+        Myq_clear (&aplTmp);
+        Myq_clear (&aplRht);
+        Myq_clear (&aplLft);
+#endif
+    } // End IF/ELSE/...
+
+    return mpqRes;
+} // End PrimFnDydStileRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydStile VisVvV
+//
+//  Primitive scalar function dyadic Stile:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydStileVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Handle zero modulus or argument
+    if (IsMpf0 (&aplVfpLft)
+     || IsMpf0 (&aplVfpRht))
+        // Return the right arg
+        mpf_init_set (&mpfRes, &aplVfpRht);
+    else
+    // If the right arg is negative infinity, ...
+    if (IsMpfNegInfinity (&aplVfpRht))
+    {
+        // If the left arg is positive, ...
+        if (mpf_sgn (&aplVfpLft) > 0)
+            return mpf_QuadICValue (aplVfpLft,
+                                    ICNDX_PosMODNi,
+                                    aplVfpRht,
+                                    mpfRes);
+        // If the left arg is negative, ...
+        if (mpf_sgn (&aplVfpLft) < 0)
+            return mpf_QuadICValue (aplVfpLft,
+                                    ICNDX_NegMODNi,
+                                    aplVfpRht,
+                                    mpfRes);
+    } else
+    // If the right arg is positive infinity, ...
+    if (IsMpfPosInfinity (&aplVfpRht))
+    {
+        // If the left arg is positive, ...
+        if (mpf_sgn (&aplVfpLft) > 0)
+            return mpf_QuadICValue (aplVfpLft,
+                                    ICNDX_PosMODPi,
+                                    aplVfpRht,
+                                    mpfRes);
+        // If the left arg is negative, ...
+        if (mpf_sgn (&aplVfpLft) < 0)
+            return mpf_QuadICValue (aplVfpLft,
+                                    ICNDX_NegMODPi,
+                                    aplVfpRht,
+                                    mpfRes);
+    } else
+    // If the left arg is negative infinity, ...
+    if (IsMpfNegInfinity (&aplVfpLft))
+    {
+        // If the right arg is positive, ...
+        if (mpf_sgn (&aplVfpRht) > 0)
+            return mpf_QuadICValue (aplVfpLft,
+                                    ICNDX_NiMODPos,
+                                    aplVfpRht,
+                                    mpfRes);
+        // Initialize the result with the right arg
+        mpf_init_set (&mpfRes, &aplVfpRht);
+    } else
+    // If the left arg is positive infinity, ...
+    if (IsMpfPosInfinity (&aplVfpLft))
+    {
+        // If the right arg is negative, ...
+        if (mpf_sgn (&aplVfpRht) < 0)
+            return mpf_QuadICValue (aplVfpLft,
+                                    ICNDX_PiMODNeg,
+                                    aplVfpRht,
+                                    mpfRes);
+        // Initialize the result with the right arg
+        mpf_init_set (&mpfRes, &aplVfpRht);
+    } else
+    {
+        // Initialize the result
+        mpf_init (&mpfRes);
+
+        // Calculate the residue
+        mpf_mod (&mpfRes, &aplVfpRht, &aplVfpLft);
+    } // End IF/ELSE/...
+
+    return mpfRes;
+} // End PrimFnDydStileVisVvV
 
 
 //***************************************************************************

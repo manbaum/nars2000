@@ -525,6 +525,9 @@ NORMAL_EXIT:
 
     if (lpMemPTD)
     {
+        // Destroy the PerTabData vars
+        DESTROY_PERTABVARS
+
         // We no longer need this storage
         MyVirtualFree (lpMemPTD, 0, MEM_RELEASE); lpMemPTD = NULL;
     } // End IF

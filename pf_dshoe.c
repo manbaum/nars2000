@@ -419,6 +419,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
         case ARRAY_FLOAT:
         case ARRAY_CHAR:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
         {
             TOKEN    tkFunc = {0},      // Grade-up function token
                      tkRht  = {0};      // Right arg token
@@ -426,6 +428,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             APLINT   aplLastInt;        // The last int   we found
             APLFLOAT aplLastFlt;        // ...      float ...
             APLCHAR  aplLastChr;        // ...      char  ...
+            APLRAT   aplLastRat;        // ...      RAT   ...
+            APLVFP   aplLastVfp;        // ...      VFP   ...
 
             // Setup the grade-up function token
             tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
@@ -532,6 +536,50 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
                         // Save as the next unique value
                         aplLastChr = ((LPAPLCHAR) lpMemRht)[lpMemGup[uRht]];
+                    } // End FOR/IF
+
+                    break;
+
+                case ARRAY_RAT:
+                    // Initialize the last value with the first one
+                    if (aplNELMRht)
+                        aplLastRat = ((LPAPLRAT)   lpMemRht)[*lpMemGup];
+
+                    // Trundle through the grade-up of the right arg
+                    //   counting unique values and saving their indices
+                    for (uRht = 1, aplNELMRes = (aplNELMRht > 0);
+                         uRht < aplNELMRht;
+                         uRht++)
+                    // Check for a different (and thus unique) value
+                    if (mpq_cmp (&aplLastRat, &((LPAPLRAT) lpMemRht)[lpMemGup[uRht]]) NE 0)
+                    {
+                        // Save as the next unique value's index
+                        lpMemGup[aplNELMRes++] = lpMemGup[uRht];
+
+                        // Save as the next unique value
+                        aplLastRat = ((LPAPLRAT) lpMemRht)[lpMemGup[uRht]];
+                    } // End FOR/IF
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Initialize the last value with the first one
+                    if (aplNELMRht)
+                        aplLastVfp = ((LPAPLVFP)   lpMemRht)[*lpMemGup];
+
+                    // Trundle through the grade-up of the right arg
+                    //   counting unique values and saving their indices
+                    for (uRht = 1, aplNELMRes = (aplNELMRht > 0);
+                         uRht < aplNELMRht;
+                         uRht++)
+                    // Check for a different (and thus unique) value
+                    if (mpf_cmp (&aplLastVfp, &((LPAPLVFP) lpMemRht)[lpMemGup[uRht]]) NE 0)
+                    {
+                        // Save as the next unique value's index
+                        lpMemGup[aplNELMRes++] = lpMemGup[uRht];
+
+                        // Save as the next unique value
+                        aplLastVfp = ((LPAPLVFP) lpMemRht)[lpMemGup[uRht]];
                     } // End FOR/IF
 
                     break;
@@ -678,6 +726,20 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                     //   copying elements to the result
                     for (uRht = 0; uRht < aplNELMRes; uRht++)
                         *((LPAPLCHAR)  lpMemRes)++ = ((LPAPLCHAR)  lpMemRht)[lpMemTmp[*lpMemGup++]];
+                    break;
+
+                case ARRAY_RAT:
+                    // Trundle through the right arg via the grade-up
+                    //   copying elements to the result
+                    for (uRht = 0; uRht < aplNELMRes; uRht++)
+                        mpq_init_set (((LPAPLRAT)   lpMemRes)++, &((LPAPLRAT)   lpMemRht)[lpMemTmp[*lpMemGup++]]);
+                    break;
+
+                case ARRAY_VFP:
+                    // Trundle through the right arg via the grade-up
+                    //   copying elements to the result
+                    for (uRht = 0; uRht < aplNELMRes; uRht++)
+                        mpf_init_set (((LPAPLVFP)   lpMemRes)++, &((LPAPLVFP)   lpMemRht)[lpMemTmp[*lpMemGup++]]);
                     break;
 
                 defstop

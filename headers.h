@@ -29,6 +29,7 @@
 // Disable stack checking
 #pragma check_stack(off)
 
+#include "mpfr.h"
 #include "macros.h"
 #include "enums.h"
 #include "defines.h"
@@ -68,6 +69,7 @@
 #include "qf.h"
 #include "fmtspec.h"
 #include "primes.h"
+#include "mpifns.h"
 
 #pragma pack(pop)
 

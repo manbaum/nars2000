@@ -29,15 +29,22 @@
 //#include <multimon.h>   // Multiple monitor support
 #include <wininet.h>
 #include <stdio.h>
+#include <math.h>
 
 #define DEFINE_VARS
 #define DEFINE_VALUES
 #define DEFINE_ENUMS
-#include "symbolnames.h"
+#define MPIFNS
 #include "headers.h"
+#include "symbolnames.h"
+#undef  MPIFNS
 #undef  DEFINE_ENUMS
 #undef  DEFINE_VALUES
 #undef  DEFINE_VARS
+
+////#include "vld.h"
+
+CRITICAL_SECTION CSOPthread;            // Critical Section Object for pthread
 
 
 //************************** Data Area **************************************
@@ -4265,6 +4272,7 @@ int PASCAL WinMain
 #endif
     InitializeCriticalSection (&CSOPL);
     InitializeCriticalSection (&CSOTokenize);
+    InitializeCriticalSection (&CSOPthread);
 
     // Mark as CSO defined
     bCSO = TRUE;
@@ -4299,6 +4307,12 @@ int PASCAL WinMain
     // Initialize tables for Primitive Fns, Operators, etc.
     InitPrimTabs ();
 
+    // Initialize global numeric constants
+    InitGlbNumConstants ();
+
+    // Initialize the precision-specific VFP constants
+    InitVfpConstants (DEF_QUADFPC_CWS);
+
     PERFMON
 
 #ifdef DEBUG
@@ -4329,7 +4343,7 @@ int PASCAL WinMain
     if (hWndMF EQ NULL)
     {
         MB (pszNoCreateMFWnd);
-        goto EXIT4;
+        goto EXIT5;
     } // End IF
 
     PERFMON
@@ -4372,10 +4386,14 @@ int PASCAL WinMain
     } // End __try/__except
 
     // GetMessageW returned FALSE for a Quit message
+EXIT5:
+    // Uninitialize global numeric constants
+    UninitGlbNumConstants ();
 EXIT4:
     // Mark as all CSO deleted
     bCSO = FALSE;
 
+    DeleteCriticalSection (&CSOPthread);
     DeleteCriticalSection (&CSOTokenize);
     DeleteCriticalSection (&CSOPL);
 #ifdef RESDEBUG
@@ -4393,6 +4411,30 @@ EXIT2:
 EXIT1:
     return (int) Msg.wParam;
 } // End WinMain
+
+
+//***************************************************************************
+//  $pthread_mutex_lock
+//***************************************************************************
+
+void pthread_mutex_lock
+    (LPVOID mutex)
+
+{
+    EnterCriticalSection (&CSOPthread);
+} // End pthread_mutex_lock
+
+
+//***************************************************************************
+//  $pthread_mutex_unlock
+//***************************************************************************
+
+void pthread_mutex_unlock
+    (LPVOID mutex)
+
+{
+    LeaveCriticalSection (&CSOPthread);
+} // End pthread_mutex_unlock
 
 
 //***************************************************************************

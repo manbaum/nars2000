@@ -44,6 +44,11 @@ PRIMSPEC PrimSpecEqual = {
     NULL,   // &PrimFnMonEqualFisI, -- Can't happen w/Equal
     NULL,   // &PrimFnMonEqualFisF, -- Can't happen w/Equal
 
+    NULL,   // &PrimFnMonEqualRisR, -- Can't happen w/Equal
+
+////                          VisR      // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonEqualVisV, -- Can't happen w/Equal
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecEqualStorageTypeDyd,
@@ -55,12 +60,19 @@ PRIMSPEC PrimSpecEqual = {
     &PrimFnDydEqualBisCvC,
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydEqualIisIvI, -- Can't happen w/Equal
-    NULL,   // &PrimFnDydEqualIisFvF, -- Can't happen w/Equal
+    NULL,   // &PrimFnDydEqualIisIvI, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualIisFvF, -- Result Boolean, can't happen w/Equal
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydEqualFisIvI, -- Can't happen w/Equal
-    NULL,   // &PrimFnDydEqualFisFvF, -- Can't happen w/Equal
+    NULL,   // &PrimFnDydEqualFisIvI, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualFisFvF, -- Result Boolean, can't happen w/Equal
+
+    &PrimFnDydEqualBisRvR,
+    NULL,   // &PrimFnDydEqualRisRvR, -- Result Boolean, can't happen w/Equal
+
+    &PrimFnDydEqualBisVvV,
+////                  VisRvR,   // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydUpEqualVisVvV, -- Result Boolean, can't happen w/Equal
 
     NULL,   // &PrimFnMonEqualB64isB64, -- Can't happen w/Equal
     NULL,   // &PrimFnMonEqualB32isB32, -- Can't happen w/Equal
@@ -137,8 +149,8 @@ APLSTYPE PrimSpecEqualStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // All simple numeric results are Boolean
-    if (IsSimpleNum (aplTypeRes))
+    // All numeric results are Boolean
+    if (IsNumeric (aplTypeRes))
         aplTypeRes = ARRAY_BOOL;
 
     return aplTypeRes;
@@ -276,6 +288,45 @@ APLBOOL PrimFnDydEqualBisCvC
 {
     return (aplCharLft EQ aplCharRht);
 } // End PrimFnDydEqualBisCvC
+
+
+//***************************************************************************
+//  $PrimFnDydEqualRisRvR
+//
+//  Primitive scalar function dyadic Equal:  B {is} R fn R
+//***************************************************************************
+
+APLBOOL PrimFnDydEqualBisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+#ifdef RAT_EXACT
+    // Compare the two RATs
+    return mpq_cmp    (&aplRatLft, &aplRatRht              ) EQ 0;
+#else
+    // Compare the two RATs relative to []CT
+    return mpq_cmp_ct ( aplRatLft,  aplRatRht, GetQuadCT ()) EQ 0;
+#endif
+} // End PrimFnDydEqualBisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisVvV
+//
+//  Primitive scalar function dyadic Equal:  B {is} V fn V
+//***************************************************************************
+
+APLBOOL PrimFnDydEqualBisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    // Compare the two VFPs relative to []CT
+    return (mpf_cmp_ct (aplVfpLft, aplVfpRht, GetQuadCT ()) EQ 0);
+} // End PrimFnDydEqualBisVvV
 
 
 //***************************************************************************

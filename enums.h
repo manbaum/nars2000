@@ -126,13 +126,19 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
 
 typedef enum tagEXCEPTION_CODES // Exception Codes
 {
-    EXCEPTION_SUCCESS = 0 ,     // 00:  All OK
-    EXCEPTION_RESULT_FLOAT,     // 01:  Result should be Float
-    EXCEPTION_DOMAIN_ERROR,     // 02:  Signal a DOMAIN ERROR
-    EXCEPTION_LIMIT_ERROR,      // 03:  Signal a LIMIT ERROR
-    EXCEPTION_CTRL_BREAK,       // 04:  Ctrl-Break pressed
-    EXCEPTION_NONCE_ERROR,      // 05:  Signal a NONCE ERROR
+    EXCEPTION_SUCCESS = 0  ,    // 00:  All OK
+    EXCEPTION_RESULT_FLOAT ,    // 01:  Result should be Float
+    EXCEPTION_RESULT_RAT   ,    // 02:  Result should be RAT
+    EXCEPTION_RESULT_VFP   ,    // 03:  Result should be VFP
+    EXCEPTION_DOMAIN_ERROR ,    // 04:  Signal a DOMAIN ERROR
+    EXCEPTION_LIMIT_ERROR  ,    // 05:  Signal a LIMIT ERROR
+    EXCEPTION_NONCE_ERROR  ,    // 06:  Signal a NONCE ERROR
+    EXCEPTION_WS_FULL      ,    // 07:  Signal a WS FULL
+    EXCEPTION_CTRL_BREAK   ,    // 08:  Ctrl-Break pressed
 } EXCEPTION_CODES;
+
+// If you change the above tagEXCEPTION_CODES enum, be sure
+//   to change <CheckException> in <except.c>.
 
 
 typedef enum tagMAKE_PROTO

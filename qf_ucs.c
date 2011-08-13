@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,7 +88,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
 {
     APLSTYPE       aplTypeRht,          // Right arg storage type
-                   aplTypeRes;          // Result    ...
+                   aplTypeRes,          // Result    ...
+                   aplTypeHet;          // Hetero item ...
     APLNELM        aplNELMRht;          // Right arg NELM
     APLRANK        aplRankRht;          // Right arg rank
     HGLOBAL        hGlbRht = NULL,      // Right arg global memory handle
@@ -104,7 +105,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     APLUINT        ByteRes,             // # bytes in the result
                    uRht;                // Loop counter
     UINT           uBitMask;            // Bit mask for marching through Booleans
-    APLHETERO      aplHeteroRht;        // Right arg value as APLHETERO
+    APLHETERO      aplHeteroRht,        // Right arg value as APLHETERO
+                   lpMemHeteroRht;      // Ptr to hetero item
     LPSYMENTRY     lpSymTmp;            // Ptr to temporary LPSYMENTRY
 
     // Get the attributes (Type, NELM, and Rank)
@@ -112,7 +114,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for DOMAIN ERROR
-    if (!IsSimple (aplTypeRht))
+    if (!IsSimpleGlbNum (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // Get right arg's global ptrs
@@ -121,32 +123,78 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     // If the right arg/result is a scalar, ...
     if (IsScalar (aplRankRht))
     {
-        // If the right arg is a simple numeric scalar, ...
-        if (IsSimpleNum (aplTypeRht))
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
         {
-            // If the right arg is a simple float scalar, ...
-            if (IsSimpleFlt (aplTypeRht))
-            {
+            case ARRAY_FLOAT:
                 // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
-            } // End IF
 
-            // Check for out of range for Unicode
-            //   as an APLUINT so we don't have to deal with negatives
-            if (MAX_UNICODE < aplLongestRht)
-                goto DOMAIN_EXIT;
+                // Fall through to common code
 
-            // Check for out of range for UCS-2
-            if (APLCHAR_SIZE <= aplLongestRht)
-                aplLongestRht = UTF16_REPLACEMENTCHAR;
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+                // Check for out of range for Unicode
+                //   as an APLUINT so we don't have to deal with negatives
+                if (MAX_UNICODE < aplLongestRht)
+                    goto DOMAIN_EXIT;
 
-            // Set the result immediate type
-            immTypeRes = IMMTYPE_CHAR;
-        } else
-            // Set the result immediate type
-            immTypeRes = IMMTYPE_INT;
+                // Check for out of range for UCS-2
+                if (APLCHAR_SIZE <= aplLongestRht)
+                    aplLongestRht = UTF16_REPLACEMENTCHAR;
+
+                // Set the result immediate type
+                immTypeRes = IMMTYPE_CHAR;
+
+                break;
+
+            case ARRAY_CHAR:
+                // Set the result immediate type
+                immTypeRes = IMMTYPE_INT;
+
+                break;
+
+            case ARRAY_RAT:
+                aplLongestRht = mpq_get_ctsa ((LPAPLRAT) VarArrayBaseToData (lpMemRht, aplRankRht), &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                // Check for out of range for Unicode
+                //   as an APLUINT so we don't have to deal with negatives
+                if (MAX_UNICODE < aplLongestRht)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for UCS-2
+                if (APLCHAR_SIZE <= aplLongestRht)
+                    aplLongestRht = UTF16_REPLACEMENTCHAR;
+
+                // Set the result immediate type
+                immTypeRes = IMMTYPE_CHAR;
+
+                break;
+
+            case ARRAY_VFP:
+                aplLongestRht = mpf_get_ctsa ((LPAPLVFP) VarArrayBaseToData (lpMemRht, aplRankRht), &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                // Check for out of range for Unicode
+                //   as an APLUINT so we don't have to deal with negatives
+                if (MAX_UNICODE < aplLongestRht)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for UCS-2
+                if (APLCHAR_SIZE <= aplLongestRht)
+                    aplLongestRht = UTF16_REPLACEMENTCHAR;
+
+                // Set the result immediate type
+                immTypeRes = IMMTYPE_CHAR;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
@@ -170,6 +218,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
         case ARRAY_INT:
         case ARRAY_FLOAT:
         case ARRAY_APA:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
             aplTypeRes = ARRAY_CHAR;
 
             break;
@@ -322,28 +372,93 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 aplHeteroRht  = *((LPAPLHETERO) lpMemRht)++;
-                aplLongestRht = aplHeteroRht->stData.stLongest;
 
-                // Split cases based upon the immediate type
-                switch (aplHeteroRht->stFlags.ImmType)
+                // Split cases based upon the ptr type bits
+                switch (GetPtrTypeDir (aplHeteroRht))
                 {
-                    case IMMTYPE_BOOL:
-                        *((LPAPLHETERO) lpMemRes)++ =
-                        lpSymTmp =
-                          SymTabAppendChar_EM    ((APLBOOL) aplLongestRht);
-                        if (!lpSymTmp)
-                            goto ERROR_EXIT;
+                    case PTRTYPE_STCONST:
+                        aplLongestRht = aplHeteroRht->stData.stLongest;
+
+                        // Split cases based upon the immediate type
+                        switch (aplHeteroRht->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:
+                                *((LPAPLHETERO) lpMemRes)++ =
+                                lpSymTmp =
+                                  SymTabAppendChar_EM    ((APLBOOL) aplLongestRht);
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                                break;
+
+                            case IMMTYPE_FLOAT:
+                                // Attempt to convert the float to an integer using System CT
+                                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+                                if (!bRet)
+                                    goto DOMAIN_EXIT;
+
+                                // Fall through to common code
+
+                            case IMMTYPE_INT:
+                                // Check for out of range for Unicode
+                                //   as an APLUINT so we don't have to deal with negatives
+                                if (MAX_UNICODE < aplLongestRht)
+                                    goto DOMAIN_EXIT;
+
+                                // Check for out of range for UCS-2
+                                if (APLCHAR_SIZE <= aplLongestRht)
+                                    aplLongestRht = UTF16_REPLACEMENTCHAR;
+
+                                *((LPAPLHETERO) lpMemRes)++ =
+                                lpSymTmp =
+                                  SymTabAppendChar_EM    ((APLCHAR) aplLongestRht);
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                                break;
+
+                            case IMMTYPE_CHAR:
+                                *((LPAPLHETERO) lpMemRes)++ =
+                                lpSymTmp =
+                                  SymTabAppendInteger_EM ((APLCHAR) aplLongestRht);
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
                         break;
 
-                    case IMMTYPE_FLOAT:
-                        // Attempt to convert the float to an integer using System CT
-                        aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+                    case PTRTYPE_HGLOBAL:
+                        // Lock the memory to get a ptr to it
+                        lpMemHeteroRht = MyGlobalLock (aplHeteroRht);
+
+                        // Get the array type
+                        aplTypeHet = ((LPVARARRAY_HEADER) lpMemHeteroRht)->ArrType;
+
+                        // Skip over the header and dimensions to the data
+                        lpMemHeteroRht = VarArrayBaseToData (lpMemHeteroRht, 0);
+
+                        // Split cases based upon the array storage type
+                        switch (aplTypeHet)
+                        {
+                            case ARRAY_RAT:
+                                aplLongestRht = mpq_get_ctsa ((LPAPLRAT) lpMemHeteroRht, &bRet);
+
+                                break;
+
+                            case ARRAY_VFP:
+                                aplLongestRht = mpf_get_ctsa ((LPAPLVFP) lpMemHeteroRht, &bRet);
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
                         if (!bRet)
                             goto DOMAIN_EXIT;
 
-                        // Fall through to common code
-
-                    case IMMTYPE_INT:
                         // Check for out of range for Unicode
                         //   as an APLUINT so we don't have to deal with negatives
                         if (MAX_UNICODE < aplLongestRht)
@@ -358,19 +473,59 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                           SymTabAppendChar_EM    ((APLCHAR) aplLongestRht);
                         if (!lpSymTmp)
                             goto ERROR_EXIT;
-                        break;
 
-                    case IMMTYPE_CHAR:
-                        *((LPAPLHETERO) lpMemRes)++ =
-                        lpSymTmp =
-                          SymTabAppendInteger_EM ((APLCHAR) aplLongestRht);
-                        if (!lpSymTmp)
-                            goto ERROR_EXIT;
+                        // We no longer need this ptr
+                        MyGlobalUnlock (aplHeteroRht); lpMemHeteroRht = NULL;
+
                         break;
 
                     defstop
                         break;
                 } // End SWITCH
+            } // End FOR
+
+            break;
+
+        case ARRAY_RAT:
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Attempt to convert the RAT to an integer using System CT
+                aplLongestRht = mpq_get_ctsa (((LPAPLRAT) lpMemRht)++, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for Unicode
+                //   as an APLUINT so we don't have to deal with negatives
+                if (MAX_UNICODE < aplLongestRht)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for UCS-2
+                if (APLCHAR_SIZE <= aplLongestRht)
+                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                else
+                    *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Attempt to convert the VFP to an integer using System CT
+                aplLongestRht = mpf_get_ctsa (((LPAPLVFP) lpMemRht)++, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for Unicode
+                //   as an APLUINT so we don't have to deal with negatives
+                if (MAX_UNICODE < aplLongestRht)
+                    goto DOMAIN_EXIT;
+
+                // Check for out of range for UCS-2
+                if (APLCHAR_SIZE <= aplLongestRht)
+                    *((LPAPLCHAR) lpMemRes)++ = UTF16_REPLACEMENTCHAR;
+                else
+                    *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
             } // End FOR
 
             break;

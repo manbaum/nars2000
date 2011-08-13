@@ -1048,6 +1048,112 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                 break;
 
+            case ARRAY_RAT:
+                //***************************************************************
+                // Allocate storage for this subarray,
+                //   save the HGLOBAL in the result,
+                //   lock the subarray to return a ptr to it,
+                //   fill in the subarray header, and
+                //   copy the dimensions from the right arg to the subarray.
+                //***************************************************************
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
+                                                   ARRAY_RAT,
+                                                   aplNELMSub,
+                                                   aplNELMAxis,
+                                                   aplRankRes,
+                                                   aplRankRht,
+                                    ((LPAPLNESTED) lpMemRes)++,
+                                                   lpMemDimRht,
+                                                   lpMemAxis,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
+                                                   lptkFunc);
+                if (!bRet)
+                    goto ERROR_EXIT;
+
+                //***************************************************************
+                // Copy data from the right arg to the subarray
+                //***************************************************************
+
+                // Traverse the subarray
+                for (uSub = 0; uSub < aplNELMSub; uSub++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Use the index in lpMemOdo to calculate the
+                    //   corresponding index in lpMemRes where the
+                    //   next value from lpMemRht goes.
+                    for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
+                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemSub[uSub]
+                    mpq_init_set (&((LPAPLRAT) lpMemSub)[uSub], &((LPAPLRAT) lpMemRht)[uRht]);
+                } // End FOR
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                break;
+
+            case ARRAY_VFP:
+                //***************************************************************
+                // Allocate storage for this subarray,
+                //   save the HGLOBAL in the result,
+                //   lock the subarray to return a ptr to it,
+                //   fill in the subarray header, and
+                //   copy the dimensions from the right arg to the subarray.
+                //***************************************************************
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
+                                                   ARRAY_VFP,
+                                                   aplNELMSub,
+                                                   aplNELMAxis,
+                                                   aplRankRes,
+                                                   aplRankRht,
+                                    ((LPAPLNESTED) lpMemRes)++,
+                                                   lpMemDimRht,
+                                                   lpMemAxis,
+                                                  &hGlbSub,
+                                                  &lpMemSub,
+                                                   lptkFunc);
+                if (!bRet)
+                    goto ERROR_EXIT;
+
+                //***************************************************************
+                // Copy data from the right arg to the subarray
+                //***************************************************************
+
+                // Traverse the subarray
+                for (uSub = 0; uSub < aplNELMSub; uSub++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Use the index in lpMemOdo to calculate the
+                    //   corresponding index in lpMemRes where the
+                    //   next value from lpMemRht goes.
+                    for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
+                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemSub[uSub]
+                    mpf_init_set (&((LPAPLVFP) lpMemSub)[uSub], &((LPAPLVFP) lpMemRht)[uRht]);
+                } // End FOR
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                break;
+
             defstop
                 break;
         } // End FOR/SWITCH
@@ -1418,7 +1524,8 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                  aplRankRes;        // Result   ...
     APLDIM       uDimAxRht;         // Right arg axis length
     HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRes = NULL;    // Result   ...
+                 hGlbRes = NULL,    // Result   ...
+                 lpSymGlbLft;       // Ptr to left arg as global numeric
     LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
                  lpMemRht = NULL,   // Ptr to right ...
                  lpMemRes = NULL;   // Ptr to result   ...
@@ -1480,7 +1587,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         goto LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft))
+    if (!IsNumeric (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
     // Calculate the product of the right arg's dimensions below the axis dimension
@@ -1496,12 +1603,41 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     // Get left arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
 
-    if (IsSimpleFlt (aplTypeLft))
+    // Split cases based upon the left arg storage type
+    switch (aplTypeLft)
     {
-        aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-        if (!bRet)
-            goto LEFT_DOMAIN_EXIT;
-    } // End IF
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_FLOAT:
+            // Attempt to convert the FLOAT to an INT
+            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+            if (!bRet)
+                goto LEFT_DOMAIN_EXIT;
+            break;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an INT
+            aplLongestLft = mpq_get_ctsa ((LPAPLRAT) VarArrayBaseToData (lpMemLft, aplRankLft), &bRet);
+            if (!bRet)
+                goto LEFT_DOMAIN_EXIT;
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the RAT to an INT
+            aplLongestLft = mpf_get_ctsa ((LPAPLVFP) VarArrayBaseToData (lpMemLft, aplRankLft), &bRet);
+            if (!bRet)
+                goto LEFT_DOMAIN_EXIT;
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+        defstop
+            break;
+    } // End SWITCH
 
     // If the left arg is global
     if (hGlbLft)
@@ -1520,15 +1656,44 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
             GetNextValueMem (lpMemLft,          // Ptr to item global memory data
                              aplTypeLft,        // Item storage type
                              uCnt,              // Index into item
-                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                            &lpSymGlbLft,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestLft,     // Ptr to result immediate value (may be NULL)
                              NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-            if (IsSimpleFlt (aplTypeLft))
+            // Split cases based upon the left arg storage type
+            switch (aplTypeLft)
             {
-                aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-                if (!bRet)
-                    goto LEFT_DOMAIN_EXIT;
-            } // End IF
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                case ARRAY_APA:
+                    break;
+
+                case ARRAY_FLOAT:
+                    // Attempt to convert the FLOAT to an INT
+                    aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+                    if (!bRet)
+                        goto LEFT_DOMAIN_EXIT;
+                    break;
+
+                case ARRAY_RAT:
+                    // Attempt to convert the RAT to an INT
+                    aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+                    if (!bRet)
+                        goto LEFT_DOMAIN_EXIT;
+                    break;
+
+                case ARRAY_VFP:
+                    // Attempt to convert the RAT to an INT
+                    aplLongestLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                    if (!bRet)
+                        goto LEFT_DOMAIN_EXIT;
+                    break;
+
+                case ARRAY_CHAR:
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
+                defstop
+                    break;
+            } // End SWITCH
 
             // If the value is non-zero, ...
             if (aplLongestLft)
@@ -1783,15 +1948,44 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         GetNextValueMem (lpMemLft,          // Ptr to item global memory data
                          aplTypeLft,        // Item storage type
                          uCnt,              // Index into item
-                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                        &lpSymGlbLft,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                         &aplLongestLft,     // Ptr to result immediate value (may be NULL)
                          NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-        if (IsSimpleFlt (aplTypeLft))
+        // Split cases based upon the left arg storage type
+        switch (aplTypeLft)
         {
-            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-            if (!bRet)
-                goto LEFT_DOMAIN_EXIT;
-        } // End IF
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                break;
+
+            case ARRAY_FLOAT:
+                // Attempt to convert the FLOAT to an INT
+                aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+                if (!bRet)
+                    goto LEFT_DOMAIN_EXIT;
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an INT
+                aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+                if (!bRet)
+                    goto LEFT_DOMAIN_EXIT;
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the RAT to an INT
+                aplLongestLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                if (!bRet)
+                    goto LEFT_DOMAIN_EXIT;
+                break;
+
+            case ARRAY_CHAR:
+            case ARRAY_HETERO:
+            case ARRAY_NESTED:
+            defstop
+                break;
+        } // End SWITCH
 
         // If the value is non-zero, ...
         if (aplLongestLft)
@@ -1991,7 +2185,8 @@ UBOOL PrimFnDydLeftShoeAppend_EM
     APLSTYPE   aplTypeItm;              // Item storage type
     APLLONGEST aplLongestRht;           // Right arg immediate value
     HGLOBAL    hGlbItm = NULL,          // Item global memory handle
-               hGlbSub;                 // Subitem ...
+               hGlbSub,                 // Subitem ...
+               lpSymGlbRht;             // Ptr to global numeric
     LPVOID     lpMemItm;                // Ptr to item global memory
     UINT       uBitIndex;               // Bit index for looping through Booleans
     TOKEN      tkItmArg = {0};          // Temporary token for TypeDemote
@@ -2055,6 +2250,8 @@ UBOOL PrimFnDydLeftShoeAppend_EM
             case ARRAY_FLOAT:
             case ARRAY_APA:
             case ARRAY_CHAR:
+            case ARRAY_RAT:
+            case ARRAY_VFP:
                 // Loop through the subitems
                 for (uSub = uStartCnt; uSub < uEndCnt; uSub++)
                 {
@@ -2065,7 +2262,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
                     GetNextValueMem (lpMemRht,          // Ptr to item global memory data
                                      aplTypeRht,        // Item storage type
                                      uRht,              // Index into item
-                                     NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                    &lpSymGlbRht,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                     &aplLongestRht,     // Ptr to result immediate value (may be NULL)
                                      NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                     // Split cases based upon the right arg storage type
@@ -2100,6 +2297,18 @@ UBOOL PrimFnDydLeftShoeAppend_EM
                         case ARRAY_CHAR:
                             // Save the next element in the item
                             *((LPAPLCHAR)  lpMemItm)++ = (APLCHAR) aplLongestRht;
+
+                            break;
+
+                        case ARRAY_RAT:
+                            // Save the next element in the item
+                            mpq_init_set (((LPAPLRAT) lpMemItm)++, (LPAPLRAT) lpSymGlbRht);
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Save the next element in the item
+                            mpf_init_set (((LPAPLVFP) lpMemItm)++, (LPAPLVFP) lpSymGlbRht);
 
                             break;
 

@@ -538,7 +538,7 @@ EndFor:
   ;
 
 EndForLcl:
-    ENDFORLCL SOSStmts                                          {DbgMsgWP (L"%%EndFor:  ENDFORLCL SOSStmts");
+    ENDFORLCL SOSStmts                                          {DbgMsgWP (L"%%EndForLcl:  ENDFORLCL SOSStmts");
                                                                     // Ensure the ENDFORLCL token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -548,7 +548,7 @@ EndForLcl:
 
                                                                     $$ = $1;
                                                                 }
-  | END       SOSStmts                                          {DbgMsgWP (L"%%EndFor:  END SOSStmts");
+  | END       SOSStmts                                          {DbgMsgWP (L"%%EndForLcl:  END SOSStmts");
                                                                     // Ensure the END token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -677,7 +677,7 @@ ContinueAndIf:
   ;
 
 LeaveAndIf:
-                LEAVE    SOSStmts                               {DbgMsgWP (L"%%LeaveAndIf:  LEAVE SOSStmts");
+                LEAVE   SOSStmts                                {DbgMsgWP (L"%%LeaveAndIf:  LEAVE SOSStmts");
                                                                     $$ = $1;
                                                                 }
   |             LEAVEIF NSS                                     {DbgMsgWP (L"%%LeaveAndIf:  LEAVEIF NSS");

@@ -1880,6 +1880,7 @@ UBOOL fnPointDone
     PNLOCALVARS  pnLocalVars = {0};     // PN Local vars
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
+    HGLOBAL      hGlbData;              // RatNum global memory handle
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnPointDone");
@@ -1946,7 +1947,7 @@ UBOOL fnPointDone
                     tkFlags.ImmType  = IMMTYPE_BOOL;
 
                     // Get the value
-                    tkData.tkInteger = pnLocalVars.aplInteger;
+                    tkData.tkInteger = pnLocalVars.at.aplInteger;
 
                     break;
 
@@ -1956,7 +1957,7 @@ UBOOL fnPointDone
                     tkFlags.ImmType  = IMMTYPE_INT;
 
                     // Get the value
-                    tkData.tkInteger = pnLocalVars.aplInteger;
+                    tkData.tkInteger = pnLocalVars.at.aplInteger;
 
                     break;
 
@@ -1966,15 +1967,45 @@ UBOOL fnPointDone
                     tkFlags.ImmType  = IMMTYPE_FLOAT;
 
                     // Get the value
-                    tkData.tkFloat   = pnLocalVars.aplFloat;
+                    tkData.tkFloat   = pnLocalVars.at.aplFloat;
+
+                    break;
+
+                case PN_NUMTYPE_RAT:
+                    hGlbData =
+                      MakeGlbEntry_EM (ARRAY_RAT,               // Entry type
+                                      &pnLocalVars.at.aplRat,   // Ptr to the value
+                                       FALSE,                   // TRUE iff we should initialize the target first
+                                       NULL);                   // Ptr to function token
+                    // If the allocate failed, ...
+                    if (!hGlbData)
+                        goto ERROR_EXIT;
+
+                    // Mark the data as a (scalar) array
+                    tkFlags.TknType  = TKT_NUMSCALAR;
+                    tkData.tkGlbData = hGlbData;
+
+                    break;
+
+                case PN_NUMTYPE_VFP:
+                    hGlbData =
+                      MakeGlbEntry_EM (ARRAY_VFP,               // Entry type
+                                      &pnLocalVars.at.aplVfp,   // Ptr to the value
+                                       FALSE,                   // TRUE iff we should initialize the target first
+                                       NULL);                   // Ptr to function token
+                    // If the allocate failed, ...
+                    if (!hGlbData)
+                        goto ERROR_EXIT;
+
+                    // Mark the data as a (scalar) array
+                    tkFlags.TknType  = TKT_NUMSCALAR;
+                    tkData.tkGlbData = hGlbData;
 
                     break;
 
                 case PN_NUMTYPE_HC2:
                 case PN_NUMTYPE_HC4:
                 case PN_NUMTYPE_HC8:
-                case PN_NUMTYPE_RAT:
-                case PN_NUMTYPE_EXT:
                     goto NONCE_EXIT;
 
                 defstop
@@ -3124,7 +3155,7 @@ UBOOL MergeNumbers
 
         // Convert the :CONSTANT to an HGLOBAL
         hGlbObj =
-          (*lpMemPTD->lpLoadWsGlbVarConv) ((UINT) lppnLocalVars->aplInteger,
+          (*lpMemPTD->lpLoadWsGlbVarConv) ((UINT) lppnLocalVars->at.aplInteger,
                                            lpMemPTD->lpLoadWsGlbVarParm);
         // Split cases based upon the global memory signature
         switch (GetSignatureGlb (hGlbObj))
@@ -3201,17 +3232,21 @@ UBOOL MergeNumbers
     // See if we can merge this with the previous token
     if (lptkLocalVars->lpHeader->TokenCnt
      && (lptkPrv->tkFlags.TknType EQ TKT_VARIMMED
-      || lptkPrv->tkFlags.TknType EQ TKT_NUMSTRAND))
+      || lptkPrv->tkFlags.TknType EQ TKT_NUMSTRAND
+      || lptkPrv->tkFlags.TknType EQ TKT_NUMSCALAR))
     {
         // Get the previous token's attrs
         AttrsOfToken (lptkPrv, &aplTypePrv, &aplNELMPrv, &aplRankPrv, NULL);
 
-        // If the previous token is a simple numeric and
-        //   it's either an immediate
+        // If the previous token is a numeric strand/scalar, or
+        //   it's a simple numeric and
+        //   either an immediate
         //   or non-empty (i.e. not zilde)
-        if (IsSimpleNum (aplTypePrv)
+        if (lptkPrv->tkFlags.TknType EQ TKT_NUMSTRAND
+         || lptkPrv->tkFlags.TknType EQ TKT_NUMSCALAR
+         || (IsSimpleNum (aplTypePrv)
           && (lptkPrv->tkFlags.TknType EQ TKT_VARIMMED
-          || !IsEmpty (aplNELMPrv)))
+           || !IsEmpty (aplNELMPrv))))
         {
             // Catentate the current number with the previous token
 
@@ -3222,32 +3257,7 @@ UBOOL MergeNumbers
             lpMemHdrPrv = lpMemPrv;
 
             // Get the new storage type
-            // Split cases based upon the storage type
-            switch (lppnLocalVars->chType)
-            {
-                case PN_NUMTYPE_BOOL:
-                    aplTypeNew = ARRAY_BOOL;
-
-                    break;
-
-                case PN_NUMTYPE_INT:
-                    aplTypeNew = ARRAY_INT;
-
-                    break;
-
-                case PN_NUMTYPE_FLT:
-                    aplTypeNew = ARRAY_FLOAT;
-
-                    break;
-
-                case PN_NUMTYPE_HC2:
-                case PN_NUMTYPE_HC4:
-                case PN_NUMTYPE_HC8:
-                case PN_NUMTYPE_RAT:
-                case PN_NUMTYPE_EXT:
-                defstop
-                    break;
-            } // End SWITCH
+            aplTypeNew = TranslatePnTypeToArrayType (lppnLocalVars->chType);
 
             // Calculate the result storage type
             aplTypeRes = aTypePromote[aplTypePrv][aplTypeNew];
@@ -3305,7 +3315,7 @@ UBOOL MergeNumbers
                     CopyMemory (lpMemRes, lpMemPrv, (APLU3264) RoundUpBitsToBytes (aplNELMPrv) * sizeof (APLBOOL));
 
                     // Save the new value as a Boolean
-                    ((LPAPLBOOL) lpMemRes)[aplNELMPrv >> LOG2NBIB] |= (lppnLocalVars->aplInteger << (MASKLOG2NBIB & (UINT) aplNELMPrv));
+                    ((LPAPLBOOL) lpMemRes)[aplNELMPrv >> LOG2NBIB] |= (lppnLocalVars->at.aplInteger << (MASKLOG2NBIB & (UINT) aplNELMPrv));
 
                     break;
 
@@ -3344,12 +3354,12 @@ UBOOL MergeNumbers
                     } // End SWITCH
 
                     // Save the new value as an integer
-                    ((LPAPLINT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplInteger;
+                    ((LPAPLINT) lpMemRes)[aplNELMPrv] = lppnLocalVars->at.aplInteger;
 
                     // If the previous value(s) are 2s, ...
                     if (IsAll2s (lpMemHdrPrv)
                      || (lpMemHdrPrv EQ NULL && aplLongestPrv EQ 2))
-                        lpMemHdrRes->All2s = (lppnLocalVars->aplInteger EQ 2);
+                        lpMemHdrRes->All2s = (lppnLocalVars->at.aplInteger EQ 2);
                     break;
 
                 case ARRAY_FLOAT:
@@ -3388,12 +3398,206 @@ UBOOL MergeNumbers
 
                             break;
 
+                        case ARRAY_RAT:
+                        case ARRAY_VFP:
                         defstop
                             break;
                     } // End SWITCH
 
+                    // Split cases based upon the new storage type
+                    switch (aplTypeNew)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
                             // Save the new value as a float
-                    ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = lppnLocalVars->aplFloat;
+                            ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = (APLFLOAT) lppnLocalVars->at.aplInteger;
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Save the new value as a float
+                            ((LPAPLFLOAT) lpMemRes)[aplNELMPrv] = lppnLocalVars->at.aplFloat;
+
+                            break;
+
+                        case ARRAY_RAT:
+                        case ARRAY_VFP:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_RAT:
+                    // Split cases based upon the previous token's storage type
+                    switch (aplTypePrv)
+                    {
+                        case ARRAY_BOOL:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                            {
+                                // Save in the result
+                                mpq_init_set_sa (&((LPAPLRAT) lpMemRes)[uPrv],
+                                                  (uBitMask & *(LPAPLBOOL) lpMemPrv) NE 0,
+                                                  1);
+                                // Shift over the bit mask
+                                uBitMask <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMask EQ END_OF_BYTE)
+                                {
+                                    uBitMask = BIT0;            // Start over
+                                    ((LPAPLBOOL) lpMemPrv)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                // Save in the result
+                                mpq_init_set_sa (&((LPAPLRAT) lpMemRes)[uPrv],
+                                                 *((LPAPLINT) lpMemPrv)++,
+                                                  1);
+                            break;
+
+                        case ARRAY_RAT:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                // Save in the result
+                                ((LPAPLRAT) lpMemRes)[uPrv] = *((LPAPLRAT) lpMemPrv)++;
+                            break;
+
+                        case ARRAY_FLOAT:
+                        case ARRAY_VFP:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Split cases based upon the new storage type
+                    switch (aplTypeNew)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                            // Save the new value as a Rational
+                            mpq_init_set_sa (&((LPAPLRAT) lpMemRes)[aplNELMPrv],
+                                              lppnLocalVars->at.aplInteger,
+                                              1);
+                            break;
+
+                        case ARRAY_RAT:
+                            // Save the new value as a Rational
+                            ((LPAPLRAT) lpMemRes)[aplNELMPrv] = lppnLocalVars->at.aplRat;
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                        case ARRAY_VFP:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Split cases based upon the previous token's storage type
+                    switch (aplTypePrv)
+                    {
+                        case ARRAY_BOOL:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                            {
+                                // Save in the result
+                                mpf_init_set_sa (&((LPAPLVFP) lpMemRes)[uPrv],
+                                                  (uBitMask & *(LPAPLBOOL) lpMemPrv) NE 0);
+                                // Shift over the bit mask
+                                uBitMask <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMask EQ END_OF_BYTE)
+                                {
+                                    uBitMask = BIT0;            // Start over
+                                    ((LPAPLBOOL) lpMemPrv)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                // Save in the result
+                                mpf_init_set_sa (&((LPAPLVFP) lpMemRes)[uPrv],
+                                                 *((LPAPLINT) lpMemPrv)++);
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                // Save in the result
+                                mpf_init_set_d  (&((LPAPLVFP) lpMemRes)[uPrv],
+                                                 *((LPAPLFLOAT) lpMemPrv)++);
+                            break;
+
+                        case ARRAY_RAT:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                            {
+                                // Save in the result
+                                mpf_init_set_q  (&((LPAPLVFP) lpMemRes)[uPrv],
+                                                  ((LPAPLRAT) lpMemPrv)++);
+                                // Free the RAT temp
+                                Myq_clear (&((LPAPLRAT) lpMemPrv)[-1]);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Loop through the previous token's values
+                            for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
+                                // Save in the result
+                                ((LPAPLVFP) lpMemRes)[uPrv] = *((LPAPLVFP) lpMemPrv)++;
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Split cases based upon the new type
+                    switch (aplTypeNew)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                            // Save the new value as a VFP
+                            mpf_init_set_sa (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
+                                              lppnLocalVars->at.aplInteger);
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Save the new value as a VFP
+                            mpf_init_set_d  (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
+                                              lppnLocalVars->at.aplFloat);
+                            break;
+
+                        case ARRAY_RAT:
+                            // Save the new value as a VFP
+                            mpf_init_set_q  (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
+                                             &lppnLocalVars->at.aplRat);
+                            // Free the RAT temp
+                            Myq_clear (&lppnLocalVars->at.aplRat);
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Save the new value as a VFP
+                            ((LPAPLVFP) lpMemRes)[aplNELMPrv] = lppnLocalVars->at.aplVfp;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
 
                     break;
 
@@ -4099,6 +4303,7 @@ void Untokenize
 
         case TKT_CHRSTRAND:         // Character strand  (data is HGLOBAL)
         case TKT_NUMSTRAND:         // Numeric   ...
+        case TKT_NUMSCALAR:         // Numeric   ...
         case TKT_VARARRAY:          // Array of data (data is HGLOBAL)
             // Free the array and all elements of it
             if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
@@ -4321,6 +4526,7 @@ UBOOL AppendNewToken_EM
         case TKT_VARNAMED      :
         case TKT_CHRSTRAND     :
         case TKT_NUMSTRAND     :
+        case TKT_NUMSCALAR     :
         case TKT_VARIMMED      :
         case TKT_ASSIGN        :
         case TKT_LISTSEP       :

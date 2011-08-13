@@ -45,6 +45,11 @@ PRIMSPEC PrimSpecRightCaret = {
     NULL,   // &PrimFnMonRightCaretFisI, -- Can't happen w/RightCaret
     NULL,   // &PrimFnMonRightCaretFisF, -- Can't happen w/RightCaret
 
+    NULL,   // &PrimFnMonRightCaretRisR, -- Can't happen w/RightCaret
+
+////               VisR,    // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonRightCaretVisV, -- Can't happen w/RightCaret
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecRightCaretStorageTypeDyd,
@@ -56,12 +61,19 @@ PRIMSPEC PrimSpecRightCaret = {
     NULL,   // &PrimFnDydRightCaretBisCvC, -- Can't happen w/RightCaret
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydRightCaretIisIvI, -- Can't happen w/RightCaret
-    NULL,   // &PrimFnDydRightCaretIisFvF, -- Can't happen w/RightCaret
+    NULL,   // &PrimFnDydRightCaretIisIvI, -- Result Boolean, can't happen w/RightCaret
+    NULL,   // &PrimFnDydRightCaretIisFvF, -- Result Boolean, can't happen w/RightCaret
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydRightCaretFisIvI, -- Can't happen w/RightCaret
-    NULL,   // &PrimFnDydRightCaretFisFvF, -- Can't happen w/RightCaret
+    NULL,   // &PrimFnDydRightCaretFisIvI, -- Result Boolean, can't happen w/RightCaret
+    NULL,   // &PrimFnDydRightCaretFisFvF, -- Result Boolean, can't happen w/RightCaret
+
+    &PrimFnDydRightCaretBisRvR,
+    NULL,   // &PrimFnDydRightCaretRisRvR, -- Result Boolean, can't happen w/RightCaret
+
+    &PrimFnDydRightCaretBisVvV,
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydRightCaretVisVvV, -- Result Boolean, can't happen w/RightCaret
 
     NULL,   // &PrimFnMonRightCaretB64isB64, -- Can't happen w/RightCaret
     NULL,   // &PrimFnMonRightCaretB32isB32, -- Can't happen w/RightCaret
@@ -219,8 +231,8 @@ APLSTYPE PrimSpecRightCaretStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // All simple numeric results are Boolean
-    if (IsSimpleNum (aplTypeRes))
+    // All numeric results are Boolean
+    if (IsNumeric (aplTypeRes))
         aplTypeRes = ARRAY_BOOL;
 
     return aplTypeRes;
@@ -342,6 +354,45 @@ APLBOOL PrimFnDydRightCaretBisFvF
     // Otherwise, return the natural result
     return (aplFloatLft > aplFloatRht);
 } // End PrimFnDydRightCaretBisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydRightCaretBisRvR
+//
+//  Primitive scalar function dyadic RightCaret:  B {is} R fn R
+//***************************************************************************
+
+APLBOOL PrimFnDydRightCaretBisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+#ifdef RAT_EXACT
+    // Compare the two RATs
+    return mpq_cmp    (&aplRatLft, &aplRatRht              ) > 0;
+#else
+    // Compare the two RATs relative to []CT
+    return mpq_cmp_ct ( aplRatLft,  aplRatRht, GetQuadCT ()) > 0;
+#endif
+} // End PrimFnDydRightCaretBisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydRightCaretBisVvV
+//
+//  Primitive scalar function dyadic RightCaret:  B {is} V fn V
+//***************************************************************************
+
+APLBOOL PrimFnDydRightCaretBisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    // Compare the two VFPs relative to []CT
+    return (mpf_cmp_ct (aplVfpLft, aplVfpRht, GetQuadCT ()) > 0);
+} // End PrimFnDydRightCaretBisVvV
 
 
 //***************************************************************************

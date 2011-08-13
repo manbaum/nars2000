@@ -100,7 +100,8 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     HGLOBAL            hGlbRht = NULL,          // Right arg global memory handle
                        hGlbDfnHdr = NULL,       // Function  ...
                        hGlbMonInfo = NULL,      // MonInfo   ...
-                       hGlbRes = NULL;          // Result    ...
+                       hGlbRes = NULL,          // Result    ...
+                       lpSymGlbRht;             // Ptr to global immediate
     LPAPLCHAR          lpMemRht = NULL;         // Ptr to right arg global memory
     LPEXTMONINFO_UNION lpMemResUnion = NULL;    // Ptr to result    ...           as integers
     LPDFN_HEADER       lpMemDfnHdr = NULL;      // Ptr to function header global memory
@@ -130,12 +131,12 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
         goto RANK_EXIT;
 
     // Pick off numeric singleton cases
-    if (IsSimpleNum (aplTypeRht)
+    if (IsNumeric (aplTypeRht)
      && IsSingleton (aplNELMRht))
     {
         APLINT   aplIntegerRht;             // Right arg integer
         APLFLOAT aplFloatRht;               // ...       float
-        UBOOL    bRet;                      // TRUE iff the result is valid
+        UBOOL    bRet = TRUE;               // TRUE iff the result is valid
 
         // Get the one and only value
         GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
@@ -143,16 +144,41 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
                            &aplFloatRht,    // Ptr to float ...
                             NULL,           // Ptr to WCHAR ...
                             NULL,           // Ptr to longest ...
-                            NULL,           // Ptr to lpSym/Glb ...
+                           &lpSymGlbRht,    // Ptr to lpSym/Glb ...
                             NULL,           // Ptr to ...immediate type ...
                             NULL);          // Ptr to array type ...
-        if (IsSimpleFlt (aplTypeRht))
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
         {
-            // Attempt to convert the float to an integer using System CT
-            aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-            if (!bRet)
-                goto DOMAIN_EXIT;
-        } // End IF
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                break;
+
+            case ARRAY_FLOAT:
+                // Attempt to convert the float to an integer using System CT
+                aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an integer using System CT
+                aplIntegerRht = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht, &bRet);
+
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an integer using System CT
+                aplIntegerRht = mpf_get_ctsa ((LPAPLVFP) lpSymGlbRht, &bRet);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        if (!bRet)
+            goto DOMAIN_EXIT;
 
         return SysFnMonMF_Numeric_EM (aplIntegerRht, lptkFunc);
     } // End IF
@@ -543,7 +569,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                  uCol;                  // Loop counter
     LPSYMENTRY   lpSymEntry;            // Ptr to SYMENTRY
     STFLAGS      stFlags;               // STE flags
-    UBOOL        bRet;                  // TRUE iff the result is valid
+    UBOOL        bRet = TRUE;           // TRUE iff the result is valid
     UINT         uBitIndex;             // Bit index for looping through Booleans
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
 
@@ -570,7 +596,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
         goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft))
+    if (!IsNumeric (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
@@ -584,14 +610,38 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check the left arg
-    if (IsSimpleFlt (aplTypeLft))
+    // Split cases based upon the left arg storage type
+    switch (aplTypeLft)
     {
-        // Attempt to convert the float to an integer using System CT
-        aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft,
-                                          &bRet);
-        if (!bRet)
-            goto LEFT_DOMAIN_EXIT;
-    } // End IF
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_FLOAT:
+            // Attempt to convert the float to an integer using System CT
+            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft,
+                                              &bRet);
+            break;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an integer using System CT
+            aplLongestLft = GetNextRatIntGlb (MakePtrTypeGlb (hGlbLft), 0, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an integer using System CT
+            aplLongestLft = GetNextVfpIntGlb (MakePtrTypeGlb (hGlbLft), 0, &bRet);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    if (!bRet)
+        goto LEFT_DOMAIN_EXIT;
 
     // Check for LEFT DOMAIN ERROR
     if (!IsBooleanValue (aplLongestLft))

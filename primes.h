@@ -27,13 +27,13 @@
 
 typedef struct tagPROCESSPRIME
 {
-    APLUINT uFcnIndex,              // 00:  Function index (see enum NUMTHEORY)
-            uTotient,               // 08:  Result of totient function
-            uDivisor;               // 10:  Result of divisor count/sum
-    UBOOL   bSquareFree;            // 18:  TRUE iff the number is square-free
-    UINT    seed1,                  // 1C:  Random seeds
-            seed2;                  // 20:  ...
-    LPUBOOL lpbCtrlBreak;           // 24:  Ptr to Ctrl-Break flag
+    APLUINT uFcnIndex;              // 00:  Function index (see enum NUMTHEORY) ( 8 bytes)
+    APLMPI  mpzDivisor,             // 08:  Result of divisor count/sum         (12 bytes)
+            mpzTotient;             // 14:  Result of totient function          (12 bytes)
+    UBOOL   bSquareFree;            // 20:  TRUE iff the number is square-free  ( 4 bytes)
+    UINT    seed1,                  // 24:  Random seeds
+            seed2;                  // 28:  ...
+    LPUBOOL lpbCtrlBreak;           // 2C:  Ptr to Ctrl-Break flag
 } PROCESSPRIME, *LPPROCESSPRIME;
 
 

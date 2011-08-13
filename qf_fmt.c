@@ -22,6 +22,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <math.h>
 #include "headers.h"
 
 
@@ -580,8 +581,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     if (hGlbRht EQ NULL)
         lpMemRht = &aplLongestRht;
 
-    //  Allowed types are Simple, Hetero, nested depth <= 2.
-    if (IsSimple (aplTypeRht))
+    //  Allowed types are Simple, Global Numeric, Hetero, nested depth <= 2.
+    if (IsSimpleGlbNum (aplTypeRht))
     {
         // Count the # cols & rows in the right arg
         if (IsMultiRank (aplRankRht))
@@ -650,7 +651,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                 AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, &aplColsItm);
 
                 // Check for RIGHT DOMAIN ERROR
-                if (!IsSimple (aplTypeItm))
+                if (!IsSimpleGlbNum (aplTypeItm))
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Count the # cols & rows in the item
@@ -872,8 +873,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     // Initialize the iteration count
     fsRep = lpfsInit->fsRep;
 
-    // If the right arg is simple non-heterogeneous, ...
-    if (IsSimpleNH (aplTypeRht))
+    // If the right arg is simple non-heterogeneous or global numeric, ...
+    if (IsSimpleNHGlbNum (aplTypeRht))
         // Format the right arg into the result
         SysFnDydFMTSimp (aplTypeRht,            // Item storage type
                          aplNumCols,            // Item # cols
@@ -1119,7 +1120,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $SysFnDydFMTSimp
 //
-//  Format []FMT simple right arg
+//  Format []FMT simple or global numeric right arg
 //
 //  Returns the rightmost format spec
 //***************************************************************************
@@ -1173,6 +1174,8 @@ FMTSPECVAL SysFnDydFMTSimp
             case ARRAY_INT:
             case ARRAY_FLOAT:
             case ARRAY_APA:
+            case ARRAY_RAT:
+            case ARRAY_VFP:
                 // Loop through the item cols
                 //   where a scalar/vector is treated as a one-column matrix
                 for (aplCurColItm = 0, aplMaxColRes = aplCurColRes = *lpaplCurColRes;
@@ -1664,7 +1667,8 @@ void QFMT_CommonG
                          fsWid,                         // Precision for F-format, significant digits for E-format
                          UTF16_DOT,                     // Char to use as decimal separator
                          UTF16_OVERBAR,                 // Char to use as overbar
-                         FLTDISPFMT_RAWINT);            // Float display format
+                         FLTDISPFMT_RAWINT,             // Float display format
+                         FALSE);                        // TRUE iff we're to substitute text for infinity
     // Ensure properly terminated
     *--lpaplChar = WC_EOS;
 
@@ -1841,10 +1845,19 @@ void QFMT_CommonEFI
                  iWid;                      // ...
     APLU3264     fsDig;                     // Precision for F-format, significant digits for E-format
     UBOOL        bContinue,                 // TRUE iff we're to continue with Symbol Substitution
-                 bZeroFill;                 // TRUE iff we're still doing Zero Fill
+                 bZeroFill,                 // TRUE iff we're still doing Zero Fill
+                 bRet = TRUE;               // TRUE iff the result is valid
     LPWCHAR      lpwSrc,                    // Ptr to source text
                  lpwEnd,                    // Ptr to end of ...
                  lpwSymChar;                // Ptr to symbol to substitute
+    HGLOBAL      lpSymGlbItm;               // Ptr to global numeric item
+    APLRAT       aplRatItm,                 // Item as RAT
+                 aplRat10 = {0},            // Constant RAT
+                 aplRat1  = {0},            // ...
+                 aplRatTmp = {0};           // Temporary RAT
+    APLVFP       aplVfpItm,                 // Item as VFP
+                 aplVfp10 = {0},            // Constant VFP
+                 aplVfpTmp = {0};           // Temporary VFP
 
     // Modifiers allowed for E-format:  B   K L M N O P Q R S Z Rep
     // ...       not ...             :    C
@@ -1864,23 +1877,60 @@ void QFMT_CommonEFI
     GetNextValueMem (lpMemItm,                              // Ptr to item global memory data
                      aplTypeItm,                            // Item storage type
                      (uRow * aplColsItm) + aplCurColItm,    // Index into item
-                     NULL,                                  // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                    &lpSymGlbItm,                           // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                     &aplLongestItm,                         // Ptr to result immediate value (may be NULL)
                     &immTypeItm);                           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+    // If the item is a global numeric, ...
+    if (IsImmGlbNum (immTypeItm))
+    {
+        if (IsImmRat (immTypeItm))
+        {
+            mpq_init_set_ui (&aplRat10, 10, 1);
+            mpq_init_set_ui (&aplRat1 , 1 , 1);
+        } else
+        if (IsImmVfp (immTypeItm))
+            mpf_init_set_ui (&aplVfp10, 10);
+        else
+            DbgStop ();
+    } // End IF
+
     // Fill in the background if present (R-modifier)
     if ((lpfsNxt)->bR)
         QFMT_FillBg (lpfsNxt, lpMemRes);
 
-    // Get the value as an integer/float
-    if (IsImmInt (immTypeItm))
+    // Split cases based upon the immediate storage type
+    switch (immTypeItm)
     {
-        aplIntItm = (APLINT) aplLongestItm;
-        aplFltItm = (APLFLOAT) aplIntItm;
-    } else
-    {
-        aplIntItm = (APLINT) *(LPAPLFLOAT) &aplLongestItm;
-        aplFltItm = *(LPAPLFLOAT) &aplLongestItm;
-    } // End IF/ELSE
+        case IMMTYPE_BOOL:
+        case IMMTYPE_INT:
+            aplIntItm = (APLINT) aplLongestItm;
+            aplFltItm = (APLFLOAT) aplIntItm;
+
+            break;
+
+        case IMMTYPE_FLOAT:
+            aplIntItm = (APLINT) *(LPAPLFLOAT) &aplLongestItm;
+            aplFltItm = *(LPAPLFLOAT) &aplLongestItm;
+
+            break;
+
+        case IMMTYPE_RAT:
+            aplRatItm = *(LPAPLRAT) lpSymGlbItm;
+            aplFltItm = mpq_get_d (&aplRatItm);
+            aplIntItm = (APLINT) aplFltItm;
+
+            break;
+
+        case IMMTYPE_VFP:
+            aplVfpItm = *(LPAPLVFP) lpSymGlbItm;
+            aplFltItm = mpf_get_d (&aplVfpItm);
+            aplIntItm = (APLINT) aplFltItm;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // Compare value and substitute text (O-modifier)
     if (lpfsNxt->bO
@@ -1913,20 +1963,76 @@ void QFMT_CommonEFI
             case FMTSPECVAL_F:
                 // If the scaling factor is negative, ...
                 if (fsScl < 0)
-                    while (fsScl++)
-                        aplFltItm /= 10;
-                else
-                    while (fsScl--)
-                        aplFltItm *= 10;
+                {
+                    // If it's a global numeric, ...
+                    if (IsImmGlbNum (immTypeItm))
+                    {
+                        while (fsScl++)
+                        if (IsImmRat (immTypeItm))
+                            mpq_div (&aplRatItm, &aplRatItm, &aplRat10);
+                        else
+                        if (IsImmVfp (immTypeItm))
+                            mpf_div (&aplVfpItm, &aplVfpItm, &aplVfp10);
+                        else
+                            DbgStop ();
+                    } else
+                        while (fsScl++)
+                            aplFltItm /= 10;
+                } else
+                {
+                    // If it's a global numeric, ...
+                    if (IsImmGlbNum (immTypeItm))
+                    {
+                        while (fsScl--)
+                        if (IsImmRat (immTypeItm))
+                            mpq_mul (&aplRatItm, &aplRatItm, &aplRat10);
+                        else
+                        if (IsImmVfp (immTypeItm))
+                            mpf_mul (&aplVfpItm, &aplVfpItm, &aplVfp10);
+                        else
+                            DbgStop ();
+                    } else
+                        while (fsScl--)
+                            aplFltItm *= 10;
+                } // End IF/ELSE
+
                 break;
 
             case FMTSPECVAL_I:
                 if (fsScl < 0)
-                    while (fsScl++)
-                        aplIntItm /= 10;
-                else
-                    while (fsScl--)
-                        aplIntItm *= 10;
+                {
+                    // If it's a global numeric, ...
+                    if (IsImmGlbNum (immTypeItm))
+                    {
+                        while (fsScl++)
+                        if (IsImmRat (immTypeItm))
+                            mpq_div (&aplRatItm, &aplRatItm, &aplRat10);
+                        else
+                        if (IsImmVfp (immTypeItm))
+                            mpf_div (&aplVfpItm, &aplVfpItm, &aplVfp10);
+                        else
+                            DbgStop ();
+                    } else
+                        while (fsScl++)
+                            aplIntItm /= 10;
+                } else
+                {
+                    // If it's a global numeric, ...
+                    if (IsImmGlbNum (immTypeItm))
+                    {
+                        while (fsScl--)
+                        if (IsImmRat (immTypeItm))
+                            mpq_mul (&aplRatItm, &aplRatItm, &aplRat10);
+                        else
+                        if (IsImmVfp (immTypeItm))
+                            mpf_mul (&aplVfpItm, &aplVfpItm, &aplVfp10);
+                        else
+                            DbgStop ();
+                    } else
+                        while (fsScl--)
+                            aplIntItm *= 10;
+                } // End IF/ELSE
+
                 break;
 
             defstop
@@ -1942,13 +2048,55 @@ void QFMT_CommonEFI
         {
             int iExpCnt;                                // Loop counter
 
-            lpwEnd =
-              FormatFloatFC (lpwszFormat,           // Ptr to output save area
-                             aplFltItm,             // The value to format
-                             fsDig,                 // Precision for F-format, significant digits for E-format
-                             UTF16_DOT,             // Char to use as decimal separator
-                             UTF16_OVERBAR,         // Char to use as overbar
-                             FLTDISPFMT_E);             // Float display format
+            // Split cases based upon the immediate storage type
+            switch (immTypeItm)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                case IMMTYPE_FLOAT:
+                    lpwEnd =
+                      FormatFloatFC (lpwszFormat,           // Ptr to output save area
+                                     aplFltItm,             // The value to format
+                                     fsDig,                 // Precision for F-format, significant digits for E-format
+                                     UTF16_DOT,             // Char to use as decimal separator
+                                     UTF16_OVERBAR,         // Char to use as overbar
+                                     FLTDISPFMT_E,          // Float display format
+                                     FALSE);                // TRUE iff we're to substitute text for infinity
+                    break;
+
+                case IMMTYPE_RAT:
+                    // Convert the RAT to a VFP
+                    mpf_init_set_q (&aplVfpItm, &aplRatItm);
+
+                    lpwEnd =
+                      FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
+                                      aplVfpItm,            // The value to format
+                                     -fsWid,                // # significant digits (0 = all)
+                                      UTF16_DOT,            // Char to use as decimal separator
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      FALSE,                // TRUE iff nDigits is # fractional digits
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpItm);
+
+                    break;
+
+                case IMMTYPE_VFP:
+                    lpwEnd =
+                      FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
+                                      aplVfpItm,            // The value to format
+                                     -fsWid,                // # significant digits (0 = all)
+                                      UTF16_DOT,            // Char to use as decimal separator
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      FALSE,                // TRUE iff nDigits is # fractional digits
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                    break;
+
+                case IMMTYPE_CHAR:
+                defstop
+                    break;
+            } // End SWITCH
+
             // Append enough blanks to the result to fill
             //   out the exponent to full width ("E-100")
             iExpCnt = 5 - ((UINT) (lpwEnd - strchrW (lpwszFormat, L'E')) - 1);
@@ -1962,13 +2110,55 @@ void QFMT_CommonEFI
         } // End FMTSPECVAL_E
 
         case FMTSPECVAL_F:
-            lpwEnd =
-              FormatFloatFC (lpwszFormat,           // Ptr to output save area
-                             aplFltItm,             // The value to format
-                             fsDig,                 // Precision for F-format, significant digits for E-format
-                             UTF16_DOT,             // Char to use as decimal separator
-                             UTF16_OVERBAR,         // Char to use as overbar
-                             FLTDISPFMT_F);             // Float display format
+            // Split cases based upon the immediate storage type
+            switch (immTypeItm)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                case IMMTYPE_FLOAT:
+                    lpwEnd =
+                      FormatFloatFC (lpwszFormat,           // Ptr to output save area
+                                     aplFltItm,             // The value to format
+                                     fsDig,                 // Precision for F-format, significant digits for E-format
+                                     UTF16_DOT,             // Char to use as decimal separator
+                                     UTF16_OVERBAR,         // Char to use as overbar
+                                     FLTDISPFMT_F,          // Float display format
+                                     FALSE);                // TRUE iff we're to substitute text for infinity
+                    break;
+
+                case IMMTYPE_RAT:
+                    // Convert the RAT to a VFP
+                    mpf_init_set_q (&aplVfpItm, &aplRatItm);
+
+                    lpwEnd =
+                      FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
+                                      aplVfpItm,            // The value to format
+                                      fsWid,                // # significant digits (0 = all)
+                                      UTF16_DOT,            // Char to use as decimal separator
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      FALSE,                // TRUE iff nDigits is # fractional digits
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpItm);
+
+                    break;
+
+                case IMMTYPE_VFP:
+                    lpwEnd =
+                      FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
+                                      aplVfpItm,            // The value to format
+                                      fsWid,                // # significant digits (0 = all)
+                                      UTF16_DOT,            // Char to use as decimal separator
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      FALSE,                // TRUE iff nDigits is # fractional digits
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                    break;
+
+                case IMMTYPE_CHAR:
+                defstop
+                    break;
+            } // End SWITCH
+
             // Ensure properly terminated
             *--lpwEnd = WC_EOS;
 
@@ -2007,19 +2197,76 @@ void QFMT_CommonEFI
             break;
 
         case FMTSPECVAL_I:
-            if (IsImmInt (immTypeItm))
-                lpaplChar =
-                  FormatAplintFC (lpwszFormat,          // Ptr to output save area
-                                  aplIntItm,            // The value to format
-                                  UTF16_OVERBAR);       // Char to use as overbar
-            else
-                lpaplChar =
-                  FormatFloatFC (lpwszFormat,           // Ptr to output save area
-                                 aplFltItm,             // The value to format
-                                 fsWid,                 // Precision for F-format, significant digits for E-format
-                                 UTF16_DOT,             // Char to use as decimal separator
-                                 UTF16_OVERBAR,         // Char to use as overbar
-                                 FLTDISPFMT_RAWINT);    // Float display format
+            // Split cases based upon the immediate storage type
+            switch (immTypeItm)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                    lpaplChar =
+                      FormatAplintFC (lpwszFormat,          // Ptr to output save area
+                                      aplIntItm,            // The value to format
+                                      UTF16_OVERBAR);       // Char to use as overbar
+                    break;
+
+                case IMMTYPE_FLOAT:
+                    // Round the FLT to the nearest integer
+                    aplFltItm = floor (aplFltItm + 0.5);
+
+                    lpaplChar =
+                      FormatFloatFC (lpwszFormat,           // Ptr to output save area
+                                     aplFltItm,             // The value to format
+                                     fsWid,                 // Precision for F-format, significant digits for E-format
+                                     UTF16_DOT,             // Char to use as decimal separator
+                                     UTF16_OVERBAR,         // Char to use as overbar
+                                     FLTDISPFMT_RAWINT,     // Float display format
+                                     FALSE);                // TRUE iff we're to substitute text for infinity
+                    break;
+
+                case IMMTYPE_RAT:
+                    // Initialize the temp
+                    mpq_init (&aplRatTmp);
+
+                    // Round the RAT to the nearest integer
+                    mpq_add   (&aplRatTmp, &aplRatItm, &mpqHalf);
+                    mpq_floor (&aplRatTmp, &aplRatTmp);
+
+                    lpaplChar =
+                      FormatAplRatFC (lpwszFormat,          // Ptr to output save area
+                                      aplRatTmp,            // The value to format
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      L'r',                 // Char to use as rational separator
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                    // We no longer need this storage
+                    Myq_clear (&aplRatTmp);
+
+                    break;
+
+                case IMMTYPE_VFP:
+                    // Initialize the temp
+                    mpf_init (&aplVfpTmp);
+
+                    // Round the VFP to the nearest integer
+                    mpf_add   (&aplVfpTmp, &aplVfpItm, &mpfHalf);
+                    mpf_floor (&aplVfpTmp, &aplVfpTmp);
+
+                    lpaplChar =
+                      FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
+                                      aplVfpTmp,            // The value to format
+                                      fsWid,                // # significant digits (0 = all)
+                                      UTF16_DOT,            // Char to use as decimal separator
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      FALSE,                // TRUE iff nDigits is # fractional digits
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpTmp);
+
+                    break;
+
+                case IMMTYPE_CHAR:
+                defstop
+                    break;
+            } // End SWITCH
+
             // Ensure properly terminated
             *--lpaplChar = WC_EOS;
 
@@ -2028,6 +2275,20 @@ void QFMT_CommonEFI
         defstop
             break;
     } // End SWITCH
+
+    // If the item is a global numeric, ...
+    if (IsImmGlbNum (immTypeItm))
+    {
+        if (IsImmRat (immTypeItm))
+        {
+            Myq_clear (&aplRat10);
+            Myq_clear (&aplRat1);
+        } else
+        if (IsImmVfp (immTypeItm))
+            Myf_clear (&aplVfp10);
+        else
+            DbgStop ();
+    } // End IF
 
     // Calculate length of and ptr to negative text to prepend (M-modifier)
     if (lpfsNxt->bM && aplFltItm <  0)
@@ -2177,6 +2438,13 @@ void QFMT_CommonEFI
 
     // Get the formatted item length
     iWid = lstrlenW (lpwszFormat);
+
+    // Delete trailing blanks so we don't overflow because of that
+////while (iWid > 0)
+////if (isspaceW (lpwszFormat[iWid - 1]))
+////    iWid--;
+////else
+////    break;
 
     // If the item fits within the specified width, ...
     if (iWid <= fsWid)

@@ -39,12 +39,16 @@ typedef ULONGLONG   APLDIM;             // ...             dimensions   ...
 typedef UCHAR       APLBOOL;            // ...         an element in a Boolean array (unsigned)
 typedef  LONGLONG   APLINT;             // ...         ...           an integer array
 typedef ULONGLONG   APLUINT;            // ...         ...           an integer array (unsigned)
-typedef WCHAR       APLCHAR;            // ...         ...           a character
+typedef WCHAR       APLCHAR;            // ...         ...           a character array
 typedef double      APLFLOAT;           // ...         ...           a Floating Point array
 typedef HGLOBAL     APLNESTED;          // ...         ...           a nested array
 typedef struct tagSYMENTRY *APLHETERO;  // ...         ...           a HETERO array
 typedef struct tagTOKEN APLLIST;        // ...                       a list
-typedef UCHAR       APLSTYPE;           // Storage type (see ARRAY_TYPES)
+typedef MP_INT      APLMPI;             // ...         ...           an Arbitrary Precision Integer array
+typedef MP_RAT      APLRAT;             // ...         ...           a Rational Number array
+typedef __mpf_struct APLVFP;            // ...         ...           a Variable-precision Floating Point array
+typedef __mpfr_struct APLMPFR;          // ...         ...           a MPFR array
+typedef enum tagARRAY_TYPES APLSTYPE;   // Storage type (see ARRAY_TYPES)
 
 typedef ULONGLONG   APLB64;             // Boolean 64 bits
 typedef uint32_t    APLB32;             // ...     32 ...
@@ -61,9 +65,8 @@ typedef uint8_t     APLB08;             // ...      8 ...
   #error Need code for this architecture.
 #endif
 
-// APLNESTED may be either an LPSYMENTRY or
+// APLNESTED and APLHETERO may be either an LPSYMENTRY or
 //   an HGLOBAL.
-// APLHETERO may be an LPSYMENTRY only.
 
 typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMTAB_DATA
 
@@ -85,6 +88,10 @@ typedef APLNESTED * LPAPLNESTED;
 typedef APLLIST   * LPAPLLIST;
 typedef APLFLOAT  * LPAPLFLOAT;
 typedef APLHETERO * LPAPLHETERO;
+typedef APLMPI    * LPAPLMPI;
+typedef APLRAT    * LPAPLRAT;
+typedef APLVFP    * LPAPLVFP;
+typedef APLMPFR   * LPAPLMPFR;
 
 typedef APLB64    * LPAPLB64;
 typedef APLB32    * LPAPLB32;
@@ -92,6 +99,20 @@ typedef APLB16    * LPAPLB16;
 typedef APLB08    * LPAPLB08;
 
 typedef APLLONGEST* LPAPLLONGEST;
+
+#pragma pack(push,4)
+typedef struct tagAPLU_SPLIT
+{
+    UINT lo,
+         hi;
+} APLU_SPLIT, *LPAPLU_SPLIT;
+
+typedef struct tagAPL_SPLIT
+{
+    UINT lo;
+    int  hi;
+} APL_SPLIT, *LPAPL_SPLIT;
+#pragma pack(pop)
 
 
 //***************************************************************************

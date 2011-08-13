@@ -45,6 +45,11 @@ PRIMSPEC PrimSpecRightCaretUnderbar = {
     NULL,   // &PrimFnMonRightCaretUnderbarFisI, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarFisF, -- Can't happen w/RightCaretUnderbar
 
+    NULL,   // &PrimFnMonRightCaretUnderbarRisR, -- Can't happen w/RightCaretUnderbar
+
+////                 VisR,   // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonRightCaretUnderbarVisV, -- Can't happen w/RightCaretUnderbar
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecRightCaretUnderbarStorageTypeDyd,
@@ -56,12 +61,19 @@ PRIMSPEC PrimSpecRightCaretUnderbar = {
     NULL,   // &PrimFnDydRightCaretUnderbarBisCvC, -- Can't happen w/RightCaretUnderbar
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydRightCaretUnderbarIisIvI, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnDydRightCaretUnderbarIisFvF, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarIisIvI, -- Result Boolean, can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarIisFvF, -- Result Boolean, can't happen w/RightCaretUnderbar
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydRightCaretUnderbarFisIvI, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnDydRightCaretUnderbarFisFvF, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarFisIvI, -- Result Boolean, can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarFisFvF, -- Result Boolean, can't happen w/RightCaretUnderbar
+
+    &PrimFnDydRightCaretUnderbarBisRvR,
+    NULL,   // &PrimFnDydRightCaretUnderbarRisRvR, -- Result Boolean, can't happen w/RightCaretUnderbar
+
+    &PrimFnDydRightCaretUnderbarBisVvV,
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydRightCaretUnderbarVisVvV, -- Result Boolean, can't happen w/RightCaretUnderbar
 
     NULL,   // &PrimFnMonRightCaretUnderbarB64isB64, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarB32isB32, -- Can't happen w/RightCaretUnderbar
@@ -138,8 +150,8 @@ APLSTYPE PrimSpecRightCaretUnderbarStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // All simple numeric results are Boolean
-    if (IsSimpleNum (aplTypeRes))
+    // All numeric results are Boolean
+    if (IsNumeric (aplTypeRes))
         aplTypeRes = ARRAY_BOOL;
 
     return aplTypeRes;
@@ -261,6 +273,45 @@ APLBOOL PrimFnDydRightCaretUnderbarBisFvF
     // Otherwise, return the natural result
     return (aplFloatLft >= aplFloatRht);
 } // End PrimFnDydRightCaretUnderbarBisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydRightCaretUnderbarBisRvR
+//
+//  Primitive scalar function dyadic RightCaretUnderbar:  B {is} R fn R
+//***************************************************************************
+
+APLBOOL PrimFnDydRightCaretUnderbarBisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+#ifdef RAT_EXACT
+    // Compare the two RATs
+    return mpq_cmp    (&aplRatLft, &aplRatRht              ) >= 0;
+#else
+    // Compare the two RATs relative to []CT
+    return mpq_cmp_ct ( aplRatLft,  aplRatRht, GetQuadCT ()) >= 0;
+#endif
+} // End PrimFnDydRightCaretUnderbarBisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydRightCaretUnderbarBisVvV
+//
+//  Primitive scalar function dyadic RightCaretUnderbar:  B {is} V fn V
+//***************************************************************************
+
+APLBOOL PrimFnDydRightCaretUnderbarBisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    // Compare the two VFPs relative to []CT
+    return (mpf_cmp_ct (aplVfpLft, aplVfpRht, GetQuadCT ()) >= 0);
+} // End PrimFnDydRightCaretUnderbarBisVvV
 
 
 //***************************************************************************

@@ -39,7 +39,13 @@ typedef union tagAPLFLOAT_UNION
     APLFLOATSTR aplFloatStr;            // 00:  The struct to pick it apart
 } APLFLOATUNION, *LPAPLFLOATUNION;
 
-#define APL_MAN
+typedef union tagAPLUINT_UNION
+{
+    APLINT  aplInt;
+    APLUINT aplUInt;
+    DWORD   dwords[2];
+} APLUINTUNION;
+
 #define MAX_APLUINT     0xFFFFFFFFFFFFFFFF                      // Largest  APLINT
 #define MAX_APLINT      0x7FFFFFFFFFFFFFFF                      // ...      APLINT
 #define MAX_APLNELM     MAX_APLINT                              // ...      APLNELM
@@ -47,11 +53,12 @@ typedef union tagAPLFLOAT_UNION
 #define MAX_APLDIM      MAX_APLINT                              // ...      APLDIM
 #define MIN_APLINT      0x8000000000000000                      // Smallest APLINT
 #define MIN_APLINT_STR  WS_UTF16_OVERBAR L"9223372036854775808" // ...      ...    as a string
-#define MAX_UNICODE     0x1FFFFF                                // Largest allowable Unicode code point
+#define MAX_UNICODE     0x10FFFF                                // Largest allowable Unicode code point
 
 // # bits in an APLxxx
 #define BITS_IN_APLCHAR (NBIB * (sizeof (APLCHAR)))
 #define BITS_IN_APLINT  (NBIB * (sizeof (APLINT )))
+#define BITS_IN_APLUINT (NBIB * (sizeof (APLUINT)))
 
 // # integers in an APLCHAR
 #define APLCHAR_SIZE    (BIT0 << BITS_IN_APLCHAR)
@@ -68,10 +75,52 @@ typedef enum tagSTRAND_TYPES
  STRAND_STRING,                         // 06:  Character vector
  STRAND_HETERO,                         // 07:  Simple heterogeneous (mixed numeric and character scalar)
  STRAND_NESTED,                         // 08:  Nested
+ STRAND_RAT,                            // 09:  Multiprecision Rational Number
+ STRAND_VFP,                            // 0A:  Variable-precision Float
 
- STRAND_LENGTH                          // 09:  # elements in this enum
+ STRAND_LENGTH                          // 0B:  # elements in this enum
                                         //      *MUST* be the last entry
 } STRAND_TYPES;
+
+typedef struct tagDTHC2
+{
+    APLFLOAT Real,                  // 00:  Complex number,    real      part    (8 bytes)
+             Imag;                  // 08:  ...                imaginary part    (8 bytes)
+} DTHC2, *LPDTHC2;
+
+typedef struct tagDTHC4
+{
+    APLFLOAT  Real,                 // 00:  Quaternion number, real      part    (8 bytes)
+              Imag1,                // 08:  ...                imaginary part #1 (8 bytes)
+              Imag2,                // 10:  ...                imaginary part #2 (8 bytes)
+              Imag3;                // 18:  ...                imaginary part #3 (8 bytes)
+} DTHC4, *LPDTHC4;
+
+typedef struct tagDTHC8
+{
+    APLFLOAT Real,                  // 00:  Octonion number,   real      part    (8 bytes)
+             Imag1,                 // 08:  ...                imaginary part #1 (8 bytes)
+             Imag2,                 // 10:  ...                imaginary part #2 (8 bytes)
+             Imag3,                 // 18:  ...                imaginary part #3 (8 bytes)
+             Imag4,                 // 20:  ...                imaginary part #4 (8 bytes)
+             Imag5,                 // 28:  ...                imaginary part #5 (8 bytes)
+             Imag6,                 // 30:  ...                imaginary part #6 (8 bytes)
+             Imag7;                 // 38:  ...                imaginary part #7 (8 bytes)
+} DTHC8, *LPDTHC8;
+
+typedef union tagALLTYPES
+{
+    APLINT    aplInteger;           // 00:  Integer or real number as an integer ( 8 bytes)
+    APLFLOAT  aplFloat;             // 00:  Real number as a float               ( 8 bytes)
+    APLCHAR   aplChar;              // 00:  Character
+    DTHC2     aplHC2;               // 00:  Complex number                       (16 bytes)
+    DTHC4     aplHC4;               // 00:  Quaternion number                    (32 bytes)
+    DTHC8     aplHC8;               // 00:  Octonion number                      (64 bytes)
+    APLHETERO aplHetero;            // 00:  Heterogeneous array                  ( 4 bytes)
+    APLNESTED aplNested;            // 00:  Nested array                         ( 4 bytes)
+    APLRAT    aplRat;               // 00:  RAT number, num and denom parts      (24 bytes)
+    APLVFP    aplVfp;               // 00:  VFP number                           (16 bytes)
+} ALLTYPES, *LPALLTYPES;
 
 // Array types -- used to identify array storage type in memory
 typedef enum tagARRAY_TYPES
@@ -84,31 +133,34 @@ typedef enum tagARRAY_TYPES
  ARRAY_NESTED,                          // 05:  Nested
  ARRAY_LIST,                            // 06:  List
  ARRAY_APA,                             // 07:  Arithmetic Progression Array
+ ARRAY_RAT,                             // 08:  Multiprecision Rational Number
+ ARRAY_VFP,                             // 09:  Variable-precision Float
 
- ARRAY_LENGTH,                          // 08:  # elements in this enum
+ ARRAY_LENGTH,                          // 0A:  # elements in this enum
                                         //      *MUST* be the last non-error entry
-                                        // 08-0F:  Available entries (4 bits)
+                                        // 0A-0F:  Available entries (4 bits)
  ARRAY_INIT  = ARRAY_LENGTH,
  ARRAY_ERROR = (APLSTYPE) -1,
 
 // Whenever changing this <enum>, be sure to make a
-//   corresponding change to <StorageType> and <TypeDemote> in <primfns.c>,
+//   corresponding change to <StorageType>  in <primfns.c>,
+//   <TypeDemote> in <typemote.c>
 //   <aTypePromote> and <uTypeMap> in <externs.h>,
-//   <IsSimpleNH> and <IsSimpleNum> macros
-//   and BPE_VEC in <datatype.h>.
+//   <IsSimpleNH> and <IsSimpleNum> macros in <macros.h>,
+//   ArrayTypeAsChar and BPE_VEC in <datatype.h>.
 
 } ARRAY_TYPES;
 
 // Translate an array type to a char
 // Note that the order of the chars in this #define
 //   depends upon the ordering of the above enum
-#define ArrayTypeAsChar     L"BIFCHNLA"
+#define ArrayTypeAsChar     L"BIFCHNLARV"
 
 // Bites per element vector
 // N.B. the order of elements in this vector matches
 //   the order of elements in the above ARRAY_TYPES enum.
-//                  B   I   F   C  H  N  L   A
-#define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 64
+//                  B   I   F   C  H  N  L   A   R   V
+#define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 64,  0,  0
 
 // Define APA structure
 typedef struct tagAPLAPA                // Offset + Multiplier {times} {iota} NELM (origin-0)
@@ -176,6 +228,11 @@ ARRAY_APA       An APA is a representation of Off + Mul {times} {iota} aplNELM
 
                 The NELM comes from the array header.
 
+ARRAY_RAT       A rational or extended precision (denom EQ 1) scalar number.
+                The value is an HGLOBAL of a GMP value (see <gmp.h> for details).
+
+ARRAY_VFP       A variable-precision floating point scalar number.
+                The value is an HGLOBAL of a GMP value (see <gmp.h> for details).
  */
 
 typedef struct tagHEADER_SIGNATURE

@@ -46,6 +46,11 @@ PRIMSPEC PrimSpecPlus =
     NULL,   // &PrimFnMonPlusFisI, -- Can't happen w/Plus
     &PrimFnMonPlusFisF,
 
+    &PrimFnMonPlusRisR,
+
+////               VisR,    // Handled via type promotion (to VisV)
+    &PrimFnMonPlusVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecPlusStorageTypeDyd,
@@ -63,6 +68,13 @@ PRIMSPEC PrimSpecPlus =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydPlusFisIvI,
     &PrimFnDydPlusFisFvF,
+
+    NULL,   // &PrimFnDydPlusBisRvR, -- Can't happen w/Plus
+    &PrimFnDydPlusRisRvR,
+
+    NULL,   // &PrimFnDydPlusBisVvV, -- Can't happen w/Plus
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydPlusVisVvV,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecPlus};
@@ -174,6 +186,46 @@ APLFLOAT PrimFnMonPlusFisF
 {
     return aplFloatRht;
 } // End PrimFnMonPlusFisF
+
+
+//***************************************************************************
+//  $PrimFnMonPlusRisR
+//
+//  Primitive scalar function monadic Plus:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonPlusRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Copy the right arg to the result
+    mpq_init_set (&mpqRes, &aplRatRht);
+
+    return mpqRes;
+} // End PrimFnMonPlusRisR
+
+
+//***************************************************************************
+//  $PrimFnMonPlusVisV
+//
+//  Primitive scalar function monadic Plus:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonPlusVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Copy the right arg to the result
+    mpf_init_set (&mpfRes, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnMonPlusVisV
 
 
 //***************************************************************************
@@ -311,10 +363,12 @@ APLFLOAT PrimFnDydPlusFisFvF
 
 {
     // If the args are both infinite and of opposite signs, ...
-    if (!_finite (aplFloatLft)
-     && !_finite (aplFloatRht)
+    if (IsInfinity (aplFloatLft)
+     && IsInfinity (aplFloatRht)
      && SIGN_APLFLOAT (aplFloatLft) NE SIGN_APLFLOAT (aplFloatRht))
-        return TranslateQuadICIndex (ICNDX_InfSUBInf);
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_InfSUBInf,
+                                     aplFloatRht);
 
     return (aplFloatLft + aplFloatRht);
 } // End PrimFnDydPlusFisFvF
@@ -422,6 +476,50 @@ ERROR_EXIT:
     return bRet;
 } // End PrimFnDydPlusAPA_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydPlusRisRvR
+//
+//  Primitive scalar function dyadic Plus:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydPlusRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Add the two Rationals
+    mpq_init (&mpqRes);
+    mpq_add (&mpqRes, &aplRatLft, &aplRatRht);
+
+    return mpqRes;
+} // End PrimFnDydPlusRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydPlusVisVvV
+//
+//  Primitive scalar function dyadic Plus:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydPlusVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Add the two Variable FPs
+    mpf_init (&mpfRes);
+    mpf_add (&mpfRes, &aplVfpLft, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnDydPlusVisVvV
 
 
 //***************************************************************************

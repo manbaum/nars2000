@@ -217,7 +217,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeRht))
+    if (!IsNumeric (aplTypeRht))
         goto RIGHT_DOMAIN_EXIT;
 
     // Get right arg global ptr
@@ -263,6 +263,42 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 // Get the next value
                 // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
+                if (!bRet
+                 || aplLongestRht >= NAMECLASS_LENp1
+                 || !ucNameClassValid[aplLongestRht])
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // Mark as nameclass aplLongestRht
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
+
+            break;
+
+        case ARRAY_RAT:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Attempt to convert the RAT to an integer using System CT
+                aplLongestRht = GetNextRatIntGlb (hGlbRht, uRht, &bRet);
+
+                if (!bRet
+                 || aplLongestRht >= NAMECLASS_LENp1
+                 || !ucNameClassValid[aplLongestRht])
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // Mark as nameclass aplLongestRht
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Attempt to convert the RAT to an integer using System CT
+                aplLongestRht = GetNextVfpIntGlb (hGlbRht, uRht, &bRet);
+
                 if (!bRet
                  || aplLongestRht >= NAMECLASS_LENp1
                  || !ucNameClassValid[aplLongestRht])

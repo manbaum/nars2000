@@ -728,6 +728,9 @@ LRESULT APIENTRY SMWndProc
 
             INIT_PERTABVARS
 
+            // Initialize PerTabData vars
+            InitPTDVars (lpMemPTD);
+
             // Allocate room for PTDMEMVIRT_LENGTH MemVirtStrs
             //  (see PTDMEMVIRTENUM)
             lpLclMemVirtStr =
@@ -1721,7 +1724,6 @@ NORMAL_EXIT:
                     break;
 #ifdef DEBUG
                 case VK_F1:             // No action defined as yet
-                case VK_F6:             // ...
                 case VK_F7:             // ...
 ////////////////case VK_F8:             // Handled in EDITFCN.C as <DisplayUndo>
                 case VK_F10:            // Not generated
@@ -1763,6 +1765,12 @@ NORMAL_EXIT:
                     else
                     // Otherwise, then display non-permanent non-sysvars
                         DisplayGlobals (0);
+
+                    return FALSE;
+#endif
+#ifdef DEBUG
+                case VK_F6:             // Display outstanding heap objects
+                    DisplayHeap ();
 
                     return FALSE;
 #endif
@@ -1826,6 +1834,8 @@ NORMAL_EXIT:
 
                     // Signal a breakpoint to invoke the debugger
                     DbgBrk ();
+
+                    HeapCompact (GetProcessHeap (), 0);
 
                     return FALSE;
 

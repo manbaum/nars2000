@@ -74,6 +74,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , NULL              , SYSVAR_ELX     },  // Error Latent Expression
     {WS_UTF16_QUAD L"fc"       , SYSVAR,      TRUE , NULL              , SYSVAR_FC      },  // Format Control
     {WS_UTF16_QUAD L"feature"  , SYSVAR,      TRUE , NULL              , SYSVAR_FEATURE },  // Feature Control
+    {WS_UTF16_QUAD L"fpc"      , SYSVAR,      TRUE , NULL              , SYSVAR_FPC     },  // Floating Point Control
     {WS_UTF16_QUAD L"ic"       , SYSVAR,      TRUE , NULL              , SYSVAR_IC      },  // Indeterminate Control
     {WS_UTF16_QUAD L"io"       , SYSVAR,      TRUE , NULL              , SYSVAR_IO      },  // Index Origin
     {WS_UTF16_QUAD L"lx"       , SYSVAR,      TRUE , NULL              , SYSVAR_LX      },  // Latent Expression
@@ -822,6 +823,7 @@ UBOOL ValidateInteger_EM
 
         case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSCALAR: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lptkExpr->tkData.tkGlbData;
@@ -906,6 +908,30 @@ UBOOL ValidateInteger_EM
                                              bRangeLimit);          // TRUE iff we're range limiting
             break;
 
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an integer
+            aplInteger = mpq_get_sa ((LPAPLRAT) lpMemRht, &bRet);
+
+            // Test the value
+            if (bRangeLimit || bRet)
+                bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
+                                             iValidLo,              // Low range value (inclusive)
+                                             iValidHi,              // High ...
+                                             bRangeLimit);          // TRUE iff we're range limiting
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an integer
+            aplInteger = mpf_get_sa ((LPAPLVFP) lpMemRht, &bRet);
+
+            // Test the value
+            if (bRangeLimit || bRet)
+                bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
+                                             iValidLo,              // Low range value (inclusive)
+                                             iValidHi,              // High ...
+                                             bRangeLimit);          // TRUE iff we're range limiting
+            break;
+
         defstop
             break;
     } // End IF/ELSE/SWITCH
@@ -981,37 +1007,6 @@ UBOOL ValidateIntegerTest
         return (iValidLo <= *lpaplInteger
              &&             *lpaplInteger <= iValidHi);
 } // End ValidateIntegerTest
-
-
-//***************************************************************************
-//  $ValidateFloatTest
-//
-//  Validate a float within a given range, possibly range limited
-//***************************************************************************
-
-UBOOL ValidateFloatTest
-    (LPAPLFLOAT lpaplFloat,         // Ptr to the float to test
-     APLFLOAT   fValidLo,           // Low range value (inclusive)
-     APLFLOAT   fValidHi,           // High ...
-     UBOOL      bRangeLimit)        // TRUE iff an incoming value outside
-                                    //   the given range [uValidLo, uValidHi]
-                                    //   is adjusted to be the closer range limit
-
-{
-    // If we're range limiting, ...
-    if (bRangeLimit)
-    {
-        // If it's too small, use the lower limit
-        if (*lpaplFloat < fValidLo)
-            *lpaplFloat = fValidLo;
-        // If it's too large, use the upper limit
-        if (*lpaplFloat > fValidHi)
-            *lpaplFloat = fValidHi;
-        return TRUE;
-    } else
-        return (fValidLo <= *lpaplFloat
-             &&             *lpaplFloat <= fValidHi);
-} // End ValidateFloatTest
 
 
 //***************************************************************************
@@ -1154,6 +1149,7 @@ UBOOL ValidateFloat_EM
 
         case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSCALAR: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lpToken->tkData.tkGlbData;
@@ -1231,6 +1227,24 @@ UBOOL ValidateFloat_EM
 
             break;
 
+        case ARRAY_RAT:
+            // Convert the value to a float
+            aplFloat = mpq_get_d ((LPAPLRAT) lpMemRht);
+
+            // Test the value
+            bRet = ValidateFloatTest (&aplFloat, fValidLo, fValidHi, bRangeLimit);
+
+            break;
+
+        case ARRAY_VFP:
+            // Convert the value to a float
+            aplFloat = mpf_get_d ((LPAPLVFP) lpMemRht);
+
+            // Test the value
+            bRet = ValidateFloatTest (&aplFloat, fValidLo, fValidHi, bRangeLimit);
+
+            break;
+
         defstop
             break;
     } // End IF/ELSE/SWITCH
@@ -1275,6 +1289,37 @@ UNLOCK_EXIT:
     return bRet;
 } // End ValidateFloat_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ValidateFloatTest
+//
+//  Validate a float within a given range, possibly range limited
+//***************************************************************************
+
+UBOOL ValidateFloatTest
+    (LPAPLFLOAT lpaplFloat,         // Ptr to the float to test
+     APLFLOAT   fValidLo,           // Low range value (inclusive)
+     APLFLOAT   fValidHi,           // High ...
+     UBOOL      bRangeLimit)        // TRUE iff an incoming value outside
+                                    //   the given range [uValidLo, uValidHi]
+                                    //   is adjusted to be the closer range limit
+
+{
+    // If we're range limiting, ...
+    if (bRangeLimit)
+    {
+        // If it's too small, use the lower limit
+        if (*lpaplFloat < fValidLo)
+            *lpaplFloat = fValidLo;
+        // If it's too large, use the upper limit
+        if (*lpaplFloat > fValidHi)
+            *lpaplFloat = fValidHi;
+        return TRUE;
+    } else
+        return (fValidLo <= *lpaplFloat
+             &&             *lpaplFloat <= fValidHi);
+} // End ValidateFloatTest
 
 
 //***************************************************************************
@@ -1383,6 +1428,7 @@ UBOOL ValidateCharVector_EM
 
         case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSCALAR: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lpToken->tkData.tkGlbData;
@@ -2102,6 +2148,7 @@ UBOOL ValidNdxChar
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -2114,6 +2161,8 @@ UBOOL ValidNdxChar
         case ARRAY_APA:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
             return FALSE;
 
         case ARRAY_CHAR:
@@ -2162,6 +2211,7 @@ UBOOL ValidNdxCT
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -2183,6 +2233,18 @@ UBOOL ValidNdxCT
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             return FALSE;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to a float
+            *((LPAPLFLOAT) lpaplLongestRht) = mpq_get_d ((LPAPLRAT) lpSymGlbRht);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to a float
+            *((LPAPLFLOAT) lpaplLongestRht) = mpf_get_d ((LPAPLVFP) lpSymGlbRht);
+
+            break;
 
         defstop
             break;
@@ -2245,6 +2307,7 @@ UBOOL ValidNdxDM
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -2415,6 +2478,7 @@ UBOOL ValidNdxFEATURE
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -2438,6 +2502,18 @@ UBOOL ValidNdxFEATURE
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             return FALSE;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an INT
+            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an INT
+            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+
+            break;
 
         defstop
             break;
@@ -2497,6 +2573,123 @@ void SetCurrentFeatureCWS
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadFEATURE_CWS); lpMemCWS = NULL;
 } // End SetCurrentFeatureCWS
+
+
+//***************************************************************************
+//  $ValidSetFPC_EM
+//
+//  Validate a value before assigning it to []FPC
+//
+//  We allow any number between DEF_MIN_QUADFPC and DEF_MAX_QUADFPC inclusive.
+//***************************************************************************
+
+UBOOL ValidSetFPC_EM
+    (LPTOKEN lptkNamArg,                // Ptr to name arg token
+     LPTOKEN lptkRhtArg)                // Ptr to right arg token
+
+{
+    UBOOL bRet;                             // TRUE iff the result is valid
+
+    // Ensure the argument is either a Boolean scalar or
+    //   one-element vector (demoted to a scalar).
+    bRet = ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
+                               lptkRhtArg,          // Ptr to right arg token
+                               DEF_MIN_QUADFPC,     // Minimum value
+              bResetVars.FPC ? DEF_QUADFPC_CWS
+                             : uQuadFPC_CWS,        // Default ...
+                               DEF_MAX_QUADFPC,     // Maximum ...
+                               bRangeLimit.FPC);    // TRUE iff range limiting
+    if (bRet)
+    {
+        // Initialize VFP constants as the default precision has changed
+        InitVfpConstants (lptkNamArg->tkData.tkSym->stData.stInteger);
+
+        // Initialize PerTabData vars
+        InitPTDVars (GetMemPTD ());
+    } // End IF
+
+    return bRet;
+} // End ValidSetFPC_EM
+
+
+//***************************************************************************
+//  $ValidNdxFPC
+//
+//  Validate a single value before assigning it to a position in []FPC.
+//
+//  We allow any number between DEF_MIN_QUADFPC and DEF_MAX_QUADFPC inclusive.
+//***************************************************************************
+
+UBOOL ValidNdxFPC
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
+     LPTOKEN      lptkFunc)                 // Ptr to function token
+
+{
+    UBOOL bRet = TRUE;                      // TRUE iff the result is valid
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_FLOAT:
+            // The right arg is float -- convert to integer
+            *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
+
+            break;
+
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an INT
+            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an INT
+            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    if (!bRet)
+        return bRet;
+
+    // Set the new immediate type (in case it was integer/APA)
+    if (lpimmTypeRht)
+        *lpimmTypeRht = IMMTYPE_BOOL;
+
+    // Test the value
+    bRet =
+      ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
+                           DEF_MIN_QUADFPC,                 // Low range value (inclusive)
+                           DEF_MAX_QUADFPC,                 // High ...
+                           bRangeLimit.FPC);                // TRUE iff we're range limiting
+    if (bRet)
+    {
+        // Initialize VFP constants as the default precision has changed
+        InitVfpConstants (*(LPAPLINT) lpaplLongestRht);
+
+        // Initialize PerTabData vars
+        InitPTDVars (GetMemPTD ());
+    } // End IF
+
+    return bRet;
+} // End ValidNdxFPC
 
 
 //***************************************************************************
@@ -2566,6 +2759,7 @@ UBOOL ValidNdxIC
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -2589,6 +2783,18 @@ UBOOL ValidNdxIC
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             return FALSE;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an integer
+            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the RAT to an integer
+            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+
+            break;
 
         defstop
             break;
@@ -2648,6 +2854,7 @@ UBOOL ValidNdxIO
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -2671,6 +2878,18 @@ UBOOL ValidNdxIO
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             return FALSE;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an INT
+            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an INT
+            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+
+            break;
 
         defstop
             break;
@@ -2746,6 +2965,7 @@ UBOOL ValidNdxPP
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -2769,6 +2989,18 @@ UBOOL ValidNdxPP
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             return FALSE;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an INT
+            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an INT
+            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+
+            break;
 
         defstop
             break;
@@ -2877,6 +3109,7 @@ UBOOL ValidSetPR_EM
 
         case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSCALAR: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
@@ -3009,6 +3242,7 @@ UBOOL ValidNdxPW
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -3032,6 +3266,18 @@ UBOOL ValidNdxPW
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             return FALSE;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an INT
+            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an INT
+            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+
+            break;
 
         defstop
             break;
@@ -3090,6 +3336,7 @@ UBOOL ValidNdxRL
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -3113,6 +3360,18 @@ UBOOL ValidNdxRL
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             return FALSE;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an INT
+            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an INT
+            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+
+            break;
 
         defstop
             break;
@@ -3197,6 +3456,7 @@ UBOOL ValidSetSA_EM
 
         case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
         case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSCALAR: // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
@@ -3408,6 +3668,7 @@ UBOOL ValidNdxAny
      APLSTYPE     aplTypeRht,               // Right arg storage type
      LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
      LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
      LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
@@ -3431,6 +3692,7 @@ UBOOL AssignDefaultSysVars
     if (!AssignGlobalCWS     (hGlbQuadELX_CWS     , SYSVAR_ELX     , lpSymQuad[SYSVAR_ELX     ])) return FALSE;   // Error Latent Expression
     if (!AssignGlobalCWS     (hGlbQuadFC_CWS      , SYSVAR_FC      , lpSymQuad[SYSVAR_FC      ])) return FALSE;   // Format Control
     if (!AssignGlobalCWS     (hGlbQuadFEATURE_CWS , SYSVAR_FEATURE , lpSymQuad[SYSVAR_FEATURE ])) return FALSE;   // Feature Control
+    if (!AssignIntScalarCWS  (uQuadFPC_CWS        , SYSVAR_FPC     , lpSymQuad[SYSVAR_FPC     ])) return FALSE;   // Floating Point Control
     if (!AssignGlobalCWS     (hGlbQuadIC_CWS      , SYSVAR_IC      , lpSymQuad[SYSVAR_IC      ])) return FALSE;   // Indeterminate Control
     if (!AssignBoolScalarCWS (bQuadIO_CWS         , SYSVAR_IO      , lpSymQuad[SYSVAR_IO      ])) return FALSE;   // Index Origin
     if (!AssignGlobalCWS     (hGlbQuadLX_CWS      , SYSVAR_LX      , lpSymQuad[SYSVAR_LX      ])) return FALSE;   // Latent Expression
@@ -3476,6 +3738,7 @@ UBOOL InitSystemVars
     aSysVarValidSet[SYSVAR_ELX     ] = ValidSetELX_EM      ;
     aSysVarValidSet[SYSVAR_FC      ] = ValidSetFC_EM       ;
     aSysVarValidSet[SYSVAR_FEATURE ] = ValidSetFEATURE_EM  ;
+    aSysVarValidSet[SYSVAR_FPC     ] = ValidSetFPC_EM      ;
     aSysVarValidSet[SYSVAR_IC      ] = ValidSetIC_EM       ;
     aSysVarValidSet[SYSVAR_IO      ] = ValidSetIO_EM       ;
     aSysVarValidSet[SYSVAR_LX      ] = ValidSetLX_EM       ;
@@ -3494,6 +3757,7 @@ UBOOL InitSystemVars
     aSysVarValidNdx[SYSVAR_ELX     ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_FC      ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_FEATURE ] = ValidNdxFEATURE     ;
+    aSysVarValidNdx[SYSVAR_FPC     ] = ValidNdxFPC         ;
     aSysVarValidNdx[SYSVAR_IC      ] = ValidNdxIC          ;
     aSysVarValidNdx[SYSVAR_IO      ] = ValidNdxIO          ;
     aSysVarValidNdx[SYSVAR_LX      ] = ValidNdxChar        ;

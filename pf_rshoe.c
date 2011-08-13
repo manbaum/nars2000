@@ -341,6 +341,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLINT        aplInteger;           // Immediate value as Boolean/Integer
     APLFLOAT      aplFloat;             // ...                Float
+    APLRAT        mpqTmp = {0};         // Temporary RAT
+    APLVFP        mpfTmp = {0};         // ...       VFP
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -643,6 +645,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                     break;
 
+                case ARRAY_RAT:
+                case ARRAY_VFP:
                 defstop
                     break;
             } // End SWITCH
@@ -654,11 +658,11 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     //***************************************************************
     // Copy the data to the result
     //***************************************************************
-    if (IsSimpleNH (aplTypeRes))
+    if (IsSimpleNH (aplTypeRes) || IsGlbNum (aplTypeRes))
     {
         //***************************************************************
         // At this point, the right arg is nested and non-empty
-        //   and the result is simple.
+        //   and the result is simple or global numeric.
         //***************************************************************
 
         // Loop through the elements of the right arg
@@ -730,6 +734,66 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                             // Save the Char in the first position
                             ((LPAPLCHAR)  lpMemRes)[uRht * aplNELMCom] =        ((LPAPLHETERO) lpMemRht)[uRht]->stData.stChar;
+
+                            break;
+
+                        case ARRAY_RAT:
+                            // Fill the row with zeros
+                            // Loop through the rest of common item's elements
+                            //   saving the item's prototype
+                            for (uSubRest = 0; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                                mpq_init (&((LPAPLRAT) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
+
+                            // Save the RAT in the first position
+                            // Split cases based upon the immediate storage type
+                            switch (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType)
+                            {
+                                case IMMTYPE_BOOL:
+                                case IMMTYPE_INT:
+                                    mpq_set_sa (&((LPAPLRAT)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger, 1);
+
+                                    break;
+
+                                case IMMTYPE_FLOAT:
+                                case IMMTYPE_CHAR:
+                                case IMMTYPE_RAT:
+                                case IMMTYPE_VFP:
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Fill the row with zeros
+                            // Loop through the rest of common item's elements
+                            //   saving the item's prototype
+                            for (uSubRest = 0; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                                mpf_init (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
+
+                            // Save the VFP in the first position
+                            // Split cases based upon the immediate storage type
+                            switch (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType)
+                            {
+                                case IMMTYPE_BOOL:
+                                case IMMTYPE_INT:
+                                    mpf_set_sa (&((LPAPLVFP)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger);
+
+                                    break;
+
+                                case IMMTYPE_FLOAT:
+                                    mpf_set_d  (&((LPAPLVFP)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stFloat);
+
+                                    break;
+
+                                case IMMTYPE_CHAR:
+                                case IMMTYPE_RAT:
+                                case IMMTYPE_VFP:
+                                defstop
+                                    break;
+                            } // End SWITCH
 
                             break;
 
@@ -943,6 +1007,130 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                                 ((LPAPLCHAR)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                                   L' ';
+                            } // End FOR/FOR
+
+                            break;
+
+                        case ARRAY_RAT:
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = uSub = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+                                // Split cases based upon the storage type of the item
+                                switch (aplTypeSub)
+                                {
+                                    case ARRAY_BOOL:
+                                    case ARRAY_INT:
+                                    case ARRAY_APA:
+                                        mpq_init_set_sa (&((LPAPLRAT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                         GetNextInteger (lpMemSub, aplTypeSub, uSub), 1);
+                                        break;
+
+                                    case ARRAY_RAT:
+                                        mpq_init_set    (&((LPAPLRAT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                         &((LPAPLRAT) lpMemSub)[uSub]);
+                                        break;
+
+                                    case ARRAY_FLOAT:       // Can't happen with result RAT
+                                    case ARRAY_CHAR:        // ...
+                                    case ARRAY_VFP:         // ...
+                                    defstop
+                                        break;
+                                } // End SWITCH
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                mpq_init     (&((LPAPLRAT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                mpq_init     (&((LPAPLRAT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
+                            } // End FOR/FOR
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = uSub = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+                                // Split cases based upon the storage type of the item
+                                switch (aplTypeSub)
+                                {
+                                    case ARRAY_BOOL:
+                                    case ARRAY_INT:
+                                    case ARRAY_APA:
+                                        mpf_init_set_sa (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                         GetNextInteger (lpMemSub, aplTypeSub, uSub));
+                                        break;
+
+                                    case ARRAY_FLOAT:
+                                        mpf_init_set_d  (&((LPAPLVFP)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                          ((LPAPLFLOAT) lpMemSub)[uSub]);
+                                        break;
+
+                                    case ARRAY_RAT:
+                                        mpf_init_set_q  (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                         &((LPAPLRAT) lpMemSub)[uSub]);
+                                        break;
+
+                                    case ARRAY_VFP:
+                                        mpf_init_set    (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                         &((LPAPLVFP) lpMemSub)[uSub]);
+                                        break;
+
+                                    case ARRAY_CHAR:        // Can't happen with result VFP
+                                    defstop
+                                        break;
+                                } // End SWITCH
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                mpf_init     (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                mpf_init     (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
                             } // End FOR/FOR
 
                             break;
@@ -1357,6 +1545,132 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                             break;
 
+                        case ARRAY_RAT:
+                            // Initialize the temp
+                            mpq_init (&mpqTmp);
+
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  lpSymTmp =
+                                    MakeGlbEntry_EM (ARRAY_RAT,                 // Entry type
+                                                    ((LPAPLRAT) lpMemSub)++,    // Ptr to the value
+                                                    TRUE,                       // TRUE iff we should initialize the target first
+                                                    lptkFunc);                  // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  lpSymTmp =
+                                    MakeGlbEntry_EM (ARRAY_RAT,                 // Entry type
+                                                   &mpqTmp,                     // Ptr to the value
+                                                    TRUE,                       // TRUE iff we should initialize the target first
+                                                    lptkFunc);                  // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  lpSymTmp =
+                                    MakeGlbEntry_EM (ARRAY_RAT,                 // Entry type
+                                                   &mpqTmp,                     // Ptr to the value
+                                                    TRUE,                       // TRUE iff we should initialize the target first
+                                                    lptkFunc);                  // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Initialize the temp
+                            mpf_init (&mpfTmp);
+
+                            // Loop through the right arg item's elements
+                            //   copying them to the result
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  lpSymTmp =
+                                    MakeGlbEntry_EM (ARRAY_VFP,                 // Entry type
+                                                    ((LPAPLVFP) lpMemSub)++,    // Ptr to the value
+                                                    TRUE,                       // TRUE iff we should initialize the target first
+                                                    lptkFunc);                  // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's cols)
+                            //   copying the prototype
+                            for (uSubRest = 0; uSubRest < aplNELMSubRest; uSubRest++)
+                            for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  lpSymTmp =
+                                    MakeGlbEntry_EM (ARRAY_VFP,                 // Entry type
+                                                   &mpfTmp,                     // Ptr to the value
+                                                    TRUE,                       // TRUE iff we should initialize the target first
+                                                    lptkFunc);                  // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            // Loop through the missing elements in the result (right arg item's rows)
+                            //   copying the prototype
+                            for (uSubRest = aplNELMSubRest; uSubRest < aplNELMComRest; uSubRest++)
+                            for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
+                                  lpSymTmp =
+                                    MakeGlbEntry_EM (ARRAY_VFP,                 // Entry type
+                                                   &mpfTmp,                     // Ptr to the value
+                                                    TRUE,                       // TRUE iff we should initialize the target first
+                                                    lptkFunc);                  // Ptr to function token
+                                if (!lpSymTmp)
+                                    goto ERROR_EXIT;
+                            } // End FOR/FOR
+
+                            break;
+
                         defstop
                             break;
                     } // End SWITCH
@@ -1506,6 +1820,10 @@ ERROR_EXIT:
 
     bRet = FALSE;
 TAIL_EXIT:
+    // We no longer need this storage
+    Myf_clear (&mpfTmp);
+    Myq_clear (&mpqTmp);
+
     if (hGlbDimCom)
     {
         if (lpMemDimCom)
@@ -1834,6 +2152,9 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 {
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    HGLOBAL      hGlbLft;           // Left arg global memory handle
+    APLSTYPE     aplTypeLft;        // Left arg storage type
+    IMM_TYPES    immTypeLft;        // Left arg immediate storage type
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -1841,8 +2162,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
     // Split cases based upon the left arg's token type
     switch (lptkLftArg->tkFlags.TknType)
     {
-        HGLOBAL hGlbLft;
-
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkLftArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
@@ -1856,22 +2175,41 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir_PTB (hGlbLft));
 
-                lpYYRes =
-                  PrimFnDydRightShoeGlbGlb_EM_YY
-                  (hGlbLft,                                 // Left arg global memory handle
-                   hGlbRht,                                 // Right arg global memory handle
-                   lptkFunc,                                // Ptr to function token
-                   FALSE,                                   // TRUE iff array assignment
-                   ARRAY_ERROR,                             // Set arg storage type
-                   NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-                   0,                                       // Set arg immediate value
-                   lpMemPTD);                               // Ptr to PerTabData global memory
+                // Get the global attrs
+                AttrsOfGlb (hGlbLft, &aplTypeLft, NULL, NULL, NULL);
+                immTypeLft = TranslateArrayTypeToImmType (aplTypeLft);
+
+                if (IsGlbNum (aplTypeLft))
+                {
+                    // Handle the immediate case
+                    lpYYRes =
+                      PrimFnDydRightShoeImmGlb_EM_YY
+                      (immTypeLft,                              // Immediate type
+                       0,                                       // Immediate value
+                       hGlbLft,                                 // Left arg global memory handle (may be NULL)
+                       hGlbRht,                                 // Right arg global memory handle
+                       lpMemPTD,                                // Ptr to PerTabData global memory
+                       lptkFunc);                               // Ptr to function token
+                } else
+                {
+                    lpYYRes =
+                      PrimFnDydRightShoeGlbGlb_EM_YY
+                      (hGlbLft,                                 // Left arg global memory handle
+                       hGlbRht,                                 // Right arg global memory handle
+                       lptkFunc,                                // Ptr to function token
+                       FALSE,                                   // TRUE iff array assignment
+                       ARRAY_ERROR,                             // Set arg storage type
+                       NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+                       0,                                       // Set arg immediate value
+                       lpMemPTD);                               // Ptr to PerTabData global memory
+                } // End IF/ELSE
             } else
                 // Handle the immediate case
                 lpYYRes =
                   PrimFnDydRightShoeImmGlb_EM_YY
                   (lptkLftArg->tkData.tkSym->stFlags.ImmType,   // Immediate type
                    lptkLftArg->tkData.tkSym->stData.stLongest,  // Immediate value
+                   NULL,                                        // Left arg global memory handle (may be NULL)
                    hGlbRht,                                     // Right arg global memory handle
                    lpMemPTD,                                    // Ptr to PerTabData global memory
                    lptkFunc);                                   // Ptr to function token
@@ -1882,6 +2220,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
               PrimFnDydRightShoeImmGlb_EM_YY
               (lptkLftArg->tkFlags.ImmType,                 // Immediate type
                lptkLftArg->tkData.tkLongest,                // Immediate value
+               NULL,                                        // Left arg global memory handle (may be NULL)
                hGlbRht,                                     // Right arg global memory handle
                lpMemPTD,                                    // Ptr to PerTabData global memory
                lptkFunc);                                   // Ptr to function token
@@ -1894,16 +2233,32 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (hGlbLft));
 
-            lpYYRes =
-              PrimFnDydRightShoeGlbGlb_EM_YY
-              (hGlbLft,                                 // Left arg global memory handle
-               hGlbRht,                                 // Right arg global memory handle
-               lptkFunc,                                // Ptr to function token
-               FALSE,                                   // TRUE iff array assignment
-               ARRAY_ERROR,                             // Set arg storage type
-               NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-               0,                                       // Set arg immediate value
-               lpMemPTD);                               // Ptr to PerTabData global memory
+            // Get the global attrs
+            AttrsOfGlb (hGlbLft, &aplTypeLft, NULL, NULL, NULL);
+            immTypeLft = TranslateArrayTypeToImmType (aplTypeLft);
+
+            if (IsGlbNum (aplTypeLft))
+            {
+                // Handle the immediate case
+                lpYYRes =
+                  PrimFnDydRightShoeImmGlb_EM_YY
+                  (immTypeLft,                              // Immediate type
+                   0,                                       // Immediate value
+                   hGlbLft,                                 // Left arg global memory handle (may be NULL)
+                   hGlbRht,                                 // Right arg global memory handle
+                   lpMemPTD,                                // Ptr to PerTabData global memory
+                   lptkFunc);                               // Ptr to function token
+            } else
+                lpYYRes =
+                  PrimFnDydRightShoeGlbGlb_EM_YY
+                  (hGlbLft,                                 // Left arg global memory handle
+                   hGlbRht,                                 // Right arg global memory handle
+                   lptkFunc,                                // Ptr to function token
+                   FALSE,                                   // TRUE iff array assignment
+                   ARRAY_ERROR,                             // Set arg storage type
+                   NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+                   0,                                       // Set arg immediate value
+                   lpMemPTD);                               // Ptr to PerTabData global memory
             break;
 
         defstop
@@ -1935,6 +2290,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
     (IMM_TYPES    immTypeLft,           // Left arg immediate type (see IMM_TYPES)
      APLLONGEST   aplLongestLft,        // Left arg immediate value
+     HGLOBAL      hGlbLft,              // Left arg global memory handle (may be NULL)
      HGLOBAL      hGlbRht,              // Right arg global memory handle
      LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      LPTOKEN      lptkFunc)             // Ptr to function token
@@ -1947,8 +2303,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
     APLLONGEST   aplLongestRes;     // Result immediate value
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     UBOOL        bRet;              // TRUE iff FloatToAplint_SCT is valid
-    APLBOOL      bQuadIO;           // []IO
     HGLOBAL      hGlbRes = NULL;    // Result global memory handle
+    LPVOID       lpMemLft;          // Ptr to left arg global memory
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg global
@@ -1964,65 +2320,99 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
         case IMMTYPE_FLOAT:
             // Attempt to convert the float to an integer using System CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-            if (!bRet)
-                goto DOMAIN_EXIT;
 
-            // Fall through to common code
+            break;
 
         case IMMTYPE_BOOL:
         case IMMTYPE_INT:
-            // Get the current value of []IO
-            bQuadIO = GetQuadIO ();
-
-            // Convert to origin-0
-            aplLongestLft -= bQuadIO;
-
-            // Check for negative indices [-aplNELMRht, -1]
-            if (SIGN_APLLONGEST (aplLongestLft)
-             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-                aplLongestLft += aplNELMRht;
-
-            // Ensure that the index is within range
-            // N.B.:  Because APLLONGEST is unsigned, we don't have to worry about negatives
-            if (aplLongestLft >= aplNELMRht)
-                goto DOMAIN_EXIT;
-
-            // Extract an element from the right arg
-            GetNextValueGlb (hGlbRht,               // Right arg global memory handle
-                             aplLongestLft,         // Index into right arg
-                            &hGlbRes,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                            &aplLongestRes,         // Ptr to result immediate value (may be NULL)
-                            &immTypeRes);           // Ptr to result immediate type (may be NULL)
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
-
-            // If the result is an HGLOBAL
-            if (hGlbRes)
-            {
-                // Fill in the result token
-                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbRes);
-                lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-            } else
-            {
-                // Fill in the result token
-                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkLongest  = aplLongestRes;
-                lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-            } // End IF/ELSE
+            bRet = TRUE;
 
             break;
 
         case IMMTYPE_CHAR:
             goto DOMAIN_EXIT;
 
+        case IMMTYPE_RAT:
+            // Lock the memory to get a ptr to it
+            lpMemLft = MyGlobalLock (hGlbLft);
+
+            Assert (IsScalar (((LPVARARRAY_HEADER) lpMemLft)->Rank));
+
+            // Skip over the header and dimensions to the data
+            lpMemLft = VarArrayBaseToData (lpMemLft, 0);
+
+            // Attempt to convert the RAT to an integer using System CT
+            aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpMemLft, &bRet);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+
+            break;
+
+        case IMMTYPE_VFP:
+            // Lock the memory to get a ptr to it
+            lpMemLft = MyGlobalLock (hGlbLft);
+
+            Assert (IsScalar (((LPVARARRAY_HEADER) lpMemLft)->Rank));
+
+            // Skip over the header and dimensions to the data
+            lpMemLft = VarArrayBaseToData (lpMemLft, 0);
+
+            // Attempt to convert the VFP to an integer using System CT
+            aplLongestLft = mpf_get_ctsa ((LPAPLVFP) lpMemLft, &bRet);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+
+            break;
+
         defstop
             break;
     } // End SWITCH
+
+    if (!bRet)
+        goto DOMAIN_EXIT;
+
+    // Convert to origin-0
+    aplLongestLft -= GetQuadIO ();
+
+    // Check for negative indices [-aplNELMRht, -1]
+    if (SIGN_APLLONGEST (aplLongestLft)
+     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+        aplLongestLft += aplNELMRht;
+
+    // Ensure that the index is within range
+    // N.B.:  Because APLLONGEST is unsigned, we don't have to worry about negatives
+    if (aplLongestLft >= aplNELMRht)
+        goto DOMAIN_EXIT;
+
+    // Extract an element from the right arg
+    GetNextValueGlb (hGlbRht,               // Right arg global memory handle
+                     aplLongestLft,         // Index into right arg
+                    &hGlbRes,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                    &aplLongestRes,         // Ptr to result immediate value (may be NULL)
+                    &immTypeRes);           // Ptr to result immediate type (may be NULL)
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // If the result is an HGLOBAL
+    if (hGlbRes)
+    {
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbNumDir_PTB (hGlbRes, aplTypeRht, lptkFunc);
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    } else
+    {
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkLongest  = aplLongestRes;
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    } // End IF/ELSE
 
     return lpYYRes;
 
@@ -2170,7 +2560,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 goto LENGTH_EXIT;
 
             // Check for LEFT DOMAIN ERROR
-            if (!IsSimpleNum (aplTypeSubLft))
+            if (!IsSimpleGlbNum (aplTypeSubLft))
                 goto DOMAIN_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -2336,6 +2726,72 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 case ARRAY_HETERO:
                 case ARRAY_NESTED:
                     bRet = FALSE;
+
+                    break;
+
+                case ARRAY_RAT:
+                    // Loop through the right arg dimensions
+                    for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        // Attempt to convert the RAT to an integer using System CT
+                        aplTmpSubLft = mpq_get_ctsa (&((LPAPLRAT) lpMemSubLft)[iDim], &bRet) - bQuadIO;
+
+                        // Check for negative indices [-lpMemDimRht[iDim], -1]
+                        if (SIGN_APLLONGEST (aplTmpSubLft)
+                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                            aplTmpSubLft += lpMemDimRht[iDim];
+
+                        // Ensure the indices are within range
+                        if ((!bRet) || lpMemDimRht[iDim] <= aplTmpSubLft)
+                        {
+                            bRet = FALSE;
+
+                            break;
+                        } // End IF
+
+                        // Add into accumulator
+                        aplLongestSubLft += aplTmpSubLft * aplWValSubLft;
+
+                        // Shift the weighting value over
+                        aplWValSubLft *= lpMemDimRht[iDim];
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Loop through the right arg dimensions
+                    for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        // Attempt to convert the VFP to an integer using System CT
+                        aplTmpSubLft = mpf_get_ctsa (&((LPAPLVFP) lpMemSubLft)[iDim], &bRet) - bQuadIO;
+
+                        // Check for negative indices [-lpMemDimRht[iDim], -1]
+                        if (SIGN_APLLONGEST (aplTmpSubLft)
+                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                            aplTmpSubLft += lpMemDimRht[iDim];
+
+                        // Ensure the indices are within range
+                        if ((!bRet) || lpMemDimRht[iDim] <= aplTmpSubLft)
+                        {
+                            bRet = FALSE;
+
+                            break;
+                        } // End IF
+
+                        // Add into accumulator
+                        aplLongestSubLft += aplTmpSubLft * aplWValSubLft;
+
+                        // Shift the weighting value over
+                        aplWValSubLft *= lpMemDimRht[iDim];
+                    } // End FOR
 
                     break;
 
@@ -2552,7 +3008,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbRht);
+        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbNumDir_PTB (hGlbRht, aplTypeRht, lptkFunc);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE
 

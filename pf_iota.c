@@ -128,12 +128,16 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLSTYPE     aplTypeRht,        // Right arg storage type
+                 aplTypeRes;        // Result    ...
     APLNELM      aplNELMRht;        // Right arg NELM
     APLRANK      aplRankRht;        // Right arg rank
     HGLOBAL      hGlbRht,           // Right arg global memory handle
-                 hGlbRes;           // Result    ...
+                 hGlbRes,           // Result    ...
+                 lpSymGlbRht;       // Right arg as rational
     APLUINT      ByteRes;           // # bytes in the result
+    APLINT       iRes,              // Loop counter
+                 iLim;              // Loop limit
     LPVOID       lpMemRes;          // Ptr to result global memory
     UBOOL        bRet;              // TRUE iff result is valid
     APLLONGEST   aplLongestRht;     // Right arg iommediate value
@@ -157,7 +161,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     if (IsMultiRank (aplRankRht))
         goto RANK_EXIT;
 
-    if (!IsSimpleNum (aplTypeRht))
+    if (!IsNumeric (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // Handle length != 1 args via magic function/operator
@@ -175,29 +179,95 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                           NULL,             // ...    float (may be NULL)
                           NULL,             // ...    char (may be NULL)
                          &aplLongestRht,    // ...    longest (may be NULL)
-                          NULL,             // ...    LPSYMENTRY or HGLOBAL (may be NULL)
+                         &lpSymGlbRht,      // ...    LPSYMENTRY or HGLOBAL (may be NULL)
                           NULL,             // ...    immediate type (see IMM_TYPES) (may be NULL)
                           NULL,             // ...    array type -- ARRAY_TYPES (may be NULL)
                           FALSE);           // TRUE iff we should expand LPSYMENTRY into immediate value
-    // The singleton value is in aplLongestRht
+    // The singleton value is in aplLongestRht or lpSymGlbRht
 
-    // If the storage type is float, attempt to convert it
-    if (IsSimpleFlt (aplTypeRht))
+    // Split cases based upon the storage type
+    switch (aplTypeRht)
     {
-        // Attempt to convert the float to an integer using System CT
-        aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            // Set the result storage type
+            aplTypeRes = ARRAY_APA;
 
-        if (!bRet)
-            goto DOMAIN_EXIT;
-    } // End IF
+            break;
 
-    // If the value is negative and negative indices are not allowed, ...
-    if (SIGN_APLLONGEST (aplLongestRht)
-     && !lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-        goto DOMAIN_EXIT;
+        case ARRAY_RAT:
+            // Attempt to convert the rational to an APLINT
+            aplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            if (!bRet)
+                goto DOMAIN_EXIT;
+
+            // Set the result storage type
+            aplTypeRes = ARRAY_RAT;
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an APLINT
+            aplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            if (!bRet)
+                goto DOMAIN_EXIT;
+
+            // Set the result storage type
+            aplTypeRes = ARRAY_VFP;
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Attempt to convert the float to an integer using System CT
+            aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+            if (!bRet)
+                goto DOMAIN_EXIT;
+
+            // Set the result storage type
+            aplTypeRes = ARRAY_APA;
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+        defstop
+            break;
+    } // End SWITCH
+
+    // If negative indices are not allowed, ...
+    if (!lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+            // If the value is negative, ...
+            if (SIGN_APLLONGEST (aplLongestRht))
+                goto DOMAIN_EXIT;
+            break;
+
+        case ARRAY_RAT:
+            // If the value is negative, ...
+            if (mpz_sgn (mpq_numref ((LPAPLRAT) lpSymGlbRht)) < 0)
+                goto DOMAIN_EXIT;
+            break;
+
+        case ARRAY_VFP:
+            // If the value is negative, ...
+            if (mpf_sgn             ((LPAPLVFP) lpSymGlbRht)  < 0)
+                goto DOMAIN_EXIT;
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_APA, abs64 (aplLongestRht), 1);
+    ByteRes = CalcArraySize (aplTypeRes, abs64 (aplLongestRht), 1);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -214,7 +284,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_APA;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->PV0        = (bQuadIO EQ 0) && !SIGN_APLLONGEST(aplLongestRht);
@@ -230,17 +300,58 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     // Skip over the header and dimensions to the data (APLAPA struct)
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-    // Save the APA values
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_APA:
+            // Save the APA values
 #define lpAPA       ((LPAPLAPA) lpMemRes)
-    // Handle negative indices
-    if (SIGN_APLINT (aplLongestRht)
-     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-        lpAPA->Off = bQuadIO + aplLongestRht;
-    else
-        lpAPA->Off = bQuadIO;
+            // Handle negative indices
+            if (SIGN_APLINT (aplLongestRht))
+                lpAPA->Off = bQuadIO + aplLongestRht;
+            else
+                lpAPA->Off = bQuadIO;
 
-    lpAPA->Mul = 1;
+            lpAPA->Mul = 1;
 #undef  lpAPA
+            break;
+
+        case ARRAY_RAT:
+            // Save the loop limit
+            iLim = (APLINT) (bQuadIO + abs64 (aplLongestRht));
+
+            if (SIGN_APLINT (aplLongestRht))
+                // Loop through the result
+                for (iRes = bQuadIO; iRes < iLim; iRes++)
+                    // Initialize and save the value
+                    mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplLongestRht + iRes, 1);
+            else
+                // Loop through the result
+                for (iRes = bQuadIO; iRes < iLim; iRes++)
+                    // Initialize and save the value
+                    mpq_init_set_sa (((LPAPLRAT) lpMemRes)++,                 iRes, 1);
+            break;
+
+        case ARRAY_VFP:
+            // Save the loop limit
+            iLim = (APLINT) (bQuadIO + abs64 (aplLongestRht));
+
+            if (SIGN_APLINT (aplLongestRht))
+                // Loop through the result
+                for (iRes = bQuadIO; iRes < iLim; iRes++)
+                    // Initialize and save the value
+                    mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplLongestRht + iRes);
+            else
+                // Loop through the result
+                for (iRes = bQuadIO; iRes < iLim; iRes++)
+                    // Initialize and save the value
+                    mpf_init_set_sa (((LPAPLVFP) lpMemRes)++,                 iRes);
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -584,8 +695,8 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     //    the left and right args are not different types (numeric vs. char), ...
     if (!(IsEmpty (aplNELMLft)
        || IsEmpty (aplNELMRht)
-       || (IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
-       || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft))))
+       || (IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht))
+       || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft))))
     {
         // Split cases based upon the left & right arg storage types
         if (IsSimpleBool (aplTypeLft) && IsSimpleBool (aplTypeRht))
@@ -601,9 +712,9 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
                                    lpbCtrlBreak))   // Ptr to Ctrl-Break flag
                 goto ERROR_EXIT;
         } else
-        if (IsSimpleBool (aplTypeLft) && IsSimpleNum (aplTypeRht))
+        if (IsSimpleBool (aplTypeLft) && IsNumeric (aplTypeRht))
         {
-            // Handle APLBOOL vs. APLINT/APLAPA/APLFLOAT
+            // Handle APLBOOL vs. APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
             if (!PrimFnDydIotaBvN (lpMemRes,        // Ptr to result global memory data
                                    aplNELMLft,      // Left arg NELM
                                    lpMemLft,        // Ptr to left arg global memory data
@@ -615,9 +726,9 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
                                    lpbCtrlBreak))   // Ptr to Ctrl-Break flag
                 goto ERROR_EXIT;
         } else
-        if (IsPermVector (lpHeaderLft) && IsSimpleNum (aplTypeRht))
+        if (IsPermVector (lpHeaderLft) && IsNumeric (aplTypeRht))
         {
-            // Handle PV vs. APLBOOL/APLINT/APLAPA/APLFLOAT
+            // Handle PV vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
             if (!PrimFnDydIotaPvN_EM (lpMemRes,     // Ptr to result global memory data
                                       lpHeaderLft,  // Ptr to left arg header
                                       aplTypeLft,   // Left arg storage type
@@ -632,9 +743,9 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
                                       lptkFunc))    // Ptr to function token
                 goto ERROR_EXIT;
         } else
-        if (IsSimpleAPA (aplTypeLft) && IsSimpleInt (aplTypeRht))
+        if (IsSimpleAPA (aplTypeLft) && IsNumeric (aplTypeRht))
         {
-            // Handle APLAPA vs. APLBOOL/APLINT/APLAPA/APLFLOAT
+            // Handle APLAPA vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
             if (!PrimFnDydIotaAvN_EM (lpMemRes,     // Ptr to result global memory data
                                       aplNELMLft,   // Left arg NELM
                                       lpMemLft,     // Ptr to left arg global memory data
@@ -647,9 +758,9 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
                                       lptkFunc))    // Ptr to function token
                 goto ERROR_EXIT;
         } else
-        if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
+        if (IsSimpleInt (aplTypeLft) && IsNumeric (aplTypeRht))
         {
-            // Handle APLINT vs. APLBOOL/APLINT/APLAPA
+            // Handle APLINT vs. APLBOOL/APLINT/APLAPA/APLRAT/APLVFP
             if (!PrimFnDydIotaIvI_EM (lpMemRes,     // Ptr to result global memory data
                                       lptkLftArg,   // Ptr to left arg token
                                       aplTypeLft,   // Left arg storage type
@@ -667,15 +778,53 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
                                       lptkFunc))    // Ptr to function token
                 goto ERROR_EXIT;
         } else
-        if (IsSimpleNum (aplTypeLft) && IsSimpleNum (aplTypeRht))
+        if (IsSimpleNum (aplTypeLft) && IsNumeric (aplTypeRht))
         {
-            // Handle APLFLOAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT
+            // Handle APLFLOAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
             //   and  APLINT   vs. APLFLOAT
             if (!PrimFnDydIotaNvN_EM (lpMemRes,     // Ptr to result global memory data
                                       lptkLftArg,   // Ptr to left arg token
                                       aplTypeLft,   // Left arg storage type
                                       aplNELMLft,   // Left arg NELM
                                       lpMemLft,     // Ptr to left arg global memory data
+                                      lptkRhtArg,   // Ptr to right arg token
+                                      aplTypeRht,   // Right arg storage type
+                                      aplNELMRht,   // Right arg NELM
+                                      aplRankRht,   // Right arg rank
+                                      lpMemRht,     // Ptr to right arg global memory data
+                                      bQuadIO,      // []IO
+                                      NotFound,     // Not found value
+                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
+                                      lptkFunc))    // Ptr to function token
+                goto ERROR_EXIT;
+        } else
+        if (IsRat (aplTypeLft) && IsNumeric (aplTypeRht))
+        {
+            // Handle APLRAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
+            if (!PrimFnDydIotaRvN_EM (lpMemRes,     // Ptr to result global memory data
+                                      lptkLftArg,   // Ptr to left arg token
+                                      aplTypeLft,   // Left arg storage type
+                                      aplNELMLft,   // Left arg NELM
+                           (LPAPLRAT) lpMemLft,     // Ptr to left arg global memory data
+                                      lptkRhtArg,   // Ptr to right arg token
+                                      aplTypeRht,   // Right arg storage type
+                                      aplNELMRht,   // Right arg NELM
+                                      aplRankRht,   // Right arg rank
+                                      lpMemRht,     // Ptr to right arg global memory data
+                                      bQuadIO,      // []IO
+                                      NotFound,     // Not found value
+                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
+                                      lptkFunc))    // Ptr to function token
+                goto ERROR_EXIT;
+        } else
+        if (IsVfp (aplTypeLft) && IsNumeric (aplTypeRht))
+        {
+            // Handle APLVFP vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
+            if (!PrimFnDydIotaVvN_EM (lpMemRes,     // Ptr to result global memory data
+                                      lptkLftArg,   // Ptr to left arg token
+                                      aplTypeLft,   // Left arg storage type
+                                      aplNELMLft,   // Left arg NELM
+                           (LPAPLVFP) lpMemLft,     // Ptr to left arg global memory data
                                       lptkRhtArg,   // Ptr to right arg token
                                       aplTypeRht,   // Right arg storage type
                                       aplNELMRht,   // Right arg NELM
@@ -880,7 +1029,7 @@ UBOOL PrimFnDydIotaBvB
     // Initialize the bit mask
     uBitMaskRht = BIT0;
 
-    // Loop throught the right arg,
+    // Loop through the right arg,
     //   saving in the result Index[0] for each 0 in the right arg, and
     //                        Index[1] for each 1 in the right arg
     for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -912,7 +1061,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $PrimFnDydIotaBvN
 //
-//  Dyadic iota of APLBOOL vs. APLINT/APLAPA/APLFLOAT
+//  Dyadic iota of APLBOOL vs. APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
 //***************************************************************************
 
 UBOOL PrimFnDydIotaBvN
@@ -939,6 +1088,7 @@ UBOOL PrimFnDydIotaBvN
              apaMul;                // ... multiplier
     APLFLOAT uFlt,                  // Temporary float
              fQuadCT;               // []CT
+    UBOOL    bRet;                  // TRUE iff the result is valid
 
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
@@ -1002,7 +1152,7 @@ UBOOL PrimFnDydIotaBvN
 #undef  lpaplAPA
     } // End IF
 
-    // Loop throught the right arg,
+    // Loop through the right arg,
     //   saving in the result Index[0] for each 0 in the right arg, and
     //                        Index[1] for each 1 in the right arg, and
     //                        NotFound for each non-Boolean ...
@@ -1057,6 +1207,28 @@ UBOOL PrimFnDydIotaBvN
                     *lpMemRes++ = NotFound;
                 break;
 
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an APLINT
+                uTmp = mpq_get_sa (&((LPAPLRAT) lpMemRht)[uRht], &bRet);
+                if (bRet && IsBooleanValue (uTmp))
+                    // Save the appropriate value in the result
+                    *lpMemRes++ = Index[uTmp];
+                else
+                    // Save the appropriate value in the result
+                    *lpMemRes++ = NotFound;
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an APLINT
+                uTmp = mpf_get_sa (&((LPAPLVFP) lpMemRht)[uRht], &bRet);
+                if (bRet && IsBooleanValue (uTmp))
+                    // Save the appropriate value in the result
+                    *lpMemRes++ = Index[uTmp];
+                else
+                    // Save the appropriate value in the result
+                    *lpMemRes++ = NotFound;
+                break;
+
             defstop
                 break;
         } // End SWITCH
@@ -1071,7 +1243,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $PrimFnDydIotaAvN_EM
 //
-//  Dyadic iota of APLAPA vs. APLBOOL/APLINT/APLAPA/APLFLOAT
+//  Dyadic iota of APLAPA vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
 //***************************************************************************
 
 UBOOL PrimFnDydIotaAvN_EM
@@ -1121,23 +1293,45 @@ UBOOL PrimFnDydIotaAvN_EM
         if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
-        // If the right arg is float, ...
-        if (IsSimpleFlt (aplTypeRht))
-            // Attempt to convert the float to an integer using []CT
-            aplIntegerRht =
-              FloatToAplint_CT (*((LPAPLFLOAT) lpMemRht)++,
-                                fQuadCT,
-                               &bRet);
-        else
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
         {
-            // Get the next integer from the right arg
-            aplIntegerRht =
-              GetNextInteger (lpMemRht,     // Ptr to global memory
-                              aplTypeRht,   // Storage type
-                              iRht);        // Index
-            // Mark as an integer
-            bRet = TRUE;
-        } // End IF/ELSE
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                // Get the next integer from the right arg
+                aplIntegerRht =
+                  GetNextInteger (lpMemRht,     // Ptr to global memory
+                                  aplTypeRht,   // Storage type
+                                  iRht);        // Index
+                // Mark as an integer
+                bRet = TRUE;
+
+                break;
+
+            case ARRAY_FLOAT:
+                // Attempt to convert the float to an integer using []CT
+                aplIntegerRht =
+                  FloatToAplint_CT (*((LPAPLFLOAT) lpMemRht)++,
+                                    fQuadCT,
+                                   &bRet);
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an APLINT
+                aplIntegerRht = mpq_get_sa (((LPAPLRAT) lpMemRht)++, &bRet);
+
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an APLINT
+                aplIntegerRht = mpf_get_sa (((LPAPLVFP) lpMemRht)++, &bRet);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // Determine if the right arg value is in the left arg
         if (bRet
@@ -1162,7 +1356,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $PrimFnDydIotaIvI_EM
 //
-//  Dyadic iota of APLINT/APLAPA vs. APLBOOL/APLINT/APLAPA
+//  Dyadic iota of APLINT/APLAPA vs. APLBOOL/APLINT/APLAPA/APLRAT/APLVFP
 //***************************************************************************
 
 UBOOL PrimFnDydIotaIvI_EM
@@ -1281,11 +1475,37 @@ UBOOL PrimFnDydIotaIvI_EM
         // Get the result index
         iRes = lpMemGupRht[iRht];
 
-        // Get the next integer from the right arg
-        aplIntegerRht =
-          GetNextInteger (lpMemRht,                 // Ptr to global memory
-                          aplTypeRht,               // Storage type
-                          iRes);                    // Index
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                // Get the next integer from the right arg
+                aplIntegerRht =
+                  GetNextInteger (lpMemRht,                 // Ptr to global memory
+                                  aplTypeRht,               // Storage type
+                                  iRes);                    // Index
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an APLINT
+                aplIntegerRht = mpq_get_sa (&((LPAPLRAT) lpMemRht)[iRes], &bRet);
+                if (!bRet)
+                    goto NOMATCH;
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an APLINT
+                aplIntegerRht = mpf_get_sa (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
+                if (!bRet)
+                    goto NOMATCH;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
         // Check for duplicate value from the right arg
         if (iRht
          && aplIntegerRht EQ aplIntegerLst)
@@ -1296,11 +1516,36 @@ UBOOL PrimFnDydIotaIvI_EM
             continue;
         } // End IF
 #else
-        // Get the next integer from the right arg
-        aplIntegerRht =
-          GetNextInteger (lpMemRht,                 // Ptr to global memory
-                          aplTypeRht,               // Storage type
-                          iRht);                    // Index
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                // Get the next integer from the right arg
+                aplIntegerRht =
+                  GetNextInteger (lpMemRht,                 // Ptr to global memory
+                                  aplTypeRht,               // Storage type
+                                  iRht);                    // Index
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an APLINT
+                aplIntegerRht = mpq_get_sa (&((LPAPLRAT) lpMemRht)[iRht], &bRet);
+                if (!bRet)
+                    goto NOMATCH;
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an APLINT
+                aplIntegerRht = mpf_get_sa (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
+                if (!bRet)
+                    goto NOMATCH;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 #endif
         // Initialize the left arg minimum and maximum indices
         iMin = 0;
@@ -1351,6 +1596,7 @@ UBOOL PrimFnDydIotaIvI_EM
 
         // If we didn't find a match, ...
         if (iMin > iMax)
+NOMATCH:
 #ifdef GRADE2ND
             // Save in the result
             lpMemRes[iRes] =
@@ -1395,7 +1641,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $PrimFnDydIotaNvN_EM
 //
-//  Dyadic iota of APLFLOAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT and
+//  Dyadic iota of APLFLOAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP and
 //                 APLINT   vs. APLFLOAT
 //***************************************************************************
 
@@ -1437,7 +1683,7 @@ UBOOL PrimFnDydIotaNvN_EM
     UBOOL        bRet = FALSE,          // TRUE iff the result is valid
                  bComp;                 // TRUE iff the left and right floats are equal within []CT
 
-    // Get the current []CT
+    // Get the current value of []CT
     fQuadCT = GetQuadCT ();
 
     // Setup the grade-up function token
@@ -1534,11 +1780,35 @@ UBOOL PrimFnDydIotaNvN_EM
             continue;
         } // End IF
 #else
-        // Get the next float from the right arg
-        aplFloatRht =
-          GetNextFloat (lpMemRht,                   // Ptr to global memory
-                        aplTypeRht,                 // Storage type
-                        iRht);                      // Index
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+            case ARRAY_FLOAT:
+                // Get the next float from the right arg
+                aplFloatRht =
+                  GetNextFloat (lpMemRht,                   // Ptr to global memory
+                                aplTypeRht,                 // Storage type
+                                iRht);                      // Index
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an APLFLOAT
+                aplFloatRht = mpq_get_d (&((LPAPLRAT) lpMemRht)[iRht]);
+
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an APLFLOAT
+                aplFloatRht = mpf_get_d (&((LPAPLVFP) lpMemRht)[iRht]);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 #endif
         // Initialize the left arg minimum and maximum indices
         iMin = 0;
@@ -1635,7 +1905,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $PrimFnDydIotaPvN_EM
 //
-//  Dyadic iota of PV vs. APLBOOL/APLINT/APLAPA/APLFLOAT
+//  Dyadic iota of PV vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1732,6 +2002,26 @@ UBOOL PrimFnDydIotaPvN_EM
 
                 // Attempt to convert the float to an integer using []CT
                 aplIntegerRht = FloatToAplint_CT (aplFloatRht, fQuadCT, &bRet);
+
+                // If it succeeded, ...
+                if (bRet)
+                    // Convert to same origin as the inverse indices
+                    aplIntegerRht = _isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an APLINT
+                aplIntegerRht = mpq_get_sa (((LPAPLRAT) lpMemRht)++, &bRet);
+
+                // If it succeeded, ...
+                if (bRet)
+                    // Convert to same origin as the inverse indices
+                    aplIntegerRht = _isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an APLINT
+                aplIntegerRht = mpf_get_sa (((LPAPLVFP) lpMemRht)++, &bRet);
 
                 // If it succeeded, ...
                 if (bRet)
@@ -1866,6 +2156,583 @@ NORMAL_EXIT:
     return bRet;
 } // End PrimFnDydIotaCvC_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydIotaRvN_EM
+//
+//  Dyadic iota of APLRAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
+//***************************************************************************
+
+UBOOL PrimFnDydIotaRvN_EM
+    (LPAPLUINT lpMemRes,                // Ptr to result global memory data
+     LPTOKEN   lptkLftArg,              // Ptr to left arg token
+     APLSTYPE  aplTypeLft,              // Left arg storage type
+     APLNELM   aplNELMLft,              // Left arg NELM
+     LPAPLRAT  lpMemLft,                // Ptr to left arg global memory data
+     LPTOKEN   lptkRhtArg,              // Ptr to right arg token
+     APLSTYPE  aplTypeRht,              // Right arg storage type
+     APLNELM   aplNELMRht,              // Right arg NELM
+     APLRANK   aplRankRht,              // Right arg rank
+     LPVOID    lpMemRht,                // Ptr to right arg global memory data
+     UBOOL     bQuadIO,                 // []IO
+     APLUINT   NotFound,                // Not found value
+     LPUBOOL   lpbCtrlBreak,            // Ptr to Ctrl-Break flag
+     LPTOKEN   lptkFunc)                // Ptr to function token
+
+{
+    TOKEN        tkFunc = {0};          // Grade-up function token
+    HGLOBAL      hGlbGupLft = NULL;     // Left arg grade-up global memory handle
+    LPAPLINT     lpMemGupLft = NULL;    // Ptr to left arg grade-up global memory
+#ifdef GRADE2ND
+    HGLOBAL      hGlbGupRht = NULL;     // Right arg grade-up global memory handle
+    LPAPLINT     lpMemGupRht = NULL;    // Ptr to right grade-up global memory
+    APLUINT      uLastVal;              // Last value saved in the result
+    APLINT       aplIntegerLst,         // Last right arg integer
+                 aplIntegerZero = 0;    // A zero in case the right arg is a scalar
+#endif
+    APLINT       iLft,                  // Loop counter
+                 iRht,                  // Loop counter
+                 iMin,                  // Minimum index
+                 iMax;                  // Maximum ...
+    LPPL_YYSTYPE lpYYRes;               // Ptr to grade-up result
+    UBOOL        bRet = FALSE;          // TRUE iff the result is valid
+    APLLONGEST   aplLongestRht;         // Right arg immediate value
+    APLRAT       aplRatLft = {0},       // Left arg item as rational
+                 aplRatRht = {0};       // Right ...
+    APLFLOAT     fQuadCT;               // []CT
+
+    // Get the current value of []CT
+    fQuadCT = GetQuadCT ();
+
+    // Initialize the temps
+    mpq_init (&aplRatLft);
+    mpq_init (&aplRatRht);
+
+    // Setup the grade-up function token
+    tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFunc.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+    tkFunc.tkData.tkChar     = UTF16_DELTASTILE;
+    tkFunc.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Set the current index origin to zero for convenience
+    SetQuadIO (0);
+
+    // Grade-up the left arg
+    lpYYRes =
+      PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
+                                   lptkLftArg,  // Ptr to right arg token
+                                   NULL,        // Ptr to axis token (may be NULL)
+                                   TRUE);       // TRUE iff we're to treat the right arg as ravelled
+    // Restore the index origin
+    SetQuadIO (bQuadIO);
+
+    if (lpYYRes EQ NULL)
+        goto ERROR_EXIT;
+    // Get the grade-up global memory handle
+    hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
+
+    // Free the YYRes
+    YYFree (lpYYRes); lpYYRes = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemGupLft = MyGlobalLock (hGlbGupLft);
+
+    // Skip over the header and dimensions to the data
+    lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+#ifdef GRADE2ND
+    // If the right arg is not a scalar, ...
+    if (!IsScalar (aplRankRht))
+    {
+        // Set the current index origin to zero for convenience
+        SetQuadIO (0);
+
+        // Grade-up the right arg
+        lpYYRes =
+          PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
+                                       lptkRhtArg,  // Ptr to right arg token
+                                       NULL,        // Ptr to axis token (may be NULL)
+                                       TRUE);       // TRUE iff we're to treat the right arg as ravelled
+        // Restore the index origin
+        SetQuadIO (bQuadIO);
+
+        if (lpYYRes EQ NULL)
+            goto ERROR_EXIT;
+        // Get the grade-up global memory handle
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
+
+        // Free the YYRes
+        YYFree (lpYYRes); lpYYRes = NULL;
+
+        // Lock the memory to get a ptr to it
+        lpMemGupRht = MyGlobalLock (hGlbGupRht);
+
+        // Skip over the header and dimensions to the data
+        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+    } else
+        // Handle the scalar case
+        lpMemGupRht = &aplIntegerZero;
+#endif
+    // Loop through the right arg values and look'em up
+    //   in the left arg
+    for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
+    {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+#ifdef GRADE2ND
+        // Save the right arg value as the last one
+        aplIntegerLst = aplIntegerRht;
+
+        // Get the result index
+        iRes = lpMemGupRht[iRht];
+
+        // Get the next integer from the right arg
+        aplIntegerRht =
+          GetNextInteger (lpMemRht,                 // Ptr to global memory
+                          aplTypeRht,               // Storage type
+                          iRes);                    // Index
+        // Check for duplicate value from the right arg
+        if (iRht
+         && aplIntegerRht EQ aplIntegerLst)
+        {
+            // Save in the result
+            lpMemRes[iRes] = uLastVal;
+
+            continue;
+        } // End IF
+#else
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                // Get the next integer from the right arg
+                mpq_set_sa (&aplRatRht,
+                             GetNextInteger (lpMemRht,      // Ptr to global memory
+                                             aplTypeRht,    // Storage type
+                                             iRht),         // Index
+                             1);
+                break;
+
+            case ARRAY_FLOAT:
+                // Attempt to convert the float to an integer using System CT
+                aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[iRht], &bRet);
+                if (!bRet)
+                    goto NOMATCH;
+                mpq_set_sa (&aplRatRht, aplLongestRht, 1);
+
+                break;
+
+            case ARRAY_RAT:
+                // Copy the RAT
+                mpq_set (&aplRatRht, &((LPAPLRAT) lpMemRht)[iRht]);
+
+                break;
+
+            case ARRAY_VFP:
+                // Copy the VFP to a RAT
+                mpq_set_f (&aplRatRht, &((LPAPLVFP) lpMemRht)[iRht]);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+#endif
+        // Initialize the left arg minimum and maximum indices
+        iMin = 0;
+        iMax = aplNELMLft - 1;
+
+        // Lookup this value in the left arg (binary search)
+        while (iMin <= iMax)
+        {
+            // Set the current index
+            iLft = (iMin + iMax) / 2;
+
+            // Get the next rational from the left arg
+            mpq_set (&aplRatLft, &lpMemLft[lpMemGupLft[iLft]]);
+
+            // Split cases based upon the signum of the comparison
+            switch (signum (mpq_cmp (&aplRatLft, &aplRatRht)))
+            {
+                case  1:
+                    iMax = iLft - 1;
+
+                    continue;
+
+                case  0:
+                    break;
+
+                case -1:
+                    iMin = iLft + 1;
+
+                    continue;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We found a match -- check earlier indices for a match
+            //   so we always return the lowest index match.
+            for (iLft = iLft - 1; iLft >= 0; iLft--)
+            {
+                // Get the next rational from the left arg
+                mpq_set (&aplRatLft, &lpMemLft[lpMemGupLft[iLft]]);
+
+                // If the right arg is a VFP, use []CT in compare
+                if (IsVfp (aplTypeRht))
+                {
+                    if (mpq_cmp_ct (aplRatLft, aplRatRht, fQuadCT) NE 0)
+                        break;
+                } else
+                    if (mpq_cmp (&aplRatLft, &aplRatRht) NE 0)
+                        break;
+            } // End FOR
+#ifdef GRADE2ND
+            uLastVal = bQuadIO + lpMemGupLft[iLft + 1];
+
+            // Save in the result
+            lpMemRes[iRes] = uLastVal;
+#else
+            // Save in the result
+            lpMemRes[iRht] = bQuadIO + lpMemGupLft[iLft + 1];
+#endif
+            break;
+        } // End WHILE
+
+        // If we didn't find a match, ...
+        if (iMin > iMax)
+NOMATCH:
+#ifdef GRADE2ND
+            // Save in the result
+            lpMemRes[iRes] =
+              uLastVal     = NotFound;
+#else
+            // Save in the result
+            lpMemRes[iRht] = NotFound;
+#endif
+    } // End FOR
+
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    if (hGlbGupLft && lpMemGupLft)
+    {
+        if (lpMemGupLft)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbGupLft); lpMemGupLft = NULL;
+        } // End IF
+
+        // We no longer need this resource
+        FreeResultGlobalVar (hGlbGupLft); hGlbGupLft = NULL;
+    } // End IF
+#ifdef GRADE2ND
+    if (hGlbGupRht && lpMemGupRht)
+    {
+        if (lpMemGupRht)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbGupRht); lpMemGupRht = NULL;
+        } // End IF
+
+        // We no longer need this resource
+        FreeResultGlobalVar (hGlbGupRht); hGlbGupRht = NULL;
+    } // End IF
+#endif
+    // We no longer need this storage
+    Myq_clear (&aplRatRht);
+    Myq_clear (&aplRatLft);
+
+    return bRet;
+} // End PrimFnDydIotaRvN_EM
+
+
+//***************************************************************************
+//  $PrimFnDydIotaVvN_EM
+//
+//  Dyadic iota of APLVFP vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
+//***************************************************************************
+
+UBOOL PrimFnDydIotaVvN_EM
+    (LPAPLUINT lpMemRes,                // Ptr to result global memory data
+     LPTOKEN   lptkLftArg,              // Ptr to left arg token
+     APLSTYPE  aplTypeLft,              // Left arg storage type
+     APLNELM   aplNELMLft,              // Left arg NELM
+     LPAPLVFP  lpMemLft,                // Ptr to left arg global memory data
+     LPTOKEN   lptkRhtArg,              // Ptr to right arg token
+     APLSTYPE  aplTypeRht,              // Right arg storage type
+     APLNELM   aplNELMRht,              // Right arg NELM
+     APLRANK   aplRankRht,              // Right arg rank
+     LPVOID    lpMemRht,                // Ptr to right arg global memory data
+     UBOOL     bQuadIO,                 // []IO
+     APLUINT   NotFound,                // Not found value
+     LPUBOOL   lpbCtrlBreak,            // Ptr to Ctrl-Break flag
+     LPTOKEN   lptkFunc)                // Ptr to function token
+
+{
+    TOKEN        tkFunc = {0};          // Grade-up function token
+    HGLOBAL      hGlbGupLft = NULL;     // Left arg grade-up global memory handle
+    LPAPLINT     lpMemGupLft = NULL;    // Ptr to left arg grade-up global memory
+#ifdef GRADE2ND
+    HGLOBAL      hGlbGupRht = NULL;     // Right arg grade-up global memory handle
+    LPAPLINT     lpMemGupRht = NULL;    // Ptr to right grade-up global memory
+    APLUINT      uLastVal;              // Last value saved in the result
+    APLINT       aplIntegerLst,         // Last right arg integer
+                 aplIntegerZero = 0;    // A zero in case the right arg is a scalar
+#endif
+    APLINT       iLft,                  // Loop counter
+                 iRht,                  // Loop counter
+                 iMin,                  // Minimum index
+                 iMax;                  // Maximum ...
+    LPPL_YYSTYPE lpYYRes;               // Ptr to grade-up result
+    UBOOL        bRet = FALSE;          // TRUE iff the result is valid
+    APLLONGEST   aplLongestRht;         // Right arg immediate value
+    APLVFP       aplVfpLft = {0},       // Left arg item as VFP
+                 aplVfpRht = {0};       // Right ...
+    APLFLOAT     fQuadCT;               // []CT
+
+    // Get the current value of []CT
+    fQuadCT = GetQuadCT ();
+
+    // Initialize the temps
+    mpf_init (&aplVfpLft);
+    mpf_init (&aplVfpRht);
+
+    // Setup the grade-up function token
+    tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFunc.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+    tkFunc.tkData.tkChar     = UTF16_DELTASTILE;
+    tkFunc.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Set the current index origin to zero for convenience
+    SetQuadIO (0);
+
+    // Grade-up the left arg
+    lpYYRes =
+      PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
+                                   lptkLftArg,  // Ptr to right arg token
+                                   NULL,        // Ptr to axis token (may be NULL)
+                                   TRUE);       // TRUE iff we're to treat the right arg as ravelled
+    // Restore the index origin
+    SetQuadIO (bQuadIO);
+
+    if (lpYYRes EQ NULL)
+        goto ERROR_EXIT;
+    // Get the grade-up global memory handle
+    hGlbGupLft = lpYYRes->tkToken.tkData.tkGlbData;
+
+    // Free the YYRes
+    YYFree (lpYYRes); lpYYRes = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemGupLft = MyGlobalLock (hGlbGupLft);
+
+    // Skip over the header and dimensions to the data
+    lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+#ifdef GRADE2ND
+    // If the right arg is not a scalar, ...
+    if (!IsScalar (aplRankRht))
+    {
+        // Set the current index origin to zero for convenience
+        SetQuadIO (0);
+
+        // Grade-up the right arg
+        lpYYRes =
+          PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
+                                       lptkRhtArg,  // Ptr to right arg token
+                                       NULL,        // Ptr to axis token (may be NULL)
+                                       TRUE);       // TRUE iff we're to treat the right arg as ravelled
+        // Restore the index origin
+        SetQuadIO (bQuadIO);
+
+        if (lpYYRes EQ NULL)
+            goto ERROR_EXIT;
+        // Get the grade-up global memory handle
+        hGlbGupRht = lpYYRes->tkToken.tkData.tkGlbData;
+
+        // Free the YYRes
+        YYFree (lpYYRes); lpYYRes = NULL;
+
+        // Lock the memory to get a ptr to it
+        lpMemGupRht = MyGlobalLock (hGlbGupRht);
+
+        // Skip over the header and dimensions to the data
+        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+    } else
+        // Handle the scalar case
+        lpMemGupRht = &aplIntegerZero;
+#endif
+    // Loop through the right arg values and look'em up
+    //   in the left arg
+    for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
+    {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+#ifdef GRADE2ND
+        // Save the right arg value as the last one
+        aplIntegerLst = aplIntegerRht;
+
+        // Get the result index
+        iRes = lpMemGupRht[iRht];
+
+        // Get the next integer from the right arg
+        aplIntegerRht =
+          GetNextInteger (lpMemRht,                 // Ptr to global memory
+                          aplTypeRht,               // Storage type
+                          iRes);                    // Index
+        // Check for duplicate value from the right arg
+        if (iRht
+         && aplIntegerRht EQ aplIntegerLst)
+        {
+            // Save in the result
+            lpMemRes[iRes] = uLastVal;
+
+            continue;
+        } // End IF
+#else
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                // Get the next integer from the right arg
+                mpf_set_sa (&aplVfpRht,
+                             GetNextInteger (lpMemRht,      // Ptr to global memory
+                                             aplTypeRht,    // Storage type
+                                             iRht));        // Index
+                break;
+
+            case ARRAY_FLOAT:
+                // Attempt to convert the float to an integer using System CT
+                aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[iRht], &bRet);
+                if (!bRet)
+                    goto NOMATCH;
+                mpf_set_sa (&aplVfpRht, aplLongestRht);
+
+                break;
+
+            case ARRAY_RAT:
+                mpf_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[iRht]);
+
+                break;
+
+            case ARRAY_VFP:
+                mpf_set   (&aplVfpRht, &((LPAPLVFP) lpMemRht)[iRht]);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+#endif
+        // Initialize the left arg minimum and maximum indices
+        iMin = 0;
+        iMax = aplNELMLft - 1;
+
+        // Lookup this value in the left arg (binary search)
+        while (iMin <= iMax)
+        {
+            // Set the current index
+            iLft = (iMin + iMax) / 2;
+
+            // Get the next VFP from the left arg
+            mpf_set (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
+
+            // Split cases based upon the signum of the comparison
+            switch (signum (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT)))
+            {
+                case  1:
+                    iMax = iLft - 1;
+
+                    continue;
+
+                case  0:
+                    break;
+
+                case -1:
+                    iMin = iLft + 1;
+
+                    continue;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We found a match -- check earlier indices for a match
+            //   so we always return the lowest index match.
+            for (iLft = iLft - 1; iLft >= 0; iLft--)
+            {
+                // Get the next VFP from the left arg
+                mpf_set (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
+
+                if (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
+                    break;
+            } // End FOR
+#ifdef GRADE2ND
+            uLastVal = bQuadIO + lpMemGupLft[iLft + 1];
+
+            // Save in the result
+            lpMemRes[iRes] = uLastVal;
+#else
+            // Save in the result
+            lpMemRes[iRht] = bQuadIO + lpMemGupLft[iLft + 1];
+#endif
+            break;
+        } // End WHILE
+
+        // If we didn't find a match, ...
+        if (iMin > iMax)
+NOMATCH:
+#ifdef GRADE2ND
+            // Save in the result
+            lpMemRes[iRes] =
+              uLastVal     = NotFound;
+#else
+            // Save in the result
+            lpMemRes[iRht] = NotFound;
+#endif
+    } // End FOR
+
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    if (hGlbGupLft && lpMemGupLft)
+    {
+        if (lpMemGupLft)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbGupLft); lpMemGupLft = NULL;
+        } // End IF
+
+        // We no longer need this resource
+        FreeResultGlobalVar (hGlbGupLft); hGlbGupLft = NULL;
+    } // End IF
+#ifdef GRADE2ND
+    if (hGlbGupRht && lpMemGupRht)
+    {
+        if (lpMemGupRht)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbGupRht); lpMemGupRht = NULL;
+        } // End IF
+
+        // We no longer need this resource
+        FreeResultGlobalVar (hGlbGupRht); hGlbGupRht = NULL;
+    } // End IF
+#endif
+    // We no longer need this storage
+    Myf_clear (&aplVfpRht);
+    Myf_clear (&aplVfpLft);
+
+    return bRet;
+} // End PrimFnDydIotaVvN_EM
 
 
 //***************************************************************************

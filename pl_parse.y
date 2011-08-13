@@ -482,7 +482,7 @@ StmtSing:
                                                  lpplLocalVars->bRet = FALSE;
                                              else
                                                  lpplLocalVars->bRet =
-                                                   CS_ENDFOR_Stmt (lpplLocalVars, &$1, FALSE);
+                                                   CS_ENDFOR_Stmt_EM (lpplLocalVars, &$1, FALSE);
 
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR3
@@ -501,7 +501,7 @@ StmtSing:
                                                  lpplLocalVars->bRet = FALSE;
                                              else
                                                  lpplLocalVars->bRet =
-                                                   CS_ENDFOR_Stmt (lpplLocalVars, &$1, TRUE);
+                                                   CS_ENDFOR_Stmt_EM (lpplLocalVars, &$1, TRUE);
 
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR3
@@ -8161,6 +8161,7 @@ char LookaheadAdjacent
 
         case TKT_CHRSTRAND:
         case TKT_NUMSTRAND:
+        case TKT_NUMSCALAR:
         case TKT_VARIMMED:
         case TKT_VARARRAY:
         case TKT_INPOUT:
@@ -8384,6 +8385,7 @@ UBOOL LookaheadDyadicOp
     {
         case TKT_CHRSTRAND:
         case TKT_NUMSTRAND:
+        case TKT_NUMSCALAR:
         case TKT_VARIMMED:
         case TKT_LEFTPAREN:
         case TKT_FCNIMMED:
@@ -8536,6 +8538,7 @@ UBOOL LookbehindOp
     {
         case TKT_CHRSTRAND:
         case TKT_NUMSTRAND:
+        case TKT_NUMSCALAR:
         case TKT_VARIMMED:
         case TKT_LEFTPAREN:
         case TKT_RIGHTPAREN:
@@ -8870,6 +8873,7 @@ PL_YYLEX_START:
                 return CHRSTRAND;
 
         case TKT_NUMSTRAND:
+        case TKT_NUMSCALAR:
             // If the next token is a dyadic op, ...
             if (LookaheadDyadicOp (lpplLocalVars, &lpplLocalVars->lptkNext[-1]))
                 return OP2NUMSTRAND;

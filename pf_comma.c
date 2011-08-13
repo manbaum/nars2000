@@ -743,23 +743,82 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     {
         APLNELM aplNELM;
 
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_APA:
+            case ARRAY_CHAR:
+                // Account for the header and dimensions
+                ByteRes -= sizeof (VARARRAY_HEADER)
+                         + sizeof (APLDIM) * aplRankRes;
+                CopyMemory (lpMemRes, lpMemRht, (APLU3264) ByteRes);
+
+                break;
+
+            case ARRAY_NESTED:
                 // We're about to copy the entries from the right arg
                 //   into the result.  If the right arg is ARRAY_NESTED,
                 //   we need to increment each HGLOBAL's reference count.
-        if (IsNested (aplTypeRht))
-        {
+
                 // In case the right arg is empty, include its prototype
                 aplNELM = max (aplNELMRht, 1);
 
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELM; uRht++)
                     DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
-        } // End IF
 
                 // Account for the header and dimensions
                 ByteRes -= sizeof (VARARRAY_HEADER)
                          + sizeof (APLDIM) * aplRankRes;
                 CopyMemory (lpMemRes, lpMemRht, (APLU3264) ByteRes);
+
+                break;
+
+            case ARRAY_HETERO:
+                // Make a copy of each RAT/VFP item
+                for (uRes = 0; uRes < aplNELMRht; uRes++)
+                // Split cases based upon the item's storage type
+                switch (GetPtrTypeDir (((LPAPLHETERO) lpMemRht)[uRes]))
+                {
+                    case PTRTYPE_STCONST:
+                        // Copy the ptr
+                        ((LPAPLHETERO *) lpMemRes)[uRes] = ((LPAPLHETERO *) lpMemRht)[uRes];
+
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        // Increment the reference count
+                        DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRes]);
+
+                        // Copy the ptr
+                        ((LPAPLHETERO *) lpMemRes)[uRes] = ((LPAPLHETERO *) lpMemRht)[uRes];
+
+                        break;
+
+                    defstop
+                        break;
+                } // End FOR/SWITCH
+
+                break;
+
+            case ARRAY_RAT:
+                // Make a copy of each RAT item
+                for (uRes = 0; uRes < aplNELMRht; uRes++)
+                    mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &((LPAPLRAT) lpMemRht)[uRes]);
+                break;
+
+            case ARRAY_VFP:
+                // Make a copy of each RAT item
+                for (uRes = 0; uRes < aplNELMRht; uRes++)
+                    mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRes]);
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } else
     // Reorder the right arg into the result
     {
@@ -995,6 +1054,52 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
                 break;
 
+            case ARRAY_RAT:
+                for (uRes = 0; uRes < aplNELMRht; uRes++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Use the index in lpMemOdo to calculate the
+                    //   corresponding index in lpMemRes where the
+                    //   next value from lpMemRht goes.
+                    for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
+                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &((LPAPLRAT) lpMemRht)[uRht]);
+                } // End FOR
+
+                break;
+
+            case ARRAY_VFP:
+                for (uRes = 0; uRes < aplNELMRht; uRes++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Use the index in lpMemOdo to calculate the
+                    //   corresponding index in lpMemRes where the
+                    //   next value from lpMemRht goes.
+                    for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
+                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
+                } // End FOR
+
+                break;
+
             defstop
                 break;
         } // End SWITCH
@@ -1183,7 +1288,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                            &aplFloatLft,        // Ptr to float ...
                            &aplCharLft,         // Ptr to WCHAR ...
                             NULL,               // Ptr to longest ...
-                            NULL,               // Ptr to lpSym/Glb ...
+                           &lpSymGlbLft,        // Ptr to lpSym/Glb ...
                             NULL,               // Ptr to ...immediate type ...
                             NULL);              // Ptr to array type ...
     else                                        // otherwise,
@@ -1207,7 +1312,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                            &aplFloatRht,        // Ptr to float ...
                            &aplCharRht,         // Ptr to WCHAR ...
                             NULL,               // Ptr to longest ...
-                            NULL,               // Ptr to lpSym/Glb ...
+                           &lpSymGlbRht,        // Ptr to lpSym/Glb ...
                             NULL,               // Ptr to ...immediate type ...
                             NULL);              // Ptr to array type ...
     else                                        // otherwise,
@@ -1421,6 +1526,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
             case ARRAY_BOOL:
             case ARRAY_INT:
             case ARRAY_FLOAT:
+            case ARRAY_RAT:
+            case ARRAY_VFP:
                 aplTypeRes = ARRAY_BOOL;
 
                 break;
@@ -2565,6 +2672,560 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (*((LPAPLNESTED) lpMemRht)++);
+                            } // End FOR
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+
+            break;
+
+        case ARRAY_RAT:                 // Res = RAT
+            // Loop through the leading dimensions
+            for (uBeg = 0; uBeg < aplDimBeg; uBeg++)
+            {
+                // Split cases based upon the left arg's storage type
+                switch (aplTypeLft)
+                {
+                    case ARRAY_BOOL:    // Res = RAT, Lft = BOOL
+                        // If the left arg is a scalar, ...
+                        if (IsScalar (aplRankLft))
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a RAT
+                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplIntegerLft, 1);
+                            } // End FOR
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a RAT
+                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE, 1);
+
+                                // Shift over the bit mask
+                                uBitMaskLft <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMaskLft EQ END_OF_BYTE)
+                                {
+                                    uBitMaskLft = BIT0;         // Start over
+                                    ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
+                        break;
+
+                    case ARRAY_INT:     // Res = RAT, Lft = INT
+                        // If the left arg is a scalar, ...
+                        if (IsScalar (aplRankLft))
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplIntegerLft, 1);
+                            } // End FOR
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, *((LPAPLINT) lpMemLft)++, 1);
+                            } // End FOR
+                        break;
+
+                    case ARRAY_APA:     // Res = RAT, Lft = APA
+                        // Loop through the left arg's trailing dimensions
+                        for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the APA to a RAT
+                            mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, apaOffLft + apaMulLft * uEndLft++, 1);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_RAT:     // Res = RAT, Lft = RAT
+                        // If the left arg is a scalar, ...
+                        if (IsScalar (aplRankLft))
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Copy the RAT to a RAT
+                                mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) lpSymGlbLft);
+                            } // End FOR
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Copy the RAT to a RAT
+                                mpq_init_set (((LPAPLRAT) lpMemRes)++, ((LPAPLRAT) lpMemLft)++);
+                            } // End FOR
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Split cases based upon the right arg's storage type
+                switch (aplTypeRht)
+                {
+                    case ARRAY_BOOL:    // Res = RAT, Rht = BOOL
+                        // If the right arg is a scalar, ...
+                        if (IsScalar (aplRankRht))
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a RAT
+                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplIntegerRht, 1);
+                            } // End FOR
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a RAT
+                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE, 1);
+
+                                // Shift over the bit mask
+                                uBitMaskRht <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMaskRht EQ END_OF_BYTE)
+                                {
+                                    uBitMaskRht = BIT0;         // Start over
+                                    ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
+                        break;
+
+                    case ARRAY_INT:     // Res = RAT, Rht = INT
+                        // If the right arg is a scalar, ...
+                        if (IsScalar (aplRankRht))
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplIntegerRht, 1);
+                            } // End FOR
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, *((LPAPLINT) lpMemRht)++, 1);
+                            } // End FOR
+                        break;
+
+                    case ARRAY_APA:     // Res = RAT, Rht = APA
+                        // Loop through the right arg's trailing dimensions
+                        for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the APA to a RAT
+                            mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, apaOffRht + apaMulRht * uEndRht++, 1);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_RAT:     // Res = RAT, Rht = RAT
+                        // If the right arg is a scalar, ...
+                        if (IsScalar (aplRankRht))
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Copy the RAT to a RAT
+                                mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) lpSymGlbRht);
+                            } // End FOR
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Copy the RAT to a RAT
+                                mpq_init_set (((LPAPLRAT) lpMemRes)++, ((LPAPLRAT) lpMemRht)++);
+                            } // End FOR
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:                 // Res = VFP
+            // Loop through the leading dimensions
+            for (uBeg = 0; uBeg < aplDimBeg; uBeg++)
+            {
+                // Split cases based upon the left arg's storage type
+                switch (aplTypeLft)
+                {
+                    case ARRAY_BOOL:    // Res = VFP, Lft = BOOL
+                        // If the left arg is a scalar, ...
+                        if (IsScalar (aplRankLft))
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerLft);
+                            } // End FOR
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE);
+
+                                // Shift over the bit mask
+                                uBitMaskLft <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMaskLft EQ END_OF_BYTE)
+                                {
+                                    uBitMaskLft = BIT0;         // Start over
+                                    ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
+                        break;
+
+                    case ARRAY_INT:     // Res = VFP, Lft = INT
+                        // If the left arg is a scalar, ...
+                        if (IsScalar (aplRankLft))
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerLft);
+                            } // End FOR
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemLft)++);
+                            } // End FOR
+                        break;
+
+                    case ARRAY_APA:     // Res = VFP, Lft = APA
+                        // Loop through the left arg's trailing dimensions
+                        for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the APA to a VFP
+                            mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, apaOffLft + apaMulLft * uEndLft++);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                        // If the left arg is a scalar, ...
+                        if (IsScalar (aplRankLft))
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLT to a VFP
+                                mpf_init_set_d  (((LPAPLVFP) lpMemRes)++, aplFloatLft);
+                            } // End FOR
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLT to a VFP
+                                mpf_init_set_d  (((LPAPLVFP) lpMemRes)++, *((LPAPLFLOAT) lpMemLft)++);
+                            } // End FOR
+                        break;
+
+                    case ARRAY_RAT:     // Res = VFP, Lft = RAT
+                        // If the left arg is a scalar, ...
+                        if (IsScalar (aplRankLft))
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_init_set_q (((LPAPLVFP) lpMemRes)++, (LPAPLRAT) lpSymGlbLft);
+                            } // End FOR
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_init_set_q (((LPAPLVFP) lpMemRes)++, ((LPAPLRAT) lpMemLft)++);
+                            } // End FOR
+                        break;
+
+                    case ARRAY_VFP:     // Res = VFP, Lft = VFP
+                        // If the left arg is a scalar, ...
+                        if (IsScalar (aplRankLft))
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Copy the VFP to a VFP
+                                mpf_init_set   (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbLft);
+                            } // End FOR
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Copy the VFP to a VFP
+                                mpf_init_set   (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemLft)++);
+                            } // End FOR
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Split cases based upon the right arg's storage type
+                switch (aplTypeRht)
+                {
+                    case ARRAY_BOOL:    // Res = VFP, Rht = BOOL
+                        // If the right arg is a scalar, ...
+                        if (IsScalar (aplRankRht))
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
+                            } // End FOR
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE);
+
+                                // Shift over the bit mask
+                                uBitMaskRht <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMaskRht EQ END_OF_BYTE)
+                                {
+                                    uBitMaskRht = BIT0;         // Start over
+                                    ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
+                        break;
+
+                    case ARRAY_INT:     // Res = VFP, Rht = INT
+                        // If the right arg is a scalar, ...
+                        if (IsScalar (aplRankRht))
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
+                            } // End FOR
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemRht)++);
+                            } // End FOR
+                        break;
+
+                    case ARRAY_APA:     // Res = VFP, Rht = APA
+                        // Loop through the right arg's trailing dimensions
+                        for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the APA to a VFP
+                            mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, apaOffRht + apaMulRht * uEndRht++);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_FLOAT:   // Res = VFP, Rht = FLT
+                        // If the right arg is a scalar, ...
+                        if (IsScalar (aplRankRht))
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLT to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
+                            } // End FOR
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemRht)++);
+                            } // End FOR
+                        break;
+
+                    case ARRAY_RAT:     // Res = VFP, Rht = RAT
+                        // If the right arg is a scalar, ...
+                        if (IsScalar (aplRankRht))
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_init_set_q (((LPAPLVFP) lpMemRes)++, (LPAPLRAT) lpSymGlbRht);
+                            } // End FOR
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_init_set_q (((LPAPLVFP) lpMemRes)++, ((LPAPLRAT) lpMemRht)++);
+                            } // End FOR
+                        break;
+
+                    case ARRAY_VFP:     // Res = VFP, Rht = VFP
+                        // If the right arg is a scalar, ...
+                        if (IsScalar (aplRankRht))
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Copy the VFP to a VFP
+                                mpf_init_set (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbRht);
+                            } // End FOR
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Copy the VFP to a VFP
+                                mpf_init_set (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemRht)++);
                             } // End FOR
                         break;
 

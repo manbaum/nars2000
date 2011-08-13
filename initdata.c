@@ -73,6 +73,9 @@ extern PRIMSPEC PrimSpecUpStile;
 #define PrimOpSlashBar_EM_YY    PrimOpSlash_EM_YY
 #define PrimOpSlopeBar_EM_YY    PrimOpSlope_EM_YY
 
+// These vars are needed by the InitxxxConstants routines
+mp_bitcnt_t mpfPrec;
+mpfr_prec_t mpfrPrec;
 
 // This var is needed by the GSL routines.
 double __infinity;
@@ -132,6 +135,168 @@ void InitConstants
 #undef  NEG_INFINITY
 #undef  POS_INFINITY
 } // End InitConstants
+
+
+//***************************************************************************
+//  $InitGlbNumConstants
+//
+//  Initialize global numeric constants
+//***************************************************************************
+
+void InitGlbNumConstants
+    (void)
+
+{
+    // Clear the MPFR cache constants
+    mpfr_free_cache ();
+
+    // Use our own memory management functions for MPIR/MPFR
+    mp_set_memory_functions (mp_alloc, mp_realloc, mp_free);
+
+    // Get the default precisions
+    mpfPrec  = mpf_get_default_prec  ();
+    mpfrPrec = mpfr_get_default_prec ();
+
+    // Set the default precision for the following VFP constants
+    mpf_set_default_prec (DEF_QUADFPC_CWS);
+    mpfr_set_default_prec (DEF_QUADFPC_CWS);
+
+    // Initialize the MPI, RAT, and VFP constants
+    mpz_init_set_str (&mpzMinInt  , "-9223372036854775808", 10);
+    mpz_init_set_str (&mpzMaxInt  ,  "9223372036854775807", 10);
+    mpz_init_set_str (&mpzMaxUInt , "18446744073709551615", 10);
+    mpq_init_set_str (&mpqMinInt  , "-9223372036854775808", 10);
+    mpq_init_set_str (&mpqMaxInt  ,  "9223372036854775807", 10);
+    mpq_init_set_str (&mpqMaxUInt , "18446744073709551615", 10);
+    mpq_init_set_ui  (&mpqHalf    , 1, 2);
+    mpf_init_set_str (&mpfMinInt  , "-9223372036854775808", 10);
+    mpf_init_set_str (&mpfMaxInt  ,  "9223372036854775807", 10);
+    mpf_init_set_str (&mpfMaxUInt , "18446744073709551615", 10);
+    mpf_init_set_d   (&mpfHalf    , 0.5);
+
+    // Use our own invalid operation functions for MPIR/MPFR
+    mp_set_invalid_functions (mpz_invalid, mpq_invalid, mpf_invalid);
+} // End InitGlbNumConstants
+
+
+//***************************************************************************
+//  $UninitGlbNumConstants
+//
+//  Uninitialize global numeric constants
+//***************************************************************************
+
+void UninitGlbNumConstants
+    (void)
+
+{
+    // Uninitialize the MPI, RAT, and VFP constants
+    Myf_clear (&mpfHalf    );
+    Myf_clear (&mpfMaxUInt );
+    Myf_clear (&mpfMaxInt  );
+    Myf_clear (&mpfMinInt  );
+    Myq_clear (&mpqHalf    );
+    Myq_clear (&mpqMaxUInt );
+    Myq_clear (&mpqMaxInt  );
+    Myq_clear (&mpqMinInt  );
+    Myz_clear (&mpzMaxUInt );
+    Myz_clear (&mpzMaxInt  );
+    Myz_clear (&mpzMinInt  );
+} // End UninitGlbNumConstants
+
+
+//***************************************************************************
+//  $InitPTDVars
+//
+//  Initialize PerTabData vars
+//***************************************************************************
+
+void InitPTDVars
+    (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    APLMPFR mpfrTmp = {0};              // MPFR temporary value
+
+    // Free these vars unless already free
+    Myf_clear     (&lpMemPTD->mpfPi);
+    Myf_clear     (&lpMemPTD->mpfE);
+
+    // Initialize a temp
+    mpfr_init     (&mpfrTmp);
+
+    // Create a local value for Pi
+    mpf_init      (&lpMemPTD->mpfPi);
+    mpfr_const_pi (                  &mpfrTmp, MPFR_RNDN);
+    mpfr_get_f    (&lpMemPTD->mpfPi, &mpfrTmp, MPFR_RNDN);
+
+    // Create a local value for e
+    mpf_init      (&lpMemPTD->mpfE);
+    mpfr_set_ui   (&mpfrTmp, 1, MPFR_RNDN);
+    mpfr_exp      (&mpfrTmp,         &mpfrTmp, MPFR_RNDN);
+    mpfr_get_f    (&lpMemPTD->mpfE , &mpfrTmp, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear    (&mpfrTmp);
+} // InitPTDVars
+
+
+//***************************************************************************
+//  $InitVfpConstants
+//
+//  Initalize the VFP constants whenever the default precision changes
+//***************************************************************************
+
+void InitVfpConstants
+    (APLUINT uDefPrec)          // Default VFP precision
+
+{
+////APLUINT uRes;
+    APLVFP  mpfTmp1 = {0},
+            mpfTmp2 = {0},
+            mpfTmp3;
+    APLMPFR mpfrRes = {0};
+
+    // Set the new default precision
+    mpf_set_default_prec  ((UINT) uDefPrec);
+    mpfr_set_default_prec ((UINT) uDefPrec);
+
+    mpf_init (&mpfTmp1);
+    mpf_init (&mpfTmp2);
+
+    // Calculate the # digits this precision represents
+    // N = 1 + floor (log (2 ^ uDefPrec)) / log (10)
+////nDigitsFPC = 1 + (APLINT) (floor (log (pow (2, (UINT) uDefPrec)) / log (10.0)));
+
+    nDigitsFPC = 157;
+
+    mpf_set_ui    (&mpfTmp1, 1);
+#ifdef DEBUG
+////*FormatAplVfp (wszTemp, mpfTmp1, 200) = WC_EOS;
+#endif
+    mpf_mul_2exp  (&mpfTmp1, &mpfTmp1, (UINT) uDefPrec);
+#ifdef DEBUG
+////*FormatAplVfp (wszTemp, mpfTmp1, 200) = WC_EOS;
+#endif
+    mpf_set_ui    (&mpfTmp2, 10                );
+#ifdef DEBUG
+////*FormatAplVfp (wszTemp, mpfTmp2, 200) = WC_EOS;
+#endif
+    mpfTmp3 = PrimFnDydCircleStarVisVvV (mpfTmp2, mpfTmp1, NULL);
+#ifdef DEBUG
+////*FormatAplVfp (wszTemp, mpfTmp3, 200) = WC_EOS;
+#endif
+    mpf_floor     (&mpfTmp1, &mpfTmp3          );
+#ifdef DEBUG
+////*FormatAplVfp (wszTemp, mpfTmp1, 200) = WC_EOS;
+#endif
+    nDigitsFPC = 1 + mpf_get_si (&mpfTmp1);
+
+    // We no longer need this storage
+    Myf_clear (&mpfTmp3);
+
+    // We no longer need this storage
+    Myf_clear (&mpfTmp2);
+    Myf_clear (&mpfTmp1);
+} // End InitVfpConstants
 
 
 //***************************************************************************

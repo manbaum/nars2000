@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,6 +46,11 @@ PRIMSPEC PrimSpecColonBar =
     &PrimFnMonColonBarFisI,
     &PrimFnMonColonBarFisF,
 
+    &PrimFnMonColonBarRisR,
+
+////               VisR,    // Handled via type promotion (to VisV)
+    &PrimFnMonColonBarVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecColonBarStorageTypeDyd,
@@ -63,6 +68,13 @@ PRIMSPEC PrimSpecColonBar =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydColonBarFisIvI,
     &PrimFnDydColonBarFisFvF,
+
+    NULL,   // &PrimFnDydColonBarBisRvR, -- Can't happen w/ColonBar
+    &PrimFnDydColonBarRisRvR,
+
+    NULL,   // &PrimFnDydColonBarBisVvV, -- Can't happen w/ColonBar
+////                  VisRvR,   // Handled via type promotion (to VisVvV)
+    &PrimFnDydColonBarVisVvV,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecColonBar};
@@ -148,7 +160,9 @@ APLFLOAT PrimFnMonColonBarFisI
 {
     // Check for indeterminates:  {div} 0
     if (aplIntegerRht EQ 0)
-        return TranslateQuadICIndex (ICNDX_DIV0);
+        return TranslateQuadICIndex (0,
+                                     ICNDX_DIV0,
+                                     (APLFLOAT) aplIntegerRht);
 
     // The FPU handles overflow and underflow for us
     return (1 / (APLFLOAT) aplIntegerRht);
@@ -168,17 +182,77 @@ APLFLOAT PrimFnMonColonBarFisF
 {
     // Check for indeterminates:  {div} 0
     if (aplFloatRht EQ 0)
-        return TranslateQuadICIndex (ICNDX_DIV0);
+        return TranslateQuadICIndex (0,
+                                     ICNDX_DIV0,
+                                     aplFloatRht);
 
     // If the arg is ± infinity, just return 0.
     // If we don't, then the reciprocal of {neg}infinity
     //   is {neg}0.
-    if (!_finite (aplFloatRht))
+    if (IsInfinity (aplFloatRht))
         return 0;
 
     // The FPU handles overflow and underflow for us
     return (1 / aplFloatRht);
 } // End PrimFnMonColonBarFisF
+
+
+//***************************************************************************
+//  $PrimFnMonColonBarRisR
+//
+//  Primitive scalar function monadic ColonBar:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonColonBarRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Check for indeterminates:  {div} 0
+    if (IsMpq0 (&aplRatRht))
+        return mpq_QuadICValue (aplRatRht,          // No left arg
+                                ICNDX_DIV0,
+                                aplRatRht,
+                                mpqRes);
+    // Initialize the result
+    mpq_init (&mpqRes);
+
+    // Invert the Rational
+    mpq_inv (&mpqRes, &aplRatRht);
+
+    return mpqRes;
+} // End PrimFnMonColonBarRisR
+
+
+//***************************************************************************
+//  $PrimFnMonColonBarVisV
+//
+//  Primitive scalar function monadic ColonBar:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonColonBarVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Check for indeterminates:  {div} 0
+    if (IsMpf0 (&aplVfpRht))
+        return mpf_QuadICValue (aplVfpRht,          // No left arg
+                                ICNDX_DIV0,
+                                aplVfpRht,
+                                mpfRes);
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    // Invert the Variable FP
+    mpf_ui_div (&mpfRes, 1, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnMonColonBarVisV
 
 
 //***************************************************************************
@@ -264,7 +338,9 @@ APLFLOAT PrimFnDydColonBarFisIvI
     // Check for indeterminates:  0 {div} 0
     if (aplIntegerLft EQ 0
      && aplIntegerRht EQ 0)
-        return TranslateQuadICIndex (ICNDX_0DIV0);
+        return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
+                                     ICNDX_0DIV0,
+                                     (APLFLOAT) aplIntegerRht);
 
     // The FPU handles overflow and underflow for us
     return (((APLFLOAT) aplIntegerLft) / (APLFLOAT) aplIntegerRht);
@@ -286,21 +362,124 @@ APLFLOAT PrimFnDydColonBarFisFvF
     // Check for indeterminates:  0 {div} 0
     if (aplFloatLft EQ 0
      && aplFloatRht EQ 0)
-        return TranslateQuadICIndex (ICNDX_0DIV0);
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_0DIV0,
+                                     aplFloatRht);
 
     // Check for indeterminates:  _ {div} _ (same or different signs)
-    if (!_finite (aplFloatLft)
-     && !_finite (aplFloatRht))
+    if (IsInfinity (aplFloatLft)
+     && IsInfinity (aplFloatRht))
     {
         if (SIGN_APLFLOAT (aplFloatLft) EQ SIGN_APLFLOAT (aplFloatRht))
-            return TranslateQuadICIndex (ICNDX_PiDIVPi);
+            return TranslateQuadICIndex (aplFloatLft,
+                                         ICNDX_PiDIVPi,
+                                         aplFloatRht);
         else
-            return TranslateQuadICIndex (ICNDX_NiDIVPi);
+            return TranslateQuadICIndex (aplFloatLft,
+                                         ICNDX_NiDIVPi,
+                                         aplFloatRht);
     } // End IF
 
     // The FPU handles overflow and underflow for us
     return (aplFloatLft / aplFloatRht);
 } // End PrimFnDydColonBarFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydColonBarRisRvR
+//
+//  Primitive scalar function dyadic ColonBar:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydColonBarRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Check for indeterminates:  0 {div} 0
+    if (IsMpq0 (&aplRatLft)
+     && IsMpq0 (&aplRatRht))
+        return mpq_QuadICValue (aplRatLft,
+                                ICNDX_0DIV0,
+                                aplRatRht,
+                                mpqRes);
+    // Check for indeterminates:  _ {div} _ (same or different signs)
+    if (mpq_inf_p (&aplRatLft)
+     && mpq_inf_p (&aplRatRht))
+    {
+        if (mpq_sgn (&aplRatLft) EQ mpq_sgn (&aplRatRht))
+            return mpq_QuadICValue (aplRatLft,
+                                    ICNDX_PiDIVPi,
+                                    aplRatRht,
+                                    mpqRes);
+        else
+            return mpq_QuadICValue (aplRatLft,
+                                    ICNDX_NiDIVPi,
+                                    aplRatRht,
+                                    mpqRes);
+    } // End IF
+
+    // Initialize the result
+    mpq_init (&mpqRes);
+
+    // Divide the Rationals
+    mpq_div (&mpqRes, &aplRatLft, &aplRatRht);
+
+    // Canonicalize the Rational
+    mpq_canonicalize (&mpqRes);
+
+    return mpqRes;
+} // End PrimFnDydColonBarRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydColonBarVisVvV
+//
+//  Primitive scalar function dyadic ColonBar:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydColonBarVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Check for indeterminates:  0 {div} 0
+    if (IsMpf0 (&aplVfpLft)
+     && IsMpf0 (&aplVfpRht))
+        return mpf_QuadICValue (aplVfpLft,
+                                ICNDX_0DIV0,
+                                aplVfpRht,
+                                mpfRes);
+    // Check for indeterminates:  _ {div} _ (same or different signs)
+    if (mpf_inf_p (&aplVfpLft)
+     && mpf_inf_p (&aplVfpRht))
+    {
+        if (mpf_sgn (&aplVfpLft) EQ mpf_sgn (&aplVfpRht))
+            return mpf_QuadICValue (aplVfpLft,
+                                    ICNDX_PiDIVPi,
+                                    aplVfpRht,
+                                    mpfRes);
+        else
+            return mpf_QuadICValue (aplVfpLft,
+                                    ICNDX_NiDIVPi,
+                                    aplVfpRht,
+                                    mpfRes);
+    } // End IF
+
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    // Divide the Variable FPs
+    mpf_div (&mpfRes, &aplVfpLft, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnDydColonBarVisVvV
 
 
 //***************************************************************************

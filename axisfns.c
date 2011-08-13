@@ -528,6 +528,98 @@ UBOOL CheckAxisGlb
 
             break;
 
+        case ARRAY_RAT:
+
+#define lpaplRat        ((LPAPLRAT) lpMem)
+
+            // Loop through the elements
+            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
+            {
+                // Attempt to fit the RAT into an APLINT
+                aplRankLcl = mpq_get_sa (lpaplRat++, &bRet);
+                aplRankLcl -= bQuadIO; // Less the index origin
+
+                // Check for negative indices [-aplRankCmp, -1]
+                if (SIGN_APLRANK (aplRankLcl)
+                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                    aplRankLcl += aplRankCmp;
+
+                // If fractional values are allowed,
+                //   return whether or not they are present
+                if (lpbFract)
+                    *lpbFract |= !bRet;
+
+                // If fractional values allowed and are present, ...
+                if (lpbFract && !bRet)
+                    bRet = TRUE;
+
+                // Ensure it's within range
+                // Note that because aplRankLcl and aplRankCmp
+                //   are unsigned, we don't need to check
+                //   for below zero
+                bRet = bRet && (aplRankLcl < aplRankCmp);
+
+                // Save the next trailing value
+                //   if asked to and not sorting
+                //   the axes.
+                if (bRet && lphGlbAxis && !bSortAxes)
+                    *lpAxisTail++ = aplRankLcl;
+
+                // Test for duplicates
+                if (bRet)
+                    bRet = TestDupAxis (lpDup, aplRankLcl, bAllowDups);
+            } // End FOR
+
+#undef  lpaplRat
+
+            break;
+
+        case ARRAY_VFP:
+
+#define lpaplVfp        ((LPAPLVFP) lpMem)
+
+            // Loop through the elements
+            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
+            {
+                // Attempt to fit the VFP into an APLINT
+                aplRankLcl = mpf_get_sa (lpaplVfp++, &bRet);
+                aplRankLcl -= bQuadIO; // Less the index origin
+
+                // Check for negative indices [-aplRankCmp, -1]
+                if (SIGN_APLRANK (aplRankLcl)
+                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                    aplRankLcl += aplRankCmp;
+
+                // If fractional values are allowed,
+                //   return whether or not they are present
+                if (lpbFract)
+                    *lpbFract |= !bRet;
+
+                // If fractional values allowed and are present, ...
+                if (lpbFract && !bRet)
+                    bRet = TRUE;
+
+                // Ensure it's within range
+                // Note that because aplRankLcl and aplRankCmp
+                //   are unsigned, we don't need to check
+                //   for below zero
+                bRet = bRet && (aplRankLcl < aplRankCmp);
+
+                // Save the next trailing value
+                //   if asked to and not sorting
+                //   the axes.
+                if (bRet && lphGlbAxis && !bSortAxes)
+                    *lpAxisTail++ = aplRankLcl;
+
+                // Test for duplicates
+                if (bRet)
+                    bRet = TestDupAxis (lpDup, aplRankLcl, bAllowDups);
+            } // End FOR
+
+#undef  lpaplVfp
+
+            break;
+
         defstop
             break;
     } // End SWITCH

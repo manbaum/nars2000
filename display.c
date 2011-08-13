@@ -26,6 +26,10 @@
 #include <math.h>
 #include "headers.h"
 
+#define DEF_POSINFINITY_CHAR     '!'
+#define DEF_POSINFINITY_STR      "!"
+#define DEF_NEGINFINITY_STR     "-!"
+
 typedef enum tagDTOA_MODE
 {
     DTOAMODE_SHORT_RND = 0,             // 0 = shortest string with rounding, e.g., 1e23
@@ -34,6 +38,7 @@ typedef enum tagDTOA_MODE
     DTOAMODE_FRACTDIGS,                 // 3 = # fractional digits (past decimal point)
 } DTOAMODE;
 
+WCHAR wcInf = UTF16_INFINITY;
 
 // DTOA mode for the corresponding FLTDSPFMT_xxx value
 DTOAMODE gDTOA_Mode[FLTDISPFMT_LENGTH] = {DTOAMODE_SIGDIGS,     // E :  2 = nDigits significant digits
@@ -449,6 +454,32 @@ UBOOL DisplayGlbArr_EM
                                      TRUE);                 // TRUE iff last (rightmost) col
                 break;
 
+            case ARRAY_RAT:
+////////////////lpaplChar =
+                  CompileArrRat     ((LPAPLRAT)    lpMem,   // Ptr to right arg memory
+                                     lpFmtHeader,           // Ptr to parent header
+                                     lpFmtColStr,           // Ptr to vector of ColStrs
+                                     lpaplCharStart,        // Ptr to compiled output
+                                     aplDimNRows,           // # rows
+                                     aplDimNCols,           // # cols
+                                     aplRank,               // Right arg rank
+                                     lpMemDim,              // Ptr to right arg dimensions
+                                     TRUE);                 // TRUE iff top level array
+                break;
+
+            case ARRAY_VFP:
+////////////////lpaplChar =
+                  CompileArrVfp     ((LPAPLVFP)    lpMem,   // Ptr to right arg memory
+                                     lpFmtHeader,           // Ptr to parent header
+                                     lpFmtColStr,           // Ptr to vector of ColStrs
+                                     lpaplCharStart,        // Ptr to compiled output
+                                     aplDimNRows,           // # rows
+                                     aplDimNCols,           // # cols
+                                     aplRank,               // Right arg rank
+                                     lpMemDim,              // Ptr to right arg dimensions
+                                     TRUE);                 // TRUE iff top level array
+                break;
+
             defstop
                 break;
         } // End SWITCH
@@ -503,6 +534,8 @@ UBOOL DisplayGlbArr_EM
             case ARRAY_CHAR:
             case ARRAY_APA:
             case ARRAY_HETERO:
+            case ARRAY_RAT:
+            case ARRAY_VFP:
 ////////////////lpaplChar =
                   FormatArrSimple (lpFmtHeader,             // Ptr to FMTHEADER
                                    lpFmtColStr,             // Ptr to vector of <aplChrNCols> FMTCOLSTRs
@@ -687,6 +720,8 @@ LPAPLCHAR FormatImmed
 
 {
     WCHAR             wc;
+    LPVARARRAY_HEADER lpMemHdr;
+    LPVOID            lpMemGlbNum;
 
     // Split cases based upon the immediate type
     switch (ImmType)
@@ -757,6 +792,40 @@ LPAPLCHAR FormatImmed
                            0);                        // Use default significant digits
             break;
 
+        case IMMTYPE_ERROR:
+            Assert (GetPtrTypeDir (lpaplLongest) EQ PTRTYPE_HGLOBAL);
+
+            // Lock the memory to get a ptr to it
+            lpMemHdr = MyGlobalLock (lpaplLongest);
+
+            // Skip over the header and dimensions to the data
+            lpMemGlbNum = VarArrayBaseToData (lpMemHdr, 0);
+
+            // Split cases based upon the storage type
+            switch (lpMemHdr->ArrType)
+            {
+                case ARRAY_RAT:
+                    lpaplChar =
+                      FormatAplRat (lpaplChar,      // Ptr to output save area
+                        *(LPAPLRAT) lpMemGlbNum);   // The value to format
+                    break;
+
+                case ARRAY_VFP:
+                    lpaplChar =
+                      FormatAplVfp (lpaplChar,      // Ptr to output save area
+                        *(LPAPLVFP) lpMemGlbNum,    // The value to format
+                                    GetQuadPPV ()); // Use this many significant digits for VFP
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We no longer need this ptr
+            MyGlobalUnlock (lpaplLongest); lpMemHdr = NULL; lpMemGlbNum = NULL;
+
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -778,7 +847,8 @@ LPAPLCHAR FormatImmedFC
      APLUINT      nDigits,          // # significant digits
      APLCHAR      aplCharDecimal,   // Char to use as decimal separator
      APLCHAR      aplCharOverbar,   // Char to use as overbar
-     FLTDISPFMT   fltDispFmt)       // Float display format
+     FLTDISPFMT   fltDispFmt,       // Float display format
+     UBOOL        bSubstInf)        // TRUE iff we're to substitute text for infinity
 
 {
     WCHAR wc;
@@ -854,7 +924,8 @@ LPAPLCHAR FormatImmedFC
                              nDigits,                   // # significant digits
                              aplCharDecimal,            // Char to use as decimal separator
                              aplCharOverbar,            // Char to use as overbar
-                             fltDispFmt);               // Float display format
+                             fltDispFmt,                // Float display format
+                             bSubstInf);                // TRUE iff we're to substitute text for infinity
             break;
 
         defstop
@@ -947,6 +1018,102 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $FormatAplRat
+//
+//  Format an APLRAT
+//***************************************************************************
+
+LPAPLCHAR FormatAplRat
+    (LPAPLCHAR lpaplChar,           // Ptr to output save area
+     APLRAT    aplRat)              // The value to format
+
+{
+    return FormatAplRatFC (lpaplChar,       // Ptr to output save area
+                           aplRat,          // The value to format
+                           UTF16_OVERBAR,   // Char to use as overbar
+                           L'r',            // Char to use as rational separator
+                           FALSE);          // TRUE iff we're to substitute text for infinity
+} // End FormatAplRat
+
+
+//***************************************************************************
+//  $FormatAplRatFC
+//
+//  Format an APLRAT using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplRatFC
+    (LPAPLCHAR lpaplChar,           // Ptr to output save area
+     APLRAT    aplRat,              // The value to format
+     APLCHAR   aplCharOverbar,      // Char to use as overbar
+     APLCHAR   aplCharRatSep,       // Char to use as rational separator
+     UBOOL     bSubstInf)           // TRUE iff we're to substitute text for infinity
+
+{
+    APLINT    iLen,                 // String length
+              iRes;                 // Loop counter
+    LPAPLCHAR lpw;                  // Ptr to string
+    UBOOL     bNeg;                 // TRUE iff the number is negative
+    LPCHAR    lpRawFmt;             // Ptr to raw formatted #
+
+    lpRawFmt = (LPCHAR) lpaplChar;
+
+    // Canonicalize the arg
+    mpq_canonicalize (&aplRat);
+
+    // Format the num/den
+    mpq_get_str (lpRawFmt, 10, &aplRat);
+
+    // Convert a leading minus to aplCharOverbar
+    bNeg = (lpRawFmt[0] EQ '-');
+
+    // Get the char length
+    iLen = lstrlen (lpRawFmt);
+
+    // Convert the char to WCHAR
+    for (iRes = iLen; iRes >= 0; iRes--)
+        lpaplChar[iRes] = lpRawFmt[iRes];
+
+    // Convert a leading minus to aplCharOverbar
+    if (bNeg)
+    {
+        *lpaplChar++ = aplCharOverbar;
+        iLen--;
+    } // End IF
+
+    // Check for Infinity
+    if (lpaplChar[0] EQ DEF_POSINFINITY_CHAR)
+    {
+        // If we're to substitute, ...
+        if (bSubstInf)
+            lpaplChar +=
+              ConvertWideToNameLength (lpaplChar,   // Ptr to output save buffer
+                                      &wcInf,       // Ptr to incoming chars
+                                        1);         // # chars to convert
+        else
+            *lpaplChar++ = UTF16_INFINITY;
+    } else
+    {
+        // Convert '/' (if any) to aplCharRatSep
+//////////   or 'x' if no '/'
+        lpw = strchrW (lpaplChar, L'/');
+        if (lpw)
+            *lpw = aplCharRatSep;
+////////else
+////////    lpaplChar[iLen++] = L'x';
+
+        // Skip over the formatted number
+        lpaplChar += iLen;
+    } // End IF/ELSE
+
+    // Include a separator
+    *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplRatFC
+
+
+//***************************************************************************
 //  $FormatFloat
 //
 //  Format a floating point number
@@ -964,7 +1131,8 @@ LPAPLCHAR FormatFloat
                           nDigits,                  // # significant digits (0 = default)
                           L'.',                     // Char to use as decimal separator
                           UTF16_OVERBAR,            // Char to use as overbar
-                          FLTDISPFMT_RAWFLT);       // Float display format
+                          FLTDISPFMT_RAWFLT,        // Float display format
+                          FALSE);                   // TRUE iff we're to substitute text for infinity
 } // End FormatFloat
 
 
@@ -981,14 +1149,23 @@ LPAPLCHAR FormatFloatFC
                                     // F-format:  # digits to right of decimal sep
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
-     FLTDISPFMT fltDispFmt)         // Float display format (see FLTDISPFMT)
+     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
 
 {
-    if (!_finite (aplFloat))
+    if (IsInfinity (aplFloat))
     {
         if (aplFloat < 0)
             *lpaplChar++ = aplCharOverbar;
-        *lpaplChar++ = CHR_INFINITY;    // Char for infinity
+
+        // If we're to substitute, ...
+        if (bSubstInf)
+            lpaplChar +=
+              ConvertWideToNameLength (lpaplChar,       // Ptr to output save buffer
+                                      &wcInf,           // Ptr to incoming chars
+                                        1);             // # chars to convert
+        else
+            *lpaplChar++ = wcInf;           // Char for infinity
     } else
     if (aplFloat EQ 0)
     {
@@ -1154,7 +1331,7 @@ LPAPLCHAR FormatFloatFC
                 //   to the right of the decimal point
 
                 // Get the maximum # significant digits
-                iSigDig = DEF_MAX_QUADPP;
+                iSigDig = DEF_MAX_QUADPP64;
 
                 // Handle numbers between 0 and 1
                 if (decpt <= 0)
@@ -1260,12 +1437,12 @@ LPAPLCHAR FormatFloatFC
 
                     // Copy no more than nDigits
 
-                    // No more than DEF_MAX_QUADPP digits
+                    // No more than DEF_MAX_QUADPP64 digits
                     if (nDigits)
-                        nSigDig = min (nDigits, DEF_MAX_QUADPP);
+                        nSigDig = min (nDigits, DEF_MAX_QUADPP64);
                     else
                     {
-                        nSigDig = DEF_MAX_QUADPP;
+                        nSigDig = DEF_MAX_QUADPP64;
                         nDigits = decpt;
                     } // End IF/ELSE
 
@@ -1427,7 +1604,7 @@ LPAPLCHAR FormatExpFmt
         nDigits = -nDigits;
 
     // Get the maximum # significant digits
-    iSigDig = DEF_MAX_QUADPP;
+    iSigDig = DEF_MAX_QUADPP64;
 
     // If there's only one significant digit, ...
     if (nDigits EQ 1)
@@ -1499,6 +1676,204 @@ LPAPLCHAR FormatExpFmt
 
     return lpaplChar;
 } // End FormatExpFmt
+
+
+//***************************************************************************
+//  $FormatAplVfp
+//
+//  Format a variable-precision floating point number
+//***************************************************************************
+
+LPAPLCHAR FormatAplVfp
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     APLVFP   aplVfp,           // The value to format
+     APLUINT  nDigits)          // # significant digits (0 = all)
+
+{
+    return FormatAplVfpFC (lpaplChar,               // Ptr to output save area
+                           aplVfp,                  // The value to format
+                           nDigits,                 // # significant digits (0 = all)
+                           UTF16_DOT,               // Char to use as decimal separator
+                           UTF16_OVERBAR,           // Char to use as overbar
+                           FALSE,                   // TRUE iff nDigits is # fractional digits
+                           FALSE);                  // TRUE iff we're to substitute text for infinity
+} // End FormatAplVfp
+
+
+//***************************************************************************
+//  $FormatAplVfpFC
+//
+//  Format a variable FP using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplVfpFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     APLVFP     aplVfp,             // The value to format
+     APLINT     nDigits,            // # significant digits (0 = all), or
+                                    // # fractional digits (if bFractDigs)
+                                    // If negative, use E-format
+     APLCHAR    aplCharDecimal,     // Char to use as decimal separator
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
+     UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
+
+{
+    mp_exp_t  expptr;               // Ptr to exponent shift
+    APLINT    iLen,                 // String length
+              iRes;                 // Loop counter
+    UBOOL     bNeg;                 // TRUE iff the number is negative
+    APLINT    iDecPt = 0,           // Position of the decimal point (0 = none)
+              iDelDigits,           // # trailing digits to delete if bFractDigs
+              iUnderflow;           // # trailing underflow digits
+    LPCHAR    lpRawFmt;             // Ptr to raw formatted #
+
+    lpRawFmt = (LPCHAR) lpaplChar;
+
+    // Format the VFP
+    mpf_get_str (lpRawFmt,
+                &expptr,
+                 10,
+                abs ((UINT) nDigits),
+                &aplVfp);
+    // Get the char length
+    iLen = lstrlen (lpRawFmt);
+
+    // If displaying fractional digits, ...
+    if (bFractDigs)
+    {
+        // Calculate the # trailing underflow digits
+        iUnderflow = nDigits - max (nDigitsFPC, (APLUINT) iLen);
+        iUnderflow = max (iUnderflow, 0);
+    } else
+        iUnderflow = 0;
+
+    if (iLen EQ 0)
+    {
+        // "Format" the number
+        lpaplChar[0] = L'0';
+
+        // Skip over the formatted number
+        lpaplChar++;
+    } else
+    // If we're formatting in E-format, ...
+    if (nDigits < 0)
+    {
+        // Copy the raw # to a point to the right of itself so we can format it in place
+        CopyMemory (&lpRawFmt[6 + 2 * (iLen + 1)], lpRawFmt, (APLU3264) (iLen + 1));
+        lpRawFmt += 6 + 2 * (iLen + 1);
+
+        // Format the number with exactly nDigits significant digits
+        lpaplChar =
+          FormatExpFmt (lpaplChar,          // Ptr to output save area
+                 (int) -nDigits,            // # significant digits
+                        lpRawFmt,           // Ptr to raw formatted number
+                        expptr,             // Exponent
+                        aplCharDecimal,     // Char to use as decimal separator
+                        aplCharOverbar);    // Char to use as overbar
+    } else
+    {
+        // Convert the char to WCHAR
+        for (iRes = iLen - 1; iRes >= 0; iRes--)
+            lpaplChar[iRes] = ((LPCHAR) lpaplChar)[iRes];
+
+        // Convert a leading minus to aplCharOverbar
+        bNeg = (lpaplChar[0] EQ L'-');
+
+        // Check for Infinity
+        if (lpaplChar[bNeg] EQ DEF_POSINFINITY_CHAR)
+        {
+            if (bSubstInf)
+            {
+                lstrcpyW (&lpaplChar[bNeg], LTEXT_INFINITY);
+                iLen = lstrlenW (lpaplChar);
+            } else
+                lpaplChar[bNeg] = UTF16_INFINITY;
+        } else
+        // If the exponent is zero or negative, ...
+        if (expptr <= 0)
+        {
+            // Get the absolute value of the exponent
+            expptr = -expptr;
+
+            if (bFractDigs)
+                iDelDigits = expptr;
+            else
+                iDelDigits = 0;
+
+            // Make room for "0." and leading zeros
+            // If bFractDigs, nDigits is the # fractional digits to display
+            //   so we must delete trailing expptr chars as
+            //   the format string above produces nDigits
+            //   significant digits
+            MoveMemory (&lpaplChar[bNeg + 2 + expptr], &lpaplChar[bNeg], (APLU3264) (iLen - bNeg) * sizeof (WCHAR));
+
+            // Fill in the leading "0."
+            lpaplChar[bNeg + 0] = L'0';
+            lpaplChar[iDecPt = bNeg + 1] = aplCharDecimal;
+
+            // Fill in the leading zeros
+            FillMemoryW (&lpaplChar[bNeg + 2], expptr, L'0');
+
+            // If fractional digits, ...
+            if (bFractDigs)
+                //     "0."  Digits
+                iLen  = 2 + nDigits;
+            else
+                //     "0." Leading
+                iLen += 2 + expptr;
+        } else
+        // If the # significant digits is smaller than the exponent, ...
+        if (iLen < (bNeg + expptr))
+        {
+            // Fill in trailing zeros sufficient for the decimal point
+            FillMemoryW (&lpaplChar[iLen], (APLU3264) (bNeg + expptr - iLen), L'0');
+            iLen = bNeg + expptr;
+        } else
+        // If the # significant digits is larger than the exponent, ...
+        if (iLen > (bNeg + expptr))
+        {
+            // Make room for the decimal point
+            MoveMemory (&lpaplChar[bNeg + 1 + expptr], &lpaplChar[bNeg + expptr], (APLU3264) (iLen - (bNeg + expptr)) * sizeof (WCHAR));
+
+            // Insert the decimal point
+            lpaplChar[iDecPt = bNeg + expptr] = aplCharDecimal;
+            iLen++;
+        } // End IF/ELSE
+
+        // If we're displaying fractional digits, ...
+        if (bFractDigs)
+        {
+            // If the # digits after the decimal point is less than nDigits, ...
+            if (nDigits > (iLen - iDecPt))
+            {
+                if (iDecPt EQ 0)
+                    lpaplChar[iDecPt = iLen++] = aplCharDecimal;
+
+                // Fill with trailing zeros
+                FillMemoryW (&lpaplChar[iLen], (APLU3264) (nDigits - (iLen - (iDecPt + 1))), L'0');
+
+                //           Decpt    Digits
+                iLen =  1 + iDecPt + nDigits;
+            } // End IF
+
+            // Fill in the trailing underflow digits
+            if (iUnderflow)
+                FillMemoryW (&lpaplChar[iLen - iUnderflow], (APLU3264) iUnderflow, L'_');
+        } // End IF
+
+        // If the number is negative, ...
+        if (bNeg)
+            lpaplChar[0] = aplCharOverbar;
+
+        // Skip over the formatted number
+        lpaplChar += iLen;
+    } // End IF/ELSE/...
+
+    // Include a separator
+    *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplVfpFC
 
 
 //***************************************************************************
@@ -1628,10 +2003,11 @@ LPWCHAR DisplayTransferImm2
           FormatImmedFC (lpwszTemp,                         // Ptr to input string
                          lpSymEntry->stFlags.ImmType,       // Immediate type
                         &lpSymEntry->stData.stLongest,      // Ptr to value to format
-                         DEF_MAX_QUADPP,                    // # significant digits
+                         DEF_MAX_QUADPP64,                  // # significant digits
                          UTF16_DOT,                         // Char to use as decimal separator
                          UTF16_OVERBAR,                     // Char to use as overbar
-                         FLTDISPFMT_RAWFLT);                // Float display format
+                         FLTDISPFMT_RAWFLT,                 // Float display format
+                         FALSE);                            // TRUE iff we're to substitute text for infinity
     return lpwszTemp;
 } // End DisplayTransferImm2
 
@@ -1779,10 +2155,11 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatFloatFC (lpwszTemp,             // Ptr to output save area
                                  *((LPAPLFLOAT) lpMemArg)++, // Ptr to float value
-                                 DEF_MAX_QUADPP,        // # significant digits
+                                 DEF_MAX_QUADPP64,      // # significant digits
                                  L'.',                  // Char to use as decimal separator
                                  UTF16_OVERBAR,         // Char to use as overbar
-                                 FLTDISPFMT_RAWFLT);    // Float display format
+                                 FLTDISPFMT_RAWFLT,     // Float display format
+                                 FALSE);                // TRUE iff we're to substitute text for infinity
             break;
 
         case ARRAY_CHAR:

@@ -50,6 +50,8 @@ extern MAGIC_FCNOPR MFO_DydDnShoe;
 extern MAGIC_FCNOPR MFO_DydUpShoe;
 extern MAGIC_FCNOPR MFO_DydLRShoeUnd;
 extern MAGIC_FCNOPR MFO_SD;
+extern MAGIC_FCNOPR MFO_MonDomino;
+extern MAGIC_FCNOPR MFO_DydDomino;
 
 
 //***************************************************************************
@@ -746,6 +748,8 @@ UBOOL InitMagicFunctions
     lpMemPTD->hGlbMFO[MFOE_DydUpShoe    ]  = Init1MagicFunction (MFON_DydUpShoe    , &MFO_DydUpShoe    , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_DydLRShoeUnd ]  = Init1MagicFunction (MFON_DydLRShoeUnd , &MFO_DydLRShoeUnd , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_SD           ]  = Init1MagicFunction (MFON_SD           , &MFO_SD           , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_MonDomino    ]  = Init1MagicFunction (MFON_MonDomino    , &MFO_MonDomino    , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_DydDomino    ]  = Init1MagicFunction (MFON_DydDomino    , &MFO_DydDomino    , lpMemPTD, hWndEC, NULL);
 
     // Set []IO to zero in the symbol table for []VR
     lpMemPTD->htsPTD_MonVR.lpSymQuad[SYSVAR_IO]->stData.stBoolean = 0;

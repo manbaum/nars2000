@@ -136,7 +136,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
         goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft))
+    if (!IsNumeric (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
     // Get left arg's global ptrs
@@ -154,19 +154,32 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
         case ARRAY_BOOL:
         case ARRAY_INT:
         case ARRAY_APA:
-            // Calc the absolute value so we can compare against valid values
-            aplLongestTmp = abs64 (aplLongestLft);
+            break;
 
-            // Check for LEFT DOMAIN ERROR
-            if (!bRet
-             || (aplLongestTmp NE 1
-              && aplLongestTmp NE 2))
-                goto LEFT_DOMAIN_EXIT;
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an integer using System CT
+            aplLongestLft = GetNextRatIntGlb (hGlbLft, 0, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an integer using System CT
+            aplLongestLft = GetNextVfpIntGlb (hGlbLft, 0, &bRet);
+
             break;
 
         defstop
             break;
     } // End SWITCH
+
+    // Calc the absolute value so we can compare against valid values
+    aplLongestTmp = abs64 (aplLongestLft);
+
+    // Check for LEFT DOMAIN ERROR
+    if (!bRet
+     || (aplLongestTmp NE 1
+      && aplLongestTmp NE 2))
+        goto LEFT_DOMAIN_EXIT;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -505,10 +518,11 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                 lpwszTemp =
                                   FormatFloatFC (lpwszTemp,                     // Ptr to output save area
                                                  lpSymEntry->stData.stFloat,    // The value to format
-                                                 DEF_MAX_QUADPP,                // Precision to use
+                                                 DEF_MAX_QUADPP64,              // Precision to use
                                                  L'.',                          // Char to use as decimal separator
                                                  UTF16_OVERBAR,                 // Char to use as overbar
-                                                 FLTDISPFMT_RAWFLT);            // Float display format
+                                                 FLTDISPFMT_RAWFLT,             // Float display format
+                                                 FALSE);                        // TRUE iff we're to substitute text for infinity
                         } else
                         {
                             // Format & save the rank
@@ -540,10 +554,11 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                     lpwszTemp =
                                       FormatFloatFC (lpwszTemp,                     // Ptr to output save area
                                                      *(LPAPLFLOAT) &aplLongestItm,  // The value to format
-                                                     DEF_MAX_QUADPP,                // Precision to use
+                                                     DEF_MAX_QUADPP64,              // Precision to use
                                                      L'.',                          // Char to use as decimal separator
                                                      UTF16_OVERBAR,                 // Char to use as overbar
-                                                     FLTDISPFMT_RAWFLT);            // Float display format
+                                                     FLTDISPFMT_RAWFLT,             // Float display format
+                                                     FALSE);                        // TRUE iff we're to substitute text for infinity
                             } // End FOR
                         } // End IF/ELSE
 

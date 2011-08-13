@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,23 +46,35 @@ PRIMSPEC PrimSpecQuery =
     NULL,   // &PrimFnMonQueryFisI, -- Can't happen w/Query
     NULL,   // &PrimFnMonQueryFisF, -- can't happen w/Query
 
-    // Dyadic functions
-    NULL,   // &PrimFnDyd_EM, -- Can't happen w/Query
-    NULL,   // &PrimSpecQueryStorageTypeDyd, -- Can't happen w/Query
-    NULL,   // &PrimFnDydQueryAPA_EM, -- Can't happen w/Query
+    &PrimFnMonQueryRisR,
 
-    NULL,   // &PrimFnDydQueryBisBvB, -- Can't happen w/Query
-    NULL,   // &PrimFnDydQueryBisIvI, -- Can't happen w/Query
-    NULL,   // &PrimFnDydQueryBisFvF, -- Can't happen w/Query
-    NULL,   // &PrimFnDydQueryBisCvC, -- Can't happen w/Query
+////               VisR,     // Handled via type promotion (to VisV)
+    &PrimFnMonQueryVisV,
+
+    // Dyadic functions
+    NULL,   // &PrimFnDyd_EM, -- Dyadic Query not scalar
+    NULL,   // &PrimSpecQueryStorageTypeDyd, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryAPA_EM, -- Dyadic Query not scalar
+
+    NULL,   // &PrimFnDydQueryBisBvB, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisIvI, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisFvF, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisCvC, -- Dyadic Query not scalar
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
     NULL,   // &PrimFnDydQueryIisIvI,
-    NULL,   // &PrimFnDydQueryIisFvF, -- Can't happen w/Query
+    NULL,   // &PrimFnDydQueryIisFvF, -- Dyadic Query not scalar
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydQueryFisIvI, -- Can't happen w/Query
-    NULL,   // &PrimFnDydQueryFisFvF, -- Can't happen w/Query
+    NULL,   // &PrimFnDydQueryFisIvI, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryFisFvF, -- Dyadic Query not scalar
+
+    NULL,   // &PrimFnDydQueryBisRvR, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryRisRvR, -- Dyadic Query not scalar
+
+    NULL,   // &PrimFnDydQueryBisVvV, -- Dyadic Query not scalar
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydQueryVisVvV, -- Dyadic Query not scalar
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
@@ -244,6 +256,114 @@ APLINT PrimFnMonQueryIisF
 
 
 //***************************************************************************
+//  $PrimFnMonQueryRisR
+//
+//  Primitive scalar function monadic Query:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonQueryRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLBOOL bQuadIO;            // []IO
+    APLRAT  mpqRes = {0};       // Result
+
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
+
+    // Check for DOMAIN ERROR
+    if (mpq_cmp_ui (&aplRatRht, bQuadIO, 1) < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // If the RAT is an integer,  ...
+    if (mpq_integer_p (&aplRatRht))
+    {
+#ifdef DEBUG
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+#else
+  #define lpMemPTD  GetMemPTD ()
+#endif
+        // Initialize the result to 0/1
+        mpq_init (&mpqRes);
+
+        // Generate a uniformly-distributed random number in [0, Rht)
+        mpz_urandomm (mpq_numref (&mpqRes),
+                      lpMemPTD->randState,
+                      mpq_numref (&aplRatRht));
+        // Add in []IO
+        mpz_add_ui (mpq_numref (&mpqRes), mpq_numref (&mpqRes), bQuadIO);
+    } else
+        // Otherwise, it's an error
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return mpqRes;
+#ifndef DEBUG
+  #undef  lpMemPTD
+#endif
+} // End PrimFnMonQueryRisR
+
+
+//***************************************************************************
+//  $PrimFnMonQueryVisV
+//
+//  Primitive scalar function monadic Query:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonQueryVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLBOOL      bQuadIO;           // []IO
+    APLMPI       mpzRes = {0};      // Result as MPI
+    APLVFP       mpfRes = {0};      // Result as VFP
+
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
+
+    // Check for DOMAIN ERROR
+    if (mpf_cmp_ui (&aplVfpRht, bQuadIO) < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // If the VFP is an integer,  ...
+    if (mpf_integer_p (&aplVfpRht))
+    {
+#ifdef DEBUG
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+#else
+  #define lpMemPTD  GetMemPTD ()
+#endif
+        // Initialize the result to R
+        mpz_init_set_f (&mpzRes, &aplVfpRht);
+
+        // Generate a uniformly-distributed random number in [0, Rht)
+        mpz_urandomm (&mpzRes,
+                      lpMemPTD->randState,
+                      &mpzRes);
+        // Add in []IO
+        mpz_add_ui (&mpzRes, &mpzRes, bQuadIO);
+
+        // Copy to the VFP result
+        mpf_init_set_z (&mpfRes, &mpzRes);
+
+        // We no longer need this storage
+        Myz_clear (&mpzRes);
+    } else
+        // Otherwise, it's an error
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return mpfRes;
+} // End PrimFnMonQueryVisV
+
+
+//***************************************************************************
 //  $PrimFnDydQuery_EM_YY
 //
 //  Primitive function for dyadic Query ("deal")
@@ -274,7 +394,9 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                   aplRankRht;       // Right ...
     HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
                   hGlbRht = NULL,   // Right ...
-                  hGlbRes = NULL;   // Result   ...
+                  hGlbRes = NULL,   // Result   ...
+                  lpSymGlbLft,      // Ptr to left arg as global number
+                  lpSymGlbRht;      // ...    right ...
     LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
                   lpMemRht = NULL;  // Ptr to right ...
     LPAPLINT      lpMemRes = NULL;  // Ptr to result   ...
@@ -339,7 +461,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                        &aplFloatLft,    // Ptr to float ...
                         NULL,           // Ptr to WCHAR ...
                         NULL,           // Ptr to longest ...
-                        NULL,           // Ptr to lpSym/Glb ...
+                       &lpSymGlbLft,    // Ptr to lpSym/Glb ...
                         NULL,           // Ptr to ...immediate type ...
                         NULL);          // Ptr to array type ...
     GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
@@ -347,7 +469,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                        &aplFloatRht,    // Ptr to float ...
                         NULL,           // Ptr to WCHAR ...
                         NULL,           // Ptr to longest ...
-                        NULL,           // Ptr to lpSym/Glb ...
+                       &lpSymGlbRht,    // Ptr to lpSym/Glb ...
                         NULL,           // Ptr to ...immediate type ...
                         NULL);          // Ptr to array type ...
     // Check for LEFT/RIGHT DOMAIN ERRORs
@@ -359,6 +481,18 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     if (bRet && IsSimpleFlt (aplTypeRht))
         // Attempt to convert the float to an integer using System CT
         aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+    if (bRet && IsRat (aplTypeLft))
+        // Attempt to convert the RAT to an integer using System CT
+        aplIntegerLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+    if (bRet && IsRat (aplTypeRht))
+        // Attempt to convert the RAT to an integer using System CT
+        aplIntegerRht = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht, &bRet);
+    if (bRet && IsVfp (aplTypeLft))
+        // Attempt to convert the VFP to an integer using System CT
+        aplIntegerLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+    if (bRet && IsVfp (aplTypeRht))
+        // Attempt to convert the VFP to an integer using System CT
+        aplIntegerRht = mpf_get_ctsa ((LPAPLVFP) lpSymGlbRht, &bRet);
 
     if (!bRet
      || aplIntegerLft < 0

@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <math.h>
+#include <float.h>
 #include "headers.h"
 
 
@@ -45,6 +46,11 @@ PRIMSPEC PrimSpecDownCaret = {
     NULL,   // &PrimFnMonDownCaretFisI, -- Can't happen w/DownCaret
     NULL,   // &PrimFnMonDownCaretFisF, -- Can't happen w/DownCaret
 
+    NULL,   // &PrimFnMonDownCaretRisR, -- Can't happen w/DownCaret
+
+////               VisR,    // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonDownCaretVisV, -- Can't happen w/DownCaret
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecDownCaretStorageTypeDyd,
@@ -62,6 +68,13 @@ PRIMSPEC PrimSpecDownCaret = {
 ////                   FisBvB,  // Handled via type promotion (to FisIvI)
     &PrimFnDydDownCaretFisIvI,
     &PrimFnDydDownCaretFisFvF,
+
+    NULL,   // &PrimFnDydDownCaretBisRvR, -- Can't happen w/DownCaret
+    &PrimFnDydDownCaretRisRvR,
+
+    NULL,   // &PrimFnDydDownCaretBisVvV, -- Can't happen w/DownCaret
+////                  VisRvR,   // Handled via type promotion (to VisVvV)
+    &PrimFnDydDownCaretVisVvV,
 
     NULL,   // &PrimFnMonDownCaretB64isB64, -- Can't happen w/DownCaret
     NULL,   // &PrimFnMonDownCaretB32isB32, -- Can't happen w/DownCaret
@@ -209,6 +222,95 @@ APLFLOAT gcdAplFloat
 
 
 //***************************************************************************
+//  $gcdAplRat
+//
+//  GCD (Greatest Common Divisor) for aplRats
+//***************************************************************************
+
+APLRAT gcdAplRat
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT aplTmp = {0},
+           aplLft,
+           aplRht;
+
+    // Initialize the temp
+    mpq_init (&aplTmp);
+
+    // Ensure both arguments are non-negative
+    aplLft = PrimFnMonStileRisR (aplRatLft, lpPrimSpec);
+    aplRht = PrimFnMonStileRisR (aplRatRht, lpPrimSpec);
+
+    while (!IsMpq0 (&aplLft))
+    {
+////////aplTmp = aplLft;
+////////aplLft = aplRht % aplLft;
+////////aplRht = aplTmp;
+
+        mpq_set (&aplTmp, &aplLft);
+        mpq_mod (&aplLft, &aplRht, &aplLft);
+        mpq_set (&aplRht, &aplTmp);
+    } // End WHILE
+
+    // The sign of the result is the sign of the left argument
+    if (mpq_sgn (&aplRatLft) < 0)
+        mpq_neg (&aplRht, &aplRht);
+
+    // We no longer need this storage
+    Myq_clear (&aplTmp);
+
+    return aplRht;
+} // End gcdAplRat
+
+
+//***************************************************************************
+//  $gcdAplVfp
+//
+//  GCD (Greatest Common Divisor) for aplVfps
+//***************************************************************************
+
+APLVFP gcdAplVfp
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP aplTmp = {0},
+           aplLft,
+           aplRht;
+
+    mpf_init (&aplTmp);
+
+    // Ensure both arguments are non-negative
+    aplLft = PrimFnMonStileVisV (aplVfpLft, lpPrimSpec);
+    aplRht = PrimFnMonStileVisV (aplVfpRht, lpPrimSpec);
+
+    while (!IsMpf0 (&aplLft))
+    {
+////////aplTmp = aplLft;
+////////aplLft = aplRht % aplLft;
+////////aplRht = aplTmp;
+
+        mpf_set (&aplTmp, &aplLft);
+        mpf_mod (&aplLft, &aplRht, &aplLft);
+        mpf_set (&aplRht, &aplTmp);
+    } // End WHILE
+
+    // The sign of the result is the sign of the left argument
+    if (mpf_sgn (&aplVfpLft) < 0)
+        mpf_neg (&aplRht, &aplRht);
+
+    // We no longer need this storage
+    Myf_clear (&aplTmp);
+
+    return aplRht;
+} // End gcdAplVfp
+
+
+//***************************************************************************
 //  $PrimFnDydDownCaretBisBvB
 //
 //  Primitive scalar function dyadic DownCaret:  B {is} B fn B
@@ -332,8 +434,99 @@ APLFLOAT PrimFnDydDownCaretFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for indeterminates:  gcd (±_, 0)  or  gcd (0, ±_)
+    if ((IsInfinity (aplFloatLft) && (aplFloatRht EQ 0))
+     || (IsInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_0GCDInf,
+                                     aplFloatRht);
+
+    // Check for special cases:  gcd (±_, N)  or  gcd (N, ±_)
+    if (IsInfinity (aplFloatLft)
+     || IsInfinity (aplFloatRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
     return gcdAplFloat (aplFloatLft, aplFloatRht, lpPrimSpec);
 } // End PrimFnDydDownCaretFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydDownCaretRisRvR
+//
+//  Primitive scalar function dyadic DownCaret:  R {is} fn R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydDownCaretRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT aplTmp = {0};
+
+    // Check for indeterminates:  gcd (±_, 0)  or  gcd (0, ±_)
+    if ((mpq_inf_p (&aplRatLft) && IsMpq0 (&aplRatRht))
+     || (mpq_inf_p (&aplRatRht) && IsMpq0 (&aplRatLft)))
+        return mpq_QuadICValue (aplRatLft,
+                                ICNDX_0GCDInf,
+                                aplRatRht,
+                                aplTmp);
+    // Check for special cases:  gcd (±_, N)  or  gcd (N, ±_)
+    if (mpq_inf_p (&aplRatLft)
+     || mpq_inf_p (&aplRatRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // If the denominators are both 1, ...
+    if (IsMpz1 (mpq_denref (&aplRatLft))
+     && IsMpz1 (mpq_denref (&aplRatRht)))
+    {
+        APLRAT mpqRes = {0};
+
+        // Calculate the GCD on the numerators
+        mpz_gcd (mpq_numref (&mpqRes),
+                 mpq_numref (&aplRatLft),
+                 mpq_numref (&aplRatLft));
+        // The sign of the result is the sign of the left arg
+        if (mpz_sgn (mpq_numref (&aplRatLft)) EQ -1)
+            mpz_neg (mpq_numref (&aplRatLft), mpq_numref (&aplRatLft));
+
+        // Set the denominator to 1
+        mpz_set_ui (mpq_denref (&mpqRes), 1);
+
+        return mpqRes;
+    } else
+        return gcdAplRat (aplRatLft, aplRatRht, lpPrimSpec);
+} // End PrimFnDydDownCaretRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydDownCaretVisVvV
+//
+//  Primitive scalar function dyadic DownCaret:  V {is} fn V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydDownCaretVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP aplTmp = {0};
+
+    // Check for indeterminates:  gcd (±_, 0)  or  gcd (0, ±_)
+    if ((mpf_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
+     || (mpf_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
+        return mpf_QuadICValue (aplVfpLft,
+                                ICNDX_0GCDInf,
+                                aplVfpRht,
+                                aplTmp);
+    // Check for special cases:  gcd (±_, N)  or  gcd (N, ±_)
+    if (mpf_inf_p (&aplVfpLft)
+     || mpf_inf_p (&aplVfpRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return gcdAplVfp (aplVfpLft, aplVfpRht, lpPrimSpec);
+} // End PrimFnDydDownCaretVisVvV
 
 
 //***************************************************************************

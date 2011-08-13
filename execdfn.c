@@ -1696,6 +1696,7 @@ void InitVarSTEs
             case TKT_AXISARRAY:
             case TKT_CHRSTRAND:
             case TKT_NUMSTRAND:
+            case TKT_NUMSCALAR:
                 // Get the arg global memory handle
                 hGlbArg = lptkArg->tkData.tkGlbData;
 
@@ -2056,8 +2057,9 @@ UBOOL InitFcnSTEs
             {
                 case TKT_FCNARRAY:
                 case TKT_VARARRAY:
-                case TKT_NUMSTRAND:
                 case TKT_CHRSTRAND:
+                case TKT_NUMSTRAND:
+                case TKT_NUMSCALAR:
                 case TKT_AXISARRAY:
                     // Increment the RefCnt
                     DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);

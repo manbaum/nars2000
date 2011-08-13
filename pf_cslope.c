@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -754,6 +754,54 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
                 ((LPAPLHETERO) lpMemRes)[uRes] = CopySymGlbDir_PTB (((LPAPLHETERO) lpMemRht)[uRht]);
+            } // End FOR
+
+            break;
+
+        case ARRAY_RAT:
+            // Loop through the elements in the result
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Use the index in lpMemOdo to calculate the
+                //   corresponding index in lpMemRes where the
+                //   next value from lpMemRht goes.
+                for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
+                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+
+                // Increment the odometer in lpMemOdo subject to
+                //   the values in lpMemDimRes
+                IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &((LPAPLRAT) lpMemRht)[uRht]);
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            // Loop through the elements in the result
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Use the index in lpMemOdo to calculate the
+                //   corresponding index in lpMemRes where the
+                //   next value from lpMemRht goes.
+                for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
+                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+
+                // Increment the odometer in lpMemOdo subject to
+                //   the values in lpMemDimRes
+                IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
             } // End FOR
 
             break;

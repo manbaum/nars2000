@@ -118,9 +118,7 @@ int ChangeRefCntDir_PTB
                         // Clear the flag
                         lpHeader->SkipRefCntIncr = FALSE;
                     else
-                    {
                         lpHeader->RefCnt += iIncr;
-                    } // End IF/ELSE
 
                     RefCnt = lpHeader->RefCnt;
 #undef  lpHeader

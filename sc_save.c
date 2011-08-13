@@ -345,17 +345,18 @@ UBOOL CmdSave_EM
                                     // Ensure we format with full precision in case it's floating point
                                     uQuadPP = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
                                     if (IsImmFlt (stFlags.ImmType))
-                                        lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP;
+                                        lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
 
                                     // Format the value
                                     lpaplChar =
                                       FormatImmedFC (lpaplChar,                         // Ptr to input string
                                                      stFlags.ImmType,                   // Immediate type
                                                     &lpSymEntry->stData.stLongest,      // Ptr to value to format
-                                                     DEF_MAX_QUADPP,                    // Precision to use
+                                                     DEF_MAX_QUADPP64,                  // Precision to use
                                                      UTF16_DOT,                         // Char to use as decimal separator
                                                      UTF16_BAR,                         // Char to use as overbar
-                                                     FLTDISPFMT_RAWFLT);                // Float display format
+                                                     FLTDISPFMT_RAWFLT,                 // Float display format
+                                                     TRUE);                             // TRUE iff we're to substitute text for infinity
                                     // Restore user's precision
                                     lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
 
@@ -1309,10 +1310,11 @@ LPAPLCHAR SavedWsFormGlbVar
                     lpaplChar =
                       FormatFloatFC (lpaplChar,             // Ptr to output save area
                                     *(LPAPLFLOAT) lpMemObj, // The value to format
-                                     DEF_MAX_QUADPP,                                // Precision to use
+                                     DEF_MAX_QUADPP64,      // Precision to use
                                      UTF16_DOT,             // Char to use as decimal separator
                                      UTF16_BAR,             // Char to use as overbar
-                                     FLTDISPFMT_RAWFLT);                            // Float display format
+                                     FLTDISPFMT_RAWFLT,     // Float display format
+                                     TRUE);                 // TRUE iff we're to substitute text for infinity
                 break;
 
             case ARRAY_CHAR:
@@ -1390,17 +1392,18 @@ LPAPLCHAR SavedWsFormGlbVar
                                 // Ensure we format with full precision in case it's floating point
                                 uQuadPP = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
                                 if (IsImmFlt (stFlags.ImmType))
-                                    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP;
+                                    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
 
                                 // Format the value
                                 lpaplChar =
                                   FormatImmedFC (lpaplChar,                             // Ptr to input string
                                                  stFlags.ImmType,                       // Immediate type
                                                 &lpSymEntry->stData.stLongest,          // Ptr to value to format
-                                                 DEF_MAX_QUADPP,                        // Precision to use
+                                                 DEF_MAX_QUADPP64,                      // Precision to use
                                                  UTF16_DOT,                             // Char to use as decimal separator
                                                  UTF16_BAR,                             // Char to use as overbar
-                                                 FLTDISPFMT_RAWFLT);                    // Float display format
+                                                 FLTDISPFMT_RAWFLT,                     // Float display format
+                                                 TRUE);                                 // TRUE iff we're to substitute text for infinity
                                 // Restore user's precision
                                 lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
 
@@ -1472,6 +1475,32 @@ LPAPLCHAR SavedWsFormGlbVar
                         break;
                 } // End FOR
 
+                break;
+
+            case ARRAY_RAT:
+                // Loop through the array elements
+                for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLRAT) lpMemObj)++)
+                    // Format the value
+                    lpaplChar =
+                      FormatAplRatFC (lpaplChar,            // Ptr to output save area
+                                     *(LPAPLRAT) lpMemObj,  // The value to format
+                                      UTF16_BAR,            // Char to use as overbar
+                                      L'/',                 // Char to use as rational separator
+                                      TRUE);                // TRUE iff we're to substitute text for infinity
+                break;
+
+            case ARRAY_VFP:
+                // Loop through the array elements
+                for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLVFP) lpMemObj)++)
+                    // Format the value
+                    lpaplChar =
+                      FormatAplVfpFC (lpaplChar,            // Ptr to output save area
+                                     *(LPAPLVFP) lpMemObj,  // The value to format
+                                      0,                    // # significant digits (0 = all)
+                                      L'.',                 // Char to use as decimal separator
+                                      UTF16_BAR,            // Char to use as overbar
+                                      FALSE,                // TRUE iff the number if to be formatted with trailing zeros
+                                      TRUE);                // TRUE iff we're to substitute text for infinity
                 break;
 
             defstop

@@ -181,6 +181,10 @@ TOKEN_TYPES TranslateImmTypeToTknType
         case IMMTYPE_PRIMOP3:
             return TKT_OP3IMMED;
 
+        case IMMTYPE_RAT:
+        case IMMTYPE_VFP:
+            return TKT_VARARRAY;
+
         defstop
             return -1;              // To keep the compiler happy
     } // End SWITCH
@@ -211,6 +215,12 @@ STRAND_TYPES TranslateImmTypeToStrandType
 
         case IMMTYPE_FLOAT:
             return STRAND_FLOAT;
+
+        case IMMTYPE_RAT:
+            return STRAND_RAT;
+
+        case IMMTYPE_VFP:
+            return STRAND_VFP;
 
         defstop
             return -1;              // To keep the compiler happy
@@ -243,6 +253,12 @@ ARRAY_TYPES TranslateImmTypeToArrayType
         case IMMTYPE_FLOAT:
             return ARRAY_FLOAT;
 
+        case IMMTYPE_RAT:
+            return ARRAY_RAT;
+
+        case IMMTYPE_VFP:
+            return ARRAY_VFP;
+
         defstop
             return (APLSTYPE) -1;   // To keep the compiler happy
     } // End SWITCH
@@ -274,6 +290,12 @@ IMM_TYPES TranslateArrayTypeToImmType
 
         case ARRAY_CHAR:
             return IMMTYPE_CHAR;
+
+        case ARRAY_RAT:
+            return IMMTYPE_RAT;
+
+        case ARRAY_VFP:
+            return IMMTYPE_VFP;
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
@@ -317,6 +339,12 @@ STRAND_TYPES TranslateArrayTypeToStrandType
         case ARRAY_NESTED:
             return STRAND_NESTED;
 
+        case ARRAY_RAT:
+            return STRAND_RAT;
+
+        case ARRAY_VFP:
+            return STRAND_VFP;
+
         defstop
             return -1;              // To keep the compiler happy
     } // End SWITCH
@@ -356,10 +384,53 @@ ARRAY_TYPES TranslateStrandTypeToArrayType
         case STRAND_NESTED:
             return ARRAY_NESTED;
 
+        case STRAND_RAT:
+            return ARRAY_RAT;
+
+        case STRAND_VFP:
+            return ARRAY_VFP;
+
         defstop
             return ARRAY_ERROR;     // To keep the compiler happy
     } // End SWITCH
 } // End TranslateStrandTypeToArrayType
+
+
+//***************************************************************************
+//  $TranslatePnTypeToArrayType
+//
+//  Translate a PN_NUMTYPE_xxx to an ARRAY_xxx
+//***************************************************************************
+
+ARRAY_TYPES TranslatePnTypeToArrayType
+    (PNNUMTYPE pnType)
+
+{
+    // Split cases based upon the storage type
+    switch (pnType)
+    {
+        case PN_NUMTYPE_BOOL:
+            return ARRAY_BOOL;
+
+        case PN_NUMTYPE_INT:
+            return ARRAY_INT;
+
+        case PN_NUMTYPE_FLT:
+            return ARRAY_FLOAT;
+
+        case PN_NUMTYPE_RAT:
+            return ARRAY_RAT;
+
+        case PN_NUMTYPE_VFP:
+            return ARRAY_VFP;
+
+        case PN_NUMTYPE_HC2:
+        case PN_NUMTYPE_HC4:
+        case PN_NUMTYPE_HC8:
+        defstop
+            return ARRAY_ERROR;
+    } // End SWITCH
+} // End TranslatePnTypeToArrayType
 
 
 //***************************************************************************
@@ -474,6 +545,12 @@ ARRAY_TYPES TranslateCharToArrayType
 
         case 'N':
             return ARRAY_NESTED;
+
+        case 'R':
+            return ARRAY_RAT;
+
+        case 'V':
+            return ARRAY_VFP;
 
         defstop
             return '?';
@@ -688,7 +765,9 @@ UINT TranslateExitTypeToReturnCode
 //***************************************************************************
 
 APLFLOAT TranslateQuadICIndex
-    (IC_INDICES icIndex)
+    (APLFLOAT   aplFloatLft,
+     IC_INDICES icIndex,
+     APLFLOAT   aplFloatRht)
 
 {
     // Split cases based upon the []IC index value
@@ -711,6 +790,12 @@ APLFLOAT TranslateQuadICIndex
 
         case ICVAL_NEG_INFINITY:
             return NegInfinity;
+
+        case ICVAL_LEFT:
+            return aplFloatLft;
+
+        case ICVAL_RIGHT:
+            return aplFloatRht;
 
         defstop
             return 0;

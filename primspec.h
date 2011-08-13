@@ -145,6 +145,10 @@ typedef APLFLOAT FISI         (APLINT            , struct tagPRIMSPEC *lpPrimSpe
 typedef APLFLOAT FISF         (APLFLOAT          , struct tagPRIMSPEC *lpPrimSpec);
 typedef APLFLOAT FISC         (APLCHAR           , struct tagPRIMSPEC *lpPrimSpec);
 
+typedef APLRAT   RISR         (APLRAT            , struct tagPRIMSPEC *lpPrimSpec);
+
+typedef APLVFP   VISV         (APLVFP            , struct tagPRIMSPEC *lpPrimSpec);
+
 typedef APLB64   B64ISB64     (APLB64            , struct tagPRIMSPEC *lpPrimSpec);
 typedef APLB32   B32ISB32     (APLB32            , struct tagPRIMSPEC *lpPrimSpec);
 typedef APLB16   B16ISB16     (APLB16            , struct tagPRIMSPEC *lpPrimSpec);
@@ -210,6 +214,12 @@ typedef APLFLOAT FISCVI       (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpe
 typedef APLFLOAT FISCVF       (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
 typedef APLFLOAT FISCVC       (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
 
+typedef APLBOOL  BISRVR       (APLRAT  , APLRAT  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLRAT   RISRVR       (APLRAT  , APLRAT  , struct tagPRIMSPEC *lpPrimSpec);
+
+typedef APLBOOL  BISVVV       (APLVFP  , APLVFP  , struct tagPRIMSPEC *lpPrimSpec);
+typedef APLVFP   VISVVV       (APLVFP  , APLVFP  , struct tagPRIMSPEC *lpPrimSpec);
+
 typedef APLB64   B64ISB64VB64 (APLB64  , APLB64  , struct tagPRIMSPEC *lpPrimSpec);
 typedef APLB32   B32ISB32VB32 (APLB32  , APLB32  , struct tagPRIMSPEC *lpPrimSpec);
 typedef APLB16   B16ISB16VB16 (APLB16  , APLB16  , struct tagPRIMSPEC *lpPrimSpec);
@@ -235,6 +245,11 @@ typedef struct tagPRIMSPEC
     FISI               *FisI;               // Monadic F {is} I
     FISF               *FisF;               // ...            F
 
+    RISR               *RisR;               // Monadic R {is} R
+
+////VISR               *VisR;               // Handled via type promotion (to VisV)
+    VISV               *VisV;               // Monadic V {is} V
+
     // Dyadic functions
     LPPRIMFN_DYD        PrimFnDyd_EM_YY;    // Ptr to dyadic primitive function
     LPSTORAGE_TYPE_DYD  StorageTypeDyd;     // ...           storage type ...
@@ -252,6 +267,13 @@ typedef struct tagPRIMSPEC
 ////FISBVB             *FisBvB;             // Handled via type promotion (to FisFvF)
     FISIVI             *FisIvI;             // Dyadic F {is} I vs I
     FISFVF             *FisFvF;             // ...           F vs F
+
+    BISRVR             *BisRvR;             // Dyadic B {is} R vs R
+    RISRVR             *RisRvR;             // Dyadic R {is} R vs R
+
+    BISVVV             *BisVvV;             // Dyadic B {is} V vs V
+////VISRVV             *VisRvR;             // Handled via type promotion (to VisVvV)
+    VISVVV             *VisVvV;             // Dyadic V {is} V vs V
 
     B64ISB64           *B64isB64;           // Monadic B64 {is} B64
     B32ISB32           *B32isB32;           // Monadic B32 {is} B32

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,13 +38,18 @@ PRIMSPEC PrimSpecBar =
     NULL,   // &PrimFnMonBarBisI, -- Can't happen w/Bar
     NULL,   // &PrimFnMonBarBisF, -- Can't happen w/Bar
 
-////               IisB,     // Handled via type promotion (to IisI)
+////               IisB,        // Handled via type promotion (to IisI)
     &PrimFnMonBarIisI,
     NULL,   // &PrimFnMonBarIisF, -- Can't happen w/Bar
 
-////               FisB,     // Handled via type promotion (to FisI)
+////               FisB,        // Handled via type promotion (to FisI)
     &PrimFnMonBarFisI,
     &PrimFnMonBarFisF,
+
+    &PrimFnMonBarRisR,
+
+////               VisR,        // Handled via type promotion (to VisV)
+    &PrimFnMonBarVisV,
 
     // Dyadic functions
     &PrimFnDyd_EM_YY,
@@ -63,6 +68,13 @@ PRIMSPEC PrimSpecBar =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydBarFisIvI,
     &PrimFnDydBarFisFvF,
+
+    NULL,   // &PrimFnDydBarBisRvR, -- Can't happen w/Bar
+    &PrimFnDydBarRisRvR,
+
+    NULL,   // &PrimFnDydBarBisVvV, -- Can't happen w/Bar
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydBarVisVvV,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecBar};
@@ -182,6 +194,52 @@ APLFLOAT PrimFnMonBarFisF
 {
     return -aplFloatRht;
 } // End PrimFnMonBarFisF
+
+
+//***************************************************************************
+//  $PrimFnMonBarRisR
+//
+//  Primitive scalar function monadic Bar:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonBarRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Initialize the result
+    mpq_init (&mpqRes);
+
+    // Negate the Rational
+    mpq_neg (&mpqRes, &aplRatRht);
+
+    return mpqRes;
+} // End PrimFnMonBarRisR
+
+
+//***************************************************************************
+//  $PrimFnMonBarVisV
+//
+//  Primitive scalar function monadic Bar:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonBarVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    // Negate the Variable FP
+    mpf_neg (&mpfRes, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnMonBarVisV
 
 
 //***************************************************************************
@@ -352,14 +410,89 @@ APLFLOAT PrimFnDydBarFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for indeterminates:  _ - _  or  ¯_ - ¯_
+
     // If the args are both infinite and of the same signs, ...
-    if (!_finite (aplFloatLft)
-     && !_finite (aplFloatRht)
+    if (IsInfinity (aplFloatLft)
+     && IsInfinity (aplFloatRht)
      && SIGN_APLFLOAT (aplFloatLft) EQ SIGN_APLFLOAT (aplFloatRht))
-        return TranslateQuadICIndex (ICNDX_InfSUBInf);
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_InfSUBInf,
+                                     aplFloatRht);
 
     return (aplFloatLft - aplFloatRht);
 } // End PrimFnDydBarFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydBarRisRvR
+//
+//  Primitive scalar function dyadic Bar:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydBarRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Check for indeterminates:  _ - _  or  ¯_ - ¯_
+
+    // If the args are both infinite and of the same signs, ...
+    if (mpq_inf_p (&aplRatLft)
+     && mpq_inf_p (&aplRatRht)
+     && mpq_sgn (&aplRatLft) EQ mpq_sgn (&aplRatRht))
+        return mpq_QuadICValue (aplRatRht,          // No left arg
+                                ICNDX_InfSUBInf,
+                                aplRatRht,
+                                mpqRes);
+    // Initialize the result
+    mpq_init (&mpqRes);
+
+    // Subtract the Rationals
+    mpq_sub (&mpqRes, &aplRatLft, &aplRatRht);
+
+    // Canonicalize the Rational
+    mpq_canonicalize (&mpqRes);
+
+    return mpqRes;
+} // End PrimFnDydBarRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydBarVisVvV
+//
+//  Primitive scalar function dyadic Bar:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydBarVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Check for indeterminates:  _ - _  or  ¯_ - ¯_
+
+    // If the args are both infinite and of the same signs, ...
+    if (mpf_inf_p (&aplVfpLft)
+     && mpf_inf_p (&aplVfpRht)
+     && mpf_sgn (&aplVfpLft) EQ mpf_sgn (&aplVfpRht))
+        return mpf_QuadICValue (aplVfpRht,          // No left arg
+                                ICNDX_InfSUBInf,
+                                aplVfpRht,
+                                mpfRes);
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    // Subtract the Variable FP
+    mpf_sub (&mpfRes, &aplVfpLft, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnDydBarVisVvV
 
 
 //***************************************************************************

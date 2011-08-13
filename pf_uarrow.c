@@ -196,6 +196,7 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
     APLLONGEST   aplLongest;
     HGLOBAL      lpSymGlb;
     IMM_TYPES    immType;
+    APLSTYPE     aplTypeRht;
     LPPL_YYSTYPE lpYYRes;
 
     //***************************************************************
@@ -204,6 +205,10 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
     //***************************************************************
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, NULL, NULL);
 
     // Extract the first item (or the prototype) from the right arg
     GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
@@ -224,8 +229,12 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpSymGlb);
+        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbNumDir_PTB (lpSymGlb, aplTypeRht, lptkFunc);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // Check for errors
+        if (!lpYYRes->tkToken.tkData.tkGlbData)
+            goto ERROR_EXIT;
 
         // See if it fits into a lower (but not necessarily smaller) datatype
         TypeDemote (&lpYYRes->tkToken);
@@ -244,6 +253,9 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
     return NULL;
 } // End PrimFnMonUpArrow_EM_YY
 #undef  APPEND_NAME
@@ -731,10 +743,24 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
                 break;
 
+            case ARRAY_RAT:
+                // Copy element # uRhtWVec from the right arg to lpMemRes
+                mpq_init_set (&((LPAPLRAT) lpMemRes)[uResWVec],
+                              &((LPAPLRAT) lpMemRht)[uRhtWVec]);
+                break;
+
+            case ARRAY_VFP:
+                // Copy element # uRhtWVec from the right arg to lpMemRes
+                mpf_init_set (&((LPAPLVFP) lpMemRes)[uResWVec],
+                              &((LPAPLVFP) lpMemRht)[uRhtWVec]);
+                break;
+
             defstop
                 break;
         } // End SWITCH
     } // End FOR
+
+    // Fill in the prototype elements
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -810,6 +836,36 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                 // We no longer need this storage
                 FreeResultGlobalVar (aplProtoGlb); aplProtoGlb = NULL;
             } // End IF/ELSE
+
+            break;
+
+        case ARRAY_RAT:
+            // Loop through the result filling in prototype values
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                if (IsMpqNULL (&((LPAPLRAT) lpMemRes)[uRes]))
+                    // Initialize to 0/1
+                    mpq_init (&((LPAPLRAT) lpMemRes)[uRes]);
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            // Loop through the result filling in prototype values
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                if (IsMpfNULL (&((LPAPLVFP) lpMemRes)[uRes]))
+                    // Initialize to 0/1
+                    mpf_init (&((LPAPLVFP) lpMemRes)[uRes]);
+            } // End FOR
 
             break;
 

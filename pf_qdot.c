@@ -53,6 +53,11 @@ PRIMSPEC PrimSpecQuoteDot =
     &PrimFnMonQuoteDotFisI,
     &PrimFnMonQuoteDotFisF,
 
+    &PrimFnMonQuoteDotRisR,
+
+////              VisR,     // Handled via type promotion (to VisV)
+    &PrimFnMonQuoteDotVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecQuoteDotStorageTypeDyd,
@@ -70,6 +75,13 @@ PRIMSPEC PrimSpecQuoteDot =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydQuoteDotFisIvI,
     &PrimFnDydQuoteDotFisFvF,
+
+    NULL,   // &PrimFnDydQuoteDotBisRvR, -- Can't happen w/QuoteDot
+    &PrimFnDydQuoteDotRisRvR,
+
+    NULL,   // &PrimFnDydQuoteDotBisVvV, -- Can't happen w/QuoteDot
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydQuoteDotVisVvV,
 
     NULL,   // &PrimFnMonQuoteDotB64isB64, -- Can't happen w/QuoteDot
     NULL,   // &PrimFnMonQuoteDotB32isB32, -- Can't happen w/QuoteDot
@@ -208,10 +220,11 @@ APLINT PrimFnMonQuoteDotIisI
     if (aplIntegerRht < 0)
     {
         // Get the result as float
-        aplFloatRes = TranslateQuadICIndex (ICNDX_QDOTn);
-
+        aplFloatRes = TranslateQuadICIndex (0,
+                                            ICNDX_QDOTn,
+                                            (APLFLOAT) aplIntegerRht);
         // If it's infinite, ...
-        if (!_finite (aplFloatRes))
+        if (IsInfinity (aplFloatRes))
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
         else
             return (APLINT) aplFloatRes;
@@ -261,7 +274,9 @@ APLFLOAT PrimFnMonQuoteDotFisF
         // Attempt to convert the float to an integer using System CT
         (void) FloatToAplint_SCT (aplFloatRht, &iRet);
         if (iRet)
-            return TranslateQuadICIndex (ICNDX_QDOTn);
+            return TranslateQuadICIndex (0,
+                                         ICNDX_QDOTn,
+                                         aplFloatRht);
     } // End IF
 
     // Check for too large for GSL
@@ -288,6 +303,128 @@ APLFLOAT PrimFnMonQuoteDotFisF
 
     return gsr.val;
 } // End PrimFnMonQuoteDotFisF
+
+
+//***************************************************************************
+//  $PrimFnMonQuoteDotRisR
+//
+//  Primitive scalar function monadic QuoteDot:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonQuoteDotRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+    UINT   uRht;
+
+    // Check for indeterminates:  !N for integer N < 0
+    if (mpq_integer_p (&aplRatRht)
+     && mpq_cmp_ui (&aplRatRht, 0, 1) < 0)
+        return mpq_QuadICValue (aplRatRht,          // No left arg
+                                ICNDX_QDOTn,
+                                aplRatRht,
+                                mpqRes);
+    // Initialize the result to 0/1
+    mpq_init (&mpqRes);
+
+    // If the denominator is 1,
+    //   and the numerator fts in a UINT, ...
+    if (IsMpz1 (mpq_denref (&aplRatRht))
+     && mpz_fits_slong_p (mpq_numref (&aplRatRht)) NE 0)
+    {
+        // Extract the numerator
+        uRht = mpz_get_si (mpq_numref (&aplRatRht));
+
+        // Compute the factorial
+        mpz_fac_ui (mpq_numref (&mpqRes), uRht);
+    } else
+    {
+        APLVFP  mpfRes  = {0};
+        APLMPFR mpfrRes = {0};
+
+        // Convert the data to mpfr-format
+        mpfr_init_set_q (&mpfrRes, &aplRatRht, MPFR_RNDN);
+        mpfr_add_ui     (&mpfrRes, &mpfrRes, 1, MPFR_RNDN);
+
+        // Let MPFR handle it
+        mpfr_gamma (&mpfrRes, &mpfrRes, MPFR_RNDN);
+#ifdef DEBUG
+        mpfr_free_cache ();
+#endif
+        // Convert the data to mpf-format
+        mpf_init   (&mpfRes);
+        mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+        // Convert the result to RAT
+        mpq_set_f (&mpqRes, &mpfRes);
+
+        // We no longer need this storage
+        Myf_clear  (&mpfRes);
+        mpfr_clear (&mpfrRes);
+    } // End IF/ELSE
+
+    return mpqRes;
+} // End PrimFnMonQuoteDotRisR
+
+
+//***************************************************************************
+//  $PrimFnMonQuoteDotVisV
+//
+//  Primitive scalar function monadic QuoteDot:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonQuoteDotVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLMPI mpzRes = {0};
+    APLVFP mpfRes = {0};
+
+    // Check for indeterminates:  !N for integer N < 0
+    if (mpf_integer_p (&aplVfpRht)
+     && mpf_cmp_ui (&aplVfpRht, 0) < 0)
+        return mpf_QuadICValue (aplVfpRht,          // No left arg
+                                ICNDX_QDOTn,
+                                aplVfpRht,
+                                mpfRes);
+    // If the arg is an integer,
+    //   and it fits in a ULONG, ...
+    if (mpf_integer_p (&aplVfpRht)
+     && mpf_fits_uint_p (&aplVfpRht))
+    {
+        mpz_init (&mpzRes);
+        mpf_init (&mpfRes);
+
+        mpz_fac_ui (&mpzRes, mpf_get_ui (&aplVfpRht));
+        mpf_set_z  (&mpfRes, &mpzRes);
+
+        Myz_clear (&mpzRes);
+    } else
+    {
+        APLMPFR mpfrRes = {0};
+
+        // Convert the data to mpfr-format
+        mpfr_init_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+        mpfr_add_ui     (&mpfrRes, &mpfrRes, 1, MPFR_RNDN);
+
+        // Let MPFR handle it
+        mpfr_gamma (&mpfrRes, &mpfrRes, MPFR_RNDN);
+#ifdef DEBUG
+        mpfr_free_cache ();
+#endif
+        // Convert the data to mpf-format
+        mpf_init   (&mpfRes);
+        mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+        // We no longer need this storage
+        mpfr_clear (&mpfrRes);
+    } // End IF/ELSE
+
+    return mpfRes;
+} // End PrimFnMonQuoteDotVisV
 
 
 //***************************************************************************
@@ -479,7 +616,7 @@ APLFLOAT PrimFnDydQuoteDotFisIvI
                          II++, IF++)
                     {
                         ZF = (ZF * (IF + TF)) / IF;
-                        if (!_finite (ZF))
+                        if (IsInfinity (ZF))
                             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
                     } // End FOR
 
@@ -617,6 +754,97 @@ APLFLOAT PrimFnDydQuoteDotFisFvF
 #undef  RF
 #undef  LF
 } // End PrimFnDydQuoteDotFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydQuoteDotRisRvR
+//
+//  Primitive scalar function dyadic QuoteDot:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydQuoteDotRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+    UINT   uLft;
+
+    // Initialize the result to 0/1
+    mpq_init (&mpqRes);
+
+    // If both denominators are 1,
+    //   and the left numerator fits in a UINT, ...
+    if (IsMpz1 (mpq_denref (&aplRatLft))
+     && IsMpz1 (mpq_denref (&aplRatRht))
+     && mpz_fits_slong_p (mpq_numref (&aplRatLft)) NE 0)
+    {
+        // Extract the numerator
+        uLft = mpz_get_si (mpq_numref (&aplRatLft));
+
+        // Compute the binomial coefficient
+        mpz_bin_ui (mpq_numref (&mpqRes), mpq_numref (&mpqRes), uLft);
+    } else
+    {
+        APLVFP aplVfpLft = {0},
+               aplVfpRht = {0},
+               mpfRes;
+
+        mpf_init  (&aplVfpLft);
+        mpf_init  (&aplVfpRht);
+        mpf_set_q (&aplVfpLft, &aplRatLft);
+        mpf_set_q (&aplVfpRht, &aplRatRht);
+
+        mpfRes = PrimFnDydQuoteDotVisVvV (aplVfpLft, aplVfpRht, NULL);
+
+        mpq_set_f (&mpqRes, &mpfRes);
+
+        // We no longer need this storage
+        Myf_clear (&aplVfpRht);
+        Myf_clear (&aplVfpLft);
+        Myf_clear (&mpfRes   );
+    } // End IF/ELSE
+
+    return mpqRes;
+} // End PrimFnDydQuoteDotRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydQuoteDotVisVvV
+//
+//  Primitive scalar function dyadic QuoteDot:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydQuoteDotVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes,
+           aplLft,
+           aplRht,
+           aplTmp = {0};
+
+    // Z = (!R) / (!L) * !R-L
+    aplLft = PrimFnMonQuoteDotVisV (aplVfpLft, NULL);   // !L
+    aplRht = PrimFnMonQuoteDotVisV (aplVfpRht, NULL);   // !R
+
+    mpf_init_set (&aplTmp, &aplVfpRht);                 // R
+    mpf_sub      (&aplTmp, &aplTmp, &aplVfpLft);        // R-L
+    mpfRes = PrimFnMonQuoteDotVisV (aplTmp, NULL);      // !R-L
+
+    mpf_mul (&mpfRes, &aplLft, &mpfRes);                // (!L) * !R-L
+    mpf_div (&mpfRes, &aplRht, &mpfRes);                // (!R) / ((!L) * !R-L)
+
+    // We no longer need this storage
+    Myf_clear (&aplRht);
+    Myf_clear (&aplLft);
+    Myf_clear (&aplTmp);
+
+    return mpfRes;
+} // End PrimFnDydQuoteDotVisVvV
 
 
 //***************************************************************************

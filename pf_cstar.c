@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
+
+////#define OWN_EXPLOG
 
 #define STRICT
 #include <windows.h>
@@ -47,6 +49,11 @@ PRIMSPEC PrimSpecCircleStar =
     &PrimFnMonCircleStarFisI,
     &PrimFnMonCircleStarFisF,
 
+    NULL,   // &PrimFnMonCircleStarRisR, -- Can't happen w/CircleStar
+
+////               VisR,    // Handled via type promotion (to VisV)
+    &PrimFnMonCircleStarVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecCircleStarStorageTypeDyd,
@@ -64,6 +71,13 @@ PRIMSPEC PrimSpecCircleStar =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydCircleStarFisIvI,
     &PrimFnDydCircleStarFisFvF,
+
+    NULL,   // &PrimFnDydCircleStarBisRvR, -- Can't happen w/CircleStar
+    NULL,   // &PrimFnDydCircleStarRisRvR, -- Can't happen w/CircleStar
+
+    NULL,   // &PrimFnDydCircleStarBisVvV, -- Can't happen w/CircleStar
+////                 VisRvR,    // Handled via type promotion (to VisVvV)
+    &PrimFnDydCircleStarVisVvV,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircleStar};
@@ -136,6 +150,10 @@ APLSTYPE PrimSpecCircleStarStorageTypeMon
     // Except that BOOL, INT and APA become FLOAT
     if (IsSimpleInt (aplTypeRes))
         aplTypeRes = ARRAY_FLOAT;
+    else
+    // Except that RAT becomes VFP
+    if (IsRat (aplTypeRes))
+        aplTypeRes = ARRAY_VFP;
 
     return aplTypeRes;
 } // End PrimSpecCircleStarStorageTypeMon
@@ -154,7 +172,13 @@ APLFLOAT PrimFnMonCircleStarFisI
 {
     // Check for indeterminates:  {log} 0
     if (aplIntegerRht EQ 0)
-        return TranslateQuadICIndex (ICNDX_LOG0);
+        return TranslateQuadICIndex (0,
+                                     ICNDX_LOG0,
+                                     (APLFLOAT) aplIntegerRht);
+
+    // Check for special cases:  {log} N  for N < 0
+    if (aplIntegerRht < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return log ((APLFLOAT) aplIntegerRht);
 } // End PrimFnMonCircleStarFisI
@@ -173,11 +197,219 @@ APLFLOAT PrimFnMonCircleStarFisF
 {
     // Check for indeterminates:  {log} 0
     if (aplFloatRht EQ 0)
-        return TranslateQuadICIndex (ICNDX_LOG0);
+        return TranslateQuadICIndex (0,
+                                     ICNDX_LOG0,
+                                     aplFloatRht);
+
+    // Check for special cases:  {log} _
+    if (IsPosInfinity (aplFloatRht))
+        return PosInfinity;
+
+    // Check for special cases:  {log} -_
+    // Check for special cases:  {log} N  for N < 0
+    if (IsNegInfinity (aplFloatRht)
+     || aplFloatRht < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return log (aplFloatRht);
 } // End PrimFnMonCircleStarFisF
 
+
+//***************************************************************************
+//  $PrimFnMonCircleStarVisV
+//
+//  Primitive scalar function monadic CircleStar:  V {is} fn V
+//
+//  See "http://www.jsoftware.com/jwiki/Essays/Extended%20Precision%20Functions"
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonCircleStarVisV"
+#else
+#define APPEND_NAME
+#endif
+
+APLVFP PrimFnMonCircleStarVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+#if 0
+    APLMPI mpzTmp = {0};
+    APLVFP mpfRes = {0},
+           mpfTmp = {0},
+           mpfLn2;
+    signed long log2x;
+    int    log2xSign;
+#endif
+    // Check for indeterminates:  {log} 0
+    if (IsMpf0 (&aplVfpRht))
+        return mpf_QuadICValue (aplVfpRht,          // No left arg
+                                ICNDX_LOG0,
+                                aplVfpRht,
+                                mpfRes);
+    // Check for special cases:  {log} _
+    if (IsMpfPosInfinity (&aplVfpRht))
+        return mpfPosInfinity;
+
+    // Check for special cases:  {log} -_
+    // Check for special cases:  {log} N  for N < 0
+    if (IsMpfNegInfinity (&aplVfpRht)
+     || mpf_cmp_ui (&aplVfpRht, 0) < 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+        // Convert the data to mpfr-format
+        mpfr_init  (&mpfrRes);
+        mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+        // Let MPFR handle it
+        mpfr_log   (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+        // Convert the data to mpf-format
+        mpf_init   (&mpfRes);
+        mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+        // We no longer need this storage
+        mpfr_clear (&mpfrRes);
+
+        return mpfRes;
+#if 0
+    // Initialize the result
+    mpf_init_set (&mpfRes, &aplVfpRht);
+
+
+
+    // First, represent V as r * 2 ^ m where m is an integer
+    //   and r is between 1/sqrt (2) and sqrt (2).
+    // This means that log (V) = (log (r)) + m * log (2)
+////log2x = (int) (floor (0.5 + (log (mpf_get_d (&aplVfpRht)) / log (2.0))));
+
+    mpz_init (&mpzTmp);
+    mpf_init (&mpfTmp);
+
+    if (mpf_cmp (&mpfRes, &mpfSqrt2) > 0)
+    {
+        mpf_div (&mpfTmp, &mpfRes, &mpfSqrt2);
+        mpf_floor (&mpfTmp, &mpfTmp);
+        mpz_set_f (&mpzTmp, &mpfTmp);
+        log2x = (int) mpz_sizeinbase (&mpzTmp, 2);
+        mpf_div_2exp (&mpfRes, &mpfRes, log2x);
+        log2xSign =  1;
+    } else
+    if (mpf_cmp (&mpfInvSqrt2, &mpfRes) > 0)
+    {
+        mpf_div (&mpfTmp, &mpfInvSqrt2, &mpfRes);
+        mpf_floor (&mpfTmp, &mpfTmp);
+        mpz_set_f (&mpzTmp, &mpfTmp);
+        log2x = (int) mpz_sizeinbase (&mpzTmp, 2);
+        mpf_mul_2exp (&mpfRes, &mpfRes, log2x);
+        log2xSign = -1;
+    } else
+        log2x = log2xSign = 0;
+
+    Myf_clear (&mpfTmp);
+    Myz_clear (&mpzTmp);
+
+    // Check the scale as the above calculation of log2x can be off by one
+    while (mpf_cmp (&mpfRes, &mpfSqrt2) > 0)
+    {
+        mpf_div_ui (&mpfRes, &mpfRes, 2);
+        log2x++;
+    } // End WHILE
+
+    while (mpf_cmp (&mpfInvSqrt2, &mpfRes) > 0)
+    {
+        mpf_mul_ui (&mpfRes, &mpfRes, 2);
+        log2x++;
+    } // End WHILE
+
+    // Calculate the log of mpfRes via the power series 4.1.27 in Abramowitz & Stegun
+    mpfTmp = LogVfp (mpfRes);
+
+    // Copy to the result
+    mpf_set (&mpfRes, &mpfTmp);
+
+    // Calculate the log of 2 ...
+    mpf_set_ui (&mpfTmp, 2);
+    mpfLn2 = LogVfp (mpfTmp);
+
+    // Finally, convert the result back to normal
+    mpf_mul_ui (&mpfTmp, &mpfLn2, log2x);
+    if (log2xSign < 0)
+        mpf_neg (&mpfTmp, &mpfTmp);
+    mpf_add    (&mpfRes, &mpfRes, &mpfTmp);
+
+    // We no longer need this storage
+    Myf_clear (&mpfTmp);
+    Myf_clear (&mpfLn2);
+
+    return mpfRes;
+#endif
+} // End PrimFnMonCircleStarVisV
+#undef  APPEND_NAME
+
+
+#ifdef OWN_EXPLOG
+//***************************************************************************
+//  $LogVfp
+//
+//  Calculate the natural log of a VFP where
+//       V is between 1/sqrt (2) and sqrt (2)
+//
+//  See "http://www.jsoftware.com/jwiki/Essays/Extended%20Precision%20Functions"
+//***************************************************************************
+
+APLVFP LogVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP mpfRes   = {0},      // MPF result
+           mpfTmp1  = {0},      // ... temp
+           mpfTmp2  = {0},      // ...
+           mpfBase  = {0};      // ... base
+    UINT   uRes;                // Loop counter
+
+    mpf_init (&mpfRes);
+    mpf_init (&mpfTmp1);
+    mpf_init (&mpfTmp2);
+    mpf_init (&mpfBase);
+
+    // ln z = 2 * [(1/1)*(z-1)/(z+1) + (1/3)*((z-1)/z+1))^3 + (1/5)*...]
+
+    // Calculate Base:  (z-1)/(z+1)
+    mpf_sub_ui (&mpfTmp1, &aplVfpRht, 1);
+    mpf_add_ui (&mpfTmp2, &aplVfpRht, 1);
+    mpf_div    (&mpfBase, &mpfTmp1, &mpfTmp2);
+
+    // Calculate the multiplier:  Base^2
+    mpf_mul    (&mpfTmp2, &mpfBase, &mpfBase);
+
+    // Loop through the # terms
+    for (uRes = 0 ; uRes < nDigitsFPC; uRes++)
+    {
+        // Divide the base by (2 * uRes) + 1
+        mpf_div_ui (&mpfTmp1, &mpfBase, 2 * uRes + 1);
+
+        // Accumulate into the result
+        mpf_add (&mpfRes, &mpfRes, &mpfTmp1);
+
+        // Multiply the base by the multiplier
+        mpf_mul (&mpfBase, &mpfBase, &mpfTmp2);
+    } // End FOR
+
+    // Multiply by the final 2
+    mpf_mul_ui (&mpfRes, &mpfRes, 2);
+
+    // We no longer need this storage
+    Myf_clear (&mpfBase);
+    Myf_clear (&mpfTmp2);
+    Myf_clear (&mpfTmp1);
+
+    return mpfRes;
+} // End LogfVfp
+#endif
 
 //***************************************************************************
 //  $PrimSpecCircleStarStorageTypeDyd
@@ -214,6 +446,10 @@ APLSTYPE PrimSpecCircleStarStorageTypeDyd
         // Calculate the storage type of the result
         aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
+    // Except that RAT becomes VFP
+    if (IsRat (aplTypeRes))
+        aplTypeRes = ARRAY_VFP;
+
     return aplTypeRes;
 } // End PrimSpecCircleStarStorageTypeDyd
 
@@ -230,12 +466,14 @@ APLFLOAT PrimFnDydCircleStarFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLFLOAT    aplFloatRes;
+    APLFLOAT aplFloatRes;
 
     // Check for indeterminates:  B {log} B
     if (IsBooleanValue (aplIntegerLft)
      && IsBooleanValue (aplIntegerRht))
-        return TranslateQuadICIndex (icndxLog[aplIntegerLft][aplIntegerRht]);
+        return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
+                                     icndxLog[aplIntegerLft][aplIntegerRht],
+                                     (APLFLOAT) aplIntegerRht);
 
     // The EAS says "If A and B are equal, return one."
     if (aplIntegerLft EQ aplIntegerRht)
@@ -245,7 +483,7 @@ APLFLOAT PrimFnDydCircleStarFisIvI
     aplFloatRes = log ((APLFLOAT) aplIntegerRht) / log ((APLFLOAT) aplIntegerLft);
 
     // Check for ± infinity result (both args are finite)
-    if (!_finite (aplFloatRes))
+    if (IsInfinity (aplFloatRes))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return aplFloatRes;
@@ -266,10 +504,20 @@ APLFLOAT PrimFnDydCircleStarFisFvF
 {
     APLFLOAT    aplFloatRes;
 
+    // Check for special cases:  0 {log} ±_
+    // Check for special cases:  ±_ {log} 0
+    // Check for special cases:  ±_ {log} ±_
+    if ((aplFloatLft EQ 0 && IsInfinity (aplFloatRht))
+     || (IsInfinity (aplFloatLft) && aplFloatRht EQ 0)
+     || (IsInfinity (aplFloatLft) && IsInfinity (aplFloatRht)))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
     // Check for indeterminates:  B {log} B
     if (IsBooleanValue (aplFloatLft)
      && IsBooleanValue (aplFloatRht))
-        return TranslateQuadICIndex (icndxLog[(UINT) aplFloatLft][(UINT) aplFloatRht]);
+        return TranslateQuadICIndex (aplFloatLft,
+                                     icndxLog[(UINT) aplFloatLft][(UINT) aplFloatRht],
+                                     aplFloatRht);
 
     // The EAS says "If A and B are equal, return one."
     if (aplFloatLft EQ aplFloatRht)
@@ -279,13 +527,66 @@ APLFLOAT PrimFnDydCircleStarFisFvF
     aplFloatRes = log (aplFloatRht) / log (aplFloatLft);
 
     // Check for ± infinity result with both args finite
-    if (!_finite (aplFloatRes)
-     &&  _finite (aplFloatLft)
-     &&  _finite (aplFloatRht))
+    if ( IsInfinity (aplFloatRes)
+     && !IsInfinity (aplFloatLft)
+     && !IsInfinity (aplFloatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return aplFloatRes;
 } // End PrimFnDydCircleStarFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydCircleStarVisVvV
+//
+//  Primitive scalar function dyadic CircleStar:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydCircleStarVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0},
+           mpfLft,
+           mpfRht;
+
+    // Check for special cases:  0 {log} ±_
+    // Check for special cases:  ±_ {log} 0
+    // Check for special cases:  ±_ {log} ±_
+    if ((IsMpf0 (&aplVfpLft) && mpf_inf_p (&aplVfpRht))
+     || (mpf_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
+     || (mpf_inf_p (&aplVfpLft) && mpf_inf_p (&aplVfpRht)))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // Check for indeterminates:  B {log} B
+    if (IsBooleanVfp (&aplVfpLft)
+     && IsBooleanVfp (&aplVfpRht))
+        return mpf_QuadICValue (aplVfpLft,
+                                icndxLog[IsMpf1 (&aplVfpLft)][IsMpf1(&aplVfpRht)],
+                                aplVfpRht,
+                                mpfRes);
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    // The EAS says "If A and B are equal, return one."
+    if (mpf_cmp (&aplVfpLft,  &aplVfpRht) EQ 0)
+        mpf_set_ui (&mpfRes, 1);
+    else
+    {
+        // Calculate log (aplMpfRht) / log (aplVfpLft)
+        mpfLft = PrimFnMonCircleStarVisV (aplVfpLft, lpPrimSpec);
+        mpfRht = PrimFnMonCircleStarVisV (aplVfpRht, lpPrimSpec);
+        mpf_div (&mpfRes, &mpfRht, &mpfLft);
+
+        // We no longer need this storage
+        Myf_clear (&mpfRht);
+        Myf_clear (&mpfLft);
+    } // End IF
+
+    return mpfRes;
+} // End PrimFnDydCircleStarVisVvV
 
 
 //***************************************************************************

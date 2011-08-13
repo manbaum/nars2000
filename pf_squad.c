@@ -655,9 +655,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     //***************************************************************
     // Trundle through the left arg accumulating the
     //   sum of ranks and product of NELMs
-    // Note that for simple NH arrays, the NELM and Rank above are all we need
+    // Note that for simple NH global numeric arrays, the NELM and Rank above are all we need
     //***************************************************************
-    if (!IsSimpleNH (aplTypeLft))   // Meaning we accept '' as a valid left arg
+    if (!IsSimpleNHGlbNum (aplTypeLft))     // Meaning we accept '' as a valid left arg
     {
         HGLOBAL  hGlbSub;       // Left arg item global memory handle
         APLSTYPE aplTypeSub;    // Left arg item storage type
@@ -708,7 +708,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 AttrsOfGlb (hGlbSub, &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
                 // Ensure the item is simple numeric
-                if (!IsSimpleNum (aplTypeSub))
+                if (!IsSimpleGlbNum (aplTypeSub))
                     goto DOMAIN_EXIT;
 
                 // Accumulate the NELM & rank
@@ -888,8 +888,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                 &immTypeSub);   // Ptr to left arg immediate type (may be NULL)
                                                 // The above ptr is needed (but unused) to force
                                                 //   GetNextValueMem to return hGlbSub as an HGLOBAL only
-                // If the left arg item is a global, ...
-                if (hGlbSub)
+                // If the left arg item is a global but not a global numeric, ...
+                if (hGlbSub && !IsImmGlbNum (immTypeSub))
                 {
                     APLNELM  aplNELMSub;
                     APLRANK  aplRankSub;
@@ -1125,8 +1125,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                     &hGlbSub,           // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                                     &aplLongestSub,     // Ptr to left arg immediate value
                                     &immTypeSub);       // Ptr to left arg immediate type
-                    // If the left arg item is a global, ...
-                    if (hGlbSub)
+                    // If the left arg item is a global but not a global numeric, ...
+                    if (hGlbSub && !IsImmGlbNum (immTypeSub))
                     {
                         // The index value is the <lpMemOdo[iAxisNxt]> value in <hGlbSub>
                         GetNextValueGlb (hGlbSub,               // The global memory handle
@@ -1148,15 +1148,40 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     {
                         Assert (lpMemOdo[iAxisNxt] EQ 0);
 
-                        // If the index value is float, attempt to convert it to int
-                        if (IsImmFlt (immTypeSub))
+                        // Split cases based upon the storage type of the item
+                        switch (immTypeSub)
                         {
-                            // Attempt to convert the float to an integer using System CT
-                            aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSub, &bRet);
-                            if (!bRet)
-                                goto DOMAIN_EXIT;
-                        } else
-                            aplLongestNxt = aplLongestSub;
+                            case IMMTYPE_BOOL:
+                            case IMMTYPE_INT:
+                                bRet = TRUE;
+                                aplLongestNxt = aplLongestSub;
+
+                                break;
+
+                            case IMMTYPE_FLOAT:
+                                // Attempt to convert the float to an integer using System CT
+                                aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSub, &bRet);
+
+                                break;
+
+                            case IMMTYPE_RAT:
+                                // Attempt to convert the RAT to an integer using System CT
+                                aplLongestNxt = mpq_get_ctsa ((LPAPLRAT) ClrPtrTypeDir (hGlbSub), &bRet);
+
+                                break;
+
+                            case IMMTYPE_VFP:
+                                // Attempt to convert the VFP to an integer using System CT
+                                aplLongestNxt = mpf_get_ctsa ((LPAPLVFP) ClrPtrTypeDir (hGlbSub), &bRet);
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        if (!bRet)
+                            goto DOMAIN_EXIT;
                     } // End IF/ELSE
                 } else
                 // The left arg item is immediate
@@ -1217,11 +1242,66 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                             &hGlbSub,           // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestSub,     // Ptr to right arg immediate value
                             &immTypeSub);       // Ptr to right arg immediate type
-            // If the right arg item is a global, ...
-            if (hGlbSub)
+            // If the right arg item is a global and the right arg is not a global numeric, ...
+            if (hGlbSub && !IsGlbNum (aplTypeRht))
+            {
+                // Save in the result
                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
-            else
-            // The right arg item is immediate
+////////////////// Split cases based upon the immediate type
+////////////////switch (immTypeSub)
+////////////////{
+////////////////    LPVOID lpMemSub;            // Ptr to item global memory
+////////////////
+////////////////    case IMMTYPE_RAT:
+////////////////        // Lock the memory to get a ptr to it
+////////////////        lpMemSub = MyGlobalLock (hGlbSub);
+////////////////
+////////////////        // Skip over the header and dimensions to the data
+////////////////        lpMemSub = VarArrayDataFmBase (lpMemSub);
+////////////////
+////////////////        // Save in the result
+////////////////        *((LPAPLNESTED) lpMemRes)++ =
+////////////////          MakeGlbEntry_EM (ARRAY_RAT,                       // Entry type
+////////////////                           (LPAPLRAT) lpMemSub,             // Ptr to the value
+////////////////                           TRUE,                            // TRUE iff we should initialize the target first
+////////////////                           lptkFunc);                       // Ptr to function token
+////////////////        // We no longer need this ptr
+////////////////        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+////////////////
+////////////////        break;
+////////////////
+////////////////    case IMMTYPE_VFP:
+////////////////        // Lock the memory to get a ptr to it
+////////////////        lpMemSub = MyGlobalLock (hGlbSub);
+////////////////
+////////////////        // Skip over the header and dimensions to the data
+////////////////        lpMemSub = VarArrayDataFmBase (lpMemSub);
+////////////////
+////////////////        // Save in the result
+////////////////        *((LPAPLNESTED) lpMemRes)++ =
+////////////////          MakeGlbEntry_EM (ARRAY_VFP,                       // Entry type
+////////////////                           (LPAPLVFP) lpMemSub,             // Ptr to the value
+////////////////                           TRUE,                            // TRUE iff we should initialize the target first
+////////////////                           lptkFunc);                       // Ptr to function token
+////////////////        // We no longer need this ptr
+////////////////        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+////////////////
+////////////////        break;
+////////////////
+////////////////    case IMMTYPE_BOOL:
+////////////////    case IMMTYPE_INT:
+////////////////    case IMMTYPE_FLOAT:
+////////////////    case IMMTYPE_ERROR:
+////////////////        // Save in the result
+////////////////        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
+////////////////
+////////////////        break;
+////////////////
+////////////////    defstop
+////////////////        break;
+////////////////} // End SWITCH
+            } else
+            // The right arg item is immediate or a global numeric
             //   (in <aplLongestSub> of immediate type <immTypeSub>)
             {
                 // Split cases based upon the result storage type
@@ -1275,6 +1355,18 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                            lptkFunc);       // Ptr to function token
                         if (!lpSymTmp)
                             goto ERROR_EXIT;
+                        break;
+
+                    case ARRAY_RAT:
+                        // Save in result
+                        mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) hGlbSub);
+
+                        break;
+
+                    case ARRAY_VFP:
+                        // Save in result
+                        mpf_init_set (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
+
                         break;
 
                     defstop

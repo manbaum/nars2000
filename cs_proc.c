@@ -339,6 +339,7 @@ UBOOL CS_ASSERT_Stmt_EM
     APLNELM    aplNELMRht;              // Right arg NELM
     APLRANK    aplRankRht;              // Right arg rank
     APLLONGEST aplLongestRht;           // Right arg longest if immediate
+    UBOOL      bRet;                    // TRUE iff the result is valid
 
     // The arg to the ASSERT stmt must be a Boolean-valued scalar or
     //   one-element vector.
@@ -355,41 +356,12 @@ UBOOL CS_ASSERT_Stmt_EM
     if (!IsSingleton (aplNELMRht))
         goto LENGTH_EXIT;
 
-    // Split cases based upon the right arg storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-        case ARRAY_FLOAT:
-            GetFirstItemToken (&lpYYRhtArg->tkToken,
-                               &aplLongestRht,
-                                NULL,
-                                NULL);
-            // If the storage type is float, ...
-            if (IsSimpleFlt (aplTypeRht))
-            {
-                UBOOL bRet;                 // TRUE iff the result is valid
-
-                // Attempt to convert the float to an integer using System CT
-                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-            } // End IF
-
-            break;
-
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            goto DOMAIN_EXIT;
-
-        defstop
-            break;
-    } // End SWITCH
+    // Get and validate the first item in a token
+    aplLongestRht = ValidateFirstItemToken (aplTypeRht, &lpYYRhtArg->tkToken, &bRet);
 
     // Check for DOMAIN ERROR
-    if (!IsBooleanValue (aplLongestRht))
+    if (!bRet
+     || !IsBooleanValue (aplLongestRht))
          goto DOMAIN_EXIT;
 
     if (aplLongestRht EQ 0)
@@ -505,6 +477,7 @@ UBOOL CS_CONTINUEIF_Stmt_EM
     APLNELM    aplNELMRht;              // Right arg NELM
     APLRANK    aplRankRht;              // Right arg rank
     APLLONGEST aplLongestRht;           // Right arg longest if immediate
+    UBOOL      bRet;                    // TRUE iff the result is valid
 
     // The arg to the CONTINUEIF stmt must be a Boolean-valued scalar or
     //   one-element vector.
@@ -521,41 +494,12 @@ UBOOL CS_CONTINUEIF_Stmt_EM
     if (!IsSingleton (aplNELMRht))
         goto LENGTH_EXIT;
 
-    // Split cases based upon the right arg storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-        case ARRAY_FLOAT:
-            GetFirstItemToken (&lpYYRhtArg->tkToken,
-                               &aplLongestRht,
-                                NULL,
-                                NULL);
-            // If the storage type is float, ...
-            if (IsSimpleFlt (aplTypeRht))
-            {
-                UBOOL bRet;                 // TRUE iff the result is valid
-
-                // Attempt to convert the float to an integer using System CT
-                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-            } // End IF
-
-            break;
-
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            goto DOMAIN_EXIT;
-
-        defstop
-            break;
-    } // End SWITCH
+    // Get and validate the first item in a token
+    aplLongestRht = ValidateFirstItemToken (aplTypeRht, &lpYYRhtArg->tkToken, &bRet);
 
     // Check for DOMAIN ERROR
-    if (!IsBooleanValue (aplLongestRht))
+    if (!bRet
+     || !IsBooleanValue (aplLongestRht))
          goto DOMAIN_EXIT;
 
     if (aplLongestRht)
@@ -659,12 +603,18 @@ LPFORSTMT FindMatchingForStmt
 
 
 //***************************************************************************
-//  $CS_ENDFOR_Stmt
+//  $CS_ENDFOR_Stmt_EM
 //
 //  Process ENDFOR/ENDFORLCL stmt (pl_yyparse)
 //***************************************************************************
 
-UBOOL CS_ENDFOR_Stmt
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CS_ENDFOR_Stmt_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL CS_ENDFOR_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPPL_YYSTYPE  lpYYEndForArg,       // Ptr to ENDFOR arg
      UBOOL         bFORLCL)             // TRUE iff FORLCL
@@ -685,9 +635,15 @@ UBOOL CS_ENDFOR_Stmt
     {
         // Get the next value from the IN array token into the Named Var token
         //   and increment the index
-        GetNextValueTokenIntoNamedVarToken (&lpForStmtNext->tkForArr,
-                                             lpForStmtNext->uIndex++,
-                                            &lpForStmtNext->tkForI);
+        if (!GetNextValueTokenIntoNamedVarToken_EM (&lpForStmtNext->tkForArr,
+                                                     lpForStmtNext->uIndex++,
+                                                    &lpForStmtNext->tkForI))
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                      &lpYYEndForArg->tkToken);
+            return FALSE;
+        } // End IF
+
         // Tell the lexical analyzer to get the next token from
         //   the stmt after the token pointed to by the ENDFOR/ENDFORLCL stmt
         CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYEndForArg->tkToken.tkData);
@@ -703,7 +659,8 @@ UBOOL CS_ENDFOR_Stmt
         // By not changing the line/token #, we fall through to the next stmt
 UNINIT_EXIT:
     return TRUE;
-} // End CS_ENDFOR_Stmt
+} // End CS_ENDFOR_Stmt_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -930,39 +887,12 @@ UBOOL CS_IF_Stmt_EM
     if (!IsSingleton (aplNELMRht))
         goto LENGTH_EXIT;
 
-    // Split cases based upon the right arg storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-        case ARRAY_FLOAT:
-            GetFirstItemToken (&lpYYRhtArg->tkToken,
-                               &aplLongestRht,
-                                NULL,
-                                NULL);
-            // If the storage type is float, ...
-            if (IsSimpleFlt (aplTypeRht))
-            {
-                // Attempt to convert the float to an integer using System CT
-                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-            } // End IF
-
-            break;
-
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            goto DOMAIN_EXIT;
-
-        defstop
-            break;
-    } // End SWITCH
+    // Get and validate the first item in a token
+    aplLongestRht = ValidateFirstItemToken (aplTypeRht, &lpYYRhtArg->tkToken, &bRet);
 
     // Check for DOMAIN ERROR
-    if (!IsBooleanValue (aplLongestRht))
+    if (!bRet
+     || !IsBooleanValue (aplLongestRht))
          goto DOMAIN_EXIT;
 
     // Copy the token data
@@ -1385,6 +1315,7 @@ UBOOL CS_LEAVEIF_Stmt_EM
     APLNELM    aplNELMRht;              // Right arg NELM
     APLRANK    aplRankRht;              // Right arg rank
     APLLONGEST aplLongestRht;           // Right arg longest if immediate
+    UBOOL      bRet;                    // TRUE iff the result is valid
 
     // The arg to the LEAVEIF stmt must be a Boolean-valued scalar or
     //   one-element vector.
@@ -1401,41 +1332,12 @@ UBOOL CS_LEAVEIF_Stmt_EM
     if (!IsSingleton (aplNELMRht))
         goto LENGTH_EXIT;
 
-    // Split cases based upon the right arg storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-        case ARRAY_FLOAT:
-            GetFirstItemToken (&lpYYRhtArg->tkToken,
-                               &aplLongestRht,
-                                NULL,
-                                NULL);
-            // If the storage type is float, ...
-            if (IsSimpleFlt (aplTypeRht))
-            {
-                UBOOL bRet;                 // TRUE iff the result is valid
-
-                // Attempt to convert the float to an integer using System CT
-                aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-            } // End IF
-
-            break;
-
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            goto DOMAIN_EXIT;
-
-        defstop
-            break;
-    } // End SWITCH
+    // Get and validate the first item in a token
+    aplLongestRht = ValidateFirstItemToken (aplTypeRht, &lpYYRhtArg->tkToken, &bRet);
 
     // Check for DOMAIN ERROR
-    if (!IsBooleanValue (aplLongestRht))
+    if (!bRet
+     || !IsBooleanValue (aplLongestRht))
          goto DOMAIN_EXIT;
 
     if (aplLongestRht)

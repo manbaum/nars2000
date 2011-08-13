@@ -28,7 +28,6 @@ typedef struct tagSYMBOLNAMES
     WCHAR *lpwName;     // Ptr to name
 } SYMBOLNAMES, *LPSYMBOLNAMES;
 
-
 // Translate table for symbols to names
 SYMBOLNAMES aSymbolNames[]
 #ifdef DEFINE_VALUES
@@ -112,7 +111,7 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_DOWNSTILE            , L"{min}"                },  // ...
   {UTF16_DOWNSTILE            , L"{floor}"              },  // ...
   {UTF16_EPSILON              , L"{epsilon}"            },  // Alt-'e' - epsilon
-  {UTF16_INFINITY             , L"{infinity}"           },  // Alt-'f' - infinity
+  {UTF16_INFINITY             , LTEXT_INFINITY          },  // Alt-'f' - infinity
   {UTF16_DEL                  , L"{del}"                },  // Alt-'g' - del
   {UTF16_DELTA                , L"{delta}"              },  // Alt-'h' - delta
   {UTF16_IOTA                 , L"{iota}"               },  // Alt-'i' - iota

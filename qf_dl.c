@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,6 +93,7 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
     DWORD        dwTickCount;       // The current tick count (time in millseconds since W was started)
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    HGLOBAL      lpSymGlbRht;       // Ptr to global numeric
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -107,7 +108,7 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
         goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeRht))
+    if (!IsNumeric (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // Get the one (and only) value from the right arg
@@ -116,9 +117,32 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
                        &aplFloatRht,        // Ptr to float ...
                         NULL,               // Ptr to WCHAR ...
                         NULL,               // Ptr to longest ...
-                        NULL,               // Ptr to lpSym/Glb ...
+                       &lpSymGlbRht,        // Ptr to lpSym/Glb ...
                         NULL,               // Ptr to ...immediate type ...
                         NULL);              // Ptr to array type ...
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+            break;
+
+        case ARRAY_RAT:
+            aplFloatRht = mpq_get_d ((LPAPLRAT) lpSymGlbRht);
+
+            break;
+
+        case ARRAY_VFP:
+            aplFloatRht = mpf_get_d ((LPAPLVFP) lpSymGlbRht);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 

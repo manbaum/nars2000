@@ -72,6 +72,7 @@
 #define KEYNAME_QUADELX                 L"QuadELX"
 #define KEYNAME_QUADFC                  L"QuadFC"
 #define KEYNAME_QUADFEATURE             L"QuadFEATURE"
+#define KEYNAME_QUADFPC                 L"QuadFPC"
 #define KEYNAME_QUADIC                  L"QuadIC"
 #define KEYNAME_QUADIO                  L"QuadIO"
 #define KEYNAME_QUADLX                  L"QuadLX"
@@ -719,6 +720,12 @@ UBOOL ReadIniFileGlb
                                 DEF_QUADFEATURE_GLB,    // HGLOBAL of the result
                                 FEATURENDX_LENGTH,      // Length of the default integer vector
                                 lpwszIniFile);          // Ptr to the file name
+    // Read in []FPC
+    uQuadFPC_CWS =
+      GetPrivateProfileIntW (SECTNAME_SYSVARS,      // Ptr to the section name
+                             KEYNAME_QUADFPC,       // Ptr to the key name
+                             DEF_QUADFPC_CWS,       // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
     // Loop through the items of aplDefaultIC
     for (uCnt = 0, lpwszTemp = wszTemp; uCnt < ICNDX_LENGTH; uCnt++)
         // Make the default wide-string form of aplDefaultIC
@@ -865,6 +872,12 @@ UBOOL ReadIniFileGlb
                              KEYNAME_QUADFEATURE,   // Ptr to the key name
                              DEF_RANGELIMIT_FEATURE,// Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    // Read in bRangeLimit.FPC
+    bRangeLimit.FPC =
+      GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
+                             KEYNAME_QUADFPC,       // Ptr to the key name
+                             DEF_RANGELIMIT_FPC,    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
     // Read in bRangeLimit.IC
     bRangeLimit.IC =
       GetPrivateProfileIntW (SECTNAME_RANGELIMITS,  // Ptr to the section name
@@ -917,6 +930,12 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADFEATURE,   // Ptr to the key name
                              DEF_RESETVARS_FEATURE, // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bResetVars.FPC
+    bResetVars.FPC =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
+                             KEYNAME_QUADFPC,       // Ptr to the key name
+                             DEF_RESETVARS_FPC,     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bResetVars.IC
     bResetVars.IC =
@@ -2117,10 +2136,11 @@ void SaveIniFile
     lpaplChar =
      FormatFloatFC (wszTemp,                                // Ptr to output save area
                     fQuadCT_CWS,                            // The value to format
-                    DEF_MAX_QUADPP,                         // Precision to use
+                    DEF_MAX_QUADPP64,                       // Precision to use
                     L'.',                                   // Char to use as decimal separator
                     L'-',                                   // Char to use as overbar
-                    FLTDISPFMT_RAWFLT);                     // Float display format
+                    FLTDISPFMT_RAWFLT,                      // Float display format
+                    FALSE);                                 // TRUE iff we're to substitute text for infinity
     // Zap the trailing blank
     lpaplChar[-1] = WC_EOS;
 
@@ -2169,6 +2189,20 @@ void SaveIniFile
     // Write out []FEATURE
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
                                 KEYNAME_QUADFEATURE,        // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //************************ []FPC **************************
+    // Format []FPC
+    lpaplChar =
+      FormatAplintFC (wszTemp,                              // Ptr to output save area
+                      uQuadFPC_CWS,                         // The value to format
+                      L'-');                                // Char to use as overbar
+    // Zap the trailing blank
+    lpaplChar[-1] = WC_EOS;
+
+    // Write out []FPC
+    WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
+                                KEYNAME_QUADFPC,            // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //************************ []IC ***************************
@@ -2334,6 +2368,16 @@ void SaveIniFile
                                 KEYNAME_QUADFEATURE,        // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
+    //******************* bRangeLimit.FPC *********************
+    // Format bRangeLimit.FPC
+    wszTemp[0] = L'0' + bRangeLimit.FPC;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bRangeLimit.FPC
+    WritePrivateProfileStringW (SECTNAME_RANGELIMITS,       // Ptr to the section name
+                                KEYNAME_QUADFPC,            // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
     //******************* bRangeLimit.IC **********************
     // Format bRangeLimit.IC
     wszTemp[0] = L'0' + bRangeLimit.IC;
@@ -2416,6 +2460,16 @@ void SaveIniFile
     // Write out bResetVars.FEATURE
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
                                 KEYNAME_QUADFEATURE,        // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //****************** bResetVars.FPC ***********************
+    // Format bResetVars.FPC
+    wszTemp[0] = L'0' + bResetVars.FPC;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bResetVars.FPC
+    WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
+                                KEYNAME_QUADFPC,            // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.IC ************************

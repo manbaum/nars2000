@@ -56,26 +56,39 @@ WCHAR wszCancelMessage[] = L"You have made changes to the Customize settings.  S
 //  []IC-specific Information
 //***************************************************************************
 
+#define INF     WS_UTF16_INFINITY
+#define NINF    WS_UTF16_OVERBAR WS_UTF16_INFINITY
+#define R_NE_FLOOR_R    L"R" WS_UTF16_NOTEQUAL WS_UTF16_DOWNSTILE L"R"
+
 // []IC Index Names -- these must be in the same order as the IC_INDICES enum.
 LPWCHAR icIndexNames[ICNDX_LENGTH]
 = {WS_UTF16_COLONBAR L"0"                                                             , // 00:    {div} 0
    WS_UTF16_CIRCLESTAR L"0"                                                           , // 01:    {log} 0
-   L"!N for integer N < 0"                                                            , // 02:      !N for integer N < 0
-   L"0" WS_UTF16_TIMES WS_UTF16_INFINITY,                                               // 03:  0 {times} _
-   L"0" WS_UTF16_TIMES WS_UTF16_OVERBAR WS_UTF16_INFINITY,                              // 04:  0 {times} {neg}_
+   L"!N for integer N<0"                                                              , // 02:      !N for integer N < 0
+   L"0" WS_UTF16_TIMES  INF                                                           , // 03:  0 {times} _
+   L"0" WS_UTF16_TIMES NINF                                                           , // 04:  0 {times} {neg}_
    L"0" WS_UTF16_COLONBAR L"0"                                                        , // 05:  0 {div} 0
-   WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L" (same sign)",               // 06:  _ {div} _   (same sign)
-   WS_UTF16_INFINITY WS_UTF16_COLONBAR WS_UTF16_INFINITY L" (diff sign)",               // 07:  _ {div} _   (different sign)
-   WS_UTF16_INFINITY L"-"              WS_UTF16_INFINITY L" (and related)",             // 08:  _ - _ or _ + -_ or ...
-   L"L|±" WS_UTF16_INFINITY,                                                            // 09:  L   |   ±_
-   L"0*0",                                                                              // 0A:  0   *   0
-   L"L*" WS_UTF16_INFINITY L"for L" WS_UTF16_LEFTCARETUNDERBAR WS_UTF16_OVERBAR L"1",   // 0B:  L   *   _ for L <= -1
-   L"0" WS_UTF16_CIRCLESTAR L"0",                                                       // 0C:  0 {log} 0
-   L"0" WS_UTF16_CIRCLESTAR L"1",                                                       // 0D:  0 {log} 1
-   L"1" WS_UTF16_CIRCLESTAR L"0",                                                       // 0E:  1 {log} 0
-   L"1" WS_UTF16_CIRCLESTAR L"1",                                                       // 0F:  1 {log} 1
-   L"0*" WS_UTF16_INFINITY,                                                             // 10:  0   *   +_
-   L"0*" WS_UTF16_OVERBAR WS_UTF16_INFINITY                                             // 11:  0   *   -_
+   INF WS_UTF16_COLONBAR INF L" (same sign)"                                          , // 06:  _ {div} _   (same sign)
+   INF WS_UTF16_COLONBAR INF L" (diff sign)"                                          , // 07:  _ {div} _   (different sign)
+   INF L"-"              INF L" (and related)"                                        , // 08:  _ - _ or _ + -_ or ...
+   L"L|"   INF L"  for L>0"                                                            , // 09:  L   |    _  for L > 0
+   L"L|"  NINF L" for L>0"                                                            , // 0A:  L   |   -_  for L > 0
+   L"L|"   INF L"  for L<0"                                                            , // 0B:  L   |    _  for L < 0
+   L"L|"  NINF L" for L<0"                                                            , // 0C:  L   |   -_  for L < 0
+   NINF L"|R"                                                                         , // 0D:  -_  |   R   for R > 0
+    INF L"|R"                                                                         , // 0E:   _  |   R   for R < 0
+   L"0*0"                                                                             , // 0F:  0   *   0
+   L"L*" INF L"for L" WS_UTF16_LEFTCARETUNDERBAR WS_UTF16_OVERBAR L"1"                , // 10:  L   *   _   for L <= -1
+   L"0*"  INF                                                                         , // 11:  0   *   +_
+   L"0*" NINF                                                                         , // 12:  0   *   -_
+   L"±" INF L"*0"                                                                     , // 13:  ±_  *   0
+   L"L * R for L<0 and " R_NE_FLOOR_R                                                 , // 14:  L   *   R   for L < 0 and R != floor (R)
+   L"0" WS_UTF16_CIRCLESTAR L"0"                                                      , // 15:  0 {log} 0
+   L"0" WS_UTF16_CIRCLESTAR L"1"                                                      , // 16:  0 {log} 1
+   L"1" WS_UTF16_CIRCLESTAR L"0"                                                      , // 17:  1 {log} 0
+   L"1" WS_UTF16_CIRCLESTAR L"1"                                                      , // 18:  1 {log} 1
+   L"0" WS_UTF16_DOWNCARET L"±" INF L"  or  ±" INF WS_UTF16_DOWNCARET L"0"            , // 19:  0 {gcd} ±_  or  ±_ {gcd} 0
+   L"0" WS_UTF16_UPCARET   L"±" INF L"  or  ±" INF WS_UTF16_UPCARET   L"0"            , // 1A:  0 {lcm} ±_  or  ±_ {lcm} 0
   };
 
 // []IC Index Values -- these must be in the same order as the IC_VALUES enum.
@@ -84,9 +97,13 @@ LPWCHAR icIndexValues[ICVAL_LENGTH]
    L"0"                     ,
    L"1"                     ,
    L"DOMAIN ERROR"          ,
-   WS_UTF16_INFINITY,
-   WS_UTF16_OVERBAR WS_UTF16_INFINITY,
+   INF                      ,
+   NINF                     ,
+   L"L"                     ,
+   L"R"                     ,
   };
+#undef  NINF
+#undef  INF
 
 
 //***************************************************************************
@@ -408,7 +425,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWndProp2,              // ...
                         hWndFont,               // Font property page ChooseFontW button window handle
                         hWndKTC,                // Keyboard TabCtrl window handle
-                        hWnd_UD;                // []IO/[]PP/[]PW UpDown Control or its Buddy window handle
+                        hWnd_UD;                // []FPC/[]IO/[]PP/[]PW UpDown Control or its Buddy window handle
            LOGFONTW     lf_ST,                  // Static text LOGFONTW
                         lf_CWS;                 // CLEARWS Values ...
     static HFONT        hFontNorm_ST = NULL,    // Normal static text font handle
@@ -635,20 +652,21 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hFontCWS = MyCreateFontIndirectW (&lf_CWS);
 
                         // Set the font for each Edit Ctrl or ComboBox
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PP_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PW_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_RL_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []ALX
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []CT
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []ELX
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FC
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FEATURE
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FEATURE
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FPC_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FPC
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB1      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []IC
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IC_CB2      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []IC
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_IO_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []IO
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LX_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []LX
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []MF
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PP_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []PP
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_PW_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []PW
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_RL_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []RL
 
                         // Save the normal font handle
                         hFontNorm_ST = (HFONT) SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_LEN), WM_GETFONT, 0, 0);
@@ -696,10 +714,11 @@ APLU3264 CALLBACK CustomizeDlgProc
                         lpMemChr =
                           FormatFloatFC (lpwszGlbTemp,                  // Ptr to output save area
                                          fQuadCT_CWS,                   // The value to format
-                                         DEF_MAX_QUADPP,                // Precision to use
+                                         DEF_MAX_QUADPP64,              // Precision to use
                                          L'.',                          // Char to use as decimal separator
                                          UTF16_OVERBAR,                 // Char to use as overbar
-                                         FLTDISPFMT_RAWFLT);            // Float display format
+                                         FLTDISPFMT_RAWFLT,             // Float display format
+                                         FALSE);                        // TRUE iff we're to substitute text for infinity
                         // Zap the trailing blank
                         lpMemChr[-1] = WC_EOS;
 
@@ -800,6 +819,19 @@ APLU3264 CALLBACK CustomizeDlgProc
                         MyGlobalUnlock (hGlbQuadFEATURE_CWS); lpMemInt = NULL;
 
                         //***************************************************************
+                        // []FPC -- CLEAR WS Values
+                        //***************************************************************
+
+                        // Get the []FPC UpDown Control window handle
+                        hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_FPC_UD);
+
+                        // Set the range
+                        SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADFPC, DEF_MAX_QUADFPC);
+
+                        // Set the initial position
+                        SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadFPC_CWS, 0));
+
+                        //***************************************************************
                         // []IC -- CLEAR WS Values
                         //***************************************************************
 
@@ -848,7 +880,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_IO_UD);
 
                         // Set the range
-                        SendMessageW (hWnd_UD, UDM_SETRANGE, 0, MAKELONG (DEF_MAX_QUADIO, DEF_MIN_QUADIO));
+                        SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADIO,  DEF_MAX_QUADIO );
 
                         // Set the initial position
                         SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (bQuadIO_CWS, 0));
@@ -909,7 +941,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_PP_UD);
 
                         // Set the range
-                        SendMessageW (hWnd_UD, UDM_SETRANGE, 0, MAKELONG (DEF_MAX_QUADPP, DEF_MIN_QUADPP));
+                        SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADPP,  DEF_MAX_QUADPP );
 
                         // Set the initial position
                         SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadPP_CWS, 0));
@@ -922,7 +954,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_PW_UD);
 
                         // Set the range
-                        SendMessageW (hWnd_UD, UDM_SETRANGE, 0, MAKELONG (DEF_MAX_QUADPW, DEF_MIN_QUADPW));
+                        SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADPW,  DEF_MAX_QUADPW );
 
                         // Set the initial position
                         SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadPW_CWS, 0));
@@ -2544,6 +2576,12 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // Save the new []FEATURE value
                         GetClearWsComValue (ARRAY_INT, FEATURENDX_LENGTH, &hGlbQuadFEATURE_CWS, featValues, sizeof (featValues[0]));
+
+                        //***************************************************************
+                        // []FPC
+                        //***************************************************************
+                        uQuadFPC_CWS =
+                          GetDlgItemInt (hWndProp, IDC_CLEARWS_FPC_EC, NULL, FALSE);
 
                         //***************************************************************
                         // []IC
@@ -4744,7 +4782,7 @@ LRESULT WINAPI LclFontsStaticTextWndProc
             msg.pt.x    = GET_X_LPARAM (dwMsgPos);
             msg.pt.y    = GET_Y_LPARAM (dwMsgPos);
 
-            // Relay this message to teh Tooltip control
+            // Relay this message to the Tooltip control
             SendMessageW (hWndTT, TTM_RELAYEVENT, 0, (LPARAM) &msg);
 
             break;

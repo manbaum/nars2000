@@ -788,7 +788,7 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
         goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft))
+    if (!IsNumeric (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
     // Get left arg's global ptrs
@@ -812,6 +812,18 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
         case ARRAY_INT:
         case ARRAY_APA:
             bRet = TRUE;
+
+            break;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an integer using System CT
+            aplLongestLft = GetNextRatIntGlb (hGlbLft, 0, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an integer using System CT
+            aplLongestLft = GetNextVfpIntGlb (hGlbLft, 0, &bRet);
 
             break;
 

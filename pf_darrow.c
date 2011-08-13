@@ -350,7 +350,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         goto LENGTH_EXIT;
 
     // Check for DOMAIN error
-    if (!IsSimpleNum (aplTypeLft)
+    if (!IsNumeric (aplTypeLft)
      && !IsEmpty (aplNELMLft))
         goto DOMAIN_EXIT;
 
@@ -630,7 +630,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
             case ARRAY_APA:
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLINT)    lpMemRes)[uRes] = apaOffRht + apaMulRht * uRht;;
+                ((LPAPLINT)    lpMemRes)[uRes] = apaOffRht + apaMulRht * uRht;
 
                 break;
 
@@ -644,6 +644,18 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
             case ARRAY_HETERO:
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
                 ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
+
+                break;
+
+            case ARRAY_RAT:
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &((LPAPLRAT) lpMemRht)[uRht]);
+
+                break;
+
+            case ARRAY_VFP:
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
 
                 break;
 
@@ -1013,6 +1025,46 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         case ARRAY_NESTED:          // We could check for promotion to simple numeric
         case ARRAY_HETERO:          // ...
             bRet = FALSE;
+
+            break;
+
+        case ARRAY_RAT:
+            for (uDim = 0; bRet && uDim < aplNELMLft; uDim++)
+            {
+                // Attempt to convert the RAT to an integer using System CT
+                aplIntLft = mpq_get_ctsa (&((LPAPLRAT) lpDataLft)[uDim], &bRet);
+                if (bRet)
+                {
+                    // If there's an axis, ...
+                    if (lpMemAxisTail)
+                        uRes = lpMemAxisTail[uDim];
+                    else
+                        uRes = uDim;
+
+                    // Save in the normalized global memory
+                    lpMemTmpLft[uRes] = aplIntLft;
+                } // End IF/ELSE
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            for (uDim = 0; bRet && uDim < aplNELMLft; uDim++)
+            {
+                // Attempt to convert the VFP to an integer using System CT
+                aplIntLft = mpf_get_ctsa (&((LPAPLVFP) lpDataLft)[uDim], &bRet);
+                if (bRet)
+                {
+                    // If there's an axis, ...
+                    if (lpMemAxisTail)
+                        uRes = lpMemAxisTail[uDim];
+                    else
+                        uRes = uDim;
+
+                    // Save in the normalized global memory
+                    lpMemTmpLft[uRes] = aplIntLft;
+                } // End IF/ELSE
+            } // End FOR
 
             break;
 

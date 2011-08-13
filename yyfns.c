@@ -811,6 +811,7 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
 
                 case TKT_CHRSTRAND:
                 case TKT_NUMSTRAND:
+                case TKT_NUMSCALAR:
                 case TKT_VARARRAY:
                 case TKT_AXISARRAY:
                     // Fill in the token
@@ -1051,8 +1052,9 @@ void IncrFcnMem
             {
                 case TKT_FCNARRAY:
                 case TKT_VARARRAY:
-                case TKT_NUMSTRAND:
                 case TKT_CHRSTRAND:
+                case TKT_NUMSTRAND:
+                case TKT_NUMSCALAR:
                     // Get the item global memory handle
                     hGlbItm = lpMemFcn->tkToken.tkData.tkGlbData;
 

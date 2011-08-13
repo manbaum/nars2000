@@ -45,12 +45,23 @@
 
 #define AplModI(m,a) PrimFnDydStileIisIvI ((m), (a), NULL)
 #define AplModF(m,a) PrimFnDydStileFisFvF ((m), (a), NULL)
+#define AplModR(m,a) PrimFnDydStileRisRvR ((m), (a), NULL)
+#define AplModV(m,a) PrimFnDydStileVisVvV ((m), (a), NULL)
+
+#define LOLONGLONG(x)           ( (LONG) ( ( ( (LONGLONG) x) & LOPART_LONGLONG)      ) )
+#define HILONGLONG(x)           ( (LONG) ( ( ( (LONGLONG) x) & HIPART_LONGLONG) >> 32) )
 
 #define LODWORD(x)              ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
 #define HIDWORD(x)              ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
 
 #define LOSHORT(l)              ((short)((DWORD)(l) & 0xffff))
 #define HISHORT(l)              ((short)((DWORD)(l) >> 16))
+
+#define LOAPLUINT(a)            (((LPAPLU_SPLIT) &a)->lo)
+#define HIAPLUINT(a)            (((LPAPLU_SPLIT) &a)->hi)
+
+#define LOAPLINT(a)             (((LPAPL_SPLIT) &a)->lo)
+#define HIAPLINT(a)             (((LPAPL_SPLIT) &a)->hi)
 
 #define CheckSymEntries()       _CheckSymEntries (FNLN)
 
@@ -192,6 +203,18 @@
 // Define macro for detecting simple float array type
 #define IsSimpleFlt(ArrType)            ((ArrType) EQ ARRAY_FLOAT)
 
+// Define macro for detecting Numeric arrays (including RAT, VFP, etc.)
+#define IsNumeric(ArrType)              (IsSimpleNum (ArrType) || IsGlbNum (ArrType))
+
+// Define macro for detecting character or Numeric arrays (including RAT, VFP, etc.)
+#define IsSimpleGlbNum(ArrType)         (IsSimple (ArrType) || IsGlbNum (ArrType))
+
+// Define macro for detecting character or Numeric arrays (including RAT, VFP, etc.) but not hetero
+#define IsSimpleNHGlbNum(ArrType)       (IsSimpleNH (ArrType) || IsGlbNum (ArrType))
+
+// Define macro for detecting Global Numeric arrays (including RAT, VFP, etc.)
+#define IsGlbNum(ArrType)               (IsRat (ArrType) || IsVfp (ArrType))
+
 // Define macro for detecting simple character array type
 #define IsSimpleChar(ArrType)           ((ArrType) EQ ARRAY_CHAR)
 
@@ -206,6 +229,12 @@
 
 // Define macro for detecting list array type
 #define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
+
+// Define macro for detecting an Rat
+#define IsRat(ArrType)                  (ArrType EQ ARRAY_RAT)
+
+// Define macro for detecting an Variable FP
+#define IsVfp(ArrType)                  (ArrType EQ ARRAY_VFP)
 
 // Define macros for detecting permutation vectors
 #define IsPermVector0(lpHeader)         (((lpHeader) NE NULL) && (lpHeader)->PV0)
@@ -257,6 +286,36 @@
 // Define macro for detecting simple Boolean value
 #define IsBooleanValue(Val)             ((Val) EQ 0 || (Val) EQ 1)
 
+// Define macro for detecting simple Boolean RAT
+#define IsBooleanRat(Rat)               (IsMpq0 (Rat) || IsMpq1 (Rat))
+
+// Define macro for detecting simple Boolean VFP
+#define IsBooleanVfp(Vfp)               (IsMpf0 (Vfp) || IsMpf1 (Vfp))
+
+// Define macro for detecting an Integer 0
+#define IsMpz0(Int)                     (mpz_cmp_si (Int, 0) EQ 0)
+
+// Define macro for detecting an Integer 1
+#define IsMpz1(Int)                     (mpz_cmp_si (Int, 1) EQ 0)
+
+// Define macro for detecting an Rat 0
+#define IsMpq0(Rat)                     (mpq_cmp_si (Rat, 0, 1) EQ 0)
+
+// Define macro for detecting an Rat 1
+#define IsMpq1(Rat)                     (mpq_cmp_si (Rat, 1, 1) EQ 0)
+
+// Define macro for detecting a valid mpq_* var
+#define IsMpqValid(a)                   ((a)->_mp_num._mp_d NE NULL)
+
+// Define macro for detecting an Variable FP 0
+#define IsMpf0(Vfp)                     (mpf_cmp_si (Vfp, 0) EQ 0)
+
+// Define macro for detecting an Variable FP 1
+#define IsMpf1(Vfp)                     (mpf_cmp_si (Vfp, 1) EQ 0)
+
+// Define macro for detecting a valid mpf_* var
+#define IsMpfValid(a)                   ((a)->_mp_d NE NULL)
+
 // Define macro for detecting a parenthetic list
 #define IsTknParList(Tkn)               ((Tkn)->tkFlags.TknType EQ TKT_LISTPAR)
 
@@ -269,6 +328,7 @@
 // Macros to skip from the variable array base to either the dimensions or the data
 #define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER)                              )
 #define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplRank))
+#define VarArrayDataFmBase(lpMem)         (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (((LPVARARRAY_HEADER) lpMem)->Rank))
 #define VarArrayDimToData(lpMem,aplRank)  (LPVOID)   (((LPCHAR) (lpMem))                            + sizeof (APLDIM) * (aplRank))
 
 // Macro to skip from the function array base to the data
@@ -305,20 +365,24 @@
 #define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to copy direct and indirect ptrs, incrementing the reference count
-#define CopySymGlbDirAsGlb(hGlb)    CopySymGlbDir_PTB (MakePtrTypeGlb (hGlb))
-#define CopySymGlbInd_PTB(lpSymGlb) CopySymGlbDir_PTB (*(LPAPLNESTED) lpSymGlb)
+#define CopySymGlbDirAsGlb(hGlb)                        CopySymGlbDir_PTB (MakePtrTypeGlb (hGlb))
+#define CopySymGlbNumDirAsGlb(hGlb,aplType,lptkFunc)    CopySymGlbNumDir_PTB (MakePtrTypeGlb (hGlb), aplType, lptkFunc)
+#define CopySymGlbInd_PTB(lpSymGlb)                     CopySymGlbDir_PTB (*(LPAPLNESTED) lpSymGlb)
 
 // Macros to check on PTR_REUSED
 #define PtrReusedDir(lpMem)                     ((lpMem) EQ PTR_REUSED)
 #define PtrReusedInd(lpMem)         ((*(LPVOID *) lpMem) EQ PTR_REUSED)
 
-// Note that the following macros depend upon
+// Note that some of the following macros depend upon
 //   the ordering of the enum IMM_TYPES in <symtab.h>
 #define IsImmBool(a)                ((a) EQ IMMTYPE_BOOL)
 #define IsImmInt(a)                 (IMMTYPE_ERROR < (a) && (a) < IMMTYPE_FLOAT)
 #define IsImmNum(a)                 (IMMTYPE_ERROR < (a) && (a) < IMMTYPE_CHAR)
 #define IsImmFlt(a)                 ((a) EQ IMMTYPE_FLOAT)
 #define IsImmChr(a)                 ((a) EQ IMMTYPE_CHAR)
+#define IsImmRat(a)                 ((a) EQ IMMTYPE_RAT)
+#define IsImmVfp(a)                 ((a) EQ IMMTYPE_VFP)
+#define IsImmGlbNum(a)              (IsImmRat (a) || IsImmVfp (a))
 
 // The enum NAME_TYPES in <symtab.h> is constructed to allow
 //  the following macros to be used.
@@ -351,6 +415,19 @@
 #define DLG_MSGDONE                 TRUE            // We handled this Dlg msg
 #define DLG_MSGDEFFOCUS             TRUE            // In WM_INITDIALOG, set keyboard focus to wParam, DWLP_MSGRESULT ignored
 #define DLG_MSGNODEFFOCUS           FALSE           // ...               do not set focus
+
+// Define macro for detecting floating point infinity
+#define IsInfinity(a)       (!_finite (a) && !_isnan (a))
+#define IsPosInfinity(a)    (!_finite (a) && !_isnan (a) && !SIGN_APLFLOAT (a))
+#define IsNegInfinity(a)    (!_finite (a) && !_isnan (a) &&  SIGN_APLFLOAT (a))
+
+// Define macro for detecting Rational or VFP infinity
+#define IsMpzInfinity(a)    (mpz_inf_p (a))
+#define IsMpqInfinity(a)    (mpq_inf_p (a))
+#define IsMpfInfinity(a)    (mpf_inf_p (a))
+
+// Define macro for inverting VFP numbers
+#define mpf_inv(rop,op)     mpf_ui_div (rop, 1, op)
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,11 +26,12 @@
 #endif
 #include "workspace.h"
 
-#define INIT_PERTABVARS                             \
-    lpMemPTD->Sig.nature    = ' DTP';               \
-    lpMemPTD->uQuadMF       = uQuadMF_CWS;          \
-    SetCurrentFeatureCWS (lpMemPTD);                \
-    lpMemPTD->hGlbQuadEM    = hGlbQuadEM_DEF;       \
+#define INIT_PERTABVARS                                     \
+    lpMemPTD->Sig.nature    = ' DTP';                       \
+    lpMemPTD->uQuadMF       = uQuadMF_CWS;                  \
+    SetCurrentFeatureCWS (lpMemPTD);                        \
+    lpMemPTD->hGlbQuadEM    = hGlbQuadEM_DEF;               \
+    gmp_randinit_default (lpMemPTD->randState);             \
 
     // The following vars are already initialized to zero which is the default
     //   value from GHND, so they do not need to be set explicitly.
@@ -47,6 +48,11 @@
 ////lpMemPTD->hExitphore    = NULL;
 ////lpMemPTD->hWndFENxt     = NULL;
 ////lpMemPTD->EventType     = EVENTTYPE_NOERROR;
+
+#define DESTROY_PERTABVARS                          \
+    gmp_randclear (lpMemPTD->randState);            \
+    Myf_clear (&lpMemPTD->mpfPi);                   \
+    Myf_clear (&lpMemPTD->mpfE);                    \
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -127,6 +133,9 @@ typedef struct tagPERTABDATA
     HANDLE       hExitphore;                // Semaphore used to close a tab (may be NULL)
     HWND         hWndFENxt;                 // Next FE window handle (NULL = none)
     APLINT       aplCurrentFEATURE[FEATURENDX_LENGTH];  // Current values for []FEATURE
+    gmp_randstate_t randState;              // MPIR random number state for Query
+    APLVFP       mpfPi,                     // MPIR value for Pi
+                 mpfE;                      // MPIR value for e
 } PERTABDATA, *LPPERTABDATA;
 
 

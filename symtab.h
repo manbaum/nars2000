@@ -192,17 +192,19 @@ typedef struct tagHSHTABSTR
 
 typedef enum tagIMM_TYPES
 {
-    IMMTYPE_ERROR = 0,      // 00:  Error (not an immediate type)
-    IMMTYPE_BOOL,           // 01:  Boolean
-    IMMTYPE_INT,            // 02:  Integer
-    IMMTYPE_FLOAT,          // 03:  Floating point
-    IMMTYPE_CHAR,           // 04:  Character
-    IMMTYPE_PRIMFCN,        // 05:  Primitive monadic/dyadic function
-    IMMTYPE_PRIMOP1,        // 06:  Primitive monadic operator
-    IMMTYPE_PRIMOP2,        // 07:  ...       dyadic  ...
-    IMMTYPE_PRIMOP3,        // 08:  ...       ambiguous ...
-                            // 09-0F:  Available entries (4 bits)
-    IMMTYPE_SAME = -1,      // -1:  Use same type as source
+    IMMTYPE_SAME = -1 ,     // -1:  Use same type as source
+    IMMTYPE_ERROR = 0 ,     // 00:  Error (not an immediate type)
+    IMMTYPE_BOOL      ,     // 01:  Boolean
+    IMMTYPE_INT       ,     // 02:  Integer
+    IMMTYPE_FLOAT     ,     // 03:  Floating point
+    IMMTYPE_CHAR      ,     // 04:  Character
+    IMMTYPE_PRIMFCN   ,     // 05:  Primitive monadic/dyadic function
+    IMMTYPE_PRIMOP1   ,     // 06:  Primitive monadic operator
+    IMMTYPE_PRIMOP2   ,     // 07:  ...       dyadic  ...
+    IMMTYPE_PRIMOP3   ,     // 08:  ...       ambiguous ...
+    IMMTYPE_RAT       ,     // 09:  Rational number
+    IMMTYPE_VFP       ,     // 0A:  Variable-precision floating-point number
+                            // 0B-0F:  Available entries (4 bits)
 } IMM_TYPES, *LPIMM_TYPES;
 
 // N.B.:  Whenever changing the above enum (IMM_TYPES),
@@ -214,7 +216,7 @@ typedef enum tagIMM_TYPES
 // Translate an immediate type to a char
 // Note that the order of the chars in this #define
 //   depends upon the ordering of the above enum
-#define ImmTypeAsChar   L"!BIFC?123"
+#define ImmTypeAsChar   L"!BIFC?123RV"
 
 // Name types
 typedef enum tagNAME_TYPES
@@ -310,6 +312,8 @@ typedef union tagSYMTAB_DATA
                                 // 08:  Length
 } SYMTAB_DATA, *LPSYMTAB_DATA;
 
+#define SYM_HEADER_SIGNATURE    'EMYS'
+
 // Symbol table entry
 typedef struct tagSYMENTRY
 {
@@ -322,7 +326,8 @@ typedef struct tagSYMENTRY
                *stSymLink;      // 14:  Ptr to next entry in linked list of
                                 //        similarly grouped entries (NULL = none)
     UINT        stSILevel;      // 18:  State Indicator Level for this STE
-                                // 1C:  Length
+    HEADER_SIGNATURE Sig;       // 1C:  STE header signature
+                                // 20:  Length
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)

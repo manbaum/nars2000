@@ -125,6 +125,114 @@ EXCEPTION_CODES MyGetExceptionCode
 
 
 //***************************************************************************
+//  $MyGetExceptionStr
+//
+//  Return the current ExceptionCode as a string
+//***************************************************************************
+
+LPWSTR MyGetExceptionStr
+    (void)
+
+{
+    static WCHAR wszTemp[256];
+
+    // Split cases based upon the exception code
+    switch (gExceptionCode)
+    {
+        case EXCEPTION_ACCESS_VIOLATION:
+            return L"EXCEPTION_ACCESS_VIOLATION";
+
+        case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+            return L"EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
+
+        case EXCEPTION_BREAKPOINT:
+            return L"EXCEPTION_BREAKPOINT";
+
+        case EXCEPTION_CTRL_BREAK:
+            return L"EXCEPTION_CTRL_BREAK";
+
+        case EXCEPTION_DATATYPE_MISALIGNMENT:
+            return L"EXCEPTION_DATATYPE_MISALIGNMENT";
+
+        case EXCEPTION_DOMAIN_ERROR:
+            return L"EXCEPTION_DOMAIN_ERROR";
+
+        case EXCEPTION_FLT_DENORMAL_OPERAND:
+            return L"EXCEPTION_FLT_DENORMAL_OPERAND";
+
+        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+            return L"EXCEPTION_FLT_DIVIDE_BY_ZERO";
+
+        case EXCEPTION_FLT_INEXACT_RESULT:
+            return L"EXCEPTION_FLT_INEXACT_RESULT";
+
+        case EXCEPTION_FLT_INVALID_OPERATION:
+            return L"EXCEPTION_FLT_INVALID_OPERATION";
+
+        case EXCEPTION_FLT_OVERFLOW:
+            return L"EXCEPTION_FLT_OVERFLOW";
+
+        case EXCEPTION_FLT_STACK_CHECK:
+            return L"EXCEPTION_FLT_STACK_CHECK";
+
+        case EXCEPTION_FLT_UNDERFLOW:
+            return L"EXCEPTION_FLT_UNDERFLOW";
+
+        case EXCEPTION_GUARD_PAGE:
+            return L"EXCEPTION_GUARD_PAGE";
+
+        case EXCEPTION_ILLEGAL_INSTRUCTION:
+            return L"EXCEPTION_ILLEGAL_INSTRUCTION";
+
+        case EXCEPTION_IN_PAGE_ERROR:
+            return L"EXCEPTION_IN_PAGE_ERROR";
+
+        case EXCEPTION_INT_DIVIDE_BY_ZERO:
+            return L"EXCEPTION_INT_DIVIDE_BY_ZERO";
+
+        case EXCEPTION_INT_OVERFLOW:
+            return L"EXCEPTION_INT_OVERFLOW";
+
+        case EXCEPTION_INVALID_DISPOSITION:
+            return L"EXCEPTION_INVALID_DISPOSITION";
+
+        case EXCEPTION_INVALID_HANDLE:
+            return L"EXCEPTION_INVALID_HANDLE";
+
+        case EXCEPTION_LIMIT_ERROR:
+            return L"EXCEPTION_LIMIT_ERROR";
+
+        case EXCEPTION_NONCE_ERROR:
+            return L"EXCEPTION_NONCE_ERROR";
+
+        case EXCEPTION_PRIV_INSTRUCTION:
+            return L"EXCEPTION_PRIV_INSTRUCTION";
+
+        case EXCEPTION_RESULT_FLOAT:
+            return L"EXCEPTION_RESULT_FLOAT";
+
+        case EXCEPTION_SINGLE_STEP:
+            return L"EXCEPTION_SINGLE_STEP";
+
+        case EXCEPTION_STACK_OVERFLOW:
+            return L"EXCEPTION_STACK_OVERFLOW";
+
+        case EXCEPTION_SUCCESS:
+            return L"EXCEPTION_SUCCESS";
+
+        case STATUS_UNWIND_CONSOLIDATE:
+            return L"STATUS_UNWIND_CONSOLIDATE";
+
+        defstop
+            wsprintfW (wszTemp,
+                       L"*** Unknown Exception Code:  %u",
+                       gExceptionCode);
+            return wszTemp;
+    } // End SWITCH
+} // End MyGetExceptionStr
+
+
+//***************************************************************************
 //  $MySetExceptionCode
 //
 //  Set the current ExceptionCode
@@ -366,6 +474,8 @@ long CheckException
 ////////case EXCEPTION_RESULT_BOOL:
 ////////case EXCEPTION_RESULT_INT:
         case EXCEPTION_RESULT_FLOAT:
+        case EXCEPTION_RESULT_VFP:
+        case EXCEPTION_RESULT_RAT:
         case EXCEPTION_DOMAIN_ERROR:
         case EXCEPTION_NONCE_ERROR:
         case EXCEPTION_LIMIT_ERROR:

@@ -46,6 +46,14 @@
 !error Environment variable MSVC= not defined.
 !endif
 
+!ifndef MPIR
+!error Environment variable MPIR= not defined.
+!endif
+
+!ifndef MPFR
+!error Environment variable MPFR= not defined.
+!endif
+
 !ifndef SDK
 !error Environment variable SDK= not defined.
 !endif
@@ -63,46 +71,66 @@ DEBUG=0
 A=Images\                       # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
-GMP=$(NARSROOT)gmp-static\      # GMP headers & libs
 OLDPATH=$(PATH)                 # Save the current path
 GSL_INC=$(GSL_DIR)include\      # Directory of GSL includes
 GSL_LIB=$(GSL_DIR)libgsl$(WIN)-double.lib # GSL library
 
+!if "$(DEBUG)" == "1"
+RESDEBUG=1
+###CFLAGS_DEBUG=/Zi /D "DEBUG"
+CFLAGS_DEBUG=/D "DEBUG"
+BUILD_DIR=Debug
+!else
+RESDEBUG=0
+CFLAGS_DEBUG=
+BUILD_DIR=Release
+!endif
+
+!if "$(WIN)" == "32"
+FLINTAVL=1                      # 1 iff flint32.lib is available
+###LIB_DIR=$(NARSROOT)lib\Win32\$(BUILD_DIR)^\
+###MPIR_DIR = $(MPIR)build.vc10\lib\Win32\$(BUILD_DIR)^\
+###MPFR_DIR = $(MPFR)build.vc10\lib\Win32\$(BUILD_DIR)^\
+MPIR_INC = $(MPIR)build.vc10\lib\Win32\$(BUILD_DIR)^\
+!else
+FLINTAVL=0                      # 1 iff flint64.lib is available
+###LIB_DIR=$(NARSROOT)lib\x64\$(BUILD_DIR)^\
+###MPIR_DIR = $(MPIR)build.vc10\lib\x64\$(BUILD_DIR)^\
+###MPFR_DIR = $(MPFR)build.vc10\lib\x64\$(BUILD_DIR)^\
+MPIR_INC = $(MPIR)build.vc10\lib\x64\$(BUILD_DIR)^\
+!endif
+
+MPFR_INC = $(MPFR)^\
+LIB_DIR=$(NARSROOT)mpir\OldLibs^\
+
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS);$(GSL_INC);$(QDEBUG)
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(FLINT)include$(WIN);$(GSL_DIR)include
 
 MV=makever
 
 ## Set the following to 1 to debug linker error 0x460 as in
-##   mkn "LINKDEBUG=1"
-## N.B.:  The double quote marks in the above line are necessary.
+##   mkn LINKDEBUG=1
 LINKDEBUG=0
 
-!if "$(DEBUG)" == "1"
-RESDEBUG=1
-CFLAGS_DEBUG=/Zi /D "DEBUG"
+!if "$(FLINTAVL)" == "1"
+FLINT_LIB = $(NARSROOT)Flint\lib\flint$(WIN).lib
 !else
-RESDEBUG=0
-CFLAGS_DEBUG=
+FLINT_LIB =
 !endif
-
 CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"
 
 ## Load all source file names
 !include makefile.src
 
-GSL_LIB = $(NARSROOT)gsl\libgsl$(WIN)-double.lib
-
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
-CFLAGS_WEXE = /nologo /GA /W3 /WX $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
+CFLAGS_WEXE = /nologo /GA /W3 /WX $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS /D "FLINTAVL=$(FLINTAVL)"
 CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS"
-LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE
+LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /GS- /D_AMD64_ /D_M_AMD64 /D_WIN64 /Gd
-LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64 /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT
-LFLAGS_WEXE = $(LFLAGS_WEXE) /OPT:REF /DYNAMICBASE:NO /LARGEADDRESSAWARE /MANIFEST:NO
+LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64
 !endif
 
 LIBS_WEXE = gdi32.lib           \
@@ -123,6 +151,9 @@ LIBS_WEXE = gdi32.lib           \
             qdebug32.lib        \
 !endif
             libcmt.lib          \
+            $(LIB_DIR)mpir$(WIN).lib  \
+            $(LIB_DIR)mpfr$(WIN).lib  \
+            $(FLINT_LIB)        \
             $(GSL_LIB)
 
 RCFLAGS = /nologo $(VERSION_FLAGS)
@@ -201,7 +232,7 @@ INITIAL_EXE:
         @$(RC) $(RCFLAGS) $(RCDEFINES) -r -fo$@ %s
 
 {$(MS)}.c{$(O)}.obj:
-        @Set INCLUDE=$(MS);$(GMP);$(MSVC)include;$(SDK)include;.
+        @Set INCLUDE=$(MS);$(MPIR_INC);$(MSVC)include;$(SDK)include;.;$(O)
         @if exist $@ del $@
 !if "$(WIN)" == "64"
         @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32 /D WIN64 /D __x86_64__ /D "UNICODE" %s
@@ -247,6 +278,10 @@ DEP:    DIR                     \
         $(O)ver.dev             \
         $(O)version.dev
 
+{}.c{$(O)}.dep:
+        @echo $(@F)
+        @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
+
 {$(O)}.c{$(O)}.dep:
         @echo $(@F)
         @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
@@ -258,10 +293,6 @@ DEP:    DIR                     \
 {$(MS)}.c{$(O)}.dep:
         @echo $(@F)
         @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(MS)=$$(MS) %s > $@
-
-{}.c{$(O)}.dep:
-        @echo $(@F)
-        @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
 
 {}.rc{$(O)}.dev:
         @echo $(@F)
@@ -349,6 +380,23 @@ $(O)smallfact.obj:      $(MS)$(@B).c    $(SMALLFACT_DEP)    $(MS)common.h
 $(O)squfof.obj:         $(MS)$(@B).c    $(SQUFOF_DEP)       $(MS)common.h
 $(O)tinyqs.obj:         $(MS)$(@B).c    $(TINYQS_DEP)       $(MS)common.h
 
+#ifdef MPQS_ENABLED
+## Msieve-MPQS-specific files
+$(O)gf2.obj:            $(MS)$(@B).c    $(GF2_DEP)          $(MS)mpqs.h
+$(O)lanczos.obj:        $(MS)$(@B).c    $(LANCZOS_DEP)      $(MS)lanczos.h
+$(O)lanczos_pre.obj:    $(MS)$(@B).c    $(LANCZOS_PRE_DEP)  $(MS)lanczos.h
+$(O)lanczos_matmul0.obj: $(MS)$(@B).c   $(LANCZOS_MATMUL0_DEP)  $(MS)lanczos.h
+$(O)lanczos_matmul1.obj: $(MS)$(@B).c   $(LANCZOS_MATMUL1_DEP)  $(MS)lanczos.h
+$(O)lanczos_matmul2.obj: $(MS)$(@B).c   $(LANCZOS_MATMUL2_DEP)  $(MS)lanczos.h
+$(O)lanczos_vv.obj:     $(MS)$(@B).c    $(LANCZOS_VV_DEP)   $(MS)lanczos.h
+$(O)matmul_util.obj:    $(MS)$(@B).c    $(MATMUL_UTIL_DEP)  $(MS)lanczos.h
+$(O)mpqs.obj:           $(MS)$(@B).c    $(MPQS_DEP)         $(MS)mpqs.h
+$(O)prime_sieve.obj:    $(MS)$(@B).c    $(PRIME_SIEVE_DEP)  $(MS)common.h
+##$(O)relation.obj:       $(MS)$(@B).c    $(RELATION_DEP)     $(MS)mpqs.h
+$(O)sieve.obj:          $(MS)$(@B).c    $(SIEVE_DEP)        $(MS)mpqs.h
+$(O)sqrt.obj:           $(MS)$(@B).c    $(SQRT_DEP)         $(MS)mpqs.h
+#endif
+
 $(MS)common.h:          $(MS)msieve.h
 $(MS)mp.h:              $(MS)util.h
 
@@ -384,6 +432,8 @@ $(O)inifile.obj:        $(@B).c         $(INIFILE_DEP)
 $(O)iniparser.obj:      $(@B).c         $(INIPARSER_DEP)
 $(O)initdata.obj:       $(@B).c         $(INITDATA_DEP)
 $(O)main.obj:           $(@B).c         $(MAIN_DEP)
+$(O)mpfns.obj:          $(@B).c         $(MPFNS_DEP)
+$(O)mpifns.obj:         $(@B).c         $(MPIFNS_DEP)
 $(O)perfmon.obj:        $(@B).c         $(PERFMON_DEP)
 $(O)pf_bar.obj:         $(@B).c         $(PF_BAR_DEP)
 $(O)pf_circle.obj:      $(@B).c         $(PF_CIRCLE_DEP)
@@ -537,10 +587,13 @@ OBJS=   $(SRC:???=obj)                  \
         $(O)dbgbrk.obj                  \
         $(O)main.res
 
-$(O)$(ENAME).exe:       $(OBJS)         \
-                        $(DEFFILE)      \
-                        $(GSL_LIB)      \
-                        makefile.inc    \
+$(O)$(ENAME).exe:       $(OBJS)             \
+                        $(DEFFILE)          \
+                        $(LIB_DIR)mpir$(WIN).lib  \
+                        $(LIB_DIR)mpfr$(WIN).lib  \
+                        $(FLINT_LIB)        \
+                        $(GSL_LIB)          \
+                        makefile.inc        \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.crf
 $(OBJS)

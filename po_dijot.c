@@ -246,7 +246,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
             goto RIGHT_OPERAND_LENGTH_EXIT;
 
         // Check for RIGHT OPERAND DOMAIN ERROR
-        if (!IsSimpleNum (aplTypeOprRht))
+        if (!IsNumeric (aplTypeOprRht))
             goto RIGHT_OPERAND_DOMAIN_EXIT;
     } else
     // Check for RIGHT OPERAND DOMAIN ERROR

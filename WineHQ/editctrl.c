@@ -5143,6 +5143,9 @@ static LRESULT EDIT_WM_Destroy(EDITSTATE *es)
     }
 #endif
 
+    if (es->undo_text)
+        HeapFree(GetProcessHeap(), 0, es->undo_text);
+
     pc = es->first_line_def;
     while (pc)
     {
@@ -5152,7 +5155,7 @@ static LRESULT EDIT_WM_Destroy(EDITSTATE *es)
     }
 
         SetWindowLongPtrW( es->hwndSelf, GWLEC_ES, 0 );
-    HeapFree(GetProcessHeap(), 0, es);
+    HeapFree (GetProcessHeap(), 0, es);
 
     return 0;
 } // End EDIT_WM_Destroy

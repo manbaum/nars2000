@@ -45,6 +45,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>      // For sscanfW
 #include <ctype.h>
 
+#include <gmp.h>
+#include "mpfr.h"
 #include "macros.h"
 #include "defines.h"
 #include "types.h"
@@ -687,7 +689,7 @@ LPDICTIONARY iniparser_load
         line_len = lstrlenW (lpwLine);
         last = line_len - 1;
         /* Safety check against buffer overflows */
-        if (lpwLine[last] NE '\n')
+        if (lpwLine[last] NE L'\n')
         {
             *lpErrCode = ERRCODE_BUFFER_OVERFLOW;
 

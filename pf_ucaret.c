@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <math.h>
+#include <float.h>
 #include "headers.h"
 
 
@@ -45,6 +46,11 @@ PRIMSPEC PrimSpecUpCaret = {
     NULL,   // &PrimFnMonUpCaretFisI, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretFisF, -- Can't happen w/UpCaret
 
+    NULL,   // &PrimFnMonUpCaretRisR, -- Can't happen w/UpCaret
+
+////                 VisR,   // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonUpCaretVisV, -- Can't happen w/UpCaret
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecUpCaretStorageTypeDyd,
@@ -62,6 +68,13 @@ PRIMSPEC PrimSpecUpCaret = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydUpCaretFisIvI,
     &PrimFnDydUpCaretFisFvF,
+
+    NULL,   // &PrimFnDydUpCaretBisRvR, -- Can't happen w/UpCaret
+    &PrimFnDydUpCaretRisRvR,
+
+    NULL,   // &PrimFnDydUpCaretBisVvV, -- Can't happen w/UpCaret
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydUpCaretVisVvV,
 
     NULL,   // &PrimFnMonUpCaretB64isB64, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretB32isB32, -- Can't happen w/UpCaret
@@ -210,6 +223,82 @@ APLFLOAT lcmAplFloat
 
 
 //***************************************************************************
+//  $lcmAplRat
+//
+//  LCM (Least Common Multiple) for aplRats
+//***************************************************************************
+
+APLRAT lcmAplRat
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT aplTmp,
+           aplLft,
+           aplRht;
+
+    // Ensure both arguments are non-negative
+    aplLft = PrimFnMonStileRisR (aplRatLft, lpPrimSpec);
+    aplRht = PrimFnMonStileRisR (aplRatRht, lpPrimSpec);
+
+    // Calculate the GCD
+    aplTmp = gcdAplRat (aplLft, aplRht, lpPrimSpec);
+    if (!IsMpq0 (&aplTmp))
+    {
+////////aplTmp = aplLft * (aplRht / aplTmp);
+
+        mpq_div (&aplTmp, &aplRht, &aplTmp);
+        mpq_mul (&aplTmp, &aplLft, &aplTmp);
+
+        // The sign of the result is the sign of the left argument
+        if (mpq_sgn (&aplRatLft) < 0)
+            mpq_neg (&aplTmp, &aplTmp);
+    } // End IF
+
+    return aplTmp;
+} // End lcmAplRat
+
+
+//***************************************************************************
+//  $lcmAplVfp
+//
+//  LCM (Least Common Multiple) for aplVfps
+//***************************************************************************
+
+APLVFP lcmAplVfp
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP aplTmp,
+           aplLft,
+           aplRht;
+
+    // Ensure both arguments are non-negative
+    aplLft = PrimFnMonStileVisV (aplVfpLft, lpPrimSpec);
+    aplRht = PrimFnMonStileVisV (aplVfpRht, lpPrimSpec);
+
+    // Calculate the GCD
+    aplTmp = gcdAplVfp (aplLft, aplRht, lpPrimSpec);
+    if (!IsMpf0 (&aplTmp))
+    {
+////////aplTmp = aplLft * (aplRht / aplTmp);
+
+        mpf_div (&aplTmp, &aplRht, &aplTmp);
+        mpf_mul (&aplTmp, &aplLft, &aplTmp);
+
+        // The sign of the result is the sign of the left argument
+        if (mpf_sgn (&aplVfpLft) < 0)
+            mpf_neg (&aplTmp, &aplTmp);
+    } // End IF
+
+    return aplTmp;
+} // End lcmAplVfp
+
+
+//***************************************************************************
 //  $PrimFnDydUpCaretBisBvB
 //
 //  Primitive scalar function dyadic UpCaret:  B {is} B fn B
@@ -333,8 +422,94 @@ APLFLOAT PrimFnDydUpCaretFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for indeterminates:  lcm (±_, 0)  or  lcm (0, ±_)
+    if ((IsInfinity (aplFloatLft) && (aplFloatRht EQ 0))
+     || (IsInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_0LCMInf,
+                                     aplFloatRht);
+    // Check for special cases:  lcm (±_, N)  or  lcm (N, ±_)
+    if (IsInfinity (aplFloatLft)
+     || IsInfinity (aplFloatRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
     return lcmAplFloat (aplFloatLft, aplFloatRht, lpPrimSpec);
 } // End PrimFnDydUpCaretFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretRisRvR
+//
+//  Primitive scalar function dyadic UpCaret:  R {is} fn R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydUpCaretRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT aplTmp = {0};
+
+    // Check for indeterminates:  lcm (±_, 0)  or  lcm (0, ±_)
+    if ((mpq_inf_p (&aplRatLft) && IsMpq0 (&aplRatRht))
+     || (mpq_inf_p (&aplRatRht) && IsMpq0 (&aplRatLft)))
+        return mpq_QuadICValue (aplRatLft,
+                                ICNDX_0LCMInf,
+                                aplRatRht,
+                                aplTmp);
+    // Check for special cases:  lcm (±_, N)  or  lcm (N, ±_)
+    if (mpq_inf_p (&aplRatLft)
+     || mpq_inf_p (&aplRatRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // If the denominators are both 1, ...
+    if (IsMpz1 (mpq_denref (&aplRatLft))
+     && IsMpz1 (mpq_denref (&aplRatRht)))
+    {
+        APLRAT mpqRes = {0};
+
+        // Calculate the LCM on the numerators
+        mpz_lcm (mpq_numref (&mpqRes),
+                 mpq_numref (&aplRatLft),
+                 mpq_numref (&aplRatLft));
+        // Set the denominator to 1
+        mpz_set_ui (mpq_denref (&mpqRes), 1);
+
+        return mpqRes;
+    } else
+        return lcmAplRat (aplRatLft, aplRatRht, lpPrimSpec);
+} // End PrimFnDydUpCaretRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretVisVvV
+//
+//  Primitive scalar function dyadic UpCaret:  V {is} fn V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydUpCaretVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP aplTmp = {0};
+
+    // Check for indeterminates:  lcm (±_, 0)  or  lcm (0, ±_)
+    if ((mpf_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
+     || (mpf_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
+        return mpf_QuadICValue (aplVfpLft,
+                                ICNDX_0LCMInf,
+                                aplVfpRht,
+                                aplTmp);
+    // Check for special cases:  lcm (±_, N)  or  lcm (N, ±_)
+    if (mpf_inf_p (&aplVfpLft)
+     || mpf_inf_p (&aplVfpRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return lcmAplVfp (aplVfpLft, aplVfpRht, lpPrimSpec);
+} // End PrimFnDydUpCaretVisVvV
 
 
 //***************************************************************************

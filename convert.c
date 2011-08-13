@@ -154,8 +154,8 @@ APLBOOL _CompareCT
     } // End IF
 
     // If the signs differ, return FALSE
-    if (PrimFnMonTimesIisF (aplFloatLft, lpPrimSpec)
-     NE PrimFnMonTimesIisF (aplFloatRht, lpPrimSpec))
+    if (signumf (aplFloatLft)
+     NE signumf (aplFloatRht))
         return FALSE;
 
     // Calculate the low end of the left neighborhood of (|Rht)

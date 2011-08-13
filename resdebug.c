@@ -29,6 +29,7 @@
 #define OBJ_GLBLOCK     15
 #define OBJ_GLBALLOC    16
 #define OBJ_SEMAPHORE   17
+#define OBJ_HEAPALLOC   18
 
 
 // ************** DEBUGGING DATA ********************************************
@@ -50,7 +51,8 @@ UINT
  auLinNumCOLORSPACE [MAXOBJ],               // 14
  auLinNumGLBLOCK    [MAXOBJ],               // 15
  auLinNumGLBALLOC   [MAXOBJ],               // 16
- auLinNumSEMAPHORE  [MAXOBJ];               // 17
+ auLinNumSEMAPHORE  [MAXOBJ],               // 17
+ auLinNumHEAPALLOC  [MAXOBJ];               // 18
 
 UINT *lpaauLinNum[] =
 {&auLinNumPEN        [0],                   //  1
@@ -70,6 +72,7 @@ UINT *lpaauLinNum[] =
  &auLinNumGLBLOCK    [0],                   // 15
  &auLinNumGLBALLOC   [0],                   // 16
  &auLinNumSEMAPHORE  [0],                   // 17
+ &auLinNumHEAPALLOC  [0],                   // 18
 };
 
 int
@@ -89,7 +92,8 @@ int
  iCountCOLORSPACE  = 0,                     // 14
  iCountGLBLOCK     = 0,                     // 15
  iCountGLBALLOC    = 0,                     // 16
- iCountSEMAPHORE   = 0;                     // 17
+ iCountSEMAPHORE   = 0,                     // 17
+ iCountHEAPALLOC   = 0;                     // 18
 
 int *lpiaCount[] =
 {&iCountPEN        ,                        //  1
@@ -109,6 +113,7 @@ int *lpiaCount[] =
  &iCountGLBLOCK    ,                        // 15
  &iCountGLBALLOC   ,                        // 16
  &iCountSEMAPHORE  ,                        // 17
+ &iCountHEAPALLOC  ,                        // 18
 };
 
 HANDLE
@@ -128,7 +133,8 @@ HANDLE
  ahCOLORSPACE  [MAXOBJ],                    // 14
  ahGLBLOCK     [MAXOBJ],                    // 15
  ahGLBALLOC    [MAXOBJ],                    // 16
- ahSEMAPHORE   [MAXOBJ];                    // 17
+ ahSEMAPHORE   [MAXOBJ],                    // 17
+ ahHEAPALLOC   [MAXOBJ];                    // 18
 
 HANDLE *lpaah[] =
 {&ahPEN        [0],                         //  1
@@ -148,6 +154,7 @@ HANDLE *lpaah[] =
  &ahGLBLOCK    [0],                         // 15
  &ahGLBALLOC   [0],                         // 16
  &ahSEMAPHORE  [0],                         // 17
+ &ahHEAPALLOC  [0],                         // 18
 };
 
 LPCHAR
@@ -174,6 +181,7 @@ LPCHAR *lpaaFileName[] =
  &lpaFileNameGLBLOCK[0],                    // 15
  &lpaFileNameGLBALLOC[0],                   // 16
  &lpaFileNameSEMAPHORE[0],                  // 17
+ NULL,                                      // 18
 };
 
 
@@ -1354,6 +1362,145 @@ HGLOBAL _MyGlobalFree
 
     return GlobalFree (hMem);
 } // _MyGlobalFree
+
+
+//***************************************************************************
+//  $MyHeapAlloc
+//
+//  Allocate a heap variable
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MyHeapAlloc"
+#else
+#define APPEND_NAME
+#endif
+
+LPVOID _MyHeapAlloc
+    (HANDLE hHeap,          // Handle to the heap
+     DWORD  dwFlags,        // Heap allocation options
+     SIZE_T dwBytes,        // Number of bytes to allocate
+     UINT   uLine)          // Line #
+
+{
+    LPVOID lpMem;
+
+    HeapValidate (hHeap, 0, NULL);
+
+    __try
+    {
+        lpMem = HeapAlloc (hHeap, dwFlags, dwBytes);
+    } __except (CheckException (GetExceptionInformation (), L"HeapAlloc"))
+    {
+#ifdef DEBUG
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+        if (!lpMem)
+        {
+#ifdef DEBUG
+            if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
+                DisplayHeap ();
+#endif
+            MBWC (MyGetExceptionStr ());
+            DbgBrk ();
+        } // End IF
+    } // End __try/__except
+
+    if (lpMem)
+        _SaveObj (OBJ_HEAPALLOC, lpMem,   NULL,       uLine);
+#ifdef DEBUG
+    else
+    {
+        DisplayHeap ();
+        DbgBrk ();
+    } // End IF
+#endif
+    return lpMem;
+} // End _MyHeapAlloc
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MyHeapReAlloc
+//
+//  Resize a heap variable
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MyHeapReAlloc"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL _MyHeapReAlloc
+    (HANDLE hHeap,          // Handle to the heap
+     DWORD  dwFlags,        // Heap reallocation options
+     LPVOID lpMem,          // Ptr to block of memory
+     SIZE_T dwBytes,        // New size of block
+     UINT   uLine)          // Line #
+
+{
+    HGLOBAL hGlb;
+
+    HeapValidate (hHeap, 0, NULL);
+
+    __try
+    {
+        hGlb = HeapReAlloc (hHeap, dwFlags, lpMem, dwBytes);
+    } __except (CheckException (GetExceptionInformation (), L"HeapAlloc"))
+    {
+#ifdef DEBUG
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+        if (!hGlb)
+        {
+#ifdef DEBUG
+            if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
+                DisplayHeap ();
+#endif
+            MBWC (MyGetExceptionStr ());
+            DbgBrk ();
+        } // End IF
+    } // End __try/__except
+
+#ifdef DEBUG
+    if (hGlb EQ NULL)
+    {
+        DisplayHeap ();
+        DbgBrk ();
+    } // End IF
+#endif
+    // If the block moved, ...
+    if (hGlb && lpMem NE hGlb)
+    {
+        _DeleObj (OBJ_HEAPALLOC, lpMem);
+        _SaveObj (OBJ_HEAPALLOC, hGlb,    NULL,       uLine);
+    } // End IF/ELSE
+
+    return hGlb;
+} // End _MyHeapReAlloc
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MyHeapFree
+//
+//  My HeapFree function which checks for unlocked memory
+//***************************************************************************
+
+UBOOL _MyHeapFree
+    (HANDLE hHeap,          // Handle to the heap
+     DWORD  dwFlags,        // Heap reallocation options
+     LPVOID lpMem,          // Ptr to block of memory
+     UINT   uLine)          // Line #
+
+{
+    HeapValidate (hHeap, 0, NULL);
+
+    _DeleObj (OBJ_HEAPALLOC, lpMem);
+
+    return HeapFree (hHeap, dwFlags, lpMem);
+} // _MyHeapFree
 
 
 //***************************************************************************

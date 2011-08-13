@@ -367,7 +367,8 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     APLNELM       aplNELMRht;           // Right arg NELM
     APLRANK       aplRankRht;           // Right arg rank
     HGLOBAL       hGlbRht = NULL,       // Right arg global memory handle
-                  hGlbRes = NULL;       // Result    ...
+                  hGlbRes = NULL,       // Result    ...
+                  lpSymGlb;             // Ptr to global numeric
     LPVOID        lpMemRht = NULL,      // Ptr to right arg global memory
                   lpMemRes = NULL;      // Ptr to result    ...
     APLUINT       uRht,                 // Right arg loop counter
@@ -807,7 +808,85 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           &uValErrCnt,          // Ptr to VALUE ERROR counter
                                            lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                     // Free the arg token
-                    FreeResultTkn (&tkRhtArg);
+                    FreeResultTkn (&tkRhtArg); tkRhtArg.tkData.tkGlbData = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            case ARRAY_RAT:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Set the token & immediate type
+                    tkRhtArg.tkFlags.TknType = TKT_VARARRAY;
+                    tkRhtArg.tkFlags.ImmType = IMMTYPE_RAT;
+
+                    // Copy the value to the arg token
+                    tkRhtArg.tkData.tkGlbData =
+                    lpSymGlb =
+                      MakeGlbEntry_EM (ARRAY_RAT,                   // Entry type
+                                       ((LPAPLRAT) lpMemRht)++,     // Ptr to the value
+                                       TRUE,                        // TRUE iff we should initialize the target first
+                                      &lpYYFcnStrOpr->tkToken);     // Ptr to function token
+                    if (!lpSymGlb)
+                        goto ERROR_EXIT;
+                    // Execute the function on the arg token
+                    bRet =
+                      ExecFuncOnToken_EM (&lpMemRes,                // Ptr to output storage
+                                           NULL,                    // Ptr to left arg token
+                                           lpYYFcnStrLft,           // Ptr to function strand
+                                          &tkRhtArg,                // Ptr to right arg token
+                                           lptkAxisLft,             // Ptr to left operand axis token
+                                          &uValErrCnt,              // Ptr to VALUE ERROR counter
+                                           lpPrimProtoLft);         // Ptr to left operand prototype function (may be NULL)
+                    // Free the arg token
+                    FreeResultTkn (&tkRhtArg); tkRhtArg.tkData.tkGlbData = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            case ARRAY_VFP:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Set the token & immediate type
+                    tkRhtArg.tkFlags.TknType = TKT_VARARRAY;
+                    tkRhtArg.tkFlags.ImmType = IMMTYPE_VFP;
+
+                    // Copy the value to the arg token
+                    tkRhtArg.tkData.tkGlbData =
+                    lpSymGlb =
+                      MakeGlbEntry_EM (ARRAY_VFP,                   // Entry type
+                                       ((LPAPLVFP) lpMemRht)++,     // Ptr to the value
+                                       TRUE,                        // TRUE iff we should initialize the target first
+                                      &lpYYFcnStrOpr->tkToken);     // Ptr to function token
+                    if (!lpSymGlb)
+                        goto ERROR_EXIT;
+                    // Execute the function on the arg token
+                    bRet =
+                      ExecFuncOnToken_EM (&lpMemRes,                // Ptr to output storage
+                                           NULL,                    // Ptr to left arg token
+                                           lpYYFcnStrLft,           // Ptr to function strand
+                                          &tkRhtArg,                // Ptr to right arg token
+                                           lptkAxisLft,             // Ptr to left operand axis token
+                                          &uValErrCnt,              // Ptr to VALUE ERROR counter
+                                           lpPrimProtoLft);         // Ptr to left operand prototype function (may be NULL)
+                    // Free the arg token
+                    FreeResultTkn (&tkRhtArg); tkRhtArg.tkData.tkGlbData = NULL;
 
                     if (!bRet)
                         goto ERROR_EXIT;
@@ -1386,33 +1465,40 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
             uRht = IsEmpty (aplNELMRht) ? uRes : uRes % aplNELMRht;
         } // End IF/ELSE
 
+        // Initialize
+        bRet = TRUE;
+
         // If the left arg is not immediate, get the next value
         if (lpMemLft)
             // Get the next value from the left arg
-            GetNextValueMemIntoToken (uLft,         // Index to use
-                                      lpMemLft,     // Ptr to global memory object to index
-                                      aplTypeLft,   // Storage type of the arg
-                                      apaOffLft,    // APA offset (if needed)
-                                      apaMulLft,    // APA multiplier (if needed)
-                                     &tkLftArg);    // Ptr to token in which to place the value
+            bRet &=
+              GetNextValueMemIntoToken (uLft,       // Index to use
+                                        lpMemLft,   // Ptr to global memory object to index
+                                        aplTypeLft, // Storage type of the arg
+                                        apaOffLft,  // APA offset (if needed)
+                                        apaMulLft,  // APA multiplier (if needed)
+                                       &tkLftArg);  // Ptr to token in which to place the value
         // If the right arg is not immediate, get the next value
         if (lpMemRht)
             // Get the next value from the right arg
-            GetNextValueMemIntoToken (uRht,         // Index to use
-                                      lpMemRht,     // Ptr to global memory object to index
-                                      aplTypeRht,   // Storage type of the arg
-                                      apaOffRht,    // APA offset (if needed)
-                                      apaMulRht,    // APA multiplier (if needed)
-                                     &tkRhtArg);    // Ptr to token in which to place the value
-        // Execute the function strand between the left & right arg tokens
-        bRet =
-          ExecFuncOnToken_EM (&lpMemRes,            // Ptr to output storage
-                              &tkLftArg,            // Ptr to left arg token
-                               lpYYFcnStrLft,       // Ptr to function strand
-                              &tkRhtArg,            // Ptr to right arg token
-                               lptkAxisLft,         // Ptr to left operand axis token
-                              &uValErrCnt,          // Ptr to VALUE ERROR counter
-                               lpPrimProtoLft);     // Ptr to left operand prototype function
+            bRet &=
+              GetNextValueMemIntoToken (uRht,       // Index to use
+                                        lpMemRht,   // Ptr to global memory object to index
+                                        aplTypeRht, // Storage type of the arg
+                                        apaOffRht,  // APA offset (if needed)
+                                        apaMulRht,  // APA multiplier (if needed)
+                                       &tkRhtArg);  // Ptr to token in which to place the value
+        // If there's been no error so far, ...
+        if (bRet)
+            // Execute the function strand between the left & right arg tokens
+            bRet =
+              ExecFuncOnToken_EM (&lpMemRes,        // Ptr to output storage
+                                  &tkLftArg,        // Ptr to left arg token
+                                   lpYYFcnStrLft,   // Ptr to function strand
+                                  &tkRhtArg,        // Ptr to right arg token
+                                   lptkAxisLft,     // Ptr to left operand axis token
+                                  &uValErrCnt,      // Ptr to VALUE ERROR counter
+                                   lpPrimProtoLft); // Ptr to left operand prototype function
         // Free the left & right arg tokens
         if (lpMemLft)
             FreeResultTkn (&tkLftArg);

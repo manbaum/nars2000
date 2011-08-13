@@ -45,6 +45,11 @@ PRIMSPEC PrimSpecTimes =
     NULL,   // &PrimFnMonTimesFisI, -- Can't happen w/Times
     NULL,   // &PrimFnMonTimesFisF, -- Can't happen w/Times
 
+    &PrimFnMonTimesRisR,
+
+////               VisR,     // Handled via type promotion (to VisV)
+    &PrimFnMonTimesVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecTimesStorageTypeDyd,
@@ -62,6 +67,13 @@ PRIMSPEC PrimSpecTimes =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydTimesFisIvI,
     &PrimFnDydTimesFisFvF,
+
+    NULL,   // &PrimFnDydTimesBisRvR, -- Can't happen w/Times
+    &PrimFnDydTimesRisRvR,
+
+    NULL,   // &PrimFnDydTimesBisVvV, -- Can't happen w/Times
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydTimesVisVvV,
 
     NULL,   // &PrimFnMonTimesB64isB64, -- Can't happen w/Times
     NULL,   // &PrimFnMonTimesB32isB32, -- Can't happen w/Times
@@ -171,13 +183,7 @@ APLINT PrimFnMonTimesIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    if (aplIntegerRht < 0)
-        return -1;
-    else
-    if (aplIntegerRht EQ 0)
-        return  0;
-    else
-        return  1;
+    return signum (aplIntegerRht);
 } // End PrimFnMonTimesIisI
 
 
@@ -192,14 +198,46 @@ APLINT PrimFnMonTimesIisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    if (aplFloatRht < 0)
-        return -1;
-    else
-    if (aplFloatRht EQ 0)
-        return  0;
-    else
-        return  1;
+    return signumf (aplFloatRht);
 } // End PrimFnMonTimesIisF
+
+
+//***************************************************************************
+//  $PrimFnMonTimesRisR
+//
+//  Primitive scalar function monadic Times:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonTimesRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    mpq_init_set_si (&mpqRes, mpq_sgn (&aplRatRht), 1);
+
+    return mpqRes;
+} // End PrimFnMonTimesRisR
+
+
+//***************************************************************************
+//  $PrimFnMonTimesVisV
+//
+//  Primitive scalar function monadic Times:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonTimesVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    mpf_init_set_si (&mpfRes, mpf_sgn (&aplVfpRht));
+
+    return mpfRes;
+} // End PrimFnMonTimesVisV
 
 
 //***************************************************************************
@@ -293,22 +331,109 @@ APLFLOAT PrimFnDydTimesFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Check for indeterminates:  0 {times} _
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
     if ((aplFloatLft EQ 0
       && aplFloatRht EQ PosInfinity)
      || (aplFloatLft EQ PosInfinity
       && aplFloatRht EQ 0))
-        return TranslateQuadICIndex (ICNDX_0MULPi);
-
-    // Check for indeterminates:  0 {times} {neg}_
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_0MULPi,
+                                     aplFloatRht);
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((aplFloatLft EQ 0
       && aplFloatRht EQ NegInfinity)
      || (aplFloatLft EQ NegInfinity
       && aplFloatRht EQ 0))
-        return TranslateQuadICIndex (ICNDX_0MULNi);
-
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_0MULNi,
+                                     aplFloatRht);
     return (aplFloatLft * aplFloatRht);
 } // End PrimFnDydTimesFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydTimesRisRvR
+//
+//  Primitive scalar function dyadic Times:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydTimesRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpq0 (&aplRatLft)
+      && IsMpqPosInfinity (&aplRatRht))
+     || (IsMpqPosInfinity (&aplRatLft)
+      && IsMpq0 (&aplRatRht)))
+        return mpq_QuadICValue (aplRatLft,
+                                ICNDX_0MULPi,
+                                aplRatRht,
+                                mpqRes);
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpq0 (&aplRatLft)
+      && IsMpqNegInfinity (&aplRatRht))
+     || (IsMpqNegInfinity (&aplRatLft)
+      && IsMpq0 (&aplRatRht)))
+        return mpq_QuadICValue (aplRatLft,
+                                ICNDX_0MULNi,
+                                aplRatRht,
+                                mpqRes);
+    // Initalize the result
+    mpq_init (&mpqRes);
+
+    // Multiply two Rationals
+    mpq_mul (&mpqRes, &aplRatLft, &aplRatRht);
+
+    return mpqRes;
+} // End PrimFnDydTimesRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydTimesVisVvV
+//
+//  Primitive scalar function dyadic Times:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydTimesVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpf0 (&aplVfpLft)
+      && IsMpfPosInfinity (&aplVfpRht))
+     || (IsMpfPosInfinity (&aplVfpLft)
+      && IsMpf0 (&aplVfpRht)))
+        return mpf_QuadICValue (aplVfpLft,
+                                ICNDX_0MULPi,
+                                aplVfpRht,
+                                mpfRes);
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpf0 (&aplVfpLft)
+      && IsMpfNegInfinity (&aplVfpRht))
+     || (IsMpfNegInfinity (&aplVfpLft)
+      && IsMpf0 (&aplVfpRht)))
+        return mpf_QuadICValue (aplVfpLft,
+                                ICNDX_0MULNi,
+                                aplVfpRht,
+                                mpfRes);
+
+    // Initalize the result
+    mpf_init (&mpfRes);
+
+    // Multiply two Variable FPs
+    mpf_mul (&mpfRes, &aplVfpLft, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnDydTimesVisVvV
 
 
 //***************************************************************************

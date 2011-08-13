@@ -48,7 +48,9 @@ typedef enum tagMFO
     MFOE_DydUpShoe    ,         // 16:  Dyadic Up Shoe
     MFOE_DydLRShoeUnd ,         // 17:  Dyadic Left/Right Shoe Underbar
     MFOE_SD           ,         // 18:  Symmetric Difference
-    MFOE_LENGTH                 // 19:  # entries in this enum
+    MFOE_MonDomino    ,         // 19:  Monadic Domino for global numerics
+    MFOE_DydDomino    ,         // 1A:  Dyadic  ...
+    MFOE_LENGTH                 // 1B:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -77,6 +79,8 @@ typedef enum tagMFO
 #define MFON_DydUpShoe      L"#DydUpShoe"
 #define MFON_DydLRShoeUnd   L"#DydLRShoeUnd"
 #define MFON_SD             L"#SD"
+#define MFON_MonDomino      L"#MonDomino"
+#define MFON_DydDomino      L"#DydDomino"
 
 // Magic Function/Operator Variables
 #define $AND            WS_UTF16_UPCARET
@@ -89,6 +93,7 @@ typedef enum tagMFO
 #define $DEL            WS_UTF16_DEL
 #define $DISCLOSE       WS_UTF16_RIGHTSHOE
 #define $DIVIDE         WS_UTF16_COLONBAR
+#define $DOMINO         WS_UTF16_DOMINO
 #define $DUPLICATE      WS_UTF16_DIERESISTILDE
 #define $EACH           WS_UTF16_DIERESIS
 #define $ENCLOSE        WS_UTF16_LEFTSHOE

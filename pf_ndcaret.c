@@ -44,6 +44,11 @@ PRIMSPEC PrimSpecDownCaretTilde = {
     NULL,   // &PrimFnMonDownCaretTildeFisI, -- Can't happen w/DownCaretTilde
     NULL,   // &PrimFnMonDownCaretTildeFisF, -- Can't happen w/DownCaretTilde
 
+    NULL,   // &PrimFnMonDownCaretTildeRisR, -- Can't happen w/DownCaretTilde
+
+////               VisR,    // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonDownCaretTildeVisV, -- Can't happen w/DownCaretTilde
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecDownCaretTildeStorageTypeDyd,
@@ -55,12 +60,19 @@ PRIMSPEC PrimSpecDownCaretTilde = {
     NULL,   // &PrimFnDydDownCaretTildeBisCvC, -- Can't happen w/DownCaretTilde
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydDownCaretTildeIisIvI, -- Can't happen w/DownCaretTilde
-    NULL,   // &PrimFnDydDownCaretTildeIisFvF, -- Can't happen w/DownCaretTilde
+    NULL,   // &PrimFnDydDownCaretTildeIisIvI, -- Result Boolean, can't happen w/DownCaretTilde
+    NULL,   // &PrimFnDydDownCaretTildeIisFvF, -- Result Boolean, can't happen w/DownCaretTilde
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydDownCaretTildeFisIvI, -- Can't happen w/DownCaretTilde
-    NULL,   // &PrimFnDydDownCaretTildeFisFvF, -- Can't happen w/DownCaretTilde
+    NULL,   // &PrimFnDydDownCaretTildeFisIvI, -- Result Boolean, can't happen w/DownCaretTilde
+    NULL,   // &PrimFnDydDownCaretTildeFisFvF, -- Result Boolean, can't happen w/DownCaretTilde
+
+    &PrimFnDydDownCaretTildeBisRvR,
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydDownCaretTildeRisRvR, -- Result Boolean, can't happen w/DownCaretTilde
+
+    &PrimFnDydDownCaretTildeBisVvV,
+    NULL,   // &PrimFnDydDownCaretTildeVisVvV, -- Result Boolean, can't happen w/DownCaretTilde
 
     NULL,   // &PrimFnMonDownCaretTildeB64isB64, -- Can't happen w/DownCaretTilde
     NULL,   // &PrimFnMonDownCaretTildeB32isB32, -- Can't happen w/DownCaretTilde
@@ -137,8 +149,8 @@ APLSTYPE PrimSpecDownCaretTildeStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // All simple numerics return Boolean
-    if (IsSimpleNum (aplTypeRes))
+    // All numeric results are Boolean
+    if (IsNumeric (aplTypeRes))
         aplTypeRes = ARRAY_BOOL;
 
     return aplTypeRes;
@@ -226,7 +238,7 @@ APLB08 PrimFnDydDownCaretTildeB08isB08vB08
 
 
 //***************************************************************************
-//  $PrimFnDydDownCaretTildeIisIvI
+//  $PrimFnDydDownCaretTildeBisIvI
 //
 //  Primitive scalar function dyadic DownCaretTilde:  B {is} I fn I
 //***************************************************************************
@@ -272,6 +284,60 @@ APLBOOL PrimFnDydDownCaretTildeBisFvF
 
     return !(((APLBOOL) aplLft) | (APLBOOL) aplRht);
 } // End PrimFnDydDownCaretTildeBisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydDownCaretTildeBisRvR
+//
+//  Primitive scalar function dyadic DownCaretTilde:  B {is} R fn R
+//***************************************************************************
+
+APLBOOL PrimFnDydDownCaretTildeBisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLBOOL aplBooleanLft,
+            aplBooleanRht;
+
+    if ((!IsMpq0 (&aplRatLft)
+      && !IsMpq1 (&aplRatLft))
+     || (!IsMpq0 (&aplRatRht)
+      && !IsMpq1 (&aplRatRht)))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    aplBooleanLft = IsMpq1 (&aplRatLft);
+    aplBooleanRht = IsMpq1 (&aplRatRht);
+
+    return !(aplBooleanLft | aplBooleanRht);
+} // End PrimFnDydDownCaretTildeBisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydDownCaretTildeBisVvV
+//
+//  Primitive scalar function dyadic DownCaretTilde:  B {is} V fn V
+//***************************************************************************
+
+APLBOOL PrimFnDydDownCaretTildeBisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLBOOL aplBooleanLft,
+            aplBooleanRht;
+
+    if ((!IsMpf0 (&aplVfpLft)
+      && !IsMpf1 (&aplVfpLft))
+     || (!IsMpf0 (&aplVfpRht)
+      && !IsMpf1 (&aplVfpRht)))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    aplBooleanLft = IsMpf1 (&aplVfpLft);
+    aplBooleanRht = IsMpf1 (&aplVfpRht);
+
+    return !(aplBooleanLft | aplBooleanRht);
+} // End PrimFnDydDownCaretTildeBisVvV
 
 
 //***************************************************************************

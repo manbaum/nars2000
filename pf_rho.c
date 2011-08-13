@@ -429,6 +429,8 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
             case ARRAY_INT:
             case ARRAY_FLOAT:
             case ARRAY_APA:
+            case ARRAY_RAT:
+            case ARRAY_VFP:
                 aplTypeRes = ARRAY_BOOL;
 
 ////////////////ByteRes = 0;
@@ -1470,6 +1472,96 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
 
                 break;
 
+            case ARRAY_RAT:
+                // Loop through the dimensions
+                for (u = 0; bRet && u < aplNELMLft; u++)
+                {
+                    // Attempt to convert the RAT to an integer using System CT
+                    aplIntTmp = mpq_get_ctsa (&((LPAPLRAT) lpDataLft)[u], &bRet);
+                    if (!bRet)
+                        goto DOMAIN_EXIT;
+
+                    // Ensure the value fits into a dimension
+                    if (0 > aplIntTmp
+                     ||     aplIntTmp > MAX_APLDIM)
+                        goto DOMAIN_EXIT;
+
+                    // Multiply the two numbers as APLINTs so we can check for overflow
+                    aplIntTmp = _imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+
+                    // Check for overflow
+                    bRet = bRet && (aplIntTmp <= MAX_APLNELM);
+
+                    // If overflow, check for zeros
+                    if (!bRet)
+                    {
+                        // Loop through the rest of the dimensions
+                        for (u++; u < aplNELMLft; u++)
+                        {
+                            // If the dimension is zero, ...
+                            if (IsMpq0 (&((LPAPLRAT) lpDataLft)[u]))
+                            {
+                                // The result NELM is zero
+                                *lpaplNELMRes = 0;
+
+                                goto NORMAL_EXIT;
+                            } // End IF
+                        } // End FOR
+
+                        goto DOMAIN_EXIT;
+                    } // End IF
+
+                    // Save back
+                    *lpaplNELMRes = (APLNELM) aplIntTmp;
+                } // End FOR
+
+                break;
+
+            case ARRAY_VFP:
+                // Loop through the dimensions
+                for (u = 0; bRet && u < aplNELMLft; u++)
+                {
+                    // Attempt to convert the VFP to an integer using System CT
+                    aplIntTmp = mpf_get_ctsa (&((LPAPLVFP) lpDataLft)[u], &bRet);
+                    if (!bRet)
+                        goto DOMAIN_EXIT;
+
+                    // Ensure the value fits into a dimension
+                    if (0 > aplIntTmp
+                     ||     aplIntTmp > MAX_APLDIM)
+                        goto DOMAIN_EXIT;
+
+                    // Multiply the two numbers as APLINTs so we can check for overflow
+                    aplIntTmp = _imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+
+                    // Check for overflow
+                    bRet = bRet && (aplIntTmp <= MAX_APLNELM);
+
+                    // If overflow, check for zeros
+                    if (!bRet)
+                    {
+                        // Loop through the rest of the dimensions
+                        for (u++; u < aplNELMLft; u++)
+                        {
+                            // If the dimension is zero, ...
+                            if (IsMpq0 (&((LPAPLRAT) lpDataLft)[u]))
+                            {
+                                // The result NELM is zero
+                                *lpaplNELMRes = 0;
+
+                                goto NORMAL_EXIT;
+                            } // End IF
+                        } // End FOR
+
+                        goto DOMAIN_EXIT;
+                    } // End IF
+
+                    // Save back
+                    *lpaplNELMRes = (APLNELM) aplIntTmp;
+                } // End FOR
+
+                break;
+
             defstop
                 break;
         } // End SWITCH
@@ -1520,6 +1612,7 @@ void PrimFnDydRhoLftGlbCopyDim
     APLNELM  aplNELMLft;    // Left arg NELM
     UINT     uLft,          // Loop counter
              uBitMaskLft;   // Left arg bit mask
+    UBOOL    bRet;          // TRUE iff the result is valid
 
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
@@ -1583,6 +1676,16 @@ void PrimFnDydRhoLftGlbCopyDim
         case ARRAY_CHAR:
         case ARRAY_NESTED:          // We could check for promotion to simple numeric
         case ARRAY_HETERO:          // ...
+            break;
+
+        case ARRAY_RAT:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) mpq_get_ctsa (((LPAPLRAT) lpDataLft)++, &bRet);
+            break;
+
+        case ARRAY_VFP:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) mpf_get_ctsa (((LPAPLVFP) lpDataLft)++, &bRet);
             break;
 
         defstop
@@ -1870,6 +1973,48 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
 
             break;
         } // End ARRAY_APA
+
+        case ARRAY_RAT:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                mpq_init_set (((LPAPLRAT) lpDataRes)++, ((LPAPLRAT) lpMemRhtNext)++);
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                mpf_init_set (((LPAPLVFP) lpDataRes)++, ((LPAPLVFP) lpMemRhtNext)++);
+            } // End FOR
+
+            break;
 
         defstop
             break;

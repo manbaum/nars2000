@@ -47,13 +47,15 @@ typedef struct tagSM_CREATESTRUCTW
 // Indeterminate Control Values
 typedef enum tagIC_VALUES
 {
-    ICVAL_NEG1 = -1,        // -1:  Result is -1
-    ICVAL_ZERO,             // 00:  ...        0
-    ICVAL_ONE,              // 01:  ...        1
-    ICVAL_DOMAIN_ERROR,     // 02:  ...        DOMAIN ERROR
-    ICVAL_POS_INFINITY,     // 03:  ...        + infinity
-    ICVAL_NEG_INFINITY,     // 04:  ...        - infinity
-    ICVAL_LENGTHM1,         // 05:  Length-1
+    ICVAL_NEG1 = -1    ,    // -1:  Result is -1
+    ICVAL_ZERO         ,    // 00:  ...        0
+    ICVAL_ONE          ,    // 01:  ...        1
+    ICVAL_DOMAIN_ERROR ,    // 02:  ...        DOMAIN ERROR
+    ICVAL_POS_INFINITY ,    // 03:  ...        + infinity
+    ICVAL_NEG_INFINITY ,    // 04:  ...        - infinity
+    ICVAL_LEFT         ,    // 05:  ...        L
+    ICVAL_RIGHT        ,    // 06:  ...        R
+    ICVAL_LENGTHM1          // 07:  Length-1
 } IC_VALUES;
 
 #define ICVAL_LENGTH        (ICVAL_LENGTHM1 + 1)
@@ -69,25 +71,34 @@ typedef enum tagIC_VALUES
 // Indeterminate Control Indices
 typedef enum tagIC_INDICES
 {
-    ICNDX_DIV0,             // 00:    {div} 0
-    ICNDX_LOG0,             // 01:    {log} 0
-    ICNDX_QDOTn,            // 02:      !N for integer N < 0
-    ICNDX_0MULPi,           // 03:  0 {times} _
-    ICNDX_0MULNi,           // 04:  0 {times} {neg}_
-    ICNDX_0DIV0,            // 05:  0 {div} 0
-    ICNDX_PiDIVPi,          // 06:  _ {div} _   (same sign)
-    ICNDX_NiDIVPi,          // 07:  _ {div} _   (different sign)
-    ICNDX_InfSUBInf,        // 08:  _ - _ or _ + -_ or ...
-    ICNDX_NMODInf,          // 09:  L   |   ±_
-    ICNDX_0EXP0,            // 0A:  0   *   0
-    ICNDX_NEXPPi,           // 0B:  L   *   _ for L <= -1
-    ICNDX_0LOG0,            // 0C:  0 {log} 0
-    ICNDX_0LOG1,            // 0D:  0 {log} 1
-    ICNDX_1LOG0,            // 0E:  1 {log} 0
-    ICNDX_1LOG1,            // 0F:  1 {log} 1
-    ICNDX_0EXPPi,           // 10:  0   *   +_
-    ICNDX_0EXPNi,           // 11:  0   *   -_
-    ICNDX_LENGTH            // 12:  # entries in this enum
+    ICNDX_DIV0      ,       // 00:    {div} 0
+    ICNDX_LOG0      ,       // 01:    {log} 0
+    ICNDX_QDOTn     ,       // 02:      !N for integer N < 0
+    ICNDX_0MULPi    ,       // 03:  0 {times} _
+    ICNDX_0MULNi    ,       // 04:  0 {times} {neg}_
+    ICNDX_0DIV0     ,       // 05:  0 {div} 0
+    ICNDX_PiDIVPi   ,       // 06:  _ {div} _   (same sign)
+    ICNDX_NiDIVPi   ,       // 07:  _ {div} _   (different sign)
+    ICNDX_InfSUBInf ,       // 08:  _ - _ or _ + -_ or ...
+    ICNDX_PosMODPi  ,       // 09:  L   |    _  for L > 0
+    ICNDX_PosMODNi  ,       // 0A:  L   |   -_  for L > 0
+    ICNDX_NegMODPi  ,       // 0B:  L   |    _  for L < 0
+    ICNDX_NegMODNi  ,       // 0C:  L   |   -_  for L < 0
+    ICNDX_NiMODPos  ,       // 0D:  -_  |   R   for R > 0
+    ICNDX_PiMODNeg  ,       // 0E:   _  |   R   for R < 0
+    ICNDX_0EXP0     ,       // 0F:  0   *   0
+    ICNDX_NEXPPi    ,       // 10:  L   *   _   for L <= -1
+    ICNDX_0EXPPi    ,       // 11:  0   *   +_
+    ICNDX_0EXPNi    ,       // 12:  0   *   -_
+    ICNDX_InfEXP0   ,       // 13:  ±_  *   0
+    ICNDX_NegEXPFrc ,       // 14:  L   *   R   for L < 0 and R != floor (R)
+    ICNDX_0LOG0     ,       // 15:  0 {log} 0
+    ICNDX_0LOG1     ,       // 16:  0 {log} 1
+    ICNDX_1LOG0     ,       // 17:  1 {log} 0
+    ICNDX_1LOG1     ,       // 18:  1 {log} 1
+    ICNDX_0GCDInf   ,       // 19:  0 {gcd} ±_  or  ±_ {gcd} 0
+    ICNDX_0LCMInf   ,       // 1A:  0 {lcm} ±_  or  ±_ {lcm} 0
+    ICNDX_LENGTH            // 1B:  # entries in this enum
 } IC_INDICES;
 
 // N.B.:  Whenever changing the above enum (IC_INDICES),
@@ -106,15 +117,24 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
     ICVAL_DOMAIN_ERROR ,    // 06:  _ {div} _   (same sign)
     ICVAL_DOMAIN_ERROR ,    // 07:  _ {div} _   (different sign)
     ICVAL_DOMAIN_ERROR ,    // 08:  _ - _ or _ + -_ or ...
-    ICVAL_DOMAIN_ERROR ,    // 09:  L   |   ±_
-    ICVAL_ONE          ,    // 0A:  0   *   0
-    ICVAL_DOMAIN_ERROR ,    // 0B:  L   *   _ for L <= -1
-    ICVAL_ONE          ,    // 0C:  0 {log} 0
-    ICVAL_DOMAIN_ERROR ,    // 0D:  0 {log} 1
-    ICVAL_DOMAIN_ERROR ,    // 0E:  1 {log} 0
-    ICVAL_ONE          ,    // 0F:  1 {log} 1
-    ICVAL_ZERO         ,    // 10:  0   *   +_
-    ICVAL_POS_INFINITY ,    // 11:  0   *   -_
+    ICVAL_DOMAIN_ERROR ,    // 09:  L   |    _  for L > 0
+    ICVAL_DOMAIN_ERROR ,    // 0A:  L   |   -_  for L > 0
+    ICVAL_DOMAIN_ERROR ,    // 0B:  L   |    _  for L < 0
+    ICVAL_DOMAIN_ERROR ,    // 0C:  L   |   -_  for L < 0
+    ICVAL_NEG_INFINITY ,    // 0D:  -_  |   R   for R > 0
+    ICVAL_POS_INFINITY ,    // 0E:   _  |   R   for R < 0
+    ICVAL_ONE          ,    // 0F:  0   *   0
+    ICVAL_DOMAIN_ERROR ,    // 10:  L   *   _   for L <= -1
+    ICVAL_ZERO         ,    // 11:  0   *   +_
+    ICVAL_POS_INFINITY ,    // 12:  0   *   -_
+    ICVAL_DOMAIN_ERROR ,    // 13:  ±_  *   0
+    ICVAL_DOMAIN_ERROR ,    // 14:  L   *   R   for L < 0 and R != floor (R)
+    ICVAL_ONE          ,    // 15:  0 {log} 0
+    ICVAL_DOMAIN_ERROR ,    // 16:  0 {log} 1
+    ICVAL_DOMAIN_ERROR ,    // 17:  1 {log} 0
+    ICVAL_ONE          ,    // 18:  1 {log} 1
+    ICVAL_LEFT         ,    // 19:  0 {gcd} ±_  or  ±_ {gcd} 0
+    ICVAL_DOMAIN_ERROR ,    // 1A:  0 {lcm} ±_  or  ±_ {lcm} 0
    }
 #endif
 ;
@@ -186,7 +206,8 @@ EXTERN
 APLINT   uQuadMF_CWS         ;          // []MF
 
 EXTERN
-APLUINT  uQuadPP_CWS         ,          // []PP
+APLUINT  uQuadFPC_CWS        ,          // []FPC
+         uQuadPP_CWS         ,          // []PP
          uQuadPW_CWS         ,          // []PW
          uQuadRL_CWS         ;          // []RL
 
@@ -197,13 +218,14 @@ APLCHAR  cQuadPR_CWS         ,          // []PR     (L' ') (When a char scalar)
 // Struct for whether or a System var is range limited
 typedef struct tagRANGELIMIT
 {
-    UBOOL CT:1,
+    UBOOL CT     :1,
           FEATURE:1,
-          IC:1,
-          IO:1,
-          PP:1,
-          PW:1,
-          RL:1;
+          FPC    :1,
+          IC     :1,
+          IO     :1,
+          PP     :1,
+          PW     :1,
+          RL     :1;
 } RANGELIMIT;
 
 EXTERN
@@ -211,6 +233,7 @@ RANGELIMIT bRangeLimit
 #ifdef DEFINE_VALUES
 = {DEF_RANGELIMIT_CT,       // []CT
    DEF_RANGELIMIT_FEATURE,  // []FEATURE
+   DEF_RANGELIMIT_FPC,      // []FPC
    DEF_RANGELIMIT_IC,       // []IC
    DEF_RANGELIMIT_IO,       // []IO
    DEF_RANGELIMIT_PP,       // []PP
@@ -226,14 +249,15 @@ RANGELIMIT bRangeLimit
 //   in the .ini file (FALSE)
 typedef struct tagRESET_VARS
 {
-    UBOOL CT:1,
-          FC:1,
+    UBOOL CT     :1,
+          FC     :1,
           FEATURE:1,
-          IC:1,
-          IO:1,
-          PP:1,
-          PW:1,
-          RL:1;
+          FPC    :1,
+          IC     :1,
+          IO     :1,
+          PP     :1,
+          PW     :1,
+          RL     :1;
 } RESET_VARS;
 
 EXTERN
@@ -242,6 +266,7 @@ RESET_VARS bResetVars
 = {DEF_RESETVARS_CT,        // []CT
    DEF_RESETVARS_FC,        // []FC
    DEF_RESETVARS_FEATURE,   // []FEATURE
+   DEF_RESETVARS_FPC,       // []FPC
    DEF_RESETVARS_IC,        // []IC
    DEF_RESETVARS_IO,        // []IO
    DEF_RESETVARS_PP,        // []PP
@@ -285,6 +310,11 @@ UINT gVarLvl        // Debug level for display of variable-related info
 #endif
 ,
      gChnLvl        // ...                        CS chain-related ...
+#ifdef DEFINE_VALUES
+= 3
+#endif
+,
+     gVfpLvl        // ..                         MPFNS-related ...
 #ifdef DEFINE_VALUES
 = 3
 #endif
@@ -1039,10 +1069,10 @@ EXTERN
 // Use as in:  (*aSysVarValidSet[SYSVAR_IO]) (lptkNamArg, lptkRhtArg);
 ASYSVARVALIDSET aSysVarValidSet[SYSVAR_LENGTH];
 
-typedef UBOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST, LPIMM_TYPES, LPTOKEN);
+typedef UBOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST, LPIMM_TYPES, HGLOBAL, LPTOKEN);
 
 EXTERN
-// Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht, &immTypeRht, lptkFunc);
+// Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht, &immTypeRht, hGlbSubRht, lptkFunc);
 ASYSVARVALIDNDX aSysVarValidNdx[SYSVAR_LENGTH];
 
 EXTERN
@@ -1223,29 +1253,48 @@ HIMAGELIST hImageListTC,                // Handle to the common image list for T
            hImageListOW;                // ...                                 OW
 
 // Same order as in ARRAY_TYPES
-// so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED
+// so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED < LIST < RAT
 EXTERN
 UINT uTypeMap[]
 #ifdef DEFINE_VALUES
-//  BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA
- = {   0,   1,     2,    4,      5,      6,    7,   3}
+//  BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA, RAT, VFP
+ = {   0,   1,     2,    4,      5,      6,    7,   3,   8,   9}
 #endif
 ;
 
+#define TP_MAT                                                                                                                                                     \
+{/*     BOOL          INT          FLT         CHAR         HETERO       NESTED       LIST          APA          RAT          VFP         INIT     */              \
+   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,HETE),M(BOOL,HETE),M(BOOL,NEST),M(BOOL,ERR ),M(BOOL,INT ),M(BOOL,RAT ),M(BOOL,VFP ),M(BOOL,BOOL)},   /* BOOL */  \
+   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,HETE),M(INT ,HETE),M(INT ,NEST),M(INT ,ERR ),M(INT ,INT ),M(INT ,RAT ),M(INT ,VFP ),M(INT ,INT )},   /* INT  */  \
+   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,HETE),M(FLT ,HETE),M(FLT ,NEST),M(FLT ,ERR ),M(FLT ,FLT ),M(FLT ,VFP ),M(FLT ,VFP ),M(FLT ,FLT )},   /* FLT  */  \
+   {M(CHAR,HETE),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,CHAR),M(CHAR,HETE),M(CHAR,NEST),M(CHAR,ERR ),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,CHAR)},   /* CHAR */  \
+   {M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,NEST),M(HETE,ERR ),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE)},   /* HETE */  \
+   {M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,ERR ),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST)},   /* NEST */  \
+   {M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR )},   /* LIST */  \
+   {M(APA ,INT ),M(APA ,INT ),M(APA ,FLT ),M(APA ,HETE),M(APA ,HETE),M(APA ,NEST),M(APA ,ERR ),M(APA ,INT ),M(APA ,RAT ),M(APA ,VFP ),M(APA ,INT )},   /* APA  */  \
+   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HETE),M(RAT ,HETE),M(RAT ,NEST),M(RAT ,ERR ),M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,RAT )},   /* RAT  */  \
+   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HETE),M(VFP ,HETE),M(VFP ,NEST),M(VFP ,ERR ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP )},   /* VFP  */  \
+   {M(INIT,BOOL),M(INIT,INT ),M(INIT,FLT ),M(INIT,CHAR),M(INIT,HETE),M(INIT,NEST),M(INIT,ERR ),M(INIT,INT ),M(INIT,RAT ),M(INIT,VFP ),M(INIT,INIT)},   /* INIT */  \
+}
+
+// ARRAY_xxx Type Promotion result matrix
 APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #ifdef DEFINE_VALUES
 =
-//      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA              INIT
-{{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_BOOL  },  // BOOL
- {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_INT   },  // INT
- {ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_FLOAT , ARRAY_FLOAT },  // FLOAT
- {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO, ARRAY_CHAR  },  // CHAR
- {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO, ARRAY_HETERO},  // HETERO
- {ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_ERROR , ARRAY_NESTED, ARRAY_NESTED},  // NESTED
- {ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR },  // LIST
- {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_INT   },  // APA
- {ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   , ARRAY_ERROR },  // INIT
-}
+#define M(a,b)          ARRAY_##b
+#define ARRAY_FLT       ARRAY_FLOAT
+#define ARRAY_HETE      ARRAY_HETERO
+#define ARRAY_NEST      ARRAY_NESTED
+#define ARRAY_ERR       ARRAY_ERROR
+#define ARRAY_INIT      ARRAY_ERROR
+TP_MAT
+#undef  ARRAY_INIT
+#undef  ARRAY_ERR
+#undef  ARRAY_NEST
+#undef  ARRAY_HETE
+#undef  ARRAY_FLT
+#undef  M
+
 #endif
 ;
 
@@ -1919,6 +1968,97 @@ UINT uNumLibDirs;                   // # LibDirs
 
 typedef WCHAR (*LPWSZLIBDIRS)[_MAX_PATH];   // Ptr to LibDirs
 
+
+//***************************************************************************
+//  Global Numeric Constants
+//***************************************************************************
+
+EXTERN
+APLMPI mpzMinInt                // Minimum signed integer -2*63
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpzMaxInt                // Maximum ...            (2*63)-1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpzMaxUInt               // Maximum unsigned ...   (2*64)-1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpzPosInfinity           // Positive infinity
+#ifdef DEFINE_VALUES
+= {0, 0x7FFFFFFF, NULL}
+#endif
+,
+       mpzNegInfinity           // Negative fininity
+#ifdef DEFINE_VALUES
+= {0, 0x80000000, NULL}
+#endif
+;
+
+EXTERN
+APLRAT mpqMinInt                // Minimum signed integer -2*63
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpqMaxInt                // Maximum ...            (2*63)-1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpqMaxUInt               // Maximum unsigned ...   (2*64)-1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpqHalf                  // ...          0.5 ...
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpqPosInfinity           // Positive infniity
+#ifdef DEFINE_VALUES
+= {{0, 0x7FFFFFFF, NULL},
+   {0, 0         , NULL}}
+#endif
+,
+       mpqNegInfinity           // Negative infinity
+#ifdef DEFINE_VALUES
+= {{0, 0x80000000, NULL},
+   {0, 0         , NULL}}
+#endif
+;
+
+EXTERN
+APLVFP mpfMinInt                // Minimum signed integer -2*63
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpfMaxInt                // Maximum ...            (2*63)-1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpfMaxUInt               // Maximum unsigned ...   (2*64)-1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpfPosInfinity           // Positive infinity
+#ifdef DEFINE_VALUES
+= {0, 0x7FFFFFFF, 0, NULL}
+#endif
+,      mpfNegInfinity           // Negative infinity
+#ifdef DEFINE_VALUES
+= {0, 0x80000000, 0, NULL}
+#endif
+,      mpfHalf                  // ...          0.5 ...
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
+
+
+EXTERN
+APLUINT nDigitsFPC;             // # decimal digits in []FPC
+
+#include "typemote.h"
 
 #define ENUMS_DEFINED
 #undef  EXTERN

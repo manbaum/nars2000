@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,13 +62,19 @@ void pn_yyfprintf   (FILE *hfile, LPCHAR lpszFmt, ...);
 #define yy_reduce_print         pn_yy_reduce_print
 #define yydestruct              pn_yydestruct
 
+#define YYERROR2        {lppnLocalVars->bYYERROR = TRUE; YYERROR;}
+
 ////#define DbgMsgWP(a)         DbgMsgW(a)
 ////#define DbgMsgWP(a)         DbgMsgW(a); DbgBrk ()
 ////#define DbgMsgWP(a)         DbgMsgW(a)
     #define DbgMsgWP(a)
 
+#define WSFULL          "memory exhausted"
+
 // Define macro for Boolean or Integer type
 #define IsIntegerType(a)        ((a) EQ PN_NUMTYPE_BOOL || (a) EQ PN_NUMTYPE_INT)
+#define IsRatType(a)            ((a) EQ PN_NUMTYPE_RAT)
+#define IsVfpType(a)            ((a) EQ PN_NUMTYPE_VFP)
 
 %}
 
@@ -194,7 +200,7 @@ DecPoint:
                                      $1.chType = PN_NUMTYPE_INT;
 
                                      // Calculate the number
-                                     PN_NumCalc (lppnLocalVars, &$1);
+                                     PN_NumCalc (lppnLocalVars, &$1, FALSE);
 
                                      $$ = $1;
                                     }
@@ -206,7 +212,7 @@ DecPoint:
                                      $1.chType = PN_NUMTYPE_INT;
 
                                      // Calculate the number
-                                     PN_NumCalc (lppnLocalVars, &$1);
+                                     PN_NumCalc (lppnLocalVars, &$1, FALSE);
 
                                      $$ = $1;
                                     }
@@ -218,7 +224,7 @@ DecPoint:
                                      $1.chType = PN_NUMTYPE_FLT;
 
                                      // Calculate the number
-                                     PN_NumCalc (lppnLocalVars, &$1);
+                                     PN_NumCalc (lppnLocalVars, &$1, FALSE);
 
                                      $$ = $1;
                                     }
@@ -228,7 +234,7 @@ DecPoint:
 
                                      // Mark the result as float
                                      $1.chType = PN_NUMTYPE_FLT;
-                                     $1.aplFloat = PosInfinity;
+                                     $1.at.aplFloat = PosInfinity;
 
                                      $$ = $1;
                                     }
@@ -238,7 +244,95 @@ DecPoint:
 
                                      // Mark the result as float
                                      $1.chType = PN_NUMTYPE_FLT;
-                                     $1.aplFloat = NegInfinity;
+                                     $1.at.aplFloat = NegInfinity;
+
+                                     $$ = $1;
+                                    }
+    ;
+
+VfpDecimal:
+      Integer 'v'                   {DbgMsgWP (L"%%VfpDecimal:  Integer 'v'");
+                                     // Accumulate the decimal point
+                                     PN_NumAcc (lppnLocalVars, '.');
+
+                                     $$ = $1;
+                                    }
+    |         'v'                   {DbgMsgWP (L"%%VfpDecimal:  'v' Digit");
+                                     // Mark starting offset
+                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+
+                                     // Accumulate the decimal point
+                                     PN_NumAcc (lppnLocalVars, '.');
+
+                                     $$ = $1;
+                                    }
+    | OVR     'v'                   {DbgMsgWP (L"%%VfpDecimal:  '" WS_UTF16_OVERBAR L"' 'v' Digit");
+                                     // Mark starting offset
+                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+
+                                     // Accumulate the negative sign
+                                     PN_NumAcc (lppnLocalVars, OVERBAR1);
+
+                                     // Accumulate the decimal point
+                                     PN_NumAcc (lppnLocalVars, '.');
+
+                                     $$ = $1;
+                                    }
+    | VfpDecimal  Digit             {DbgMsgWP (L"%%VfpDecimal:  VfpDecimal Digit");
+                                     // Accumulate the digit
+                                     PN_NumAcc (lppnLocalVars, $2.chCur);
+                                    }
+    | VfpDecimal  error             {DbgMsgWP (L"%%VfpDecimal:  VfpDecimal ERROR");
+                                     YYERROR2;
+                                    }
+    ;
+
+VfpDecPoint:
+      VfpDecimal                    {DbgMsgWP (L"%%VfpDecPoint:  VfpDecimal");
+                                     // Terminate the argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     // Mark the result as VFP
+                                     $1.chType = PN_NUMTYPE_VFP;
+
+                                     $$ = $1;
+                                    }
+    ;
+
+VfpConstants:
+          INF 'v'                   {DbgMsgWP (L"%%VfpConstants:  INF 'v'");
+                                     // Mark as positive infinity
+                                     mpf_set_infsub (&$1.at.aplVfp, 1);
+
+                                     // Mark the result as VFP
+                                     $1.chType = PN_NUMTYPE_VFP;
+
+                                     $$ = $1;
+                                    }
+    | OVR INF 'v'                   {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
+                                     // Mark as negative infinity
+                                     mpf_set_infsub (&$1.at.aplVfp, -1);
+
+                                     // Mark the result as VFP
+                                     $1.chType = PN_NUMTYPE_VFP;
+
+                                     $$ = $1;
+                                    }
+    |     INF 'v' Integer           {DbgMsgWP (L"%%VfpConstants:  INF 'v'" Integer);
+                                     // Mark as positive infinity
+                                     mpf_set_infsub (&$1.at.aplVfp, 1);
+
+                                     // Mark the result as VFP
+                                     $1.chType = PN_NUMTYPE_VFP;
+
+                                     $$ = $1;
+                                    }
+    | OVR INF 'v' Integer           {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v' Integer");
+                                     // Mark as negative infinity
+                                     mpf_set_infsub (&$1.at.aplVfp, -1);
+
+                                     // Mark the result as VFP
+                                     $1.chType = PN_NUMTYPE_VFP;
 
                                      $$ = $1;
                                     }
@@ -250,15 +344,15 @@ Hc2Point:
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
-                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
                                      // If the imaginary part is integer, ...
                                      if (IsIntegerType ($3.chType))
                                          // Convert it to float
-                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
 
                                      // Save the real & imaginary parts
-                                     $1.aplHC2Real = $1.aplFloat;
-                                     $1.aplHC2Imag = $3.aplFloat;
+                                     $1.at.aplHC2.Real = $1.at.aplFloat;
+                                     $1.at.aplHC2.Imag = $3.at.aplFloat;
 
                                      // Mark the result as Complex
                                      $1.chType = PN_NUMTYPE_HC2;
@@ -269,15 +363,15 @@ Hc2Point:
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
-                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
                                      // If the imaginary part is integer, ...
                                      if (IsIntegerType ($3.chType))
                                          // Convert it to float
-                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
 
                                      // Save the real & imaginary parts
-                                     $1.aplHC2Real = $1.aplFloat;
-                                     $1.aplHC2Imag = $3.aplFloat;
+                                     $1.at.aplHC2.Real = $1.at.aplFloat;
+                                     $1.at.aplHC2.Imag = $3.at.aplFloat;
 
                                      // Mark the result as Complex
                                      $1.chType = PN_NUMTYPE_HC2;
@@ -288,19 +382,19 @@ Hc2Point:
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
-                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
                                      // If the imaginary part is integer, ...
                                      if (IsIntegerType ($4.chType))
                                          // Convert it to float
-                                         $4.aplFloat = (APLFLOAT) $4.aplInteger;
+                                         $4.at.aplFloat = (APLFLOAT) $4.at.aplInteger;
 
                                      // Convert from degrees to radians
-                                     $4.aplFloat = FloatPi * $4.aplFloat / 180;
+                                     $4.at.aplFloat = FloatPi * $4.at.aplFloat / 180;
 
                                      // Save the real & imaginary parts
                                      // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
-                                     $1.aplHC2Real = $1.aplFloat * cos ($4.aplFloat);
-                                     $1.aplHC2Imag = $1.aplFloat * sin ($4.aplFloat);
+                                     $1.at.aplHC2.Real = $1.at.aplFloat * cos ($4.at.aplFloat);
+                                     $1.at.aplHC2.Imag = $1.at.aplFloat * sin ($4.at.aplFloat);
 
                                      // Mark the result as Complex
                                      $1.chType = PN_NUMTYPE_HC2;
@@ -311,16 +405,16 @@ Hc2Point:
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
-                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
                                      // If the imaginary part is integer, ...
                                      if (IsIntegerType ($4.chType))
                                          // Convert it to float
-                                         $4.aplFloat = (APLFLOAT) $4.aplInteger;
+                                         $4.at.aplFloat = (APLFLOAT) $4.at.aplInteger;
 
                                      // Save the real & imaginary parts
                                      // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
-                                     $1.aplHC2Real = $1.aplFloat * cos ($4.aplFloat);
-                                     $1.aplHC2Imag = $1.aplFloat * sin ($4.aplFloat);
+                                     $1.at.aplHC2.Real = $1.at.aplFloat * cos ($4.at.aplFloat);
+                                     $1.at.aplHC2.Imag = $1.at.aplFloat * sin ($4.at.aplFloat);
 
                                      // Mark the result as Complex
                                      $1.chType = PN_NUMTYPE_HC2;
@@ -336,25 +430,25 @@ Hc4Point:
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
-                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
                                      // If the imaginary part #1 is integer, ...
                                      if (IsIntegerType ($3.chType))
                                          // Convert it to float
-                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
                                      // If the imaginary part #2 is integer, ...
                                      if (IsIntegerType ($5.chType))
                                          // Convert it to float
-                                         $5.aplFloat = (APLFLOAT) $5.aplInteger;
+                                         $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
                                      // If the imaginary part #3 is integer, ...
                                      if (IsIntegerType ($8.chType))
                                          // Convert it to float
-                                         $8.aplFloat = (APLFLOAT) $8.aplInteger;
+                                         $8.at.aplFloat = (APLFLOAT) $8.at.aplInteger;
 
                                      // Save the real & imaginary parts
-                                     $1.aplHC4Real  = $1.aplFloat;
-                                     $1.aplHC4Imag1 = $3.aplFloat;
-                                     $1.aplHC4Imag2 = $5.aplFloat;
-                                     $1.aplHC4Imag3 = $8.aplFloat;
+                                     $1.at.aplHC4.Real  = $1.at.aplFloat;
+                                     $1.at.aplHC4.Imag1 = $3.at.aplFloat;
+                                     $1.at.aplHC4.Imag2 = $5.at.aplFloat;
+                                     $1.at.aplHC4.Imag3 = $8.at.aplFloat;
 
                                      // Mark the result as Quaternion
                                      $1.chType = PN_NUMTYPE_HC4;
@@ -366,25 +460,25 @@ Hc4Point:
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
-                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
                                      // If the imaginary part #1 is integer, ...
                                      if (IsIntegerType ($3.chType))
                                          // Convert it to float
-                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
                                      // If the imaginary part #2 is integer, ...
                                      if (IsIntegerType ($5.chType))
                                          // Convert it to float
-                                         $5.aplFloat = (APLFLOAT) $5.aplInteger;
+                                         $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
                                      // If the imaginary part #3 is integer, ...
                                      if (IsIntegerType ($7.chType))
                                          // Convert it to float
-                                         $7.aplFloat = (APLFLOAT) $7.aplInteger;
+                                         $7.at.aplFloat = (APLFLOAT) $7.at.aplInteger;
 
                                      // Save the real & imaginary parts
-                                     $1.aplHC4Real  = $1.aplFloat;
-                                     $1.aplHC4Imag1 = $3.aplFloat;
-                                     $1.aplHC4Imag2 = $5.aplFloat;
-                                     $1.aplHC4Imag3 = $7.aplFloat;
+                                     $1.at.aplHC4.Real  = $1.at.aplFloat;
+                                     $1.at.aplHC4.Imag1 = $3.at.aplFloat;
+                                     $1.at.aplHC4.Imag2 = $5.at.aplFloat;
+                                     $1.at.aplHC4.Imag3 = $7.at.aplFloat;
 
                                      // Mark the result as Quaternion
                                      $1.chType = PN_NUMTYPE_HC4;
@@ -400,45 +494,45 @@ Hc8Point:
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
-                                         $1.aplFloat = (APLFLOAT) $1.aplInteger;
+                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
                                      // If the imaginary part #1 is integer, ...
                                      if (IsIntegerType ($3.chType))
                                          // Convert it to float
-                                         $3.aplFloat = (APLFLOAT) $3.aplInteger;
+                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
                                      // If the imaginary part #2 is integer, ...
                                      if (IsIntegerType ($5.chType))
                                          // Convert it to float
-                                         $5.aplFloat = (APLFLOAT) $5.aplInteger;
+                                         $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
                                      // If the imaginary part #3 is integer, ...
                                      if (IsIntegerType ($7.chType))
                                          // Convert it to float
-                                         $7.aplFloat = (APLFLOAT) $7.aplInteger;
+                                         $7.at.aplFloat = (APLFLOAT) $7.at.aplInteger;
                                      // If the imaginary part #4 is integer, ...
                                      if (IsIntegerType ($9.chType))
                                          // Convert it to float
-                                         $9.aplFloat = (APLFLOAT) $9.aplInteger;
+                                         $9.at.aplFloat = (APLFLOAT) $9.at.aplInteger;
                                      // If the imaginary part #5 is integer, ...
                                      if (IsIntegerType ($12.chType))
                                          // Convert it to float
-                                         $12.aplFloat = (APLFLOAT) $12.aplInteger;
+                                         $12.at.aplFloat = (APLFLOAT) $12.at.aplInteger;
                                      // If the imaginary part #6 is integer, ...
                                      if (IsIntegerType ($15.chType))
                                          // Convert it to float
-                                         $15.aplFloat = (APLFLOAT) $15.aplInteger;
+                                         $15.at.aplFloat = (APLFLOAT) $15.at.aplInteger;
                                      // If the imaginary part #7 is integer, ...
                                      if (IsIntegerType ($18.chType))
                                          // Convert it to float
-                                         $18.aplFloat = (APLFLOAT) $18.aplInteger;
+                                         $18.at.aplFloat = (APLFLOAT) $18.at.aplInteger;
 
                                      // Save the real & imaginary parts
-                                     $1.aplHC8Real  = $1 .aplFloat;
-                                     $1.aplHC8Imag1 = $3 .aplFloat;
-                                     $1.aplHC8Imag2 = $5 .aplFloat;
-                                     $1.aplHC8Imag3 = $7 .aplFloat;
-                                     $1.aplHC8Imag4 = $9 .aplFloat;
-                                     $1.aplHC8Imag5 = $12.aplFloat;
-                                     $1.aplHC8Imag6 = $15.aplFloat;
-                                     $1.aplHC8Imag7 = $18.aplFloat;
+                                     $1.at.aplHC8.Real  = $1.at.aplFloat;
+                                     $1.at.aplHC8.Imag1 = $3.at.aplFloat;
+                                     $1.at.aplHC8.Imag2 = $5.at.aplFloat;
+                                     $1.at.aplHC8.Imag3 = $7.at.aplFloat;
+                                     $1.at.aplHC8.Imag4 = $9.at.aplFloat;
+                                     $1.at.aplHC8.Imag5 = $12.at.aplFloat;
+                                     $1.at.aplHC8.Imag6 = $15.at.aplFloat;
+                                     $1.at.aplHC8.Imag7 = $18.at.aplFloat;
 
                                      // Mark the result as Octonion
                                      $1.chType = PN_NUMTYPE_HC8;
@@ -456,10 +550,7 @@ Rational:
                                      $1.chType = PN_NUMTYPE_INT;
 
                                      // Calculate the number
-                                     PN_NumCalc (lppnLocalVars, &$1);
-
-                                     // Save in the Local Vars
-                                     $1.aplRationalNum = $1.aplInteger;
+                                     PN_NumCalc (lppnLocalVars, &$1, TRUE);
 
                                      // Mark starting offset
                                      $1.uNumOff = lppnLocalVars->uNumAcc;
@@ -477,10 +568,7 @@ Rational:
                                      $1.chType = PN_NUMTYPE_INT;
 
                                      // Calculate the number
-                                     PN_NumCalc (lppnLocalVars, &$1);
-
-                                     // Save in the Local Vars
-                                     $1.aplRationalNum = $1.aplInteger;
+                                     PN_NumCalc (lppnLocalVars, &$1, TRUE);
 
                                      // Mark starting offset
                                      $1.uNumOff = lppnLocalVars->uNumAcc;
@@ -500,7 +588,79 @@ Rational:
     ;
 
 RatPoint:
-    | Rational                      {DbgMsgWP (L"%%RatPoint:  Rational");
+      Rational                      {DbgMsgWP (L"%%RatPoint:  Rational");
+                                     // Terminate the argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     // Mark the result as rational
+                                     $1.chType = PN_NUMTYPE_RAT;
+
+                                     // Calculate the number
+                                     PN_NumCalc (lppnLocalVars, &$1, TRUE);
+
+                                     $$ = $1;
+                                    }
+    ;
+
+RatConstants:
+          INF EXT                   {DbgMsgWP (L"%%RatConstants:  INF EXT");
+                                     // Mark as positive infinity
+                                     mpq_set_infsub (&$1.at.aplRat, 1);
+
+                                     // Mark the result as RAT
+                                     $1.chType = PN_NUMTYPE_RAT;
+
+                                     $$ = $1;
+                                    }
+    |     INF 'r' Integer           {DbgMsgWP (L"%%RatConstants:  INF 'r' Integer");
+                                     // Mark as positive infinity
+                                     mpq_set_infsub (&$1.at.aplRat, 1);
+
+                                     // Mark the result as RAT
+                                     $1.chType = PN_NUMTYPE_RAT;
+
+                                     $$ = $1;
+                                    }
+    | OVR INF EXT                   {DbgMsgWP (L"%%RatConstants:  OVR INF EXT");
+                                     // Mark as negative infinity
+                                     mpq_set_infsub (&$1.at.aplRat, -1);
+
+                                     // Mark the result as RAT
+                                     $1.chType = PN_NUMTYPE_RAT;
+
+                                     $$ = $1;
+                                    }
+    | OVR INF 'r' Integer           {DbgMsgWP (L"%%RatConstants:  OVR INF 'r' Integer");
+                                     // Mark as negative infinity
+                                     mpq_set_infsub (&$1.at.aplRat, -1);
+
+                                     // Mark the result as RAT
+                                     $1.chType = PN_NUMTYPE_RAT;
+
+                                     $$ = $1;
+                                    }
+    | Integer 'r' INF               {DbgMsgWP (L"%%RatConstants:  Integer 'r' INF");
+                                     // Initialize to 0
+                                     mpq_init (&$1.at.aplRat);
+
+                                     // Mark the result as RAT
+                                     $1.chType = PN_NUMTYPE_RAT;
+
+                                     $$ = $1;
+                                    }
+    | Integer 'r' OVR INF           {DbgMsgWP (L"%%RatConstants:  Integer 'r' OVR INF");
+                                     // Initialize to 0
+                                     mpq_init (&$1.at.aplRat);
+
+                                     // Mark the result as RAT
+                                     $1.chType = PN_NUMTYPE_RAT;
+
+                                     $$ = $1;
+                                    }
+    ;
+
+ExtPoint:
+      Integer EXT                   {DbgMsgWP (L"%%ExtPoint:  Integer 'x'");
                                      // Terminate the argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
@@ -508,16 +668,13 @@ RatPoint:
                                      $1.chType = PN_NUMTYPE_INT;
 
                                      // Calculate the number
-                                     PN_NumCalc (lppnLocalVars, &$1);
+                                     PN_NumCalc (lppnLocalVars, &$1, TRUE);
 
-                                     // Save in the Local Vars
-                                     $1.aplRationalDen = $1.aplInteger;
+                                     // Set the denominator to 1
+                                     mpz_init_set_ui (mpq_denref (&$1.at.aplRat), 1);
 
                                      // Mark the result as rational
                                      $1.chType = PN_NUMTYPE_RAT;
-
-                                     // Calculate the number
-                                     PN_NumCalc (lppnLocalVars, &$1);
 
                                      $$ = $1;
                                     }
@@ -529,13 +686,15 @@ EPArgs:
                                     }
     | ExpPoint                      {DbgMsgWP (L"%%EPArgs:  ExpPoint");
                                     }
-    | RatPoint                      {DbgMsgWP (L"%%EPArgs:  RatPoint");
-                                    }
     | Hc2Point                      {DbgMsgWP (L"%%EPArgs:  Hc2Point");
                                     }
     | Hc4Point                      {DbgMsgWP (L"%%EPArgs:  Hc4Point");
                                     }
     | Hc8Point                      {DbgMsgWP (L"%%EPArgs:  Hc8Point");
+                                    }
+    | RatPoint                      {DbgMsgWP (L"%%EPArgs:  RatPoint");
+                                    }
+    | VfpPoint                      {DbgMsgWP (L"%%EPArgs:  VfpPoint");
                                     }
     ;
 
@@ -547,10 +706,34 @@ PiPoint:
 
 ExpPoint:
       DecPoint 'e' Integer          {DbgMsgWP (L"%%ExpPoint:  DecPoint 'e' Integer");
+                                     // Terminate the (Exponent) argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
                                      $$ = *PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
                                     }
     | DecPoint 'E' Integer          {DbgMsgWP (L"%%ExpPoint:  DecPoint 'E' Integer");
+                                     // Terminate the (Exponent) argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
                                      $$ = *PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
+                                    }
+    ;
+
+VfpPoint:
+      VfpDecPoint                   {DbgMsgWP (L"%%VfpPoint:  VfpDecPoint");
+                                     $$ = *PN_MakeVfpPoint (lppnLocalVars, &$1, NULL);
+                                    }
+    | VfpDecPoint 'e' Integer       {DbgMsgWP (L"%%VfpPoint:  VfpDecPoint 'e' Integer");
+                                     // Terminate the (Exponent) argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     $$ = *PN_MakeVfpPoint (lppnLocalVars, &$1, &$3);
+                                    }
+    | VfpDecPoint 'E' Integer       {DbgMsgWP (L"%%VfpPoint:  VfpDecPoint 'E' Integer");
+                                     // Terminate the (Exponent) argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     $$ = *PN_MakeVfpPoint (lppnLocalVars, &$1, &$3);
                                     }
     ;
 
@@ -585,68 +768,62 @@ BasePoint:
     | Hc8Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc8Point 'b' AlphaInt");
                                      $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
                                     }
+    | VfpPoint   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  VfpPoint 'b' AlphaInt");
+                                     $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
+                                    }
     ;
 
 Number:
       BasePoint                     {DbgMsgWP (L"%%Number:  BasePoint");
-                                     lppnLocalVars->aplInteger     = $1.aplInteger;
-                                     lppnLocalVars->aplFloat       = $1.aplFloat;
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     | DecPoint                      {DbgMsgWP (L"%%Number:  DecPoint");
-                                     lppnLocalVars->aplInteger     = $1.aplInteger;
-                                     lppnLocalVars->aplFloat       = $1.aplFloat;
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     | EulerPoint                    {DbgMsgWP (L"%%Number:  EulerPoint");
-                                     lppnLocalVars->aplInteger     = $1.aplInteger;
-                                     lppnLocalVars->aplFloat       = $1.aplFloat;
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     | ExpPoint                      {DbgMsgWP (L"%%Number:  ExpPoint");
-                                     lppnLocalVars->aplInteger     = $1.aplInteger;
-                                     lppnLocalVars->aplFloat       = $1.aplFloat;
+                                     lppnLocalVars->at             = $1.at;
+                                     lppnLocalVars->chType         = $1.chType;
+                                    }
+    | ExtPoint                      {DbgMsgWP (L"%%Number:  ExtPoint");
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     | PiPoint                       {DbgMsgWP (L"%%Number:  PiPoint");
-                                     lppnLocalVars->aplInteger     = $1.aplInteger;
-                                     lppnLocalVars->aplFloat       = $1.aplFloat;
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
-    | Integer EXT                   {DbgMsgWP (L"%%Number:  Integer 'x'");      // Extended precision
-
-
-
-                                     // Mark as not yet implemented
-                                     pn_yyerror (lppnLocalVars, "nonce error");
-                                     YYERROR;
-                                    }
     | RatPoint                      {DbgMsgWP (L"%%Number:  RatPoint");
-                                     lppnLocalVars->aplRationalNum = $1.aplRationalNum;
-                                     lppnLocalVars->aplRationalDen = $1.aplRationalDen;
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     | Hc2Point                      {DbgMsgWP (L"%%Number:  Hc2Point");
-                                     lppnLocalVars->aplHC2Real     = $1.aplHC2Real;
-                                     lppnLocalVars->aplHC2Imag     = $1.aplHC2Imag;
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     | Hc4Point                      {DbgMsgWP (L"%%Number:  Hc4Point");
-                                     lppnLocalVars->aplHC4Real     = $1.aplHC4Real;
-                                     lppnLocalVars->aplHC4Imag1    = $1.aplHC4Imag1;
-                                     lppnLocalVars->aplHC4Imag2    = $1.aplHC4Imag2;
-                                     lppnLocalVars->aplHC4Imag3    = $1.aplHC4Imag3;
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     | Hc8Point                      {DbgMsgWP (L"%%Number:  Hc8Point");
-                                     lppnLocalVars->aplHC8Real     = $1.aplHC8Real;
-                                     lppnLocalVars->aplHC8Imag1    = $1.aplHC8Imag1;
-                                     lppnLocalVars->aplHC8Imag2    = $1.aplHC8Imag2;
-                                     lppnLocalVars->aplHC8Imag3    = $1.aplHC8Imag3;
-                                     lppnLocalVars->aplHC8Imag4    = $1.aplHC8Imag4;
-                                     lppnLocalVars->aplHC8Imag5    = $1.aplHC8Imag5;
-                                     lppnLocalVars->aplHC8Imag6    = $1.aplHC8Imag6;
-                                     lppnLocalVars->aplHC8Imag7    = $1.aplHC8Imag7;
+                                     lppnLocalVars->at             = $1.at;
+                                     lppnLocalVars->chType         = $1.chType;
+                                    }
+    | VfpPoint                      {DbgMsgWP (L"%%Number:  VfpPoint");
+                                     lppnLocalVars->at             = $1.at;
+                                     lppnLocalVars->chType         = $1.chType;
+                                    }
+    | RatConstants                  {DbgMsgWP (L"%%Number:  RatConstants");
+                                     lppnLocalVars->at             = $1.at;
+                                     lppnLocalVars->chType         = $1.chType;
+                                    }
+    | VfpConstants                  {DbgMsgWP (L"%%Number:  VfpConstants");
+                                     lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     ;
@@ -658,12 +835,219 @@ Number:
 //***************************************************************************
 
 //***************************************************************************
+//  $PN_actUNK
+//***************************************************************************
+
+void PN_actUNK
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    DbgStop ();
+} // End PN_actUNK
+
+
+//***************************************************************************
+//  $PN_actBOOL_FLT
+//***************************************************************************
+
+void PN_actBOOL_FLT
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    // Convert the value from BOOL to FLT
+    lpSrc->at.aplFloat = (APLFLOAT) lpSrc->at.aplInteger;
+
+    lpSrc->chType = PN_NUMTYPE_FLT;
+} // End PN_actBOOL_FLT
+
+
+//***************************************************************************
+//  $PN_actBOOL_RAT
+//***************************************************************************
+
+void PN_actBOOL_RAT
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    // Convert the value from BOOL to RAT
+    mpq_init_set_sa (&lpSrc->at.aplRat, lpSrc->at.aplInteger, 1);
+
+    lpSrc->chType = PN_NUMTYPE_RAT;
+} // End PN_actBOOL_RAT
+
+
+//***************************************************************************
+//  $PN_actBOOL_VFP
+//***************************************************************************
+
+void PN_actBOOL_VFP
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    // Convert the value from BOOL to VFP
+    mpf_init_set_sa (&lpSrc->at.aplVfp, lpSrc->at.aplInteger);
+
+    lpSrc->chType = PN_NUMTYPE_VFP;
+} // End PN_actBOOL_VFP
+
+
+//***************************************************************************
+//  $PN_actINT_FLT
+//***************************************************************************
+
+void PN_actINT_FLT
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    // Convert the value from INT to FLT
+    lpSrc->at.aplFloat = (APLFLOAT) lpSrc->at.aplInteger;
+
+    lpSrc->chType = PN_NUMTYPE_FLT;
+} // End PN_actINT_FLT
+
+
+//***************************************************************************
+//  $PN_actINT_RAT
+//***************************************************************************
+
+void PN_actINT_RAT
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    // Convert the value from INT to RAT
+    mpq_init_set_sa (&lpSrc->at.aplRat, lpSrc->at.aplInteger, 1);
+
+    lpSrc->chType = PN_NUMTYPE_RAT;
+} // End PN_actINT_RAT
+
+
+//***************************************************************************
+//  $PN_actINT_VFP
+//***************************************************************************
+
+void PN_actINT_VFP
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    // Convert the value from INT to VFP
+    mpf_init_set_sa (&lpSrc->at.aplVfp, lpSrc->at.aplInteger);
+
+    lpSrc->chType = PN_NUMTYPE_VFP;
+} // End PN_actINT_VFP
+
+
+//***************************************************************************
+//  $PN_actFLT_VFP
+//***************************************************************************
+
+void PN_actFLT_VFP
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    // Convert the value from FLT to VFP
+    mpf_init_set_d  (&lpSrc->at.aplVfp, lpSrc->at.aplFloat);
+
+    lpSrc->chType = PN_NUMTYPE_VFP;
+} // End PN_actFLT_VFP
+
+
+//***************************************************************************
+//  $PN_actRAT_VFP
+//***************************************************************************
+
+void PN_actRAT_VFP
+    (LPPN_YYSTYPE lpSrc)
+
+{
+    APLVFP aplVfp = {0};
+
+    // Convert the value from RAT to VFP
+    mpf_init_set_q  (&aplVfp, &lpSrc->at.aplRat);
+
+    Myq_clear (&lpSrc->at.aplRat);
+
+    lpSrc->at.aplVfp = aplVfp;
+
+    lpSrc->chType = PN_NUMTYPE_VFP;
+} // End PN_actRAT_VFP
+
+
+#define PN_MAT                                                                                                              \
+{/*     BOOL          INT          FLT          HC2          HC4          HC8          RAT          VFP     */              \
+   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,HC2 ),M(BOOL,HC4 ),M(BOOL,HC8 ),M(BOOL,RAT ),M(BOOL,VFP )},   /* BOOL */  \
+   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,HC2 ),M(INT ,HC4 ),M(INT ,HC8 ),M(INT ,RAT ),M(INT ,VFP )},   /* INT  */  \
+   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,HC2 ),M(FLT ,HC4 ),M(FLT ,HC8 ),M(FLT ,VFP ),M(FLT ,VFP )},   /* FLT  */  \
+   {M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC4 ),M(HC2 ,HC8 ),M(HC2 ,HC2 ),M(HC2 ,HC2 )},   /* HC2  */  \
+   {M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC8 ),M(HC4 ,HC4 ),M(HC4 ,HC4 )},   /* HC4  */  \
+   {M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 )},   /* HC8  */  \
+   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HC2 ),M(RAT ,HC4 ),M(RAT ,HC8 ),M(RAT ,RAT ),M(RAT ,VFP )},   /* RAT  */  \
+   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HC2 ),M(VFP ,HC4 ),M(VFP ,HC8 ),M(VFP ,VFP ),M(VFP ,VFP )},   /* VFP  */  \
+};
+// PN_NUMTYPE_xxx promotion result matrix
+PNNUMTYPE aNumTypePromote[PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH] =
+#define M(a,b)  PN_NUMTYPE_##b
+PN_MAT
+#undef  M
+
+typedef void (*PN_ACTION)(LPPN_YYSTYPE);
+
+#define PN_actBOOL_BOOL     NULL
+#define PN_actBOOL_INT      NULL
+////ine PN_actBOOL_FLT      NULL
+#define PN_actBOOL_HC2      PN_actUNK
+#define PN_actBOOL_HC4      PN_actUNK
+#define PN_actBOOL_HC8      PN_actUNK
+
+#define PN_actINT_INT       NULL
+////ine PN_actINT_FLT       NULL
+#define PN_actINT_HC2       PN_actUNK
+#define PN_actINT_HC4       PN_actUNK
+#define PN_actINT_HC8       PN_actUNK
+
+#define PN_actFLT_FLT       NULL
+#define PN_actFLT_HC2       PN_actUNK
+#define PN_actFLT_HC4       PN_actUNK
+#define PN_actFLT_HC8       PN_actUNK
+
+#define PN_actHC2_HC2       NULL
+#define PN_actHC2_HC4       PN_actUNK
+#define PN_actHC2_HC8       PN_actUNK
+
+#define PN_actHC4_HC4       NULL
+#define PN_actHC4_HC8       PN_actUNK
+
+#define PN_actHC8_HC8       NULL
+
+#define PN_actRAT_RAT       NULL
+#define PN_actRAT_HC2       PN_actUNK
+#define PN_actRAT_HC4       PN_actUNK
+#define PN_actRAT_HC8       PN_actUNK
+
+#define PN_actVFP_VFP       NULL
+#define PN_actVFP_HC2       PN_actUNK
+#define PN_actVFP_HC4       PN_actUNK
+#define PN_actVFP_HC8       PN_actUNK
+
+// PN_NUMTYPE_xxx promotion action matrix
+PN_ACTION aNumTypeAction [PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH] =
+#define M(a,b)  PN_act##a##_##b
+PN_MAT
+#undef  M
+
+
+//***************************************************************************
 //  $ParsePointNotation
 //
 //  Parse a sequence of Point Notation characters
 //
 //  Thanks to the designers of J for these clever ideas.
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ParsePointNotation"
+#else
+#define APPEND_NAME
+#endif
 
 UBOOL ParsePointNotation
     (LPPNLOCALVARS lppnLocalVars)           // Ptr to PN Local vars
@@ -679,11 +1063,35 @@ UBOOL ParsePointNotation
     // Enable debugging
     yydebug = TRUE;
 #endif
-    // Parse the header, check for errors
-    //   0 = success
-    //   1 = YYABORT or APL error
-    //   2 = memory exhausted
-    bRet = pn_yyparse (lppnLocalVars) EQ 0;
+    __try
+    {
+        // Parse the header, check for errors
+        //   0 = success
+        //   1 = YYABORT or APL error
+        //   2 = memory exhausted
+        bRet = pn_yyparse (lppnLocalVars) EQ 0;
+    } __except (CheckException (GetExceptionInformation (), L"ParsePointNotation"))
+    {
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
+        {
+            case EXCEPTION_NONCE_ERROR:
+                // Mark as in error
+                bRet = FALSE;
+                ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                           NULL);
+                break;
+
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+
+                // Mark as in error
+                bRet = FALSE;
+
+                break;
+        } // End SWITCH
+    } // End __try/__except
 
 #if YYDEBUG
     // Disable debugging
@@ -691,6 +1099,7 @@ UBOOL ParsePointNotation
 #endif
     return bRet;
 } // End ParsePointNotation
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -720,7 +1129,8 @@ void PN_NumAcc
 
 void PN_NumCalc
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
-     LPPN_YYSTYPE  lpYYArg)             // Ptr to incoming YYSTYPE
+     LPPN_YYSTYPE  lpYYArg,             // Ptr to incoming YYSTYPE
+     UBOOL         bUseRat)             // TRUE iff this routine may blowup to Rational
 
 {
     UBOOL  bRet = TRUE,                 // TRUE iff the result is valid
@@ -730,6 +1140,10 @@ void PN_NumCalc
            uOff,                        // Starting offset
            uAcc;                        // Loop counter
 
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return;
+
     // Initialize the starting offset
     uOff = lpYYArg->uNumOff;
 
@@ -737,39 +1151,45 @@ void PN_NumCalc
     switch (lpYYArg->chType)
     {
         case PN_NUMTYPE_INT:
-            // Initialize the accumulator
-            aplInteger = 0;
-
-            // Initialize the loop length
-            uLen = lstrlen (&lppnLocalVars->lpszNumAccum[uOff]);
-
-            // Handle negative sign
-            uAcc = bSigned = (lppnLocalVars->lpszNumAccum[uOff] EQ OVERBAR1);
-
-            // Loop through the digits
-            for (; bRet && uAcc < uLen; uAcc++)
+            // If we're forming the numerator of a Rational number, ...
+            if (bUseRat)
             {
-                aplInteger = _imul64 (aplInteger, 10, &bRet);
-                if (bRet)
-                    aplInteger = _iadd64 (aplInteger, lppnLocalVars->lpszNumAccum[uOff + uAcc] - '0', &bRet);
-            } // End FOR
-
-            if (bRet)
-            {
-                if (bSigned)
-                    // can't overflow as there are more negative than positive numbers
-                    aplInteger = -aplInteger;
-
-                // Save in the result
-                lpYYArg->aplInteger = aplInteger;
-
-                if (IsBooleanValue (aplInteger))
-                    lpYYArg->chType = PN_NUMTYPE_BOOL;
-
-                // In case we need this number as a float later, ...
-                lpYYArg->aplFloat = (APLFLOAT) aplInteger;
+                // Convert the numerator to a GMP integer
+                mpz_init_set_str (mpq_numref (&lpYYArg->at.aplRat), &lppnLocalVars->lpszNumAccum[uOff], 10);
 
                 break;
+            } else
+            {
+                // Initialize the accumulator
+                aplInteger = 0;
+
+                // Initialize the loop length
+                uLen = lstrlen (&lppnLocalVars->lpszNumAccum[uOff]);
+
+                // Handle negative sign
+                uAcc = bSigned = (lppnLocalVars->lpszNumAccum[uOff] EQ OVERBAR1);
+
+                // Loop through the digits
+                for (; bRet && uAcc < uLen; uAcc++)
+                {
+                    aplInteger = _imul64 (aplInteger, 10, &bRet);
+                    if (bRet)
+                        aplInteger = _iadd64 (aplInteger, lppnLocalVars->lpszNumAccum[uOff + uAcc] - '0', &bRet);
+                } // End FOR
+
+                if (bRet)
+                {
+                    if (bSigned)
+                        // can't overflow as there are more negative than positive numbers
+                        aplInteger = -aplInteger;
+
+                    // Save in the result
+                    lpYYArg->at.aplInteger = aplInteger;
+
+                    if (IsBooleanValue (aplInteger))
+                        lpYYArg->chType = PN_NUMTYPE_BOOL;
+                    break;
+                } // End IF
             } // End IF
 
             // Change the type to float
@@ -779,20 +1199,39 @@ void PN_NumCalc
 
         case PN_NUMTYPE_FLT:
             // Use David Gay's routines
-            lpYYArg->aplFloat = strtod (&lppnLocalVars->lpszNumAccum[uOff], NULL);
+            lpYYArg->at.aplFloat = strtod (&lppnLocalVars->lpszNumAccum[uOff], NULL);
 
             break;
 
         case PN_NUMTYPE_RAT:
-            // Just divide 'em for use in Base, Euler, and Pi Point Notation
-            lpYYArg->aplFloat = ((APLFLOAT) lpYYArg->aplRationalNum) / (APLFLOAT) lpYYArg->aplRationalDen;
+            // This type is used after the numerator has been calculated
+            //   and is in mpq_numref (&lpYYArg->at.aplRat).  The denominator is
+            //   in lppnLocalVars->NumAccum[uOff] and must be converted.
 
+            // Convert the denominator to a GMP integer
+            mpz_init_set_str (mpq_denref (&lpYYArg->at.aplRat), &lppnLocalVars->lpszNumAccum[uOff], 10);
+
+            // If the denominator is zero, ...
+            if (IsMpz0 (mpq_denref (&lpYYArg->at.aplRat)))
+            {
+                int iSgn;
+
+                // Save the sign of the numerator
+                iSgn = mpz_sgn (mpq_numref (&lpYYArg->at.aplRat));
+
+                // We no longer need this storage
+                Myq_clear (&lpYYArg->at.aplRat);
+
+                // Set to the appropriate-signed infinity
+                mpq_set_infsub (&lpYYArg->at.aplRat, iSgn);
+            } else
+                // Canonicalize the arg
+                mpq_canonicalize (&lpYYArg->at.aplRat);
             break;
 
         case PN_NUMTYPE_HC2:
         case PN_NUMTYPE_HC4:
         case PN_NUMTYPE_HC8:
-        case PN_NUMTYPE_EXT:
             break;
 
         defstop
@@ -848,6 +1287,10 @@ LPPN_YYSTYPE PN_MakeBasePoint
     UBOOL    bRet = TRUE;               // TRUE iff the result is valid
     UCHAR    chCur;                     // Temporary character
 
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return NULL;
+
     // Get the string length
     uLen = lppnLocalVars->uAlpAcc;
 
@@ -860,7 +1303,7 @@ LPPN_YYSTYPE PN_MakeBasePoint
         case PN_NUMTYPE_BOOL:
         case PN_NUMTYPE_INT:
             // Get the base value
-            aplIntBase = lpYYBase->aplInteger;
+            aplIntBase = lpYYBase->at.aplInteger;
 
             // Initialize the accumulator and base power
             aplIntAcc = 0;
@@ -904,28 +1347,118 @@ LPPN_YYSTYPE PN_MakeBasePoint
             if (bRet)
             {
                 // Save the result
-                lpYYBase->aplInteger = aplIntAcc;
+                lpYYBase->at.aplInteger = aplIntAcc;
 
                 break;
             } // End IF
 
-            // Convert the base value to float
-            lpYYBase->aplFloat = (APLFLOAT) lpYYBase->aplInteger;
+            // Convert the base value to Rational
+            mpq_init_set_sa (&lpYYBase->at.aplRat, lpYYBase->at.aplInteger, 1);
 
             // Get the ptr to the end of the AlphaInt string
             lpszAlphaInt = &lppnLocalVars->lpszAlphaInt[uLen - 1];
 
+            // Change the type to RAT
+            lpYYBase->chType = PN_NUMTYPE_RAT;
+
             // Fall through to the rational case
 
         case PN_NUMTYPE_RAT:
-            // Change the base type to float
-            lpYYBase->chType = PN_NUMTYPE_FLT;
+        {
+            APLRAT aplRatBase    = {0},
+                   aplRatPowBase = {0},
+                   aplRatTmp     = {0};
 
-            // Fall through to the float case
+            // Initialize and set the base value
+            mpq_init_set (&aplRatBase, &lpYYBase->at.aplRat);
+
+            // Initialize the accumulator and base power
+            mpq_set_ui (&lpYYBase->at.aplRat, 0, 1);
+            mpq_init_set_ui (&aplRatPowBase, 1, 1);
+            mpq_init (&aplRatTmp);
+
+            // Loop through the AlphaInt arg
+            for (uAcc = 0; uAcc < uLen; uAcc++)
+            {
+                // Get the next char as lowercase
+                chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+
+                // Convert to a number
+                if ('0' <= chCur
+                 &&        chCur <= '9')
+                    chCur -= '0';
+                else
+                if ('a' <= chCur
+                 &&        chCur <= 'z')
+                    chCur -= 'a' - 10;
+
+                // Times the power base and accumulate
+                mpq_set_ui (&aplRatTmp, chCur, 1);
+                mpq_mul (&aplRatTmp, &aplRatPowBase, &aplRatTmp);
+                mpq_add (&lpYYBase->at.aplRat, &lpYYBase->at.aplRat, &aplRatTmp);
+                mpq_canonicalize (&lpYYBase->at.aplRat);
+
+                // Shift over the power base
+                mpq_mul (&aplRatPowBase, &aplRatPowBase, &aplRatBase);
+            } // End FOR
+
+            // We no longer need this storage
+            Myq_clear (&aplRatTmp);
+            Myq_clear (&aplRatPowBase);
+            Myq_clear (&aplRatBase);
+
+            break;
+        } // End PN_NUMTYPE_RAT
+
+        case PN_NUMTYPE_VFP:
+        {
+            APLVFP aplVfpBase    = {0},
+                   aplVfpPowBase = {0},
+                   aplVfpTmp     = {0};
+
+            // Initialize and set the base value
+            mpf_init_set (&aplVfpBase, &lpYYBase->at.aplVfp);
+
+            // Initialize the accumulator and base power
+            mpf_set_ui (&lpYYBase->at.aplVfp, 0);
+            mpf_init_set_ui (&aplVfpPowBase, 1);
+            mpf_init (&aplVfpTmp);
+
+            // Loop through the AlphaInt arg
+            for (uAcc = 0; uAcc < uLen; uAcc++)
+            {
+                // Get the next char as lowercase
+                chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+
+                // Convert to a number
+                if ('0' <= chCur
+                 &&        chCur <= '9')
+                    chCur -= '0';
+                else
+                if ('a' <= chCur
+                 &&        chCur <= 'z')
+                    chCur -= 'a' - 10;
+
+                // Times the power base and accumulate
+                mpf_set_ui (&aplVfpTmp, chCur);
+                mpf_mul (&aplVfpTmp, &aplVfpPowBase, &aplVfpTmp);
+                mpf_add (&lpYYBase->at.aplVfp, &lpYYBase->at.aplVfp, &aplVfpTmp);
+
+                // Shift over the power base
+                mpf_mul (&aplVfpPowBase, &aplVfpPowBase, &aplVfpBase);
+            } // End FOR
+
+            // We no longer need this storage
+            Myf_clear (&aplVfpTmp);
+            Myf_clear (&aplVfpPowBase);
+            Myf_clear (&aplVfpBase);
+
+            break;
+        } // End PN_NUMTYPE_VFP
 
         case PN_NUMTYPE_FLT:
             // Get the base value
-            aplFltBase = lpYYBase->aplFloat;
+            aplFltBase = lpYYBase->at.aplFloat;
 
             // Initialize the accumulator and base power
             aplFltAcc = 0;
@@ -954,14 +1487,14 @@ LPPN_YYSTYPE PN_MakeBasePoint
             } // End FOR
 
             // Save the result
-            lpYYBase->aplFloat = aplFltAcc;
+            lpYYBase->at.aplFloat = aplFltAcc;
 
             break;
 
         case PN_NUMTYPE_HC2:
             // Get the base value
-            aplBaseHC2Real = lpYYBase->aplHC2Real;
-            aplBaseHC2Imag = lpYYBase->aplHC2Imag;
+            aplBaseHC2Real = lpYYBase->at.aplHC2.Real;
+            aplBaseHC2Imag = lpYYBase->at.aplHC2.Imag;
 
             // Initialize the accumulator and base power
             aplAccHC2Real =
@@ -994,14 +1527,13 @@ LPPN_YYSTYPE PN_MakeBasePoint
             } // End FOR
 
             // Save the result
-            lpYYBase->aplHC2Real = aplAccHC2Real;
-            lpYYBase->aplHC2Imag = aplAccHC2Imag;
+            lpYYBase->at.aplHC2.Real = aplAccHC2Real;
+            lpYYBase->at.aplHC2.Imag = aplAccHC2Imag;
 
             break;
 
         case PN_NUMTYPE_HC4:
         case PN_NUMTYPE_HC8:
-        case PN_NUMTYPE_EXT:
             // ***FINISHME***
 
             break;
@@ -1026,35 +1558,79 @@ LPPN_YYSTYPE PN_MakeEulerPoint
      LPPN_YYSTYPE  lpYYExponent)        // The exponent part
 
 {
-    // If the multiplier is integer, ...
-    if (IsIntegerType (lpYYMultiplier->chType))
-        // Convert to float
-        lpYYMultiplier->aplFloat = (APLFLOAT) lpYYMultiplier->aplInteger;
+    PNNUMTYPE pnTypeRes;
 
-    // If the multiplier is integer or rational, ...
-    if (IsIntegerType (lpYYMultiplier->chType)
-     || lpYYMultiplier->chType EQ PN_NUMTYPE_RAT)
-        // Change the type to float
-        lpYYMultiplier->chType = PN_NUMTYPE_FLT;
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return NULL;
 
-    // If the exponent is integer, ...
-    if (IsIntegerType (lpYYExponent->chType))
-        // Convert to float
-        lpYYExponent->aplFloat = (APLFLOAT) lpYYExponent->aplInteger;
+    // Promote the multiplier and exponent to a common format
+    pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYExponent->chType];
 
-    // Split cases based upon the numeric type
-    switch (lpYYMultiplier->chType)
+    // If the result is BOOL/INT, ...
+    if (pnTypeRes EQ PN_NUMTYPE_BOOL
+     || pnTypeRes EQ PN_NUMTYPE_INT)
+        // Make it FLT
+        pnTypeRes = PN_NUMTYPE_FLT;
+
+    // If the result is RAT, ...
+    if (pnTypeRes EQ PN_NUMTYPE_RAT)
+        // Make it VFP
+        pnTypeRes = PN_NUMTYPE_VFP;
+
+    // If the multiplier must be promoted, ...
+    if (pnTypeRes NE lpYYMultiplier->chType
+     && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
+        (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier);
+
+    // If the exponent must be promoted, ...
+    if (pnTypeRes NE lpYYExponent->chType
+     && aNumTypeAction[lpYYExponent->chType  ][pnTypeRes] NE NULL)
+        (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent);
+
+    // Set the result type
+    lpYYMultiplier->chType =
+    lpYYExponent->chType   = pnTypeRes;
+
+    // Split cases based upon the numeric type of the result
+    switch (pnTypeRes)
     {
-        case PN_NUMTYPE_FLT:
+        case PN_NUMTYPE_BOOL:
+        case PN_NUMTYPE_INT:
             // The result is Multiplier x (*1) * Exponent
-            lpYYMultiplier->aplFloat *= pow (FloatE, lpYYExponent->aplFloat);
+            lpYYMultiplier->at.aplFloat *= pow (FloatE, (APLFLOAT) lpYYExponent->at.aplInteger);
 
             break;
+
+        case PN_NUMTYPE_FLT:
+            // The result is Multiplier x (*1) * Exponent
+            lpYYMultiplier->at.aplFloat *= pow (FloatE, lpYYExponent->at.aplFloat);
+
+            break;
+
+        case PN_NUMTYPE_VFP:
+        {
+            APLVFP aplVfpTmp = {0};
+
+            // Initialize the temp array
+            mpf_init (&aplVfpTmp);
+
+            // The result is Multiplier x (*1) * Exponent
+            mpf_pow (&aplVfpTmp, &GetMemPTD ()->mpfE, &lpYYExponent->at.aplVfp);
+
+            // Accumulate in the multiplier
+            mpf_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp);
+
+            // We no longer need this storage
+            Myf_clear (&aplVfpTmp);
+            Myf_clear (&lpYYExponent->at.aplVfp);
+
+            break;
+        } // End PN_NUMTYPE_VFP
 
         case PN_NUMTYPE_HC2:
         case PN_NUMTYPE_HC4:
         case PN_NUMTYPE_HC8:
-        case PN_NUMTYPE_EXT:
             // ***FINISHME***
 
             break;
@@ -1081,6 +1657,13 @@ LPPN_YYSTYPE PN_MakeExpPoint
 {
     UINT uOff;                          // Starting offset
 
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return NULL;
+
+    // Terminate the (Exponent) argument
+    PN_NumAcc (lppnLocalVars, '\0');
+
     // Initialize the starting offset
     uOff = lpYYArg->uNumOff;
 
@@ -1088,7 +1671,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
     lppnLocalVars->lpszNumAccum[lpYYExponent->uNumOff - 1] = 'e';
 
     // Use David Gay's routines
-    lpYYArg->aplFloat = strtod (&lppnLocalVars->lpszNumAccum[uOff], NULL);
+    lpYYArg->at.aplFloat = strtod (&lppnLocalVars->lpszNumAccum[uOff], NULL);
 
     // Change the type to float
     lpYYArg->chType = PN_NUMTYPE_FLT;
@@ -1109,35 +1692,79 @@ LPPN_YYSTYPE PN_MakePiPoint
      LPPN_YYSTYPE  lpYYExponent)        // The exponent part
 
 {
-    // If the multiplier is integer, ...
-    if (IsIntegerType (lpYYMultiplier->chType))
-        // Convert to float
-        lpYYMultiplier->aplFloat = (APLFLOAT) lpYYMultiplier->aplInteger;
+    PNNUMTYPE pnTypeRes;
 
-    // If the multiplier is integer or rational, ...
-    if (IsIntegerType (lpYYMultiplier->chType)
-     || lpYYMultiplier->chType EQ PN_NUMTYPE_RAT)
-        // Change the type to float
-        lpYYMultiplier->chType = PN_NUMTYPE_FLT;
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return NULL;
 
-    // If the exponent is integer, ...
-    if (IsIntegerType (lpYYExponent->chType))
-        // Convert to float
-        lpYYExponent->aplFloat = (APLFLOAT) lpYYExponent->aplInteger;
+    // Promote the multiplier and exponent to a common format
+    pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYExponent->chType];
+
+    // If the result is BOOL/INT, ...
+    if (pnTypeRes EQ PN_NUMTYPE_BOOL
+     || pnTypeRes EQ PN_NUMTYPE_INT)
+        // Make it FLT
+        pnTypeRes = PN_NUMTYPE_FLT;
+
+    // If the result is RAT, ...
+    if (pnTypeRes EQ PN_NUMTYPE_RAT)
+        // Make it VFP
+        pnTypeRes = PN_NUMTYPE_VFP;
+
+    // If the multiplier must be promoted, ...
+    if (pnTypeRes NE lpYYMultiplier->chType
+     && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
+        (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier);
+
+    // If the exponent must be promoted, ...
+    if (pnTypeRes NE lpYYExponent->chType
+     && aNumTypeAction[lpYYExponent->chType  ][pnTypeRes] NE NULL)
+        (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent);
+
+    // Set the result type
+    lpYYMultiplier->chType =
+    lpYYExponent->chType   = pnTypeRes;
 
     // Split cases based upon the numeric type
-    switch (lpYYMultiplier->chType)
+    switch (pnTypeRes)
     {
-        case PN_NUMTYPE_FLT:
+        case PN_NUMTYPE_BOOL:
+        case PN_NUMTYPE_INT:
             // The result is Multiplier x (o1) * Exponent
-            lpYYMultiplier->aplFloat *= pow (FloatPi, lpYYExponent->aplFloat);
+            lpYYMultiplier->at.aplFloat *= pow (FloatPi, (APLFLOAT) lpYYExponent->at.aplInteger);
 
             break;
+
+        case PN_NUMTYPE_FLT:
+            // The result is Multiplier x (o1) * Exponent
+            lpYYMultiplier->at.aplFloat *= pow (FloatPi, lpYYExponent->at.aplFloat);
+
+            break;
+
+        case PN_NUMTYPE_VFP:
+        {
+            APLVFP aplVfpTmp = {0};
+
+            // Initialize the temp array
+            mpf_init (&aplVfpTmp);
+
+            // The result is Multiplier x (o1) * Exponent
+            mpf_pow (&aplVfpTmp, &GetMemPTD ()->mpfPi, &lpYYExponent->at.aplVfp);
+
+            // Accumulate in the multiplier
+            mpf_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp);
+
+            // We no longer need this storage
+            Myf_clear (&aplVfpTmp);
+            Myf_clear (&lpYYExponent->at.aplVfp);
+
+            break;
+        } // End PN_NUMTYPE_VFP
 
         case PN_NUMTYPE_HC2:
         case PN_NUMTYPE_HC4:
         case PN_NUMTYPE_HC8:
-        case PN_NUMTYPE_EXT:
             // ***FINISHME***
 
             break;
@@ -1148,6 +1775,42 @@ LPPN_YYSTYPE PN_MakePiPoint
 
     return lpYYMultiplier;
 } // End PN_MakePiPoint
+
+
+//***************************************************************************
+//  $PN_MakeVfpPoint
+//
+//  Merge the multiplier and exponential part to form a number
+//***************************************************************************
+
+LPPN_YYSTYPE PN_MakeVfpPoint
+    (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
+     LPPN_YYSTYPE  lpYYArg,             // The mantissa part
+     LPPN_YYSTYPE  lpYYExponent)        // The exponent part (may be NULL)
+
+{
+    UINT uOff;                          // Starting offset
+
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return NULL;
+
+    // Initialize the starting offset
+    uOff = lpYYArg->uNumOff;
+
+    // If present, ...
+    if (lpYYExponent)
+        // Insert the exponent separator
+        lppnLocalVars->lpszNumAccum[lpYYExponent->uNumOff - 1] = 'e';
+
+    // Use MPFR routine
+    mpf_init_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszNumAccum[uOff], 10);
+
+    // Change the type to VFP
+    lpYYArg->chType = PN_NUMTYPE_VFP;
+
+    return lpYYArg;
+} // End PN_MakeVfpPoint
 
 
 //***************************************************************************
@@ -1168,7 +1831,8 @@ int pn_yylex
     // Get the next char
     lpYYLval->chCur = lppnLocalVars->lpszStart[lppnLocalVars->uNumCur++];
 
-    // If the character is 'x' and is the last in the sequence, ...
+    // If the character is 'x' and
+    //   is the last in the sequence, ...
     if (lpYYLval->chCur EQ 'x'
      && lppnLocalVars->uNumCur EQ lppnLocalVars->uNumLen)
         return EXT;
@@ -1227,7 +1891,7 @@ void pn_yyerror                     // Called for Bison syntax error
         lppnLocalVars->uNumCur--;
     } else
     // Check for WS FULL
-#define ERR     "memory exhausted"
+#define ERR     WSFULL
     if (lstrcpyn (szTemp, s, sizeof (ERR)),     // Note: Terminates the string, too
         lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
@@ -1238,6 +1902,9 @@ void pn_yyerror                     // Called for Bison syntax error
 
     // Set the error char index
     lppnLocalVars->uCharIndex += lppnLocalVars->uNumCur;
+
+    // Set the error flag
+    lppnLocalVars->bYYERROR = TRUE;
 
     // If we're at the end, ...
     if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ WC_EOS)

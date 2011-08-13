@@ -44,6 +44,11 @@ PRIMSPEC PrimSpecNotEqual = {
     NULL,   // &PrimFnMonNotEqualFisI, -- Can't happen w/NotEqual
     NULL,   // &PrimFnMonNotEqualFisF, -- Can't happen w/NotEqual
 
+    NULL,   // &PrimFnMonNotEqualRisR, -- Can't happen w/NotEqual
+
+////                          VisR      // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonNotEqualVisV, -- Can't happen w/NotEqual
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecNotEqualStorageTypeDyd,
@@ -55,12 +60,19 @@ PRIMSPEC PrimSpecNotEqual = {
     &PrimFnDydNotEqualBisCvC,
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydNotEqualIisIvI, -- Can't happen w/NotEqual
-    NULL,   // &PrimFnDydNotEqualIisFvF, -- Can't happen w/NotEqual
+    NULL,   // &PrimFnDydNotEqualIisIvI, -- Result Boolean, can't happen w/NotEqual
+    NULL,   // &PrimFnDydNotEqualIisFvF, -- Result Boolean, can't happen w/NotEqual
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydNotEqualFisIvI, -- Can't happen w/NotEqual
-    NULL,   // &PrimFnDydNotEqualFisFvF, -- Can't happen w/NotEqual
+    NULL,   // &PrimFnDydNotEqualFisIvI, -- Result Boolean, can't happen w/NotEqual
+    NULL,   // &PrimFnDydNotEqualFisFvF, -- Result Boolean, cCan't happen w/NotEqual
+
+    &PrimFnDydNotEqualBisRvR,
+    NULL,   // &PrimFnDydNotEqualRisRvR, -- Result Boolean, can't happen w/NotEqual
+
+    &PrimFnDydNotEqualBisVvV,
+////                  VisRvR,   // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydNotEqualVisVvV, -- Result Boolean, can't happen w/NotEqual
 
     NULL,   // &PrimFnMonNotEqualB64isB64, -- Can't happen w/NotEqual
     NULL,   // &PrimFnMonNotEqualB32isB32, -- Can't happen w/NotEqual
@@ -137,8 +149,8 @@ APLSTYPE PrimSpecNotEqualStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // All simple numeric results are Boolean
-    if (IsSimpleNum (aplTypeRes))
+    // All numeric results are Boolean
+    if (IsNumeric (aplTypeRes))
         aplTypeRes = ARRAY_BOOL;
 
     return aplTypeRes;
@@ -271,6 +283,45 @@ APLBOOL PrimFnDydNotEqualBisCvC
 {
     return (aplCharLft NE aplCharRht);
 } // End PrimFnDydNotEqualBisCvC
+
+
+//***************************************************************************
+//  $PrimFnDydNotEqualRisRvR
+//
+//  Primitive scalar function dyadic NotEqual:  B {is} R fn R
+//***************************************************************************
+
+APLBOOL PrimFnDydNotEqualBisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+#ifdef RAT_EXACT
+    // Compare the two RATs
+    return mpq_cmp    (&aplRatLft, &aplRatRht              ) NE 0;
+#else
+    // Compare the two RATs relative to []CT
+    return mpq_cmp_ct ( aplRatLft,  aplRatRht, GetQuadCT ()) NE 0;
+#endif
+} // End PrimFnDydNotEqualBisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydNotEqualBisVvV
+//
+//  Primitive scalar function dyadic NotEqual:  B {is} V fn V
+//***************************************************************************
+
+APLBOOL PrimFnDydNotEqualBisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    // Compare the two VFPs relative to []CT
+    return (mpf_cmp_ct (aplVfpLft, aplVfpRht, GetQuadCT ()) NE 0);
+} // End PrimFnDydNotEqualBisVvV
 
 
 //***************************************************************************

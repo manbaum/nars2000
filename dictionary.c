@@ -50,6 +50,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 
+#include <gmp.h>
+#include "mpfr.h"
 #include "macros.h"
 #include "enums.h"
 #include "defines.h"

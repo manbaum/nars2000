@@ -2378,6 +2378,31 @@ typedef struct tagLANGCHARS
                                          WS_UTF16_OVERBAR WS_UTF16_INFINITY L" is the smallest (floating point) number\n\n"
                                          L"Keyboard:  Alt-'f'\n\n"
                                          L"Unicode:  0x221E or 8734"},
+        LANGCHARS_SEPARATOR
+        {L'b'                     , {0}, L"Base point notation",
+                                         L"This notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF.  "
+                                         L"The number to the left of the b is the base of the number system for the characters to the right of the b."
+                                         },
+        {L'e'                     , {0}, L"Exponential point notation",
+                                         L"This notation allows you to enter numeric constants by specifying a signed multiplier and a signed base 10 exponent "
+                                         L"as in 1.23e" WS_UTF16_OVERBAR L"3."
+                                         },
+        {L'p'                     , {0}, L"Pi point notation",
+                                         L"This notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
+                                         L"as in 0.5p1 for " WS_UTF16_PI L"/2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI L"/3."
+                                         },
+        {L'r'                     , {0}, L"Rational Point Notation",
+                                         L"This notation allows you to enter Rational numbers as in 1r3, or, if the denominator is 1, using the suffix x as in 123x.  "
+                                         L"Such constants are of infinite precision."
+                                         },
+        {L'v'                     , {0}, L"Variable-precision Floating Point notation",
+                                         L"This notation allows you to enter VFP numbers as in 1v3.  "
+                                         L"The precision of such a constant is controlled by the current value of " WS_UTF16_QUAD L"FPC."
+                                         },
+        {L'x'                     , {0}, L"Euler point notation",
+                                         L"This notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "
+                                         L"as in 3x2 for three times e squared where e is the base of the natural logarithm."
+                                         },
     };
 
 #define LANGCHARS_LENGTH        countof (langChars)

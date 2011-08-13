@@ -22,6 +22,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <mpir.h>
 #include "headers.h"
 #include "common.h"
 
@@ -45,6 +46,11 @@ PRIMSPEC PrimSpecPi =
     NULL,   // &PrimFnMonPiFisI, -- Can't happen w/Pi
     NULL,   // &PrimFnMonPiFisF, -- Can't happen w/Pi
 
+    NULL,   // &PrimFnMonPiRisR, -- Can't happen w/Pi
+
+////               VisR,    // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonPiVisV, -- Can't happen w/Pi
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecPiStorageTypeDyd,
@@ -62,6 +68,13 @@ PRIMSPEC PrimSpecPi =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydPiFisIvI,
     NULL,   // &PrimFnDydPiFisFvF, -- Can't happen w/Pi
+
+    NULL,   // &PrimFnDydPiBisRvR, -- Can't happen w/Pi
+    &PrimFnDydPiRisRvR,
+
+    NULL,   // &PrimFnDydPiBisVvV, -- Can't happen w/Pi
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydPiVisVvV,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecPi};
@@ -187,22 +200,29 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE          aplTypeRht;       // Right arg storage type
+    APLSTYPE          aplTypeRht,       // Right arg storage type
+                      aplTypeRes;       // Result ...
     APLNELM           aplNELMRht,       // Right arg NELM
-                      aplNELMRes,       // Result    ...
-                      aplNELMMax;       // Maximum # elements in the result
+                      aplNELMRes;       // Result    ...
     APLRANK           aplRankRht;       // Right arg rank
     HGLOBAL           hGlbRht,          // Right arg global memory handle
                       hGlbRes = NULL;   // Result global memory handle
-    LPAPLINT          lpMemRes = NULL;  // Prt to result global memory
-    LPVARARRAY_HEADER lpMemHdrRes;      // Ptr to result global memory header
-    APLLONGEST        aplLongestRht;    // Right arg immediate value
+    LPVOID            lpMemRes = NULL;  // Ptr to result global memory
+    LPAPLMPI          lpMemTmp;         // Ptr to temporary data
     APLINT            aplIntegerRht;    // Right arg integer value
     UBOOL             bRet;             // TRUE iff the result is valid
-    APLUINT           ByteRes;          // # bytes in the result
-    LPPL_YYSTYPE      lpYYRes;          // Ptr to result
+    APLUINT           ByteRes,          // # bytes in the result
+                      uRes;             // Loop counter
+    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to result
     LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLMPI            aplMPIRht = {0},  // Right arg as MP integer
+                      aplMPIRes = {0};  // Result    ...
+    LPPERTABDATA      lpMemPTD;         // Ptr to PerTabData global memory
+    LPVOID            lpMemRht;         // Ptr to right arg global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -222,35 +242,104 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     if (!IsSingleton (aplNELMRht))
         goto RIGHT_LENGTH_EXIT;
 
-    // Check for RIGHT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeRht))
-        goto RIGHT_DOMAIN_EXIT;
-
     // Get right arg's global ptr
-    aplLongestRht = GetGlbPtrs (lptkRhtArg, &hGlbRht);
+    aplIntegerRht = GetGlbPtrs (lptkRhtArg, &hGlbRht);
 
-    // Attempt to convert FLOAT right arg
-    if (IsSimpleFlt (aplTypeRht))
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
     {
-        // Attempt to convert the float to an integer using System CT
-        aplIntegerRht = FloatToAplint_SCT ((APLFLOAT) aplLongestRht, &bRet);
-        if (!bRet)
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            // Save in local var
+            mpz_init_set_sa (&aplMPIRht, aplIntegerRht);
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Attempt to convert the float to an integer using System CT
+            aplIntegerRht = FloatToAplint_SCT ((APLFLOAT) aplIntegerRht, &bRet);
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
+
+            // Save in local var
+            mpz_init_set_sa (&aplMPIRht, aplIntegerRht);
+
+            break;
+
+        case ARRAY_RAT:
+            // Lock the memory to get a ptr to it
+            lpMemRht = MyGlobalLock (hGlbRht);
+
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, ((LPVARARRAY_HEADER) lpMemRht)->Rank);
+
+            // Save in local var
+            mpz_init_set (&aplMPIRht, mpq_numref ((LPAPLRAT) lpMemRht));
+
+            // Is it an integer?
+            bRet = mpq_integer_p ((LPAPLRAT) lpMemRht);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+            // If it's not an integer, ...
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
+            break;
+
+        case ARRAY_VFP:
+            // Lock the memory to get a ptr to it
+            lpMemRht = MyGlobalLock (hGlbRht);
+
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, ((LPVARARRAY_HEADER) lpMemRht)->Rank);
+
+            // Save in local var
+            mpz_init_set_f (&aplMPIRht, (LPAPLVFP) lpMemRht);
+
+            // Is it an integer?
+            bRet = mpf_integer_p ((LPAPLVFP) lpMemRht);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+            // If it's not an integer, ...
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
+            break;
+
+        default:
             goto RIGHT_DOMAIN_EXIT;
-    } else
-        aplIntegerRht = aplLongestRht;
+    } // End SWITCH
 
     // Check the singleton arg
-    if (aplIntegerRht <= 0)
+    if (mpz_sgn (&aplMPIRht) <= 0)
         goto RIGHT_DOMAIN_EXIT;
+
+    // Point to the MPI data
+    lpMemTmp = (LPAPLMPI) lpMemPTD->lpwszTemp;
 
     // Factor the given number
 
-    // Guess at the # factors in the result
-    aplNELMMax = 64;
-    aplNELMRes = 0;
+    // Call common routine
+    aplMPIRes =
+      PrimFnPiCommon (lpMemTmp,             // Ptr to result global memory
+                      NUMTHEORY_FACTOR,     // Function index
+                     &aplMPIRht,            // Value to factor
+                      lpbCtrlBreak);        // Ptr to Ctrl-Break flag
+    // Get the actual NELM
+    aplNELMRes = mpz_get_sa (&aplMPIRes, &bRet);
+
+    // Check for Ctrl-Break
+    if (CheckCtrlBreak (*lpbCtrlBreak))
+        goto ERROR_EXIT;
+
+    // Set the result storage type
+    aplTypeRes = ARRAY_RAT;
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_INT, aplNELMMax, 1);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, 1);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -262,50 +351,32 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = (LPVOID)
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_INT;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
-////lpHeader->NELM       = aplNELMRes;      // To be filled in later
+    lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
 #undef  lpHeader
 
-    // Skip over the header to the dimensions
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
-
-    // Call common routine
-    aplNELMRes =
-      PrimFnPiCommon (lpMemRes,         // Ptr to result global memory (may be NULL)
-                      NUMTHEORY_FACTOR, // Function index
-                      aplIntegerRht,    // Value to factor
-                      lpbCtrlBreak);    // Ptr to Ctrl-Break flag
-    // Check for Ctrl-Break
-    if (CheckCtrlBreak (*lpbCtrlBreak))
-        goto ERROR_EXIT;
-
-    // Save the actual NELM
-    lpMemHdrRes->NELM = aplNELMRes;
-
     // Skip over the header to the dimension
-    lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
+    lpMemRes = VarArrayBaseToDim (lpMemRes);
 
-    // Save the actual dimension
-    lpMemRes[0] = aplNELMRes;
+    // Save and skip over the actual dimension
+    *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
-    // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
+    // Copy the MPI data to the result as RAT
+    for (uRes = 0; uRes < aplNELMRes; uRes++)
+        // Copy the MPI value as a RAT
+        mpq_init_set_z (((LPAPLRAT) lpMemRes)++, &lpMemTmp[uRes]);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-    // Reallocate the array downwards
-    hGlbRes = MyGlobalReAlloc (hGlbRes, (APLU3264) ByteRes, GMEM_MOVEABLE);
 
     // Allocate a new YYRes;
     lpYYRes = YYAlloc ();
@@ -317,7 +388,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return lpYYRes;
+    goto NORMAL_EXIT;
 
 RIGHT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
@@ -351,8 +422,20 @@ ERROR_EXIT:
         // We no longer need this resource
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
+NORMAL_EXIT:
+    // If we filled in aplMPIRes, ...
+    if (aplMPIRes._mp_d)
+    {
+        // Free the storage in lpMemTmp
+        for (uRes = 0; uRes < aplNELMRes; uRes++)
+            Myz_clear (&lpMemTmp[uRes]);
+    } // End IF
 
-    return NULL;
+    // We no longer need this storage
+    Myz_clear (&aplMPIRes);
+    Myz_clear (&aplMPIRht);
+
+    return lpYYRes;
 } // End PrimFnMonPi_EM_YY
 #undef  APPEND_NAME
 
@@ -406,55 +489,9 @@ APLINT PrimFnDydPiIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLINT        aplIntegerRes;        // The integer result
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    RaiseException (EXCEPTION_RESULT_RAT, 0, 0, NULL);
 
-    // Get the thread's ptr to local vars
-    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
-
-    // Get the ptr to the Ctrl-Break flag
-    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
-
-    // Check the singleton right arg
-    if (aplIntegerRht <= 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    // Split cases based upon the left arg
-    switch (aplIntegerLft)
-    {
-        case NUMTHEORY_DIVCNT:          // Divisor function (count of divisors of N)
-        case NUMTHEORY_DIVSUM:          // Divisor function (sum of divisors of N)
-        case NUMTHEORY_MOBIUS:          // Mobius function
-        case NUMTHEORY_TOTIENT:         // Totient function (# positive integers coprime to N)
-            // Call common routine
-            aplIntegerRes =
-              PrimFnPiCommon (NULL,             // Ptr to result global memory (may be NULL)
-                              aplIntegerLft,    // Function index
-                              aplIntegerRht,    // Value to factor
-                              lpbCtrlBreak);    // Ptr to Ctrl-Break flag
-            break;
-
-        case NUMTHEORY_ISPRIME:         // TRUE iff the given # is prime
-            return PrimFnPiIsPrime   (aplIntegerRht, lpbCtrlBreak);
-
-        case NUMTHEORY_NEXTPRIME:       // Next prime after a given #
-            return PrimFnPiNextPrime (aplIntegerRht, lpbCtrlBreak);
-
-        case NUMTHEORY_PREVPRIME:       // Prev prime before a given #
-            return PrimFnPiPrevPrime (aplIntegerRht, lpbCtrlBreak);
-
-        case NUMTHEORY_NTHPRIME:        // Nth prime
-            return PrimFnPiNthPrime  (aplIntegerRht, lpbCtrlBreak);
-
-        case NUMTHEORY_NUMPRIMES:       // # primes <= a given #
-            return PrimFnPiNumPrimes (aplIntegerRht, lpbCtrlBreak);
-
-        default:
-            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End SWITCH
-
-    return aplIntegerRes;
+    return 0;           // To keep the compiler happy
 } // End PrimFnDydPiIisIvI
 
 
@@ -508,9 +545,135 @@ APLFLOAT PrimFnDydPiFisIvI
 {
     RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-    return 0.0;
+    return 0.0;         // To keep the compiler happy
 } // End PrimFnDydPiFisIvI
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydPiRisRvR
+//
+//  Primitive scalar function dyadic Pi:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydPiRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    APLRAT        mpqRes = {0};         // The result
+    APLINT        aplIntegerLft;        // Left arg as an integer
+    UBOOL         bRet;                 // TRUE iff the result is valid
+    APLMPI        aplMPIRht,            // Right arg as MP integer
+                  aplMPIRes;            // Result    ...
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // Check the (singleton) left arg
+    if (!mpq_integer_p (&aplRatLft)
+     || mpq_cmp_ui (&aplRatLft,                0, 1) <= 0
+     || mpq_cmp_ui (&aplRatLft, NUMTHEORY_LENGTH, 1) >= 0)
+        goto DOMAIN_EXIT;
+
+    // Check the (singleton) right arg
+    if (mpq_sgn (&aplRatRht) <= 0)
+        goto DOMAIN_EXIT;
+
+    // Copy the right arg as an integer
+    aplMPIRht = *mpq_numref (&aplRatRht);
+
+    // Get the left arg as an integer
+    //  (Ignore the value in bRet as we know it's an integer)
+    aplIntegerLft = mpq_get_sa (&aplRatLft, &bRet);
+
+    // Split cases based upon the left arg
+    switch (aplIntegerLft)
+    {
+        case NUMTHEORY_DIVCNT:          // Divisor function (count of divisors of N)
+        case NUMTHEORY_DIVSUM:          // Divisor function (sum of divisors of N)
+        case NUMTHEORY_MOBIUS:          // Mobius function
+        case NUMTHEORY_TOTIENT:         // Totient function (# positive integers coprime to N)
+            // Call common routine
+            aplMPIRes =
+              PrimFnPiCommon (NULL,             // Ptr to result global memory (may be NULL)
+                              aplIntegerLft,    // Function index
+                             &aplMPIRht,        // Value to factor
+                              lpbCtrlBreak);    // Ptr to Ctrl-Break flag
+            break;
+
+        case NUMTHEORY_ISPRIME:         // TRUE iff the given # is prime
+            aplMPIRes =
+              PrimFnPiIsPrime   (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+            break;
+
+        case NUMTHEORY_NEXTPRIME:       // Next prime after a given #
+            aplMPIRes =
+              PrimFnPiNextPrime (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+            break;
+
+        case NUMTHEORY_PREVPRIME:       // Prev prime before a given #
+            aplMPIRes =
+              PrimFnPiPrevPrime (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+            break;
+
+        case NUMTHEORY_NTHPRIME:        // Nth prime
+            aplMPIRes =
+              PrimFnPiNthPrime  (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+            break;
+
+        case NUMTHEORY_NUMPRIMES:       // # primes <= a given #
+            aplMPIRes =
+              PrimFnPiNumPrimes (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Initialize the result
+    mpq_init (&mpqRes);
+
+    // Copy the return value to the numerator of the result
+    mpz_set (mpq_numref (&mpqRes), &aplMPIRes);
+
+    return mpqRes;
+
+DOMAIN_EXIT:
+    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return mpqRes;
+} // End PrimFnDydPiRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydPiVisVvV
+//
+//  Primitive scalar function dyadic Pi:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydPiVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
+    return mpfRes;
+} // End PrimFnDydPiVisVvV
 
 
 //***************************************************************************
@@ -525,31 +688,37 @@ APLFLOAT PrimFnDydPiFisIvI
 #define APPEND_NAME
 #endif
 
-APLNELM PrimFnPiCommon
-    (LPAPLUINT lpMemRes,            // Ptr to result global memory (may be NULL)
+APLMPI PrimFnPiCommon
+    (LPAPLMPI  lpMemRes,            // Ptr to result global memory (may be NULL)
      APLUINT   uFcnIndex,           // Function index (see enum NUMTHEORY)
-     APLINT    aplIntegerRht,       // Value to factor
+     LPAPLMPI  mpzRht,              // Ptr to value to factor
      LPUBOOL   lpbCtrlBreak)        // Ptr to Ctrl-Break flag
 
 {
     APLUINT      uRes,              // Loop counter
-                 uPrime,            // The current prime
-                 uPrimeCnt;         // # occurrences of a specific prime
+                 uPrime;            // The current prime
+    UINT         uPrimeCnt;         // # occurrences of a specific prime
     APLNELM      aplNELMRes;        // Result NELM
     PROCESSPRIME procPrime;         // Struct for args to ProcessPrime
+    APLMPI       aplTmp = {0},
+                 aplPrime = {0};
 
     // Initialize the function vars
     procPrime.uFcnIndex    = uFcnIndex;
     procPrime.bSquareFree  = TRUE;
-    procPrime.uTotient     = aplIntegerRht;
-    procPrime.uDivisor     = 1;
+    mpz_init_set    (&procPrime.mpzTotient, mpzRht);
+    mpz_init_set_ui (&procPrime.mpzDivisor, 1);
     procPrime.lpbCtrlBreak = lpbCtrlBreak;
     get_random_seeds (&procPrime.seed1, &procPrime.seed2);
+
+    // Initialize the temps
+    mpz_init (&aplTmp);
+    mpz_init (&aplPrime);
 
     // Run through the list of small primes
     // This handles all numbers < PRECOMPUTED_PRIME_NEXT2 = ~1e10 (~33 bits)
     for (aplNELMRes = uPrime = uRes = 0;
-         aplIntegerRht NE 1
+         mpz_cmp_ui (mpzRht, 1) NE 0
       && uRes < PRECOMPUTED_NUM_PRIMES;
          uRes++)
     {
@@ -560,112 +729,116 @@ APLNELM PrimFnPiCommon
         // Initialize the prime count and the prime
         uPrimeCnt = 0;
         uPrime += prime_delta[uRes];
+        mpz_set_ui (&aplPrime, (UINT) uPrime);
 
-        // While this prime is a factor, ...
-        while (0 EQ (aplIntegerRht % uPrime))
-        {
-            // If we're saving the values, ...
-            if (lpMemRes)
-                // Save in the result
-                *lpMemRes++ = uPrime;
-
-            // Divide it out
-            aplIntegerRht /= uPrime;
-
-            // Count it in
-            aplNELMRes++;
-            uPrimeCnt++;
-        } // End WHILE
+        // If it's divisible, ...
+        if (mpz_divisible_p (mpzRht, &aplPrime))
+            // Remove all occurrences of this prime from mpzRht
+            uPrimeCnt = (UINT) mpz_remove (mpzRht, mpzRht, &aplPrime);
 
         // If this prime divides N, ...
         if (uPrimeCnt)
         {
-#ifdef DEBUG
-            if (uPrimeCnt EQ 1)
-                dprintfWL0 (L"trial:   %I64u", uPrime);
-            else
-                dprintfWL0 (L"trial:   %I64u" WS_UTF16_RHO L"%I64u", uPrimeCnt, uPrime);
-#endif
+            // Accumulate into the result
+            aplNELMRes += uPrimeCnt;
+
             // Process this prime factor
-            ProcessPrime (uPrime, uPrimeCnt, &procPrime);
+            ProcessPrime (aplPrime, uPrimeCnt, &procPrime);
+
+            // If we're saving the values, ...
+            if (lpMemRes)
+            while (uPrimeCnt--)
+                // Save in the result
+                mpz_init_set (lpMemRes++, &aplPrime);
         } // End IF
     } // End FOR
 
     // Check against the smallest # not factorable by trial division
-    if (1 < aplIntegerRht
-     &&     aplIntegerRht < PRECOMPUTED_PRIME_NEXT2)    // = 100003L*100003L
+    if (mpz_cmp_ui (mpzRht, 1) > 0
+     && mpz_cmp_sa (mpzRht, PRECOMPUTED_PRIME_NEXT2) < 0)   // = 100003L*100003L
     {
         // If we're saving the values, ...
         if (lpMemRes)
+        {
+            // Zero the memory
+            ZeroMemory (lpMemRes, sizeof (APLMPI));
+
             // Save in the result
-            *lpMemRes++ = aplIntegerRht;
+            mpz_init_set (((APLMPI *) lpMemRes)++, mpzRht);
+        } // End IF
 
          // Count it in
          aplNELMRes++;
 
-#ifdef DEBUG
-        dprintfWL0 (L"prime:   %I64u", aplIntegerRht);
-#endif
         // Process this prime factor
-        ProcessPrime (aplIntegerRht, 1, &procPrime);
+        ProcessPrime (*mpzRht, 1, &procPrime);
     } else
     // Loop until we have no more factors
-    while (aplIntegerRht > 1)
+    while (mpz_cmp_ui (mpzRht, 1) > 0)
     {
-        mp_t mpNumber;                      // Number to factor
-
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
-        // Save the integer into mpNumber
-        mp_set (&mpNumber, aplIntegerRht);
-
         // Try to factor aplIntegerRht using various methods
-        uPrime = PrimeFactor (&mpNumber, &procPrime);
+        Myz_clear (&aplPrime);
+        aplPrime = PrimeFactor (*mpzRht, &procPrime);
 
-        // Initialize the prime count
-        uPrimeCnt = 0;
-        while (0 EQ (aplIntegerRht % uPrime))
+        // If it's divisible, ...
+        if (mpz_divisible_p (mpzRht, &aplPrime))
+            // Remove all occurrences of this prime from mpzRht
+            uPrimeCnt = (UINT) mpz_remove (mpzRht, mpzRht, &aplPrime);
+
+        // If this prime divides N, ...
+        if (uPrimeCnt)
         {
+            // Accumulate into the result
+            aplNELMRes += uPrimeCnt;
+
+            // Process this prime factor
+            ProcessPrime (aplPrime, uPrimeCnt, &procPrime);
+
             // If we're saving the values, ...
             if (lpMemRes)
+            while (uPrimeCnt--)
                 // Save in the result
-                *lpMemRes++ = uPrime;
-
-            // Divide it out
-            aplIntegerRht /= uPrime;
-
-            // Count it in
-            aplNELMRes++;
-            uPrimeCnt++;
-        } // End WHILE
-
-        // Process this prime factor
-        ProcessPrime (uPrime, uPrimeCnt, &procPrime);
+                mpz_init_set (lpMemRes++, &aplPrime);
+        } // End IF
     } // End WHILE
+
+    // We no longer need this storage
+    mpz_clear (&aplTmp);
 
     // Split cases based upon the function index
     switch (uFcnIndex)
     {
         case NUMTHEORY_FACTOR:
-            return aplNELMRes;
+            mpz_set_sa (&aplPrime, aplNELMRes);
+
+            break;
 
         case NUMTHEORY_DIVCNT:
         case NUMTHEORY_DIVSUM:
-                return procPrime.uDivisor;
+            // Copy to result var
+            mpz_set (&aplPrime, &procPrime.mpzDivisor);
+
+            break;
 
         case NUMTHEORY_MOBIUS:
             // If the prime factors are all unique, ...
             if (procPrime.bSquareFree)
                 // Return (-1) * (the parity of the # factors)
-                return (aplNELMRes & BIT0) ? -1 : 1;
+                mpz_set_sa (&aplPrime, (aplNELMRes & BIT0) ? -1 : 1);
             else
                 // The prime factors are not all unique
-                return 0;
+                mpz_set_ui (&aplPrime, 0);
+            break;
 
         case NUMTHEORY_TOTIENT:
-                return procPrime.uTotient;
+            // Copy to result var
+            mpz_set (&aplPrime, &procPrime.mpzTotient);
+
+            break;
 
         case NUMTHEORY_ISPRIME:
         case NUMTHEORY_NEXTPRIME:
@@ -675,8 +848,17 @@ APLNELM PrimFnPiCommon
         defstop
             break;
     } // End SWITCH
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
-    return -2;
+    mpz_set_sa (&aplPrime, -2);
+NORMAL_EXIT:
+    // We no longer need this storage
+     Myz_clear (&procPrime.mpzDivisor);
+     Myz_clear (&procPrime.mpzTotient);
+
+    return aplPrime;
 } // End PrimFnPiCommon
 #undef  APPEND_NAME
 
@@ -688,36 +870,37 @@ ERROR_EXIT:
 //    or the number itself if it's prime
 //***************************************************************************
 
-APLUINT PrimeFactor
-    (LPVOID         mpNumber,           // The number to factor (really a mp_t*)
+APLMPI PrimeFactor
+    (APLMPI         mpzNumber,          // The number to factor
      LPPROCESSPRIME lpProcPrime)        // Ptr to PROCESSPRIME struc
 
 {
-    mp_t    mpFactor1,                  // Factor #1
-            mpFactor2;                  // ...     2
-    APLUINT uVal;                       // Temporary value
-    UINT    bits;                       // # bits in the value
+    APLMPI  mpzFactor1 = {0},           // Factor #1
+            mpzFactor2 = {0},           // ...     2
+            mpzRes     = {0};           // Result
+    APLUINT uVal,                       // Temporary value
+            bits;                       // # bits in the value
 #ifdef DEBUG
-    mp_t *mpValue;
-
-    mpValue = mpNumber;
-#else
-  #define mpValue   ((mp_t *) mpNumber)
+    char    szTemp1[1024],              // Temporary output save area
+            szTemp2[1024];              // ...
 #endif
 
-    bits = mp_bits (mpValue);
+    // get the bit size of the incoming number
+    bits = mpz_sizeinbase (&mpzNumber, 2);
 
-    if (bits <= SMALL_COMPOSITE_CUTOFF_BITS)
+    // Initialize the result & temps
+    mpz_init_set (&mpzRes, &mpzNumber);
+    mpz_init     (&mpzFactor1);
+    mpz_init     (&mpzFactor2);
+
+    if (bits <= SMALL_COMPOSITE_CUTOFF_BITS)            // 85
     {
-        mp_clear (&mpFactor1);
-        mp_clear (&mpFactor2);
-
         if (bits <= PRECOMPUTED_PRIME_NEXT2_LOG2)       // = 33
-            return mp_get (mpValue);
+            goto NORMAL_EXIT;
         else
         if (bits <= 60)
         {
-            uVal = squfof (mpValue, lpProcPrime->lpbCtrlBreak);
+            uVal = MySqufof (&mpzRes, lpProcPrime->lpbCtrlBreak);
 
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
@@ -728,17 +911,20 @@ APLUINT PrimeFactor
                 case 0:
                 case 1:
                     // Try Pollard's Rho
-                    if (rho (mpValue, &mpFactor1, lpProcPrime))
+                    if (MyRho (&mpzRes, &mpzFactor1, lpProcPrime))
                     {
 #ifdef DEBUG
-                        dprintfWL0 (L"rho:     %I64u", mp_get (&mpFactor1));
+                        dprintfWL0 (L"MyRho:     %S", mpz_get_str (szTemp1, 10, &mpzFactor1));
 #endif
-                        return PrimeFactor (&mpFactor1, lpProcPrime);
+                        Myz_clear (&mpzRes);
+                        mpzRes = PrimeFactor (mpzFactor1, lpProcPrime);
+
+                        goto NORMAL_EXIT;
                     } else
-                        uVal = tinyqs (mpValue, &mpFactor1, &mpFactor2, lpProcPrime->lpbCtrlBreak);
+                        uVal = MyTinyqs (&mpzRes, &mpzFactor1, &mpzFactor2, lpProcPrime->lpbCtrlBreak);
 #ifdef DEBUG
                     if (uVal)
-                        dprintfWL0 (L"tinyqs:  %I64u %I64u", mp_get (&mpFactor1), mp_get (&mpFactor2));
+                        dprintfWL0 (L"MyTinyqs:  %S %S", mpz_get_str (szTemp1, 10, &mpzFactor1), mpz_get_str (szTemp2, 10, &mpzFactor2));
 #endif
                     // Check for Ctrl-Break
                     if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
@@ -748,25 +934,31 @@ APLUINT PrimeFactor
 
                 default:
 #ifdef DEBUG
-                    dprintfWL0 (L"squfof:  %I64u", uVal);
+                    dprintfWL0 (L"MySqufof:  %I64u", uVal);
 #endif
                     // If the value is within trial division, ...
                     if (uVal < PRECOMPUTED_PRIME_NEXT2)
+                    {
                         // It's a prime:  return it
-                        return uVal;
+                        mpz_set_sa (&mpzRes, uVal);
+
+                        goto NORMAL_EXIT;
+                    } // End IF
 
                     // Otherwise, it may be composite:  try to factor it
-                    mpFactor1.nwords = 1;
-                    mpFactor1.val[0] = (uint32) uVal;
+                    mpz_set_sa (&mpzFactor1, uVal);
 
-                    return PrimeFactor (&mpFactor1, lpProcPrime);
+                    Myz_clear (&mpzRes);
+                    mpzRes = PrimeFactor (mpzFactor1, lpProcPrime);
+
+                    goto NORMAL_EXIT;
             } // End SWITCH
         } else
         {
-            uVal = tinyqs (mpValue, &mpFactor1, &mpFactor2, lpProcPrime->lpbCtrlBreak);
+            uVal = MyTinyqs (&mpzRes, &mpzFactor1, &mpzFactor2, lpProcPrime->lpbCtrlBreak);
 #ifdef DEBUG
             if (uVal)
-                dprintfWL0 (L"tinyqs:  %I64u %I64u", mp_get (&mpFactor1), mp_get (&mpFactor2));
+                dprintfWL0 (L"MyTinyqs:  %S %S", mpz_get_str (szTemp1, 10, &mpzFactor1), mpz_get_str (szTemp2, 10, &mpzFactor2));
 #endif
         } // End IF
 
@@ -776,27 +968,37 @@ APLUINT PrimeFactor
 
         if (uVal)
         {
-            if (mp_is_one (&mpFactor1))
-                return mp_get (&mpFactor2);
+            if (IsMpz1 (&mpzFactor1))
+                mpz_set (&mpzRes, &mpzFactor2);
             else
-            if (mp_is_one (&mpFactor2))
-                return mp_get (&mpFactor1);
+            if (IsMpz1 (&mpzFactor2))
+                mpz_set (&mpzRes, &mpzFactor1);
             else
+            {
+                Myz_clear (&mpzRes);
+
                 // Try again with the smaller # so as to try to return factors in ascending order
-                return PrimeFactor ((mp_cmp (&mpFactor1, &mpFactor2) < 0) ? &mpFactor1 : &mpFactor2, lpProcPrime);
+                mpzRes = PrimeFactor ((mpz_cmp (&mpzFactor1, &mpzFactor2) < 0) ? mpzFactor1 : mpzFactor2, lpProcPrime);
+            } // End IF/ELSE/...
+
+            goto NORMAL_EXIT;
         } // End IF
     } // End IF
-
-#ifdef DEBUG
-    dprintfWL0 (L"prime?:  %I64u", mp_get (mpValue));
+#ifdef MPQS_ENABLED
+    if (MyFactor_mpqs (&mpzRes))
+        goto NORMAL_EXIT;
 #endif
-    return mp_get (mpValue);
+#ifdef DEBUG
+    dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));
+#endif
+    goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    return 0;
-#ifndef DEBUG
-  #undef  mpValue
-#endif
+NORMAL_EXIT:
+    Myz_clear (&mpzFactor1);
+    Myz_clear (&mpzFactor2);
+
+    return mpzRes;
 } // End PrimeFactor
 
 
@@ -807,12 +1009,15 @@ ERROR_EXIT:
 //***************************************************************************
 
 void ProcessPrime
-    (APLUINT        uPrime,         // The prime to process
-     APLUINT        uPrimeCnt,      // The prime exponent
+    (APLMPI         aplMPIRht,      // The prime to process
+     UINT           uPrimeCnt,      // The prime exponent
      LPPROCESSPRIME lpProcPrime)    // Ptr to PROCESSPRIME struc
 
 {
-    APLUINT uAccum;                 // Product accumulator
+    APLMPI  mpzTmp = {0};           // Temporary
+
+    // Initialize the temp
+    mpz_init (&mpzTmp);
 
     // Split cases based upon the function index
     switch (lpProcPrime->uFcnIndex)
@@ -829,27 +1034,48 @@ void ProcessPrime
         case NUMTHEORY_TOTIENT:
             // If this prime divides N, ...
             if (uPrimeCnt)
-                lpProcPrime->uTotient -= lpProcPrime->uTotient / uPrime;
+            {
+////////////////lpProcPrime->uTotient -= lpProcPrime->uTotient / uPrime;
+                mpz_divexact (&mpzTmp, &lpProcPrime->mpzTotient, &aplMPIRht);
+                mpz_sub      (&lpProcPrime->mpzTotient, &lpProcPrime->mpzTotient, &mpzTmp);
+            } // End IF
+
             break;
 
         case NUMTHEORY_DIVCNT:
             // If this prime divides N, ...
             if (uPrimeCnt)
-                lpProcPrime->uDivisor *= (uPrimeCnt + 1);
+            {
+////////////////lpProcPrime->uDivisor *= (uPrimeCnt + 1);
+                mpz_set_sa (&mpzTmp, uPrimeCnt + 1);
+                mpz_mul (&lpProcPrime->mpzDivisor, &lpProcPrime->mpzDivisor, &mpzTmp);
+            } // End IF
+
             break;
 
         case NUMTHEORY_DIVSUM:
             // If this prime divides N, ...
             if (uPrimeCnt++)
             {
-                // Initialize the product accumulator
-                uAccum = 1;
+                APLMPI mpzTmp2 = {0};
 
-                while (uPrimeCnt--)
-                    uAccum = imul64 (uAccum, uPrime);   // uAccum = exp (p, uPrimeCnt + 1)
-                uAccum = (uAccum - 1) / (uPrime - 1);   // uAccum = exp (p, uPrimeCnt + 1) / (p - 1)
+                // Initialize the temp to 0
+                mpz_init (&mpzTmp2);
 
-                lpProcPrime->uDivisor *= uAccum;
+                // Tmp2 = p - 1
+                mpz_sub_ui (&mpzTmp2, &aplMPIRht, 1);
+
+                // Tmp = exp (p, uPrimeCnt + 1)
+                mpz_pow_ui (&mpzTmp, &aplMPIRht, uPrimeCnt);
+
+                // Tmp = Tmp / (p - 1)
+                mpz_div    (&mpzTmp, &mpzTmp, &mpzTmp2);
+
+////////////////lpProcPrime->uDivisor *= uAccum;
+                mpz_mul (&lpProcPrime->mpzDivisor, &lpProcPrime->mpzDivisor, &mpzTmp);
+
+                // We no longer need this storage
+                Myz_clear (&mpzTmp2);
             } // End IF
 
             break;
@@ -862,6 +1088,9 @@ void ProcessPrime
         defstop
             break;
     } // End SWITCH
+
+    // We no longer need this storage
+    Myz_clear (&mpzTmp);
 } // End ProcessPrime
 
 
@@ -871,26 +1100,21 @@ void ProcessPrime
 //  Return TRUE or FALSE for whether or not a given # is a prime
 //***************************************************************************
 
-UBOOL PrimFnPiIsPrime
-    (APLINT  aplInteger,            // The number to check
-     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+APLMPI PrimFnPiIsPrime
+    (APLMPI        aplMPIArg,       // The number to check
+     LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    uint32 seed1,                   // Random seeds
-           seed2;                   // ...
-    mp_t   mpValue;                 // Temporary MP value
+    APLMPI mpzRes = {0};            // The result
 
-    // Handle special case
-    if (aplInteger EQ 1)
-        return FALSE;
+    // Initialize the result to 0
+    mpz_init (&mpzRes);
 
-    // Initialize the seeds
-    get_random_seeds (&seed1, &seed2);
+    if (mpz_cmp_ui (&aplMPIArg, 1) > 1)
+        mpz_set_ui (&mpzRes, mpz_likely_prime_p (&mpzRes, lpMemPTD->randState, 0));
 
-    // Initialize the struc
-    mp_set (&mpValue, aplInteger);
-
-    return mp_is_prime (&mpValue, &seed1, &seed2, lpbCtrlBreak);
+    return mpzRes;
 } // End PrimFnPiIsPrime
 
 
@@ -900,26 +1124,24 @@ UBOOL PrimFnPiIsPrime
 //  Return the next prime after than a given #
 //***************************************************************************
 
-APLINT PrimFnPiNextPrime
-    (APLINT  aplInteger,            // The number to check
-     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+APLMPI PrimFnPiNextPrime
+    (APLMPI        aplMPIArg,       // The number to check
+     LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    uint32 seed1,                   // Random seeds
-           seed2;                   // ...
-    mp_t   mpValue;                 // Temporary MP value
-
     // Handle special cases
-    if (aplInteger <= 2)
-        return aplInteger + 1;
+    if (mpz_cmp_ui (&aplMPIArg, 2) <= 0)
+    {
+        APLMPI mpzRes = {0};            // The result
 
-    // Initialize the seeds
-    get_random_seeds (&seed1, &seed2);
+        mpz_init_set (&mpzRes, &aplMPIArg);
+        mpz_add_ui   (&mpzRes, &mpzRes, 1);
 
-    // Initialize the struc
-    mp_set (&mpValue, aplInteger);
-
-    return iadd64 (aplInteger, mp_next_prime (&mpValue, &mpValue, &seed1, &seed2, lpbCtrlBreak));
+        return mpzRes;
+    } else
+        // Calculate the next likely prime
+        return mpz_next_prime (&aplMPIArg, lpbCtrlBreak, lpMemPTD);
 } // End PrimFnPiNextPrime
 
 
@@ -929,29 +1151,29 @@ APLINT PrimFnPiNextPrime
 //  Return the Prev prime before a given #
 //***************************************************************************
 
-APLINT PrimFnPiPrevPrime
-    (APLINT  aplInteger,            // The number to check
-     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+APLMPI PrimFnPiPrevPrime
+    (APLMPI        aplMPIArg,       // The number to check
+     LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    uint32 seed1,                   // Random seeds
-           seed2;                   // ...
-    mp_t   mpValue;                 // Temporary MP value
+    APLMPI mpzRes = {0};            // The result
 
     // Handle special cases
-    if (aplInteger <= 2)
+    if (mpz_cmp_ui (&aplMPIArg, 2) <= 0)
+    {
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    else
-    if (aplInteger EQ 3)
-        return 2;
 
-    // Initialize the seeds
-    get_random_seeds (&seed1, &seed2);
+        return mpzRes;
+    } else
+    if (mpz_cmp_ui (&aplMPIArg, 3) EQ 0)
+    {
+        mpz_init_set_sa (&mpzRes, 2);
 
-    // Initialize the struc
-    mp_set (&mpValue, aplInteger);
-
-    return isub64 (aplInteger, mp_prev_prime (&mpValue, &mpValue, &seed1, &seed2, lpbCtrlBreak));
+        return mpzRes;
+    } else
+        // Calculate the previous likely prime
+        return mpz_prev_prime (&aplMPIArg, lpbCtrlBreak, lpMemPTD);
 } // End PrimFnPiPrevPrime
 
 
@@ -961,102 +1183,197 @@ APLINT PrimFnPiPrevPrime
 //  Return the Nth prime
 //***************************************************************************
 
-APLINT PrimFnPiNthPrime
-    (APLINT  aplInteger,            // The number to check
-     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+APLMPI PrimFnPiNthPrime
+    (APLMPI        aplMPIArg,       // The number to check
+     LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    APLUINT uPrime;                 // The result
+    APLMPI  mpzRes = {0},           // The result
+            mpzTmp = {0};           // Temporary
     UINT    uRes = 0;               // Loop counter
-    uint32  seed1,                  // Random seeds
-            seed2;                  // ...
-    mp_t    mpValue;                // Temporary MP value
 
     // Handle special cases
     // The following answers were obtained from
     //   http://oeis.org/A006988/
-    // Split cases based upon the value
-    switch (aplInteger)
+    mpz_init_set_ui (&mpzRes, 10000);               // 1E4
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
     {
-        case 10000:                 // 1E4
-            return 104729;
+        mpz_set_sa (&mpzRes, 104729);
 
-        case 100000:                // 1E5
-            return 1299709;
+        return mpzRes;
+    } // End IF
 
-        case 1000000:               // 1E6
-            return 15485863;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E5
 
-        case 10000000:              // 1E7
-            return 179424673;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 1299709);
 
-        case 100000000:             // 1E8
-            return 2038074743;
+        return mpzRes;
+    } // End IF
 
-        case 1000000000:            // 1E9
-            return 22801763489;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E6
 
-        case 10000000000:           // 1E10
-            return 252097800623;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 15485863);
 
-        case 100000000000:          // 1E11
-            return 2760727302517;
+        return mpzRes;
+    } // End IF
 
-        case 1000000000000:         // 1E12
-            return 29996224275833;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E7
 
-        case 10000000000000:        // 1E13
-            return 323780508946331;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 179424673);
 
-        case 100000000000000:       // 1E14
-            return 3475385758524527;
+        return mpzRes;
+    } // End IF
 
-        case 1000000000000000:      // 1E15
-            return 37124508045065437;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E8
 
-        case 10000000000000000:     // 1E16
-            return 394906913903735329;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 2038074743);
 
-        case 100000000000000000:    // 1E17
-            return 4185296581467695669;
+        return mpzRes;
+    } // End IF
 
-////////case 1000000000000000000:   // 1E18
-////////    return 44211790234832169331;        // Constant too big
-    } // End SWITCH
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E9
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 22801763489);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E10
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 252097800623);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E11
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 2760727302517);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E12
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 29996224275833);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E13
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 323780508946331);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E14
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 3475385758524527);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E15
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 37124508045065437);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E16
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 4185296581467695669);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E18
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_str (&mpzRes, "44211790234832169331", 10);
+
+        return mpzRes;
+    } // End IF
+
+    // Initialize the result
+    mpz_set (&mpzTmp, &aplMPIArg);
 
     // Check the list of small primes
-    if (aplInteger <= PRECOMPUTED_NUM_PRIMES)
+    if (mpz_cmp_ui (&mpzTmp, PRECOMPUTED_NUM_PRIMES) <= 0)
     {
-        uPrime = 0;
-        while (aplInteger--)
-            uPrime += prime_delta[uRes++];
-        return uPrime;
-    } else
-    {
-        // Initialize
-        get_random_seeds (&seed1, &seed2);
-        uPrime      = PRECOMPUTED_PRIME_MAX;
-        aplInteger -= PRECOMPUTED_NUM_PRIMES;
-
-        while (aplInteger--)
+        mpz_set_ui (&mpzRes, 0);
+        while (mpz_sub_ui (&mpzTmp, &mpzTmp, 1), mpz_sgn (&mpzTmp) > 0)
         {
-            // Save the current prime into mpValue
-            mp_set (&mpValue, uPrime);
-
-            // Calculate the next prime
-            uPrime =
-              iadd64 (uPrime, mp_next_prime (&mpValue, &mpValue, &seed1, &seed2, lpbCtrlBreak));
+            // Add to get the next prime
+            mpz_add_ui (&mpzRes, &mpzRes, prime_delta[uRes++]);
 
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpbCtrlBreak))
                 goto ERROR_EXIT;
         } // End WHILE
 
-        return uPrime;
+        return mpzRes;
+    } else
+    {
+        // Initialize
+        mpz_set_sa (&mpzRes, PRECOMPUTED_PRIME_MAX);
+        mpz_sub_ui (&mpzTmp, &mpzTmp, PRECOMPUTED_NUM_PRIMES);
+
+        while (mpz_sub_ui (&mpzTmp, &mpzTmp, 1), mpz_sgn (&mpzTmp) > 0)
+        {
+            // Calculate the next prime
+            mpz_nextprime (&mpzRes, &mpzRes);
+
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+        } // End WHILE
+
+        return mpzRes;
     } // End IF/ELSE
 
 ERROR_EXIT:
-    return 0;
+    return mpzRes;
 } // End PrimFnPiNthPrime
 
 
@@ -1066,74 +1383,186 @@ ERROR_EXIT:
 //  Return # primes <= a given #
 //***************************************************************************
 
-APLINT PrimFnPiNumPrimes
-    (APLINT  aplInteger,            // The number to check
-     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+APLMPI PrimFnPiNumPrimes
+    (APLMPI        aplMPIArg,       // The number to check
+     LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    uint32 seed1,                   // Random seeds
-           seed2;                   // ...
-    mp_t   mpValue;                 // Temporary MP value
+    APLMPI mpzRes = {0};            // The result
     APLUINT uRes;                   // Loop counter
     APLINT  uPrime;                 // The current prime
-    UBOOL   bRet;                   // TRUE iff the result is valid
 
     // Handle special cases
     // The following answers were obtained from
     //   http://oeis.org/A006880
-    // Split cases based upon the value
-    switch (aplInteger)
+    mpz_init_set_ui (&mpzRes, 10000);               // 1E4
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
     {
-        case 10000:                 // 1E4
-            return 1229;
+        mpz_set_sa (&mpzRes, 1229);
 
-        case 100000:                // 1E5
-            return 9592;
+        return mpzRes;
+    } // End IF
 
-        case 1000000:               // 1E6
-            return 78498;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E5
 
-        case 10000000:              // 1E7
-            return 664579;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 9592);
 
-        case 100000000:             // 1E8
-            return 5761455;
+        return mpzRes;
+    } // End IF
 
-        case 1000000000:            // 1E9
-            return 50847534;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E6
 
-        case 10000000000:           // 1E10
-            return 455052511;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_init_set_sa (&mpzRes, 78498);
 
-        case 100000000000:          // 1E11
-            return 4118054813;
+        return mpzRes;
+    } // End IF
 
-        case 1000000000000:         // 1E12
-            return 37607912018;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E7
 
-        case 10000000000000:        // 1E13
-            return 346065536839;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_init_set_sa (&mpzRes, 664579);
 
-        case 100000000000000:       // 1E14
-            return 3204941750802;
+        return mpzRes;
+    } // End IF
 
-        case 1000000000000000:      // 1E15
-            return 29844570422669;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E8
 
-        case 10000000000000000:     // 1E16
-            return 279238341033925;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_init_set_sa (&mpzRes, 5761455);
 
-        case 100000000000000000:    // 1E17
-            return 2623557157654233;
+        return mpzRes;
+    } // End IF
 
-        case 1000000000000000000:   // 1E18
-            return 24739954287740860;
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E9
 
-        case 10000000000000000000:  // 1E19
-            return 234057667276344607;
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_init_set_sa (&mpzRes, 50847534);
 
-////////case 100000000000000000000: // 1E20     // Constant too big
-////////    return 2220819602560918840;
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E10
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_init_set_sa (&mpzRes, 455052511);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E11
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_init_set_sa (&mpzRes, 4118054813);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E12
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_init_set_sa (&mpzRes, 37607912018);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E13
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 346065536839);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E14
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 3204941750802);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E15
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 29844570422669);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E16
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 279238341033925);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E17
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 2623557157654233);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E18
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 24739954287740860);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E19
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 234057667276344607);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E20
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    {
+        mpz_set_sa (&mpzRes, 2220819602560918840);
+
+        return mpzRes;
     } // End SWITCH
 
     // Run through the list of small primes
@@ -1149,99 +1578,270 @@ APLINT PrimFnPiNumPrimes
         uPrime += prime_delta[uRes];
 
         // Check the prime
-        if (uPrime > aplInteger)
-            return uRes;
+        if (mpz_cmp_ui (&aplMPIArg, (UINT) uPrime) < 0)
+        {
+            // Initialize the result
+            mpz_set_sa (&mpzRes, uRes);
+
+            return mpzRes;
+        } // End IF
     } // End FOR
 
-    // Initialize the seeds
-    get_random_seeds (&seed1, &seed2);
+    // Initialize the current prime
+    mpz_set_sa (&mpzRes, uPrime);
 
     // Loop through mp_next_prime
     while (TRUE)
     {
-        // Initialize the struc
-        mp_set (&mpValue, uPrime);
-
         // Calculate the next prime
-        uPrime =
-          _iadd64 (uPrime, mp_next_prime (&mpValue, &mpValue, &seed1, &seed2, lpbCtrlBreak), &bRet);
+        mpz_nextprime (&mpzRes, &mpzRes);
 
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Check the prime
-        if (!bRet || uPrime > aplInteger)
-            return uRes;
+        if (mpz_cmp (&aplMPIArg, &mpzRes) < 0)
+        {
+            // Initialize the result
+            mpz_set_sa (&mpzRes, uRes);
+
+            return mpzRes;
+        } // End IF
+
         // Count in another prime
         uRes++;
     } // End WHILE
-
-    return uRes;
 ERROR_EXIT:
-    return -2;
+    // Initialize the result
+    mpz_set_sa (&mpzRes, uRes);
+
+    return mpzRes;
 } // End PrimFnPiNumPrimes
 
 
 //***************************************************************************
-//  $mp_set
-//
-//  Initialize and set a number into a mp_t struc
+//  $MyTinyqs
 //***************************************************************************
 
-void mp_set
-    (LPVOID mpNumber,               // The output (really a mp_t*)
-     APLINT aplInteger)             // The input
+uint32 MyTinyqs
+    (LPAPLMPI n,
+     LPAPLMPI factor1,
+     LPAPLMPI factor2,
+     LPUBOOL  lpbCtrlBreak)
 
 {
-    UINT uVal;                      // Loop counter
-#ifdef DEBUG
-    mp_t *mpValue;
+    mp_t   N,                       // Temporary vars
+           Factor1,                 // ...
+           Factor2;                 // ...
+    uint32 uRes;                    // The result
+    size_t nWords;
 
-    mpValue = mpNumber;
-#else
-  #define mpValue   ((mp_t *) mpNumber)
-#endif
+    // Initialize the mp_t vars
+    mp_clear (&N);
+    mp_clear (&Factor1);
+    mp_clear (&Factor2);
 
-    // Initialize the struc
-    mp_clear (mpValue);
+    // Convert the APLMPI args to mp_t args
+    mpz_export (&N.val[0],                  // rop:     Output save area
+                &nWords,                    // countp:  # words written to output save area
+                 -1,                        // order:   Least significant word first
+                 sizeof (N.val[0]),         // size:    Size of each word in the output save area
+                 -1,                        // endian:  Little-endian
+                  0,                        // nails:   # nails
+                  n);                       // op:      Ptr to input
+    N.nwords = (uint32) nWords;
 
-    for (uVal = 0; aplInteger; aplInteger >>= 32, mpValue->nwords++, uVal++)
-        mpValue->val[uVal] = (UINT) aplInteger;
-#ifndef DEBUG
-  #undef  mpValue
-#endif
-} // End mp_set
+    mpz_export (&Factor1.val[0],            // rop:     Output save area
+                &nWords,                    // countp:  # words written to output save area
+                 -1,                        // order:   Least significant word first
+                 sizeof (Factor1.val[0]),   // size:    Size of each word in the output save area
+                 -1,                        // endian:  Little-endian
+                  0,                        // nails:   # nails
+                  factor1);                 // op:      Ptr to input
+    Factor1.nwords = (uint32) nWords;
+
+    mpz_export (&Factor2.val[0],            // rop:     Output save area
+                &nWords,                    // countp:  # words written to output save area
+                 -1,                        // order:   Least significant word first
+                 sizeof (Factor2.val[0]),   // size:    Size of each word in the output save area
+                 -1,                        // endian:  Little-endian
+                  0,                        // nails:   # nails
+                  factor2);                 // op:      Ptr to input
+    Factor2.nwords = (uint32) nWords;
+
+    // Call the original handler
+    uRes = tinyqs (&N, &Factor1, &Factor2, lpbCtrlBreak);
+
+    // Convert the mp_t args to APLMPI
+    mpz_import (n,                          // rop:     Output save area
+                N.nwords,                   // count:   # words in the input data
+                -1,                         // order:   Least significant word first
+                sizeof (N.val[0]),          // size:    Size of each word in the input
+                -1,                         // endian:  Little-endian
+                 0,                         // nails:   # nails
+                &N.val[0]);                 // op:      Ptr to input
+    mpz_import (factor1,                    // rop:     Output save area
+                Factor1.nwords,             // count:   # words in the input data
+                -1,                         // order:   Least significant word first
+                sizeof (Factor1.val[0]),    // size:    Size of each word in the input
+                -1,                         // endian:  Little-endian
+                 0,                         // nails:   # nails
+                &Factor1.val[0]);           // op:      Ptr to input
+    mpz_import (factor2,                    // rop:     Output save area
+                Factor2.nwords,             // count:   # words in the input data
+                -1,                         // order:   Least significant word first
+                sizeof (Factor2.val[0]),    // size:    Size of each word in the input
+                -1,                         // endian:  Little-endian
+                 0,                         // nails:   # nails
+                &Factor2.val[0]);           // op:      Ptr to input
+    return uRes;
+} // End MyTinyqs
 
 
 //***************************************************************************
-//  $mp_get
-//
-//  Convert a mp_t number to a 64-bit integer
+//  $MySqufof
 //***************************************************************************
 
-APLUINT mp_get
-    (LPVOID mpNumber)               // The number to convert (really a mp_t*)
+uint32 MySqufof
+    (LPAPLMPI n,
+     LPUBOOL  lpbCtrlBreak)
 
 {
-    WORDSPLIT wSplit;               // Union for the result
-#ifdef DEBUG
-    mp_t *mpValue;
+    uint32 uRes;                    // The result
+    mp_t   N;                       // Temporary var
+    size_t nWords;
 
-    mpValue = mpNumber;
-#else
-  #define mpValue   ((mp_t *) mpNumber)
+    // Initialize the mp_t var
+    mp_clear (&N);
+
+    // Convert the APLMPI arg to mp_t arg
+    mpz_export (&N.val[0],                  // rop:     Output save area
+                &nWords,                    // countp:  # words written to output save area
+                 -1,                        // order:   Least significant word first
+                 sizeof (N.val[0]),         // size:    Size of each word in the output save area
+                 -1,                        // endian:  Little-endian
+                  0,                        // nails:   # nails
+                  n);                       // op:      Ptr to input
+    N.nwords = (uint32) nWords;
+
+    // Call the original handler
+    uRes = squfof (&N, lpbCtrlBreak);
+
+    // Convert the mp_t args to APLMPI
+    mpz_import (n,                          // rop:     Output save area
+                N.nwords,                   // count:   # words in the input data
+                -1,                         // order:   Least significant word first
+                sizeof (N.val[0]),          // size:    Size of each word in the input
+                -1,                         // endian:  Little-endian
+                 0,                         // nails:   # nails
+                &N.val[0]);                 // op:      Ptr to input
+    return uRes;
+} // End MySqufof
+
+
+//***************************************************************************
+//  $MyRho
+//***************************************************************************
+
+uint32 MyRho
+    (LPAPLMPI n,
+     LPAPLMPI reduced_n,
+     LPPROCESSPRIME lpProcPrime)
+
+{
+    uint32 uRes;                    // The result
+    mp_t   N,                       // Temporary vars
+           Reduced_N;               // ...
+    size_t nWords;
+
+    // Initialize the mp_t vars
+    mp_clear (&N);
+    mp_clear (&Reduced_N);
+
+    // Convert the APLMPI args to mp_t args
+    mpz_export (&N.val[0],                  // rop:     Output save area
+                &nWords,                    // countp:  # words written to output save area
+                 -1,                        // order:   Least significant word first
+                 sizeof (N.val[0]),         // size:    Size of each word in the output save area
+                 -1,                        // endian:  Little-endian
+                  0,                        // nails:   # nails
+                  n);                       // op:      Ptr to input
+    N.nwords = (uint32) nWords;
+
+    mpz_export (&Reduced_N.val[0],          // rop:     Output save area
+                &nWords,                    // countp:  # words written to output save area
+                 -1,                        // order:   Least significant word first
+                 sizeof (Reduced_N.val[0]), // size:    Size of each word in the output save area
+                 -1,                        // endian:  Little-endian
+                  0,                        // nails:   # nails
+                  reduced_n);               // op:      Ptr to input
+    Reduced_N.nwords = (uint32) nWords;
+
+    // Call the original handler
+    uRes = rho (&N, &Reduced_N, lpProcPrime);
+
+    // Convert the mp_t args to APLMPI
+    mpz_import (n,                          // rop:     Output save area
+                N.nwords,                   // count:   # words in the input data
+                -1,                         // order:   Least significant word first
+                sizeof (N.val[0]),          // size:    Size of each word in the input
+                -1,                         // endian:  Little-endian
+                 0,                         // nails:   # nails
+                &N.val[0]);                 // op:      Ptr to input
+    mpz_import (reduced_n,                  // rop:     Output save area
+                Reduced_N.nwords,           // count:   # words in the input data
+                -1,                         // order:   Least significant word first
+                sizeof (Reduced_N.val[0]),  // size:    Size of each word in the input
+                -1,                         // endian:  Little-endian
+                 0,                         // nails:   # nails
+                &Reduced_N.val[0]);         // op:      Ptr to input
+    return uRes;
+} // End MyRho
+
+
+#ifdef MPQS_ENABLED
+//***************************************************************************
+//  $MyFactor_mpqs
+//***************************************************************************
+
+UBOOL MyFactor_mpqs
+    (LPAPLMPI n)
+
+{
+    factor_list_t factor_list;
+    msieve_obj    obj;
+    mp_t          N;                        // Temporary var
+    UBOOL         bRet;                     // TRUE iff the result is valid
+
+    size_t nWords;
+
+    // Initialize the mp_t var
+    mp_clear (&N);
+
+    // Convert the APLMPI arg to mp_t arg
+    mpz_export (&N.val[0],                  // rop:     Output save area
+                &nWords,                    // countp:  # words written to output save area
+                 -1,                        // order:   Least significant word first
+                 sizeof (N.val[0]),         // size:    Size of each word in the output save area
+                 -1,                        // endian:  Little-endian
+                  0,                        // nails:   # nails
+                  n);                       // op:      Ptr to input
+    N.nwords = (uint32) nWords;
+
+    bRet = factor_mpqs (&obj, &N, &factor_list);
+
+    // Convert the mp_t arg to APLMPI
+    mpz_import (n,                          // rop:     Output save area
+                N.nwords,                   // count:   # words in the input data
+                -1,                         // order:   Least significant word first
+                sizeof (N.val[0]),          // size:    Size of each word in the input
+                -1,                         // endian:  Little-endian
+                 0,                         // nails:   # nails
+                &N.val[0]);                 // op:      Ptr to input
+    return bRet;
+} // End MyFactor_mpqs
 #endif
-
-    // Save the words in the result
-    wSplit.words[0] = mpValue->val[0];
-    wSplit.words[1] = mpValue->val[1];
-
-    return wSplit.aplInteger;
-#ifndef DEBUG
-  #undef  mpValue
-#endif
-} // End mp_get
 
 
 //***************************************************************************

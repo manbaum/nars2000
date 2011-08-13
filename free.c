@@ -294,8 +294,9 @@ void FreeResultSub
         case TKT_VARARRAY:  // tkData contains an HGLOBAL of an array of LPSYMENTRYs and HGLOBALs
         case TKT_AXISARRAY: // ...
         case TKT_FCNARRAY:  // ...
-        case TKT_NUMSTRAND: // ...
         case TKT_CHRSTRAND: // ...
+        case TKT_NUMSTRAND: // ...
+        case TKT_NUMSCALAR: // ...
         case TKT_LSTARRAY:  // tkData contains an HGLOBAL of an array of LPTOKENs
         case TKT_LSTMULT:   // ...
             // Get the global memory ptr
@@ -582,6 +583,26 @@ UBOOL FreeResultGlobalVarSub
 
                 break;
 
+            case ARRAY_RAT:
+                // Point to the array data (APLRATs)
+                lpMem = VarArrayBaseToData (lpMem, aplRank);
+
+                // Loop through the APLRATs
+                for (u = 0; u < aplNELM; u++, ((LPAPLRAT) lpMem)++)
+                    Myq_clear ((LPAPLRAT) lpMem);
+
+                break;
+
+            case ARRAY_VFP:
+                // Point to the array data (APLVFPs)
+                lpMem = VarArrayBaseToData (lpMem, aplRank);
+
+                // Loop through the APLVFPs
+                for (u = 0; u < aplNELM; u++, ((LPAPLVFP) lpMem)++)
+                    Myf_clear ((LPAPLVFP) lpMem);
+
+                break;
+
             defstop
                 break;
         } // End IF/SWITCH
@@ -736,6 +757,7 @@ UBOOL FreeResultGlobalFcn
             case TKT_AXISARRAY:     // Free the axis array
             case TKT_CHRSTRAND:     // Free the character strand
             case TKT_NUMSTRAND:     // Free the numeric strand
+            case TKT_NUMSCALAR:     // Free the numeric scalar
                 // Get the global handle
                 hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
 

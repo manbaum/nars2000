@@ -249,6 +249,7 @@ void FreeStrand
 
             case TKT_CHRSTRAND:
             case TKT_NUMSTRAND:
+            case TKT_NUMSCALAR:
             case TKT_VARARRAY:
             case TKT_AXISARRAY:
                 // Check for reused and indirect ptrs
@@ -337,6 +338,7 @@ LPPL_YYSTYPE MakeVarStrand_EM_YY
                  lpYYStrand;
     HGLOBAL      hGlbStr,
                  hGlbData,
+                 lpSymGlbNum,
                  hGlbNum;
     LPVOID       lpMemStr,
                  lpMemNum;
@@ -349,19 +351,23 @@ LPPL_YYSTYPE MakeVarStrand_EM_YY
         LPAPLHETERO Hetero;
         LPAPLNESTED Nested;
         LPSYMENTRY  *Sym;
+        LPAPLRAT    Rat;
+        LPAPLVFP    Vfp;
     } LPAPL;
 
 static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
-// Initial       Boolean        Integer        Float          Char           CharStrand     String         Hetero         Nested
-{{STRAND_INIT  , STRAND_BOOL  , STRAND_INT   , STRAND_FLOAT , STRAND_CHAR  , STRAND_CHARST, STRAND_STRING, STRAND_HETERO, STRAND_NESTED}, // Initial
- {STRAND_BOOL  , STRAND_BOOL  , STRAND_INT   , STRAND_FLOAT , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED}, // Boolean
- {STRAND_INT   , STRAND_INT   , STRAND_INT   , STRAND_FLOAT , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED}, // Integer
- {STRAND_FLOAT , STRAND_FLOAT , STRAND_FLOAT , STRAND_FLOAT , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED}, // Float
- {STRAND_CHAR  , STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_CHARST, STRAND_CHARST, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED}, // Char
- {STRAND_CHARST, STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_CHARST, STRAND_CHARST, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED}, // CharStrand
- {STRAND_STRING, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED}, // String
- {STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED}, // Hetero
- {STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED}, // Nested
+// Initial       Boolean        Integer        Float          Char           CharStrand     String         Hetero         Nested         RAT            VFP
+{{STRAND_INIT  , STRAND_BOOL  , STRAND_INT   , STRAND_FLOAT , STRAND_CHAR  , STRAND_CHARST, STRAND_STRING, STRAND_HETERO, STRAND_NESTED, STRAND_RAT   , STRAND_VFP   }, // Initial
+ {STRAND_BOOL  , STRAND_BOOL  , STRAND_INT   , STRAND_FLOAT , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED, STRAND_RAT   , STRAND_VFP   }, // Boolean
+ {STRAND_INT   , STRAND_INT   , STRAND_INT   , STRAND_FLOAT , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED, STRAND_RAT   , STRAND_VFP   }, // Integer
+ {STRAND_FLOAT , STRAND_FLOAT , STRAND_FLOAT , STRAND_FLOAT , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED, STRAND_FLOAT , STRAND_VFP   }, // Float
+ {STRAND_CHAR  , STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_CHARST, STRAND_CHARST, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_HETERO}, // Char
+ {STRAND_CHARST, STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_CHARST, STRAND_CHARST, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_HETERO}, // CharStrand
+ {STRAND_STRING, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED}, // String
+ {STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_HETERO}, // Hetero
+ {STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED, STRAND_NESTED}, // Nested
+ {STRAND_RAT   , STRAND_RAT   , STRAND_RAT   , STRAND_FLOAT , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED, STRAND_RAT   , STRAND_VFP   }, // RAT
+ {STRAND_VFP   , STRAND_VFP   , STRAND_VFP   , STRAND_VFP   , STRAND_HETERO, STRAND_HETERO, STRAND_NESTED, STRAND_HETERO, STRAND_NESTED, STRAND_VFP   , STRAND_VFP   }, // VFP
 };
 
     STRAND_TYPES  cStrandCurType = STRAND_INIT,
@@ -371,6 +377,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
     IMM_TYPES     immTypeNum;           // Numeric strand immediate type
     APLNELM       aplNELMNum,           // Numeric strand NELM
                   uNum;                 // Loop counter
+    APLRANK       aplRankNum;           // Numeric strand Rank
     APLLONGEST    aplLongestNum;        // Numeric strand immediate value
     LPSYMENTRY    lpSymEntry;           // Temporary STE
     UBOOL         bRet = TRUE;          // TRUE iff the result is valid
@@ -479,6 +486,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 break;
 
             case TKT_NUMSTRAND:
+            case TKT_NUMSCALAR:
                 // Get the token attrs
                 AttrsOfToken (&lpYYToken->tkToken, &aplTypeNum, &aplNELMNum, NULL, NULL);
 
@@ -490,7 +498,23 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 break;
 
             case TKT_VARARRAY:
-                cStrandNxtType = STRAND_NESTED;
+                // Get the global handle
+                hGlbData = lpYYToken->tkToken.tkData.tkGlbData;
+
+                // tkData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir_PTB (hGlbData));
+
+                // Lock the memory to get a ptr to it
+                lpMemStr = MyGlobalLock (hGlbData);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
+                if (IsScalar (lpHeader->Rank))
+                    cStrandNxtType = TranslateArrayTypeToStrandType (lpHeader->ArrType);
+                else
+                    cStrandNxtType = STRAND_NESTED;
+#undef  lpHeader
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbData); lpMemStr = NULL;
 
                 break;
 
@@ -586,7 +610,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             case STRAND_INT:        // e.g., 2
             case STRAND_CHAR:       // e.g., 'a'
             case STRAND_FLOAT:      // e.g., 1.5
-            {
                 // Split cases based upon the token flags
                 switch (lpYYStrand->tkToken.tkFlags.TknType)
                 {
@@ -618,6 +641,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
                     case TKT_CHRSTRAND:
                     case TKT_NUMSTRAND:
+                    case TKT_NUMSCALAR:
                         // Fill in the result token
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
@@ -632,7 +656,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 } // End SWITCH
 
                 break;
-            } // End STRAND_BOOL/INT/CHAR/FLOAT
 
             case STRAND_NESTED:
                 // Split cases based upon the token type
@@ -682,6 +705,45 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
                 lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
                 lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+
+                break;
+
+            case STRAND_RAT:
+            case STRAND_VFP:
+                // Split cases based upon the token flags
+                switch (lpYYStrand->tkToken.tkFlags.TknType)
+                {
+                    case TKT_VARNAMED:
+                        // tkData is an LPSYMENTRY
+                        Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                        // Fill in the result token
+                        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkSym->stData.stGlbData);
+                        lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+
+                        break;
+
+                    case TKT_VARARRAY:
+                    case TKT_NUMSTRAND:
+                    case TKT_NUMSCALAR:
+                        // tkData is an HGLOBAL
+                        Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.tkVoid) EQ PTRTYPE_HGLOBAL);
+
+                        // Fill in the result token
+                        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
+                        lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
 
                 break;
 
@@ -793,6 +855,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         break;
 
                     case TKT_NUMSTRAND:
+                    case TKT_NUMSCALAR:
                         // Get and lock the global ptrs
                         GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
 
@@ -878,6 +941,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     break;
 
                 case TKT_NUMSTRAND:
+                case TKT_NUMSCALAR:
                     // Get the numeric strand attrs
                     AttrsOfToken (&lpYYToken->tkToken, &aplTypeNum, &aplNELMNum, NULL, NULL);
 
@@ -956,6 +1020,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     break;
 
                 case TKT_NUMSTRAND:                         // Can't happen -- STRAND_CHAR
+                case TKT_NUMSCALAR:                         // Can't happen -- STRAND_CHAR
                 defstop
                     break;
             } // End FOR/SWITCH
@@ -1043,6 +1108,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     break;
 
                 case TKT_NUMSTRAND:
+                case TKT_NUMSCALAR:
                     // Get the numeric strand attrs
                     AttrsOfToken (&lpYYToken->tkToken, &aplTypeNum, &aplNELMNum, NULL, NULL);
 
@@ -1151,6 +1217,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     break;
 
                 case TKT_NUMSTRAND:
+                case TKT_NUMSCALAR:
                     // Get the numeric strand attrs
                     AttrsOfToken (&lpYYToken->tkToken, &aplTypeNum, &aplNELMNum, NULL, NULL);
 
@@ -1159,11 +1226,140 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // Get and lock the global ptrs
                     GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
 
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemNum)
                     // Skip over the header and dimensions to the data
-                    lpMemNum = VarArrayBaseToData (lpMemNum, 1);
-
+                    lpMemNum = VarArrayBaseToData (lpMemNum, lpHeader->Rank);
+#undef  lpHeader
                     // Get the numeric strand immediate type
                     immTypeNum = TranslateArrayTypeToImmType (aplTypeNum);
+
+                    // Loop through the numeric strand
+                    for (uNum = 0; uNum < aplNELMNum; uNum++)
+                    // Split cases based upon the object storage type
+                    switch (aplTypeNum)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_FLOAT:
+                        case ARRAY_CHAR:
+                            // Get the next value from memory
+                            GetNextValueMem (lpMemNum,          // Ptr to item global memory data
+                                             aplTypeNum,        // Item storage type
+                                             uNum,              // Index into item
+                                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                            &aplLongestNum,     // Ptr to result immediate value (may be NULL)
+                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                            // Make a SYMENTRY
+                            lpSymEntry = MakeSymEntry_EM (immTypeNum,           // Immediate type
+                                                         &aplLongestNum,        // Ptr to immediate value
+                                                         &lpYYArg->tkToken);    // Ptr to function token
+                            if (lpSymEntry)
+                                *LPAPL.Nested++ = MakePtrTypeSym (lpSymEntry);
+                            else
+                            {
+                                bRet = FALSE;
+
+                                break;
+                            } // End IF/ELSE
+
+                            break;
+
+                        case ARRAY_RAT:
+                            // Make a global entry
+                            lpSymEntry =
+                              MakeGlbEntry_EM (aplTypeNum,          // Entry type
+                                  &((LPAPLRAT) lpMemNum)[uNum],     // Ptr to the value
+                                               TRUE,                // TRUE iff we should initialize the target first
+                                              &lpYYArg->tkToken);   // Ptr to function token
+                            if (lpSymEntry)
+                                *LPAPL.Nested++ = lpSymEntry;
+                            else
+                            {
+                                bRet = FALSE;
+
+                                break;
+                            } // End IF/ELSE
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Make a global entry
+                            lpSymEntry =
+                              MakeGlbEntry_EM (aplTypeNum,          // Entry type
+                                  &((LPAPLVFP) lpMemNum)[uNum],     // Ptr to the value
+                                               TRUE,                // TRUE iff we should initialize the target first
+                                              &lpYYArg->tkToken);   // Ptr to function token
+                            if (lpSymEntry)
+                                *LPAPL.Nested++ = lpSymEntry;
+                            else
+                            {
+                                bRet = FALSE;
+
+                                break;
+                            } // End IF/ELSE
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End FOR/SWITCH
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbNum); lpMemNum = NULL;
+
+                    break;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+
+            break;
+
+        case STRAND_RAT:            // lpYYToken->tkToken.tkData.tkGlbData (TKT_VARARRAY)
+            for (lpYYToken = &lpYYStrand[iNELM - 1];
+                 lpYYToken NE &lpYYStrand[-1];
+                 lpYYToken--)
+            // Split cases based upon the token type
+            switch (lpYYToken->tkToken.tkFlags.TknType)
+            {
+                case TKT_VARIMMED:
+                    // Convert the INT to a RAT
+                    mpq_init_set_sa (LPAPL.Rat++, lpYYToken->tkToken.tkData.tkInteger, 1);
+
+                    break;
+
+                case TKT_VARNAMED:
+                    // tkData is an LPSYMENTRY
+                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                    // If it's an immediate, ...
+                    if (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
+                    {
+                        // Convert the INT to a RAT
+                        mpq_init_set_sa (LPAPL.Rat++, lpYYToken->tkToken.tkData.tkSym->stData.stInteger, 1);
+
+                        break;
+                    } else
+                    {
+                        // stData is an HGLOBAL
+                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkSym->stData.stVoid) EQ PTRTYPE_HGLOBAL);
+                    } // End IF/ELSE
+
+                    // Fall through to the global var case
+
+                case TKT_NUMSTRAND:
+                case TKT_NUMSCALAR:
+                case TKT_VARARRAY:
+                    // Get the numeric strand attrs
+                    AttrsOfToken (&lpYYToken->tkToken, &aplTypeNum, &aplNELMNum, &aplRankNum, NULL);
+
+                    Assert (aplNELMNum > 0);
+
+                    // Get and lock the global ptrs
+                    GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
+
+                    // Skip over the header and dimensions to the data
+                    lpMemNum = VarArrayBaseToData (lpMemNum, aplRankNum);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1172,21 +1368,174 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                          aplTypeNum,        // Item storage type
                                          uNum,              // Index into item
-                                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                        &lpSymGlbNum,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNum,     // Ptr to result immediate value (may be NULL)
                                          NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        // Make a SYMENTRY
-                        lpSymEntry = MakeSymEntry_EM (immTypeNum,           // Immediate type
-                                                     &aplLongestNum,        // Ptr to immediate value
-                                                     &lpYYArg->tkToken);    // Ptr to function token
-                        if (lpSymEntry)
-                            *LPAPL.Nested++ = MakePtrTypeSym (lpSymEntry);
-                        else
+                        // Split cases based upon the item storage type
+                        switch (aplTypeNum)
                         {
-                            bRet = FALSE;
+                            case ARRAY_BOOL:
+                            case ARRAY_INT:
+                                // Convert the BOOL/INT to a RAT
+                                mpq_init_set_sa (LPAPL.Rat++, aplLongestNum, 1);
+
+                                break;
+
+                            case ARRAY_RAT:
+                                // Copy the RAT to a RAT
+                                mpq_init_set    (LPAPL.Rat++, (LPAPLRAT) lpSymGlbNum);
+
+                                // Decrement the refcnt as we're making a copy of the value, not reusing it
+                                DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbNum));
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbNum); lpMemNum = NULL;
+
+                    break;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+
+            break;
+
+        case STRAND_VFP:            // lpYYToken->tkToken.tkData.tkGlbData (TKT_VARARRAY)
+            for (lpYYToken = &lpYYStrand[iNELM - 1];
+                 lpYYToken NE &lpYYStrand[-1];
+                 lpYYToken--)
+            // Split cases based upon the token type
+            switch (lpYYToken->tkToken.tkFlags.TknType)
+            {
+                case TKT_VARIMMED:
+                    // Split cases based upon the immediate storage type
+                    switch (lpYYToken->tkToken.tkFlags.ImmType)
+                    {
+                        case IMMTYPE_BOOL:
+                        case IMMTYPE_INT:
+                            // Convert the INT to a VFP
+                            mpf_init_set_sa (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkInteger);
 
                             break;
-                        } // End IF/ELSE
+
+                        case IMMTYPE_FLOAT:
+                            // Convert the FLOAT to a VFP
+                            mpf_init_set_d  (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkFloat  );
+
+                            break;
+
+                        case IMMTYPE_CHAR:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case TKT_VARNAMED:
+                    // tkData is an LPSYMENTRY
+                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                    // If it's an immediate, ...
+                    if (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
+                    {
+                        // Split cases based upon the immediate storage type
+                        switch (lpYYToken->tkToken.tkData.tkSym->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:
+                            case IMMTYPE_INT:
+                                // Convert the BOOL/INT to a RAT
+                                mpf_init_set_sa (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkSym->stData.stInteger);
+
+                                break;
+
+                            case IMMTYPE_FLOAT:
+                                // Convert the FLOAT to a VFP
+                                mpf_init_set_d  (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkSym->stData.stFloat  );
+
+                                break;
+
+                            case IMMTYPE_CHAR:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+
+                        break;
+                    } else
+                    {
+                        // stData is an HGLOBAL
+                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkSym->stData.stVoid) EQ PTRTYPE_HGLOBAL);
+                    } // End IF/ELSE
+
+                    // Fall through to the global var case
+
+                case TKT_NUMSTRAND:
+                case TKT_NUMSCALAR:
+                case TKT_VARARRAY:
+                    // Get the numeric strand attrs
+                    AttrsOfToken (&lpYYToken->tkToken, &aplTypeNum, &aplNELMNum, &aplRankNum, NULL);
+
+                    Assert (aplNELMNum > 0);
+
+                    // Get and lock the global ptrs
+                    GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
+
+                    // Skip over the header and dimensions to the data
+                    lpMemNum = VarArrayBaseToData (lpMemNum, aplRankNum);
+
+                    // Loop through the numeric strand
+                    for (uNum = 0; uNum < aplNELMNum; uNum++)
+                    {
+                        // Get the next value from memory
+                        GetNextValueMem (lpMemNum,          // Ptr to item global memory data
+                                         aplTypeNum,        // Item storage type
+                                         uNum,              // Index into item
+                                        &lpSymGlbNum,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                        &aplLongestNum,     // Ptr to result immediate value (may be NULL)
+                                         NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                        // Split cases based upon the item storage type
+                        switch (aplTypeNum)
+                        {
+                            case ARRAY_BOOL:
+                            case ARRAY_INT:
+                                // Convert the BOOL/INT to a VFP
+                                mpf_init_set_sa (LPAPL.Vfp++, aplLongestNum);
+
+                                break;
+
+                            case ARRAY_FLOAT:
+                                // Convert the FLOAT to a VFP
+                                mpf_init_set_d  (LPAPL.Vfp++, *(LPAPLFLOAT) &aplLongestNum);
+
+                                break;
+
+                            case ARRAY_RAT:
+                                // Convert the RAT to a VFP
+                                mpf_init_set_q  (LPAPL.Vfp++, (LPAPLRAT) lpSymGlbNum);
+
+                                // Decrement the refcnt as we're making a copy of the value, not reusing it
+                                DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbNum));
+
+                                break;
+
+                            case ARRAY_VFP:
+                                // Copy the VFP to a VFP
+                                mpf_init_set    (LPAPL.Vfp++, (LPAPLVFP) lpSymGlbNum);
+
+                                // Decrement the refcnt as we're making a copy of the value, not reusing it
+                                DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbNum));
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
                     } // End FOR
 
                     // We no longer need this ptr
@@ -1241,6 +1590,104 @@ ERROR_EXIT:
 
     YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 } // End MakeVarStrand_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MakeGlbEntry_EM
+//
+//  Make an HGLOBAL with a given type and value
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakeGlbEntry_EM"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL MakeGlbEntry_EM
+    (ARRAY_TYPES  aplTypeRes,       // Array Type to use (see ARRAY_TYPES)
+     LPVOID       lpVal,            // Ptr to value to use
+     UBOOL        bInit,            // TRUE iff we should initialize the target first
+     LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
+
+{
+    HGLOBAL hGlbRes = NULL;         // Result global memory handle
+    LPVOID  lpMemRes;               // Ptr to result global memory
+    APLUINT ByteRes;                // # bytes in the result
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (aplTypeRes, 1, 0);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    // Allocate global memory for a length <iLen> vector of type <aplTypeRes>.
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType = aplTypeRes;
+////lpHeader->PermNdx = PERMNDX_NONE;   // Already zero from GHND
+////lpHeader->SysVar  = FALSE;          // Already zero from GHND
+    lpHeader->RefCnt  = 1;
+    lpHeader->NELM    = 1;
+    lpHeader->Rank    = 0;
+#undef  lpHeader
+
+    // Skip over the header and dimensions
+    lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+
+    // Split cases based upon the storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_RAT:
+            if (bInit)
+                // Initialize the result and copy the value
+                mpq_init_set ((LPAPLRAT) lpMemRes, (LPAPLRAT) lpVal);
+            else
+                // Copy the value
+                *((LPAPLRAT) lpMemRes) = *(LPAPLRAT) lpVal;
+            break;
+
+        case ARRAY_VFP:
+            if (bInit)
+                // Initialize the result and copy the value
+                mpf_init_set ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpVal);
+            else
+                // Copy the value
+                *((LPAPLVFP) lpMemRes) = *(LPAPLVFP) lpVal;
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Set the Ptr type bits
+    hGlbRes = MakePtrTypeGlb (hGlbRes);
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Set the error message
+    ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+    // If there's a function token, set the error token
+    if (lptkFunc)
+        ErrorMessageSetToken (lptkFunc);
+NORMAL_EXIT:
+    return hGlbRes;
+} // End MakeGlbEntry_EM
 #undef  APPEND_NAME
 
 
@@ -2709,6 +3156,7 @@ LPTOKEN CopyToken_EM
         case TKT_AXISARRAY:     // ...
         case TKT_CHRSTRAND:     // ...
         case TKT_NUMSTRAND:     // ...
+        case TKT_NUMSCALAR:     // ...
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (lpToken->tkData.tkGlbData));
 

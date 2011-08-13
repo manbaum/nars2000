@@ -46,6 +46,11 @@ PRIMSPEC PrimSpecDownStile = {
     NULL,   // &PrimFnMonDownStileFisI, -- Can't happen w/DownStile
     &PrimFnMonDownStileFisF,
 
+    &PrimFnMonDownStileRisR,
+
+////               VisR,    // Handled via type promotion (to VisV)
+    &PrimFnMonDownStileVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecDownStileStorageTypeDyd,
@@ -63,6 +68,13 @@ PRIMSPEC PrimSpecDownStile = {
 ////                   FisBvB,  // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydDownStileFisIvI, -- Can't happen w/DownStile
     &PrimFnDydDownStileFisFvF,
+
+    NULL,   // &PrimFnDydDownStileBisRvR, -- Can't happen w/DownStile
+    &PrimFnDydDownStileRisRvR,
+
+    NULL,   // &PrimFnDydDownStileBisVvV, -- Can't happen w/DownStile
+////                  VisRvR,   // Handled via type promotion (to VisVvV)
+    &PrimFnDydDownStileVisVvV,
 
     NULL,   // &PrimFnMonDownStileB64isB64, -- Can't happen w/DownStile
     NULL,   // &PrimFnMonDownStileB32isB32, -- Can't happen w/DownStile
@@ -189,7 +201,7 @@ APLINT PrimFnMonDownStileIisF
 {
     // Check for ± infinity and numbers whose
     //   absolute value is >= 2*53
-    if (!_finite (aplFloatRht)
+    if (IsInfinity (aplFloatRht)
      || fabs (aplFloatRht) >= Float2Pow53)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
@@ -217,7 +229,7 @@ APLFLOAT PrimFnMonDownStileFisF
     fQuadCT = GetQuadCT ();
 
     // Check for ± infinity
-    if (!_finite (aplFloatRht))
+    if (IsInfinity (aplFloatRht))
         return aplFloatRht;
 
     // Get the exact floor and ceiling
@@ -228,9 +240,8 @@ APLFLOAT PrimFnMonDownStileFisF
 
     // Split cases based upon the signum of the difference between
     //   (the number and its floor) and (the ceiling and the number)
-    switch (PrimFnMonTimesIisF ((aplFloatRht - aplFloor)
-                              - (aplCeil - aplFloatRht),
-                                lpPrimSpec))
+    switch (signumf ((aplFloatRht - aplFloor)
+                   - (aplCeil     - aplFloatRht)))
     {
         case  1:
             aplNear = aplCeil;
@@ -279,6 +290,52 @@ APLFLOAT PrimFnMonDownStileFisF
     else
         return -1;
 } // End PrimFnMonDownStileFisF
+
+
+//***************************************************************************
+//  $PrimFnMonDownStileRisR
+//
+//  Primitive scalar function monadic DownStile:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonDownStileRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Initialize the result to 0/1
+    mpq_init (&mpqRes);
+
+    // Divide the numerator by the denominator
+    mpz_fdiv_q (mpq_numref (&mpqRes), mpq_numref (&aplRatRht), mpq_denref (&aplRatRht));
+
+    return mpqRes;
+} // End PrimFnMonDownStileRisR
+
+
+//***************************************************************************
+//  $PrimFnMonDownStileVisV
+//
+//  Primitive scalar function monadic DownStile:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonDownStileVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    // Find the floor of the Variable FP
+    mpf_floor (&mpfRes, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnMonDownStileVisV
 
 
 //***************************************************************************
@@ -388,6 +445,54 @@ APLFLOAT PrimFnDydDownStileFisFvF
 {
     return min (aplFloatLft, aplFloatRht);
 } // End PrimFnDydDownStileFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydDownStileRisRvR
+//
+//  Primitive scalar function dyadic DownStile:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydDownStileRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Compare the two Rationals
+    if (mpq_cmp (&aplRatLft, &aplRatRht) < 0)
+        mpq_init_set (&mpqRes, &aplRatLft);
+    else
+        mpq_init_set (&mpqRes, &aplRatRht);
+
+    return mpqRes;
+} // End PrimFnDydDownStileRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydDownStileVisVvV
+//
+//  Primitive scalar function dyadic DownStile:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydDownStileVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Compare the two Variable FPs
+    if (mpf_cmp (&aplVfpLft, &aplVfpRht) < 0)
+        mpf_init_set (&mpfRes, &aplVfpLft);
+    else
+        mpf_init_set (&mpfRes, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnDydDownStileVisVvV
 
 
 //***************************************************************************

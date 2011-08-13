@@ -62,7 +62,9 @@ EXIT_TYPES GotoLine_EM
     LPPLLOCALVARS  lpplLocalVars;   // Ptr to PL local vars
     TOKEN          tkNxt;           // Token of next stmt
     UINT           uTknNum = 0;     // Starting token #
-    UBOOL          bExecEC;         // TRUE iff we're executing under []EC
+    UBOOL          bExecEC,         // TRUE iff we're executing under []EC
+                   bRet;            // TRUE iff the result is valid
+    HGLOBAL        lpSymGlb;        // Ptr to global numeric value
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -84,22 +86,84 @@ EXIT_TYPES GotoLine_EM
                            &aplFloatRht,    // Ptr to float ...
                             NULL,           // Ptr to WCHAR ...
                             NULL,           // Ptr to longest ...
-                            NULL,           // Ptr to lpSym/Glb ...
+                           &lpSymGlb,       // Ptr to lpSym/Glb ...
                            &immType,        // Ptr to ...immediate type ...
                             NULL);          // Ptr to array type ...
-        if (immType EQ IMMTYPE_ERROR
-         || IsImmChr (immType))
-            goto DOMAIN_EXIT;
-
-        if (IsImmFlt (immType))
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
         {
-            UBOOL bRet;
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                break;
 
-            // Attempt to convert the float to an integer using System CT
-            aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-            if (!bRet)
-                goto DOMAIN_EXIT;
-        } // End IF
+            case ARRAY_HETERO:
+            case ARRAY_NESTED:
+                // Split cases based upon the immediate storage type
+                switch (immType)
+                {
+                    case IMMTYPE_BOOL:
+                    case IMMTYPE_INT:
+                        break;
+
+                    case IMMTYPE_RAT:
+                        Assert (GetPtrTypeDir (lpSymGlb) EQ PTRTYPE_HGLOBAL);
+
+                        // Attempt to convert the RAT to an integer using System CT
+                        aplIntegerRht = GetNextRatIntGlb (lpSymGlb, 0, &bRet);
+                        if (!bRet)
+                            goto DOMAIN_EXIT;
+                        break;
+
+                    case IMMTYPE_VFP:
+                        Assert (GetPtrTypeDir (lpSymGlb) EQ PTRTYPE_HGLOBAL);
+
+                        // Attempt to convert the VFP to an integer using System CT
+                        aplIntegerRht = GetNextVfpIntGlb (lpSymGlb, 0, &bRet);
+                        if (!bRet)
+                            goto DOMAIN_EXIT;
+                        break;
+
+                    case IMMTYPE_FLOAT:
+                        // Attempt to convert the float to an integer using System CT
+                        aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+                        if (!bRet)
+                            goto DOMAIN_EXIT;
+                        break;
+
+                    case IMMTYPE_ERROR:
+                        goto DOMAIN_EXIT;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                break;
+
+            case ARRAY_FLOAT:
+                // Attempt to convert the float to an integer using System CT
+                aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                break;
+
+            case ARRAY_RAT:
+                // Attempt to convert the RAT to an integer using System CT
+                aplIntegerRht = mpq_get_ctsa ((LPAPLRAT) lpSymGlb, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                break;
+
+            case ARRAY_VFP:
+                // Attempt to convert the VFP to an integer using System CT
+                aplIntegerRht = mpf_get_ctsa ((LPAPLVFP) lpSymGlb, &bRet);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } // End IF
 
     // Copy ptr to current SI level

@@ -159,6 +159,7 @@
 // Range limits for []vars
 #define DEF_RANGELIMIT_CT           TRUE
 #define DEF_RANGELIMIT_FEATURE      TRUE
+#define DEF_RANGELIMIT_FPC          TRUE
 #define DEF_RANGELIMIT_IC           TRUE
 #define DEF_RANGELIMIT_IO           TRUE
 #define DEF_RANGELIMIT_PP           TRUE
@@ -170,6 +171,7 @@
 #define DEF_RESETVARS_CT            FALSE
 #define DEF_RESETVARS_FC            FALSE
 #define DEF_RESETVARS_FEATURE       FALSE
+#define DEF_RESETVARS_FPC           FALSE
 #define DEF_RESETVARS_IC            FALSE
 #define DEF_RESETVARS_IO            FALSE
 #define DEF_RESETVARS_PP            FALSE
@@ -278,6 +280,9 @@
 
 #define LOPART_DWORDLONG    ((DWORDLONG) 0x00000000FFFFFFFF)
 #define HIPART_DWORDLONG    ((DWORDLONG) 0xFFFFFFFF00000000)
+
+#define LOPART_LONGLONG     ((LONGLONG)  0x00000000FFFFFFFF)
+#define HIPART_LONGLONG     ((LONGLONG)  0xFFFFFFFF00000000)
 
 #define QWORD   ULONGLONG
 
@@ -469,6 +474,10 @@ default:        \
                                     //   in <pn_parse.y>
 #define OVERBAR1        '-'         // ...
 
+// Define text for infinity
+#define  TEXT_INFINITY       "{infinity}"
+#define LTEXT_INFINITY      L"{infinity}"
+
 
 //***************************************************************************
 // Wide-char routines From <string.h>
@@ -575,6 +584,14 @@ default:        \
 
 #define PROP_IDMPOSFN   L"PROP_IDMPOSFN"
 #define PROP_NTHREADS   L"PROP_NTHREADS"
+
+//***************************************************************************
+//  RAT & VFP
+//***************************************************************************
+
+// Define the following symbol iff comparison of two RATs is meant to be exact
+//   as opposed to sensitive to []CT.
+#define RAT_EXACT
 
 
 //***************************************************************************

@@ -101,27 +101,27 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 #define DR_SHOW             0   // Return a character vector representation
 #define DR_FLOAT2CHAR       1   // Convert between float   and its 16-digit hexadecimal character representation
 #define DR_INT2CHAR         2   // Convert between integer and its 16-digit hexadecimal character representation
-#define DR_BOOL           100   //   1 bit  per value
-#define DR_CHAR8          801   //   8 bits ...
-#define DR_CHAR16        1601   //  16 ...
-#define DR_CHAR32        3201   //  32 ...
-#define DR_INT8           802   //   8 ...
-#define DR_INT16         1602   //  16 ...
-#define DR_INT32         3202   //  32 ...
-#define DR_INT64         6402   //  64 ...
-#define DR_FLOAT         6403   //  64 ...
-#define DR_APA           6404   //  64 ... offset & multiplier
-#define DR_COMPLEX      12805   // 128 ... real & imaginary
-#define DR_QUATERNIONS  25606   // 256 ... ...              & ...
-#define DR_OCTONIONS    51207   // 512 ... ...                ... & ...
-#define DR_HETERO32      3208   //  32 ... per item
-#define DR_HETERO64      6408   //  64 ... ...
-#define DR_NESTED32      3209   //  32 ... ...
-#define DR_NESTED64      6409   //  64 ... ...
-#define DR_LIST32        3210   //  32 ... ...
-#define DR_LIST64        6410   //  64 ... ...
-#define DR_RATIONAL        11   //  ??
-#define DR_EXTPREC         12   //  ??
+#define DR_BOOL           101   //   1 bit  per value
+#define DR_CHAR8          802   //   8 bits ...
+#define DR_CHAR16        1602   //  16 ...
+#define DR_CHAR32        3202   //  32 ...
+#define DR_INT8           803   //   8 ...
+#define DR_INT16         1603   //  16 ...
+#define DR_INT32         3203   //  32 ...
+#define DR_INT64         6403   //  64 ...
+#define DR_FLOAT         6404   //  64 ...
+#define DR_APA           6405   //  64 ... offset & multiplier
+#define DR_COMPLEX      12806   // 128 ... real & imaginary
+#define DR_QUATERNIONS  25607   // 256 ... ...              & ...
+#define DR_OCTONIONS    51208   // 512 ... ...                ... & ...
+#define DR_HETERO32      3209   //  32 ... per item
+#define DR_HETERO64      6409   //  64 ... ...
+#define DR_NESTED32      3210   //  32 ... ...
+#define DR_NESTED64      6410   //  64 ... ...
+#define DR_RATIONAL32    3212   //  24 bytes per item plus size of limbs
+#define DR_RATIONAL64    6412   //  32 ...
+#define DR_VFP32         3213   //  16 bytes per item plus size of limbs
+#define DR_VFP64         6413   //  20 ...
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -176,11 +176,21 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 #endif
             break;
 
-        case ARRAY_LIST:
+        case ARRAY_RAT:
 #ifdef _WIN64
-            lpYYRes->tkToken.tkData.tkInteger = DR_LIST64;
+            lpYYRes->tkToken.tkData.tkInteger = DR_RATIONAL64;
 #elif defined (_WIN32)
-            lpYYRes->tkToken.tkData.tkInteger = DR_LIST32;
+            lpYYRes->tkToken.tkData.tkInteger = DR_RATIONAL32;
+#else
+  #error Need code for this architecture.
+#endif
+            break;
+
+        case ARRAY_VFP:
+#ifdef _WIN64
+            lpYYRes->tkToken.tkData.tkInteger = DR_VFP64;
+#elif defined (_WIN32)
+            lpYYRes->tkToken.tkData.tkInteger = DR_VFP32;
 #else
   #error Need code for this architecture.
 #endif
@@ -306,8 +316,6 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_HETERO64:
         case DR_NESTED32:
         case DR_NESTED64:
-        case DR_LIST32:
-        case DR_LIST64:
         default:
             return PrimFnDomainError_EM (lptkFunc APPEND_NAME_ARG);
 
@@ -319,8 +327,10 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_COMPLEX:
         case DR_QUATERNIONS:
         case DR_OCTONIONS:
-        case DR_RATIONAL:
-        case DR_EXTPREC:
+        case DR_RATIONAL32:
+        case DR_RATIONAL64:
+        case DR_VFP32:
+        case DR_VFP64:
             return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
     } // End SWITCH
 
@@ -791,20 +801,6 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
                       DR_APA);
             break;
 
-        case ARRAY_LIST:
-            wsprintfW (wszTemp,
-#ifdef _WIN64
-                      L"List (%d):  64 bits per element",
-                      DR_LIST64
-#elif defined (_WIN32)
-                      L"List (%d):  32 bits per element",
-                      DR_LIST32
-#else
-  #error Need code for this architecture.
-#endif
-                      );
-            break;
-
         case ARRAY_NESTED:
             wsprintfW (wszTemp,
 #ifdef _WIN64
@@ -827,6 +823,34 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 #elif defined (_WIN32)
                       L"Heterogeneous Array (%d):  32 bits per element",
                       DR_HETERO32
+#else
+  #error Need code for this architecture.
+#endif
+                      );
+            break;
+
+        case ARRAY_RAT:
+            wsprintfW (wszTemp,
+#ifdef _WIN64
+                      L"Rational (%d):  arbitrary precision numerator and denominator",
+                      DR_RATIONAL64
+#elif defined (_WIN32)
+                      L"Rational (%d):  arbitrary precision numerator and denominator",
+                      DR_RATIONAL32
+#else
+  #error Need code for this architecture.
+#endif
+                      );
+            break;
+
+        case ARRAY_VFP:
+            wsprintfW (wszTemp,
+#ifdef _WIN64
+                      L"Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                      DR_VFP64
+#elif defined (_WIN32)
+                      L"Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                      DR_VFP32
 #else
   #error Need code for this architecture.
 #endif

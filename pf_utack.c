@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -165,7 +165,9 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
                   aplLongestRht;    // Right ...
     HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
                   hGlbRht = NULL,   // Right ...
-                  hGlbRes = NULL;   // Result   ...
+                  hGlbRes = NULL,   // Result   ...
+                  lpSymGlbLft,      // Ptr to left arg global numeric
+                  lpSymGlbRht;      // ...    right ...
     LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
                   lpMemRht = NULL,  // Ptr to right ...
                   lpMemRes = NULL;  // Ptr to result   ...
@@ -181,6 +183,14 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLRAT        aplRatLft = {0},  // Left arg as a RAT
+                  aplRatRht = {0},  // Right ...
+                  aplRatAcc = {0},  // Accum ...
+                  aplRatVal = {0};  // Value ...
+    APLVFP        aplVfpLft = {0},  // Left arg as a VFP
+                  aplVfpRht = {0},  // Right ...
+                  aplVfpAcc = {0},  // Accum ...
+                  aplVfpVal = {0};  // Value ...
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -210,19 +220,19 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
         goto LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimple (aplTypeLft))
+    if (!IsSimpleGlbNum (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
-    if (!IsSimpleNum (aplTypeLft)
+    if (!IsNumeric (aplTypeLft)
      && !IsEmpty (aplColsLft)
      && !IsScalar (aplRankLft))
         goto LEFT_DOMAIN_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
-    if (!IsSimple (aplTypeRht))
+    if (!IsSimpleGlbNum (aplTypeRht))
         goto RIGHT_DOMAIN_EXIT;
 
-    if (!IsSimpleNum (aplTypeRht)
+    if (!IsNumeric (aplTypeRht)
      && !IsEmpty (aplFrstRht)
      && !IsScalar (aplRankRht))
         goto RIGHT_DOMAIN_EXIT;
@@ -231,9 +241,9 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     if (IsScalar (aplRankLft)
      && IsScalar (aplRankRht))
     {
-        if (!IsSimpleNum (aplTypeLft))
+        if (!IsNumeric (aplTypeLft))
             goto LEFT_DOMAIN_EXIT;
-        if (!IsSimpleNum (aplTypeRht))
+        if (!IsNumeric (aplTypeRht))
             goto RIGHT_DOMAIN_EXIT;
     } // End IF
 
@@ -283,12 +293,23 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
         // Calc result Type
         aplTypeRes = ARRAY_BOOL;
     else
-    // Calc result Type
-    if (IsSimpleFlt (aplTypeLft)
-     || IsSimpleFlt (aplTypeRht))
-        aplTypeRes = ARRAY_FLOAT;
-    else
-        aplTypeRes = ARRAY_INT;
+        // Calc result Type
+        aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
+
+    // If the result is global numeric, ...
+    if (IsGlbNum (aplTypeRes))
+    {
+        // Initialize the temps
+        mpq_init (&aplRatLft);
+        mpq_init (&aplRatRht);
+        mpq_init (&aplRatAcc);
+        mpq_init (&aplRatVal);
+
+        mpf_init (&aplVfpLft);
+        mpf_init (&aplVfpRht);
+        mpf_init (&aplVfpAcc);
+        mpf_init (&aplVfpVal);
+    } // End IF
 RESTART_EXCEPTION:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
@@ -376,15 +397,51 @@ RESTART_EXCEPTION:
                  InnValInt;
         APLFLOAT aplFloatAcc,
                  InnValFlt;
+        APLFLOAT aplFloatLft,       // Temporary floats
+                 aplFloatRht;       // ...
 
         // Calc result index
         uRes = 1 * uOutRht + aplRestRht * uOutLft;
 
-        // Initialize accumulator and weighting value
-        aplIntAcc   = 0;
-        aplFloatAcc = 0.0;
-        InnValInt = 1;
-        InnValFlt = 1.0;
+        // Split cases based upon the result storage type
+        switch (aplTypeRes)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+                // Initialize accumulator and weighting value
+                aplIntAcc = 0;
+                InnValInt = 1;
+
+                break;
+
+            case ARRAY_FLOAT:
+                // Initialize accumulator and weighting value
+                aplFloatAcc = 0.0;
+                InnValFlt   = 1.0;
+
+                break;
+
+            case ARRAY_RAT:
+                // Initialize accumulator and weighting value
+                mpq_set_ui (&aplRatAcc, 0, 1);
+                mpq_set_ui (&aplRatVal, 1, 1);
+
+                break;
+
+            case ARRAY_VFP:
+                // Initialize accumulator and weighting value
+                mpf_set_ui (&aplVfpAcc, 0);
+                mpf_set_ui (&aplVfpVal, 1);
+
+                break;
+
+            case ARRAY_CHAR:            // Can't happen w/UpTack
+            case ARRAY_APA:             // ...
+            case ARRAY_HETERO:          // ...
+            case ARRAY_NESTED:          // ...
+            defstop
+                break;
+        } // End SWITCH
 
         // Trundle through the inner dimensions, back to front
         for (iInnMax = aplInnrMax - 1; iInnMax >= 0; iInnMax--)
@@ -408,134 +465,372 @@ RESTART_EXCEPTION:
             else
                 uInnRht = 1 * uOutRht + aplRestRht * iInnMax;
 
-            if (IsSimpleFlt (aplTypeRes))
+            // Split cases based upon the result storage type
+            switch (aplTypeRes)
             {
-                APLFLOAT aplFloatLft,
-                         aplFloatRht;
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                    // If the right arg is an array, ...
+                    if (hGlbRht)
+                    {
+                        // If the right arg is non-empty, ...
+                        if (aplNELMRht)
+                            // Get the next right arg value
+                            GetNextValueGlb (hGlbRht,           // The global memory handle
+                                             uInnRht,           // Index into item
+                                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
+                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                        else
+                            aplLongestRht = 0;
+                    } // End IF
 
-                // If the right arg is an array, ...
-                if (hGlbRht)
-                {
-                    // If the right arg is non-empty, ...
-                    if (aplNELMRht)
-                        // Get the next right arg value
-                        GetNextValueGlb (hGlbRht,           // The global memory handle
-                                         uInnRht,           // Index into item
-                                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                        &aplLongestRht,     // Ptr to result immediate value (may be NULL)
-                                         NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                    else
-                        aplLongestRht = 0;
-                } // End IF
+                    __try
+                    {
+                        // Add into accumulator
+                        aplIntAcc = iadd64 (aplIntAcc, imul64 (InnValInt, aplLongestRht));
 
-                // If the right arg is int, convert it to float
-                if (IsSimpleInt (aplTypeRht))
-                    aplFloatRht = (APLFLOAT) (APLINT) aplLongestRht;
-                else
-                    aplFloatRht = *(LPAPLFLOAT) &aplLongestRht;
-
-                // Add into accumulator
-                aplFloatAcc += InnValFlt * aplFloatRht;
-
-                // If the left arg is an array, ...
-                if (hGlbLft)
-                {
-                    // If the left arg is non-empty, ...
-                    if (aplNELMLft)
                         // Get the next left arg value
-                        GetNextValueGlb (hGlbLft,           // The global memory handle
-                                         uInnLft,           // Index into item
-                                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                        &aplLongestLft,     // Ptr to result immediate value (may be NULL)
-                                         NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                        if (hGlbLft)
+                        {
+                            // If the left arg is non-empty, ...
+                            if (aplNELMLft)
+                                GetNextValueGlb (hGlbLft,       // The global memory handle
+                                                 uInnLft,       // Index into item
+                                                 NULL,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                                &aplLongestLft, // Ptr to result immediate value (may be NULL)
+                                                 NULL);         // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                            else
+                                aplLongestLft = 0;
+                        } // End IF
+
+                        // Multiply into the weighting value
+                        InnValInt = imul64 (InnValInt, aplLongestLft);
+                    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+                    {
+                        switch (MyGetExceptionCode ())
+                        {
+                            case EXCEPTION_RESULT_FLOAT:
+                                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                                if (!IsSimpleFlt (aplTypeRes))
+                                {
+                                    aplTypeRes = ARRAY_FLOAT;
+#ifdef DEBUG
+                                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                                    // We no longer need these ptrs
+                                    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                                    // We no longer need this storage
+                                    FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                                    goto RESTART_EXCEPTION;
+                                } // End IF
+
+                                // Fall through to never-never-land
+
+                            default:
+                                // Display message for unhandled exception
+                                DisplayException ();
+
+                                break;
+                        } // End SWITCH
+                    } // End __try/__except
+
+                    break;
+
+                case ARRAY_FLOAT:
+                    // If the right arg is an array, ...
+                    if (hGlbRht)
+                    {
+                        // If the right arg is non-empty, ...
+                        if (aplNELMRht)
+                            // Get the next right arg value
+                            GetNextValueGlb (hGlbRht,           // The global memory handle
+                                             uInnRht,           // Index into item
+                                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
+                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                        else
+                            aplLongestRht = 0;
+                    } // End IF
+
+                    // If the right arg is int, convert it to float
+                    if (IsSimpleInt (aplTypeRht))
+                        aplFloatRht = (APLFLOAT) (APLINT) aplLongestRht;
                     else
-                        aplLongestLft = 0;
-                } // End IF
+                        aplFloatRht = *(LPAPLFLOAT) &aplLongestRht;
 
-                // If the left arg is int, convert it to float
-                if (IsSimpleInt (aplTypeLft))
-                    aplFloatLft = (APLFLOAT) (APLINT) aplLongestLft;
-                else
-                    aplFloatLft = *(LPAPLFLOAT) &aplLongestLft;
-
-                // Multiply into the weighting value
-                InnValFlt *= aplFloatLft;
-            } else
-            {
-                // Get the next right arg value
-                if (hGlbRht)
-                {
-                    // If the right arg is non-empty, ...
-                    if (aplNELMRht)
-                        GetNextValueGlb (hGlbRht,           // The global memory handle
-                                         uInnRht,           // Index into item
-                                         NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                        &aplLongestRht,     // Ptr to result immediate value (may be NULL)
-                                         NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                    else
-                        aplLongestRht = 0;
-                } // End IF
-
-                __try
-                {
                     // Add into accumulator
-                    aplIntAcc = iadd64 (aplIntAcc, imul64 (InnValInt, aplLongestRht));
+                    aplFloatAcc += InnValFlt * aplFloatRht;
 
-                    // Get the next left arg value
+                    // If the left arg is an array, ...
                     if (hGlbLft)
                     {
                         // If the left arg is non-empty, ...
                         if (aplNELMLft)
+                            // Get the next left arg value
+                            GetNextValueGlb (hGlbLft,           // The global memory handle
+                                             uInnLft,           // Index into item
+                                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                            &aplLongestLft,     // Ptr to result immediate value (may be NULL)
+                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                        else
+                            aplLongestLft = 0;
+                    } // End IF
+
+                    // If the left arg is int, convert it to float
+                    if (IsSimpleInt (aplTypeLft))
+                        aplFloatLft = (APLFLOAT) (APLINT) aplLongestLft;
+                    else
+                        aplFloatLft = *(LPAPLFLOAT) &aplLongestLft;
+
+                    // Multiply into the weighting value
+                    InnValFlt *= aplFloatLft;
+
+                    break;
+
+                case ARRAY_RAT:
+                    // If the right arg is an array, ...
+                    if (hGlbRht)
+                    {
+                        // If the right arg is non-empty, ...
+                        if (aplNELMRht)
+                            // Get the next right arg value
+                            GetNextValueGlb (hGlbRht,           // The global memory handle
+                                             uInnRht,           // Index into item
+                                            &lpSymGlbRht,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
+                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                        else
+                            aplLongestRht = 0;
+                    } // End IF
+
+                    // Split cases based upon the right arg storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_APA:
+                            mpq_set_sa (&aplRatRht, aplLongestRht, 1);
+
+                            break;
+
+                        case ARRAY_RAT:
+                            mpq_set    (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
+
+                            break;
+
+                        case ARRAY_FLOAT:       // Can't happen w/Res = RAT
+                        case ARRAY_CHAR:        // ...
+                        case ARRAY_HETERO:      // ...
+                        case ARRAY_NESTED:      // ...
+                        case ARRAY_VFP:         // ...
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Add into accumulator
+////////////////////aplFloatAcc += InnValFlt * aplFloatRht;
+                    mpq_mul (&aplRatRht, &aplRatVal, &aplRatRht);
+                    mpq_add (&aplRatAcc, &aplRatAcc, &aplRatRht);
+
+                    // If the left arg is an array, ...
+                    if (hGlbLft)
+                    {
+                        // If the left arg is non-empty, ...
+                        if (aplNELMLft)
+                            // Get the next left arg value
                             GetNextValueGlb (hGlbLft,       // The global memory handle
                                              uInnLft,       // Index into item
-                                             NULL,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                            &lpSymGlbLft,   // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                             &aplLongestLft, // Ptr to result immediate value (may be NULL)
                                              NULL);         // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                         else
                             aplLongestLft = 0;
                     } // End IF
 
-                    // Multiply into the weighting value
-                    InnValInt = imul64 (InnValInt, aplLongestLft);
-                } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
-                {
-                    switch (MyGetExceptionCode ())
+                    // Split cases based upon the left arg storage type
+                    switch (aplTypeLft)
                     {
-                        case EXCEPTION_RESULT_FLOAT:
-                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                            if (!IsSimpleFlt (aplTypeRes))
-                            {
-                                aplTypeRes = ARRAY_FLOAT;
-#ifdef DEBUG
-                                dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
-                                // We no longer need these ptrs
-                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-                                // We no longer need this storage
-                                FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-
-                                goto RESTART_EXCEPTION;
-                            } // End IF
-
-                            // Fall through to never-never-land
-
-                        default:
-                            // Display message for unhandled exception
-                            DisplayException ();
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_APA:
+                            mpq_set_sa (&aplRatLft, aplLongestLft, 1);
 
                             break;
+
+                        case ARRAY_RAT:
+                            mpq_set    (&aplRatLft, (LPAPLRAT) lpSymGlbLft);
+
+                            break;
+
+                        case ARRAY_FLOAT:       // Can't happen w/Res = RAT
+                        case ARRAY_CHAR:        // ...
+                        case ARRAY_HETERO:      // ...
+                        case ARRAY_NESTED:      // ...
+                        case ARRAY_VFP:         // ...
+                        defstop
+                            break;
                     } // End SWITCH
-                } // End __try/__except
-            } // End IF/ELSE
+
+                    // Multiply into the weighting value
+////////////////////InnValFlt *= aplFloatLft;
+                    mpq_mul (&aplRatVal, &aplRatVal, &aplRatLft);
+
+                    break;
+
+                case ARRAY_VFP:
+                    // If the right arg is an array, ...
+                    if (hGlbRht)
+                    {
+                        // If the right arg is non-empty, ...
+                        if (aplNELMRht)
+                            // Get the next right arg value
+                            GetNextValueGlb (hGlbRht,           // The global memory handle
+                                             uInnRht,           // Index into item
+                                            &lpSymGlbRht,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
+                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                        else
+                            aplLongestRht = 0;
+                    } // End IF
+
+                    // Split cases based upon the right arg storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_APA:
+                            mpf_set_sa (&aplVfpRht, aplLongestRht);
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            mpf_set_d  (&aplVfpRht, *(LPAPLFLOAT) &aplLongestRht);
+
+                            break;
+
+                        case ARRAY_RAT:
+                            mpf_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                            break;
+
+                        case ARRAY_VFP:
+                            mpf_set    (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+
+                            break;
+
+                        case ARRAY_CHAR:        // Can't happen w/Res=VFP
+                        case ARRAY_HETERO:      // ...
+                        case ARRAY_NESTED:      // ...
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Add into accumulator
+////////////////////aplFloatAcc += InnValFlt * aplFloatRht;
+                    mpf_mul (&aplVfpRht, &aplVfpVal, &aplVfpRht);
+                    mpf_add (&aplVfpAcc, &aplVfpAcc, &aplVfpRht);
+
+                    // If the left arg is an array, ...
+                    if (hGlbLft)
+                    {
+                        // If the left arg is non-empty, ...
+                        if (aplNELMLft)
+                            // Get the next left arg value
+                            GetNextValueGlb (hGlbLft,       // The global memory handle
+                                             uInnLft,       // Index into item
+                                            &lpSymGlbLft,   // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                            &aplLongestLft, // Ptr to result immediate value (may be NULL)
+                                             NULL);         // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                        else
+                            aplLongestLft = 0;
+                    } // End IF
+
+                    // Split cases based upon the left arg storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_APA:
+                            mpf_set_sa (&aplVfpLft, aplLongestLft);
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            mpf_set_d  (&aplVfpLft, *(LPAPLFLOAT) &aplLongestLft);
+
+                            break;
+
+                        case ARRAY_RAT:
+                            mpf_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                            break;
+
+                        case ARRAY_VFP:
+                            mpf_set    (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+
+                            break;
+
+                        case ARRAY_CHAR:        // Can't happen w/Res = VFP
+                        case ARRAY_HETERO:      // ...
+                        case ARRAY_NESTED:      // ...
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Multiply into the weighting value
+////////////////////InnValFlt *= aplFloatLft;
+                    mpf_mul (&aplVfpVal, &aplVfpVal, &aplVfpLft);
+
+                    break;
+
+                case ARRAY_APA:
+                case ARRAY_CHAR:
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
+                defstop
+                    break;
+            } // End SWITCH
         } // End FOR
 
-        // Save in result
-        if (IsSimpleFlt (aplTypeRes))
-            ((LPAPLFLOAT) lpMemRes)[uRes] = aplFloatAcc;
-        else
-            ((LPAPLINT)   lpMemRes)[uRes] = aplIntAcc;
+        // Split cases based upon the result storage type
+        switch (aplTypeRes)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+                // Save in result
+                ((LPAPLINT)   lpMemRes)[uRes] = aplIntAcc;
+
+                break;
+
+            case ARRAY_FLOAT:
+                // Save in result
+                ((LPAPLFLOAT) lpMemRes)[uRes] = aplFloatAcc;
+
+                break;
+
+            case ARRAY_RAT:
+                // Save in result
+                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &aplRatAcc);
+
+                break;
+
+            case ARRAY_VFP:
+                // Save in result
+                mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &aplVfpAcc);
+
+                break;
+
+            case ARRAY_CHAR:            // Can't happen w/UpTack
+            case ARRAY_APA:             // ...
+            case ARRAY_HETERO:          // ...
+            case ARRAY_NESTED:          // ...
+            defstop
+                break;
+        } // End SWITCH
     } // End FOR/FOR
 YYALLOC_EXIT:
     // Unlock the result global memory in case TypeDemote actually demotes
@@ -589,6 +884,21 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // If the result is global numeric, ...
+    if (IsGlbNum (aplTypeRes))
+    {
+        // We no longer need this storage
+        Myf_clear (&aplVfpVal);
+        Myf_clear (&aplVfpAcc);
+        Myf_clear (&aplVfpRht);
+        Myf_clear (&aplVfpLft);
+
+        Myq_clear (&aplRatVal);
+        Myq_clear (&aplRatAcc);
+        Myq_clear (&aplRatRht);
+        Myq_clear (&aplRatLft);
+    } // End IF
+
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr

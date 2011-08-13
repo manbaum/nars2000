@@ -284,40 +284,46 @@ BEGIN
     COMBOBOX                   IDC_CLEARWS_FEATURE_CB1 , 45,102,170, 250,WS_BORDER | CBS_DROPDOWNLIST
     COMBOBOX                   IDC_CLEARWS_FEATURE_CB2 ,220,102, 50, 250,WS_BORDER | CBS_DROPDOWNLIST
 
-    LTEXT           "IC"      ,IDC_STATIC              ,  5,124, 40, 13
-    COMBOBOX                   IDC_CLEARWS_IC_CB1      , 45,120,135, 250,WS_BORDER | CBS_DROPDOWNLIST
-    COMBOBOX                   IDC_CLEARWS_IC_CB2      ,185,120, 85, 250,WS_BORDER | CBS_DROPDOWNLIST
-
-    LTEXT           "IO"      ,IDC_STATIC              ,  5,142, 40, 13
-    CONTROL         ""        ,IDC_CLEARWS_IO_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,138, 30, 16
-    CONTROL         ""        ,IDC_CLEARWS_IO_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,75,138,10,16
-    LTEXT           "Boolean Scalar",
-                               IDC_STATIC              ,200,142, 80, 13
-
-    LTEXT           "LX"      ,IDC_STATIC              ,  5,160, 40, 13
-    CONTROL         ""        ,IDC_CLEARWS_LX_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45,156,150, 16
-    LTEXT           "Character Vector (?)",
-                               IDC_CLEARWS_LX_LEN      ,200,160, 80, 13
-
-    LTEXT           "MF"      ,IDC_STATIC              ,  5,178, 40, 13
-    COMBOBOX                   IDC_CLEARWS_MF_CB       , 45,174,250,100,WS_BORDER | CBS_DROPDOWNLIST
-
-    LTEXT           "PP"      ,IDC_STATIC              ,  5,196, 40, 13
-    CONTROL         ""        ,IDC_CLEARWS_PP_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER ,45,192, 30, 16
-    CONTROL         ""        ,IDC_CLEARWS_PP_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,65,192,10,16
+    LTEXT           "FPC"     ,IDC_STATIC              ,  5,124, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_FPC_EC      ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,120, 90, 16
+    CONTROL         ""        ,IDC_CLEARWS_FPC_UD      ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS | UDS_ALIGNRIGHT,65,120,10,16
     LTEXT           "Integer Scalar",
-                               IDC_STATIC              ,200,196, 80, 13
+                               IDC_STATIC              ,200,124, 80, 13
 
-    LTEXT           "PW"      ,IDC_STATIC              ,  5,214, 40, 13
-    CONTROL         ""        ,IDC_CLEARWS_PW_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,210, 30, 16
-    CONTROL         ""        ,IDC_CLEARWS_PW_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS,65,210,10,16
+    LTEXT           "IC"      ,IDC_STATIC              ,  5,142, 40, 13
+    COMBOBOX                   IDC_CLEARWS_IC_CB1      , 45,138,155, 250,WS_BORDER | CBS_DROPDOWNLIST
+    COMBOBOX                   IDC_CLEARWS_IC_CB2      ,205,138, 85, 250,WS_BORDER | CBS_DROPDOWNLIST
+
+    LTEXT           "IO"      ,IDC_STATIC              ,  5,160, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_IO_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,156, 90, 16
+    CONTROL         ""        ,IDC_CLEARWS_IO_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS | UDS_ALIGNRIGHT,75,156,10,16
+    LTEXT           "Boolean Scalar",
+                               IDC_STATIC              ,200,160, 80, 13
+
+    LTEXT           "LX"      ,IDC_STATIC              ,  5,178, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_LX_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL,45,174,150, 16
+    LTEXT           "Character Vector (?)",
+                               IDC_CLEARWS_LX_LEN      ,200,178, 80, 13
+
+    LTEXT           "MF"      ,IDC_STATIC              ,  5,196, 40, 13
+    COMBOBOX                   IDC_CLEARWS_MF_CB       , 45,192,250,100,WS_BORDER | CBS_DROPDOWNLIST
+
+    LTEXT           "PP"      ,IDC_STATIC              ,  5,214, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_PP_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,210, 90, 16
+    CONTROL         ""        ,IDC_CLEARWS_PP_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS | UDS_ALIGNRIGHT,65,210,10,16
     LTEXT           "Integer Scalar",
                                IDC_STATIC              ,200,214, 80, 13
 
-    LTEXT           "RL"      ,IDC_STATIC              ,  5,232, 40, 13
-    CONTROL         ""        ,IDC_CLEARWS_RL_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,228,150, 16
+    LTEXT           "PW"      ,IDC_STATIC              ,  5,232, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_PW_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,228, 90, 16
+    CONTROL         ""        ,IDC_CLEARWS_PW_UD       ,UPDOWN_CLASS,UDS_AUTOBUDDY | UDS_SETBUDDYINT | UDS_NOTHOUSANDS | UDS_ARROWKEYS | UDS_ALIGNRIGHT,65,228,10,16
     LTEXT           "Integer Scalar",
                                IDC_STATIC              ,200,232, 80, 13
+
+    LTEXT           "RL"      ,IDC_STATIC              ,  5,250, 40, 13
+    CONTROL         ""        ,IDC_CLEARWS_RL_EC       ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,246,150, 16
+    LTEXT           "Integer Scalar",
+                               IDC_STATIC              ,200,250, 80, 13
 END
 
 IDD_PROPPAGE_DIRS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -595,11 +601,12 @@ BEGIN
                                 IDC_STATIC           ,65, 26,143,78
     AUTOCHECKBOX    "CT"      , IDC_RANGE_XB_CT      ,10, 26, 55,10
     AUTOCHECKBOX    "FEATURE" , IDC_RANGE_XB_FEATURE ,10, 39, 55,10
-    AUTOCHECKBOX    "IC"      , IDC_RANGE_XB_IC      ,10, 52, 55,10
-    AUTOCHECKBOX    "IO"      , IDC_RANGE_XB_IO      ,10, 65, 55,10
-    AUTOCHECKBOX    "PP"      , IDC_RANGE_XB_PP      ,10, 78, 55,10
-    AUTOCHECKBOX    "PW"      , IDC_RANGE_XB_PW      ,10, 91, 55,10
-    AUTOCHECKBOX    "RL"      , IDC_RANGE_XB_RL      ,10,104, 55,10
+    AUTOCHECKBOX    "FPC"     , IDC_RANGE_XB_FPC     ,10, 52, 55,10
+    AUTOCHECKBOX    "IC"      , IDC_RANGE_XB_IC      ,10, 65, 55,10
+    AUTOCHECKBOX    "IO"      , IDC_RANGE_XB_IO      ,10, 78, 55,10
+    AUTOCHECKBOX    "PP"      , IDC_RANGE_XB_PP      ,10, 91, 55,10
+    AUTOCHECKBOX    "PW"      , IDC_RANGE_XB_PW      ,10,104, 55,10
+    AUTOCHECKBOX    "RL"      , IDC_RANGE_XB_RL      ,10,117, 55,10
 END
 
 IDD_PROPPAGE_SYNTAX_COLORING DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -799,25 +806,29 @@ BEGIN
     AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO1 ,55,100, 16, 8
     AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO2 ,95,100, 16, 8
 
-    LTEXT           "IC"            ,IDC_STATIC               , 5,115, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1      ,55,115, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2      ,95,115, 16, 8
+    LTEXT           "FPC"           ,IDC_STATIC               , 5,115, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO1     ,55,115, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO2     ,95,115, 16, 8
 
-    LTEXT           "IO"            ,IDC_STATIC               , 5,130, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1      ,55,130, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2      ,95,130, 16, 8
+    LTEXT           "IC"            ,IDC_STATIC               , 5,130, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1      ,55,130, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2      ,95,130, 16, 8
 
-    LTEXT           "PP"            ,IDC_STATIC               , 5,145, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1      ,55,145, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2      ,95,145, 16, 8
+    LTEXT           "IO"            ,IDC_STATIC               , 5,145, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1      ,55,145, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2      ,95,145, 16, 8
 
-    LTEXT           "PW"            ,IDC_STATIC               , 5,160, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1      ,55,160, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2      ,95,160, 16, 8
+    LTEXT           "PP"            ,IDC_STATIC               , 5,160, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1      ,55,160, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2      ,95,160, 16, 8
 
-    LTEXT           "RL"            ,IDC_STATIC               , 5,175, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1      ,55,175, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2      ,95,175, 16, 8
+    LTEXT           "PW"            ,IDC_STATIC               , 5,175, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1      ,55,175, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2      ,95,175, 16, 8
+
+    LTEXT           "RL"            ,IDC_STATIC               , 5,190, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1      ,55,190, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2      ,95,190, 16, 8
 END
 
 IDD_PROPPAGE_TAB_COLORS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY

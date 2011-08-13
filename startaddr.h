@@ -74,7 +74,7 @@ typedef struct tagSTART_ADDRESSES
     "CS_CONTINUE_Stmt"          , (LPUCHAR) &CS_CONTINUE_Stmt           ,
     "CS_ELSE_Stmt"              , (LPUCHAR) &CS_ELSE_Stmt               ,
     "FindMatchingForStmt"       , (LPUCHAR) &FindMatchingForStmt        ,
-    "CS_ENDFOR_Stmt"            , (LPUCHAR) &CS_ENDFOR_Stmt             ,
+    "CS_ENDFOR_Stmt_EM"         , (LPUCHAR) &CS_ENDFOR_Stmt_EM          ,
     "CS_DoneFOR"                , (LPUCHAR) &CS_DoneFOR                 ,
     "CS_ENDREPEAT_Stmt"         , (LPUCHAR) &CS_ENDREPEAT_Stmt          ,
     "CS_ENDWHILE_Stmt"          , (LPUCHAR) &CS_ENDWHILE_Stmt           ,
@@ -305,6 +305,34 @@ typedef struct tagSTART_ADDRESSES
     "EnumCallbackPassMsg"       , (LPUCHAR) &EnumCallbackPassMsg        ,
     "MFWndProc"                 , (LPUCHAR) &MFWndProc                  ,
 
+    // mpfns.c
+    "mp_alloc"                  , (LPUCHAR) &mp_alloc                   ,
+    "mp_realloc"                , (LPUCHAR) &mp_realloc                 ,
+    "mp_free"                   , (LPUCHAR) &mp_free                    ,
+    "mpz_set_sa"                , (LPUCHAR) &mpz_set_sa                 ,
+    "mpz_set_ua"                , (LPUCHAR) &mpz_set_ua                 ,
+    "mpq_init_set"              , (LPUCHAR) &mpq_init_set               ,
+    "mpq_init_set_sa"           , (LPUCHAR) &mpq_init_set_sa            ,
+    "mpq_init_set_si"           , (LPUCHAR) &mpq_init_set_si            ,
+    "mpq_init_set_ui"           , (LPUCHAR) &mpq_init_set_ui            ,
+    "mpq_init_set_d"            , (LPUCHAR) &mpq_init_set_d             ,
+    "mpq_set_sa"                , (LPUCHAR) &mpq_set_sa                 ,
+    "mpf_set_sa"                , (LPUCHAR) &mpf_set_sa                 ,
+    "mpf_init_set_sa"           , (LPUCHAR) &mpf_init_set_sa            ,
+    "mpf_init_set_q"            , (LPUCHAR) &mpf_init_set_q             ,
+    "mpf_pow"                   , (LPUCHAR) &mpf_pow                    ,
+    "mpf_ui_cmp"                , (LPUCHAR) &mpf_ui_cmp                 ,
+    "mpf_si_cmp"                , (LPUCHAR) &mpf_si_cmp                 ,
+    "Myf_clear"                 , (LPUCHAR) &Myf_clear                  ,
+
+    // mpifns.c
+    "mp_get_invalid_functions"  , (LPUCHAR) &mp_get_invalid_functions   ,
+    "mp_set_invalid_functions"  , (LPUCHAR) &mp_set_invalid_functions   ,
+    "signumint"                 , (LPUCHAR) &signumint                  ,
+    "signumflt"                 , (LPUCHAR) &signumflt                  ,
+    "mpz_exit"                  , (LPUCHAR) &mpz_exit                   ,
+    "mpz_inf_p"                 , (LPUCHAR) &mpz_inf_p                  ,
+    "IsMpzNULL"                 , (LPUCHAR) &IsMpzNULL                  ,
 
     // pf_bar.c
     "PrimFnBar_EM_YY"           , (LPUCHAR) &PrimFnBar_EM_YY            ,

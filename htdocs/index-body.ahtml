@@ -301,6 +301,10 @@ Welcome to NARS2000</h1>
       &mdash; considerable development work needs to be done to this
       feature to handle the many special cases</li>
     <li>Array predicates (a la Bernecky) for Permutation Vectors</li>
+    <li>Rational numbers (e.g., <span class="APL">1r3</span>
+      and <span class="APL">12345x</span>)</li>
+    <li>Variable precision floating point numbers (e.g., <span class="APL">1v234</span>
+      and <span class="APL">12v</span>)</li>
     </ul>
 
   <h3>Wish List of Datatypes</h3>
@@ -312,8 +316,6 @@ Welcome to NARS2000</h1>
     <li>Quaternions (e.g., <span class="APL">2i3j4ij5</span>
       or <span class="APL">2i3j4k5</span>)</li>
     <li>Octonions (e.g., <span class="APL">2i3j4k5l6il7jl8kl9</span>)</li>
-    <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
-    <li>Extended precision numbers (e.g., <span class="APL">12345x</span>)</li>
     <li>Datatypes user extensible via user-defined APL functions</li>
     <li>Array predicates (a la Bernecky) for other special arrays</li>
   </ul>

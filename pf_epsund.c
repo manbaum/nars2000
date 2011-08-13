@@ -638,8 +638,8 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     } else
     {
         // Handle all other combinations
-        // APLHETERO/APLNESTED vs. anything
-        // anything            vs. APLHETERO/APLNESTED
+        // APLHETERO/APLNESTED/APLRAT/APLVFP vs. anything
+        // anything            vs. APLHETERO/APLNESTED/APLRAT/APLVFP
         if (!PrimFnDydEpsilonUnderbarOvO (lpMemRes,         // Ptr to result global memory data
                                           lpMemDimDiff,     // ...    dimension difference vector
                                           lpMemWVecTst,     // ...    test weighting vector
@@ -819,11 +819,20 @@ NORMAL_EXIT:
 
 #define GetNextBool(lpMem,typeMem,uRes)     (BIT0 & (((LPAPLBOOL) lpMem)[(uRes) >> LOG2NBIB] >> (MASKLOG2NBIB & (uRes))))
 #define GetNextDir(lpMem,typeMem,uRes)       lpMem[uRes]
+#define GetNextRAT(lpMem,typeMem,uRes)      ((LPAPLRAT) lpMem)[uRes]
+#define GetNextVFP(lpMem,typeMem,uRes)      ((LPAPLVFP) lpMem)[uRes]
 #define CompareInt(Lft,typeLft,Rht,typeRht) (Lft EQ Rht)
-#define CompareFlt(Lft,typeLft,Rht,typeRht) (CompareCT (Lft, Rht, fQuadCT, NULL))
+#define CompareFlt(Lft,typeLft,Rht,typeRht) (CompareCT  ( Lft,  Rht, fQuadCT, NULL))
+#ifdef RAT_EXACT
+#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp    (&Lft, &Rht         ) EQ 0)
+#else
+#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp_ct ( Lft,  Rht, fQuadCT) EQ 0)
+#endif
+#define CompareVFP(Lft,typeLft,Rht,typeRht) (mpf_cmp_ct ( Lft,  Rht, fQuadCT) EQ 0)
+#define Compare
 //  ***FXME*** -- What to do about fuzzy comparisons not being transitive???
 
-#define FINDMAC(preKmp,aplTypeKmp,GetNextValLft,aplTypeLft,GetNextValRht,aplTypeRht,CompareVal)         \
+#define FINDMAC(preKmp,aplTypeKmp,GetNextValLft,aplTypeLft,GetNextValRht,aplTypeRht,CompareVal,LblSuf)  \
     APLINT    i,                        /* Loop counter             */                                  \
               j,                        /* ...                      */                                  \
               k,                        /* ...                      */                                  \
@@ -885,7 +894,7 @@ NORMAL_EXIT:
                                                                                                         \
                         if (!CompareVal (GetNextValLft (lpMemLft, aplTypeLft, uLft),     aplTypeLft,    \
                                          GetNextValRht (lpMemRht, aplTypeRht, uTst + k), aplTypeRht))   \
-                            goto NOMATCH;                                                               \
+                            goto NOMATCH##LblSuf;                                                       \
                     } /* End FOR */                                                                     \
                 } /* End IF */                                                                          \
                                                                                                         \
@@ -894,7 +903,7 @@ NORMAL_EXIT:
                                                                                                         \
                 /* Mark as a match */                                                                   \
                 lpMemRes[k >> LOG2NBIB] |= 1 << (MASKLOG2NBIB & k);                                     \
-NOMATCH:                                                                                                \
+NOMATCH##LblSuf:                                                                                        \
                 /* Skip over the match */                                                               \
                 i = lpMemKmpNext[i];                                                                    \
                                                                                                         \
@@ -909,7 +918,7 @@ NOMATCH:                                                                        
             /*   the values in lpMemDimRht, skipping the cols           */                              \
             /*   (thus using aplRankRht - 1 instead of aplRankRht).     */                              \
             if (IncrOdometer (lpMemOdoRht, lpMemDimRht, NULL, aplRankRht - 1))                          \
-                goto ALLDONE;                                                                           \
+                goto ALLDONE##LblSuf;                                                                   \
                                                                                                         \
             for (uRht = 0; uRht < (aplRankRht - 1); uRht++)                                             \
             if (lpMemDimDiff[uRht] < lpMemOdoRht[uRht])                                                 \
@@ -923,17 +932,17 @@ NOMATCH:                                                                        
         for (uRht = uOdo = 0; uOdo < (aplRankRht - 1); uOdo++)                                          \
             uRht += lpMemOdoRht[uOdo] * lpMemWVecRht[uOdo];                                             \
     } /* End WHILE */                                                                                   \
-ALLDONE:                                                                                                \
+ALLDONE##LblSuf:                                                                                        \
     return TRUE;
 
 
 //***************************************************************************
 //  $GetNextSN
 //
-//  Get the next element from a simple/nested array
+//  Get the next element from a simple hetero/nested array
 //***************************************************************************
 
-APLHETERO GetNextSN
+APLLONGEST GetNextSN
     (LPVOID   lpMem,
      APLSTYPE typeMem,
      APLINT   uRes)
@@ -943,26 +952,26 @@ APLHETERO GetNextSN
     switch (typeMem)
     {
         case ARRAY_BOOL:
-            return (APLHETERO) GetNextBool (lpMem, typeMem, uRes);
+            return (APLLONGEST) GetNextBool (lpMem, typeMem, uRes);
 
         case ARRAY_INT:
-            return (APLHETERO) ((LPAPLINT) lpMem)[uRes];
+            return (APLLONGEST) ((LPAPLINT) lpMem)[uRes];
 
         case ARRAY_FLOAT:
-            return (APLHETERO) ((LPAPLLONGEST) lpMem)[uRes];
+            return (APLLONGEST) ((LPAPLLONGEST) lpMem)[uRes];
 
         case ARRAY_CHAR:
-            return (APLHETERO) ((LPAPLCHAR) lpMem)[uRes];
+            return (APLLONGEST) ((LPAPLCHAR) lpMem)[uRes];
 
         case ARRAY_APA:
-            return (APLHETERO) (((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes);
+            return (APLLONGEST) (((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes);
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            return ((LPAPLHETERO) lpMem)[uRes];
+            return (UINT_PTR) ((LPAPLHETERO) lpMem)[uRes];
 
         defstop
-            return NULL;
+            return 0;
     } // End SWITCH
 } // End GetNextSN
 
@@ -1005,7 +1014,7 @@ UBOOL PrimFnDydEpsilonUnderbarBvB
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpB, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, CompareInt)
+    FINDMAC (preKmpB, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, CompareInt, BvB)
 } // End PrimFnDydEpsilonUnderbarBvB
 #undef  APPEND_NAME
 
@@ -1048,7 +1057,7 @@ UBOOL PrimFnDydEpsilonUnderbarBvF
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpB, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, GetNextFloat, ARRAY_FLOAT, CompareFlt)
+    FINDMAC (preKmpB, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, GetNextFloat, ARRAY_FLOAT, CompareFlt, BvF)
 } // End PrimFnDydEpsilonUnderbarBvF
 #undef  APPEND_NAME
 
@@ -1091,7 +1100,7 @@ UBOOL PrimFnDydEpsilonUnderbarAvF
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpA, ARRAY_APA, GetNextFloat, ARRAY_APA, GetNextFloat, ARRAY_FLOAT, CompareFlt)
+    FINDMAC (preKmpA, ARRAY_APA, GetNextFloat, ARRAY_APA, GetNextFloat, ARRAY_FLOAT, CompareFlt, AvF)
 } // End PrimFnDydEpsilonUnderbarAvF
 #undef  APPEND_NAME
 
@@ -1136,7 +1145,7 @@ UBOOL PrimFnDydEpsilonUnderbarIvI
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpO, aplTypeLft, GetNextInteger, aplTypeLft, GetNextInteger, aplTypeRht, CompareInt)
+    FINDMAC (preKmpO, aplTypeLft, GetNextInteger, aplTypeLft, GetNextInteger, aplTypeRht, CompareInt, IvI)
 } // End PrimFnDydEpsilonUnderbarIvI
 #undef  APPEND_NAME
 
@@ -1182,7 +1191,7 @@ UBOOL PrimFnDydEpsilonUnderbarNvN
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpO, aplTypeLft, GetNextFloat, aplTypeLft, GetNextFloat, aplTypeRht, CompareFlt)
+    FINDMAC (preKmpO, aplTypeLft, GetNextFloat, aplTypeLft, GetNextFloat, aplTypeRht, CompareFlt, NvN)
 } // End PrimFnDydEpsilonUnderbarNvN
 #undef  APPEND_NAME
 
@@ -1225,7 +1234,7 @@ UBOOL PrimFnDydEpsilonUnderbarCvC
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpC, ARRAY_CHAR, GetNextDir, ARRAY_CHAR, GetNextDir, ARRAY_CHAR, CompareInt)
+    FINDMAC (preKmpC, ARRAY_CHAR, GetNextDir, ARRAY_CHAR, GetNextDir, ARRAY_CHAR, CompareInt, CvC)
 } // End PrimFnDydEpsilonUnderbarCvC
 #undef  APPEND_NAME
 
@@ -1398,6 +1407,72 @@ void preKmpI
 
 
 //***************************************************************************
+//  $preKmpR
+//
+//  Preprocessing phase for Knuth-Morris-Pratt
+//    for APLRATs
+//***************************************************************************
+
+void preKmpR
+    (LPAPLRAT    x,
+     APLSTYPE    aplTypeKmp,
+     APLINT      m,
+     APLINT      kmpNext[])
+{
+    APLINT i, j;
+
+    i = 0;
+    j = kmpNext[0] = -1;
+
+    while (i < m)
+    {
+        while (j > -1 && mpq_cmp (&x[i], &x[j]) NE 0)
+            j = kmpNext[j];
+        i++;
+        j++;
+
+        if ((i < m) && mpq_cmp (&x[i], &x[j]) EQ 0)
+            kmpNext[i] = kmpNext[j];
+        else
+            kmpNext[i] = j;
+   } // End WHILE
+} // End preKmpR
+
+
+//***************************************************************************
+//  $preKmpV
+//
+//  Preprocessing phase for Knuth-Morris-Pratt
+//    for APLVFPs
+//***************************************************************************
+
+void preKmpV
+    (LPAPLVFP    x,
+     APLSTYPE    aplTypeKmp,
+     APLINT      m,
+     APLINT      kmpNext[])
+{
+    APLINT i, j;
+
+    i = 0;
+    j = kmpNext[0] = -1;
+
+    while (i < m)
+    {
+        while (j > -1 && mpf_cmp (&x[i], &x[j]) NE 0)
+            j = kmpNext[j];
+        i++;
+        j++;
+
+        if ((i < m) && mpf_cmp (&x[i], &x[j]) EQ 0)
+            kmpNext[i] = kmpNext[j];
+        else
+            kmpNext[i] = j;
+   } // End WHILE
+} // End preKmpV
+
+
+//***************************************************************************
 //  $preKmpHN
 //
 //  Preprocessing phase for Knuth-Morris-Pratt
@@ -1484,6 +1559,59 @@ UBOOL CompareNested
 
 
 //***************************************************************************
+//  $CompareSNvSN
+//
+//  Compare two nested items
+//***************************************************************************
+
+UBOOL CompareSNvSN
+    (APLLONGEST x,               // Left arg, possibly simple as per typeX
+     APLSTYPE   typeX,           // Left arg storage type
+     APLLONGEST y,               // Right arg, possibly simple as per typeY
+     APLSTYPE   typeY)           // Right arg storage type
+
+{
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // If the left arg is simple non-hetero and the right arg is hetero/nested, ...
+    if (IsSimpleNH (typeX) && !IsSimpleNH (typeY))
+    {
+        // If the hetero/nested arg is not a STE, ...
+        if (GetPtrTypeDir ((APLHETERO) y) NE PTRTYPE_STCONST)
+            return FALSE;
+        return
+          PrimFnDydEqualUnderbarSimple (&x,                                  typeX,                                                         1, 0,
+                                        &((APLHETERO) y)->stData.stLongest, TranslateImmTypeToArrayType (((APLHETERO) y)->stFlags.ImmType), 1, 0,
+                                         FALSE, lpbCtrlBreak);
+    } // End IF
+
+    // If the right arg is simple non-hetero and the left arg is hetero/nested, ...
+    if (IsSimpleNH (typeY) && !IsSimpleNH (typeX))
+    {
+        // If the hetero/nested arg is not a STE, ...
+        if (GetPtrTypeDir ((APLHETERO) x) NE PTRTYPE_STCONST)
+            return FALSE;
+        return
+          PrimFnDydEqualUnderbarSimple (&y,                                 typeY,                                                          1, 0,
+                                        &((APLHETERO) x)->stData.stLongest, TranslateImmTypeToArrayType (((APLHETERO) x)->stFlags.ImmType), 1, 0,
+                                         FALSE, lpbCtrlBreak);
+    } // End IF
+
+    return
+      PrimFnDydEqualUnderbarNested (&x, ARRAY_NESTED, 1, 0,
+                                    &y, ARRAY_NESTED, 1, 0,
+                                     FALSE, lpbCtrlBreak);
+} // End CompareSNvSN
+
+
+//***************************************************************************
 //  $preKmpO
 //
 //  Preprocessing phase for Knuth-Morris-Pratt
@@ -1527,6 +1655,16 @@ void preKmpO
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             preKmpHN (x, aplTypeKmp, m, kmpNext);
+
+            break;
+
+        case ARRAY_RAT:
+            preKmpR (x, aplTypeKmp, m, kmpNext);
+
+            break;
+
+        case ARRAY_VFP:
+            preKmpV (x, aplTypeKmp, m, kmpNext);
 
             break;
 
@@ -1672,6 +1810,236 @@ void KMP
 
 
 //***************************************************************************
+//  $CompareRATvVFP
+//
+//  Compare a RAT and a VFP
+//***************************************************************************
+
+UBOOL CompareRATvVFP
+    (APLRAT    aplLft,          // Left arg, possibly simple as per typeLft
+     APLSTYPE  typeX,           // Left arg storage type
+     APLVFP    aplRht,          // Right arg, possibly simple as per typeRht
+     APLSTYPE  typeY)           // Right arg storage type
+
+{
+    APLVFP mpfLft = {0};        // Temporary VFP
+    UBOOL  bRet;                // TRUE iff the result is valid
+
+    // Convert the RAT to a VFP
+    mpf_init_set_q (&mpfLft, &aplLft);
+
+    // Compare 'em
+    bRet = (mpf_cmp_ct (mpfLft, aplRht, GetQuadCT ()) EQ 0);
+
+    // We no longer need this storage
+    Myf_clear (&mpfLft);
+
+    return bRet;
+} // End ComapreRATvVFP
+
+
+//***************************************************************************
+//  $CompareRATvSN
+//
+//  Compare a RAT and a simple/nested
+//***************************************************************************
+
+UBOOL CompareRATvSN
+    (APLRAT      aplLft,        // Left arg, possibly simple as per typeLft
+     APLSTYPE    typeLft,       // Left arg storage type
+     APLLONGEST  aplRht,        // Right arg, possibly simple as per typeRht
+     APLSTYPE    typeRht)       // Right arg storage type
+
+{
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // If the right arg is APA, ...
+    if (IsSimpleAPA (typeRht))
+        // Set to INT as aplRht is the current value in the APA
+        typeRht = ARRAY_INT;
+
+    // If the right arg is simple or global numeric, ...
+    // Note that the types are switched to be in ARRAY_TYPES order
+    //   expected by EqualUnderbar.
+    if (IsSimpleGlbNum (typeRht))
+        return
+          PrimFnDydEqualUnderbarSimple (&aplRht, typeRht, 1, 0,
+                                        &aplLft, typeLft, 1, 0,
+                                         FALSE,  lpbCtrlBreak);
+    else
+        return
+          PrimFnDydEqualUnderbarNested (&aplRht, typeRht     , 1, 0,
+                                        &aplLft, typeLft     , 1, 0,
+                                         FALSE,  lpbCtrlBreak);
+} // End ComapreRATvSN
+
+
+//***************************************************************************
+//  $CompareVFPvRAT
+//
+//  Compare a VFP and a RAT
+//***************************************************************************
+
+UBOOL CompareVFPvRAT
+    (APLVFP    aplLft,          // Left arg, possibly simple as per typeLft
+     APLSTYPE  typeX,           // Left arg storage type
+     APLRAT    aplRht,          // Right arg, possibly simple as per typeRht
+     APLSTYPE  typeY)           // Right arg storage type
+
+{
+    APLVFP mpfRht = {0};        // Temporary VFP
+    UBOOL  bRet;                // TRUE iff the result is valid
+
+    // Convert the RAT to a VFP
+    mpf_init_set_q (&mpfRht, &aplRht);
+
+    // Compare 'em
+    bRet = (mpf_cmp_ct (aplLft, mpfRht, GetQuadCT ()) EQ 0);
+
+    // We no longer need this storage
+    Myf_clear (&mpfRht);
+
+    return bRet;
+} // End ComapreVFPvRAT
+
+
+//***************************************************************************
+//  $CompareVFPvSN
+//
+//  Compare a VFP and a simple/nested
+//***************************************************************************
+
+UBOOL CompareVFPvSN
+    (APLVFP      aplLft,        // Left arg, possibly simple as per typeLft
+     APLSTYPE    typeLft,       // Left arg storage type
+     APLLONGEST  aplRht,        // Right arg, possibly simple as per typeRht
+     APLSTYPE    typeRht)       // Right arg storage type
+
+{
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // If the right arg is APA, ...
+    if (IsSimpleAPA (typeRht))
+        // Set to INT as aplRht is the current value in the APA
+        typeRht = ARRAY_INT;
+
+    // If the right arg is simple or global numeric, ...
+    // Note that the types are switched to be in ARRAY_TYPES order
+    //   expected by EqualUnderbar.
+    if (IsSimpleGlbNum (typeRht))
+        return
+          PrimFnDydEqualUnderbarSimple (&aplRht, typeRht, 1, 0,
+                                        &aplLft, typeLft, 1, 0,
+                                         FALSE,  lpbCtrlBreak);
+    else
+        return
+          PrimFnDydEqualUnderbarNested (&aplRht, typeRht     , 1, 0,
+                                        &aplLft, typeLft     , 1, 0,
+                                         FALSE, lpbCtrlBreak);
+} // End ComapreVFPvSN
+
+
+//***************************************************************************
+//  $CompareSNvRAT
+//
+//  Compare a simple/nested and a RAT
+//***************************************************************************
+
+UBOOL CompareSNvRAT
+    (APLLONGEST  aplLft,        // Left arg, possibly simple as per typeLft
+     APLSTYPE    typeLft,       // Left arg storage type
+     APLRAT      aplRht,        // Right arg, possibly simple as per typeRht
+     APLSTYPE    typeRht)       // Right arg storage type
+
+{
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // If the left arg is APA, ...
+    if (IsSimpleAPA (typeLft))
+        // Set to INT as aplLft is the current value in the APA
+        typeLft = ARRAY_INT;
+
+    // If the left arg is simple or global numeric, ...
+    // Note that the types are switched to be in ARRAY_TYPES order
+    //   expected by EqualUnderbar.
+    if (IsSimpleGlbNum (typeLft))
+        return
+          PrimFnDydEqualUnderbarSimple (&aplRht, typeRht, 1, 0,
+                                        &aplLft, typeLft, 1, 0,
+                                         FALSE,  lpbCtrlBreak);
+    else
+        return
+          PrimFnDydEqualUnderbarNested (&aplRht, typeRht     , 1, 0,
+                                        &aplLft, typeLft     , 1, 0,
+                                         FALSE, lpbCtrlBreak);
+} // End ComapreSNvRAT
+
+
+//***************************************************************************
+//  $CompareSNvVFP
+//
+//  Compare a simple/nested and a VFP
+//***************************************************************************
+
+UBOOL CompareSNvVFP
+    (APLLONGEST  aplLft,        // Left arg, possibly simple as per typeLft
+     APLSTYPE    typeLft,       // Left arg storage type
+     APLVFP      aplRht,        // Right arg, possibly simple as per typeRht
+     APLSTYPE    typeRht)       // Right arg storage type
+
+{
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // If the left arg is APA, ...
+    if (IsSimpleAPA (typeLft))
+        // Set to INT as aplLft is the current value in the APA
+        typeLft = ARRAY_INT;
+
+    // If the left arg is simple or global numeric, ...
+    // Note that the types are switched to be in ARRAY_TYPES order
+    //   expected by EqualUnderbar.
+    if (IsSimpleGlbNum (typeLft))
+        return
+          PrimFnDydEqualUnderbarSimple (&aplRht, typeRht, 1, 0,
+                                        &aplLft, typeLft, 1, 0,
+                                         FALSE,  lpbCtrlBreak);
+    else
+        return
+          PrimFnDydEqualUnderbarNested (&aplRht, typeRht     , 1, 0,
+                                        &aplLft, typeLft     , 1, 0,
+                                         FALSE, lpbCtrlBreak);
+} // End ComapreSNvVFP
+
+
+//***************************************************************************
 //  $PrimFnDydEpsilonUnderbarOvO
 //
 //  Dyadic EpsilonUnderbar between all other arg combinations
@@ -1713,7 +2081,77 @@ UBOOL PrimFnDydEpsilonUnderbarOvO
      LPTOKEN     lptkFunc)              // Ptr to function token
 
 {
-    FINDMAC (preKmpO, aplTypeLft, GetNextSN, aplTypeLft, GetNextSN, aplTypeRht, CompareNested)
+    UINT uLft,
+         uRht;
+
+    // Is the left arg RAT, VFP, or Other?
+    uLft = (IsRat (aplTypeLft) ? 0
+                               : (IsVfp (aplTypeLft) ? 1
+                                                     : 2));
+    // Is the right arg RAT, VFP, or Other?
+    uRht = (IsRat (aplTypeRht) ? 0
+                               : (IsVfp (aplTypeRht) ? 1
+                                                     : 2));
+    // Split cases based upon the left vs. right arg storage types
+    switch (3 * uLft + 1 * uRht)
+    {
+        //      RAT     RAT
+        case 3 * 0 + 1 * 0:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextRAT, aplTypeLft, GetNextRAT, aplTypeRht, CompareRAT    , RvR)
+        } // End RAT vs. RAT
+
+        //      RAT     VFP
+        case 3 * 0 + 1 * 1:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextRAT, aplTypeLft, GetNextVFP, aplTypeRht, CompareRATvVFP, RvV)
+        } // End RAT vs. VFP
+
+        //      RAT     Oth
+        case 3 * 0 + 1 * 2:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextRAT, aplTypeLft, GetNextSN , aplTypeRht, CompareRATvSN , RvO)
+        } // End RAT vs. Oth
+
+        //      VFP     RAT
+        case 3 * 1 + 1 * 0:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextVFP, aplTypeLft, GetNextRAT, aplTypeRht, CompareVFPvRAT, VvR)
+        } // End VFP vs. RAT
+
+        //      VFP     VFP
+        case 3 * 1 + 1 * 1:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextVFP, aplTypeLft, GetNextVFP, aplTypeRht, CompareVFP    , VvV)
+        } // End VFP vs. VFP
+
+        //      VFP     Oth
+        case 3 * 1 + 1 * 2:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextVFP, aplTypeLft, GetNextSN , aplTypeRht, CompareVFPvSN , VvO)
+        } // End VFP vs. Oth
+
+        //      Oth     RAT
+        case 3 * 2 + 1 * 0:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextSN , aplTypeLft, GetNextRAT, aplTypeRht, CompareSNvRAT , OvR)
+        } // End Oth vs. RAT
+
+        //      Oth     VFP
+        case 3 * 2 + 1 * 1:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextSN , aplTypeLft, GetNextVFP, aplTypeRht, CompareSNvVFP , OvV)
+        } // End Oth vs. VFP
+
+        //      Oth     Oth
+        case 3 * 2 + 1 * 2:
+        {
+            FINDMAC (preKmpO, aplTypeLft, GetNextSN , aplTypeLft, GetNextSN , aplTypeRht, CompareSNvSN  , OvO)
+        } // End Oth vs. Oth
+
+        defstop
+            return FALSE;
+    } // End SWITCH
 } // End PrimFnDydEpsilonUnderbarOvO
 #undef  APPEND_NAME
 

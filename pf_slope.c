@@ -181,7 +181,8 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                   aplFloatRep;          //
     APLCHAR       aplCharRht,           //
                   aplCharRep;           //
-    APLNESTED     aplNestRht,           //
+    APLNESTED     aplNestLft,           // Ptr to left arg global numeric
+                  aplNestRht,           // ...    right ...
                   aplNestRep,           //
                   aplNestProto;         //
     LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
@@ -240,7 +241,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft)
+    if (!IsNumeric (aplTypeLft)
      && !(IsSimpleChar (aplTypeLft) && IsEmpty (aplNELMLft)))
         goto LEFT_DOMAIN_EXIT;
 
@@ -280,7 +281,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                            &aplFloatLft,    // Ptr to float ...
                             NULL,           // Ptr to WCHAR ...
                             NULL,           // Ptr to longest ...
-                            NULL,           // Ptr to lpSym/Glb ...
+                           &aplNestLft,     // Ptr to lpSym/Glb ...
                             NULL,           // Ptr to ...immediate type ...
                             NULL);          // Ptr to array type ...
         // Attempt to convert FLOAT left arg
@@ -401,6 +402,34 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 break;
 
             case ARRAY_CHAR:
+                break;
+
+            case ARRAY_RAT:
+                for (uDim = 0; uDim < aplNELMLft; uDim++)
+                {
+                    // Attempt to convert the RAT to an INT
+                    aplIntegerLft = mpq_get_ctsa (((LPAPLRAT) lpMemLft)++, &bRet);
+                    if (!bRet || !IsBooleanValue (aplIntegerLft))
+                        goto LEFT_DOMAIN_EXIT;
+                    uDimLftSum += aplIntegerLft;
+
+                    *lpMemRep++ = aplIntegerLft;
+                } // End IF
+
+                break;
+
+            case ARRAY_VFP:
+                for (uDim = 0; uDim < aplNELMLft; uDim++)
+                {
+                    // Attempt to convert the VFP to an INT
+                    aplIntegerLft = mpf_get_ctsa (((LPAPLVFP) lpMemLft)++, &bRet);
+                    if (!bRet || !IsBooleanValue (aplIntegerLft))
+                        goto LEFT_DOMAIN_EXIT;
+                    uDimLftSum += aplIntegerLft;
+
+                    *lpMemRep++ = aplIntegerLft;
+                } // End IF
+
                 break;
 
             defstop
@@ -750,6 +779,68 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 // We no longer need this storage
                 FreeResultGlobalVar (aplNestProto); aplNestProto = NULL;
             } // End IF
+
+            break;
+
+        case ARRAY_RAT:
+            // Loop through the right arg copying the data to the result
+            for (uLo = 0; uLo < uDimLo; uLo++)
+            for (uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDimRht = uLo * uDimHi * uDimAxRht  + uHi;
+                uDimRes = uLo * uDimHi * aplNELMLft + uHi;
+                for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    if (IsSingleton (aplNELMLft))
+                        uLen = aplIntegerLft;
+                    else
+                        uLen = lpMemRep[uAx];
+                    if (uLen)
+                    {
+                        if (IsSingleton (aplNELMRht))
+                            mpq_init_set (&((LPAPLRAT) lpMemRes)[uDimRes + uAx * uDimHi], (LPAPLRAT) aplNestRht);
+                        else
+                            mpq_init_set (&((LPAPLRAT) lpMemRes)[uDimRes + uAx * uDimHi],
+                                          &((LPAPLRAT) lpMemRht)[uDimRht + uAcc++ * uDimHi]);
+                    } else
+                        mpq_init (&((LPAPLRAT) lpMemRes)[uDimRes + uAx * uDimHi]);
+                } // End FOR
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_VFP:
+            // Loop through the right arg copying the data to the result
+            for (uLo = 0; uLo < uDimLo; uLo++)
+            for (uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDimRht = uLo * uDimHi * uDimAxRht  + uHi;
+                uDimRes = uLo * uDimHi * aplNELMLft + uHi;
+                for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    if (IsSingleton (aplNELMLft))
+                        uLen = aplIntegerLft;
+                    else
+                        uLen = lpMemRep[uAx];
+                    if (uLen)
+                    {
+                        if (IsSingleton (aplNELMRht))
+                            mpf_init_set (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi], (LPAPLVFP) aplNestRht);
+                        else
+                            mpf_init_set (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi],
+                                          &((LPAPLVFP) lpMemRht)[uDimRht + uAcc++ * uDimHi]);
+                    } else
+                        mpf_init (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi]);
+                } // End FOR
+            } // End FOR/FOR
 
             break;
 

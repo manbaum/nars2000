@@ -457,6 +457,10 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                   bNrmIdent = FALSE,        // TRUE iff reducing an empty array with a primitive scalar dyadic function
                   bPrimIdent = FALSE;       // TRUE iff reducing an empty array with a primitive or
                                             //   user-defined function/operator
+    APLRAT        aplRatLft = {0},          // Left arg as RAT
+                  aplRatRht = {0};          // Right ...
+    APLVFP        aplVfpLft = {0},          // Left arg as VFP
+                  aplVfpRht = {0};          // Right ...
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -624,12 +628,12 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     } else
     // If the comparison function is scalar dyadic, and
     //   and there's no right operand axis,
-    //   both args are simple non-hetero, and
+    //   both args are simple non-hetero or global numeric, and
     //   the reduction function is scalar dyadic, ...
     if (lpPrimFlagsRht->DydScalar
      && lptkAxisRht EQ NULL
-     && IsSimpleNH (aplTypeLft)
-     && IsSimpleNH (aplTypeRht)
+     && IsSimpleNHGlbNum (aplTypeLft)
+     && IsSimpleNHGlbNum (aplTypeRht)
      && lpPrimFlagsLft->DydScalar)
     {
         // Get the left & right arg lpPrimSpec
@@ -1068,23 +1072,34 @@ RESTART_INNERPROD_RES:
                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
         } // End IF
     } else
-    // If the result is simple non-hetero, ...
-    if (IsSimpleNH (aplTypeRes))
+    // If the result is simple non-hetero or global numeric, ...
+    if (IsSimpleNHGlbNum (aplTypeRes))
     {
-        APLUINT  uInnLft,           // Index into left arg
-                 uInnRht;           // ...        right ...
-        TOKEN    tkRes = {0};       // Temporary token result
-        APLINT   aplIntegerLft,     // Left arg integer
-                 aplIntegerRht,     // Right ...
-                 aplIntegerCmpLft,  // Left comparison arg integer
-                 aplIntegerCmpRht;  // Right ...
-        APLFLOAT aplFloatLft,       // Left arg float
-                 aplFloatRht,       // Right ...
-                 aplFloatCmpLft,    // Left comparison arg float
-                 aplFloatCmpRht;    // Right ...
-        APLCHAR  aplCharLft,        // Left arg char
-                 aplCharRht;        // Right ...
-        UINT     uBitIndex;         // Bit index for looping through Boolean result
+        APLUINT  uInnLft,               // Index into left arg
+                 uInnRht;               // ...        right ...
+        TOKEN    tkRes = {0};           // Temporary token result
+        APLINT   aplIntegerLft,         // Left arg integer
+                 aplIntegerRht,         // Right ...
+                 aplIntegerCmpLft,      // Left comparison arg integer
+                 aplIntegerCmpRht;      // Right ...
+        APLFLOAT aplFloatLft,           // Left arg float
+                 aplFloatRht,           // Right ...
+                 aplFloatCmpLft,        // Left comparison arg float
+                 aplFloatCmpRht;        // Right ...
+        APLCHAR  aplCharLft,            // Left arg char
+                 aplCharRht;            // Right ...
+        UINT     uBitIndex;             // Bit index for looping through Boolean result
+        HGLOBAL  lpSymGlbLft = NULL,    // Ptr to left arg global numeric
+                 lpSymGlbRht = NULL,    // ...    right ...
+                 lpSymGlbCmpLft = NULL, // ...    Left  comparison arg global numeric
+                 lpSymGlbCmpRht = NULL; // ...    right ...
+        APLSTYPE aplType;
+
+        // Initialize the temps
+        mpq_init (&aplRatLft);
+        mpq_init (&aplRatRht);
+        mpf_init (&aplVfpLft);
+        mpf_init (&aplVfpRht);
 
         // Initialize the bit index
         uBitIndex = 0;
@@ -1146,6 +1161,16 @@ RESTART_INNERPROD_RES:
 
                         break;
 
+                    case ARRAY_RAT:
+                        lpSymGlbLft   = &((LPAPLRAT)   lpMemLft)[uInnLft];
+
+                        break;
+
+                    case ARRAY_VFP:
+                        lpSymGlbLft   = &((LPAPLVFP)   lpMemLft)[uInnLft];
+
+                        break;
+
                     defstop
                         break;
                 } // End SWITCH
@@ -1181,6 +1206,16 @@ RESTART_INNERPROD_RES:
 
                         break;
 
+                    case ARRAY_RAT:
+                        lpSymGlbRht   = &((LPAPLRAT)   lpMemRht)[uInnRht];
+
+                        break;
+
+                    case ARRAY_VFP:
+                        lpSymGlbRht   = &((LPAPLVFP)   lpMemRht)[uInnRht];
+
+                        break;
+
                     defstop
                         break;
                 } // End SWITCH
@@ -1188,97 +1223,25 @@ RESTART_INNERPROD_RES:
                 // Execute the comparison function between the left and right args
                 if (PrimFnDydSiScSiScSub_EM (&tkRes,                        // Result token
                                              &lpYYFcnStrRht->tkToken,       // Comparison function
+                                              NULL,                         // Result global memory handle (may be NULL)
                                               aplTypeCmp,                   // Comparison storage type
                                               aplTypeLft,                   // Left arg storage type
                                               aplIntegerLft,                // ...      Boolean/Integer
                                               aplFloatLft,                  // ...      Float
                                               aplCharLft,                   // ...      Char
+                                              lpSymGlbLft,                  // ...      lpSym/Glb
                                               aplTypeRht,                   // Right arg storage type
                                               aplIntegerRht,                // ...      Boolean/Integer
                                               aplFloatRht,                  // ...      Float
                                               aplCharRht,                   // ...      Char
+                                              lpSymGlbRht,                  // ...      lpSym/Glb
                                               lpPrimSpecRht))               // Ptr to comparison function PRIMSPEC
                 {
-                    Assert (tkRes.tkFlags.TknType EQ TKT_VARIMMED);
-
-                    // Check for type promotion
-                    if (aplTypeCmp NE TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType))
+                    // If the token type is an immediate, ...
+                    if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
                     {
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-                        // We no longer need this resource
-                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-
-                        if (hGlbLft && lpMemLft)
-                        {
-                            // We no longer need this ptr
-                            MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-
-                            // Lock the memory to get a ptr to it
-                            lpMemLft = MyGlobalLock (hGlbLft);
-                        } // End IF
-
-                        if (hGlbRht && lpMemRht)
-                        {
-                            // We no longer need this ptr
-                            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-
-                            // Lock the memory to get a ptr to it
-                            lpMemRht = MyGlobalLock (hGlbRht);
-                        } // End IF
-
-                        // Save as the new storage type
-                        aplTypeCmp = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
-
-                        goto RESTART_INNERPROD_CMP;
-                    } // End IF
-                } else
-                    goto ERROR_EXIT;
-
-                // If this is not the first time, do the reduction
-                if (iInnMax NE (APLINT) (aplInnrMax - 1))
-                {
-                    // Split cases based upon the comparison immediate type
-                    switch (tkRes.tkFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:
-                            aplIntegerCmpLft = (BIT0 & tkRes.tkData.tkBoolean);
-
-                            break;
-
-                        case IMMTYPE_INT:
-                            aplIntegerCmpLft = tkRes.tkData.tkInteger;
-
-                            break;
-
-                        case IMMTYPE_FLOAT:
-                            aplFloatCmpLft   = tkRes.tkData.tkFloat;
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    // Execute the left operand between the item result and the accumulated reduction
-                    if (PrimFnDydSiScSiScSub_EM (&tkRes,                    // Result token
-                                                 &lpYYFcnStrLft->tkToken,   // Reduction function
-                                                  aplTypeRes,               // Result storage type
-                                                  aplTypeCmp,               // Comparison storage type
-                                                  aplIntegerCmpLft,         // Left comparison arg Boolean/Integer
-                                                  aplFloatCmpLft,           // ...                 Float
-                                                  0,                        // No primitive scalar dyadic function returns a char
-                                                  aplTypeCmp,               // Comparison storage type
-                                                  aplIntegerCmpRht,         // Right comparison arg Boolean/Integer
-                                                  aplFloatCmpRht,           // ...                  Float
-                                                  0,                        // No primitive scalar dyadic function returns a char
-                                                  lpPrimSpecLft))           // Ptr to reduction function PRIMSPEC
-                    {
-                        Assert (tkRes.tkFlags.TknType EQ TKT_VARIMMED);
-
                         // Check for type promotion
-                        if (aplTypeRes NE TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType))
+                        if (aplTypeCmp NE TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType))
                         {
                             // We no longer need this ptr
                             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1290,45 +1253,296 @@ RESTART_INNERPROD_RES:
                             {
                                 // We no longer need this ptr
                                 MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+
+                                // Lock the memory to get a ptr to it
+                                lpMemLft = MyGlobalLock (hGlbLft);
                             } // End IF
 
                             if (hGlbRht && lpMemRht)
                             {
                                 // We no longer need this ptr
                                 MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+                                // Lock the memory to get a ptr to it
+                                lpMemRht = MyGlobalLock (hGlbRht);
                             } // End IF
 
                             // Save as the new storage type
-                            aplTypeRes = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
+                            aplTypeCmp = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
 
-                            goto RESTART_INNERPROD_RES;
+                            goto RESTART_INNERPROD_CMP;
                         } // End IF
+                    } else
+                    // If the token type is an array, ...
+                    if (tkRes.tkFlags.TknType EQ TKT_VARARRAY)
+                    {
+                        // Get the attributes (Type,NELM, and Rank)
+                        //   of the comparison result
+                        AttrsOfToken (&tkRes, &aplType, NULL, NULL, NULL);
+
+                        // Check for type promotion
+                        if (aplTypeCmp NE aplType)
+                        {
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                            // We no longer need this resource
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                            if (hGlbLft && lpMemLft)
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+
+                                // Lock the memory to get a ptr to it
+                                lpMemLft = MyGlobalLock (hGlbLft);
+                            } // End IF
+
+                            if (hGlbRht && lpMemRht)
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+                                // Lock the memory to get a ptr to it
+                                lpMemRht = MyGlobalLock (hGlbRht);
+                            } // End IF
+
+                            // Save as the new storage type
+                            aplTypeCmp = aplType;
+
+                            goto RESTART_INNERPROD_CMP;
+                        } // End IF
+                    } else
+                        DbgStop ();     // We should never get here
+                } else
+                    goto ERROR_EXIT;
+
+                // If this is not the first time, do the reduction
+                if (iInnMax NE (APLINT) (aplInnrMax - 1))
+                {
+                    // If the token type is an immediate, ...
+                    if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
+                    {
+                        // Split cases based upon the comparison immediate type
+                        switch (tkRes.tkFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:
+                                aplIntegerCmpLft = (BIT0 & tkRes.tkData.tkBoolean);
+
+                                break;
+
+                            case IMMTYPE_INT:
+                                aplIntegerCmpLft = tkRes.tkData.tkInteger;
+
+                                break;
+
+                            case IMMTYPE_FLOAT:
+                                aplFloatCmpLft   = tkRes.tkData.tkFloat;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } else
+                    {
+                        HGLOBAL hGlb;
+                        LPVOID  lpMem;
+
+                        // Get the result global ptr
+                        GetGlbPtrs_LOCK (&tkRes, &hGlb, &lpMem);
+
+                        Assert (hGlb NE NULL);
+
+                        // Skip over the header and dimensions to the data
+                        lpMem = VarArrayBaseToData (lpMem, 0);
+
+                        switch (aplType)
+                        {
+                            case ARRAY_RAT:
+////////////////////////////////Myq_clear (&aplRatLft);
+                                mpq_set (&aplRatLft, (LPAPLRAT) lpMem);
+                                lpSymGlbCmpLft = &aplRatLft;
+
+                                break;
+
+
+                            case ARRAY_VFP:
+////////////////////////////////Myf_clear (&aplVfpLft);
+                                mpf_set (&aplVfpLft, (LPAPLVFP) lpMem);
+                                lpSymGlbCmpLft = &aplVfpLft;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlb); lpMem = NULL;
+
+                        // We no longer need this storage
+                        FreeResultGlobalVar (hGlb); hGlb = NULL;
+                    } // End IF/ELSE
+
+                    // Execute the left operand between the item result and the accumulated reduction
+                    if (PrimFnDydSiScSiScSub_EM (&tkRes,                    // Result token
+                                                 &lpYYFcnStrLft->tkToken,   // Reduction function
+                                                  NULL,                     // Result global memory handle (may be NULL)
+                                                  aplTypeRes,               // Result storage type
+                                                  aplTypeCmp,               // Comparison storage type
+                                                  aplIntegerCmpLft,         // Left comparison arg Boolean/Integer
+                                                  aplFloatCmpLft,           // ...                 Float
+                                                  0,                        // No primitive scalar dyadic function returns a char
+                                                  lpSymGlbCmpLft,           // ...                 lpSym/Glb
+                                                  aplTypeCmp,               // Comparison storage type
+                                                  aplIntegerCmpRht,         // Right comparison arg Boolean/Integer
+                                                  aplFloatCmpRht,           // ...                  Float
+                                                  0,                        // No primitive scalar dyadic function returns a char
+                                                  lpSymGlbCmpRht,           // ...                 lpSym/Glb
+                                                  lpPrimSpecLft))           // Ptr to reduction function PRIMSPEC
+                    {
+                        // If the token type is an immediate, ...
+                        if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
+                        {
+                            // Check for type promotion
+                            if (aplTypeRes NE TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType))
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                                // We no longer need this resource
+                                FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                                if (hGlbLft && lpMemLft)
+                                {
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+                                } // End IF
+
+                                if (hGlbRht && lpMemRht)
+                                {
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+                                } // End IF
+
+                                // Save as the new storage type
+                                aplTypeRes = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
+
+                                goto RESTART_INNERPROD_RES;
+                            } // End IF
+                        } else
+                        // If the token type is a global numeric, ...
+                        if (tkRes.tkFlags.TknType EQ TKT_VARARRAY)
+                        {
+                            APLSTYPE aplType;
+
+                            // Get the attributes (Type,NELM, and Rank)
+                            //   of the comparison result
+                            AttrsOfToken (&tkRes, &aplType, NULL, NULL, NULL);
+
+                            // Check for type promotion
+                            if (aplTypeRes NE aplType)
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                                // We no longer need this resource
+                                FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                                if (hGlbLft && lpMemLft)
+                                {
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+                                } // End IF
+
+                                if (hGlbRht && lpMemRht)
+                                {
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+                                } // End IF
+
+                                // Save as the new storage type
+                                aplTypeRes = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
+
+                                goto RESTART_INNERPROD_RES;
+                            } // End IF
+                        } else
+                            DbgStop ();         // We should never get here
                     } else
                         goto ERROR_EXIT;
                 } // End IF
 
                 // Copy the last reduction result as the new reduction right arg
-                // Split cases based upon the previous result immediate type
-                switch (tkRes.tkFlags.ImmType)
+
+                // If the token type is an immediate, ...
+                if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
                 {
-                    case IMMTYPE_BOOL:
-                        aplIntegerCmpRht = (BIT0 &tkRes.tkData.tkBoolean);
+                    // Split cases based upon the previous result immediate type
+                    switch (tkRes.tkFlags.ImmType)
+                    {
+                        case IMMTYPE_BOOL:
+                            aplIntegerCmpRht = (BIT0 &tkRes.tkData.tkBoolean);
 
-                        break;
+                            break;
 
-                    case IMMTYPE_INT:
-                        aplIntegerCmpRht = tkRes.tkData.tkInteger;
+                        case IMMTYPE_INT:
+                            aplIntegerCmpRht = tkRes.tkData.tkInteger;
 
-                        break;
+                            break;
 
-                    case IMMTYPE_FLOAT:
-                        aplFloatCmpRht   = tkRes.tkData.tkFloat;
+                        case IMMTYPE_FLOAT:
+                            aplFloatCmpRht   = tkRes.tkData.tkFloat;
 
-                        break;
+                            break;
 
-                    defstop
-                        break;
-                } // End SWITCH
+                        defstop
+                            break;
+                    } // End SWITCH
+                } else
+                // If the token type is a global numeric, ...
+                if (tkRes.tkFlags.TknType EQ TKT_VARARRAY)
+                {
+                    HGLOBAL hGlb;
+                    LPVOID  lpMem;
+
+                    // Get the result global ptr
+                    GetGlbPtrs_LOCK (&tkRes, &hGlb, &lpMem);
+
+                    Assert (hGlb NE NULL);
+
+                    // Skip over the header and dimensions to the data
+                    lpMem = VarArrayBaseToData (lpMem, 0);
+
+                    switch (aplType)
+                    {
+                        case ARRAY_RAT:
+////                        Myq_clear (&aplRatLft);
+////                        Myq_clear (&aplRatRht);
+                            mpq_set (&aplRatRht, (LPAPLRAT) lpMem);
+                            lpSymGlbCmpRht = &aplRatRht;
+
+                            break;
+
+                        case ARRAY_VFP:
+////                        Myf_clear (&aplVfpLft);
+////                        Myf_clear (&aplVfpRht);
+                            mpf_set (&aplVfpRht, (LPAPLVFP) lpMem);
+                            lpSymGlbCmpRht = &aplVfpRht;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlb); lpMem = NULL;
+
+                    // We no longer need this storage
+                    FreeResultGlobalVar (hGlb); hGlb = NULL;
+                } else
+                    DbgStop ();         // We should never get here
             } // End FOR
 
             // Split cases based upon the result storage type
@@ -1356,6 +1570,20 @@ RESTART_INNERPROD_RES:
                 case ARRAY_FLOAT:
                     // Save the accumulated reduction in the result
                     *((LPAPLFLOAT) lpMemRes)++ = aplFloatCmpRht;
+
+                    break;
+
+                case ARRAY_RAT:
+                    // Save the accumulated reduction in the result
+                    mpq_init_set (((LPAPLRAT) lpMemRes)++, &aplRatRht);
+////////////////////             *((LPAPLRAT) lpMemRes)++= aplRatRht;
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Save the accumulated reduction in the result
+                    mpf_init_set (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
+////////////////////             *((LPAPLVFP) lpMemRes)++= aplVfpRht;
 
                     break;
 
@@ -1643,6 +1871,12 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // Free the temps
+    Myf_clear (&aplVfpRht);
+    Myf_clear (&aplVfpLft);
+    Myq_clear (&aplRatRht);
+    Myq_clear (&aplRatLft);
+
     if (hGlbPro)
     {
         FreeResultGlobalVar (hGlbPro); hGlbPro = NULL;

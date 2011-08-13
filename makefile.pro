@@ -21,6 +21,7 @@
 
 WS=WineHQ\                      # Wine source
 MS=$(NARSROOT)msieve\           # Msieve source
+MPFR=MPFR\                      # MPFR source
 
 !ifndef O
 !error makefile.pro:  Macro O is not defined.
@@ -41,6 +42,10 @@ MS=$(NARSROOT)msieve\           # Msieve source
         @php $(MAKEPRO) %s $@
 
 {$(MS)}.c{$(O)}.pro:
+        @echo $(@F) #1
+        @php $(MAKEPRO) %s $@
+
+{$(MPFR)}.c{$(O)}.pro:
         @echo $(@F) #1
         @php $(MAKEPRO) %s $@
 

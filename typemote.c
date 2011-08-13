@@ -82,12 +82,15 @@ void TypeDemote
 
 {
     HGLOBAL           hGlbRht = NULL,   // Right arg global memory handle
+                      hGlbSub,          // Temp      ...
                       hGlbRes = NULL;   // Result    ...
     LPVOID            lpMemRht = NULL,  // Ptr to right arg global memory
-                      lpMemRes = NULL;  // Ptr to result    ...
+                      lpMemRes = NULL,  // Ptr to result    ...
+                      lpMemSub;         // Ptr to temp      ...
     APLNELM           aplNELMRht,       // Right arg NELM
                       aplNELMNstRht;    // Right arg NELM in case empty nested
-    APLRANK           aplRankRht;       // Right arg rank
+    APLRANK           aplRankRht,       // Right arg rank
+                      aplRankSub;       // Temp      ...
     APLUINT           uRht,             // Right arg loop counter
                       ByteRes;          // # bytes in the result
     APLINT            aplInteger;       // Temporary integer
@@ -187,35 +190,152 @@ void TypeDemote
                 break;
 
             case ARRAY_HETERO:
-                switch ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)
+                // Split cases based upon the item's ptr type
+                switch (GetPtrTypeInd (lpMemRht))
                 {
-                    case IMMTYPE_BOOL:
-                        aplLongestRht = BIT0 & (*(LPSYMENTRY *) lpMemRht)->stData.stBoolean;
-                        immTypeRht    = IMMTYPE_BOOL;
+                    case PTRTYPE_STCONST:
+                        switch ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:
+                                aplLongestRht = BIT0 & (*(LPSYMENTRY *) lpMemRht)->stData.stBoolean;
+                                immTypeRht    = IMMTYPE_BOOL;
+
+                                break;
+
+                            case IMMTYPE_INT:
+                                aplLongestRht = (*(LPSYMENTRY *) lpMemRht)->stData.stInteger;
+                                immTypeRht    = IMMTYPE_INT;
+
+                                break;
+
+                            case IMMTYPE_FLOAT:
+                                aplLongestRht = *(LPAPLLONGEST) &(*(LPSYMENTRY *) lpMemRht)->stData.stFloat;
+                                immTypeRht    = IMMTYPE_FLOAT;
+
+                                break;
+
+                            case IMMTYPE_CHAR:
+                                aplLongestRht = (*(LPSYMENTRY *) lpMemRht)->stData.stChar;
+                                immTypeRht    = IMMTYPE_CHAR;
+
+                                break;
+
+                            case IMMTYPE_RAT:
+                                // Get the global memory handle
+                                hGlbSub = ClrPtrTypeInd (lpMemRht);
+
+                                // Lock the memory to get a handle on it
+                                lpMemSub = MyGlobalLock (hGlbSub);
+
+                                // Skip over the header and dimensions to the data
+                                lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+
+                                // Copy the data
+                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
+                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_RAT;
+                                lptkRhtArg->tkData.tkGlbData =
+                                  MakeGlbEntry_EM (ARRAY_RAT,               // Entry type
+                                                   (LPAPLRAT) lpMemSub,     // Ptr to the value
+                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                                   lptkRhtArg);             // Ptr to function token
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                                // Check for error
+                                if (!lptkRhtArg->tkData.tkGlbData)
+                                    goto WSFULL_EXIT;
+                                goto UNLOCK_EXIT;
+
+                            case IMMTYPE_VFP:
+                                // Get the global memory handle
+                                hGlbSub = ClrPtrTypeInd (lpMemRht);
+
+                                // Lock the memory to get a handle on it
+                                lpMemSub = MyGlobalLock (hGlbSub);
+
+                                // Skip over the header and dimensions to the data
+                                lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+
+                                // Copy the data
+                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
+                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_VFP;
+                                lptkRhtArg->tkData.tkGlbData =
+                                  MakeGlbEntry_EM (ARRAY_VFP,               // Entry type
+                                                   (LPAPLVFP) lpMemSub,     // Ptr to the value
+                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                                   lptkRhtArg);             // Ptr to function token
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                                // Check for error
+                                if (!lptkRhtArg->tkData.tkGlbData)
+                                    goto WSFULL_EXIT;
+                                goto UNLOCK_EXIT;
+
+                            defstop
+                                break;
+                        } // End SWITCH
 
                         break;
 
-                    case IMMTYPE_INT:
-                        aplLongestRht = (*(LPSYMENTRY *) lpMemRht)->stData.stInteger;
-                        immTypeRht    = IMMTYPE_INT;
+                    case PTRTYPE_HGLOBAL:
+                        // Get the global memory handle
+                        hGlbSub = ClrPtrTypeInd (lpMemRht);
 
-                        break;
+                        // Lock the memory to get a handle on it
+                        lpMemSub = MyGlobalLock (hGlbSub);
 
-                    case IMMTYPE_FLOAT:
-                        aplLongestRht = *(LPAPLLONGEST) &(*(LPSYMENTRY *) lpMemRht)->stData.stFloat;
-                        immTypeRht    = IMMTYPE_FLOAT;
+                        Assert (IsScalar (((LPVARARRAY_HEADER) lpMemSub)->Rank));
 
-                        break;
+                        // Get the array storage type
+                        aplTypeSub = ((LPVARARRAY_HEADER) lpMemSub)->ArrType;
 
-                    case IMMTYPE_CHAR:
-                        aplLongestRht = (*(LPSYMENTRY *) lpMemRht)->stData.stChar;
-                        immTypeRht    = IMMTYPE_CHAR;
+                        // Skip over the header and dimensions to the data
+                        lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+
+                        // Split cases based upon the array storage type
+                        switch (aplTypeSub)
+                        {
+                            case ARRAY_RAT:
+                                // Copy the data
+                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
+                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_RAT;
+                                lptkRhtArg->tkData.tkGlbData =
+                                  MakeGlbEntry_EM (ARRAY_RAT,               // Entry type
+                                                   (LPAPLRAT) lpMemSub,     // Ptr to the value
+                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                                   lptkRhtArg);             // Ptr to function token
+                                break;
+
+                            case ARRAY_VFP:
+                                // Copy the data
+                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
+                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_VFP;
+                                lptkRhtArg->tkData.tkGlbData =
+                                  MakeGlbEntry_EM (ARRAY_VFP,               // Entry type
+                                                   (LPAPLVFP) lpMemSub,     // Ptr to the value
+                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                                   lptkRhtArg);             // Ptr to function token
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                        // Check for error
+                        if (!lptkRhtArg->tkData.tkGlbData)
+                            goto WSFULL_EXIT;
+                        goto UNLOCK_EXIT;
 
                         break;
 
                     defstop
                         break;
                 } // End SWITCH
+
 
                 break;
 
@@ -245,7 +365,7 @@ void TypeDemote
             defstop
                 break;
         } // End SWITCH
-
+UNLOCK_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = lpMemRhtHdr = NULL;
 
@@ -259,8 +379,10 @@ void TypeDemote
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:        // No place to go
-        case ARRAY_APA:         // No place to go
-        case ARRAY_CHAR:        // No place to go
+        case ARRAY_APA:         // ...
+        case ARRAY_CHAR:        // ...
+        case ARRAY_RAT:         // ...
+        case ARRAY_VFP:         // ...
             goto IMMED_EXIT;
 
         case ARRAY_INT:         // Demote to Boolean
@@ -375,8 +497,42 @@ void TypeDemote
                     break;
 
                 case PTRTYPE_HGLOBAL:
+                    // Get the global memory handle
+                    hGlbSub = ClrPtrTypeInd (lpMemRht);
+
+                    // Get the global's Type
+                    AttrsOfGlb (hGlbSub, &aplTypeSub, NULL, &aplRankSub, NULL);
+
+                    // If it's not a scalar, ...
+                    if (!IsScalar (aplRankSub))
                         // It's nested, so there's no demotion
                         goto NORMAL_EXIT;
+
+                    // Split cases based upon the item storage type
+                    switch (aplTypeSub)
+                    {
+                        case ARRAY_NESTED:
+                            // Check storage type
+                            aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
+
+                            break;
+
+                        case ARRAY_RAT:
+                        case ARRAY_VFP:
+                            // Check storage type
+                            aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
+
+                            // Check for no demotion
+                            if (!IsRat (aplTypeRes)
+                             && !IsVfp (aplTypeRes))
+                                goto NORMAL_EXIT;
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
 
                 defstop
                     break;
@@ -533,6 +689,61 @@ void TypeDemote
 
         // Free the old array
         FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
+    } else
+    // Check for demotion from Nested or Hetero to Rational
+    if ((IsSimpleHet (aplTypeRht)
+      || IsNested (aplTypeRht))
+     && (IsRat (aplTypeRes)
+      || IsVfp (aplTypeRes)))
+    {
+        // Calculate space needed for the result
+        ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
+
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
+        // Allocate space for a new array
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+        if (!hGlbRes)
+            goto WSFULL_EXIT;
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+        // Fill in the header
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = aplTypeRes;
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplNELMRht;
+        lpHeader->Rank       = aplRankRht;
+#undef  lpHeader
+
+        // Skip over the header to the dimensions
+        lpMemRht = VarArrayBaseToDim (lpMemRhtHdr);
+        lpMemRes = VarArrayBaseToDim (lpMemRes);
+
+        // Copy the dimensions to the result
+        for (uRht = 0; uRht < aplRankRht; uRht++)
+            *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;
+
+        // Now, lpMemRes and lpMemRht both point to their
+        //   respective data
+
+        // Demote the data in the right arg, copying it to the result
+        DemoteData (aplTypeRes,
+                    lpMemRes,
+                    aplTypeRht,
+                    aplNELMRht,
+                    lpMemRht);
+        // We no longer need these ptrs
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+        // Free the old array
+        FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
     } // End IF/ELSE
 
     goto NORMAL_EXIT;
@@ -585,6 +796,8 @@ void DemoteData
 {
     APLUINT uRht;                   // Loop counter
     UINT    uBitIndex;              // Bit index for looping through Booleans
+    HGLOBAL hGlbSub;                // Temp global memory handle
+    LPVOID  lpMemSub;               // Ptr to temp global memory
 
     // Split cases based upon the result's storage type
     // Note that the result is always of lower type than
@@ -674,6 +887,22 @@ void DemoteData
                             ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
+
+                    break;
+
+                case ARRAY_RAT:     // Res = BOOL, Rht = RAT
+                    DbgBrk ();
+
+
+
+
+                    break;
+
+                case ARRAY_VFP:     // Res = BOOL, Rht = VFP
+                    DbgBrk ();
+
+
+
 
                     break;
 
@@ -776,6 +1005,76 @@ void DemoteData
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                         *((LPAPLCHAR) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stChar;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_RAT:
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_HETERO:  // Res = RAT, Rht = HETERO
+                case ARRAY_NESTED:  // Res = RAT, Rht = NESTED
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Get the global memory handle
+                        hGlbSub = *((LPAPLNESTED) lpMemRht)++;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemSub = MyGlobalLock (hGlbSub);
+
+                        Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
+
+                        // Skip over the header and dimensions to the data
+                        lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+
+                        // Copy the data
+                        mpq_init_set (((LPAPLRAT) lpMemRes)++, ((LPAPLRAT) lpMemSub)++);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                    } // End FOR
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_VFP:
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_HETERO:  // Res = VFP, Rht = HETERO
+                case ARRAY_NESTED:  // Res = VFP, Rht = NESTED
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Get the global memory handle
+                        hGlbSub = *((LPAPLNESTED) lpMemRht)++;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemSub = MyGlobalLock (hGlbSub);
+
+                        Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
+
+                        // Skip over the header and dimensions to the data
+                        lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+
+                        // Copy the data
+                        mpf_init_set (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemSub)++);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                    } // End FOR
+
                     break;
 
                 defstop
@@ -1222,6 +1521,18 @@ UBOOL TypePromoteGlb_EM
 
             break;
 
+        case ARRAY_RAT:
+            // Loop through the arg converting values to the result
+            for (uRes = 0; uRes < aplNELMArg; uRes++)
+                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uRes, (LPALLTYPES) ((LPAPLRAT) lpMemRes)++);
+            break;
+
+        case ARRAY_VFP:
+            // Loop through the arg converting values to the result
+            for (uRes = 0; uRes < aplNELMArg; uRes++)
+                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uRes, (LPALLTYPES) ((LPAPLVFP) lpMemRes)++);
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -1274,6 +1585,959 @@ UBOOL QueryPromote
     // Compare the storage type of the result with the existing storage type
     return (*lpaplTypeRes NE aplTypeNam);
 } // End QueryPromote
+
+
+//***************************************************************************
+//  $TPT_ERROR
+//***************************************************************************
+
+void TPT_ERROR
+    (LPTOKEN lptkArg)
+
+{
+    DbgStop ();
+} // TPT_ERROR
+
+
+//***************************************************************************
+//  $TPT_IDENT
+//***************************************************************************
+
+void TPT_IDENT
+    (LPTOKEN lptkArg)
+
+{
+} // TPT_IDENT
+
+
+//***************************************************************************
+//  $TPT_BOOL2INT
+//***************************************************************************
+
+void TPT_BOOL2INT
+    (LPTOKEN lptkArg)
+
+{
+    lptkArg->tkData.tkInteger = BIT0 & lptkArg->tkData.tkInteger;
+} // TPT_BOOL2INT
+
+
+//***************************************************************************
+//  $TPT_BOOL2FLT
+//***************************************************************************
+
+void TPT_BOOL2FLT
+    (LPTOKEN lptkArg)
+
+{
+    lptkArg->tkData.tkFloat = (APLFLOAT) lptkArg->tkData.tkInteger;
+} // TPT_BOOL2FLT
+
+
+//***************************************************************************
+//  $TPT_BOOL2RAT
+//***************************************************************************
+
+void TPT_BOOL2RAT
+    (LPTOKEN lptkArg)
+
+{
+    APLRAT aplRat;
+
+    // Convert the BOOL to a RAT
+    mpq_init_set_sa (&aplRat, BIT0 & lptkArg->tkData.tkInteger, 1);
+
+    // Make a global numeric entry of it
+    lptkArg->tkData.tkGlbData =
+      MakeGlbEntry_EM (ARRAY_RAT,           // Array Type to use (see ARRAY_TYPES)
+                      &aplRat,              // Ptr to value to use
+                       FALSE,               // TRUE iff we should initialize the target first
+                       lptkArg);            // Ptr to token to use in case of error
+    // Check for errors
+    if (lptkArg->tkData.tkGlbData EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+    // Mark as an array (not immediate)
+    lptkArg->tkFlags.TknType = TKT_VARARRAY;
+} // TPT_BOOL2RAT
+
+
+//***************************************************************************
+//  $TPT_BOOL2VFP
+//***************************************************************************
+
+void TPT_BOOL2VFP
+    (LPTOKEN lptkArg)
+
+{
+    APLVFP aplVfp;
+
+    // Convert the BOOL to a VFP
+    mpf_init_set_sa (&aplVfp, BIT0 & lptkArg->tkData.tkInteger);
+
+    // Make a global numeric entry of it
+    lptkArg->tkData.tkGlbData =
+      MakeGlbEntry_EM (ARRAY_VFP,           // Array Type to use (see ARRAY_TYPES)
+                      &aplVfp,              // Ptr to value to use
+                       FALSE,               // TRUE iff we should initialize the target first
+                       lptkArg);            // Ptr to token to use in case of error
+    // Check for errors
+    if (lptkArg->tkData.tkGlbData EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+    // Mark as an array (not immediate)
+    lptkArg->tkFlags.TknType = TKT_VARARRAY;
+} // TPT_BOOL2VFP
+
+
+//***************************************************************************
+//  $TPT_INT2FLT
+//***************************************************************************
+
+void TPT_INT2FLT
+    (LPTOKEN lptkArg)
+
+{
+    lptkArg->tkData.tkFloat = (APLFLOAT) lptkArg->tkData.tkInteger;
+} // TPT_INT2FLT
+
+
+//***************************************************************************
+//  $TPT_INT2RAT
+//***************************************************************************
+
+void TPT_INT2RAT
+    (LPTOKEN lptkArg)
+
+{
+    APLRAT aplRat;
+
+    // Convert the INT to a RAT
+    mpq_init_set_sa (&aplRat, lptkArg->tkData.tkInteger, 1);
+
+    // Make a global numeric entry of it
+    lptkArg->tkData.tkGlbData =
+      MakeGlbEntry_EM (ARRAY_RAT,           // Array Type to use (see ARRAY_TYPES)
+                      &aplRat,              // Ptr to value to use
+                       FALSE,               // TRUE iff we should initialize the target first
+                       lptkArg);            // Ptr to token to use in case of error
+    // Check for errors
+    if (lptkArg->tkData.tkGlbData EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+    // Mark as an array
+    lptkArg->tkFlags.TknType = TKT_VARARRAY;
+} // TPT_INT2RAT
+
+
+//***************************************************************************
+//  $TPT_INT2VFP
+//***************************************************************************
+
+void TPT_INT2VFP
+    (LPTOKEN lptkArg)
+
+{
+    APLVFP aplVfp;
+
+    // Convert the INT to a VFP
+    mpf_init_set_sa (&aplVfp, lptkArg->tkData.tkInteger);
+
+    // Make a global numeric entry of it
+    lptkArg->tkData.tkGlbData =
+      MakeGlbEntry_EM (ARRAY_VFP,           // Array Type to use (see ARRAY_TYPES)
+                      &aplVfp,              // Ptr to value to use
+                       FALSE,               // TRUE iff we should initialize the target first
+                       lptkArg);            // Ptr to token to use in case of error
+    // Check for errors
+    if (lptkArg->tkData.tkGlbData EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+    // Mark as an array
+    lptkArg->tkFlags.TknType = TKT_VARARRAY;
+} // TPT_INT2VFP
+
+
+//***************************************************************************
+//  $TPT_FLT2VFP
+//***************************************************************************
+
+void TPT_FLT2VFP
+    (LPTOKEN lptkArg)
+
+{
+    APLVFP aplVfp;
+
+    // Convert the FLT to a VFP
+    mpf_init_set_d  (&aplVfp, lptkArg->tkData.tkFloat);
+
+    // Make a global numeric entry of it
+    lptkArg->tkData.tkGlbData =
+      MakeGlbEntry_EM (ARRAY_VFP,           // Array Type to use (see ARRAY_TYPES)
+                      &aplVfp,              // Ptr to value to use
+                       FALSE,               // TRUE iff we should initialize the target first
+                       lptkArg);            // Ptr to token to use in case of error
+    // Check for errors
+    if (lptkArg->tkData.tkGlbData EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+    // Mark as an array
+    lptkArg->tkFlags.TknType = TKT_VARARRAY;
+} // TPT_FLT2VFP
+
+
+//***************************************************************************
+//  $TPT_APA2FLT
+//***************************************************************************
+
+void TPT_APA2FLT
+    (LPTOKEN lptkArg)
+
+{
+    lptkArg->tkData.tkFloat = (APLFLOAT) lptkArg->tkData.tkInteger;
+} // TPT_APA2FLT
+
+
+//***************************************************************************
+//  $TPT_APA2RAT
+//***************************************************************************
+
+void TPT_APA2RAT
+    (LPTOKEN lptkArg)
+
+{
+    APLRAT aplRat;
+
+    // Convert the APA to a RAT
+    mpq_init_set_sa (&aplRat, lptkArg->tkData.tkInteger, 1);
+
+    // Make a global numeric entry of it
+    lptkArg->tkData.tkGlbData =
+      MakeGlbEntry_EM (ARRAY_RAT,           // Array Type to use (see ARRAY_TYPES)
+                      &aplRat,              // Ptr to value to use
+                       FALSE,               // TRUE iff we should initialize the target first
+                       lptkArg);            // Ptr to token to use in case of error
+    // Check for errors
+    if (lptkArg->tkData.tkGlbData EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+    // Mark as an array
+    lptkArg->tkFlags.TknType = TKT_VARARRAY;
+} // TPT_APA2RAT
+
+
+//***************************************************************************
+//  $TPT_APA2VFP
+//***************************************************************************
+
+void TPT_APA2VFP
+    (LPTOKEN lptkArg)
+
+{
+    APLVFP aplVfp;
+
+    // Convert the APA to a VFP
+    mpf_init_set_sa (&aplVfp, lptkArg->tkData.tkInteger);
+
+    // Make a global numeric entry of it
+    lptkArg->tkData.tkGlbData =
+      MakeGlbEntry_EM (ARRAY_VFP,           // Array Type to use (see ARRAY_TYPES)
+                      &aplVfp,              // Ptr to value to use
+                       FALSE,               // TRUE iff we should initialize the target first
+                       lptkArg);            // Ptr to token to use in case of error
+    // Check for errors
+    if (lptkArg->tkData.tkGlbData EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+    // Mark as an array
+    lptkArg->tkFlags.TknType = TKT_VARARRAY;
+} // TPT_APA2VFP
+
+
+//***************************************************************************
+//  $TPT_RAT2VFP
+//***************************************************************************
+
+void TPT_RAT2VFP
+    (LPTOKEN lptkArg)
+
+{
+    HGLOBAL  hGlbRat;
+    LPAPLRAT lpMemRat;
+    APLVFP   aplVfp;
+
+    Assert (lptkArg->tkFlags.TknType EQ TKT_VARARRAY);
+    Assert (GetPtrTypeDir (lptkArg->tkData.tkGlbData) EQ PTRTYPE_HGLOBAL);
+
+    // Get the global memory handle
+    hGlbRat = lptkArg->tkData.tkGlbData;
+
+    // Lock the memory to get a ptr to it
+    lpMemRat = MyGlobalLock (hGlbRat);
+
+    Assert (IsScalar ((LPVARARRAY_HEADER) lpMemRat));
+
+    // Skip over the header and dimensions to the data
+    lpMemRat = VarArrayBaseToData (lpMemRat, 0);
+
+    // Convert the RAT to a VFP
+    mpf_init_set_q (&aplVfp, lpMemRat);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRat); lpMemRat = NULL;
+
+    // We no longer need this storage
+    FreeResultGlobalVar (hGlbRat); hGlbRat = NULL;
+
+    // Make a global numeric entry of it
+    lptkArg->tkData.tkGlbData =
+      MakeGlbEntry_EM (ARRAY_VFP,           // Array Type to use (see ARRAY_TYPES)
+                      &aplVfp,              // Ptr to value to use
+                       FALSE,               // TRUE iff we should initialize the target first
+                       lptkArg);            // Ptr to token to use in case of error
+    // Check for errors
+    if (lptkArg->tkData.tkGlbData EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPT_RAT2VFP
+
+
+//***************************************************************************
+//  $TPA_ERROR
+//***************************************************************************
+
+void TPA_ERROR
+    (LPVOID      lpaplAny,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    DbgStop ();
+} // TPA_ERROR
+
+
+//***************************************************************************
+//  $TPA_BOOL2BOOL
+//***************************************************************************
+
+void TPA_BOOL2BOOL
+    (LPAPLBOOL   lpaplBoolean,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+} // TPA_BOOL2BOOL
+
+
+//***************************************************************************
+//  $TPA_BOOL2INT
+//***************************************************************************
+
+void TPA_BOOL2INT
+    (LPAPLBOOL   lpaplBoolean,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+} // TPA_BOOL2INT
+
+
+//***************************************************************************
+//  $TPA_BOOL2FLT
+//***************************************************************************
+
+void TPA_BOOL2FLT
+    (LPAPLBOOL   lpaplBoolean,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplFloat = GetNextFloat (lpaplBoolean, ARRAY_BOOL, uInt);
+} // TPA_BOOL2FLT
+
+
+//***************************************************************************
+//  $TPA_BOOL2HETE
+//***************************************************************************
+
+void TPA_BOOL2HETE
+    (LPAPLBOOL   lpaplBoolean,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    APLINT aplInteger;
+
+    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+
+    lpAllTypes->aplHetero =
+      MakeSymEntry_EM (IMMTYPE_BOOL,
+       (LPAPLLONGEST) &aplInteger,
+                       NULL);
+    if (lpAllTypes->aplHetero EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_BOOL2HETE
+
+
+//***************************************************************************
+//  $TPA_BOOL2NEST
+//***************************************************************************
+
+void TPA_BOOL2NEST
+    (LPAPLBOOL   lpaplBoolean,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    APLINT aplInteger;
+
+    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+
+    lpAllTypes->aplNested =
+      MakeSymEntry_EM (IMMTYPE_BOOL,
+       (LPAPLLONGEST) &aplInteger,
+                       NULL);
+    if (lpAllTypes->aplNested EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_BOOL2NEST
+
+
+//***************************************************************************
+//  $TPA_BOOL2RAT
+//***************************************************************************
+
+void TPA_BOOL2RAT
+    (LPAPLBOOL   lpaplBoolean,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myq_init (&lpAllTypes->aplRat);
+
+    mpq_set_sa (&lpAllTypes->aplRat, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), 1);
+} // TPA_BOOL2RAT
+
+
+//***************************************************************************
+//  $TPA_BOOL2VFP
+//***************************************************************************
+
+void TPA_BOOL2VFP
+    (LPAPLBOOL   lpaplBoolean,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myf_init (&lpAllTypes->aplVfp);
+
+    mpf_set_sa (&lpAllTypes->aplVfp, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt));
+} // TPA_BOOL2VFP
+
+
+//***************************************************************************
+//  $TPA_INT2INT
+//***************************************************************************
+
+void TPA_INT2INT
+    (LPAPLINT    lpaplInteger,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplInteger = GetNextInteger (lpaplInteger, ARRAY_INT, uInt);
+} // TPA_INT2INT
+
+
+//***************************************************************************
+//  $TPA_INT2FLT
+//***************************************************************************
+
+void TPA_INT2FLT
+    (LPAPLINT    lpaplInteger,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplFloat = GetNextFloat (lpaplInteger, ARRAY_INT, uInt);
+} // TPA_INT2FLT
+
+
+//***************************************************************************
+//  $TPA_INT2HETE
+//***************************************************************************
+
+void TPA_INT2HETE
+    (LPAPLINT    lpaplInteger,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    APLINT aplInteger;
+
+    aplInteger = GetNextInteger (lpaplInteger, ARRAY_INT, uInt);
+
+    lpAllTypes->aplHetero =
+      MakeSymEntry_EM (IMMTYPE_INT,
+       (LPAPLLONGEST) &aplInteger,
+                       NULL);
+    if (lpAllTypes->aplHetero EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_INT2HETE
+
+
+//***************************************************************************
+//  $TPA_INT2NEST
+//***************************************************************************
+
+void TPA_INT2NEST
+    (LPAPLINT    lpaplInteger,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    APLINT aplInteger;
+
+    aplInteger = GetNextInteger (lpaplInteger, ARRAY_INT, uInt);
+
+    lpAllTypes->aplNested =
+      MakeSymEntry_EM (IMMTYPE_INT,
+       (LPAPLLONGEST) &aplInteger,
+                       NULL);
+    if (lpAllTypes->aplNested EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_INT2NEST
+
+
+//***************************************************************************
+//  $TPA_INT2RAT
+//***************************************************************************
+
+void TPA_INT2RAT
+    (LPAPLINT    lpaplInteger,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myq_init (&lpAllTypes->aplRat);
+
+    mpq_set_sa (&lpAllTypes->aplRat, GetNextInteger (lpaplInteger, ARRAY_INT, uInt), 1);
+} // TPA_INT2RAT
+
+
+//***************************************************************************
+//  $TPA_INT2VFP
+//***************************************************************************
+
+void TPA_INT2VFP
+    (LPAPLINT    lpaplInteger,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myf_init (&lpAllTypes->aplVfp);
+
+    mpf_set_sa (&lpAllTypes->aplVfp, GetNextInteger (lpaplInteger, ARRAY_INT, uInt));
+} // TPA_INT2VFP
+
+
+//***************************************************************************
+//  $TPA_FLT2FLT
+//***************************************************************************
+
+void TPA_FLT2FLT
+    (LPAPLFLOAT  lpaplFloat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplFloat = lpaplFloat[uInt];
+} // TPA_FLT2FLT
+
+
+//***************************************************************************
+//  $TPA_FLT2HETE
+//***************************************************************************
+
+void TPA_FLT2HETE
+    (LPAPLFLOAT  lpaplFloat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplHetero =
+      MakeSymEntry_EM (IMMTYPE_FLOAT,
+       (LPAPLLONGEST) &lpaplFloat[uInt],
+                       NULL);
+    if (lpAllTypes->aplHetero EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_FLT2HETE
+
+
+//***************************************************************************
+//  $TPA_FLT2NEST
+//***************************************************************************
+
+void TPA_FLT2NEST
+    (LPAPLFLOAT  lpaplFloat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplNested =
+      MakeSymEntry_EM (IMMTYPE_FLOAT,
+       (LPAPLLONGEST) &lpaplFloat[uInt],
+                       NULL);
+    if (lpAllTypes->aplNested EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_FLT2NEST
+
+
+//***************************************************************************
+//  $TPA_FLT2VFP
+//***************************************************************************
+
+void TPA_FLT2VFP
+    (LPAPLFLOAT  lpaplFloat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myf_init (&lpAllTypes->aplVfp);
+
+    mpf_set_d  (&lpAllTypes->aplVfp, lpaplFloat[uInt]);
+} // TPA_FLT2VFP
+
+
+//***************************************************************************
+//  $TPA_CHAR2CHAR
+//***************************************************************************
+
+void TPA_CHAR2CHAR
+    (LPAPLCHAR   lpaplChar,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplChar = lpaplChar[uInt];
+} // TPA_CHAR2CHAR
+
+
+//***************************************************************************
+//  $TPA_CHAR2HETE
+//***************************************************************************
+
+void TPA_CHAR2HETE
+    (LPAPLCHAR   lpaplChar,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplHetero =
+      MakeSymEntry_EM (IMMTYPE_CHAR,
+       (LPAPLLONGEST) &lpaplChar[uInt],
+                       NULL);
+    if (lpAllTypes->aplHetero EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_CHAR2HETE
+
+
+//***************************************************************************
+//  $TPA_CHAR2NEST
+//***************************************************************************
+
+void TPA_CHAR2NEST
+    (LPAPLCHAR   lpaplChar,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplNested =
+      MakeSymEntry_EM (IMMTYPE_CHAR,
+       (LPAPLLONGEST) &lpaplChar[uInt],
+                       NULL);
+    if (lpAllTypes->aplNested EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_CHAR2NEST
+
+
+//***************************************************************************
+//  $TPA_HETE2NEST
+//***************************************************************************
+
+void TPA_HETE2NEST
+    (LPAPLHETERO lpaplHetero,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplNested = lpaplHetero[uInt];
+} // TPA_HETE2NEST
+
+
+//***************************************************************************
+//  $TPA_APA2INT
+//***************************************************************************
+
+void TPA_APA2INT
+    (LPAPLAPA    lpaplAPA,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplInteger = GetNextInteger (lpaplAPA, ARRAY_APA, uInt);
+} // TPA_APA2INT
+
+
+//***************************************************************************
+//  $TPA_APA2FLT
+//***************************************************************************
+
+void TPA_APA2FLT
+    (LPAPLAPA    lpaplAPA,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplFloat = GetNextFloat (lpaplAPA, ARRAY_APA, uInt);
+} // TPA_APA2FLT
+
+
+//***************************************************************************
+//  $TPA_APA2HETE
+//***************************************************************************
+
+void TPA_APA2HETE
+    (LPAPLAPA    lpaplAPA,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    APLINT aplInteger;
+
+    aplInteger = GetNextInteger (lpaplAPA, ARRAY_APA, uInt);
+
+    lpAllTypes->aplHetero =
+      MakeSymEntry_EM (IMMTYPE_INT,
+       (LPAPLLONGEST) &aplInteger,
+                       NULL);
+    if (lpAllTypes->aplHetero EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_APA2HETE
+
+
+//***************************************************************************
+//  $TPA_APA2NEST
+//***************************************************************************
+
+void TPA_APA2NEST
+    (LPAPLAPA    lpaplAPA,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    APLINT aplInteger;
+
+    aplInteger = GetNextInteger (lpaplAPA, ARRAY_APA, uInt);
+
+    lpAllTypes->aplNested =
+      MakeSymEntry_EM (IMMTYPE_INT,
+       (LPAPLLONGEST) &aplInteger,
+                       NULL);
+    if (lpAllTypes->aplNested EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_APA2NEST
+
+
+//***************************************************************************
+//  $TPA_APA2RAT
+//***************************************************************************
+
+void TPA_APA2RAT
+    (LPAPLAPA    lpaplAPA,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myq_init (&lpAllTypes->aplRat);
+
+    mpq_set_sa (&lpAllTypes->aplRat, GetNextInteger (lpaplAPA, ARRAY_APA, uInt), 1);
+} // TPA_APA2RAT
+
+
+//***************************************************************************
+//  $TPA_APA2VFP
+//***************************************************************************
+
+void TPA_APA2VFP
+    (LPAPLAPA    lpaplAPA,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myf_init (&lpAllTypes->aplVfp);
+
+    mpf_set_sa (&lpAllTypes->aplVfp, GetNextInteger (lpaplAPA, ARRAY_APA, uInt));
+} // TPA_APA2VFP
+
+
+//***************************************************************************
+//  $TPA_RAT2VFP
+//***************************************************************************
+
+void TPA_RAT2VFP
+    (LPAPLRAT    lpaplRat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myf_init (&lpAllTypes->aplVfp);
+
+    mpf_set_q  (&lpAllTypes->aplVfp, &lpaplRat[uInt]);
+} // TPA_RAT2VFP
+
+
+//***************************************************************************
+//  $TPA_HETE2HETE
+//***************************************************************************
+
+void TPA_HETE2HETE
+    (LPAPLHETERO lpaplHetero,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplHetero = lpaplHetero[uInt];
+} // TPA_HETE2HETE
+
+
+//***************************************************************************
+//  $TPA_NEST2NEST
+//***************************************************************************
+
+void TPA_NEST2NEST
+    (LPAPLNESTED lpaplNested,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplNested = lpaplNested[uInt];
+} // TPA_NEST2NEST
+
+
+//***************************************************************************
+//  $TPA_RAT2HETE
+//***************************************************************************
+
+void TPA_RAT2HETE
+    (LPAPLRAT    lpaplRat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplHetero =
+      MakeGlbEntry_EM (ARRAY_RAT,       // Entry type
+                      &lpaplRat[uInt],  // Ptr to the value
+                       TRUE,            // TRUE iff we should initialize the target first
+                       NULL);           // Ptr to function token
+    if (lpAllTypes->aplHetero EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_RAT2HETE
+
+
+//***************************************************************************
+//  $TPA_RAT2NEST
+//***************************************************************************
+
+void TPA_RAT2NEST
+    (LPAPLRAT    lpaplRat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplNested =
+      MakeGlbEntry_EM (ARRAY_RAT,       // Entry type
+                      &lpaplRat[uInt],  // Ptr to the value
+                       TRUE,            // TRUE iff we should initialize the target first
+                       NULL);           // Ptr to function token
+    if (lpAllTypes->aplNested EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_RAT2NEST
+
+
+//***************************************************************************
+//  $TPA_RAT2RAT
+//***************************************************************************
+
+void TPA_RAT2RAT
+    (LPAPLRAT    lpaplRat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myq_init (&lpAllTypes->aplRat);
+
+    mpq_set (&lpAllTypes->aplRat, &lpaplRat[uInt]);
+} // TPA_RAT2RAT
+
+
+//***************************************************************************
+//  $TPA_VFP2HETE
+//***************************************************************************
+
+void TPA_VFP2HETE
+    (LPAPLVFP    lpaplVfp,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplHetero =
+      MakeGlbEntry_EM (ARRAY_VFP,       // Entry type
+                      &lpaplVfp[uInt],  // Ptr to the value
+                       TRUE,            // TRUE iff we should initialize the target first
+                       NULL);           // Ptr to function token
+    if (lpAllTypes->aplHetero EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_VFP2HETE
+
+
+//***************************************************************************
+//  $TPA_VFP2NEST
+//***************************************************************************
+
+void TPA_VFP2NEST
+    (LPAPLVFP    lpaplVfp,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplNested =
+      MakeGlbEntry_EM (ARRAY_VFP,       // Entry type
+                      &lpaplVfp[uInt],  // Ptr to the value
+                       TRUE,            // TRUE iff we should initialize the target first
+                       NULL);           // Ptr to function token
+    if (lpAllTypes->aplNested EQ NULL)
+        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+} // TPA_VFP2NEST
+
+
+//***************************************************************************
+//  $TPA_VFP2VFP
+//***************************************************************************
+
+void TPA_VFP2VFP
+    (LPAPLVFP    lpaplVfp,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myf_init (&lpAllTypes->aplVfp);
+
+    mpf_set (&lpAllTypes->aplVfp, &lpaplVfp[uInt]);
+} // TPA_VFP2VFP
 
 
 //***************************************************************************

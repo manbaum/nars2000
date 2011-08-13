@@ -45,23 +45,35 @@ PRIMSPEC PrimSpecTilde =
     NULL,   // &PrimFnMonTildeFisI, -- Can't happen w/Tilde
     &PrimFnMonTildeFisF,
 
-    // Dyadic functions
-    NULL,   // &PrimFnDyd_EM_YY, -- Can't happen w/Tilde
-    NULL,   // &PrimSpecTildeStorageTypeDyd, -- Can't happen w/Tilde
-    NULL,   // &PrimFnDydTildeAPA_EM, -- Can't happen w/Tilde
+    &PrimFnMonTildeRisR,
 
-    NULL,   // &PrimFnDydTildeBisBvB, -- Can't happen w/Tilde
-    NULL,   // &PrimFnDydTildeBisIvI, -- Can't happen w/Tilde
-    NULL,   // &PrimFnDydTildeBisFvF, -- Can't happen w/Tilde
-    NULL,   // &PrimFnDydTildeBisCvC, -- Can't happen w/Tilde
+////               VisR,     // Handled via type promotion (to VisV)
+    &PrimFnMonTildeVisV,
+
+    // Dyadic functions
+    NULL,   // &PrimFnDyd_EM_YY, -- Dyadic Tilde not scalar
+    NULL,   // &PrimSpecTildeStorageTypeDyd, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeAPA_EM, -- Dyadic Tilde not scalar
+
+    NULL,   // &PrimFnDydTildeBisBvB, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeBisIvI, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeBisFvF, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeBisCvC, -- Dyadic Tilde not scalar
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
     NULL,   // &PrimFnDydTildeIisIvI,
-    NULL,   // &PrimFnDydTildeIisFvF, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeIisFvF, -- Dyadic Tilde not scalar
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydTildeFisIvI, -- Can't happen w/Tilde
-    NULL,   // &PrimFnDydTildeFisFvF, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeFisIvI, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeFisFvF, -- Dyadic Tilde not scalar
+
+    NULL,   // &PrimFnDydTildeBisRvR, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeRisRvR, -- Dyadic Tilde not scalar
+
+    NULL,   // &PrimFnDydTildeBisVvV, -- Dyadic Tilde not scalar
+////                 VisRvR     // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydTildeVisVvV, -- Dyadic Tilde not scalar
 
     &PrimFnMonTildeB64isB64,
     &PrimFnMonTildeB32isB32,
@@ -278,6 +290,68 @@ APLBOOL PrimFnMonTildeBisB
 {
     return !aplBooleanRht;
 } // End PrimFnMonTildeBisB
+
+
+//***************************************************************************
+//  $PrimFnMonTildeRisR
+//
+//  Primitive scalar function monadic Tilde:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonTildeRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    if (IsMpq0 (&aplRatRht))
+        mpq_init_set_ui (&mpqRes, 1, 1);
+    else
+    if (IsMpq1 (&aplRatRht))
+        mpq_init_set_ui (&mpqRes, 0, 1);
+    else
+    if (mpq_cmp_ui (&aplRatRht, 0, 1) > 0
+     && mpq_cmp_ui (&aplRatRht, 1, 1) < 0)
+    {
+        mpq_init_set_ui (&mpqRes, 1, 1);
+        mpq_sub         (&mpqRes, &mpqRes, &aplRatRht);
+    } else
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return mpqRes;
+} // End PrimFnMonTildeRisR
+
+
+//***************************************************************************
+//  $PrimFnMonTildeVisV
+//
+//  Primitive scalar function monadic Tilde:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonTildeVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    if (IsMpf0 (&aplVfpRht))
+        mpf_init_set_ui (&mpfRes, 1);
+    else
+    if (IsMpf1 (&aplVfpRht))
+        mpf_init_set_ui (&mpfRes, 0);
+    else
+    if (mpf_cmp_ui (&aplVfpRht, 0) > 0
+     && mpf_cmp_ui (&aplVfpRht, 1) < 0)
+    {
+        mpf_init_set_ui (&mpfRes, 1);
+        mpf_sub         (&mpfRes, &mpfRes, &aplVfpRht);
+    } else
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return mpfRes;
+} // End PrimFnMonTildeVisV
 
 
 //***************************************************************************

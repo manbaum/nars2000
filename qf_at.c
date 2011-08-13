@@ -147,7 +147,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
         goto RIGHT_RANK_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft))
+    if (!IsNumeric (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
     // Get the left arg global handle & longest w/o locking it
@@ -171,6 +171,18 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
         case ARRAY_FLOAT:
             // Attempt to convert the float to an integer using System CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+
+            break;
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an integer using System CT
+            aplLongestLft = GetNextRatIntGlb (hGlbLft, 0, &bRet);
+
+            break;
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an integer using System CT
+            aplLongestLft = GetNextVfpIntGlb (hGlbLft, 0, &bRet);
 
             break;
 
@@ -1005,6 +1017,7 @@ APLUINT CalcGlbVarSize
 {
     APLUINT     aplSize = 0;        // The result
     LPAPLNESTED lpMemData;          // Ptr to the global memory
+    LPAPLRAT    lpMemRat;           // Ptr to Rationals ...
     APLSTYPE    aplType;            // Data storage type
     APLNELM     aplNELM;            // Data NELM
     APLRANK     aplRank;            // Data rank
@@ -1036,24 +1049,53 @@ APLUINT CalcGlbVarSize
     // Skip over the header and dimensions to the data
     lpMemData = VarArrayBaseToData (lpMemData, aplRank);
 
-    // Loop through the array adding the sizes
-    for (uData = 0; uData < aplNELM; uData++)
-    // Split cases based upon the pointer type
-    switch (GetPtrTypeDir (lpMemData[uData]))
+    // Split cases based upon the array type
+    switch (aplType)
     {
-        case PTRTYPE_STCONST:
-            aplSize += sizeof (SYMENTRY);
+        case ARRAY_NESTED:
+        case ARRAY_HETERO:
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++)
+            // Split cases based upon the pointer type
+            switch (GetPtrTypeDir (lpMemData[uData]))
+            {
+                case PTRTYPE_STCONST:
+                    aplSize += sizeof (SYMENTRY);
+
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    aplSize += CalcGlbVarSize (lpMemData[uData], lpDataSize);
+
+                    break;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
 
             break;
 
-        case PTRTYPE_HGLOBAL:
-            aplSize += CalcGlbVarSize (lpMemData[uData], lpDataSize);
+        case ARRAY_RAT:
+            // Copy as ptr to Rationals
+            lpMemRat = (LPAPLRAT) lpMemData;
 
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemRat++)
+                aplSize += sizeof (APLRAT)                      // Size of the header
+                        +  lpMemRat->_mp_num._mp_alloc          // # numerator limbs
+                        * sizeof (*lpMemRat->_mp_num._mp_d)     // ...times the size of each limb
+                        +  lpMemRat->_mp_den._mp_alloc          // # denominator limbs
+                        * sizeof (*lpMemRat->_mp_den._mp_d);    // ...times the size of each limb
             break;
 
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_CHAR:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
         defstop
             break;
-    } // End FOR/SWITCH
+    } // End SWITCH
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMemData = NULL;

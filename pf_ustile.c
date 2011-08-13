@@ -46,6 +46,11 @@ PRIMSPEC PrimSpecUpStile = {
     NULL,   // &PrimFnMonUpStileFisI, -- Can't happen w/UpStile
     &PrimFnMonUpStileFisF,
 
+    &PrimFnMonUpStileRisR,
+
+////               VisR,    // Handled via type promotion (to VisV)
+    &PrimFnMonUpStileVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecUpStileStorageTypeDyd,
@@ -63,6 +68,13 @@ PRIMSPEC PrimSpecUpStile = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydUpStileFisIvI, -- Can't happen w/UpStile
     &PrimFnDydUpStileFisFvF,
+
+    NULL,   // &PrimFnDydUpStileBisRvR, -- Can't happen w/UpStile
+    &PrimFnDydUpStileRisRvR,
+
+    NULL,   // &PrimFnDydUpStileBisVvV, -- Can't happen w/UpStile
+////                  VisRvR,   // Handled via type promotion (to VisVvV)
+    &PrimFnDydUpStileVisVvV,
 
     NULL,   // &PrimFnMonUpStileB64isB64, -- Can't happen w/UpStile
     NULL,   // &PrimFnMonUpStileB32isB32, -- Can't happen w/UpStile
@@ -189,7 +201,7 @@ APLINT PrimFnMonUpStileIisF
 {
     // Check for ± infinity and numbers whose
     //   absolute value is >= 2*53
-    if (!_finite (aplFloatRht)
+    if (IsInfinity (aplFloatRht)
      || fabs (aplFloatRht) >= Float2Pow53)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
@@ -210,6 +222,52 @@ APLFLOAT PrimFnMonUpStileFisF
 {
     return -PrimFnMonDownStileFisF (-aplFloatRht, lpPrimSpec);
 } // End PrimFnMonUpStileFisF
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileRisR
+//
+//  Primitive scalar function monadic UpStile:  R {is} fn R
+//***************************************************************************
+
+APLRAT PrimFnMonUpStileRisR
+    (APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Initialize the result to 0/1
+    mpq_init (&mpqRes);
+
+    // Divide the numerator by the denominator
+    mpz_cdiv_q (mpq_numref (&mpqRes), mpq_numref (&aplRatRht), mpq_denref (&aplRatRht));
+
+    return mpqRes;
+} // End PrimFnMonUpStileRisR
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileVisV
+//
+//  Primitive scalar function monadic UpStile:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonUpStileVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    // Find the ceiling of the Variable FP
+    mpf_ceil (&mpfRes, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnMonUpStileVisV
 
 
 //***************************************************************************
@@ -323,6 +381,54 @@ APLFLOAT PrimFnDydUpStileFisFvF
 {
     return max (aplFloatLft, aplFloatRht);
 } // End PrimFnDydUpStileFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydUpStileRisRvR
+//
+//  Primitive scalar function dyadic UpStile:  R {is} R fn R
+//***************************************************************************
+
+APLRAT PrimFnDydUpStileRisRvR
+    (APLRAT     aplRatLft,
+     APLRAT     aplRatRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLRAT mpqRes = {0};
+
+    // Compare the two Rationals
+    if (mpq_cmp (&aplRatLft, &aplRatRht) > 0)
+        mpq_init_set (&mpqRes, &aplRatLft);
+    else
+        mpq_init_set (&mpqRes, &aplRatRht);
+
+    return mpqRes;
+} // End PrimFnDydUpStileRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydUpStileVisVvV
+//
+//  Primitive scalar function dyadic UpStile:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydUpStileVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Compare the two Variable FPs
+    if (mpf_cmp (&aplVfpLft, &aplVfpRht) > 0)
+        mpf_init_set (&mpfRes, &aplVfpLft);
+    else
+        mpf_init_set (&mpfRes, &aplVfpRht);
+
+    return mpfRes;
+} // End PrimFnDydUpStileVisVvV
 
 
 //***************************************************************************

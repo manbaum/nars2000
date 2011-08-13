@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,6 +47,11 @@ PRIMSPEC PrimSpecCircle = {
     &PrimFnMonCircleFisI,
     &PrimFnMonCircleFisF,
 
+    NULL,   // &PrimFnMonCircleRisR, -- Can't happen w/Circle
+
+////                VisR,   // Handled via type promotion (to VisV)
+    &PrimFnMonCircleVisV,
+
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecCircleStorageTypeDyd,
@@ -57,13 +62,20 @@ PRIMSPEC PrimSpecCircle = {
     NULL,   // &PrimFnDydCircleBisFvF, -- Can't happen w/Circle
     NULL,   // &PrimFnDydCircleBisCvC, -- Can't happen w/Circle
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
+////                IisBvB,     // Handled via type promotion (to IisIvI)
     NULL,   // &PrimFnDydCircleIisIvI, -- Can't happen w/Circle
     NULL,   // &PrimFnDydCircleIisFvF, -- Can't happen w/Circle
 
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
+////                FisBvB,     // Handled via type promotion (to FisIvI)
     &PrimFnDydCircleFisIvI,
     &PrimFnDydCircleFisFvF,
+
+    NULL,   // &PrimFnDydCircleBisRvR, -- Can't happen w/Circle
+    NULL,   // &PrimFnDydCircleRisRvR, -- Can't happen w/Circle
+
+    NULL,   // &PrimFnDydCircleBisVvV, -- Can't happen w/Circle
+////                VisRvR,     // Handled via type promotion (to VisVvV)
+    &PrimFnDydCircleVisVvV,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircle};
@@ -131,6 +143,10 @@ APLSTYPE PrimSpecCircleStorageTypeMon
     // Except all simple numerics become FLOAT
     if (IsSimpleNum (aplTypeRes))
         aplTypeRes = ARRAY_FLOAT;
+    else
+    // Except RAT becomes VFP
+    if (IsRat (aplTypeRes))
+        aplTypeRes = ARRAY_VFP;
 
     return aplTypeRes;
 } // End PrimSpecCircleStorageTypeMon
@@ -204,6 +220,28 @@ APLFLOAT PrimFnMonCircleFisF
 
 
 //***************************************************************************
+//  $PrimFnMonCircleVisV
+//
+//  Primitive scalar function monadic Circle:  V {is} fn V
+//***************************************************************************
+
+APLVFP PrimFnMonCircleVisV
+    (APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+
+    // Initialize the result
+    mpf_init (&mpfRes);
+
+    mpf_mul (&mpfRes, &aplVfpRht, &GetMemPTD ()->mpfPi);
+
+    return mpfRes;
+} // End PrimFnMonCircleVisV
+
+
+//***************************************************************************
 //  $PrimSpecCircleStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
@@ -235,6 +273,10 @@ APLSTYPE PrimSpecCircleStorageTypeDyd
     // Except all simple numerics become FLOAT
     if (IsSimpleNum (aplTypeRes))
         aplTypeRes = ARRAY_FLOAT;
+    else
+    // Except RAT becomes VFP
+    if (IsRat (aplTypeRes))
+        aplTypeRes = ARRAY_VFP;
 
     return aplTypeRes;
 } // End PrimSpecCircleStorageTypeDyd
@@ -438,21 +480,39 @@ APLFLOAT PrimFnDydCircleFisFvF
             return sqrt (1 + pow (aplFloatRht, 2));
 
         case  3:        // tan (R)
+            if (IsInfinity (aplFloatRht))
+                break;
+
             return tan (aplFloatRht);
 
         case  2:        // cos (R)
+            if (IsInfinity (aplFloatRht))
+                break;
+
             return cos (aplFloatRht);
 
         case  1:        // sin (R)
+            if (IsInfinity (aplFloatRht))
+                break;
+
             return sin (aplFloatRht);
 
         case  0:        // (1 - R * 2) * 0.5
+            if (IsInfinity (aplFloatRht))
+                break;
+
             return sqrt (1 - pow (aplFloatRht, 2));
 
         case -1:        // asin (R)
+            if (fabs (aplFloatRht) > 1)
+                break;
+
             return asin (aplFloatRht);
 
         case -2:        // acos (R)
+            if (fabs (aplFloatRht) > 1)
+                break;
+
             return acos (aplFloatRht);
 
         case -3:        // atan (R)
@@ -481,6 +541,9 @@ APLFLOAT PrimFnDydCircleFisFvF
 
         case -7:        // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
+            if (IsInfinity (aplFloatRht))
+                break;
+
             aplFloatTmp = gsl_atanh (aplFloatRht);
 
             // Check for NaN
@@ -496,6 +559,490 @@ APLFLOAT PrimFnDydCircleFisFvF
 
     return 0;   // To keep the compiler happy
 } // End PrimFnDydCircleFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydCircleVisVvV
+//
+//  Primitive scalar function dyadic Circle:  V {is} V fn V
+//***************************************************************************
+
+APLVFP PrimFnDydCircleVisVvV
+    (APLVFP     aplVfpLft,
+     APLVFP     aplVfpRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLVFP mpfRes = {0};
+    APLINT aplLft;
+
+    // Ensure the left arg is valid
+    if (mpf_integer_p (&aplVfpLft)
+     && mpf_cmp_si (&aplVfpLft, -7) >= 0
+     && mpf_cmp_si (&aplVfpLft,  7) <= 0)
+    {
+        // Get the left arg as an int
+        aplLft = mpf_get_si (&aplVfpLft);
+
+        // Split cases based upon the value of the (now) integer left argument
+        switch (aplLft)
+        {
+            case  7:        // tanh (R)
+                return tanhVfp (aplVfpRht);
+
+            case  6:        // cosh (R)
+                return coshVfp (aplVfpRht);
+
+            case  5:        // sinh (R)
+                return sinhVfp (aplVfpRht);
+
+            case  4:        // (1 + R * 2) * 0.5
+                mpf_init (&mpfRes);
+                mpf_mul (&mpfRes, &aplVfpRht, &aplVfpRht);  // R * 2
+                mpf_add_ui (&mpfRes, &mpfRes, 1);           // 1 + R * 2
+                mpf_sqrt (&mpfRes, &mpfRes);                // (1 + R * 2) * 0.5
+
+                return mpfRes;      // sqrt (1 + pow (aplVfpRht, 2));
+
+            case  3:        // tan (R)
+                return tanVfp (aplVfpRht);
+
+            case  2:        // cos (R)
+                return cosVfp (aplVfpRht);
+
+            case  1:        // sin (R)
+                return sinVfp (aplVfpRht);
+
+            case  0:        // (1 - R * 2) * 0.5
+                mpf_init (&mpfRes);
+                mpf_mul (&mpfRes, &aplVfpRht, &aplVfpRht);  // R * 2
+                mpf_ui_sub (&mpfRes, 1, &mpfRes);           // 1 - R * 2
+                mpf_sqrt (&mpfRes, &mpfRes);                // (1 - R * 2) * 0.5
+
+                return mpfRes;      // sqrt (1 - pow (aplVfpRht, 2));
+
+            case -1:        // asin (R)
+                return asinVfp (aplVfpRht);
+
+            case -2:        // acos (R)
+                return acosVfp (aplVfpRht);
+
+            case -3:        // atan (R)
+                return atanVfp (aplVfpRht);
+
+            case -4:        // R x (1 - R * -2) * 0.5
+                mpf_init (&mpfRes);
+                mpf_mul (&mpfRes, &aplVfpRht, &aplVfpRht);  // R * 2
+                mpf_ui_div (&mpfRes, 1, &mpfRes);           // R * -2
+                mpf_ui_sub (&mpfRes, 1, &mpfRes);           // 1 - R * -2
+                mpf_sqrt (&mpfRes, &mpfRes);                // (1 - R * -2) * 0.5
+                mpf_mul (&mpfRes, &mpfRes, &aplVfpRht);     // R x (1 - R * -2) * 0.5
+
+                return mpfRes;      // aplVfpRht * sqrt (1 - pow (aplVfpRht, -2));
+
+            case -5:        // asinh (R)
+                            // ln (R + sqrt (1 + R * 2))
+                return asinhVfp (aplVfpRht);
+
+            case -6:        // acosh (R)
+                            // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
+                return acoshVfp (aplVfpRht);
+
+            case -7:        // atanh (R)
+                            // 0.5 x (ln (1 + R) - ln (1 - R))
+                return atanhVfp (aplVfpRht);
+
+            default:
+                break;
+        } // End SWITCH
+    } // End IF
+
+    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return mpfRes;      // To keep the compiler happy
+} // End PrimFnDydCircleVisVvV
+
+
+//***************************************************************************
+//  $tanhVfp:   7
+//***************************************************************************
+
+APLVFP tanhVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_tanh  (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End tanhVfp
+
+
+//***************************************************************************
+//  $coshVfp:   6
+//***************************************************************************
+
+APLVFP coshVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_cosh  (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End coshVfp
+
+
+//***************************************************************************
+//  $sinhVfp:   5
+//***************************************************************************
+
+APLVFP sinhVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_sinh  (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End sinhVfp
+
+
+//***************************************************************************
+//  $tanVfp:    3
+//***************************************************************************
+
+APLVFP tanVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_tan   (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End tanVfp
+
+
+//***************************************************************************
+//  $cosVfp:    2
+//***************************************************************************
+
+APLVFP cosVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_cos   (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End cosVfp
+
+
+//***************************************************************************
+//  $sinVfp:    1
+//***************************************************************************
+
+APLVFP sinVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_sin   (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End sinVfp
+
+
+//***************************************************************************
+//  $asinVfp:  -1
+//***************************************************************************
+
+APLVFP asinVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Check for special cases:  R < -1  or  R > 1
+    if (mpf_cmp_si (&aplVfpRht, -1) < 0
+     || mpf_cmp_si (&aplVfpRht,  1) > 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_asin  (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End asinVfp
+
+
+//***************************************************************************
+//  $acosVfp:  -2
+//***************************************************************************
+
+APLVFP acosVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Check for special cases:  R < -1  or  R > 1
+    if (mpf_cmp_si (&aplVfpRht, -1) < 0
+     || mpf_cmp_si (&aplVfpRht,  1) > 0)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_acos  (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End acosVfp
+
+
+//***************************************************************************
+//  $atanVfp:  -3
+//***************************************************************************
+
+APLVFP atanVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_atan  (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End atanVfp
+
+
+//***************************************************************************
+//  $asinhVfp:  -5
+//***************************************************************************
+
+APLVFP asinhVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_asinh (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Check for a NaN
+    if (mpfr_nan_p (&mpfrRes))
+    {
+        mpfr_clear (&mpfrRes);
+
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End asinhVfp
+
+
+//***************************************************************************
+//  $acoshVfp:  -6
+//***************************************************************************
+
+APLVFP acoshVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_acosh (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Check for a NaN
+    if (mpfr_nan_p (&mpfrRes))
+    {
+        mpfr_clear (&mpfrRes);
+
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End acoshVfp
+
+
+//***************************************************************************
+//  $atanhVfp:  -7
+//***************************************************************************
+
+APLVFP atanhVfp
+    (APLVFP aplVfpRht)
+
+{
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
+
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_atanh (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Check for a NaN
+    if (mpfr_nan_p (&mpfrRes))
+    {
+        mpfr_clear (&mpfrRes);
+
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
+
+    return mpfRes;
+} // End atanhVfp
 
 
 //***************************************************************************

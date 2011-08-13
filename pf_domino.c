@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2011 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,6 +30,11 @@
 #include "gsl/gsl_matrix_double.h"
 #include "gsl/gsl_permutation.h"
 #include "gsl/gsl_linalg.h"
+#undef  inline
+#define inline
+#if FLINTAVL == 1
+#include "fmpq_mat.h"
+#endif
 
 
 //***************************************************************************
@@ -202,7 +207,7 @@ LPPL_YYSTYPE PrimIdentFnDomino_EM_YY
         goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeRht))
+    if (!IsSimpleGlbNum (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // If the right arg is a scalar, the result is an immediate
@@ -369,13 +374,15 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeRht;           // Right arg storage type
+    APLSTYPE      aplTypeRht,           // Right arg storage type
+                  aplTypeRes;           // Result    ...
     APLNELM       aplNELMRht,           // Right arg NELM
                   aplNELMRes;           // Result    ...
     APLRANK       aplRankRht,           // Right arg rank
                   aplRankRes;           // Result    ...
     HGLOBAL       hGlbRht = NULL,       // Right arg global memory handle
-                  hGlbRes = NULL;       // Result    ...
+                  hGlbRes = NULL,       // Result    ...
+                  lpSymGlbRht;          // Ptr to right arg global numeric
     LPVOID        lpMemRht = NULL,      // Ptr to right arg global memory
                   lpMemRes = NULL;      // Ptr to result    ...
     APLUINT       ByteRes;              // # bytes in the result
@@ -396,6 +403,11 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     int           ErrCode;
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+#if FLINTAVL == 1
+    UBOOL         bRet;                 // TRUE iff the result is valid
+    fmpq_mat_t    fmpqRes;              // Ptr to result as FMPQ matrix
+#endif
+    APLRAT        aplRatTmp = {0};      // Temporary RAT
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -425,7 +437,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                                &aplFloatRht,    // Ptr to float ...
                                 NULL,           // Ptr to WCHAR ...
                                 NULL,           // Ptr to longest ...
-                                NULL,           // Ptr to lpSym/Glb ...
+                               &lpSymGlbRht,    // Ptr to lpSym/Glb ...
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
             break;
@@ -452,26 +464,110 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeRht))
+    if (!IsSimpleGlbNum (aplTypeRht))
         goto DOMAIN_EXIT;
+
+    // Calculate the result storage type
+    if (IsSimpleNum (aplTypeRht))
+        aplTypeRes = ARRAY_FLOAT;
+    else
+        aplTypeRes = aplTypeRht;
 
     // If the right arg is a scalar, the result is an immediate
     if (IsScalar (aplRankRht))
     {
+        IMM_TYPES immTypeRes;
+        APLRAT    aplRatRht = {0};
+        APLVFP    aplVfpRht = {0};
+
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
 
-        // If the right arg is zero, the result is zero
-        //   as per SVD
-        if (aplFloatRht NE 0)
-            aplFloatRht = 1.0 / aplFloatRht;
-
         // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-        lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkFloat    = aplFloatRht;
+        lpYYRes->tkToken.tkFlags.TknType   =            // Filled in below
+////////lpYYRes->tkToken.tkFlags.ImmType   =            // Filled in below
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkData.tkFloat    =            // Filled in below
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+            case ARRAY_FLOAT:
+                // Set the immediate type
+                immTypeRes = IMMTYPE_FLOAT;
+
+                // If the right arg is zero, the result is zero
+                //   as per SVD
+                if (aplFloatRht NE 0)
+                    // Invert it
+                    aplFloatRht = 1.0 / aplFloatRht;
+
+                // Save in the result
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYRes->tkToken.tkData.tkFloat    = aplFloatRht;
+
+                break;
+
+            case ARRAY_RAT:
+                // Set the immediate type
+                immTypeRes = IMMTYPE_RAT;
+
+                // Copy the value
+                mpq_init_set (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
+
+                // If the right arg is zero, the result is zero
+                //   as per SVD
+                if (!IsMpq0 (&aplRatRht))
+                    // Invert it
+                    mpq_inv (&aplRatRht, &aplRatRht);
+
+                // Save in the result
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                lpYYRes->tkToken.tkData.tkGlbData  =
+                  MakeGlbEntry_EM (aplTypeRes,
+                                  &aplRatRht,
+                                   FALSE,
+                                   lptkFunc);
+                // Check for errors
+                if (!lpYYRes->tkToken.tkData.tkGlbData)
+                    goto WSFULL_EXIT;
+                break;
+
+            case ARRAY_VFP:
+                // Set the immediate type
+                immTypeRes = IMMTYPE_VFP;
+
+                // Copy the value
+                mpf_init_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+
+                // If the right arg is zero, the result is zero
+                //   as per SVD
+                if (!IsMpf0 (&aplVfpRht))
+                    // Invert it
+                    mpf_inv (&aplVfpRht, &aplVfpRht);
+
+                // Save in the result
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                lpYYRes->tkToken.tkData.tkGlbData  =
+                  MakeGlbEntry_EM (aplTypeRes,
+                                  &aplVfpRht,
+                                   FALSE,
+                                   lptkFunc);
+                // Check for errors
+                if (!lpYYRes->tkToken.tkData.tkGlbData)
+                    goto WSFULL_EXIT;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         goto NORMAL_EXIT;
     } // End IF
@@ -479,6 +575,32 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     //***************************************************************
     // From here on, the right arg (and the result) is a vector or matrix
     //***************************************************************
+
+    // If the right arg is an overdetermined global numeric array, ...
+    if (uNumRows > uNumCols
+     && IsGlbNum (aplTypeRht))
+    {
+        HGLOBAL      hGlbMFO;           // Magic function/operator ...
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonDomino];
+
+        //  Return the matrix of indices
+        //  Use an internal magic function/operator.
+        return
+          ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
+                                      lptkFunc,     // Ptr to function token
+                                      NULL,         // Ptr to function strand
+                                      lptkRhtArg,   // Ptr to right arg token
+                                      lptkAxis,     // Ptr to axis token
+                                      hGlbMFO,      // Magic function/operator global memory handle
+                                      NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                      LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+    } // End IF
 
     // The rank of the result is the same as
     //   that of the right arg
@@ -490,7 +612,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     aplNELMRes = aplNELMRht;
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_FLOAT, aplNELMRes, aplRankRes);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -507,7 +629,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_FLOAT;
+    lpHeader->ArrType    = (aplNELMRes EQ 0) ? ARRAY_BOOL : aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -537,110 +659,120 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     if (uNumRows EQ 0)
         goto YYALLOC_EXIT;
 
-    // No aborting on error!
-    gsl_set_error_handler_off ();
-
-    // Allocate space for the GSL matrices
-    Assert (uNumRows EQ (APLU3264) uNumRows);
-    Assert (uNumCols EQ (APLU3264) uNumCols);
-
-    lpGslMatrixU = gsl_matrix_alloc  ((APLU3264) uNumRows, (APLU3264) uNumCols);    // M x N
-    lpGslMatrixV = gsl_matrix_alloc  ((APLU3264) uNumCols, (APLU3264) uNumCols);    // N x N
-    lpGslVectorS = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
-    lpGslVectorW = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
-
-    // Check the return codes for the above allocations
-    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
-     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixV
-     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorS
-     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorW)
-        goto WSFULL_EXIT;
-
-    // Copy the right arg to the GSL matrix U
-    // Split cases based upon the right arg's rank
-    switch (aplRankRht)
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
     {
-        case 0:         // Scalar
-            lpGslMatrixU->data[0] = aplFloatRht;
+        case ARRAY_FLOAT:
+            // No aborting on error!
+            gsl_set_error_handler_off ();
 
-            break;
+            // Allocate space for the GSL matrices
+            Assert (uNumRows EQ (APLU3264) uNumRows);
+            Assert (uNumCols EQ (APLU3264) uNumCols);
 
-        case 1:         // Vector
-        case 2:         // Matrix
-            // Split cases based upon the right arg storage type
-            switch (aplTypeRht)
+            lpGslMatrixU = gsl_matrix_alloc  ((APLU3264) uNumRows, (APLU3264) uNumCols);    // M x N
+            lpGslMatrixV = gsl_matrix_alloc  ((APLU3264) uNumCols, (APLU3264) uNumCols);    // N x N
+            lpGslVectorS = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
+            lpGslVectorW = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
+
+            // Check the return codes for the above allocations
+            if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
+             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixV
+             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorS
+             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorW)
+                goto WSFULL_EXIT;
+
+            // Copy the right arg to the GSL matrix U
+            // Split cases based upon the right arg's rank
+            switch (aplRankRht)
             {
-                case ARRAY_BOOL:
-                    uBitMask = BIT0;
-
-                    for (uCol = 0; uCol < aplNELMRht; uCol++)
+////////////////case 0:         // Scalar
+////////////////    lpGslMatrixU->data[0] = aplFloatRht;
+////////////////
+////////////////    break;
+////////////////
+                case 1:         // Vector
+                case 2:         // Matrix
+                    // Split cases based upon the right arg storage type
+                    switch (aplTypeRht)
                     {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
+                        case ARRAY_BOOL:
+                            uBitMask = BIT0;
 
-                        lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
+                            for (uCol = 0; uCol < aplNELMRht; uCol++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
 
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
+                                lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
 
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = BIT0;            // Start over
-                            ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
+                                // Shift over the bit mask
+                                uBitMask <<= 1;
 
-                    break;
+                                // Check for end-of-byte
+                                if (uBitMask EQ END_OF_BYTE)
+                                {
+                                    uBitMask = BIT0;            // Start over
+                                    ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
 
-                case ARRAY_INT:
-                    for (uCol = 0; uCol < aplNELMRht; uCol++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
+                            break;
 
-                        lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
-                    } // End FOR
+                        case ARRAY_INT:
+                            for (uCol = 0; uCol < aplNELMRht; uCol++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
 
-                    break;
+                                lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+                            } // End FOR
 
-                case ARRAY_FLOAT:
-                    // Calculate space needed for the result
-                    ByteRes = aplNELMRes * sizeof (APLFLOAT);
+                            break;
 
-                    // Check for overflow
-                    if (ByteRes NE (APLU3264) ByteRes)
-                        goto WSFULL_EXIT;
+                        case ARRAY_FLOAT:
+                            // Calculate space needed for the result
+                            ByteRes = aplNELMRes * sizeof (APLFLOAT);
 
-                    Assert (sizeof (double) EQ sizeof (APLFLOAT));
-                    CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
-////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
-////////////////////{
-////////////////////    // Check for Ctrl-Break
-////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
-////////////////////        goto ERROR_EXIT;
-////////////////////
-////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
-////////////////////} // End FOR
+                            // Check for overflow
+                            if (ByteRes NE (APLU3264) ByteRes)
+                                goto WSFULL_EXIT;
 
-                    break;
+                            Assert (sizeof (double) EQ sizeof (APLFLOAT));
+                            CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
+////////////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
+////////////////////////////{
+////////////////////////////    // Check for Ctrl-Break
+////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////        goto ERROR_EXIT;
+////////////////////////////
+////////////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
+////////////////////////////} // End FOR
 
-                case ARRAY_APA:
+                            break;
+
+                        case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
-                    // Get the APA parameters
-                    apaOffRht = lpAPA->Off;
-                    apaMulRht = lpAPA->Mul;
+                            // Get the APA parameters
+                            apaOffRht = lpAPA->Off;
+                            apaMulRht = lpAPA->Mul;
 #undef  lpAPA
-                    for (uCol = 0; uCol < aplNELMRht; uCol++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
+                            for (uCol = 0; uCol < aplNELMRht; uCol++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
 
-                        lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
-                    } // End FOR
+                                lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
 
                     break;
 
@@ -648,71 +780,158 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                     break;
             } // End SWITCH
 
+            // Calculate the SVD (Singular Value Decomposition)
+            //   with the result in U and S (S is the diagonal of the matrix)
+            ErrCode =
+              gsl_linalg_SV_decomp (lpGslMatrixU,               // M x N
+                                    lpGslMatrixV,               // N x N
+                                    lpGslVectorS,               // N
+                                    lpGslVectorW);              // N
+            // Check the error code
+            if (ErrCode NE GSL_SUCCESS)
+                goto DOMAIN_EXIT;
+
+            // Solve the system Ax = b
+            //   where x is the result, and b is the MxM identity matrix
+
+            // Allocate and zero a working vector (for the identity matrix)
+            lpGslVectorI = gsl_vector_alloc  ((APLU3264) uNumRows); // M
+
+            // Check the return code for the above allocation
+            if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorI)
+                goto WSFULL_EXIT;
+
+            gsl_vector_set_zero (lpGslVectorI);
+
+            // The solution rows are now L[;I] +.x V +.x (1/S) +.x U*
+            //   where L is an identity matrix
+            for (uRow = 0; uRow < uNumRows; uRow++)             // 0 to M-1
+            {
+                // If we're not at the first row, clear the previous value
+                if (uRow NE 0)
+                    lpGslVectorI->data[uRow - 1] = 0;
+
+                // Set the next value
+                lpGslVectorI->data[uRow] = 1;
+
+                // Call GSL function to solve for this column
+                ErrCode =
+                  gsl_linalg_SV_solve (lpGslMatrixU,            // M x N
+                                       lpGslMatrixV,            // N x N
+                                       lpGslVectorS,            // N
+                                       lpGslVectorI,            // M
+                                       lpGslVectorW);           // N
+                // Check the error code
+                if (ErrCode NE GSL_SUCCESS)
+                    goto DOMAIN_EXIT;
+
+#define lpMemData   ((LPAPLFLOAT) lpMemRes)
+
+                // Copy the values from W to the result
+                for (uCol = 0; uCol < uNumCols; uCol++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
+                } // End FOR
+
+#undef  lpMemData
+            } // End FOR
             break;
+
+        case ARRAY_RAT:
+#if FLINTAVL == 0
+            goto NONCE_EXIT;
+#else
+            // Create the result matrix
+            fmpq_mat_init (fmpqRes, (UINT) uNumRows, (UINT) uNumCols);
+
+            // Loop through the rows and cols
+            for (uRow = 0; uRow < uNumRows; uRow++)
+            for (uCol = 0; uCol < uNumCols; uCol++)
+                // Initialize the matrix
+                fmpq_set_mpq (fmpq_mat_entry (fmpqRes, uRow, uCol), &((LPAPLRAT) lpMemRht)[uRow * uNumCols + uCol]);
+
+            // Invert the matrix
+            bRet = fmpq_mat_inv (fmpqRes, fmpqRes) NE 0;
+
+            // If it succeeded, ...
+            if (bRet)
+            {
+                // Loop through the rows and cols
+                for (uRow = 0; uRow < uNumRows; uRow++)
+                for (uCol = 0; uCol < uNumCols; uCol++)
+                {
+                    // Initialize the result entry
+                    mpq_init (&((LPAPLRAT) lpMemRes)[uRow * uNumCols + uCol]);
+
+                    // Copy the inverted elements to the result
+                    fmpq_get_mpq (&((LPAPLRAT) lpMemRes)[uRow * uNumCols + uCol], fmpq_mat_entry (fmpqRes, uRow, uCol));
+                } // End FOR/FOR
+            } // End IF
+
+            // We no longer need this storage
+            fmpq_mat_clear (fmpqRes);
+
+            if (!bRet)
+                goto DOMAIN_EXIT;
+
+            break;
+#endif
+
+        case ARRAY_VFP:
+#if FLINTAVL == 0
+            goto NONCE_EXIT;
+#else
+            // Initialize the temp
+            mpq_init (&aplRatTmp);
+
+            // Create the matrix
+            fmpq_mat_init (fmpqRes, (UINT) uNumRows, (UINT) uNumCols);
+
+            // Loop through the rows and cols
+            for (uRow = 0; uRow < uNumRows; uRow++)
+            for (uCol = 0; uCol < uNumCols; uCol++)
+            {
+                // Convert the VFP to a RAT
+                mpq_set_f (&aplRatTmp, &((LPAPLVFP) lpMemRht)[uRow * uNumCols + uCol]);
+
+                // Initialize the matrix
+                fmpq_set_mpq (fmpq_mat_entry (fmpqRes, uRow, uCol), &aplRatTmp);
+            } // End FOR/FOR
+
+            // Invert the matrix
+            bRet = fmpq_mat_inv (fmpqRes, fmpqRes) NE 0;
+
+            // If it succeeded, ...
+            if (bRet)
+            {
+                // Loop through the rows and cols
+                for (uRow = 0; uRow < uNumRows; uRow++)
+                for (uCol = 0; uCol < uNumCols; uCol++)
+                {
+                    // Copy the inverted elements to a temp
+                    fmpq_get_mpq (&aplRatTmp, fmpq_mat_entry (fmpqRes, uRow, uCol));
+
+                    // Convert the RAT to a VFP
+                    mpf_init_set_q (&((LPAPLVFP) lpMemRes)[uRow * uNumCols + uCol], &aplRatTmp);
+                } // End FOR/FOR
+            } // End IF
+
+            // We no longer need this storage
+            fmpq_mat_clear (fmpqRes);
+            Myq_clear (&aplRatTmp);
+
+            if (!bRet)
+                goto DOMAIN_EXIT;
+            break;
+#endif
 
         defstop
             break;
     } // End SWITCH
-
-    // Calculate the SVD (Singular Value Decomposition)
-    //   with the result in U and S (S is the diagonal of the matrix)
-    ErrCode =
-      gsl_linalg_SV_decomp (lpGslMatrixU,               // M x N
-                            lpGslMatrixV,               // N x N
-                            lpGslVectorS,               // N
-                            lpGslVectorW);              // N
-    // Check the error code
-    if (ErrCode NE GSL_SUCCESS)
-        goto DOMAIN_EXIT;
-
-    // Solve the system Ax = b
-    //   where x is the result, and b is the MxM identity matrix
-
-    // Allocate and zero a working vector (for the identity matrix)
-    lpGslVectorI = gsl_vector_alloc  ((APLU3264) uNumRows); // M
-
-    // Check the return code for the above allocation
-    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorI)
-        goto WSFULL_EXIT;
-
-    gsl_vector_set_zero (lpGslVectorI);
-
-    // The solution rows are now L[;I] +.x V +.x (1/S) +.x U*
-    //   where L is an identity matrix
-    for (uRow = 0; uRow < uNumRows; uRow++)             // 0 to M-1
-    {
-        // If we're not at the first row, clear the previous value
-        if (uRow NE 0)
-            lpGslVectorI->data[uRow - 1] = 0;
-
-        // Set the next value
-        lpGslVectorI->data[uRow] = 1;
-
-        // Call GSL function to solve for this column
-        ErrCode =
-          gsl_linalg_SV_solve (lpGslMatrixU,            // M x N
-                               lpGslMatrixV,            // N x N
-                               lpGslVectorS,            // N
-                               lpGslVectorI,            // M
-                               lpGslVectorW);           // N
-        // Check the error code
-        if (ErrCode NE GSL_SUCCESS)
-            goto DOMAIN_EXIT;
-
-#define lpMemData   ((LPAPLFLOAT) lpMemRes)
-
-        // Copy the values from W to the result
-        for (uCol = 0; uCol < uNumCols; uCol++)
-        {
-            // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
-                goto ERROR_EXIT;
-
-            lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
-        } // End FOR
-
-#undef  lpMemData
-    } // End FOR
 YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -725,6 +944,13 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
+
+#if FLINTAVL == 0
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+#endif
 
 RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
@@ -807,6 +1033,29 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  Magic function/operator for Monadic Domino for Global Numerics
+//
+//  Return the pseudo-inverse of an array of global numerics.
+//***************************************************************************
+
+static APLCHAR MonHeader[] =
+  L"Z" $IS MFON_MonDomino L" R";
+
+static APLCHAR MonLine1[] =
+  L"Z" $IS L"(" $REVERSE $RHO L"R)" $RHO L"(" $TRANSPOSE L"Z)" $DOMINO L"(" $TRANSPOSE L"Z)+." $TIMES L"Z" $IS $COMMABAR L"R";
+
+static LPAPLCHAR MonBody[] =
+{MonLine1,
+};
+
+MAGIC_FCNOPR MFO_MonDomino =
+{MonHeader,
+ MonBody,
+ countof (MonBody),
+};
+
+
+//***************************************************************************
 //  $PrimFnDydDomino_EM_YY
 //
 //  Primitive function for dyadic Domino ("matrix divide")
@@ -826,7 +1075,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
 {
     APLSTYPE      aplTypeLft,           // Left arg storage type
-                  aplTypeRht;           // Right ...
+                  aplTypeRht,           // Right ...
+                  aplTypeRes;           // Result    ...
     APLNELM       aplNELMLft,           // Left arg NELM
                   aplNELMRht,           // Right ...
                   aplNELMRes;           // Result   ...
@@ -835,7 +1085,9 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                   aplRankRes;           // Result   ...
     HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
                   hGlbRht = NULL,       // Right ...
-                  hGlbRes = NULL;       // Result   ...
+                  hGlbRes = NULL,       // Result   ...
+                  lpSymGlbLft,          // Ptr to left arg global numeric
+                  lpSymGlbRht;          // Ptr to right ...
     LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
                   lpMemRht = NULL,      // Ptr to right ...
                   lpMemRes = NULL;      // Ptr to result   ...
@@ -867,6 +1119,12 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     int           ErrCode;
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+#if FLINTAVL == 1
+    fmpq_mat_t    fmpqLft,              // Ptr to left arg as FMPQ matrix
+                  fmpqRht,              // Ptr to right ...
+                  fmpqRes;              // Ptr to result    ...
+    APLRAT        aplRatTmp = {0};      // Temporary RAT
+#endif
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -898,7 +1156,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                                &aplFloatRht,    // Ptr to float ...
                                 NULL,           // Ptr to WCHAR ...
                                 NULL,           // Ptr to longest ...
-                                NULL,           // Ptr to lpSym/Glb ...
+                               &lpSymGlbRht,    // Ptr to lpSym/Glb ...
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
             break;
@@ -930,7 +1188,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                                &aplFloatLft,    // Ptr to float ...
                                 NULL,           // Ptr to WCHAR ...
                                 NULL,           // Ptr to longest ...
-                                NULL,           // Ptr to lpSym/Glb ...
+                               &lpSymGlbLft,    // Ptr to lpSym/Glb ...
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
             break;
@@ -957,8 +1215,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft)
-     || !IsSimpleNum (aplTypeRht))
+    if (!IsSimpleGlbNum (aplTypeLft)
+     || !IsSimpleGlbNum (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // Save the # rows & cols in the result
@@ -972,304 +1230,507 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     // Save the NELM of the result
     aplNELMRes = uNumRowsRes * uNumColsRes;
 
-    // Calculate space needed for the result
-    if (!IsScalar (aplRankRes))
+    // Calculate the result storage type
+    aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
+
+    // If the result is simple, ...
+    if (IsSimpleNum (aplTypeRes))
+        // Make it a float
+        aplTypeRes = ARRAY_FLOAT;
+
+    // If the args are overdetermined global numeric arrays, ...
+    if (uNumRowsRht > uNumColsRht
+     && (IsGlbNum (aplTypeLft)
+      || IsGlbNum (aplTypeRht)))
+    {
+        HGLOBAL      hGlbMFO;           // Magic function/operator ...
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydDomino];
+
+        //  Return the matrix of indices
+        //  Use an internal magic function/operator.
+        return
+          ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
+                                      lptkFunc,     // Ptr to function token
+                                      NULL,         // Ptr to function strand
+                                      lptkRhtArg,   // Ptr to right arg token
+                                      lptkAxis,     // Ptr to axis token
+                                      hGlbMFO,      // Magic function/operator global memory handle
+                                      NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                      LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+    } else
     {
         // Calculate space needed for the result
-        ByteRes = CalcArraySize (ARRAY_FLOAT, aplNELMRes, aplRankRes);
+        if (!IsScalar (aplRankRes)
+         || IsGlbNum (aplTypeRes))
+        {
+            // Calculate space needed for the result
+            ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
-        // Check for overflow
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EXIT;
+            // Check for overflow
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
 
-        // Allocate space for the result
-        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
-            goto WSFULL_EXIT;
+            // Allocate space for the result
+            hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+            if (!hGlbRes)
+                goto WSFULL_EXIT;
 
-        // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+            // Lock the memory to get a ptr to it
+            lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-        // Fill in the header values
-        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeader->ArrType    = ARRAY_FLOAT;
-////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-        lpHeader->RefCnt     = 1;
-        lpHeader->NELM       = aplNELMRes;
-        lpHeader->Rank       = aplRankRes;
+            // Fill in the header values
+            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+            lpHeader->ArrType    = (aplNELMRes EQ 0) ? ARRAY_BOOL : aplTypeRes;
+////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+            lpHeader->RefCnt     = 1;
+            lpHeader->NELM       = aplNELMRes;
+            lpHeader->Rank       = aplRankRes;
 #undef  lpHeader
 
-        // Fill in the dimensions
-        if (IsVector (aplRankRes))
-            *VarArrayBaseToDim (lpMemRes) = uNumRowsRes;
-        else
-        if (IsMatrix (aplRankRes))
-        {
-            (VarArrayBaseToDim (lpMemRes))[0] = uNumRowsRes;
-            (VarArrayBaseToDim (lpMemRes))[1] = uNumColsRes;
-        } // End IF/ELSE
-    } // End IF
-
-    // Skip over the header and dimensions to the data
-    if (!IsScalar (aplRankLft))
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-    if (!IsScalar (aplRankRht))
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    if (!IsScalar (aplRankRes))
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
-
-    // Check for no rows as gsl_linalg_SV_decomp doesn't handle it well
-    if (uNumRowsRht EQ 0)
-        goto YYALLOC_EXIT;
-
-    // No aborting on error!
-    gsl_set_error_handler_off ();
-
-    // Allocate space for the GSL matrices
-    Assert (uNumRowsLft EQ (APLU3264) uNumRowsLft);
-    Assert (uNumRowsRht EQ (APLU3264) uNumRowsRht);
-
-    lpGslMatrixU = gsl_matrix_alloc  ((APLU3264) uNumRowsRht, (APLU3264) uNumColsRht);  // M x N
-    lpGslMatrixV = gsl_matrix_alloc  ((APLU3264) uNumColsRht, (APLU3264) uNumColsRht);  // N x N
-    lpGslVectorS = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
-    lpGslVectorW = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
-    lpGslVectorX = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
-    lpGslVectorB = gsl_vector_alloc  ((APLU3264) uNumRowsRht);                      // M
-
-    // Check the return codes for the above allocations
-    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
-     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixV
-     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorS
-     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorW
-     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorX)
-        goto WSFULL_EXIT;
-
-    // Copy the right arg to the GSL matrix U
-    // Split cases based upon the right arg's rank
-    switch (aplRankRht)
-    {
-        case 0:         // Scalar
-            lpGslMatrixU->data[0] = aplFloatRht;
-
-            break;
-
-        case 1:         // Vector
-        case 2:         // Matrix
-            // Split cases based upon the right arg storage type
-            switch (aplTypeRht)
+            // Fill in the dimensions
+            if (IsVector (aplRankRes))
+                *VarArrayBaseToDim (lpMemRes) = uNumRowsRes;
+            else
+            if (IsMatrix (aplRankRes))
             {
-                case ARRAY_BOOL:
-                    uBitMask = BIT0;
+                (VarArrayBaseToDim (lpMemRes))[0] = uNumRowsRes;
+                (VarArrayBaseToDim (lpMemRes))[1] = uNumColsRes;
+            } // End IF/ELSE
+        } // End IF
 
-                    for (uCol = 0; uCol < aplNELMRht; uCol++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
+        // Skip over the header and dimensions to the data
+        if (!IsScalar (aplRankLft))
+            lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        if (!IsScalar (aplRankRht))
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        if (!IsScalar (aplRankRes) || IsGlbNum (aplTypeRes))
+            lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-                        lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
+        // Check for no rows as gsl_linalg_SV_decomp doesn't handle it well
+        if (uNumRowsRht EQ 0)
+            goto YYALLOC_EXIT;
 
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = BIT0;            // Start over
-                            ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_INT:
-                    for (uCol = 0; uCol < aplNELMRht; uCol++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_FLOAT:
-                    // Calculate space needed for the result
-                    ByteRes = aplNELMRht * sizeof (APLFLOAT);
-
-                    // Check for overflow
-                    if (ByteRes NE (APLU3264) ByteRes)
-                        goto WSFULL_EXIT;
-
-                    Assert (sizeof (double) EQ sizeof (APLFLOAT));
-                    CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
-////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
-////////////////////{
-////////////////////    // Check for Ctrl-Break
-////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
-////////////////////        goto ERROR_EXIT;
-////////////////////
-////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
-////////////////////} // End FOR
-
-                    break;
-
-                case ARRAY_APA:
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-                    // Get the APA parameters
-                    apaOffRht = lpAPA->Off;
-                    apaMulRht = lpAPA->Mul;
-#undef  lpAPA
-                    for (uCol = 0; uCol < aplNELMRht; uCol++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
-                    } // End FOR
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // Calculate the SVD (Singular Value Decomposition)
-    //   with the result in U and S (S is the diagonal of the matrix)
-    ErrCode =
-      gsl_linalg_SV_decomp (lpGslMatrixU,               // M x N
-                            lpGslMatrixV,               // N x N
-                            lpGslVectorS,               // N
-                            lpGslVectorW);              // N
-    // Check the error code
-    if (ErrCode NE GSL_SUCCESS)
-        goto DOMAIN_EXIT;
-
-    // Free the GSL work vector
-    gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
-
-    // The solution rows are now L[;I] +.x V +.x (1/S) +.x U*
-    for (uCol = 0; uCol < uNumColsLft; uCol++)
-    {
-        // Copy the next column from L to B
-        if (IsScalar (aplRankLft))
-            lpGslVectorB->data[0] = aplFloatLft;
-        else
-        // Split cases based upon the left arg's storage type
-        switch (aplTypeLft)
+        // Split cases based upon the result storage type
+        switch (aplTypeRes)
         {
-            case ARRAY_BOOL:
-                uBitMask = BIT0;
-
-                Assert (uNumRowsLft EQ lpGslVectorB->size);
-                for (uRow = 0; uRow < uNumRowsLft; uRow++)
-                {
-                    // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
-                        goto ERROR_EXIT;
-
-                    lpGslVectorB->data[uRow] = (uBitMask & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
-
-                    // Shift over the bit mask
-                    uBitMask <<= 1;
-
-                    // Check for end-of-byte
-                    if (uBitMask EQ END_OF_BYTE)
-                    {
-                        uBitMask = BIT0;            // Start over
-                        ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                    } // End IF
-                } // End FOR
-
-                break;
-
-            case ARRAY_INT:
-                Assert (uNumRowsLft EQ lpGslVectorB->size);
-                for (uRow = 0; uRow < uNumRowsLft; uRow++)
-                {
-                    // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
-                        goto ERROR_EXIT;
-
-                    lpGslVectorB->data[uRow] = (APLFLOAT) ((LPAPLINT) lpMemLft)[uRow * uNumColsLft + uCol];
-                } // End FOR
-
-                break;
-
             case ARRAY_FLOAT:
-                Assert (uNumRowsLft EQ lpGslVectorB->size);
-                for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                // No aborting on error!
+                gsl_set_error_handler_off ();
+
+                // Ensure no overflow
+                Assert (uNumRowsLft EQ (APLU3264) uNumRowsLft);
+                Assert (uNumRowsRht EQ (APLU3264) uNumRowsRht);
+
+                // Allocate space for the GSL matrices
+                lpGslMatrixU = gsl_matrix_alloc  ((APLU3264) uNumRowsRht, (APLU3264) uNumColsRht);  // M x N
+                lpGslMatrixV = gsl_matrix_alloc  ((APLU3264) uNumColsRht, (APLU3264) uNumColsRht);  // N x N
+                lpGslVectorS = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
+                lpGslVectorW = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
+                lpGslVectorX = gsl_vector_alloc  ((APLU3264) uNumColsRht);                      // N
+                lpGslVectorB = gsl_vector_alloc  ((APLU3264) uNumRowsRht);                      // M
+
+                // Check the return codes for the above allocations
+                if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
+                 || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixV
+                 || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorS
+                 || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorW
+                 || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorX)
+                    goto WSFULL_EXIT;
+
+                // Copy the right arg to the GSL matrix U
+                // Split cases based upon the right arg's rank
+                switch (aplRankRht)
                 {
-                    // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
-                        goto ERROR_EXIT;
+                    case 0:         // Scalar
+                        lpGslMatrixU->data[0] = aplFloatRht;
 
-                    lpGslVectorB->data[uRow] = ((LPAPLFLOAT) lpMemLft)[uRow * uNumColsLft + uCol];
-                } // End FOR
+                        break;
 
-                break;
+                    case 1:         // Vector
+                    case 2:         // Matrix
+                        // Split cases based upon the right arg storage type
+                        switch (aplTypeRht)
+                        {
+                            case ARRAY_BOOL:
+                                uBitMask = BIT0;
 
-            case ARRAY_APA:
-                Assert (uNumRowsLft EQ lpGslVectorB->size);
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-                // Get the APA parameters
-                apaOffLft = lpAPA->Off;
-                apaMulLft = lpAPA->Mul;
+                                for (uCol = 0; uCol < aplNELMRht; uCol++)
+                                {
+                                    // Check for Ctrl-Break
+                                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                                        goto ERROR_EXIT;
+
+                                    lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
+
+                                    // Shift over the bit mask
+                                    uBitMask <<= 1;
+
+                                    // Check for end-of-byte
+                                    if (uBitMask EQ END_OF_BYTE)
+                                    {
+                                        uBitMask = BIT0;            // Start over
+                                        ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                                    } // End IF
+                                } // End FOR
+
+                                break;
+
+                            case ARRAY_INT:
+                                for (uCol = 0; uCol < aplNELMRht; uCol++)
+                                {
+                                    // Check for Ctrl-Break
+                                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                                        goto ERROR_EXIT;
+
+                                    lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+                                } // End FOR
+
+                                break;
+
+                            case ARRAY_FLOAT:
+                                // Calculate space needed for the result
+                                ByteRes = aplNELMRht * sizeof (APLFLOAT);
+
+                                // Check for overflow
+                                if (ByteRes NE (APLU3264) ByteRes)
+                                    goto WSFULL_EXIT;
+
+                                Assert (sizeof (double) EQ sizeof (APLFLOAT));
+                                CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
+    ////////////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
+    ////////////////////////////{
+    ////////////////////////////    // Check for Ctrl-Break
+    ////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+    ////////////////////////////        goto ERROR_EXIT;
+    ////////////////////////////
+    ////////////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
+    ////////////////////////////} // End FOR
+
+                                break;
+
+                            case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                                // Get the APA parameters
+                                apaOffRht = lpAPA->Off;
+                                apaMulRht = lpAPA->Mul;
 #undef  lpAPA
-                for (uRow = 0; uRow < uNumRowsLft; uRow++)
-                {
-                    // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
-                        goto ERROR_EXIT;
+                                for (uCol = 0; uCol < aplNELMRht; uCol++)
+                                {
+                                    // Check for Ctrl-Break
+                                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                                        goto ERROR_EXIT;
 
-                    lpGslVectorB->data[uRow] = (APLFLOAT) (APLINT) (apaOffLft + apaMulLft * (uRow * uNumColsLft + uCol));
+                                    lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
+                                } // End FOR
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Calculate the SVD (Singular Value Decomposition)
+                //   with the result in U and S (S is the diagonal of the matrix)
+                ErrCode =
+                  gsl_linalg_SV_decomp (lpGslMatrixU,               // M x N
+                                        lpGslMatrixV,               // N x N
+                                        lpGslVectorS,               // N
+                                        lpGslVectorW);              // N
+                // Check the error code
+                if (ErrCode NE GSL_SUCCESS)
+                    goto DOMAIN_EXIT;
+
+                // Free the GSL work vector
+                gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
+
+                // The solution rows are now L[;I] +.x V +.x (1/S) +.x U*
+                for (uCol = 0; uCol < uNumColsLft; uCol++)
+                {
+                    // Copy the next column from L to B
+                    if (IsScalar (aplRankLft))
+                        lpGslVectorB->data[0] = aplFloatLft;
+                    else
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:
+                            uBitMask = BIT0;
+
+                            Assert (uNumRowsLft EQ lpGslVectorB->size);
+                            for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                lpGslVectorB->data[uRow] = (uBitMask & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
+
+                                // Shift over the bit mask
+                                uBitMask <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMask EQ END_OF_BYTE)
+                                {
+                                    uBitMask = BIT0;            // Start over
+                                    ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:
+                            Assert (uNumRowsLft EQ lpGslVectorB->size);
+                            for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                lpGslVectorB->data[uRow] = (APLFLOAT) ((LPAPLINT) lpMemLft)[uRow * uNumColsLft + uCol];
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            Assert (uNumRowsLft EQ lpGslVectorB->size);
+                            for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                lpGslVectorB->data[uRow] = ((LPAPLFLOAT) lpMemLft)[uRow * uNumColsLft + uCol];
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_APA:
+                            Assert (uNumRowsLft EQ lpGslVectorB->size);
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+                            // Get the APA parameters
+                            apaOffLft = lpAPA->Off;
+                            apaMulLft = lpAPA->Mul;
+#undef  lpAPA
+                            for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                lpGslVectorB->data[uRow] = (APLFLOAT) (APLINT) (apaOffLft + apaMulLft * (uRow * uNumColsLft + uCol));
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Call GSL function to solve for this column
+                    ErrCode =
+                      gsl_linalg_SV_solve (lpGslMatrixU,            // M x N
+                                           lpGslMatrixV,            // N x N
+                                           lpGslVectorS,            // N
+                                           lpGslVectorB,            // M
+                                           lpGslVectorX);           // N
+                    // Check the error code
+                    if (ErrCode NE GSL_SUCCESS)
+                        goto DOMAIN_EXIT;
+
+#define lpMemData   ((LPAPLFLOAT) lpMemRes)
+
+                    // Copy X to the next column in the result
+                    Assert (uNumRowsRes EQ lpGslVectorX->size);
+                    if (IsScalar (aplRankRes))
+                        aplFloatRes = lpGslVectorX->data[0];
+                    else
+                    for (uRow = 0; uRow < uNumRowsRes; uRow++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        lpMemData[uRow * uNumColsRes + uCol] = lpGslVectorX->data[uRow];
+                    } // End IF/ELSE/...
+
+#undef  lpMemData
                 } // End FOR
 
                 break;
+
+            case ARRAY_RAT:
+            case ARRAY_VFP:
+#if FLINTAVL == 0
+                goto NONCE_EXIT;
+#else
+                // Ensure no overflow
+                Assert (uNumRowsLft EQ (APLU3264) uNumRowsLft);
+                Assert (uNumRowsRht EQ (APLU3264) uNumRowsRht);
+
+                // Initialize the temp
+                mpq_init (&aplRatTmp);
+
+                // Create the left, right, and result FMPQ matrices
+                fmpq_mat_init (fmpqLft, (UINT) uNumRowsLft, (UINT) uNumColsLft);
+                fmpq_mat_init (fmpqRht, (UINT) uNumRowsRht, (UINT) uNumColsRht);
+                fmpq_mat_init (fmpqRes, (UINT) uNumRowsRes, (UINT) uNumColsRes);
+
+                // Loop through the left arg rows and cols
+                for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                for (uCol = 0; uCol < uNumColsLft; uCol++)
+                {
+                    // Split cases based upon the left arg storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_APA:
+                            // Convert the BOOL/INT/APA to a RAT
+                            mpq_set_sa (&aplRatTmp, GetNextInteger (lpMemLft, aplTypeLft, uRow * uNumColsLft + uCol), 1);
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Convert the FLOAT to a RAT
+                            mpq_set_d  (&aplRatTmp, ((LPAPLFLOAT) lpMemLft)[uRow * uNumColsLft + uCol]);
+
+                            break;
+
+                        case ARRAY_RAT:
+                            // Copy the RAT
+                            mpq_set    (&aplRatTmp, &((LPAPLRAT ) lpMemLft)[uRow * uNumColsLft + uCol]);
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Convert the VFP to a RAT
+                            mpq_set_f  (&aplRatTmp, &((LPAPLVFP ) lpMemLft)[uRow * uNumColsLft + uCol]);
+
+                            break;
+
+                        case ARRAY_CHAR:
+                        case ARRAY_HETERO:
+                        case ARRAY_NESTED:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Copy to the matrix entry
+                    fmpq_set_mpq (fmpq_mat_entry (fmpqLft, uRow, uCol), &aplRatTmp);
+                } // End FOR/FOR
+
+                // Loop through the right arg rows and cols
+                for (uRow = 0; uRow < uNumRowsRht; uRow++)
+                for (uCol = 0; uCol < uNumColsRht; uCol++)
+                {
+                    // Split cases based upon the right arg storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_APA:
+                            // Convert the BOOL/INT/APA to a RAT
+                            mpq_set_sa (&aplRatTmp, GetNextInteger (lpMemRht, aplTypeRht, uRow * uNumColsRht + uCol), 1);
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Convert the FLOAT to a RAT
+                            mpq_set_d  (&aplRatTmp, ((LPAPLFLOAT) lpMemRht)[uRow * uNumColsRht + uCol]);
+
+                            break;
+
+                        case ARRAY_RAT:
+                            // Copy the RAT
+                            mpq_set    (&aplRatTmp, &((LPAPLRAT ) lpMemRht)[uRow * uNumColsRht + uCol]);
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Convert the VFP to a RAT
+                            mpq_set_f  (&aplRatTmp, &((LPAPLVFP ) lpMemRht)[uRow * uNumColsRht + uCol]);
+
+                            break;
+
+                        case ARRAY_CHAR:
+                        case ARRAY_HETERO:
+                        case ARRAY_NESTED:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Copy to the matrix entry
+                    fmpq_set_mpq (fmpq_mat_entry (fmpqRht, uRow, uCol), &aplRatTmp);
+                } // End FOR/FOR
+
+////////////////DbgMsgW (L"Start Solve Dixon");
+
+                // Solve the equation
+                bRet = fmpq_mat_solve_dixon (fmpqRes, fmpqRht, fmpqLft) NE 0;
+
+////////////////DbgMsgW (L"End Solve Dixon");
+
+                // If it succeeded, ...
+                if (bRet)
+                {
+                    // Loop through the result rows and cols
+                    for (uRow = 0; uRow < uNumRowsRes; uRow++)
+                    for (uCol = 0; uCol < uNumColsRes; uCol++)
+                    // Split cases based upon the result storage type
+                    switch (aplTypeRes)
+                    {
+                        case ARRAY_RAT:
+                            // Initialize the result entry
+                            mpq_init (&((LPAPLRAT) lpMemRes)[uRow * uNumColsRes + uCol]);
+
+                            // Copy the inverted elements to the result
+                            fmpq_get_mpq (&((LPAPLRAT) lpMemRes)[uRow * uNumColsRes + uCol], fmpq_mat_entry (fmpqRes, uRow, uCol));
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Copy the inverted elements to a temp
+                            fmpq_get_mpq (&aplRatTmp, fmpq_mat_entry (fmpqRes, uRow, uCol));
+
+                            // Convert the RAT to a VFP
+                            mpf_init_set_q (&((LPAPLVFP) lpMemRes)[uRow * uNumColsRes + uCol], &aplRatTmp);
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End FOR/FOR/SWITCH
+                } // End IF
+
+                // We no longer need this storage
+                fmpq_mat_clear (fmpqRes);
+                fmpq_mat_clear (fmpqRht);
+                fmpq_mat_clear (fmpqLft);
+                Myq_clear (&aplRatTmp);
+
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                break;
+#endif
 
             defstop
                 break;
         } // End SWITCH
-
-        // Call GSL function to solve for this column
-        ErrCode =
-          gsl_linalg_SV_solve (lpGslMatrixU,            // M x N
-                               lpGslMatrixV,            // N x N
-                               lpGslVectorS,            // N
-                               lpGslVectorB,            // M
-                               lpGslVectorX);           // N
-        // Check the error code
-        if (ErrCode NE GSL_SUCCESS)
-            goto DOMAIN_EXIT;
-
-#define lpMemData   ((LPAPLFLOAT) lpMemRes)
-
-        // Copy X to the next column in the result
-        Assert (uNumRowsRes EQ lpGslVectorX->size);
-        if (IsScalar (aplRankRes))
-            aplFloatRes = lpGslVectorX->data[0];
-        else
-        for (uRow = 0; uRow < uNumRowsRes; uRow++)
-        {
-            // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
-                goto ERROR_EXIT;
-
-            lpMemData[uRow * uNumColsRes + uCol] = lpGslVectorX->data[uRow];
-        } // End IF/ELSE/...
-
-#undef  lpMemData
-    } // End FOR
+    } // End IF/ELSE
 YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1292,6 +1753,13 @@ YYALLOC_EXIT:
     } // End IF/ELSE
 
     goto NORMAL_EXIT;
+
+#if FLINTAVL == 0
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+#endif
 
 RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
@@ -1386,6 +1854,29 @@ NORMAL_EXIT:
         return NULL;
 } // End PrimFnDydDomino_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  Magic function/operator for Dyadic Domino for Global Numerics
+//
+//  Return the pseudo-inverse of an array of global numerics.
+//***************************************************************************
+
+static APLCHAR DydHeader[] =
+  L"Z" $IS L"L " MFON_DydDomino L" R";
+
+static APLCHAR DydLine1[] =
+  L"Z" $IS L"(" $DOMINO L"R)+." $TIMES L"L";
+
+static LPAPLCHAR DydBody[] =
+{DydLine1,
+};
+
+MAGIC_FCNOPR MFO_DydDomino =
+{DydHeader,
+ DydBody,
+ countof (DydBody),
+};
 
 
 //***************************************************************************

@@ -1018,6 +1018,8 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
     APLNELM      aplNELMRht;        // Right arg NELM
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     PRIMSPEC     LclPrimSpec;       // Writable copy of PRIMSPEC
+    APLVFP       mpfArg = {0},      // VFP arg
+                 mpfRes = {0};      // VFP result
 
     DBGENTER;
 
@@ -1219,6 +1221,9 @@ RESTART_EXCEPTION_VARNAMED:
 
                         goto DOMAIN_EXIT;
 
+                    case EXCEPTION_WS_FULL:
+                        goto WSFULL_EXIT;
+
                     case EXCEPTION_NONCE_ERROR:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -1226,8 +1231,30 @@ RESTART_EXCEPTION_VARNAMED:
 
                         goto NONCE_EXIT;
 
+                    case EXCEPTION_RESULT_VFP:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        if (IsNumeric (aplTypeRes)
+                         && !IsVfp    (aplTypeRes))
+                        {
+                            // It's now a VFP result
+                            aplTypeRes = ARRAY_VFP;
+#ifdef DEBUG
+                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                            goto RESTART_EXCEPTION_VARNAMED;
+                        } // End IF
+
+                        // Display message for unhandled exception
+                        DisplayException ();
+
+                        break;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        // Because the right arg is immediate, it can't be global numeric
+                        Assert (!IsGlbNum (aplTypeRes));
 
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
@@ -1358,6 +1385,51 @@ RESTART_EXCEPTION_VARIMMED:
 
                         break;
 
+                case ARRAY_VFP:                 // Res = VFP
+                        // Initialize the arg
+                        mpf_init (&mpfArg);
+
+                        // Split cases based upon the right arg's storage type
+                        switch (lptkRhtArg->tkFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:  // Res = VFP, Rht = BOOL
+                                mpf_set_sa (&mpfArg, lptkRhtArg->tkData.tkBoolean & BIT0);
+
+                                break;
+
+                            case IMMTYPE_INT:   // Res = VFP, Rht = INT
+                                mpf_set_sa (&mpfArg, lptkRhtArg->tkData.tkBoolean);
+
+                                break;
+
+                            case IMMTYPE_FLOAT: // Res = VFP, Rht = FLOAT
+                                mpf_set_d  (&mpfArg, lptkRhtArg->tkData.tkFloat);
+
+                                break;
+
+                            defstop
+                                return NULL;
+                        } // End SWITCH
+
+                        // Calculate the result
+                        mpfRes =  (*lpPrimSpec->VisV) (mpfArg,
+                                                      &LclPrimSpec);
+                        // Save in the result
+                        lpYYRes->tkToken.tkFlags.TknType  = TKT_VARARRAY;
+                        lpYYRes->tkToken.tkFlags.ImmType  = IMMTYPE_VFP;
+                        lpYYRes->tkToken.tkData.tkGlbData =
+                          MakeGlbEntry_EM (ARRAY_VFP,   // Entry type
+                                          &mpfRes,      // Ptr to the value
+                                           FALSE,       // TRUE iff we should initialize the target first
+                                           lptkFunc);   // Ptr to function token
+                        // We no longer need this storage
+                        Myf_clear (&mpfArg);
+
+                        // Check the result
+                        if (lpYYRes->tkToken.tkData.tkGlbData EQ NULL)
+                            RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+                        break;
+
                     defstop
                         return NULL;
                 } // End SWITCH
@@ -1378,6 +1450,9 @@ RESTART_EXCEPTION_VARIMMED:
 
                         goto DOMAIN_EXIT;
 
+                    case EXCEPTION_WS_FULL:
+                        goto WSFULL_EXIT;
+
                     case EXCEPTION_NONCE_ERROR:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
@@ -1385,8 +1460,30 @@ RESTART_EXCEPTION_VARIMMED:
 
                         goto NONCE_EXIT;
 
+                    case EXCEPTION_RESULT_VFP:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        if (IsNumeric (aplTypeRes)
+                         && !IsVfp    (aplTypeRes))
+                        {
+                            // It's now a VFP result
+                            aplTypeRes = ARRAY_VFP;
+#ifdef DEBUG
+                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                            goto RESTART_EXCEPTION_VARIMMED;
+                        } // End IF
+
+                        // Display message for unhandled exception
+                        DisplayException ();
+
+                        break;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        // Because the right arg is immediate, it can't be global numeric
+                        Assert (!IsGlbNum (aplTypeRes));
 
                         if (IsSimpleNum (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
@@ -1471,6 +1568,11 @@ DOMAIN_EXIT:
                                lptkFunc);
     return NULL;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
@@ -1515,6 +1617,7 @@ HGLOBAL PrimFnMonGlb_EM
     UINT          uBitIndex;        // Bit index when marching through Booleans
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLVFP        mpfRes = {0};     // VFP result
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1575,13 +1678,53 @@ HGLOBAL PrimFnMonGlb_EM
 
                     goto DOMAIN_EXIT;
 
+                case EXCEPTION_WS_FULL:
+                    goto WSFULL_EXIT;
+
                 case EXCEPTION_NONCE_ERROR:
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                     goto NONCE_EXIT;
 
+                case EXCEPTION_RESULT_VFP:
+                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                    if (IsNumeric (aplTypeRes)
+                     && !IsVfp    (aplTypeRes))
+                    {
+                        // It's now a VFP result
+                        aplTypeRes = ARRAY_VFP;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemRht = MyGlobalLock (hGlbRht);
+
+                        if (hGlbRes)
+                        {
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                            // We no longer need this storage
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                        } // End IF
+#ifdef DEBUG
+                        dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                        goto RESTART_EXCEPTION;
+                    } // End IF
+
+                    // Display message for unhandled exception
+                    DisplayException ();
+
+                    break;
+
                 case EXCEPTION_RESULT_FLOAT:
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                    // Because the right arg is immediate, it can't be global numeric
+                    Assert (!IsGlbNum (aplTypeRes));
 
                     if (IsSimpleNum (aplTypeRes)
                      && !IsSimpleFlt (aplTypeRes))
@@ -2244,6 +2387,157 @@ RESTART_EXCEPTION:
 
                 break;
 
+            case ARRAY_RAT:             // Res = RAT
+                Assert (IsRat (aplTypeRht));
+
+                // Loop through the right arg/result
+                for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Save in result
+                    *((LPAPLRAT) lpMemRes)++ =
+                      (*lpPrimSpec->RisR) (*((LPAPLRAT) lpMemRht)++,
+                                           lpPrimSpec);
+                } // End FOR
+
+                break;
+
+            case ARRAY_VFP:             // Res = VFP
+                // Initialize the temp
+                mpf_init (&mpfRes);
+
+                // Split cases based upon the right arg's storage type
+                switch (aplTypeRht)
+                {
+                    case ARRAY_BOOL:    // Res = VFP, Rht = BOOL
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the BOOL to a VFP
+                            mpf_set_si (&mpfRes, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex));
+
+                            // Save in result
+                            *((LPAPLVFP) lpMemRes)++ =
+                              (*lpPrimSpec->VisV) (mpfRes,
+                                                   lpPrimSpec);
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;              // Start over
+                                ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                            } // End IF
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_INT:     // Res = VFP, Rht = INT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the INT to a VFP
+                            mpf_set_sa (&mpfRes, *((LPAPLINT) lpMemRht)++);
+
+                            // Save in result
+                            *((LPAPLVFP) lpMemRes)++ =
+                              (*lpPrimSpec->VisV) (mpfRes,
+                                                   lpPrimSpec);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_APA:     // Res = VFP, Rht = APA
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the APA to a VFP
+                            mpf_set_sa (&mpfRes, apaOffRht + apaMulRht * uRes);
+
+                            // Save in result
+                            *((LPAPLVFP) lpMemRes)++ =
+                              (*lpPrimSpec->VisV) (mpfRes,
+                                                   lpPrimSpec);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_FLOAT:   // Res = VFP, Rht = FLOAT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the FLOAT to a VFP
+                            mpf_set_d (&mpfRes, *((LPAPLFLOAT) lpMemRht)++);
+
+                            // Save in result
+                            *((LPAPLVFP) lpMemRes)++ =
+                              (*lpPrimSpec->VisV) (mpfRes,
+                                                   lpPrimSpec);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_RAT:     // Res = VFP, Rht = RAT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Convert the RAT to a VFP
+                            mpf_set_q (&mpfRes, ((LPAPLRAT) lpMemRht)++);
+
+                            // Save in result
+                            *((LPAPLVFP) lpMemRes)++ =
+                              (*lpPrimSpec->VisV) (mpfRes,
+                                                   lpPrimSpec);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_VFP:     // Res = VFP, Rht = VFP
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Save in result
+                            *((LPAPLVFP) lpMemRes)++ =
+                              (*lpPrimSpec->VisV) (*((LPAPLVFP) lpMemRht)++,
+                                                   lpPrimSpec);
+                        } // End FOR
+
+                        break;
+
+                    defstop
+                        break;
+                } // End FOR/SWITCH
+
+                // We no longer need this storage
+                Myf_clear (&mpfRes);
+
+                break;
+
             defstop
                 break;
         } // End SWITCH
@@ -2262,15 +2556,52 @@ RESTART_EXCEPTION:
 
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_WS_FULL:
+                goto WSFULL_EXIT;
+
             case EXCEPTION_NONCE_ERROR:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 goto NONCE_EXIT;
 
+            case EXCEPTION_RESULT_VFP:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                if (IsNumeric (aplTypeRes)
+                 && !IsVfp    (aplTypeRes))
+                {
+                    // It's now a VFP result
+                    aplTypeRes = ARRAY_VFP;
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemRht = MyGlobalLock (hGlbRht);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                    // We no longer need this storage
+                    FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+#ifdef DEBUG
+                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                    goto RESTART_EXCEPTION;
+                } // End IF
+
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                if (IsSimpleNum (aplTypeRes)
+                // Because the right arg is immediate, it can't be global numeric
+                Assert (!IsGlbNum (aplTypeRes));
+
+                if (IsNumeric (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
                     // It's now a FLOAT result
@@ -2338,6 +2669,9 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // We no longer need this storage
+    Myf_clear (&mpfRes);
+
     if (lpMemRht)
     {
         // We no longer need this ptr
@@ -2471,6 +2805,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
         goto DOMAIN_EXIT;
 
     Assert (IsSimpleNum (aplTypeRes)
+         || IsRat    (aplTypeRes)
+         || IsVfp    (aplTypeRes)
          || IsNested (aplTypeRes));
 
     // Get left and right arg's global ptrs
@@ -2725,6 +3061,7 @@ UBOOL PrimFnDydSimpNest_EM
                   aplFloatRht;
     HGLOBAL       hGlbWVec = NULL,
                   hGlbOdo = NULL,
+                  lpSymGlbLft,
                   hGlbSub;
     LPAPLUINT     lpMemWVec = NULL,
                   lpMemDimLft,
@@ -2903,7 +3240,17 @@ UBOOL PrimFnDydSimpNest_EM
                     break;
 
                 case ARRAY_HETERO:
-                    aplTypeHetLft = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                    aplTypeHetLft = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
+
+                    break;
+
+                case ARRAY_RAT:
+                    lpSymGlbLft   = &((LPAPLRAT) lpMemLft)[uLft];
+
+                    break;
+
+                case ARRAY_VFP:
+                    lpSymGlbLft   = &((LPAPLVFP) lpMemLft)[uLft];
 
                     break;
 
@@ -2929,14 +3276,17 @@ UBOOL PrimFnDydSimpNest_EM
                                   NULL,
                                  &aplTypeHetRht);
                 hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                               *lphGlbRes,
                                                 aplTypeHetLft,
                                                 aplIntegerLft,
                                                 aplFloatLft,
                                                 aplCharLft,
+                                                NULL,
                                                 aplTypeHetRht,
                                                 aplIntegerRht,
                                                 aplFloatRht,
                                                 aplCharRht,
+                                                NULL,
                                                 lpPrimSpec);
                 if (!hGlbSub)
                     goto ERROR_EXIT;
@@ -2951,6 +3301,7 @@ UBOOL PrimFnDydSimpNest_EM
                                                 aplIntegerLft,
                                                 aplFloatLft,
                                                 aplCharLft,
+                                                lpSymGlbLft,
                                                 hGlbSub,
                                                 bLftIdent,
                                                 bRhtIdent,
@@ -3094,6 +3445,7 @@ UBOOL PrimFnDydNestSimp_EM
                   aplFloatRht;
     HGLOBAL       hGlbWVec = NULL,
                   hGlbOdo = NULL,
+                  lpSymGlbRht,
                   hGlbSub;
     LPAPLUINT     lpMemWVec = NULL,
                   lpMemDimLft,
@@ -3272,7 +3624,17 @@ UBOOL PrimFnDydNestSimp_EM
                     break;
 
                 case ARRAY_HETERO:
-                    aplTypeHetRht = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                    aplTypeHetRht = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
+
+                    break;
+
+                case ARRAY_RAT:
+                    lpSymGlbRht   = &((LPAPLRAT) lpMemRht)[uRht];
+
+                    break;
+
+                case ARRAY_VFP:
+                    lpSymGlbRht   = &((LPAPLVFP) lpMemRht)[uRht];
 
                     break;
 
@@ -3298,14 +3660,17 @@ UBOOL PrimFnDydNestSimp_EM
                                   NULL,
                                  &aplTypeHetLft);
                 hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                               *lphGlbRes,
                                                 aplTypeHetLft,
                                                 aplIntegerLft,
                                                 aplFloatLft,
                                                 aplCharLft,
+                                                NULL,
                                                 aplTypeHetRht,
                                                 aplIntegerRht,
                                                 aplFloatRht,
                                                 aplCharRht,
+                                                NULL,
                                                 lpPrimSpec);
                 if (!hGlbSub)
                     goto ERROR_EXIT;
@@ -3320,6 +3685,7 @@ UBOOL PrimFnDydNestSimp_EM
                                                 aplIntegerRht,
                                                 aplFloatRht,
                                                 aplCharRht,
+                                                lpSymGlbRht,
                                                 hGlbSub,
                                                 bLftIdent,
                                                 bRhtIdent,
@@ -3420,6 +3786,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
      APLINT     aplIntegerRht,      // ...       integer value
      APLFLOAT   aplFloatRht,        // ...       float   ...
      APLCHAR    aplCharRht,         // ...       char    ...
+     HGLOBAL    lpSymGlbRht,        // ...       lpSymGlb
      APLNESTED  aplNestedLft,       // Left arg nested value
      UBOOL      bLftIdent,          // TRUE iff the function has a left identity element and the Axis tail is valid
      UBOOL      bRhtIdent,          // ...                         right ...
@@ -3554,6 +3921,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                      aplIntegerRht,
                                      aplFloatRht,
                                      aplCharRht,
+                                     lpSymGlbRht,
                                      bLftIdent,
                                      bRhtIdent,
                                      lptkFunc,
@@ -3587,14 +3955,17 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                       NULL,
                                      &aplTypeHetLft);
                     hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                    hGlbRes,
                                                     aplTypeHetLft,
                                                     aplIntegerLft,
                                                     aplFloatLft,
                                                     aplCharLft,
+                                                    NULL,
                                                     aplTypeRht,
                                                     aplIntegerRht,
                                                     aplFloatRht,
                                                     aplCharRht,
+                                                    NULL,
                                                     lpPrimSpec);
                     if (!hGlbSub)
                         goto ERROR_EXIT;
@@ -3609,6 +3980,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                                     aplIntegerRht,
                                                     aplFloatRht,
                                                     aplCharRht,
+                                                    lpSymGlbRht,
                                                     hGlbSub,
                                                     bLftIdent,
                                                     bRhtIdent,
@@ -3882,6 +4254,7 @@ UBOOL PrimFnDydSingMult_EM
      APLINT            aplIntegerLft,       // ...      integer value
      APLFLOAT          aplFloatLft,         // ...      float   ...
      APLCHAR           aplCharLft,          // ...      char    ...
+     HGLOBAL           lpSymGlbLft,         // ...      lpSymGlb
      APLSTYPE          aplTypeRht,          // Right arg type
      APLINT            apaOffRht,           // ...       APA offset
      APLINT            apaMulRht,           // ...       ... multiplier
@@ -3907,6 +4280,11 @@ UBOOL PrimFnDydSingMult_EM
     APLCHAR       aplCharRht;
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLRAT        aplRatLft = {0},  // Left arg as RAT
+                  aplRatRht = {0};  // Right ...
+    APLVFP        aplVfpLft = {0},  // Left arg as VFP
+                  aplVfpRht = {0};  // Right ...
+    HGLOBAL       lpSymGlbRht;
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -3973,10 +4351,10 @@ RESTART_EXCEPTION:
                         } // End IF
                     } // End FOR
                 } else
-                // If the other argument is simple numeric,
+                // If the other argument is simple or global numeric,
                 //   use bCvN
-                if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
-                 || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))
+                if ((IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht))
+                 || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft)))
                 {
                     // Loop through the result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -4006,6 +4384,10 @@ RESTART_EXCEPTION:
                         case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL (S)
                         case ARRAY_INT:     // Res = BOOL, Lft = INT  (S)
                         case ARRAY_APA:     // Res = BOOL, Lft = APA  (S)
+                            // Initialize the temps
+                            mpq_init (&aplRatLft);
+                            mpf_init (&aplVfpLft);
+
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -4013,7 +4395,7 @@ RESTART_EXCEPTION:
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
 
                                 // Split cases based upon the right arg's item's storage type
                                 switch (aplTypeHetRht)
@@ -4041,6 +4423,28 @@ RESTART_EXCEPTION:
 
                                         break;
 
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = BOOL/INT (S), Rht = HETERO:RAT  (M)
+                                        // Convert the BOOL/INT to a RAT
+                                        mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                                *(LPAPLRAT) lpSymGlbRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = BOOL/INT (S), Rht = HETERO:VFP  (M)
+                                        // Convert the BOOL/INT to a VFP
+                                        mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                *(LPAPLVFP) lpSymGlbRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
                                     defstop
                                         break;
                                 } // End SWITCH
@@ -4053,9 +4457,18 @@ RESTART_EXCEPTION:
                                 } // End IF
                             } // End FOR
 
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpLft);
+                            Myq_clear (&aplRatLft);
+
                             break;
 
                         case ARRAY_FLOAT:   // Res = BOOL, Lft = FLOAT(S)
+                            // Initialize the temps
+                            mpq_init (&aplRatLft);
+                            mpf_init (&aplVfpLft);
+                            mpf_init (&aplVfpRht);
+
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -4063,7 +4476,7 @@ RESTART_EXCEPTION:
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
 
                                 // Split cases based upon the right arg's item's storage type
                                 switch (aplTypeHetRht)
@@ -4084,6 +4497,31 @@ RESTART_EXCEPTION:
 
                                         break;
 
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = FLOAT (S), Rht = HETERO:RAT  (M)
+                                        // Convert the FLOAT to a VFP
+                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                 aplVfpRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = FLOAT (S), Rht = HETERO:VFP  (M)
+                                        // Convert the FLOAT to a VFP
+                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                *(LPAPLVFP) lpSymGlbRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
                                     defstop
                                         break;
                                 } // End SWITCH
@@ -4096,6 +4534,11 @@ RESTART_EXCEPTION:
                                 } // End IF
                             } // End FOR
 
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+                            Myf_clear (&aplVfpLft);
+                            Myq_clear (&aplRatLft);
+
                             break;
 
                         case ARRAY_CHAR:    // Res = BOOL, Lft = CHAR (S)
@@ -4106,7 +4549,7 @@ RESTART_EXCEPTION:
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL);
 
                                 // Split cases based upon the right arg's item's storage type
                                 switch (aplTypeHetRht)
@@ -4114,6 +4557,8 @@ RESTART_EXCEPTION:
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = CHAR  (S), Rht = HETERO:BOOL (M)
                                     case ARRAY_INT:     // Res = BOOL, Lft = CHAR  (S), Rht = HETERO:INT  (M)
                                     case ARRAY_FLOAT:   // Res = BOOL, Lft = CHAR  (S), Rht = HETERO:FLOAT(M)
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = CHAR  (S), Rht = HETERO:RAT  (M)
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = CHAR  (S), Rht = HETERO:VFP  (M)
                                         *((LPAPLBOOL)  lpMemRes) |= (bCvN << uBitIndex);
 
                                         break;
@@ -4137,6 +4582,177 @@ RESTART_EXCEPTION:
                                     ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
                                 } // End IF
                             } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = BOOL, Lft = RAT  (S)
+                            // Initialize the temps
+                            mpq_init (&aplRatRht);
+                            mpf_init (&aplVfpLft);
+                            mpf_init (&aplVfpRht);
+
+                            // Loop through the right arg
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
+
+                                // Split cases based upon the right arg's item's storage type
+                                switch (aplTypeHetRht)
+                                {
+                                    case ARRAY_BOOL:    // Res = BOOL, Lft = RAT (S), Rht = HETERO:BOOL (M)
+                                    case ARRAY_INT:     // Res = BOOL, Lft = RAT (S), Rht = HETERO:INT  (M)
+                                        // Convert the BOOL/INT to a RAT
+                                        mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                  aplRatRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_FLOAT:   // Res = BOOL, Lft = RAT (S), Rht = HETERO:FLOAT(M)
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                        // Convert the FLOAT to a VFP
+                                        mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                 aplVfpRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_CHAR:    // Res = BOOL, Lft = RAT (S), Rht = HETERO:CHAR (M)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |= (bCvN << uBitIndex);
+
+                                        break;
+
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = RAT (S), Rht = HETERO:RAT  (M)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                 *(LPAPLRAT) lpSymGlbRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = RAT (S), Rht = HETERO:VFP  (M)
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                *(LPAPLVFP) lpSymGlbRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+                            Myf_clear (&aplVfpLft);
+                            Myq_clear (&aplRatRht);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = VFP  (S)
+                            // Initialize the temps
+                            mpf_init (&aplVfpLft);
+                            mpf_init (&aplVfpRht);
+
+                            // Loop through the right arg
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
+
+                                // Split cases based upon the right arg's item's storage type
+                                switch (aplTypeHetRht)
+                                {
+                                    case ARRAY_BOOL:    // Res = BOOL, Lft = VFP (S), Rht = HETERO:BOOL (M)
+                                    case ARRAY_INT:     // Res = BOOL, Lft = VFP (S), Rht = HETERO:INT  (M)
+                                        // Convert the BOOL/INT to a VFP
+                                        mpf_set_sa (&aplVfpRht, aplIntegerRht);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                  aplVfpRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_FLOAT:   // Res = BOOL, Lft = VFP (S), Rht = HETERO:FLOAT(M)
+                                        // Convert the FLOAT to a VFP
+                                        mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                  aplVfpRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_CHAR:    // Res = BOOL, Lft = VFP (S), Rht = HETERO:CHAR (M)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |= (bCvN << uBitIndex);
+
+                                        break;
+
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = VFP (S), Rht = HETERO:RAT  (M)
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                  aplVfpRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = VFP (S), Rht = HETERO:VFP  (M)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                 *(LPAPLVFP) lpSymGlbRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+                            Myf_clear (&aplVfpLft);
 
                             break;
 
@@ -4382,6 +4998,70 @@ RESTART_EXCEPTION:
 
                             break;
 
+                        case ARRAY_RAT:     // Res = BOOL, Lft = INT/APA(S), Rht = RAT(M)
+                            // Initialize the temp
+                            mpq_init (&aplRatLft);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                        *((LPAPLRAT) lpMemRht)++,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myq_clear (&aplRatLft);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = INT/APA(S), Rht = VFP(M)
+                            // Initialize the temp
+                            mpf_init (&aplVfpLft);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                        *((LPAPLVFP) lpMemRht)++,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpLft);
+
+                            break;
+
                         defstop
                             break;
                     } // End SWITCH
@@ -4485,9 +5165,427 @@ RESTART_EXCEPTION:
 
                             break;
 
+                        case ARRAY_RAT:     // Res = BOOL, Lft = FLOAT(S), Rht = RAT(M)
+                            // Initialize the temp
+                            mpf_init (&aplVfpLft);
+                            mpf_init (&aplVfpRht);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+                            Myf_clear (&aplVfpLft);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = FLOAT(S), Rht = VFP(M)
+                            // Initialize the temp
+                            mpf_init (&aplVfpLft);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                        *((LPAPLVFP) lpMemRht)++,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpLft);
+
+                            break;
+
                         defstop
                             break;
                     } // End SWITCH
+
+                    break;
+
+                case ARRAY_RAT:             // Res = BOOL, Lft = RAT  (S)
+                    // Initialize the temps
+                    mpq_init (&aplRatRht);
+                    mpf_init (&aplVfpLft);
+                    mpf_init (&aplVfpRht);
+
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:    // Res = BOOL, Lft = RAT(S), Rht = BOOL(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a RAT
+                                mpq_set_sa (&aplRatRht, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex), 1);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                          aplRatRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRht)++;       // Skip to next byte
+                                    ((LPAPLBOOL) lpMemRes)++;       // ...
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:     // Res = BOOL, Lft = RAT(S), Rht = INT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_set_sa (&aplRatRht, *((LPAPLINT) lpMemRht)++, 1);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                          aplRatRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_APA:     // Res = BOOL, Lft = RAT(S), Rht = APA(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the APA to a RAT
+                                mpq_set_sa (&aplRatRht, apaOffRht + apaMulRht * uRes, 1);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                          aplRatRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = BOOL, Lft = RAT(S), Rht = FLOAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = BOOL, Lft = RAT(S), Rht = RAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                         *((LPAPLRAT) lpMemRht)++,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = RAT(S), Rht = VFP(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                        *((LPAPLVFP) lpMemRht)++,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpRht);
+                    Myf_clear (&aplVfpLft);
+                    Myq_clear (&aplRatRht);
+
+                    break;
+
+                case ARRAY_VFP:             // Res = BOOL, Lft = VFP  (S)
+                    // Initialize the temps
+                    mpf_init (&aplVfpLft);
+                    mpf_init (&aplVfpRht);
+
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:    // Res = BOOL, Lft = VFP(S), Rht = BOOL(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a VFP
+                                mpf_set_sa (&aplVfpRht, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex));
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                          aplVfpRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRht)++;       // Skip to next byte
+                                    ((LPAPLBOOL) lpMemRes)++;       // ...
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:     // Res = BOOL, Lft = VFP(S), Rht = INT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_set_sa (&aplVfpRht, *((LPAPLINT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                          aplVfpRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_APA:     // Res = BOOL, Lft = VFP(S), Rht = APA(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the APA to a VFP
+                                mpf_set_sa (&aplVfpRht, apaOffRht + apaMulRht * uRes);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                          aplVfpRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = BOOL, Lft = VFP(S), Rht = FLOAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                          aplVfpRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = BOOL, Lft = VFP(S), Rht = RAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                          aplVfpRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = VFP(S), Rht = VFP(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                         *((LPAPLVFP) lpMemRht)++,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpRht);
+                    Myf_clear (&aplVfpLft);
 
                     break;
 
@@ -4844,6 +5942,151 @@ RESTART_EXCEPTION:
 
                             break;
 
+                        case ARRAY_RAT:     // Res = FLOAT, Lft = FLOAT(S), Rht = RAT  (M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLFLOAT) lpMemRes)++ =
+                                  (*lpPrimSpec->FisFvF) (aplFloatLft,
+                                                         mpq_get_d (((LPAPLRAT) lpMemRht)++),
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = FLOAT, Lft = FLOAT(S), Rht = VFP  (M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLFLOAT) lpMemRes)++ =
+                                  (*lpPrimSpec->FisFvF) (aplFloatLft,
+                                                         mpf_get_d (((LPAPLVFP) lpMemRht)++),
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_RAT:             // Res = FLOAT, Lft = RAT  (S)
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:    // Res = FLOAT, Lft = RAT  (S), Rht = BOOL(M)
+                            DbgBrk ();      // Can't happen with any known primitive
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLFLOAT) lpMemRes)++ =
+                                  (*lpPrimSpec->FisFvF) (mpq_get_d ((LPAPLRAT) lpSymGlbLft),
+                                                         BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex),
+                                                         lpPrimSpec);
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRht)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:     // Res = FLOAT, Lft = RAT  (S), Rht = INT(M)
+                            DbgBrk ();      // Can't happen with any known primitive
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLFLOAT) lpMemRes)++ =
+                                  (*lpPrimSpec->FisFvF) (mpq_get_d ((LPAPLRAT) lpSymGlbLft),
+                                                         (APLFLOAT) *((LPAPLINT) lpMemRht)++,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = FLOAT, Lft = RAT  (S), Rht = FLOAT(M)
+                            DbgBrk ();      // Can't happen with any known primitive
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLFLOAT) lpMemRes)++ =
+                                  (*lpPrimSpec->FisFvF) (mpq_get_d ((LPAPLRAT) lpSymGlbLft),
+                                                        *((LPAPLFLOAT) lpMemRht)++,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = FLOAT, Lft = RAT  (S), Rht = RAT  (M)
+                            DbgBrk ();      // Can't happen with any known primitive
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLFLOAT) lpMemRes)++ =
+                                  (*lpPrimSpec->FisFvF) (mpq_get_d (( LPAPLRAT) lpSymGlbLft),
+                                                         mpq_get_d (((LPAPLRAT) lpMemRht)++),
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = FLOAT, Lft = RAT  (S), Rht = VFP  (M)
+                            DbgBrk ();      // Can't happen with any known primitive
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLFLOAT) lpMemRes)++ =
+                                  (*lpPrimSpec->FisFvF) (mpq_get_d (( LPAPLRAT) lpSymGlbLft),
+                                                         mpf_get_d (((LPAPLVFP) lpMemRht)++),
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
                         defstop
                             break;
                     } // End SWITCH
@@ -4853,6 +6096,419 @@ RESTART_EXCEPTION:
                 defstop
                     break;
             } // End SWITCH
+
+            break;
+
+        case ARRAY_RAT:                     // Res = RAT
+            // Split cases based upon the storage type of the left arg
+            switch (aplTypeLft)
+            {
+                case ARRAY_BOOL:            // Res = RAT, Lft = BOOL(S)
+                case ARRAY_INT:             // Res = RAT, Lft = INT(S)
+                case ARRAY_APA:             // Res = RAT, Lft = APA(S)
+                    // Convert the INT to a RAT
+                    mpq_init_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_RAT:     // Res = RAT, Lft = BOOL/INT/APA(S), Rht = RAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLRAT) lpMemRes)++ =
+                                  (*lpPrimSpec->RisRvR) (aplRatLft,
+                                                         *((LPAPLRAT) lpMemRht)++,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this storage
+                    Myq_clear (&aplRatLft);
+
+                    break;
+
+                case ARRAY_RAT:
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:    // Res = RAT, Lft = RAT(S), Rht = BOOL(M)
+                        case ARRAY_INT:     // Res = RAT, Lft = RAT(S), Rht = INT (M)
+                        case ARRAY_APA:     // Res = RAT, Lft = RAT(S), Rht = APA (M)
+                            // Initialize the temp
+                            mpq_init (&aplRatRht);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_set_sa (&aplRatRht,
+                                             GetNextInteger (lpMemRht, aplTypeRht, uRes),
+                                             1);
+                                // Save in result
+                                *((LPAPLRAT) lpMemRes)++ =
+                                  (*lpPrimSpec->RisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                         aplRatRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myq_clear (&aplRatRht);
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = RAT, Lft = RAT(S), Rht = RAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLRAT) lpMemRes)++ =
+                                  (*lpPrimSpec->RisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                         *((LPAPLRAT) lpMemRht)++,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_VFP:                     // Res = VFP
+            // Initialize the temps
+            mpf_init (&aplVfpLft);
+            mpf_init (&aplVfpRht);
+
+            // Split cases based upon the storage type of the left arg
+            switch (aplTypeLft)
+            {
+                case ARRAY_BOOL:            // Res = VFP, Lft = BOOL(S)
+                case ARRAY_INT:             // Res = VFP, Lft = INT(S)
+                case ARRAY_APA:             // Res = VFP, Lft = APA(S)
+                    // Convert the INT to a VFP
+                    mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_RAT:     // Res = VFP, Lft = BOOL/INT/APA(S), Rht = RAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = VFP, Lft = BOOL/INT/APA(S), Rht = VFP(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                        *((LPAPLVFP) lpMemRht)++,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_FLOAT:           // Res = VFP, Lft = FLOAT(S)
+                    // Convert the FLOAT to a VFP
+                    mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_RAT:     // Res = VFP, Lft = FLOAT(S), Rht = RAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = VFP, Lft = FLOAT(S), Rht = VFP(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                        *((LPAPLVFP) lpMemRht)++,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_RAT:             // Res = VFP, Lft = RAT(S)
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:    // Res = VFP, Lft = RAT(S), Rht = BOOL(M)
+                        case ARRAY_INT:     // Res = VFP, Lft = RAT(S), Rht = INT (M)
+                        case ARRAY_APA:     // Res = VFP, Lft = RAT(S), Rht = APA (M)
+                            // Convert the RAT to a VFP
+                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_set_sa (&aplVfpRht,
+                                             GetNextInteger (lpMemRht, aplTypeRht, uRes));
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = VFP, Lft = RAT(S), Rht = FLOAT(M)
+                            // Convert the RAT to a VFP
+                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpRht,
+                                           *((LPAPLFLOAT) lpMemRht)++);
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = VFP, Lft = RAT(S), Rht = RAT(M)
+                            // Convert the RAT to a VFP
+                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = VFP, Lft = RAT(S), Rht = VFP(M)
+                            // Convert the RAT to a VFP
+                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                        *((LPAPLVFP) lpMemRht)++,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_VFP:             // Res = VFP, Lft = VFP(S)
+                    // Split cases based upon the storage type of the right arg
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:    // Res = VFP, Lft = VFP(S), Rht = BOOL(M)
+                        case ARRAY_INT:     // Res = VFP, Lft = VFP(S), Rht = INT (M)
+                        case ARRAY_APA:     // Res = VFP, Lft = VFP(S), Rht = APA (M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_set_sa (&aplVfpRht,
+                                             GetNextInteger (lpMemRht, aplTypeRht, uRes));
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                          aplVfpRht,
+                                                          lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = VFP, Lft = VFP(S), Rht = FLOAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpRht,
+                                           *((LPAPLFLOAT) lpMemRht)++);
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = VFP, Lft = VFP(S), Rht = RAT(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = VFP, Lft = VFP(S), Rht = VFP(M)
+                            // Loop through the right arg/result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLVFP) lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                        *((LPAPLVFP) lpMemRht)++,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We no longer need this storage
+            Myf_clear (&aplVfpRht);
+            Myf_clear (&aplVfpLft);
 
             break;
 
@@ -4874,15 +6530,62 @@ RESTART_EXCEPTION:
 
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_WS_FULL:
+                goto WSFULL_EXIT;
+
             case EXCEPTION_NONCE_ERROR:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 goto NONCE_EXIT;
 
+            case EXCEPTION_RESULT_VFP:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                if (IsNumeric (aplTypeRes)
+                 && !IsVfp    (aplTypeRes))
+                {
+                    // It's now a VFP result
+                    aplTypeRes = ARRAY_VFP;
+
+                    // We need to start over with the result
+                    MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                    FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+
+                    if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                     lphGlbRes,
+                                                     NULL,
+                                                     lpMemHdrRht,
+                                                     0,
+                                                     lpMemHdrRht->Rank,
+                                                    &aplRankRes,
+                                                     aplTypeRes,
+                                                     bLftIdent,
+                                                     bRhtIdent,
+                                                     1,
+                                                     lpMemHdrRht->NELM,
+                                                     aplNELMRes))
+                        goto ERROR_EXIT;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+
+                    // Restart the pointer
+                    lpMemRht = lpMemRhtStart;
+#ifdef DEBUG
+                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                    goto RESTART_EXCEPTION;
+                } // End IF
+
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                if (IsSimpleNum (aplTypeRes)
+                if (IsNumeric (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
                     // If the previous result is Boolean, we need to
@@ -4956,6 +6659,11 @@ DOMAIN_EXIT:
                                lptkFunc);
     goto ERROR_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
@@ -4963,6 +6671,12 @@ NONCE_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
+    // We no longer need this storage
+    Myq_clear (&aplRatRht);
+    Myq_clear (&aplRatLft);
+    Myf_clear (&aplVfpRht);
+    Myf_clear (&aplVfpLft);
+
     // Restore the memory ptr
     *lplpMemRes = lpMemRes;
 
@@ -4999,6 +6713,7 @@ UBOOL PrimFnDydMultSing_EM
      APLINT            aplIntegerRht,       // ...       integer value
      APLFLOAT          aplFloatRht,         // ...       float   ...
      APLCHAR           aplCharRht,          // ...       char    ...
+     HGLOBAL           lpSymGlbRht,         // ...       lpSymGlb
      UBOOL             bLftIdent,           // TRUE iff the function has a left identity element and the Axis tail is valid
      UBOOL             bRhtIdent,           // ...                         right ...
      LPTOKEN           lptkFunc,            // Ptr to function token
@@ -5019,6 +6734,11 @@ UBOOL PrimFnDydMultSing_EM
     APLCHAR       aplCharLft;
     LPPLLOCALVARS lpplLocalVars;            // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;             // Ptr to Ctrl-Break flag
+    APLRAT        aplRatLft = {0},          // Left arg as Rational
+                  aplRatRht = {0};          // Right ...
+    APLVFP        aplVfpLft = {0},          // Left arg as VFP
+                  aplVfpRht = {0};          // Right ...
+    HGLOBAL       lpSymGlbLft;              // Left arg global numeric memory handle
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -5085,10 +6805,10 @@ RESTART_EXCEPTION:
                         } // End IF
                     } // End FOR
                 } else
-                // If the other argument is simple numeric,
+                // If the other argument is simple or global numeric,
                 //   use BisCvN
-                if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
-                 || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))
+                if ((IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht))
+                 || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft)))
                 {
                     // Loop through the result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -5118,6 +6838,10 @@ RESTART_EXCEPTION:
                         case ARRAY_BOOL:    // Res = BOOL,                  Rht = BOOL (S)
                         case ARRAY_INT:     // Res = BOOL,                  Rht = INT  (S)
                         case ARRAY_APA:     // Res = BOOL,                  Rht = APA  (S)
+                            // Convert the BOOL/INT to a RAT
+                            mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+                            mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5125,7 +6849,7 @@ RESTART_EXCEPTION:
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
 
                                 // Split cases based upon the left arg's item's storage type
                                 switch (aplTypeHetLft)
@@ -5153,6 +6877,22 @@ RESTART_EXCEPTION:
 
                                         break;
 
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = HETERO:RAT  (M), Rht = BOOL/INT/APA (S)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                  aplRatRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = HETERO:VFP  (M), Rht = BOOL/INT/APA (S)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                  aplVfpRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
                                     defstop
                                         break;
                                 } // End SWITCH
@@ -5165,9 +6905,17 @@ RESTART_EXCEPTION:
                                 } // End IF
                             } // End FOR
 
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+                            Myq_clear (&aplRatRht);
+
                             break;
 
                         case ARRAY_FLOAT:   // Res = BOOL,                  Rht = FLOAT(S)
+                            // Convert the FLOAT to a RAT
+                            mpq_init_set_d (&aplRatRht, aplFloatRht);
+                            mpf_init_set_d (&aplVfpRht, aplFloatRht);
+
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5175,7 +6923,7 @@ RESTART_EXCEPTION:
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
 
                                 // Split cases based upon the left arg's item's storage type
                                 switch (aplTypeHetLft)
@@ -5194,6 +6942,22 @@ RESTART_EXCEPTION:
 
                                         break;
 
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = HETERO:RAT  (M), Rht = FLOAT (S)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                  aplRatRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = HETERO:VFP  (M), Rht = FLOAT (S)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                  aplVfpRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
                                     defstop
                                         break;
                                 } // End SWITCH
@@ -5206,6 +6970,10 @@ RESTART_EXCEPTION:
                                 } // End IF
                             } // End FOR
 
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+                            Myq_clear (&aplRatRht);
+
                             break;
 
                         case ARRAY_CHAR:    // Res = BOOL,                  Rht = CHAR (S)
@@ -5216,7 +6984,7 @@ RESTART_EXCEPTION:
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL);
 
                                 // Split cases based upon the left arg's item's storage type
                                 switch (aplTypeHetLft)
@@ -5224,6 +6992,8 @@ RESTART_EXCEPTION:
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = HETERO:BOOL (M), Rht = CHAR  (S)
                                     case ARRAY_INT:     // Res = BOOL, Lft = HETERO:INT  (M), Rht = CHAR  (S)
                                     case ARRAY_FLOAT:   // Res = BOOL, Lft = HETERO:FLOAT(M), Rht = CHAR  (S)
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = HETERO:RAT  (M), Rht = CHAR  (S)
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = HETERO:VFP  (M), Rht = CHAR  (S)
                                         *((LPAPLBOOL)  lpMemRes) |= (bCvN << uBitIndex);
 
                                         break;
@@ -5246,6 +7016,169 @@ RESTART_EXCEPTION:
                                     ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
                                 } // End IF
                             } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = BOOL,                  Rht = RAT  (S)
+                            // Initialize the temps
+                            mpq_init (&aplRatLft);
+                            mpf_init (&aplVfpLft);
+                            mpf_init (&aplVfpRht);
+
+                            // Loop through the left argument
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
+
+                                // Split cases based upon the left arg's item's storage type
+                                switch (aplTypeHetLft)
+                                {
+                                    case ARRAY_BOOL:    // Res = BOOL, Lft = HETERO:BOOL (M), Rht = RAT (S)
+                                    case ARRAY_INT:     // Res = BOOL, Lft = HETERO:INT  (M), Rht = RAT (S)
+                                        mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                                *(LPAPLRAT) lpSymGlbRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_CHAR:    // Res = BOOL, Lft = HETERO:CHAR (M), Rht = RAT (S)
+                                        *((LPAPLBOOL)  lpMemRes) |= (bCvN << uBitIndex);
+
+                                        break;
+
+                                    case ARRAY_FLOAT:   // Res = BOOL, Lft = HETERO:FLT  (M), Rht = RAT (S)
+                                        // Convert the FLOAT to a VFP
+                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                 aplVfpRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = HETERO:RAT  (M), Rht = RAT (S)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                 *(LPAPLRAT) lpSymGlbRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = HETERO:VFP  (M), Rht = RAT (S)
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                  aplVfpRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+                            Myf_clear (&aplVfpLft);
+                            Myq_clear (&aplRatLft);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL,                  Rht = VFP  (S)
+                            // Initialize the temp
+                            mpf_init (&aplVfpLft);
+
+                            // Loop through the left argument
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
+
+                                // Split cases based upon the left arg's item's storage type
+                                switch (aplTypeHetLft)
+                                {
+                                    case ARRAY_BOOL:    // Res = BOOL, Lft = HETERO:BOOL (M), Rht = VFP (S)
+                                    case ARRAY_INT:     // Res = BOOL, Lft = HETERO:INT  (M), Rht = VFP (S)
+                                        mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                *(LPAPLVFP) lpSymGlbRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_CHAR:    // Res = BOOL, Lft = HETERO:CHAR (M), Rht = VFP (S)
+                                        *((LPAPLBOOL)  lpMemRes) |= (bCvN << uBitIndex);
+
+                                        break;
+
+                                    case ARRAY_FLOAT:   // Res = BOOL, Lft = HETERO:FLOAT(M), Rht = VFP (S)
+                                        // Convert the FLOAT to a VFP
+                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                *(LPAPLVFP) lpSymGlbRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_RAT:     // Res = BOOL, Lft = HETERO:RAT  (M), Rht = VFP (S)
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                *(LPAPLVFP) lpSymGlbRht,
+                                                                 lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    case ARRAY_VFP:     // Res = BOOL, Lft = HETERO:VFP  (M), Rht = VFP (S)
+                                        // Save in result
+                                        *((LPAPLBOOL)  lpMemRes) |=
+                                          (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                 *(LPAPLVFP) lpSymGlbRht,
+                                                                  lpPrimSpec) << uBitIndex;
+                                        break;
+
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpLft);
 
                             break;
 
@@ -5490,6 +7423,64 @@ RESTART_EXCEPTION:
 
                             break;
 
+                        case ARRAY_RAT:     // Res = BOOL, Lft = RAT  (M), Rht = BOOL/INT(S)
+                            // Initialize the temp
+                            mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (*((LPAPLRAT) lpMemLft)++,
+                                                          aplRatRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myq_clear (&aplRatRht);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = VFP  (M), Rht = BOOL/INT(S)
+                            // Initialize the temp
+                            mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*((LPAPLVFP) lpMemLft)++,
+                                                          aplVfpRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+
+                            break;
+
                         defstop
                             break;
                     } // End SWITCH
@@ -5590,6 +7581,64 @@ RESTART_EXCEPTION:
                                     ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
                                 } // End IF
                             } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = BOOL, Lft = RAT (M),   Rht = APA(S)
+                            // Initialize temp
+                            mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (*((LPAPLRAT) lpMemLft)++,
+                                                          aplRatRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myq_clear (&aplRatRht);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = VFP (M),   Rht = APA(S)
+                            // Initialize temp
+                            mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*((LPAPLVFP) lpMemLft)++,
+                                                          aplVfpRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
 
                             break;
 
@@ -5696,9 +7745,433 @@ RESTART_EXCEPTION:
 
                             break;
 
+                        case ARRAY_RAT:     // Res = BOOL, Lft = RAT(M), Rht = FLOAT(S)
+                            // Initialize the temps
+                            mpf_init (&aplVfpLft);
+                            mpf_init (&aplVfpRht);
+
+                            // Convert the FLOAT to a VFP
+                            mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+                            Myf_clear (&aplVfpLft);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = VFP(M), Rht = FLOAT(S)
+                            // Initialize the temp
+                            mpf_init (&aplVfpRht);
+
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a RAT
+                                mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*((LPAPLVFP) lpMemLft)++,
+                                                         aplVfpRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myf_clear (&aplVfpRht);
+
+                            break;
+
                         defstop
                             break;
                     } // End SWITCH
+
+                    break;
+
+                case ARRAY_RAT:             // Res = BOOL,                  Rht = RAT(S)
+                    // Initialize the temps
+                    mpq_init (&aplRatLft);
+                    mpf_init (&aplVfpLft);
+                    mpf_init (&aplVfpRht);
+
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL(M),   Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a RAT
+                                mpq_set_sa (&aplRatLft, BIT0 & (*(LPAPLBOOL) lpMemLft) >> uBitIndex, 1);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                        *(LPAPLRAT) lpSymGlbRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemLft)++;       // Skip to next byte
+                                    ((LPAPLBOOL) lpMemRes)++;       // ...
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:     // Res = BOOL, Lft = INT (M),   Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_set_sa (&aplRatLft, *((LPAPLINT) lpMemLft)++, 1);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                        *(LPAPLRAT) lpSymGlbRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_APA:     // Res = BOOL, Lft = APA (M),   Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the APA to a RAT
+                                mpq_set_sa (&aplRatLft, apaOffLft + apaMulLft * uRes, 1);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                        *(LPAPLRAT) lpSymGlbRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = BOOL, Lft = FLOAT(M),  Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = BOOL, Lft = RAT (M),   Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisRvR) (*((LPAPLRAT) lpMemLft)++,
+                                                         *(LPAPLRAT) lpSymGlbRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myq_clear (&aplRatRht);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = VFP (M),   Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*((LPAPLVFP) lpMemLft)++,
+                                                          aplVfpRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpRht);
+                    Myf_clear (&aplVfpLft);
+                    Myq_clear (&aplRatLft);
+
+                    break;
+
+                case ARRAY_VFP:             // Res = BOOL,                  Rht = VFP(S)
+                    // Initialize the temps
+                    mpf_init (&aplVfpLft);
+                    mpf_init (&aplVfpRht);
+
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL(M),   Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the BOOL to a VFP
+                                mpf_set_sa (&aplVfpLft, BIT0 & (*(LPAPLBOOL) lpMemLft) >> uBitIndex);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                        *(LPAPLVFP) lpSymGlbRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemLft)++;       // Skip to next byte
+                                    ((LPAPLBOOL) lpMemRes)++;       // ...
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:     // Res = BOOL, Lft = INT (M),   Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_set_sa (&aplVfpLft, *((LPAPLINT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                        *(LPAPLVFP) lpSymGlbRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_APA:     // Res = BOOL, Lft = APA (M),   Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the APA to a VFP
+                                mpf_set_sa (&aplVfpLft, apaOffLft + apaMulLft * uRes);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                        *(LPAPLVFP) lpSymGlbRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = BOOL, Lft = FLOAT(M),  Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                        *(LPAPLVFP) lpSymGlbRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = BOOL, Lft = RAT (M),   Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                        *(LPAPLVFP) lpSymGlbRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myq_clear (&aplRatRht);
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = BOOL, Lft = VFP (M),   Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLBOOL)  lpMemRes) |=
+                                  (*lpPrimSpec->BisVvV) (*((LPAPLVFP) lpMemLft)++,
+                                                         *(LPAPLVFP) lpSymGlbRht,
+                                                          lpPrimSpec) << uBitIndex;
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
+                                {
+                                    uBitIndex = 0;                  // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpRht);
+                    Myf_clear (&aplVfpLft);
 
                     break;
 
@@ -6067,6 +8540,357 @@ RESTART_EXCEPTION:
 
             break;
 
+        case ARRAY_RAT:                     // Res = RAT
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_BOOL:            // Res = RAT,                   Rht = BOOL(S)
+                case ARRAY_INT:             // Res = RAT,                   Rht = INT(S)
+                case ARRAY_APA:             // Res = RAT,                   Rht = APA(S)
+                    // Convert the INT to a RAT
+                    mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_RAT:     // Res = RAT, Lft = RAT(M),     Rht = BOOL/INT/APA(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLRAT)   lpMemRes)++ =
+                                  (*lpPrimSpec->RisRvR) (*((LPAPLRAT) lpMemLft)++,
+                                                          aplRatRht,
+                                                          lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this storage
+                    Myq_clear (&aplRatRht);
+
+                    break;
+
+                case ARRAY_RAT:             // Res = RAT,                   Rht = RAT(S)
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:    // Res = RAT, Lft = BOOL(M),    Rht = RAT(S)
+                        case ARRAY_INT:     // Res = RAT, Lft = INT(M),     Rht = RAT(S)
+                        case ARRAY_APA:     // Res = RAT, Lft = APA(M),     Rht = RAT(S)
+                            // Initialize the temp
+                            mpq_init (&aplRatLft);
+
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a RAT
+                                mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
+
+                                // Save in result
+                                *((LPAPLRAT)   lpMemRes)++ =
+                                  (*lpPrimSpec->RisRvR) (aplRatLft,
+                                                        *(LPAPLRAT) lpSymGlbRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            // We no longer need this storage
+                            Myq_clear (&aplRatLft);
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = RAT, Lft = RAT(M),     Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLRAT)   lpMemRes)++ =
+                                  (*lpPrimSpec->RisRvR) (*((LPAPLRAT) lpMemLft)++,
+                                                         *(LPAPLRAT) lpSymGlbRht,
+                                                          lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_VFP:                     // Res = VFP
+            // Initialize the temps
+            mpf_init (&aplVfpLft);
+            mpf_init (&aplVfpRht);
+
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_BOOL:            // Res = VFP,                   Rht = BOOL(S)
+                case ARRAY_INT:             // Res = VFP,                   Rht = INT(S)
+                case ARRAY_APA:             // Res = VFP,                   Rht = APA(S)
+                    // Convert the INT to a VFP
+                    mpf_set_sa (&aplVfpRht, aplIntegerRht);
+
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_RAT:     // Res = VFP, Lft = RAT(M),     Rht = BOOL/INT/APA(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = VFP, Lft = VFP(M),     Rht = BOOL/INT/APA(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (*((LPAPLVFP) lpMemLft)++,
+                                                          aplVfpRht,
+                                                          lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_RAT:             // Res = VFP,                   Rht = RAT(S)
+                    // Convert the RAT to a VFP
+                    mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:    // Res = VFP, Lft = BOOL(M),    Rht = RAT(S)
+                        case ARRAY_INT:     // Res = VFP, Lft = INT(M),     Rht = RAT(S)
+                        case ARRAY_APA:     // Res = VFP, Lft = APA(M),     Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = VFP, Lft = FLOAT(M),   Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = VFP, Lft = RAT(M),     Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = VFP, Lft = VFP(M),     Rht = RAT(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (*((LPAPLVFP) lpMemLft)++,
+                                                          aplVfpRht,
+                                                          lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Split cases based upon the left arg's storage type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:    // Res = VFP, Lft = BOOL(M),    Rht = VFP(S)
+                        case ARRAY_INT:     // Res = VFP, Lft = INT(M),     Rht = VFP(S)
+                        case ARRAY_APA:     // Res = VFP, Lft = APA(M),     Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the INT to a VFP
+                                mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                        *(LPAPLVFP) lpSymGlbRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:   // Res = VFP, Lft = FLOAT(M),   Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the FLOAT to a VFP
+                                mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                        *(LPAPLVFP) lpSymGlbRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_RAT:     // Res = VFP, Lft = RAT(M),     Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Convert the RAT to a VFP
+                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                        *(LPAPLVFP) lpSymGlbRht,
+                                                         lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_VFP:     // Res = VFP, Lft = VFP(M),     Rht = VFP(S)
+                            // Loop through the result
+                            for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                // Save in result
+                                *((LPAPLVFP)   lpMemRes)++ =
+                                  (*lpPrimSpec->VisVvV) (*((LPAPLVFP) lpMemLft)++,
+                                                         *(LPAPLVFP) lpSymGlbRht,
+                                                          lpPrimSpec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We no longer need this storage
+            Myf_clear (&aplVfpRht);
+            Myf_clear (&aplVfpLft);
+
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -6085,15 +8909,62 @@ RESTART_EXCEPTION:
 
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_WS_FULL:
+                goto WSFULL_EXIT;
+
             case EXCEPTION_NONCE_ERROR:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 goto NONCE_EXIT;
 
+            case EXCEPTION_RESULT_VFP:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                if (IsNumeric (aplTypeRes)
+                 && !IsVfp    (aplTypeRes))
+                {
+                    // It's now a VFP result
+                    aplTypeRes = ARRAY_VFP;
+
+                    // We need to start over with the result
+                    MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                    FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+
+                    if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                     lphGlbRes,
+                                                     lpMemHdrLft,
+                                                     NULL,
+                                                     lpMemHdrLft->Rank,
+                                                     0,
+                                                    &aplRankRes,
+                                                     aplTypeRes,
+                                                     bLftIdent,
+                                                     bRhtIdent,
+                                                     lpMemHdrLft->NELM,
+                                                     1,
+                                                     aplNELMRes))
+                        goto ERROR_EXIT;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+
+                    // Restart the pointer
+                    lpMemLft = lpMemLftStart;
+#ifdef DEBUG
+                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                    goto RESTART_EXCEPTION;
+                } // End IF
+
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                if (IsSimpleNum (aplTypeRes)
+                if (IsNumeric (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
                     // If the previous result is Boolean, we need to
@@ -6167,6 +9038,11 @@ DOMAIN_EXIT:
                                lptkFunc);
     goto ERROR_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
@@ -6174,6 +9050,12 @@ NONCE_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
+    // We no longer need this storage
+    Myq_clear (&aplRatRht);
+    Myq_clear (&aplRatLft);
+    Myf_clear (&aplVfpRht);
+    Myf_clear (&aplVfpLft);
+
     // Restore the memory ptr
     *lplpMemRes = lpMemRes;
 
@@ -6200,6 +9082,7 @@ HGLOBAL PrimFnDydSiScNest_EM
      APLINT     aplIntegerLft,      // ...      integer value
      APLFLOAT   aplFloatLft,        // ...      float   ...
      APLCHAR    aplCharLft,         // ...      char    ...
+     HGLOBAL    lpSymGlbLft,        // ...      lpSymGlb
      APLNESTED  aplNestedRht,       // Right arg nested value
      UBOOL      bLftIdent,          // TRUE iff the function has a left identity element and the Axis tail is valid
      UBOOL      bRhtIdent,          // ...                         right ...
@@ -6326,6 +9209,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                                       aplIntegerLft,
                                       aplFloatLft,
                                       aplCharLft,
+                                      lpSymGlbLft,
                                       aplTypeRht,
                                       apaOffRht,
                                       apaMulRht,
@@ -6363,14 +9247,17 @@ HGLOBAL PrimFnDydSiScNest_EM
                                       NULL,
                                      &aplTypeHetRht);
                     hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                    hGlbRes,
                                                     aplTypeLft,
                                                     aplIntegerLft,
                                                     aplFloatLft,
                                                     aplCharLft,
+                                                    NULL,
                                                     aplTypeHetRht,
                                                     aplIntegerRht,
                                                     aplFloatRht,
                                                     aplCharRht,
+                                                    NULL,
                                                     lpPrimSpec);
                     if (!hGlbSub)
                         goto ERROR_EXIT;
@@ -6385,6 +9272,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                                                     aplIntegerLft,
                                                     aplFloatLft,
                                                     aplCharLft,
+                                                    lpSymGlbLft,
                                                     hGlbSub,
                                                     bLftIdent,
                                                     bRhtIdent,
@@ -6461,14 +9349,17 @@ NORMAL_EXIT:
 
 HGLOBAL PrimFnDydSiScSiSc_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
+     HGLOBAL    hGlbRes,            // Result global memory handle
      APLSTYPE   aplTypeLft,         // Left arg storage type
      APLINT     aplIntegerLft,      // ...      as integer
      APLFLOAT   aplFloatLft,        // ...         float
      APLCHAR    aplCharLft,         // ...         char
+     HGLOBAL    lpSymGlbLft,        // ...         Sym/Glb
      APLSTYPE   aplTypeRht,         // Right arg storage type
      APLINT     aplIntegerRht,      // ...       as integer
      APLFLOAT   aplFloatRht,        // ...          float
      APLCHAR    aplCharRht,         // ...          char
+     HGLOBAL    lpSymGlbRht,        // ...          Sym/Glb
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
@@ -6486,15 +9377,18 @@ HGLOBAL PrimFnDydSiScSiSc_EM
 
     if (PrimFnDydSiScSiScSub_EM (&tkRes,
                                   lptkFunc,
+                                 &hGlbRes,
                                   aplTypeRes,
                                   aplTypeLft,
                                   aplIntegerLft,
                                   aplFloatLft,
                                   aplCharLft,
+                                  NULL,
                                   aplTypeRht,
                                   aplIntegerRht,
                                   aplFloatRht,
                                   aplCharRht,
+                                  NULL,
                                   lpPrimSpec))
         // Convert the immediate type and value in tkRes
         //   into an LPSYMENTRY
@@ -6527,21 +9421,36 @@ DOMAIN_EXIT:
 UBOOL PrimFnDydSiScSiScSub_EM
     (LPTOKEN    lptkRes,            // Ptr to result token
      LPTOKEN    lptkFunc,           // Ptr to function token
+     HGLOBAL   *lphGlbRes,          // Ptr to result global memory handle (may be NULL)
      APLSTYPE   aplTypeRes,         // Result storage type
      APLSTYPE   aplTypeLft,         // Left arg storage type
      APLINT     aplIntegerLft,      // ...      as an integer
      APLFLOAT   aplFloatLft,        // ...            float
      APLCHAR    aplCharLft,         // ...            char
+     HGLOBAL    lpSymGlbLft,        // ...            lpSym/Glb
      APLSTYPE   aplTypeRht,         // Right arg storage type
      APLINT     aplIntegerRht,      // ...       as an integer
      APLFLOAT   aplFloatRht,        // ...             float
      APLCHAR    aplCharRht,         // ...             char
+     HGLOBAL    lpSymGlbRht,        // ...             lpSym/Glb
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     IMM_TYPES immType;              // Result immediate type
     UBOOL     bRet = TRUE;          // TRUE iff result is valid
+    APLUINT   ByteRes;              // # bytes in the result
+    LPVOID    lpMemRes = NULL;      // Ptr to result global memory
+    APLRAT    aplRatLft = {0},      // Left arg as Rational
+              aplRatRht = {0};      // Right ...
+    APLVFP    aplVfpLft = {0},      // Left arg as VFP
+              aplVfpRht = {0};      // Right ...
+    APLSTYPE  aplTypeCom;           // Common storage type
+    HGLOBAL   hGlbTmp;              // Temporary hGlbRes
+
 RESTART_EXCEPTION_IMMED:
+    // If the result is simple, ...
+    if (IsSimple (aplTypeRes))
+    {
         // Get the immediate type for the token
         immType = TranslateArrayTypeToImmType (aplTypeRes);
 
@@ -6550,8 +9459,16 @@ RESTART_EXCEPTION_IMMED:
         // Fill in the result token
         lptkRes->tkFlags.TknType   = TKT_VARIMMED;
         lptkRes->tkFlags.ImmType   = immType;
-////lptkRes->tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
+////////lptkRes->tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
         lptkRes->tkCharIndex       = lptkFunc->tkCharIndex;
+    } else
+    {
+        // Fill in the result token
+        lptkRes->tkFlags.TknType   = TKT_VARARRAY;
+////////lptkRes->tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lptkRes->tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+        lptkRes->tkCharIndex       = lptkFunc->tkCharIndex;
+    } // End IF/ELSE
 
     __try
     {
@@ -6595,12 +9512,200 @@ RESTART_EXCEPTION_IMMED:
                                              aplFloatRht,
                                              lpPrimSpec);
                 else
+                // If one arg is numeric, the other char
+                if ((IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht))   // Res = BOOL, Lft = NUMB(S), Rht = CHAR(s)
+                 || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft)))  // Res = BOOL, Lft = CHAR(S), Rht = CHAR(S)
                 {
                     Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
                          || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+
                     // If the function is UTF16_NOTEQUAL, the result is one
                     lptkRes->tkData.tkBoolean  = (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
-                } // End IF/ELSE/...
+                } else
+                // If either argument is global numeric, ...
+                if (IsGlbNum (aplTypeLft)
+                 || IsGlbNum (aplTypeRht))
+                {
+                    // Calculate the common storage type
+                    aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
+
+                    // Initialize the temps
+                    mpq_init (&aplRatLft);
+                    mpq_init (&aplRatRht);
+                    mpf_init (&aplVfpLft);
+                    mpf_init (&aplVfpRht);
+
+                    // Promote the left arg to the common type
+                    switch (aplTypeCom)
+                    {
+                        case ARRAY_RAT:
+                            // Split cases based upon the left arg storage type
+                            switch (aplTypeLft)
+                            {
+                                case ARRAY_BOOL:
+                                case ARRAY_INT:
+                                case ARRAY_APA:
+                                    // Convert the BOOL/INT/APA to a RAT
+                                    mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                    break;
+
+                                case ARRAY_RAT:
+                                    // Copy the RAT to a RAT
+                                    mpq_set (&aplRatLft, (LPAPLRAT) lpSymGlbLft);
+
+                                    break;
+
+                                case ARRAY_CHAR:
+                                case ARRAY_FLOAT:
+                                case ARRAY_VFP:
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Split cases based upon the left arg storage type
+                            switch (aplTypeLft)
+                            {
+                                case ARRAY_BOOL:
+                                case ARRAY_INT:
+                                case ARRAY_APA:
+                                    // Convert the BOOL/INT/APA to a VFP
+                                    mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                    break;
+
+                                case ARRAY_FLOAT:
+                                    // Convert the FLOAT to a VFP
+                                    mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                    break;
+
+                                case ARRAY_RAT:
+                                    // Convert the RAT to a VFP
+                                    mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                    break;
+
+                                case ARRAY_VFP:
+                                    // Copy the VFP to a VFP
+                                    mpf_set (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+
+                                    break;
+
+                                case ARRAY_CHAR:
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Promote the right arg to the common type
+                    switch (aplTypeCom)
+                    {
+                        case ARRAY_RAT:
+                            // Split cases based upon the right arg storage type
+                            switch (aplTypeRht)
+                            {
+                                case ARRAY_BOOL:
+                                case ARRAY_INT:
+                                case ARRAY_APA:
+                                    // Convert the BOOL/INT/APA to a RAT
+                                    mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                                    break;
+
+                                case ARRAY_RAT:
+                                    // Copy the RAT to a RAT
+                                    mpq_set (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
+
+                                    break;
+
+                                case ARRAY_CHAR:
+                                case ARRAY_FLOAT:
+                                case ARRAY_VFP:
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        case ARRAY_VFP:
+                            // Split cases based upon the right arg storage type
+                            switch (aplTypeRht)
+                            {
+                                case ARRAY_BOOL:
+                                case ARRAY_INT:
+                                case ARRAY_APA:
+                                    // Convert the BOOL/INT/APA to a VFP
+                                    mpf_set_sa (&aplVfpRht, aplIntegerRht);
+
+                                    break;
+
+                                case ARRAY_FLOAT:
+                                    // Convert the FLOAT to a VFP
+                                    mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                    break;
+
+                                case ARRAY_RAT:
+                                    // Convert the RAT to a VFP
+                                    mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                    break;
+
+                                case ARRAY_VFP:
+                                    // Copy the VFP to a VFP
+                                    mpf_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+
+                                    break;
+
+                                case ARRAY_CHAR:
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    switch (aplTypeCom)
+                    {
+                        case ARRAY_RAT:
+                            // Save the result
+                            lptkRes->tkData.tkBoolean  =
+                              (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                     aplRatRht,
+                                                     lpPrimSpec);
+                            break;
+
+                        case ARRAY_VFP:
+                            // Save the result
+                            lptkRes->tkData.tkBoolean  =
+                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                     aplVfpRht,
+                                                     lpPrimSpec);
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpRht);
+                    Myf_clear (&aplVfpLft);
+                    Myq_clear (&aplRatRht);
+                    Myq_clear (&aplRatLft);
+                } else
+                    DbgStop ();         // We should never get here
 
                 break;
 
@@ -6645,7 +9750,245 @@ RESTART_EXCEPTION_IMMED:
                                              aplFloatRht,
                                              lpPrimSpec);
                 else
+                // If both arguments are numeric (RAT, VFP, ...)
+                if (IsNumeric (aplTypeLft)
+                 && IsNumeric (aplTypeRht))     // Res = FLOAT, Lft = RAT/VFP/...(S), Rht = RAT/VFP/...(S)
+                {
+                    DbgBrk ();          // Can't happen with any known primitive
+
+
+
+
+
+
+                } else
                     DbgStop ();         // We should never get here
+                break;
+
+            case ARRAY_RAT:                     // Res = RAT
+                // If the result global memory handle is NULL, ...
+                if (lphGlbRes EQ NULL)
+                {
+                    // Allocate our own global memory and return it in lptkRes
+
+                    //***************************************************************
+                    // Calculate space needed for the result
+                    //***************************************************************
+                    ByteRes = CalcArraySize (aplTypeRes, 1, 0);
+
+                    //***************************************************************
+                    // Check for overflow
+                    //***************************************************************
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
+
+                    //***************************************************************
+                    // Now we can allocate the storage for the result
+                    //***************************************************************
+                    hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                    if (!hGlbTmp)
+                        goto WSFULL_EXIT;
+                } else
+                    hGlbTmp = *lphGlbRes;
+
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (hGlbTmp);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = aplTypeRes;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = 1;
+                lpHeader->Rank       = 0;
+#undef  lpHeader
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+
+                // Promote the left arg to Rational
+                // Split cases based upon the left arg type
+                switch (aplTypeLft)
+                {
+                    case ARRAY_BOOL:            // Res = RAT, Lft = BOOL
+                    case ARRAY_INT:             // Res = RAT, Lft = INT
+                    case ARRAY_APA:             // Res = RAT, Lft = APA
+                        mpq_init_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                        break;
+
+                    case ARRAY_RAT:             // Res = RAT, Lft = RAT
+                        mpq_init_set    (&aplRatLft, (LPAPLRAT) lpSymGlbLft);
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                    case ARRAY_CHAR:
+                    case ARRAY_VFP:
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Promote the right arg to Rational
+                // Split cases based upon the right arg type
+                switch (aplTypeRht)
+                {
+                    case ARRAY_BOOL:            // Res = RAT, Rht = BOOL
+                    case ARRAY_INT:             // Res = RAT, Rht = INT
+                    case ARRAY_APA:             // Res = RAT, Rht = APA
+                        mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                        break;
+
+                    case ARRAY_RAT:             // Res = RAT, Rht = RAT
+                        mpq_init_set    (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                    case ARRAY_CHAR:
+                    case ARRAY_VFP:
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Save the result
+                ((LPAPLRAT) lpMemRes)[0] =
+                  (*lpPrimSpec->RisRvR) (aplRatLft,
+                                         aplRatRht,
+                                         lpPrimSpec);
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+
+                // Save in the result
+                lptkRes->tkData.tkGlbData = MakePtrTypeGlb (hGlbTmp);
+
+                // We no longer need this storage
+                Myq_clear (&aplRatRht);
+                Myq_clear (&aplRatLft);
+
+                break;
+
+            case ARRAY_VFP:                     // Res = VFP
+                // If the result global memory handle is NULL, ...
+                if (lphGlbRes EQ NULL)
+                {
+                    // Allocate our own global memory and return it in lptkRes
+
+                    //***************************************************************
+                    // Calculate space needed for the result
+                    //***************************************************************
+                    ByteRes = CalcArraySize (aplTypeRes, 1, 0);
+
+                    //***************************************************************
+                    // Check for overflow
+                    //***************************************************************
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
+
+                    //***************************************************************
+                    // Now we can allocate the storage for the result
+                    //***************************************************************
+                    hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                    if (!hGlbTmp)
+                        goto WSFULL_EXIT;
+                } else
+                    hGlbTmp = *lphGlbRes;
+
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (hGlbTmp);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = aplTypeRes;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = 1;
+                lpHeader->Rank       = 0;
+#undef  lpHeader
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+
+                // Promote the left arg to VFP
+                // Split cases based upon the left arg type
+                switch (aplTypeLft)
+                {
+                    case ARRAY_BOOL:            // Res = VFP, Lft = BOOL
+                    case ARRAY_INT:             // Res = VFP, Lft = INT
+                    case ARRAY_APA:             // Res = VFP, Lft = APA
+                        mpf_init_set_sa (&aplVfpLft, aplIntegerLft);
+
+                        break;
+
+                    case ARRAY_FLOAT:           // Res = VFP, Lft = FLOAT
+                        mpf_init_set_d  (&aplVfpLft, aplFloatLft);
+
+                        break;
+
+                    case ARRAY_RAT:             // Res = VFP, Lft = RAT
+                        mpf_init_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                        break;
+
+                    case ARRAY_VFP:             // Res = VFP, Lft = VFP
+                        mpf_init_set    (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+
+                        break;
+
+                    case ARRAY_CHAR:
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Promote the right arg to VFP
+                // Split cases based upon the right arg type
+                switch (aplTypeRht)
+                {
+                    case ARRAY_BOOL:            // Res = VFP, Rht = BOOL
+                    case ARRAY_INT:             // Res = VFP, Rht = INT
+                    case ARRAY_APA:             // Res = VFP, Rht = APA
+                        mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+
+                        break;
+
+                    case ARRAY_FLOAT:           // Res = VFP, Rht = FLOAT
+                        mpf_init_set_d  (&aplVfpRht, aplFloatRht);
+
+                        break;
+
+                    case ARRAY_RAT:             // Res = VFP, Rht = RAT
+                        mpf_init_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                        break;
+
+                    case ARRAY_VFP:             // Res = VFP, Rht = VFP
+                        mpf_init_set    (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+
+                        break;
+
+                    case ARRAY_CHAR:
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Save the result
+                ((LPAPLVFP) lpMemRes)[0] =
+                  (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                         aplVfpRht,
+                                         lpPrimSpec);
+                // We no longer need this storage
+                Myf_clear (&aplVfpRht);
+                Myf_clear (&aplVfpLft);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+
+                // Save in the result
+                lptkRes->tkData.tkGlbData = MakePtrTypeGlb (hGlbTmp);
+
                 break;
 
             defstop
@@ -6666,15 +10009,37 @@ RESTART_EXCEPTION_IMMED:
 
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_WS_FULL:
+                goto WSFULL_EXIT;
+
             case EXCEPTION_NONCE_ERROR:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 goto NONCE_EXIT;
 
+            case EXCEPTION_RESULT_VFP:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                if (IsNumeric (aplTypeRes)
+                 && !IsVfp    (aplTypeRes))
+                {
+                    // It's now a VFP result
+                    aplTypeRes = ARRAY_VFP;
+#ifdef DEBUG
+                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                    goto RESTART_EXCEPTION_IMMED;
+                } // End IF
+
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+
             case EXCEPTION_RESULT_FLOAT:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                if (IsSimpleNum (aplTypeRes)
+                if (IsNumeric (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
                     // It's now a FLOAT result
@@ -6707,9 +10072,36 @@ NONCE_EXIT:
                                lptkFunc);
     goto ERROR_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+    if (hGlbTmp)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
+
+        // If the caller passed it in, ...
+        if (lphGlbRes)
+            *lphGlbRes = NULL;
+    } // End IF
+
     bRet = FALSE;
 NORMAL_EXIT:
+    // We no longer need this storage
+    Myq_clear (&aplRatRht);
+    Myq_clear (&aplRatLft);
+    Myf_clear (&aplVfpRht);
+    Myf_clear (&aplVfpLft);
+
     return bRet;
 } // End PrimFnDydSiScSiScSub_EM
 #undef  APPEND_NAME
@@ -6718,7 +10110,8 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $PrimFnDydSimpSimp_EM
 //
-//  Dyadic primitive scalar function, left simple, right simple
+//  Dyadic primitive scalar function,
+//    left simple or global numeric, right simple or global numeric
 //***************************************************************************
 
 #ifdef DEBUG
@@ -6796,6 +10189,15 @@ UBOOL PrimFnDydSimpSimp_EM
     LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
     APLNELM           aplNELMTmp,       // Temporary NELM
                       aplNELMRem;       // Remaining NELM
+    HGLOBAL           lpSymGlbLft,      // Left arg Sym/Glb
+                      lpSymGlbRht;      // Right ...
+    APLRAT            aplRatLft = {0},  // Left arg as Rational
+                      aplRatRht = {0};  // Right ...
+    APLVFP            aplVfpLft = {0},  // Left arg as VFP
+                      aplVfpRht = {0};  // Right ...
+    APLSTYPE          aplTypeHetLft,    // Left hetero types
+                      aplTypeHetRht,    // Right ...
+                      aplTypeCom;       // Common storage type
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -6835,7 +10237,7 @@ UBOOL PrimFnDydSimpSimp_EM
                                &aplFloatLft,        // Ptr to float ...
                                &aplCharLft,         // Ptr to WCHAR ...
                                 NULL,               // Ptr to longest ...
-                                NULL,               // Ptr to lpSym/Glb ...
+                               &lpSymGlbLft,        // Ptr to lpSym/Glb ...
                                 NULL,               // Ptr to ...immediate type ...
                                 NULL);              // Ptr to array type ...
             GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
@@ -6843,21 +10245,24 @@ UBOOL PrimFnDydSimpSimp_EM
                                &aplFloatRht,        // Ptr to float ...
                                &aplCharRht,         // Ptr to WCHAR ...
                                 NULL,               // Ptr to longest ...
-                                NULL,               // Ptr to lpSym/Glb ...
+                               &lpSymGlbRht,        // Ptr to lpSym/Glb ...
                                 NULL,               // Ptr to ...immediate type ...
                                 NULL);              // Ptr to array type ...
             bRet =
               PrimFnDydSiScSiScSub_EM (&lpYYRes->tkToken,
                                         lptkFunc,
+                                        lphGlbRes,
                                         aplTypeRes,
                                         aplTypeLft,
                                         aplIntegerLft,
                                         aplFloatLft,
                                         aplCharLft,
+                                        lpSymGlbLft,
                                         aplTypeRht,
                                         aplIntegerRht,
                                         aplFloatRht,
                                         aplCharRht,
+                                        lpSymGlbRht,
                                         lpPrimSpec);
         } else
         // It's a singleton array
@@ -6868,7 +10273,7 @@ UBOOL PrimFnDydSimpSimp_EM
                                &aplFloatLft,    // Ptr to float ...
                                &aplCharLft,     // Ptr to WCHAR ...
                                 NULL,           // Ptr to longest ...
-                                NULL,           // Ptr to lpSym/Glb ...
+                               &lpSymGlbLft,    // Ptr to lpSym/Glb ...
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
             GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
@@ -6876,7 +10281,7 @@ UBOOL PrimFnDydSimpSimp_EM
                                &aplFloatRht,    // Ptr to float ...
                                &aplCharRht,     // Ptr to WCHAR ...
                                 NULL,           // Ptr to longest ...
-                                NULL,           // Ptr to lpSym/Glb ...
+                               &lpSymGlbRht,    // Ptr to lpSym/Glb ...
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
 RESTART_EXCEPTION_SINGLETON:
@@ -6933,8 +10338,8 @@ RESTART_EXCEPTION_SINGLETON:
                                                  lpPrimSpec);
                     } else
                     // If one arg is numeric and the other char, ...
-                    if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = CHAR(S)
-                     || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL, Lft = CHAR(S)              , Rht = BOOL/INT/APA/FLOAT(S)
+                    if ((IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = CHAR(S)
+                     || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL, Lft = CHAR(S)              , Rht = BOOL/INT/APA/FLOAT(S)
                     {
                         // One arg is numeric, the other char
                         Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
@@ -6943,6 +10348,188 @@ RESTART_EXCEPTION_SINGLETON:
                         // If the function is not-equal, the result is 1
                         if (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL)
                             *((LPAPLBOOL)  lpMemRes) = 1;
+                    } else
+                    // If either argument is global numeric, ...
+                    if (IsGlbNum (aplTypeLft)
+                     || IsGlbNum (aplTypeRht))
+                    {
+                        // Calculate the common storage type
+                        aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
+
+                        // Initialize the temps
+                        mpq_init (&aplRatLft);
+                        mpq_init (&aplRatRht);
+                        mpf_init (&aplVfpLft);
+                        mpf_init (&aplVfpRht);
+
+                        // Promote the left arg to the common type
+                        switch (aplTypeCom)
+                        {
+                            case ARRAY_RAT:
+                                // Split cases based upon the left arg storage type
+                                switch (aplTypeLft)
+                                {
+                                    case ARRAY_BOOL:
+                                    case ARRAY_INT:
+                                    case ARRAY_APA:
+                                        // Convert the BOOL/INT/APA to a RAT
+                                        mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                        break;
+
+                                    case ARRAY_RAT:
+                                        // Copy the RAT to a RAT
+                                        mpq_set (&aplRatLft, (LPAPLRAT) lpSymGlbLft);
+
+                                        break;
+
+                                    case ARRAY_CHAR:
+                                    case ARRAY_FLOAT:
+                                    case ARRAY_VFP:
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                break;
+
+                            case ARRAY_VFP:
+                                // Split cases based upon the left arg storage type
+                                switch (aplTypeLft)
+                                {
+                                    case ARRAY_BOOL:
+                                    case ARRAY_INT:
+                                    case ARRAY_APA:
+                                        // Convert the BOOL/INT/APA to a VFP
+                                        mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                        break;
+
+                                    case ARRAY_FLOAT:
+                                        // Convert the FLOAT to a VFP
+                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                        break;
+
+                                    case ARRAY_RAT:
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                        break;
+
+                                    case ARRAY_VFP:
+                                        // Copy the VFP to a VFP
+                                        mpf_set (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+
+                                        break;
+
+                                    case ARRAY_CHAR:
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Promote the right arg to the common type
+                        switch (aplTypeCom)
+                        {
+                            case ARRAY_RAT:
+                                // Split cases based upon the right arg storage type
+                                switch (aplTypeRht)
+                                {
+                                    case ARRAY_BOOL:
+                                    case ARRAY_INT:
+                                    case ARRAY_APA:
+                                        // Convert the BOOL/INT/APA to a RAT
+                                        mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                                        break;
+
+                                    case ARRAY_RAT:
+                                        // Copy the RAT to a RAT
+                                        mpq_set (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
+
+                                        break;
+
+                                    case ARRAY_CHAR:
+                                    case ARRAY_FLOAT:
+                                    case ARRAY_VFP:
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                break;
+
+                            case ARRAY_VFP:
+                                // Split cases based upon the right arg storage type
+                                switch (aplTypeRht)
+                                {
+                                    case ARRAY_BOOL:
+                                    case ARRAY_INT:
+                                    case ARRAY_APA:
+                                        // Convert the BOOL/INT/APA to a VFP
+                                        mpf_set_sa (&aplVfpRht, aplIntegerRht);
+
+                                        break;
+
+                                    case ARRAY_FLOAT:
+                                        // Convert the FLOAT to a VFP
+                                        mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                        break;
+
+                                    case ARRAY_RAT:
+                                        // Convert the RAT to a VFP
+                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                        break;
+
+                                    case ARRAY_VFP:
+                                        // Copy the VFP to a VFP
+                                        mpf_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+
+                                        break;
+
+                                    case ARRAY_CHAR:
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Split cases based upon the common type
+                        switch (aplTypeCom)
+                        {
+                            case ARRAY_RAT:
+                                *((LPAPLBOOL)  lpMemRes) =
+                                  (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                         aplRatRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                break;
+
+                            case ARRAY_VFP:
+                                *((LPAPLBOOL)  lpMemRes) =
+                                  (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                         aplVfpRht,
+                                                         lpPrimSpec) << uBitIndex;
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // We no longer need this storage
+                        Myf_clear (&aplVfpRht);
+                        Myf_clear (&aplVfpLft);
+                        Myq_clear (&aplRatRht);
+                        Myq_clear (&aplRatLft);
                     } else
                         DbgStop ();         // We should never get here
                     break;
@@ -6994,7 +10581,151 @@ RESTART_EXCEPTION_SINGLETON:
                                                  aplFloatRht,
                                                  lpPrimSpec);
                     } else
+                    // If both arguments are numeric (RAT, VFP, ...)
+                    if (IsNumeric (aplTypeLft)
+                     && IsNumeric (aplTypeRht))    // Res = FLOAT, Lft = RAT/VFP/...(S), Rht = RAT/VFP/...(S)
+                    {
+                        DbgBrk ();          // Can't happen with any known primitive
+
+
+
+
+
+
+                    } else
                         DbgStop ();         // We should never get here
+                    break;
+
+                case ARRAY_RAT:                     // Res = RAT
+                    // Promote the left arg to Rational
+                    // Split cases based upon the left arg type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:            // Res = RAT, Lft = BOOL
+                        case ARRAY_INT:             // Res = RAT, Lft = INT
+                        case ARRAY_APA:             // Res = RAT, Lft = APA
+                            mpq_init_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                            break;
+
+                        case ARRAY_RAT:             // Res = RAT, Lft = RAT
+                            mpq_init_set    (&aplRatLft, (LPAPLRAT) lpSymGlbLft);
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                        case ARRAY_CHAR:
+                        case ARRAY_VFP:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Promote the right arg to Rational
+                    // Split cases based upon the right arg type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:            // Res = RAT, Rht = BOOL
+                        case ARRAY_INT:             // Res = RAT, Rht = INT
+                        case ARRAY_APA:             // Res = RAT, Rht = APA
+                            mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                            break;
+
+                        case ARRAY_RAT:             // Res = RAT, Rht = RAT
+                            mpq_init_set    (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                        case ARRAY_CHAR:
+                        case ARRAY_VFP:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Save in result
+                    *((LPAPLRAT)   lpMemRes) =
+                      (*lpPrimSpec->RisRvR) (aplRatLft,
+                                             aplRatRht,
+                                             lpPrimSpec);
+                    // We no longer need this storage
+                    Myq_clear (&aplRatRht);
+                    Myq_clear (&aplRatLft);
+
+                    break;
+
+                case ARRAY_VFP:                     // Res = VFP
+                    // Promote the left arg to VFP
+                    // Split cases based upon the left arg type
+                    switch (aplTypeLft)
+                    {
+                        case ARRAY_BOOL:            // Res = VFP, Lft = BOOL
+                        case ARRAY_INT:             // Res = VFP, Lft = INT
+                        case ARRAY_APA:             // Res = VFP, Lft = APA
+                            mpf_init_set_sa (&aplVfpLft, aplIntegerLft);
+
+                            break;
+
+                        case ARRAY_FLOAT:           // Res = VFP, Lft = FLOAT
+                            mpf_init_set_d  (&aplVfpLft, aplFloatLft);
+
+                            break;
+
+                        case ARRAY_RAT:             // Res = VFP, Lft = RAT
+                            mpf_init_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                            break;
+
+                        case ARRAY_VFP:             // Res = VFP, Lft = VFP
+                            mpf_init_set    (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+
+                            break;
+
+                        case ARRAY_CHAR:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Promote the right arg to VFP
+                    // Split cases based upon the right arg type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:            // Res = VFP, Rht = BOOL
+                        case ARRAY_INT:             // Res = VFP, Rht = INT
+                        case ARRAY_APA:             // Res = VFP, Rht = APA
+                            mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+
+                            break;
+
+                        case ARRAY_FLOAT:           // Res = VFP, Rht = FLOAT
+                            mpf_init_set_d  (&aplVfpRht, aplFloatRht);
+
+                            break;
+
+                        case ARRAY_RAT:             // Res = VFP, Rht = RAT
+                            mpf_init_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                            break;
+
+                        case ARRAY_VFP:             // Res = VFP, Rht = VFP
+                            mpf_init_set    (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+
+                            break;
+
+                        case ARRAY_CHAR:
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Save in result
+                    *((LPAPLVFP)   lpMemRes) =
+                      (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                             aplVfpRht,
+                                             lpPrimSpec);
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpRht);
+                    Myf_clear (&aplVfpLft);
+
                     break;
 
                 defstop
@@ -7020,10 +10751,51 @@ RESTART_EXCEPTION_SINGLETON:
 
                         goto NONCE_EXIT;
 
+                    case EXCEPTION_RESULT_VFP:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        if (IsNumeric (aplTypeRes)
+                         && !IsVfp    (aplTypeRes))
+                        {
+                            // It's now a VFP result
+                            aplTypeRes = ARRAY_VFP;
+
+                            // We need to start over with the result
+                            MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                            FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+
+                            if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                             lphGlbRes,
+                                                             lpMemHdrLft,
+                                                             lpMemHdrRht,
+                                                             aplRankLft,
+                                                             aplRankRht,
+                                                            &aplRankRes,
+                                                             aplTypeRes,
+                                                             bLftIdent,
+                                                             bRhtIdent,
+                                                             aplNELMLft,
+                                                             aplNELMRht,
+                                                             aplNELMRes))
+                                goto ERROR_EXIT;
+
+                            // Lock the memory to get a ptr to it
+                            lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+#ifdef DEBUG
+                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                            goto RESTART_EXCEPTION_SINGLETON;
+                        } // End IF
+
+                        // Display message for unhandled exception
+                        DisplayException ();
+
+                        break;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        if (IsSimpleNum (aplTypeRes)
+                        if (IsNumeric (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
                             // If the previous result is Boolean, we need to
@@ -7138,7 +10910,7 @@ RESTART_EXCEPTION_SINGLETON:
                                &aplFloatLft,    // Ptr to float ...
                                &aplCharLft,     // Ptr to WCHAR ...
                                 NULL,           // Ptr to longest ...
-                                NULL,           // Ptr to lpSym/Glb ...
+                               &lpSymGlbLft,    // Ptr to lpSym/Glb ...
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
         else
@@ -7147,7 +10919,7 @@ RESTART_EXCEPTION_SINGLETON:
                                &aplFloatRht,    // Ptr to float ...
                                &aplCharRht,     // Ptr to WCHAR ...
                                 NULL,           // Ptr to longest ...
-                                NULL,           // Ptr to lpSym/Glb ...
+                               &lpSymGlbRht,    // Ptr to lpSym/Glb ...
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
         // Split cases based upon which argument is the singleton
@@ -7166,6 +10938,7 @@ RESTART_EXCEPTION_SINGLETON:
                                          aplIntegerRht,
                                          aplFloatRht,
                                          aplCharRht,
+                                         lpSymGlbRht,
                                          bLftIdent,
                                          bRhtIdent,
                                          lptkFunc,
@@ -7180,6 +10953,7 @@ RESTART_EXCEPTION_SINGLETON:
                                          aplIntegerLft,
                                          aplFloatLft,
                                          aplCharLft,
+                                         lpSymGlbLft,
                                          aplTypeRht,
                                          apaOffRht,
                                          apaMulRht,
@@ -7461,9 +11235,19 @@ RESTART_EXCEPTION_AXIS:
                         } // End FOR
                     } else
                     // If either arg is hetero and the other is simple, ...
-                    if ((IsSimpleHet (aplTypeLft) && IsSimple (aplTypeRht))     // Res = BOOL(No Axis), Lft = HETERO, Rht = BOOL/INT/APA/FLOAT/CHAR/HETERO
-                     || (IsSimpleHet (aplTypeRht) && IsSimple (aplTypeLft)))    // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT/CHAR/HETERO, Rht = HETERO
+                    if ((IsSimpleHet (aplTypeLft) && IsSimpleGlbNum (aplTypeRht))   // Res = BOOL(Axis), Lft = HETERO, Rht = BOOL/INT/APA/FLOAT/CHAR/HETERO/RAT/VFP
+                     || (IsSimpleHet (aplTypeRht) && IsSimpleGlbNum (aplTypeLft)))  // Res = BOOL(Axis), Lft = BOOL/INT/APA/FLOAT/CHAR/HETERO/RAT/VFP, Rht = HETERO
                     {
+                        // Initialize the temps
+                        mpq_init (&aplRatLft);
+                        mpq_init (&aplRatRht);
+                        mpf_init (&aplVfpLft);
+                        mpf_init (&aplVfpRht);
+
+                        // Copy the storage types
+                        aplTypeHetLft = aplTypeLft;
+                        aplTypeHetRht = aplTypeRht;
+
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
@@ -7486,15 +11270,22 @@ RESTART_EXCEPTION_AXIS:
                                                   lpMemWVec,
                                                   lpMemDimRes);
                             // Get the next values and type
-                            aplTypeLft = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft);
-                            aplTypeRht = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                            if (IsSimpleHet (aplTypeLft))
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
+                            else
+                                GetNextSimple (lpMemLft, aplTypeLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
+
+                            if (IsSimpleHet (aplTypeRht))
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
+                            else
+                                GetNextSimple (lpMemRht, aplTypeRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
 
                             // Split cases based upon the left hetero's storage type
-                            switch (aplTypeLft)
+                            switch (aplTypeHetLft)
                             {
-                                case ARRAY_BOOL:            // Res = BOOL(Axis), Lft = BOOL,  Rht = BOOL/INT/FLOAT/CHAR (one hetero, one simple)
+                                case ARRAY_BOOL:            // Res = BOOL(Axis), Lft = BOOL,  Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
                                     // Split cases based upon the right hetero's storage type
-                                    switch (aplTypeRht)
+                                    switch (aplTypeHetRht)
                                     {
                                         case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = BOOL, Rht = BOOL  (one hetero, one simple)
                                             // Save in result
@@ -7531,15 +11322,37 @@ RESTART_EXCEPTION_AXIS:
 
                                             break;
 
+                                        case ARRAY_RAT:     // Res = BOOL(Axis), Lft = BOOL, Rht = RAT    (one hetero, one simple)
+                                            // Convert the Boolean to a RAT
+                                            mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                                    *(LPAPLRAT) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(Axis), Lft = BOOL, Rht = VFP    (one hetero, one simple)
+                                            // Convert the Boolean to a VFP
+                                            mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                    *(LPAPLVFP) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
                                         defstop
                                             break;
                                     } // End SWITCH
 
                                     break;
 
-                                case ARRAY_INT:             // Res = BOOL(Axis), Lft = INT,   Rht = BOOL/INT/FLOAT/CHAR (one hetero, one simple)
+                                case ARRAY_INT:             // Res = BOOL(Axis), Lft = INT,   Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
                                     // Split cases based upon the right hetero's storage type
-                                    switch (aplTypeRht)
+                                    switch (aplTypeHetRht)
                                     {
                                         case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = INT,   Rht = BOOL  (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(Axis), Lft = INT,   Rht = INT   (one hetero, one simple)
@@ -7569,15 +11382,37 @@ RESTART_EXCEPTION_AXIS:
 
                                             break;
 
+                                        case ARRAY_RAT:     // Res = BOOL(Axis), Lft = INT,   Rht = RAT   (one hetero, one simple)
+                                            // Convert the integer to a RAT
+                                            mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                                    *(LPAPLRAT) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(Axis), Lft = INT,   Rht = VFP   (one hetero, one simple)
+                                            // Convert the integer to a VFP
+                                            mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                    *(LPAPLVFP) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
                                         defstop
                                             break;
                                     } // End SWITCH
 
                                     break;
 
-                                case ARRAY_FLOAT:           // Res = BOOL(Axis), Lft = FLOAT, Rht = BOOL/INT/FLOAT/CHAR (one hetero, one simple)
+                                case ARRAY_FLOAT:           // Res = BOOL(Axis), Lft = FLOAT, Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
                                     // Split cases based upon the right hetero's storage type
-                                    switch (aplTypeRht)
+                                    switch (aplTypeHetRht)
                                     {
                                         case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = FLOAT, Rht = BOOL (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(Axis), Lft = FLOAT, Rht = INT  (one hetero, one simple)
@@ -7600,19 +11435,44 @@ RESTART_EXCEPTION_AXIS:
 
                                             break;
 
+                                        case ARRAY_RAT:     // Res = BOOL(Axis), Lft = FLOAT, Rht = RAT  (one hetero, one simple)
+                                            // Convert the FLOAT and RAT to a VFP
+                                            mpf_set_d (&aplVfpLft, aplFloatLft);
+                                            mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                     aplVfpRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(Axis), Lft = FLOAT, Rht = VFP  (one hetero, one simple)
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                    *(LPAPLVFP) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
                                         defstop
                                             break;
                                     } // End SWITCH
 
                                     break;
 
-                                case ARRAY_CHAR:            // Res = BOOL(Axis), Lft = CHAR,  Rht = BOOL/INT/FLOAT/CHAR (one hetero, one simple)
+                                case ARRAY_CHAR:            // Res = BOOL(Axis), Lft = CHAR,  Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
                                     // Split cases based upon the right hetero's storage type
-                                    switch (aplTypeRht)
+                                    switch (aplTypeHetRht)
                                     {
                                         case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = CHAR,  Rht = BOOL  (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(Axis), Lft = CHAR,  Rht = INT   (one hetero, one simple)
                                         case ARRAY_FLOAT:   // Res = BOOL(Axis), Lft = CHAR,  Rht = FLOAT (one hetero, one simple)
+                                        case ARRAY_RAT:     // Res = BOOL(Axis), Lft = CHAR,  Rht = RAT   (one hetero, one simple)
+                                        case ARRAY_VFP:     // Res = BOOL(Axis), Lft = CHAR,  Rht = VFP   (one hetero, one simple)
                                             // One arg is numeric, the other char
                                             Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
                                                  || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
@@ -7637,6 +11497,133 @@ RESTART_EXCEPTION_AXIS:
 
                                     break;
 
+                                case ARRAY_RAT:             // Res = BOOL(Axis), Lft = RAT ,  Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
+                                    // Split cases based upon the right hetero's storage type
+                                    switch (aplTypeHetRht)
+                                    {
+                                        case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = RAT, Rht = BOOL (one hetero, one simple)
+                                        case ARRAY_INT:     // Res = BOOL(Axis), Lft = RAT, Rht = INT  (one hetero, one simple)
+                                            // Convert the INT to a RAT
+                                            mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                     aplRatRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_FLOAT:   // Res = BOOL(Axis), Lft = RAT, Rht = FLOAT(one hetero, one simple)
+                                            // Convert the RAT and FLOAT to a VFP
+                                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                            mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                     aplVfpRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_CHAR:    // Res = BOOL(Axis), Lft = RAT, Rht = CHAR (one hetero, one simple)
+                                            // One arg is numeric, the other char
+                                            Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                                                 || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                                            // If the function is UTF16_NOTEQUAL, the result is one
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL) << uBitIndex;
+
+                                            break;
+
+                                        case ARRAY_RAT:     // Res = BOOL(Axis), Lft = RAT, Rht = RAT  (one hetero, one simple)
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                     *(LPAPLRAT) lpSymGlbRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(Axis), Lft = RAT, Rht = VFP  (one hetero, one simple)
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                    *(LPAPLVFP) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_VFP:             // Res = BOOL(Axis), Lft = VFP ,  Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
+                                    // Split cases based upon the right hetero's storage type
+                                    switch (aplTypeHetRht)
+                                    {
+                                        case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = VFP, Rht = BOOL (one hetero, one simple)
+                                        case ARRAY_INT:     // Res = BOOL(Axis), Lft = VFP, Rht = INT  (one hetero, one simple)
+                                            // Convert the INT to a VFP
+                                            mpf_set_sa (&aplVfpRht, aplIntegerRht);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                     aplVfpRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_FLOAT:   // Res = BOOL(Axis), Lft = VFP, Rht = FLOAT(one hetero, one simple)
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                     aplVfpRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_CHAR:    // Res = BOOL(Axis), Lft = VFP, Rht = CHAR (one hetero, one simple)
+                                            // One arg is numeric, the other char
+                                            Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                                                 || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                                            // If the function is UTF16_NOTEQUAL, the result is one
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL) << uBitIndex;
+
+                                            break;
+
+                                        case ARRAY_RAT:     // Res = BOOL(Axis), Lft = VFP, Rht = RAT  (one hetero, one simple)
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                      aplVfpRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(Axis), Lft = VFP, Rht = VFP  (one hetero, one simple)
+                                            // Save in result
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                     *(LPAPLVFP) lpSymGlbRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
                                 defstop
                                     break;
                             } // End SWITCH
@@ -7648,10 +11635,16 @@ RESTART_EXCEPTION_AXIS:
                                 ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
                             } // End IF
                         } // End FOR
+
+                        // We no longer need this storage
+                        Myf_clear (&aplVfpRht);
+                        Myf_clear (&aplVfpLft);
+                        Myq_clear (&aplRatRht);
+                        Myq_clear (&aplRatLft);
                     } else
                     // If one arg is numeric and the other char, ...
-                    if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = CHAR
-                     || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL(No Axis), Lft = CHAR              , Rht = BOOL/INT/APA/FLOAT
+                    if ((IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL(Axis), Lft = BOOL/INT/APA/FLOAT, Rht = CHAR
+                     || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL(Axis), Lft = CHAR              , Rht = BOOL/INT/APA/FLOAT
                     {
                         // One arg is numeric, the other char
                         Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
@@ -7661,6 +11654,217 @@ RESTART_EXCEPTION_AXIS:
                         if (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL)
                             // Fill the result with all 1s
                             FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), 0xFF);
+                    } else
+                    // If either argument is global numeric, ...
+                    if (IsGlbNum (aplTypeLft)
+                     || IsGlbNum (aplTypeRht))
+                    {
+                        // Calculate the common storage type
+                        aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
+
+                        // Initialize the temps
+                        mpq_init (&aplRatLft);
+                        mpq_init (&aplRatRht);
+                        mpf_init (&aplVfpLft);
+                        mpf_init (&aplVfpRht);
+
+                        // Loop through the left/right args/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Calculate the left and right argument indices
+                            CalcLftRhtArgIndices (uRes,
+                                                  aplRankRes,
+                                                 &uLft,
+                                                  aplRankLft,
+                                                 &uRht,
+                                                  aplRankRht,
+                                                  bLftIdent,
+                                                  bRhtIdent,
+                                                  aplNELMAxis,
+                                                  lpMemAxisHead,
+                                                  lpMemOdo,
+                                                  lpMemWVec,
+                                                  lpMemDimRes);
+                            // Promote the left arg to the common type
+                            switch (aplTypeCom)
+                            {
+                                case ARRAY_RAT:
+                                    // Split cases based upon the left arg storage type
+                                    switch (aplTypeLft)
+                                    {
+                                        case ARRAY_BOOL:
+                                        case ARRAY_INT:
+                                        case ARRAY_APA:
+                                            // Convert the BOOL/INT/APA to a RAT
+                                            mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uLft), 1);
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                            // Copy the RAT to a RAT
+                                            mpq_set (&aplRatLft, &((LPAPLRAT) lpMemLft)[uLft]);
+
+                                            break;
+
+                                        case ARRAY_CHAR:
+                                        case ARRAY_FLOAT:
+                                        case ARRAY_VFP:
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_VFP:
+                                    // Split cases based upon the left arg storage type
+                                    switch (aplTypeLft)
+                                    {
+                                        case ARRAY_BOOL:
+                                        case ARRAY_INT:
+                                        case ARRAY_APA:
+                                            // Convert the BOOL/INT/APA to a VFP
+                                            mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft));
+
+                                            break;
+
+                                        case ARRAY_FLOAT:
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpLft, ((LPAPLFLOAT) lpMemLft)[uLft]);
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uLft]);
+
+                                            break;
+
+                                        case ARRAY_VFP:
+                                            // Copy the VFP to a VFP
+                                            mpf_set (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
+
+                                            break;
+
+                                        case ARRAY_CHAR:
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Promote the right arg to the common type
+                            switch (aplTypeCom)
+                            {
+                                case ARRAY_RAT:
+                                    // Split cases based upon the right arg storage type
+                                    switch (aplTypeRht)
+                                    {
+                                        case ARRAY_BOOL:
+                                        case ARRAY_INT:
+                                        case ARRAY_APA:
+                                            // Convert the BOOL/INT/APA to a RAT
+                                            mpq_set_sa (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRht), 1);
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                            // Copy the RAT to a RAT
+                                            mpq_set (&aplRatRht, &((LPAPLRAT) lpMemRht)[uRht]);
+
+                                            break;
+
+                                        case ARRAY_CHAR:
+                                        case ARRAY_FLOAT:
+                                        case ARRAY_VFP:
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_VFP:
+                                    // Split cases based upon the right arg storage type
+                                    switch (aplTypeRht)
+                                    {
+                                        case ARRAY_BOOL:
+                                        case ARRAY_INT:
+                                        case ARRAY_APA:
+                                            // Convert the BOOL/INT/APA to a VFP
+                                            mpf_set_sa (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRht));
+
+                                            break;
+
+                                        case ARRAY_FLOAT:
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpRht, ((LPAPLFLOAT) lpMemRht)[uRht]);
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uRht]);
+
+                                            break;
+
+                                        case ARRAY_VFP:
+                                            // Copy the VFP to a VFP
+                                            mpf_set (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
+
+                                            break;
+
+                                        case ARRAY_CHAR:
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Split cases based upon the common type
+                            switch (aplTypeCom)
+                            {
+                                case ARRAY_RAT:
+                                    *((LPAPLBOOL)  lpMemRes) |=
+                                      (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                             aplRatRht,
+                                                             lpPrimSpec) << uBitIndex;
+                                    break;
+
+                                case ARRAY_VFP:
+                                    *((LPAPLBOOL)  lpMemRes) |=
+                                      (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                             aplVfpRht,
+                                                             lpPrimSpec) << uBitIndex;
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;                  // Start over
+                                ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                            } // End IF
+                        } // End FOR
+
+                        // We no longer need this storage
+                        Myf_clear (&aplVfpRht);
+                        Myf_clear (&aplVfpLft);
+                        Myq_clear (&aplRatRht);
+                        Myq_clear (&aplRatLft);
                     } else
                         DbgStop ();     // We should never get here
                     break;
@@ -7732,6 +11936,16 @@ RESTART_EXCEPTION_AXIS:
                                                      lpPrimSpec);
                         } // End FOR
                     } else
+                    // If both arguments are numeric
+                    if (IsNumeric (aplTypeLft)
+                     && IsNumeric (aplTypeRht))                                  // Res = INT(Axis), Lft = RAT/VFP/..., Rht = RAT/VFP/...
+                    {
+                        DbgBrk ();              // Can't happen with any known primitive
+
+
+
+
+                    } else
                         DbgStop ();     // We should never get here
                     break;
 
@@ -7802,7 +12016,203 @@ RESTART_EXCEPTION_AXIS:
                                                      lpPrimSpec);
                         } // End FOR
                     } else
+                    // If both arguments are numeric
+                    if (IsNumeric (aplTypeLft)
+                     && IsNumeric (aplTypeRht))     // Res = FLOAT(Axis), Lft = RAT/VFP/..., Rht = RAT/VFP/...
+                    {
+                        DbgBrk ();              // Can't happen with any known primitive
+
+
+
+
+                    } else
                         DbgStop ();     // We should never get here
+                    break;
+
+                case ARRAY_RAT:                     // Res = RAT(Axis)
+                    // Initialize the temps
+                    mpq_init (&aplRatLft);
+                    mpq_init (&aplRatRht);
+
+                    // Loop through the left/right args/result
+                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        // Calculate the left and right argument indices
+                        CalcLftRhtArgIndices (uRes,
+                                              aplRankRes,
+                                             &uLft,
+                                              aplRankLft,
+                                             &uRht,
+                                              aplRankRht,
+                                              bLftIdent,
+                                              bRhtIdent,
+                                              aplNELMAxis,
+                                              lpMemAxisHead,
+                                              lpMemOdo,
+                                              lpMemWVec,
+                                              lpMemDimRes);
+                        // Promote the left arg to Rational
+                        // Split cases based upon the left arg type
+                        switch (aplTypeLft)
+                        {
+                            case ARRAY_BOOL:            // Res = RAT(Axis), Lft = BOOL
+                            case ARRAY_INT:             // Res = RAT(Axis), Lft = INT
+                            case ARRAY_APA:             // Res = RAT(Axis), Lft = APA
+                                mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uLft), 1);
+
+                                break;
+
+                            case ARRAY_RAT:             // Res = RAT(Axis), Lft = RAT
+                                mpq_set    (&aplRatLft, &((LPAPLRAT) lpMemLft)[uLft]);
+
+                                break;
+
+                            case ARRAY_FLOAT:
+                            case ARRAY_CHAR:
+                            case ARRAY_VFP:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Promote the right arg to Rational
+                        // Split cases based upon the right arg type
+                        switch (aplTypeRht)
+                        {
+                            case ARRAY_BOOL:            // Res = RAT(Axis), Rht = BOOL
+                            case ARRAY_INT:             // Res = RAT(Axis), Rht = INT
+                            case ARRAY_APA:             // Res = RAT(Axis), Rht = APA
+                                mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                                break;
+
+                            case ARRAY_RAT:             // Res = RAT(Axis), Rht = RAT
+                                mpq_set    (&aplRatRht, &((LPAPLRAT) lpMemRht)[uLft]);
+
+                                break;
+
+                            case ARRAY_FLOAT:
+                            case ARRAY_CHAR:
+                            case ARRAY_VFP:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Save in result
+                        *((LPAPLRAT  ) lpMemRes)++ =
+                          (*lpPrimSpec->RisRvR) (aplRatLft,
+                                                 aplRatRht,
+                                                 lpPrimSpec);
+                    } // End FOR
+
+                    // We no longer need this storage
+                    Myq_clear (&aplRatRht);
+                    Myq_clear (&aplRatLft);
+
+                    break;
+
+                case ARRAY_VFP:                     // Res = VFP(Axis)
+                    // Initialize the temps
+                    mpf_init (&aplVfpLft);
+                    mpf_init (&aplVfpRht);
+
+                    // Loop through the left/right args/result
+                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        // Calculate the left and right argument indices
+                        CalcLftRhtArgIndices (uRes,
+                                              aplRankRes,
+                                             &uLft,
+                                              aplRankLft,
+                                             &uRht,
+                                              aplRankRht,
+                                              bLftIdent,
+                                              bRhtIdent,
+                                              aplNELMAxis,
+                                              lpMemAxisHead,
+                                              lpMemOdo,
+                                              lpMemWVec,
+                                              lpMemDimRes);
+                        // Promote the left arg to VFP
+                        // Split cases based upon the left arg type
+                        switch (aplTypeLft)
+                        {
+                            case ARRAY_BOOL:            // Res = VFP(Axis), Lft = BOOL
+                            case ARRAY_INT:             // Res = VFP(Axis), Lft = INT
+                            case ARRAY_APA:             // Res = VFP(Axis), Lft = APA
+                                mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft));
+
+                                break;
+
+                            case ARRAY_FLOAT:           // Res = VFP(Axis), Lft = FLOAT
+                                mpf_set_d  (&aplVfpLft,  ((LPAPLFLOAT) lpMemLft)[uLft]);
+
+                                break;
+
+                            case ARRAY_RAT:             // Res = VFP(Axis), Lft = RAT
+                                mpf_set_q  (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uLft]);
+
+                                break;
+
+                            case ARRAY_VFP:             // Res = VFP(Axis), Lft = VFP
+                                mpf_set    (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
+
+                                break;
+
+                            case ARRAY_CHAR:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Promote the right arg to VFP
+                        // Split cases based upon the right arg type
+                        switch (aplTypeRht)
+                        {
+                            case ARRAY_BOOL:            // Res = VFP(Axis), Rht = BOOL
+                            case ARRAY_INT:             // Res = VFP(Axis), Rht = INT
+                            case ARRAY_APA:             // Res = VFP(Axis), Rht = APA
+                                mpf_set_sa (&aplVfpRht, aplIntegerRht);
+
+                                break;
+
+                            case ARRAY_FLOAT:           // Res = VFP(Axis), Rht = FLOAT
+                                mpf_set_d  (&aplVfpRht,  ((LPAPLFLOAT) lpMemRht)[uLft]);
+
+                                break;
+
+                            case ARRAY_RAT:             // Res = VFP(Axis), Rht = RAT
+                                mpf_set_q  (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uLft]);
+
+                                break;
+
+                            case ARRAY_VFP:             // Res = VFP(Axis), Rht = VFP
+                                mpf_set    (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
+
+                                break;
+
+                            case ARRAY_CHAR:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Save in result
+                        *((LPAPLVFP  ) lpMemRes)++ =
+                          (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                 aplVfpRht,
+                                                 lpPrimSpec);
+                    } // End FOR
+
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpRht);
+                    Myf_clear (&aplVfpLft);
+
                     break;
 
                 defstop
@@ -7828,10 +12238,55 @@ RESTART_EXCEPTION_AXIS:
 
                         goto NONCE_EXIT;
 
+                    case EXCEPTION_RESULT_VFP:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        if (IsNumeric (aplTypeRes)
+                         && !IsVfp    (aplTypeRes))
+                        {
+                            // It's now a VFP result
+                            aplTypeRes = ARRAY_VFP;
+
+                            // We need to start over with the result
+                            MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                            FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+
+                            if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                             lphGlbRes,
+                                                             lpMemHdrLft,
+                                                             lpMemHdrRht,
+                                                             aplRankLft,
+                                                             aplRankRht,
+                                                            &aplRankRes,
+                                                             aplTypeRes,
+                                                             bLftIdent,
+                                                             bRhtIdent,
+                                                             aplNELMLft,
+                                                             aplNELMRht,
+                                                             aplNELMRes))
+                                goto ERROR_EXIT;
+
+                            // Lock the memory to get a ptr to it
+                            lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+
+                            // Re-initialize lpMemOdo
+                            for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
+                                lpMemOdo[uRes] = 0;
+#ifdef DEBUG
+                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                            goto RESTART_EXCEPTION_AXIS;
+                        } // End IF
+
+                        // Display message for unhandled exception
+                        DisplayException ();
+
+                        break;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        if (IsSimpleNum (aplTypeRes)
+                        if (IsNumeric (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
                             // If the previous result is Boolean, we need to
@@ -8255,10 +12710,20 @@ RESTART_EXCEPTION_NOAXIS:
                             } // End IF
                         } // End FOR
                     } else
-                    // If either arg is hetero and the other is simple, ...
-                    if ((IsSimpleHet (aplTypeLft) && IsSimple (aplTypeRht))     // Res = BOOL(No Axis), Lft = HETERO, Rht = BOOL/INT/APA/FLOAT/CHAR/HETERO
-                     || (IsSimpleHet (aplTypeRht) && IsSimple (aplTypeLft)))    // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT/CHAR/HETERO, Rht = HETERO
+                    // If either arg is hetero and the other is numeric or char, ...
+                    if ((IsSimpleHet (aplTypeLft) && IsSimpleGlbNum (aplTypeRht))    // Res = BOOL(No Axis), Lft = HETERO, Rht = BOOL/INT/APA/FLOAT/CHAR/HETERO (one hetero, one simple)
+                     || (IsSimpleHet (aplTypeRht) && IsSimpleGlbNum (aplTypeLft)))   // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT/CHAR/HETERO, Rht = HETERO (one hetero, one simple)
                     {
+                        // Initialize the temps
+                        mpq_init (&aplRatLft);
+                        mpq_init (&aplRatRht);
+                        mpf_init (&aplVfpLft);
+                        mpf_init (&aplVfpRht);
+
+                        // Copy the storage types
+                        aplTypeHetLft = aplTypeLft;
+                        aplTypeHetRht = aplTypeRht;
+
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
@@ -8267,15 +12732,22 @@ RESTART_EXCEPTION_NOAXIS:
                                 goto ERROR_EXIT;
 
                             // Get the next values and type
-                            aplTypeLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
-                            aplTypeRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                            if (IsSimpleHet (aplTypeLft))
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
+                            else
+                                GetNextSimple (lpMemLft, aplTypeLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
+
+                            if (IsSimpleHet (aplTypeRht))
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
+                            else
+                                GetNextSimple (lpMemRht, aplTypeRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
 
                             // Split cases based upon the left hetero's storage type
-                            switch (aplTypeLft)
+                            switch (aplTypeHetLft)
                             {
-                                case ARRAY_BOOL:            // Res = BOOL(No Axis), Lft = BOOL,  Rht = BOOL/INT/FLOAT/CHAR (one hetero, one simple)
+                                case ARRAY_BOOL:            // Res = BOOL(No Axis), Lft = BOOL,  Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
                                     // Split cases based upon the right hetero's storage type
-                                    switch (aplTypeRht)
+                                    switch (aplTypeHetRht)
                                     {
                                         case ARRAY_BOOL:    // Res = BOOL(No Axis), Lft = BOOL,  Rht = BOOL  (one hetero, one simple)
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -8309,16 +12781,34 @@ RESTART_EXCEPTION_NOAXIS:
 
                                             break;
 
+                                        case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = BOOL, Rht = RAT    (one hetero, one simple)
+                                            mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                                    *(LPAPLRAT) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = BOOL, Rht = VFP    (one hetero, one simple)
+                                            mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                    *(LPAPLVFP) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
                                         defstop
                                             break;
                                     } // End SWITCH
 
                                     break;
 
-                                case ARRAY_INT:             // Res = BOOL(No Axis), Lft = INT,   Rht = BOOL/INT/FLOAT/CHAR
-                                case ARRAY_APA:             // Res = BOOL(No Axis), Lft = APA,   Rht = BOOL/INT/FLOAT/CHAR
+                                case ARRAY_INT:             // Res = BOOL(No Axis), Lft = INT,   Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP
+                                case ARRAY_APA:             // Res = BOOL(No Axis), Lft = APA,   Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP
                                     // Split cases based upon the right hetero's storage type
-                                    switch (aplTypeRht)
+                                    switch (aplTypeHetRht)
                                     {
                                         case ARRAY_BOOL:    // Res = BOOL(No Axis), Lft = INT,  Rht = BOOL  (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(No Axis), Lft = INT,  Rht = INT   (one hetero, one simple)
@@ -8346,15 +12836,33 @@ RESTART_EXCEPTION_NOAXIS:
 
                                             break;
 
+                                        case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = INT , Rht = RAT    (one hetero, one simple)
+                                            mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                                    *(LPAPLRAT) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = INT , Rht = VFP    (one hetero, one simple)
+                                            mpf_set_sa (&aplVfpLft, aplIntegerLft);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                    *(LPAPLVFP) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
                                         defstop
                                             break;
                                     } // End SWITCH
 
                                     break;
 
-                                case ARRAY_FLOAT:           // Res = BOOL(No Axis), Lft = FLOAT, Rht = BOOL/INT/FLOAT/CHAR (one hetero, one simple)
+                                case ARRAY_FLOAT:           // Res = BOOL(No Axis), Lft = FLOAT, Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
                                     // Split cases based upon the right hetero's storage type
-                                    switch (aplTypeRht)
+                                    switch (aplTypeHetRht)
                                     {
                                         case ARRAY_BOOL:    // Res = BOOL(No Axis), Lft = FLOAT, Rht = BOOL  (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(No Axis), Lft = FLOAT, Rht = INT   (one hetero, one simple)
@@ -8376,20 +12884,44 @@ RESTART_EXCEPTION_NOAXIS:
 
                                             break;
 
+                                        case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = FLOAT, Rht = RAT    (one hetero, one simple)
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                     aplVfpRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = FLOAT, Rht = VFP    (one hetero, one simple)
+                                            mpf_set_d (&aplVfpLft, aplFloatLft);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                    *(LPAPLVFP) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
                                         defstop
                                             break;
                                     } // End SWITCH
 
                                     break;
 
-                                case ARRAY_CHAR:            // Res = BOOL(No Axis), Lft = CHAR,  Rht = BOOL/INT/FLOAT/CHAR (one hetero, one simple)
+                                case ARRAY_CHAR:            // Res = BOOL(No Axis), Lft = CHAR,  Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
                                     // Split cases based upon the right hetero's storage type
-                                    switch (aplTypeRht)
+                                    switch (aplTypeHetRht)
                                     {
                                         case ARRAY_BOOL:    // Res = BOOL(No Axis), Lft = CHAR,  Rht = BOOL  (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(No Axis), Lft = CHAR,  Rht = INT   (one hetero, one simple)
                                         case ARRAY_APA:     // Res = BOOL(No Axis), Lft = CHAR,  Rht = APA   (one hetero, one simple)
                                         case ARRAY_FLOAT:   // Res = BOOL(No Axis), Lft = CHAR,  Rht = FLOAT (one hetero, one simple)
+                                        case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = CHAR,  Rht = RAT   (one hetero, one simple)
+                                        case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = CHAR,  Rht = VFP   (one hetero, one simple)
                                             // One arg is numeric, the other char
                                             Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
                                                  || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
@@ -8412,6 +12944,127 @@ RESTART_EXCEPTION_NOAXIS:
 
                                     break;
 
+                                case ARRAY_RAT:             // Res = BOOL(No Axis), Lft = RAT  , Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
+                                    // Split cases based upon the right hetero's storage type
+                                    switch (aplTypeHetRht)
+                                    {
+                                        case ARRAY_BOOL:    // Res = BOOL(No Axis), Lft = RAT  , Rht = BOOL  (one hetero, one simple)
+                                        case ARRAY_INT:     // Res = BOOL(No Axis), Lft = RAT  , Rht = INT   (one hetero, one simple)
+                                        case ARRAY_APA:     // Res = BOOL(No Axis), Lft = RAT  , Rht = APA   (one hetero, one simple)
+                                            // Convert the BOOL/INT to a RAT
+                                            mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                      aplRatRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_FLOAT:   // Res = BOOL(No Axis), Lft = RAT  , Rht = FLOAT (one hetero, one simple)
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                     aplVfpRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_CHAR:    // Res = BOOL(No Axis), Lft = RAT  , Rht = CHAR  (one hetero, one simple)
+                                            // One arg is numeric, the other char
+                                            Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                                                 || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                                            // If the function is UTF16_NOTEQUAL, the result is one
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL) << uBitIndex;
+
+                                            break;
+
+                                        case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = RAT  , Rht = RAT    (one hetero, one simple)
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
+                                                                     *(LPAPLRAT) lpSymGlbRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = RAT  , Rht = VFP    (one hetero, one simple)
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                                    *(LPAPLVFP) lpSymGlbRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_VFP:             // Res = BOOL(No Axis), Lft = VFP  , Rht = BOOL/INT/FLOAT/CHAR/RAT/VFP (one hetero, one simple)
+                                    // Split cases based upon the right hetero's storage type
+                                    switch (aplTypeHetRht)
+                                    {
+                                        case ARRAY_BOOL:    // Res = BOOL(No Axis), Lft = VFP  , Rht = BOOL  (one hetero, one simple)
+                                        case ARRAY_INT:     // Res = BOOL(No Axis), Lft = VFP  , Rht = INT   (one hetero, one simple)
+                                        case ARRAY_APA:     // Res = BOOL(No Axis), Lft = VFP  , Rht = APA   (one hetero, one simple)
+                                            // Convert the BOOL/INT to a VFP
+                                            mpf_set_sa (&aplVfpRht, aplIntegerRht);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                      aplVfpRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_FLOAT:   // Res = BOOL(No Axis), Lft = VFP  , Rht = FLOAT (one hetero, one simple)
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpRht, aplFloatRht);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                      aplVfpRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_CHAR:    // Res = BOOL(No Axis), Lft = VFP  , Rht = CHAR  (one hetero, one simple)
+                                            // One arg is numeric, the other char
+                                            Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                                                 || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                                            // If the function is UTF16_NOTEQUAL, the result is one
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL) << uBitIndex;
+
+                                            break;
+
+                                        case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = VFP  , Rht = RAT    (one hetero, one simple)
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                      aplVfpRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = VFP  , Rht = VFP    (one hetero, one simple)
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
+                                                                     *(LPAPLVFP) lpSymGlbRht,
+                                                                      lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
                                 defstop
                                     break;
                             } // End SWITCH
@@ -8423,10 +13076,16 @@ RESTART_EXCEPTION_NOAXIS:
                                 ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
                             } // End IF
                         } // End FOR
+
+                        // We no longer need this storage
+                        Myf_clear (&aplVfpRht);
+                        Myf_clear (&aplVfpLft);
+                        Myq_clear (&aplRatRht);
+                        Myq_clear (&aplRatLft);
                     } else
                     // If one arg is numeric and the other char, ...
-                    if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = CHAR
-                     || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL(No Axis), Lft = CHAR, Rht = BOOL/INT/APA/FLOAT
+                    if ((IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht))     // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT/RAT/VFP, Rht = CHAR
+                     || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft)))    // Res = BOOL(No Axis), Lft = CHAR, Rht = BOOL/INT/APA/FLOAT/RAT/VFP
                     {
                         // One arg is numeric, the other char
                         Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
@@ -8436,6 +13095,203 @@ RESTART_EXCEPTION_NOAXIS:
                         if (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL)
                             // Fill the result with all 1s
                             FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), 0xFF);
+                    } else
+                    // If either argument is global numeric, ...
+                    if (IsGlbNum (aplTypeLft)
+                     || IsGlbNum (aplTypeRht))
+                    {
+                        // Calculate the common storage type
+                        aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
+
+                        // Initialize the temps
+                        mpq_init (&aplRatLft);
+                        mpq_init (&aplRatRht);
+                        mpf_init (&aplVfpLft);
+                        mpf_init (&aplVfpRht);
+
+                        // Loop through the left/right args/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            // Promote the left arg to the common type
+                            switch (aplTypeCom)
+                            {
+                                case ARRAY_RAT:
+                                    // Split cases based upon the left arg storage type
+                                    switch (aplTypeLft)
+                                    {
+                                        case ARRAY_BOOL:
+                                        case ARRAY_INT:
+                                        case ARRAY_APA:
+                                            // Convert the BOOL/INT/APA to a RAT
+                                            mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                            // Copy the RAT to a RAT
+                                            mpq_set (&aplRatLft, &((LPAPLRAT) lpMemLft)[uRes]);
+
+                                            break;
+
+                                        case ARRAY_CHAR:
+                                        case ARRAY_FLOAT:
+                                        case ARRAY_VFP:
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_VFP:
+                                    // Split cases based upon the left arg storage type
+                                    switch (aplTypeLft)
+                                    {
+                                        case ARRAY_BOOL:
+                                        case ARRAY_INT:
+                                        case ARRAY_APA:
+                                            // Convert the BOOL/INT/APA to a VFP
+                                            mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+
+                                            break;
+
+                                        case ARRAY_FLOAT:
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpLft, ((LPAPLFLOAT) lpMemLft)[uRes]);
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uRes]);
+
+                                            break;
+
+                                        case ARRAY_VFP:
+                                            // Copy the VFP to a VFP
+                                            mpf_set (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uRes]);
+
+                                            break;
+
+                                        case ARRAY_CHAR:
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Promote the right arg to the common type
+                            switch (aplTypeCom)
+                            {
+                                case ARRAY_RAT:
+                                    // Split cases based upon the right arg storage type
+                                    switch (aplTypeRht)
+                                    {
+                                        case ARRAY_BOOL:
+                                        case ARRAY_INT:
+                                        case ARRAY_APA:
+                                            // Convert the BOOL/INT/APA to a RAT
+                                            mpq_set_sa (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRes), 1);
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                            // Copy the RAT to a RAT
+                                            mpq_set (&aplRatRht, &((LPAPLRAT) lpMemRht)[uRes]);
+
+                                            break;
+
+                                        case ARRAY_CHAR:
+                                        case ARRAY_FLOAT:
+                                        case ARRAY_VFP:
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_VFP:
+                                    // Split cases based upon the right arg storage type
+                                    switch (aplTypeRht)
+                                    {
+                                        case ARRAY_BOOL:
+                                        case ARRAY_INT:
+                                        case ARRAY_APA:
+                                            // Convert the BOOL/INT/APA to a VFP
+                                            mpf_set_sa (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes));
+
+                                            break;
+
+                                        case ARRAY_FLOAT:
+                                            // Convert the FLOAT to a VFP
+                                            mpf_set_d (&aplVfpRht, ((LPAPLFLOAT) lpMemRht)[uRes]);
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                            // Convert the RAT to a VFP
+                                            mpf_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uRes]);
+
+                                            break;
+
+                                        case ARRAY_VFP:
+                                            // Copy the VFP to a VFP
+                                            mpf_set (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRes]);
+
+                                            break;
+
+                                        case ARRAY_CHAR:
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Split cases based upon the common type
+                            switch (aplTypeCom)
+                            {
+                                case ARRAY_RAT:
+                                    *((LPAPLBOOL)  lpMemRes) |=
+                                      (*lpPrimSpec->BisRvR) (aplRatLft,
+                                                             aplRatRht,
+                                                             lpPrimSpec) << uBitIndex;
+                                    break;
+
+                                case ARRAY_VFP:
+                                    *((LPAPLBOOL)  lpMemRes) |=
+                                      (*lpPrimSpec->BisVvV) (aplVfpLft,
+                                                             aplVfpRht,
+                                                             lpPrimSpec) << uBitIndex;
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;                  // Start over
+                                ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                            } // End IF
+                        } // End FOR
+
+                        // We no longer need this storage
+                        Myf_clear (&aplVfpRht);
+                        Myf_clear (&aplVfpLft);
+                        Myq_clear (&aplRatRht);
+                        Myq_clear (&aplRatLft);
                     } else
                         DbgStop ();         // We should never get here
                     break;
@@ -8521,7 +13377,175 @@ RESTART_EXCEPTION_NOAXIS:
                                                      lpPrimSpec);
                         } // End FOR
                     } else
+                    // If both args are numeric
+                    if (IsNumeric (aplTypeLft)      // Res = FLOAT(No Axis), Lft = RAT/VFP/..., Rht = RAT/VFP/...
+                     && IsNumeric (aplTypeRht))
+                    {
+                        DbgBrk ();              // Can't happen with any known primitive
+
+
+
+
+                    } else
                         DbgStop ();         // We should never get here
+                    break;
+
+                case ARRAY_RAT:                     // Res = RAT(No Axis)
+                    // Initialize the temps
+                    mpq_init (&aplRatLft);
+                    mpq_init (&aplRatRht);
+
+                    // Loop through the left/right args/result
+                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        // Promote the left arg to Rational
+                        // Split cases based upon the left arg type
+                        switch (aplTypeLft)
+                        {
+                            case ARRAY_BOOL:        // Res = RAT(No Axis), Lft = BOOL
+                            case ARRAY_INT:         // Res = RAT(No Axis), Lft = INT
+                            case ARRAY_APA:         // Res = RAT(No Axis), Lft = APA
+                                mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
+
+                                break;
+
+                            case ARRAY_RAT:         // Res = RAT(No Axis), Lft = RAT
+                                mpq_set    (&aplRatLft, ((LPAPLRAT) lpMemLft)++);
+
+                                break;
+
+                            case ARRAY_FLOAT:
+                            case ARRAY_CHAR:
+                            case ARRAY_VFP:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Promote the right arg to Rational
+                        // Split cases based upon the right arg type
+                        switch (aplTypeRht)
+                        {
+                            case ARRAY_BOOL:        // Res = RAT(No Axis), Rht = BOOL
+                            case ARRAY_INT:         // Res = RAT(No Axis), Rht = INT
+                            case ARRAY_APA:         // Res = RAT(No Axis), Rht = APA
+                                mpq_set_sa (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRes), 1);
+
+                                break;
+
+                            case ARRAY_RAT:         // Res = RAT(No Axis), Rht = RAT
+                                mpq_set    (&aplRatRht, ((LPAPLRAT) lpMemRht)++);
+
+                                break;
+
+                            case ARRAY_FLOAT:
+                            case ARRAY_CHAR:
+                            case ARRAY_VFP:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Save the result
+                        ((LPAPLRAT) lpMemRes)[uRes] =
+                          (*lpPrimSpec->RisRvR) (aplRatLft,
+                                                 aplRatRht,
+                                                 lpPrimSpec);
+                    } // End FOR
+
+                    // We no longer need this storage
+                    Myq_clear (&aplRatRht);
+                    Myq_clear (&aplRatLft);
+
+                    break;
+
+                case ARRAY_VFP:                     // Res = VFP(No Axis)
+                    // Initialize the temps
+                    mpf_init (&aplVfpLft);
+                    mpf_init (&aplVfpRht);
+
+                    // Loop through the left/right args/result
+                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        // Promote the left arg to VFP
+                        // Split cases based upon the left arg type
+                        switch (aplTypeLft)
+                        {
+                            case ARRAY_BOOL:        // Res = VFP(No Axis), Lft = BOOL
+                            case ARRAY_INT:         // Res = VFP(No Axis), Lft = INT
+                            case ARRAY_APA:         // Res = VFP(No Axis), Lft = APA
+                                mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+
+                                break;
+
+                            case ARRAY_FLOAT:       // Res = VFP(No Axis), Lft = FLOAT
+                                mpf_set_d  (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+
+                                break;
+
+                            case ARRAY_RAT:         // Res = VFP(No Axis), Lft = RAT
+                                mpf_set_q  (&aplVfpLft,  ((LPAPLRAT)   lpMemLft)++);
+
+                                break;
+
+                            case ARRAY_VFP:         // Res = VFP(No Axis), Lft = VFP
+                                mpf_set    (&aplVfpLft,  ((LPAPLVFP)   lpMemLft)++);
+
+                                break;
+
+                            case ARRAY_CHAR:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Promote the right arg to VFP
+                        // Split cases based upon the right arg type
+                        switch (aplTypeRht)
+                        {
+                            case ARRAY_BOOL:        // Res = VFP(No Axis), Rht = BOOL
+                            case ARRAY_INT:         // Res = VFP(No Axis), Rht = INT
+                            case ARRAY_APA:         // Res = VFP(No Axis), Rht = APA
+                                mpf_set_sa (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes));
+
+                                break;
+
+                            case ARRAY_FLOAT:       // Res = VFP(No Axis), Rht = FLOAT
+                                mpf_set_d  (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++);
+
+                                break;
+
+                            case ARRAY_RAT:         // Res = VFP(No Axis), Rht = RAT
+                                mpf_set_q  (&aplVfpRht,  ((LPAPLRAT)   lpMemRht)++);
+
+                                break;
+
+                            case ARRAY_VFP:         // Res = VFP(No Axis), Rht = VFP
+                                mpf_set    (&aplVfpRht,  ((LPAPLVFP)   lpMemRht)++);
+
+                                break;
+
+                            case ARRAY_CHAR:
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Save the result
+                        ((LPAPLVFP) lpMemRes)[uRes] =
+                          (*lpPrimSpec->VisVvV) (aplVfpLft,
+                                                 aplVfpRht,
+                                                 lpPrimSpec);
+                    } // End FOR
+
+                    // We no longer need this storage
+                    Myf_clear (&aplVfpRht);
+                    Myf_clear (&aplVfpLft);
+
                     break;
 
                 defstop
@@ -8547,10 +13571,51 @@ RESTART_EXCEPTION_NOAXIS:
 
                         goto NONCE_EXIT;
 
+                    case EXCEPTION_RESULT_VFP:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        if (IsNumeric (aplTypeRes)
+                         && !IsVfp    (aplTypeRes))
+                        {
+                            // It's now a VFP result
+                            aplTypeRes = ARRAY_VFP;
+
+                            // We need to start over with the result
+                            MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
+                            FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+
+                            if (!PrimScalarFnDydAllocate_EM (lptkFunc,
+                                                             lphGlbRes,
+                                                             lpMemHdrLft,
+                                                             lpMemHdrRht,
+                                                             aplRankLft,
+                                                             aplRankRht,
+                                                            &aplRankRes,
+                                                             aplTypeRes,
+                                                             bLftIdent,
+                                                             bRhtIdent,
+                                                             aplNELMLft,
+                                                             aplNELMRht,
+                                                             aplNELMRes))
+                                goto ERROR_EXIT;
+
+                            // Lock the memory to get a ptr to it
+                            lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+#ifdef DEBUG
+                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                            goto RESTART_EXCEPTION_NOAXIS;
+                        } // End IF
+
+                        // Display message for unhandled exception
+                        DisplayException ();
+
+                        break;
+
                     case EXCEPTION_RESULT_FLOAT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        if (IsSimpleNum (aplTypeRes)
+                        if (IsNumeric (aplTypeRes)
                          && !IsSimpleFlt (aplTypeRes))
                         {
                             // If the previous result is Boolean, we need to
@@ -8666,6 +13731,12 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // We no longer need this storage
+    Myq_clear (&aplRatRht);
+    Myq_clear (&aplRatLft);
+    Myf_clear (&aplVfpRht);
+    Myf_clear (&aplVfpLft);
+
     if (*lphGlbRes && lpMemRes)
     {
         // We no longer need this ptr

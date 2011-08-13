@@ -2036,7 +2036,9 @@ LPSYMENTRY SymTabAppendInteger_EM
 
         // Save as return result
         lpSymEntryDest = lpHTS->lpSymTabNext++;
-
+#ifdef DEBUG
+        lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
+#endif
         // Save the constant
         lpSymEntryDest->stData.stInteger = aplInteger;
 
@@ -2133,7 +2135,9 @@ LPSYMENTRY SymTabAppendFloat_EM
 
         // Save as return result
         lpSymEntryDest = lpHTS->lpSymTabNext++;
-
+#ifdef DEBUG
+        lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
+#endif
         // Save the constant
         lpSymEntryDest->stData.stFloat = aplFloat;
 
@@ -2229,7 +2233,9 @@ LPSYMENTRY SymTabAppendChar_EM
 
         // Save as return result
         lpSymEntryDest = lpHTS->lpSymTabNext++;
-
+#ifdef DEBUG
+        lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
+#endif
         // Save the constant
         lpSymEntryDest->stData.stChar = aplChar;
 
@@ -2383,7 +2389,9 @@ LPSYMENTRY SymTabAppendNewName_EM
 
     // Save as return result
     lpSymEntryDest = lpHTS->lpSymTabNext++;
-
+#ifdef DEBUG
+    lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
+#endif
     // Zero the entry
     ZeroMemory (lpSymEntryDest, sizeof (*lpSymEntryDest));
 
@@ -2541,7 +2549,7 @@ UBOOL AllocSymTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr
      LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
      LPHSHTABSTR  lpHTS,            // Ptr to HshTab Struc
-     UBOOL        bInitSTEs,        // TRUE iff we shoudl initialize STEs
+     UBOOL        bInitSTEs,        // TRUE iff we should initialize STEs
      UINT         uSymTabInitNelm,  // Initial # STEs in SymTab
      UINT         uSymTabIncrNelm,  // # STEs by which to resize when low
      UINT         uSymTabMaxNelm)   // Maximum # STEs

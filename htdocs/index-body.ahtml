@@ -184,6 +184,7 @@ Welcome to NARS2000</h1>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
+            <li><span class="APL">{quad}FPC</span> (Floating Point Control)</li>
             <li><span class="APL">{quad}IC</span> (Indeterminate Control)</li>
           </ul>
         </li>

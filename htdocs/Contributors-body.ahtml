@@ -54,6 +54,15 @@ Contributors</h1>
 
     <li>Jason Papadopoulos' excellent <a class="linkleft" href="http://msieve.sourceforge.net/">msieve</a>
       project provided the necessary code to factor integers of arbitrary precision.</li>
+
+    <li>The MPIR team contributed their <a class="linkleft" href="http://www.mpir.org">Multiple
+      Precision Integers and Rationals</a> code.</li>
+
+    <li>The MPFR team contributed their <a class="linkleft" href="http://www.mpfr.org">Multiple
+      Precision Floating-Point Reliable Library</a> code.</li>
+
+    <li>The FLINT team contributed their <a class="linkleft" href="http://www.flintlib.org">Fast
+      Library for Number Theory</a> code.</li>
   </ul>
 </div>
 

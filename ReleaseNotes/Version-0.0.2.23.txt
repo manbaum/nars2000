@@ -1,6 +1,27 @@
 Version 0.0.2.23 consists of the following Builds:
 
 
+Build #856 -- Version 0.0.2.23
+------------------------------
+
+* Miscellaneous Cleanup Prior To Release
+
+Directory trunk:
+
+MAKEFILE.INC:
+  Get <flint*.lib> from same place as other multi-precision libs.
+
+NARS2000.32.VCPROJ:
+NARS2000.64.VCPROJ:
+  Cleanup dependencies.
+
+
+Directory trunk\htdocs\download:
+
+DOWNLOAD-BODY.PHP:
+  Include reference to <mplibs.zip>.
+
+
 Build #855 -- Version 0.0.2.23
 ------------------------------
 

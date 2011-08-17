@@ -100,13 +100,24 @@ FLINTAVL=0                      # 1 iff flint64.lib is available
 MPIR_INC = $(MPIR)build.vc10\lib\x64\$(BUILD_DIR)^\
 !endif
 
-MPFR_INC = $(MPFR)^\
+MPFR_INC = $(MPFR)
+FLINT_INC=$(FLINT)include$(WIN)^\
 LIB_DIR=$(NARSROOT)mpir\OldLibs^\
+
+!if [if not exist $(MPIR_INC)*.h  exit 1]
+!error Incorrect value for MPIR_INC=$(MPIR_INC)
+!endif
+!if [if not exist $(MPFR_INC)*.h  exit 1]
+!error Incorrect value for MPFR_INC=$(MPFR_INC)
+!endif
+!if [if not exist $(FLINT_INC)*.h exit 1]
+!error Incorrect value for FLINT_INC=$(FLINT_INC)
+!endif
 
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(FLINT)include$(WIN);$(GSL_DIR)include
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(GSL_DIR)include
 
 MV=makever
 
@@ -115,7 +126,11 @@ MV=makever
 LINKDEBUG=0
 
 !if "$(FLINTAVL)" == "1"
-FLINT_LIB = $(NARSROOT)Flint\lib\flint$(WIN).lib
+!if "$(DEBUG)" == "1"
+FLINT_LIB = $(LIB_DIR)flint$(WIN)d.lib
+!else
+FLINT_LIB = $(LIB_DIR)flint$(WIN).lib
+!endif
 !else
 FLINT_LIB =
 !endif

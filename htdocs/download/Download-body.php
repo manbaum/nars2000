@@ -57,7 +57,7 @@ Downloads</h1>
     users.  The <b>.map</b> files contain debugging information and are used
     by developers.  The <b>Release Notes</b> contain information about the
     corresponding release and are, generally, of most use to developers.  The
-    <b>Special Files</b> such as <b>qdebug.zip</b>, <b>misc.zip</b>, and
+    <b>Special Files</b> such as <b>mplibs.zip</b>, <b>qdebug.zip</b>, <b>misc.zip</b>, and
     <b>gsldir.zip</b> contain support files needed by developers.</p>
 
   <ol>
@@ -68,13 +68,10 @@ Downloads</h1>
       This step unzips several files, including a <b>.exe</b> (the executable)
       and a <b>.ttf</b> (the APL font).</p></li>
 
-    <li><p>If you are running under Vista or Win7, either run the executable
+    <li><p>If you are running under Vista or Win7 (but not WinXP), either run the executable
       (NARS2000.exe) the first time (and only the first time) as Administrator
       so as to have the proper privileges to install a font under program
-      control, or install the font manually.</p>
-
-      <p>If you are running under WinXP, neither of the following steps are
-        necessary:</p>
+      control, or install the font manually.  More specifically,</p>
 
       <ul>
         <li><p>To run an executable as Administrator, right-click the <b>.exe</b>
@@ -90,6 +87,9 @@ Downloads</h1>
           choose "Install".</p>
         </li>
       </ul>
+
+      <p>If you are running under WinXP, neither of the above steps are
+        necessary.</p>
     </li>
   </ol>
 
@@ -138,7 +138,7 @@ Downloads</h1>
         } // End WHILE
 
         // Sort files descendingly by version #
-        //   (which also sorts "gsldir.zip" & "qdebug.zip" & "misc.zip" to the front)
+        //   (which also sorts "gsldir.zip" & "qdebug.zip" & "misc.zip" & "mplibs.zip" to the front)
         natsort ($Files);
         $Files = array_reverse ($Files);
 
@@ -151,6 +151,7 @@ Downloads</h1>
             // Handle special files separately
             $IsSpec = (strcmp ($File, "gsldir.zip") == 0
                     || strcmp ($File, "misc.zip"  ) == 0
+                    || strcmp ($File, "mplibs.zip") == 0
                     || strcmp ($File, "qdebug.zip") == 0);
             if ($IsSpec)
             {

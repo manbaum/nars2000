@@ -728,9 +728,6 @@ LRESULT APIENTRY SMWndProc
 
             INIT_PERTABVARS
 
-            // Initialize PerTabData vars
-            InitPTDVars (lpMemPTD);
-
             // Allocate room for PTDMEMVIRT_LENGTH MemVirtStrs
             //  (see PTDMEMVIRTENUM)
             lpLclMemVirtStr =
@@ -1442,6 +1439,12 @@ NORMAL_EXIT:
                 defstop
                     break;
             } // End SWITCH
+
+            // Initialize the precision-specific VFP constants
+            InitVfpConstants (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FPC]->stData.stInteger);
+
+            // Initialize PerTabData vars
+            InitPTDVars (lpMemPTD);
 
             // Make sure we can communicate between windows
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);

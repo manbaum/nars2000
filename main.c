@@ -4310,9 +4310,6 @@ int PASCAL WinMain
     // Initialize global numeric constants
     InitGlbNumConstants ();
 
-    // Initialize the precision-specific VFP constants
-    InitVfpConstants (DEF_QUADFPC_CWS);
-
     PERFMON
 
 #ifdef DEBUG

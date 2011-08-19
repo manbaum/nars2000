@@ -2684,6 +2684,7 @@ LPAPLCHAR FormatArrSimple
         case ARRAY_FLOAT:
         case ARRAY_VFP:
         case ARRAY_CHAR:
+        case ARRAY_HETERO:
             wcSep = L'.';
 
             break;

@@ -31,7 +31,7 @@
 #define DEF_QUADFC_GLB      hGlbQuadFC_SYS
 #define DEF_QUADFEATURE_CWS aplDefaultFEATURE
 #define DEF_QUADFEATURE_GLB hGlbQuadFEATURE_SYS
-#define DEF_QUADFPC_CWS     512
+#define DEF_QUADFPC_CWS     53
 #define DEF_QUADIC_CWS      aplDefaultIC
 #define DEF_QUADIC_GLB      hGlbQuadIC_SYS
 #define DEF_QUADIO_CWS          1
@@ -60,7 +60,7 @@
 #define DEF_MIN_QUADFEATURE 0                   // Minimum value for []FEATURE
 #define DEF_MAX_QUADFEATURE 1                   // Maximum ...
 
-#define DEF_MIN_QUADFPC     64                  // Minimum value for []FPC
+#define DEF_MIN_QUADFPC     53                  // Minimum value for []FPC
 #define DEF_MAX_QUADFPC     INT_MAX             // Maximum ...
 
 #define DEF_MIN_QUADIC      ICVAL_MINVAL        // Minimum value for []IC

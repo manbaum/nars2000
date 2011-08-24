@@ -3784,7 +3784,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                   aplCharDecimal,           // Char to use as decimal separator
                                                   aplCharOverbar,           // Char to use as overbar
                                                   TRUE,                     // TRUE iff nDigits is # fractional digits
-                                                  FALSE);                   // TRUE iff we're to substitute text for infinity
+                                                  FALSE,                    // TRUE iff we're to substitute text for infinity
+                                                  FALSE);                   // TRUE iff we're to precede the display with (FPC)
                                 break;
 
                             defstop

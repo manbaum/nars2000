@@ -2075,7 +2075,8 @@ void QFMT_CommonEFI
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
-                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                                      FALSE,                // TRUE iff we're to substitute text for infinity
+                                      FALSE);               // TRUE iff we're to precede the display with (FPC)
                     // We no longer need this storage
                     Myf_clear (&aplVfpItm);
 
@@ -2089,7 +2090,8 @@ void QFMT_CommonEFI
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
-                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                                      FALSE,                // TRUE iff we're to substitute text for infinity
+                                      FALSE);               // TRUE iff we're to precede the display with (FPC)
                     break;
 
                 case IMMTYPE_CHAR:
@@ -2137,7 +2139,8 @@ void QFMT_CommonEFI
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
-                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                                      FALSE,                // TRUE iff we're to substitute text for infinity
+                                      FALSE);               // TRUE iff we're to precede the display with (FPC)
                     // We no longer need this storage
                     Myf_clear (&aplVfpItm);
 
@@ -2151,7 +2154,8 @@ void QFMT_CommonEFI
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
-                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                                      FALSE,                // TRUE iff we're to substitute text for infinity
+                                      FALSE);               // TRUE iff we're to precede the display with (FPC)
                     break;
 
                 case IMMTYPE_CHAR:
@@ -2256,7 +2260,8 @@ void QFMT_CommonEFI
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
-                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                                      FALSE,                // TRUE iff we're to substitute text for infinity
+                                      FALSE);               // TRUE iff we're to precede the display with (FPC)
                     // We no longer need this storage
                     Myf_clear (&aplVfpTmp);
 

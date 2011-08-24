@@ -1370,7 +1370,7 @@ LPAPLCHAR SavedWsFormGlbVar
                 switch (GetPtrTypeInd (lpMemObj))
                 {
                     case PTRTYPE_STCONST:
-    #define lpSymEntry      (*(LPAPLHETERO) lpMemObj)
+#define lpSymEntry      (*(LPAPLHETERO) lpMemObj)
 
                         // Get the SymTab flags
                         stFlags = lpSymEntry->stFlags;
@@ -1432,7 +1432,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                 break;
                         } // End SWITCH
 
-    #undef  lpSymEntry
+#undef  lpSymEntry
                         break;
 
                     case PTRTYPE_HGLOBAL:
@@ -1500,7 +1500,8 @@ LPAPLCHAR SavedWsFormGlbVar
                                       L'.',                 // Char to use as decimal separator
                                       UTF16_BAR,            // Char to use as overbar
                                       FALSE,                // TRUE iff the number if to be formatted with trailing zeros
-                                      TRUE);                // TRUE iff we're to substitute text for infinity
+                                      TRUE,                 // TRUE iff we're to substitute text for infinity
+                                      TRUE);                // TRUE iff we're to precede the display with (FPC)
                 break;
 
             defstop

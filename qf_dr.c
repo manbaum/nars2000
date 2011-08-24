@@ -754,6 +754,8 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
 {
     APLSTYPE          aplTypeRht;       // Right arg storage type
+    APLNELM           aplNELMRht;       // ...       NELM
+    APLRANK           aplRankRht;       // ...       rank
     APLUINT           ByteRes;          // # bytes in the result
     HGLOBAL           hGlbRht,          // Right arg global memory handle
                       hGlbRes;          // Result    ...
@@ -766,7 +768,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, NULL, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -896,6 +898,22 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         } // End IF
 
         lstrcatW (wszTemp, L" " AP_ALL2S);
+    } // End IF
+
+    // If the arg is a singleton VFP, ...
+    if (IsSingleton (aplNELMRht)
+     && IsVfp (aplTypeRht))
+    {
+        if (!bInit)
+        {
+            lstrcatW (wszTemp, L" --");
+            bInit = TRUE;
+        } // End IF
+
+        // Show the precision of the singleton
+        wsprintfW (&wszTemp[lstrlenW (wszTemp)],
+                    L" Precision %u",
+                    mpf_get_prec (VarArrayBaseToData (lpHeader, aplRankRht)));
     } // End IF
 
     // If the ptr is valid, ...

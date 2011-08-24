@@ -1193,6 +1193,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                       uLineCnt,             // # lines in the current function including the header
                       uCnt,                 // Loop counter
                       Count;                // Temporary count for monitor info
+    mp_bitcnt_t       uDefPrec,             // Default precision to use when inputting VFP numbers
+                      uOldPrec;             // Old precision to be restored later
     FILETIME          ftCreation,           // Function creation time
                       ftLastMod;            // ...      last modification time
     SYSTEMTIME        systemTime;           // Current system (UTC) time
@@ -1564,6 +1566,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     break;
 
                 case ARRAY_VFP:
+                    // Get the current precision
+                    uOldPrec = mpf_get_default_prec ();
+
                     // Loop through the elements
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
                     {
@@ -1580,6 +1585,24 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                         // Initialize the save area
                         mpf_init ((LPAPLVFP) lpMemObj);
+
+                        // If there's a preceding (FPC), ...
+                        if (*lpwSrc EQ L'(')
+                        {
+                            // Skip over the leading paren
+                            Assert (*lpwSrc EQ L'('); lpwSrc++;
+
+                            // Scan the new precision
+                            sscanfW (lpwSrc, L"%u", &uDefPrec);
+
+                            // Set the default precision
+                            mpf_set_default_prec (uDefPrec);
+
+                            // Skip past the trailing paren
+                            lpwSrc = SkipPastCharW (lpwSrc, L')');
+                        } else
+                            // Set the default precision
+                            mpf_set_default_prec (uOldPrec);
 
                         // Convert the string from WCHAR to char
                         lpwStr = lpwSrc; lpStr = (LPCHAR) lpwStr;
@@ -1601,6 +1624,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Skip to the next field
                         lpwSrc = &lpwWS[wc EQ L' '];
                     } // End FOR
+
+                    // Restore the default preecision
+                    mpf_set_default_prec (uOldPrec);
 
                     break;
 

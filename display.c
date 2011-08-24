@@ -728,14 +728,14 @@ LPAPLCHAR FormatImmed
     {
         case IMMTYPE_BOOL:
             lpaplChar =
-              FormatAplint (lpaplChar,
-                            BIT0 & *(LPAPLBOOL) lpaplLongest);
+              FormatAplint (lpaplChar,                          // Ptr to outoput save area
+                            BIT0 & *(LPAPLBOOL) lpaplLongest);  // The value to format
             break;
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplint (lpaplChar,
-                            *(LPAPLINT) lpaplLongest);
+              FormatAplint (lpaplChar,                          // Ptr to outoput save area
+                            *(LPAPLINT) lpaplLongest);          // The value to format
             break;
 
         case IMMTYPE_CHAR:
@@ -1696,7 +1696,8 @@ LPAPLCHAR FormatAplVfp
                            UTF16_DOT,               // Char to use as decimal separator
                            UTF16_OVERBAR,           // Char to use as overbar
                            FALSE,                   // TRUE iff nDigits is # fractional digits
-                           FALSE);                  // TRUE iff we're to substitute text for infinity
+                           FALSE,                   // TRUE iff we're to substitute text for infinity
+                           FALSE);                  // TRUE iff we're to precede the display with (FPC)
 } // End FormatAplVfp
 
 
@@ -1715,7 +1716,8 @@ LPAPLCHAR FormatAplVfpFC
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
-     UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
+     UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
+     UBOOL      bPrecFPC)           // TRUE iff we're to precede the display with (FPC)
 
 {
     mp_exp_t  expptr;               // Ptr to exponent shift
@@ -1726,6 +1728,19 @@ LPAPLCHAR FormatAplVfpFC
               iDelDigits,           // # trailing digits to delete if bFractDigs
               iUnderflow;           // # trailing underflow digits
     LPCHAR    lpRawFmt;             // Ptr to raw formatted #
+
+    // If we're to precede the display with (FPC), ...
+    if (bPrecFPC)
+    {
+        // Append leading marker
+        *lpaplChar++ = L'(';
+
+        lpaplChar =
+          FormatAplint (lpaplChar,                  // Ptr to outoput save area
+                        mpf_get_prec (&aplVfp));    // The value to format
+        // Append trailing marker overwriting the trailing space
+        lpaplChar[-1] = L')';
+    } // End IF
 
     lpRawFmt = (LPCHAR) lpaplChar;
 

@@ -1225,6 +1225,10 @@ LPAPLCHAR FormatFloatFC
 
             case FLTDISPFMT_RAWINT:
             case FLTDISPFMT_RAWFLT:
+                // Display signed zero so that 6413 []DR {neg}64{take}1
+                //   displays with a sign
+                if (SIGN_APLFLOAT (aplFloat))
+                    *lpaplChar++ = aplCharOverbar;
                 // The result is "0"
                 *lpaplChar++ = L'0';
 

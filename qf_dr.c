@@ -101,27 +101,27 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 #define DR_SHOW             0   // Return a character vector representation
 #define DR_FLOAT2CHAR       1   // Convert between float   and its 16-digit hexadecimal character representation
 #define DR_INT2CHAR         2   // Convert between integer and its 16-digit hexadecimal character representation
-#define DR_BOOL           101   //   1 bit  per value
-#define DR_CHAR8          802   //   8 bits ...
-#define DR_CHAR16        1602   //  16 ...
-#define DR_CHAR32        3202   //  32 ...
-#define DR_INT8           803   //   8 ...
-#define DR_INT16         1603   //  16 ...
-#define DR_INT32         3203   //  32 ...
-#define DR_INT64         6403   //  64 ...
-#define DR_FLOAT         6404   //  64 ...
-#define DR_APA           6405   //  64 ... offset & multiplier
-#define DR_COMPLEX      12806   // 128 ... real & imaginary
-#define DR_QUATERNIONS  25607   // 256 ... ...              & ...
-#define DR_OCTONIONS    51208   // 512 ... ...                ... & ...
-#define DR_HETERO32      3209   //  32 ... per item
-#define DR_HETERO64      6409   //  64 ... ...
-#define DR_NESTED32      3210   //  32 ... ...
-#define DR_NESTED64      6410   //  64 ... ...
-#define DR_RATIONAL32    3212   //  24 bytes per item plus size of limbs
-#define DR_RATIONAL64    6412   //  32 ...
-#define DR_VFP32         3213   //  16 bytes per item plus size of limbs
-#define DR_VFP64         6413   //  20 ...
+#define DR_BOOL           110   //   1 bit  per value
+#define DR_CHAR8          811   //   8 bits ...
+#define DR_CHAR16        1611   //  16 ...
+#define DR_CHAR32        3211   //  32 ...
+#define DR_INT8           812   //   8 ...
+#define DR_INT16         1612   //  16 ...
+#define DR_INT32         3212   //  32 ...
+#define DR_INT64         6412   //  64 ...
+#define DR_FLOAT         6413   //  64 ...
+#define DR_APA           6414   //  64 ... offset & multiplier
+#define DR_COMPLEX      12815   // 128 ... real & imaginary
+#define DR_QUATERNIONS  25616   // 256 ... ...              & ...
+#define DR_OCTONIONS    51217   // 512 ... ...                ... & ...
+#define DR_HETERO32      3218   //  32 ... per item
+#define DR_HETERO64      6418   //  64 ... ...
+#define DR_NESTED32      3219   //  32 ... ...
+#define DR_NESTED64      6419   //  64 ... ...
+#define DR_RATIONAL32    3220   //  24 bytes per item plus size of limbs
+#define DR_RATIONAL64    6420   //  32 ...
+#define DR_VFP32         3221   //  16 bytes per item plus size of limbs
+#define DR_VFP64         6421   //  20 ...
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -230,9 +230,9 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     APLRANK      aplRankLft;        // Left arg rank
     HGLOBAL      hGlbRes = NULL;    // Result global memory handle
     APLINT       aplIntegerLft;     // Left arg as integer
-    APLFLOAT     aplFloatLft;       // Left arg as float
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    UBOOL        bScalar = FALSE;   // TRUE if the result is a simple scalar
+    UBOOL        bScalar = FALSE,   // TRUE iff the result is a simple scalar
+                 bRet;              // TRUE iff the result is valid
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -248,29 +248,15 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeLft))
+    if (!IsSimpleGlbNum (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
-    // Get the first (and only) value
-    GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
-                       &aplIntegerLft,  // Ptr to integer result
-                       &aplFloatLft,    // Ptr to float ...
-                        NULL,           // Ptr to WCHAR ...
-                        NULL,           // Ptr to longest ...
-                        NULL,           // Ptr to lpSym/Glb ...
-                        NULL,           // Ptr to ...immediate type ...
-                        NULL);          // Ptr to array type ...
+    // Get and validate the first item in a token
+    aplIntegerLft = ValidateFirstItemToken (aplTypeLft, lptkLftArg, &bRet);
 
-    // If it's a float, ...
-    if (IsSimpleFlt (aplTypeLft))
-    {
-        UBOOL bRet;
-
-        // Attempt to convert the float to an integer using System CT
-        aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
-        if (!bRet)
-            goto LEFT_DOMAIN_EXIT;
-    } // End IF
+    // Check for DOMAIN ERROR
+    if (!bRet)
+        goto LEFT_DOMAIN_EXIT;
 
     // Ensure the left arg is valid
     switch (aplIntegerLft)
@@ -316,6 +302,13 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_HETERO64:
         case DR_NESTED32:
         case DR_NESTED64:
+#ifdef _WIN64
+        case DR_RATIONAL32:
+        case DR_VFP32:
+#else
+        case DR_RATIONAL64:
+        case DR_VFP64:
+#endif
         default:
             return PrimFnDomainError_EM (lptkFunc APPEND_NAME_ARG);
 
@@ -327,10 +320,13 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_COMPLEX:
         case DR_QUATERNIONS:
         case DR_OCTONIONS:
-        case DR_RATIONAL32:
+#ifdef _WIN64
         case DR_RATIONAL64:
-        case DR_VFP32:
         case DR_VFP64:
+#else
+        case DR_RATIONAL32:
+        case DR_VFP32:
+#endif
             return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
     } // End SWITCH
 
@@ -756,7 +752,8 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     APLSTYPE          aplTypeRht;       // Right arg storage type
     APLNELM           aplNELMRht;       // ...       NELM
     APLRANK           aplRankRht;       // ...       rank
-    APLUINT           ByteRes;          // # bytes in the result
+    APLUINT           ByteRes,          // # bytes in the result
+                      uRht;             // Loop counter
     HGLOBAL           hGlbRht,          // Right arg global memory handle
                       hGlbRes;          // Result    ...
     LPVARARRAY_HEADER lpHeader;         // Ptr to right arg array header
@@ -900,20 +897,43 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         lstrcatW (wszTemp, L" " AP_ALL2S);
     } // End IF
 
-    // If the arg is a singleton VFP, ...
-    if (IsSingleton (aplNELMRht)
-     && IsVfp (aplTypeRht))
+    if (IsVfp (aplTypeRht))
     {
+        LPAPLVFP lpaplVfp;          // Ptr to VFP value
+        APLUINT  uCommPrec;         // Ptr to common VFP array precision (0 if none) (may be NULL)
+
+        // If the array is all the same precision, ...
+
+        // Skip over the header and dimensions to the data
+        lpaplVfp = VarArrayBaseToData (lpHeader, aplRankRht);
+
+        // Get the initial precision
+        uCommPrec = mpf_get_prec (lpaplVfp++);
+
+        for (uRht = 1; uRht < aplNELMRht; uRht++)
+        if (uCommPrec NE mpf_get_prec (lpaplVfp++))
+        {
+            // Mark as none
+            uCommPrec = 0;
+
+            break;
+        } // End FOR
+
         if (!bInit)
         {
             lstrcatW (wszTemp, L" --");
             bInit = TRUE;
         } // End IF
 
-        // Show the precision of the singleton
-        wsprintfW (&wszTemp[lstrlenW (wszTemp)],
-                    L" Precision %u",
-                    mpf_get_prec (VarArrayBaseToData (lpHeader, aplRankRht)));
+        // If there's a common precision, ...
+        if (uCommPrec NE 0)
+        {
+            lstrcatW (wszTemp, L" " AP_FPC);
+            wsprintfW (&wszTemp[lstrlenW (wszTemp)],
+                        L"%I64u ",
+                        uCommPrec);
+        } else
+            lstrcatW (wszTemp, L" " AP_FPC L"-Mixed");
     } // End IF
 
     // If the ptr is valid, ...

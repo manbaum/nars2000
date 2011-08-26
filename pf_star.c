@@ -231,7 +231,7 @@ APLVFP PrimFnMonStarVisV
     } // End IF
 #ifdef OWN_EXPLOG
     // Initialize the result
-    mpf_init_set (&mpfRes, &aplVfpRht);
+    mpf_init_copy (&mpfRes, &aplVfpRht);
     mpf_init (&mpfTmp1);
     mpf_init (&mpfTmp2);
 
@@ -268,7 +268,7 @@ APLVFP PrimFnMonStarVisV
     mpfTmp2 = ExpVfp (mpfRes);
 
     // Copy to the result
-    mpf_set (&mpfRes, &mpfTmp2);
+    mpf_copy (&mpfRes, &mpfTmp2);
 
     // Finally, convert the result back to normal
     //   by multiplying it by 2 ^ m.
@@ -877,7 +877,7 @@ APLVFP PrimFnDydStarVisVvV
     if (IsMpf1 (&aplVfpLft)
      && mpf_inf_p (&aplVfpRht))
     {
-        mpf_init_set (&mpfRes, &aplVfpLft);
+        mpf_init_copy (&mpfRes, &aplVfpLft);
 
         return mpfRes;
     } // End IF

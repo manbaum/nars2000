@@ -2624,7 +2624,7 @@ UBOOL PrimFnDydIotaVvN_EM
                 break;
 
             case ARRAY_VFP:
-                mpf_set   (&aplVfpRht, &((LPAPLVFP) lpMemRht)[iRht]);
+                mpf_copy  (&aplVfpRht, &((LPAPLVFP) lpMemRht)[iRht]);
 
                 break;
 
@@ -2643,7 +2643,7 @@ UBOOL PrimFnDydIotaVvN_EM
             iLft = (iMin + iMax) / 2;
 
             // Get the next VFP from the left arg
-            mpf_set (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
+            mpf_copy (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
 
             // Split cases based upon the signum of the comparison
             switch (signum (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT)))
@@ -2670,7 +2670,7 @@ UBOOL PrimFnDydIotaVvN_EM
             for (iLft = iLft - 1; iLft >= 0; iLft--)
             {
                 // Get the next VFP from the left arg
-                mpf_set (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
+                mpf_copy (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
 
                 if (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
                     break;

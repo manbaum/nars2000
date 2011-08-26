@@ -3400,12 +3400,12 @@ mpf_ptr mpf_clr_inf
 
 
 //***************************************************************************
-//  $mpif_set
+//  $mpif_copy
 //
-//  Set a MPF from a MPF
+//  Copy a MPF from a MPF
 //***************************************************************************
 
-void mpif_set
+void mpif_copy
     (mpf_t rop,                 // Destination
      mpf_t op)                  // Source
 
@@ -3413,8 +3413,8 @@ void mpif_set
     if (mpf_inf_p (op))
         mpf_set_inf (rop, mpf_sgn (op));
     else
-        mpf_set (mpf_clr_inf (rop), op);
-} // End mpif_set
+        mpf_copy (mpf_clr_inf (rop), op);
+} // End mpif_copy
 
 
 //***************************************************************************
@@ -3503,12 +3503,12 @@ int mpif_set_str
 
 
 //***************************************************************************
-//  $mpif_init_set
+//  $mpif_init_copy
 //
 //  Set a MPF from a MPF
 //***************************************************************************
 
-void mpif_init_set
+void mpif_init_copy
     (mpf_t rop,                 // Destination
      mpf_t op)                  // Source
 
@@ -3518,8 +3518,8 @@ void mpif_init_set
         mpf_init (rop);
         mpf_set_inf (rop, mpf_sgn (op));
     } else
-        mpf_init_set (rop, op);
-} // End mpif_init_set
+        mpf_init_copy (rop, op);
+} // End mpif_init_copy
 
 
 //***************************************************************************

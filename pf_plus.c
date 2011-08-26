@@ -222,7 +222,7 @@ APLVFP PrimFnMonPlusVisV
     APLVFP mpfRes = {0};
 
     // Copy the right arg to the result
-    mpf_init_set (&mpfRes, &aplVfpRht);
+    mpf_init_copy (&mpfRes, &aplVfpRht);
 
     return mpfRes;
 } // End PrimFnMonPlusVisV

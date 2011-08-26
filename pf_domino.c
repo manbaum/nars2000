@@ -544,7 +544,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 immTypeRes = IMMTYPE_VFP;
 
                 // Copy the value
-                mpf_init_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                mpf_init_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                 // If the right arg is zero, the result is zero
                 //   as per SVD

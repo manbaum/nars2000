@@ -831,7 +831,7 @@ APLVFP PrimFnDydQuoteDotVisVvV
     aplLft = PrimFnMonQuoteDotVisV (aplVfpLft, NULL);   // !L
     aplRht = PrimFnMonQuoteDotVisV (aplVfpRht, NULL);   // !R
 
-    mpf_init_set (&aplTmp, &aplVfpRht);                 // R
+    mpf_init_copy (&aplTmp, &aplVfpRht);                 // R
     mpf_sub      (&aplTmp, &aplTmp, &aplVfpLft);        // R-L
     mpfRes = PrimFnMonQuoteDotVisV (aplTmp, NULL);      // !R-L
 

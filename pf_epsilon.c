@@ -1548,7 +1548,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set    ((*(LPAPLVFP *) lplpMemRes)++, ((LPAPLVFP) lpMemRht)++);
+                        mpf_init_copy   ((*(LPAPLVFP *) lplpMemRes)++, ((LPAPLVFP) lpMemRht)++);
                     } // End FOR
 
                     break;
@@ -3021,7 +3021,7 @@ UBOOL PrimFnDydEpsilonNvR_EM
 
             case ARRAY_VFP:
                 // Copy the VFP to a VFP
-                mpf_set   (&aplVfpLft,
+                mpf_copy  (&aplVfpLft,
                            &((LPAPLVFP)   lpMemLft)[iLft]);
                 break;
 
@@ -3314,7 +3314,7 @@ UBOOL PrimFnDydEpsilonNvV_EM
 
             case ARRAY_VFP:
                 // Copy the VFP to a VFP
-                mpf_set   (&aplVfpLft,
+                mpf_copy  (&aplVfpLft,
                            &((LPAPLVFP)   lpMemLft)[iLft]);
                 break;
 
@@ -3333,7 +3333,7 @@ UBOOL PrimFnDydEpsilonNvV_EM
             iRht = (iMin + iMax) / 2;
 
             // Get the next VFP from the right arg
-            mpf_set (&aplVfpRht, &lpMemRht[lpMemGupRht[iRht]]);
+            mpf_copy (&aplVfpRht, &lpMemRht[lpMemGupRht[iRht]]);
 
             // Compare 'em
             iComp = mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT);

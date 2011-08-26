@@ -294,9 +294,9 @@ APLVFP gcdAplVfp
 ////////aplLft = aplRht % aplLft;
 ////////aplRht = aplTmp;
 
-        mpf_set (&aplTmp, &aplLft);
-        mpf_mod (&aplLft, &aplRht, &aplLft);
-        mpf_set (&aplRht, &aplTmp);
+        mpf_copy (&aplTmp, &aplLft);
+        mpf_mod  (&aplLft, &aplRht, &aplLft);
+        mpf_copy (&aplRht, &aplTmp);
     } // End WHILE
 
     // The sign of the result is the sign of the left argument

@@ -1365,7 +1365,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
                     case ARRAY_VFP:
                         // Save in result
-                        mpf_init_set (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
+                        mpf_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
 
                         break;
 

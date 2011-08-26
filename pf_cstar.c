@@ -277,7 +277,7 @@ APLVFP PrimFnMonCircleStarVisV
         return mpfRes;
 #if 0
     // Initialize the result
-    mpf_init_set (&mpfRes, &aplVfpRht);
+    mpf_init_copy (&mpfRes, &aplVfpRht);
 
 
 
@@ -329,7 +329,7 @@ APLVFP PrimFnMonCircleStarVisV
     mpfTmp = LogVfp (mpfRes);
 
     // Copy to the result
-    mpf_set (&mpfRes, &mpfTmp);
+    mpf_copy (&mpfRes, &mpfTmp);
 
     // Calculate the log of 2 ...
     mpf_set_ui (&mpfTmp, 2);

@@ -833,9 +833,9 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                     if (uLen)
                     {
                         if (IsSingleton (aplNELMRht))
-                            mpf_init_set (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi], (LPAPLVFP) aplNestRht);
+                            mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi], (LPAPLVFP) aplNestRht);
                         else
-                            mpf_init_set (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi],
+                            mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi],
                                           &((LPAPLVFP) lpMemRht)[uDimRht + uAcc++ * uDimHi]);
                     } else
                         mpf_init (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi]);

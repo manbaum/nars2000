@@ -423,9 +423,9 @@ APLVFP PrimFnDydUpStileVisVvV
 
     // Compare the two Variable FPs
     if (mpf_cmp (&aplVfpLft, &aplVfpRht) > 0)
-        mpf_init_set (&mpfRes, &aplVfpLft);
+        mpf_init_copy (&mpfRes, &aplVfpLft);
     else
-        mpf_init_set (&mpfRes, &aplVfpRht);
+        mpf_init_copy (&mpfRes, &aplVfpRht);
 
     return mpfRes;
 } // End PrimFnDydUpStileVisVvV

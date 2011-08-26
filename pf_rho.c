@@ -2011,7 +2011,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                     lpMemRhtNext = lpMemRhtData;
                 } // End IF
 
-                mpf_init_set (((LPAPLVFP) lpDataRes)++, ((LPAPLVFP) lpMemRhtNext)++);
+                mpf_init_copy (((LPAPLVFP) lpDataRes)++, ((LPAPLVFP) lpMemRhtNext)++);
             } // End FOR
 
             break;

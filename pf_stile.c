@@ -580,7 +580,7 @@ APLVFP PrimFnDydStileVisVvV
     if (IsMpf0 (&aplVfpLft)
      || IsMpf0 (&aplVfpRht))
         // Return the right arg
-        mpf_init_set (&mpfRes, &aplVfpRht);
+        mpf_init_copy (&mpfRes, &aplVfpRht);
     else
     // If the right arg is negative infinity, ...
     if (IsMpfNegInfinity (&aplVfpRht))
@@ -624,7 +624,7 @@ APLVFP PrimFnDydStileVisVvV
                                     aplVfpRht,
                                     mpfRes);
         // Initialize the result with the right arg
-        mpf_init_set (&mpfRes, &aplVfpRht);
+        mpf_init_copy (&mpfRes, &aplVfpRht);
     } else
     // If the left arg is positive infinity, ...
     if (IsMpfPosInfinity (&aplVfpLft))
@@ -636,7 +636,7 @@ APLVFP PrimFnDydStileVisVvV
                                     aplVfpRht,
                                     mpfRes);
         // Initialize the result with the right arg
-        mpf_init_set (&mpfRes, &aplVfpRht);
+        mpf_init_copy (&mpfRes, &aplVfpRht);
     } else
     {
         // Initialize the result

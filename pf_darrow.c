@@ -655,7 +655,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
             case ARRAY_VFP:
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
+                mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
 
                 break;
 

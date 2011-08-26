@@ -903,7 +903,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
             {
                 case PTRTYPE_STCONST:
                     // Copy the global numeric value to the result
-                    mpf_init_set ((LPAPLVFP) lpMemRes, (LPAPLVFP) hGlbSub);
+                    mpf_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) hGlbSub);
 
                     break;
 
@@ -915,7 +915,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
                     lpMemSub = VarArrayBaseToData (lpMemSub, 0);
 
                     // Copy the global numeric value to the result
-                    mpf_init_set ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemSub);
+                    mpf_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemSub);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
@@ -1213,7 +1213,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
                 break;
 
             case ARRAY_VFP:
-                mpf_init_set (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
+                mpf_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
 
                 break;
 

@@ -811,7 +811,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             mpf_init (&aplVfpRht);
 
             if (IsSingleton (aplNELMRht))
-                mpf_set (&aplVfpRht, (LPAPLVFP) aplNestRht);
+                mpf_copy (&aplVfpRht, (LPAPLVFP) aplNestRht);
 
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
@@ -826,7 +826,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     else
                         uLen = lpMemRep[uAx];
                     if (!IsSingleton (aplNELMRht))
-                        mpf_set (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uDimRht + uAx * uDimHi]);
+                        mpf_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uDimRht + uAx * uDimHi]);
 
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
@@ -834,7 +834,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set (&((LPAPLVFP) lpMemRes)[uDimRes + uAcc * uDimHi], &aplVfpRht);
+                        mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAcc * uDimHi], &aplVfpRht);
                     } // End FOR
                 } // End FOR
             } // End FOR/FOR

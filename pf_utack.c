@@ -718,7 +718,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_VFP:
-                            mpf_set    (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                            mpf_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                             break;
 
@@ -770,7 +770,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_VFP:
-                            mpf_set    (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                            mpf_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                             break;
 
@@ -820,7 +820,7 @@ RESTART_EXCEPTION:
 
             case ARRAY_VFP:
                 // Save in result
-                mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &aplVfpAcc);
+                mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &aplVfpAcc);
 
                 break;
 

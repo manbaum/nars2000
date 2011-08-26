@@ -617,7 +617,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    mpf_init_set (&((LPAPLVFP) lpMemRes)[uDim +                 uAx  * uDimHi],
+                    mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDim +                 uAx  * uDimHi],
                                   &((LPAPLVFP) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi]);
                 } // End FOR
             } // End FOR/FOR
@@ -1260,7 +1260,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    mpf_init_set (&((LPAPLVFP) lpMemRes)[uDim +                  uAx           * uDimHi],
+                    mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDim +                  uAx           * uDimHi],
                                   &((LPAPLVFP) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi]);
                 } // End FOR
             } // End FOR/FOR

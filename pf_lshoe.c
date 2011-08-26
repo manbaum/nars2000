@@ -1146,7 +1146,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
-                    mpf_init_set (&((LPAPLVFP) lpMemSub)[uSub], &((LPAPLVFP) lpMemRht)[uRht]);
+                    mpf_init_copy (&((LPAPLVFP) lpMemSub)[uSub], &((LPAPLVFP) lpMemRht)[uRht]);
                 } // End FOR
 
                 // We no longer need this ptr
@@ -2308,7 +2308,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
 
                         case ARRAY_VFP:
                             // Save the next element in the item
-                            mpf_init_set (((LPAPLVFP) lpMemItm)++, (LPAPLVFP) lpSymGlbRht);
+                            mpf_init_copy (((LPAPLVFP) lpMemItm)++, (LPAPLVFP) lpSymGlbRht);
 
                             break;
 

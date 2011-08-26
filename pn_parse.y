@@ -1417,7 +1417,7 @@ LPPN_YYSTYPE PN_MakeBasePoint
                    aplVfpTmp     = {0};
 
             // Initialize and set the base value
-            mpf_init_set (&aplVfpBase, &lpYYBase->at.aplVfp);
+            mpf_init_copy (&aplVfpBase, &lpYYBase->at.aplVfp);
 
             // Initialize the accumulator and base power
             mpf_set_ui (&lpYYBase->at.aplVfp, 0);

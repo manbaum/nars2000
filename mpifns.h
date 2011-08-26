@@ -208,13 +208,11 @@
 #undef  mpq_out_str
 #undef  mpq_inp_str
 
-#undef  mpf_set
 #undef  mpf_set_d
 #undef  mpf_set_z
 #undef  mpf_set_q
 #undef  mpf_set_str
 
-#undef  mpf_init_set
 #undef  mpf_init_set_d
 #undef  mpf_init_set_str
 
@@ -453,13 +451,11 @@
 #define mpq_out_str             mpiq_out_str
 #define mpq_inp_str             mpiq_inp_str
 
-#define mpf_set                 mpif_set
 #define mpf_set_d               mpif_set_d
 #define mpf_set_z               mpif_set_z
 #define mpf_set_q               mpif_set_q
 #define mpf_set_str             mpif_set_str
 
-#define mpf_init_set            mpif_init_set
 #define mpf_init_set_d          mpif_init_set_d
 #define mpf_init_set_str        mpif_init_set_str
 

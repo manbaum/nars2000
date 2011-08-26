@@ -813,7 +813,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             case ARRAY_VFP:
                 // Make a copy of each RAT item
                 for (uRes = 0; uRes < aplNELMRht; uRes++)
-                    mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRes]);
+                    mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRes]);
                 break;
 
             defstop
@@ -1095,7 +1095,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
-                    mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
+                    mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
                 } // End FOR
 
                 break;
@@ -3053,7 +3053,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Copy the VFP to a VFP
-                                mpf_init_set   (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbLft);
+                                mpf_init_copy  (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbLft);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -3064,7 +3064,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Copy the VFP to a VFP
-                                mpf_init_set   (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemLft)++);
+                                mpf_init_copy  (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemLft)++);
                             } // End FOR
                         break;
 
@@ -3214,7 +3214,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Copy the VFP to a VFP
-                                mpf_init_set (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbRht);
+                                mpf_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -3225,7 +3225,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Copy the VFP to a VFP
-                                mpf_init_set (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemRht)++);
+                                mpf_init_copy (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemRht)++);
                             } // End FOR
                         break;
 

@@ -542,7 +542,7 @@ APLVFP PrimFnDydRootVisVvV
     // Check for special case:  1 {root} R <==> R * 1 <==> R
     if (IsMpf1 (&aplVfpLft))
     {
-        mpf_init_set (&mpfRes, &aplVfpRht);
+        mpf_init_copy (&mpfRes, &aplVfpRht);
         return mpfRes;
     } // End IF
 

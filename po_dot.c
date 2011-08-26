@@ -1369,7 +1369,7 @@ RESTART_INNERPROD_RES:
 
                             case ARRAY_VFP:
 ////////////////////////////////Myf_clear (&aplVfpLft);
-                                mpf_set (&aplVfpLft, (LPAPLVFP) lpMem);
+                                mpf_copy (&aplVfpLft, (LPAPLVFP) lpMem);
                                 lpSymGlbCmpLft = &aplVfpLft;
 
                                 break;
@@ -1527,7 +1527,7 @@ RESTART_INNERPROD_RES:
                         case ARRAY_VFP:
 ////                        Myf_clear (&aplVfpLft);
 ////                        Myf_clear (&aplVfpRht);
-                            mpf_set (&aplVfpRht, (LPAPLVFP) lpMem);
+                            mpf_copy (&aplVfpRht, (LPAPLVFP) lpMem);
                             lpSymGlbCmpRht = &aplVfpRht;
 
                             break;
@@ -1582,7 +1582,7 @@ RESTART_INNERPROD_RES:
 
                 case ARRAY_VFP:
                     // Save the accumulated reduction in the result
-                    mpf_init_set (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
+                    mpf_init_copy (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
 ////////////////////             *((LPAPLVFP) lpMemRes)++= aplVfpRht;
 
                     break;

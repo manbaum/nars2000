@@ -1526,7 +1526,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
                             case ARRAY_VFP:
                                 // Copy the VFP to a VFP
-                                mpf_init_set    (LPAPL.Vfp++, (LPAPLVFP) lpSymGlbNum);
+                                mpf_init_copy   (LPAPL.Vfp++, (LPAPLVFP) lpSymGlbNum);
 
                                 // Decrement the refcnt as we're making a copy of the value, not reusing it
                                 DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbNum));
@@ -1660,7 +1660,7 @@ HGLOBAL MakeGlbEntry_EM
         case ARRAY_VFP:
             if (bInit)
                 // Initialize the result and copy the value
-                mpf_init_set ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpVal);
+                mpf_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpVal);
             else
                 // Copy the value
                 *((LPAPLVFP) lpMemRes) = *(LPAPLVFP) lpVal;

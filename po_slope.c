@@ -575,7 +575,7 @@ RESTART_EXCEPTION:
                                 lpMemVfp = VarArrayBaseToData (lpMemVfp, 0);
 
                                 // Copy to the result
-                                mpf_init_set (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
+                                mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (tkLftArg.tkData.tkGlbData); lpMemVfp = NULL;
@@ -751,7 +751,7 @@ RESTART_EXCEPTION:
                                     lpMemVfp = VarArrayBaseToData (lpMemVfp, 0);
 
                                     // Copy to the result
-                                    mpf_init_set (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
+                                    mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
 
                                     // We no longer need this ptr
                                     MyGlobalUnlock (tkLftArg.tkData.tkGlbData); lpMemVfp = NULL;
@@ -972,7 +972,7 @@ RESTART_EXCEPTION:
                                 lpMemVfp = VarArrayBaseToData (lpMemVfp, 0);
 
                                 // Copy to the result
-                                mpf_init_set (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
+                                mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemVfp = NULL;

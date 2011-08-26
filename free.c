@@ -135,11 +135,6 @@ void FreeResNNU
             // Clear the flag
             lpYYRes->YYCopyArray = FALSE;
         FreeResultSub (&lpYYRes->tkToken, FALSE, TRUE);
-#ifdef DEBUG
-    } else
-    {
-        DbgBrk ();
-#endif
     } // End IF
 
     DBGLEAVE;

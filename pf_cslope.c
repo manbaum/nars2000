@@ -801,7 +801,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                mpf_init_set (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
+                mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
             } // End FOR
 
             break;

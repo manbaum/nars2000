@@ -1099,7 +1099,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                         break;
 
                                     case ARRAY_VFP:
-                                        mpf_init_set    (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                        mpf_init_copy   (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
                                                          &((LPAPLVFP) lpMemSub)[uSub]);
                                         break;
 

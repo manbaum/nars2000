@@ -1069,7 +1069,7 @@ void DemoteData
                         lpMemSub = VarArrayBaseToData (lpMemSub, 0);
 
                         // Copy the data
-                        mpf_init_set (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemSub)++);
+                        mpf_init_copy (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemSub)++);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
@@ -2536,7 +2536,7 @@ void TPA_VFP2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set (&lpAllTypes->aplVfp, &lpaplVfp[uInt]);
+    mpf_copy (&lpAllTypes->aplVfp, &lpaplVfp[uInt]);
 } // TPA_VFP2VFP
 
 

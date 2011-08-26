@@ -739,7 +739,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                     // Trundle through the right arg via the grade-up
                     //   copying elements to the result
                     for (uRht = 0; uRht < aplNELMRes; uRht++)
-                        mpf_init_set (((LPAPLVFP)   lpMemRes)++, &((LPAPLVFP)   lpMemRht)[lpMemTmp[*lpMemGup++]]);
+                        mpf_init_copy (((LPAPLVFP)   lpMemRes)++, &((LPAPLVFP)   lpMemRht)[lpMemTmp[*lpMemGup++]]);
                     break;
 
                 defstop

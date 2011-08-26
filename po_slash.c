@@ -1013,7 +1013,7 @@ RESTART_EXCEPTION:
                             lpSymGlbRht = VarArrayBaseToData (lpSymGlbRht, 0);
 
                             // Copy the data
-                            mpf_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                            mpf_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                             // We no longer need this storage
                             Myf_clear ((LPAPLVFP) lpSymGlbRht);
@@ -1222,7 +1222,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:
                             // Copy the data to the result
-                            mpf_init_set (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
+                            mpf_init_copy (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
 
                             break;
 

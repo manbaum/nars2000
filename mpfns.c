@@ -1049,12 +1049,12 @@ APLVFP mpf_QuadICValue
             return mpfNegInfinity;
 
         case ICVAL_LEFT:
-            mpf_init_set (&mpfRes, &aplVfpLft);
+            mpf_init_copy (&mpfRes, &aplVfpLft);
 
             return mpfRes;
 
         case ICVAL_RIGHT:
-            mpf_init_set (&mpfRes, &aplVfpRht);
+            mpf_init_copy (&mpfRes, &aplVfpRht);
 
             return mpfRes;
 
@@ -1062,6 +1062,22 @@ APLVFP mpf_QuadICValue
             return mpfRes;
     } // End SWITCH
 } // End mpf_QuadICValue
+
+
+//***************************************************************************
+//  $mpf_copy
+//
+//  Save an MPF value as a Variable FP with the same precision
+//***************************************************************************
+
+void mpf_copy
+    (mpf_ptr dest,
+     mpf_ptr val)
+
+{
+    mpf_set_prec (dest, mpf_get_prec (val));
+    mpf_set      (dest, val);
+} // End mpf_copy
 
 
 //***************************************************************************
@@ -1084,6 +1100,22 @@ void mpf_set_sa
     // Add in the low long
     mpf_add_ui (dest, dest, LOAPLINT (val));
 } // End mpf_set_sa
+
+
+//***************************************************************************
+//  $mpf_init_copy
+//
+//  Save an MPF value as a Variable FP with the same precision
+//***************************************************************************
+
+void mpf_init_copy
+    (mpf_ptr dest,
+     mpf_ptr val)
+
+{
+    mpf_init2 (dest, mpf_get_prec (val));
+    mpf_set   (dest, val);
+} // End mpf_init_copy
 
 
 //***************************************************************************
@@ -1382,7 +1414,7 @@ void mpf_pow
     mpfTmp = PrimFnDydStarVisVvV (*base, *exp, NULL);
 
     // Copy to the destination
-    mpf_set (dest, &mpfTmp);
+    mpf_copy (dest, &mpfTmp);
 
     // We no longer need this storage
     Myf_clear (&mpfTmp);
@@ -1429,6 +1461,8 @@ void Myf_init
 {
     if (mpfVal->_mp_d EQ NULL)
         mpf_init (mpfVal);
+    else
+        mpf_set_prec (mpfVal, mpf_get_default_prec ());
 } // End Myf_init
 
 

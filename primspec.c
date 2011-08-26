@@ -9162,7 +9162,7 @@ HGLOBAL PrimFnDydSiScNest_EM
             goto NORMAL_EXIT;
     } // End IF
 
-    Assert (IsSimpleNum (aplTypeRes)
+    Assert (IsSimpleGlbNum (aplTypeRes)
          || IsNested (aplTypeRes));
 
     // Allocate space for result
@@ -9199,7 +9199,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     } // End IF
 
     // If simple result, ...
-    if (IsSimpleNum (aplTypeRes))
+    if (IsSimpleGlbNum (aplTypeRes))
         bRet = PrimFnDydSingMult_EM (&hGlbRes,
                                       aplTypeRes,
                                       lpMemHdrRes,
@@ -9591,7 +9591,7 @@ RESTART_EXCEPTION_IMMED:
 
                                 case ARRAY_VFP:
                                     // Copy the VFP to a VFP
-                                    mpf_set (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                                    mpf_copy (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                                     break;
 
@@ -9662,7 +9662,7 @@ RESTART_EXCEPTION_IMMED:
 
                                 case ARRAY_VFP:
                                     // Copy the VFP to a VFP
-                                    mpf_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                                    mpf_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                                     break;
 
@@ -9934,7 +9934,7 @@ RESTART_EXCEPTION_IMMED:
                         break;
 
                     case ARRAY_VFP:             // Res = VFP, Lft = VFP
-                        mpf_init_set    (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                        mpf_init_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                         break;
 
@@ -9965,7 +9965,7 @@ RESTART_EXCEPTION_IMMED:
                         break;
 
                     case ARRAY_VFP:             // Res = VFP, Rht = VFP
-                        mpf_init_set    (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                        mpf_init_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                         break;
 
@@ -10418,7 +10418,7 @@ RESTART_EXCEPTION_SINGLETON:
 
                                     case ARRAY_VFP:
                                         // Copy the VFP to a VFP
-                                        mpf_set (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                                        mpf_copy (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                                         break;
 
@@ -10489,7 +10489,7 @@ RESTART_EXCEPTION_SINGLETON:
 
                                     case ARRAY_VFP:
                                         // Copy the VFP to a VFP
-                                        mpf_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                                        mpf_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                                         break;
 
@@ -10677,7 +10677,7 @@ RESTART_EXCEPTION_SINGLETON:
                             break;
 
                         case ARRAY_VFP:             // Res = VFP, Lft = VFP
-                            mpf_init_set    (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                            mpf_init_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                             break;
 
@@ -10708,7 +10708,7 @@ RESTART_EXCEPTION_SINGLETON:
                             break;
 
                         case ARRAY_VFP:             // Res = VFP, Rht = VFP
-                            mpf_init_set    (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                            mpf_init_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                             break;
 
@@ -11745,7 +11745,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_VFP:
                                             // Copy the VFP to a VFP
-                                            mpf_set (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
+                                            mpf_copy (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
 
                                             break;
 
@@ -11816,7 +11816,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_VFP:
                                             // Copy the VFP to a VFP
-                                            mpf_set (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
+                                            mpf_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
 
                                             break;
 
@@ -12162,7 +12162,7 @@ RESTART_EXCEPTION_AXIS:
                                 break;
 
                             case ARRAY_VFP:             // Res = VFP(Axis), Lft = VFP
-                                mpf_set    (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
+                                mpf_copy   (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
 
                                 break;
 
@@ -12193,7 +12193,7 @@ RESTART_EXCEPTION_AXIS:
                                 break;
 
                             case ARRAY_VFP:             // Res = VFP(Axis), Rht = VFP
-                                mpf_set    (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
+                                mpf_copy   (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
 
                                 break;
 
@@ -13172,7 +13172,7 @@ RESTART_EXCEPTION_NOAXIS:
 
                                         case ARRAY_VFP:
                                             // Copy the VFP to a VFP
-                                            mpf_set (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uRes]);
+                                            mpf_copy (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uRes]);
 
                                             break;
 
@@ -13243,7 +13243,7 @@ RESTART_EXCEPTION_NOAXIS:
 
                                         case ARRAY_VFP:
                                             // Copy the VFP to a VFP
-                                            mpf_set (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRes]);
+                                            mpf_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRes]);
 
                                             break;
 
@@ -13495,7 +13495,7 @@ RESTART_EXCEPTION_NOAXIS:
                                 break;
 
                             case ARRAY_VFP:         // Res = VFP(No Axis), Lft = VFP
-                                mpf_set    (&aplVfpLft,  ((LPAPLVFP)   lpMemLft)++);
+                                mpf_copy   (&aplVfpLft,  ((LPAPLVFP)   lpMemLft)++);
 
                                 break;
 
@@ -13526,7 +13526,7 @@ RESTART_EXCEPTION_NOAXIS:
                                 break;
 
                             case ARRAY_VFP:         // Res = VFP(No Axis), Rht = VFP
-                                mpf_set    (&aplVfpRht,  ((LPAPLVFP)   lpMemRht)++);
+                                mpf_copy   (&aplVfpRht,  ((LPAPLVFP)   lpMemRht)++);
 
                                 break;
 

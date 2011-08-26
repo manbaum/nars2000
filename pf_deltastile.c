@@ -520,7 +520,7 @@ HGLOBAL MakeEncloseZilde
 //***************************************************************************
 //  $PermVecGrade
 //
-//  Grade a permutation vectora
+//  Grade a permutation vector
 //***************************************************************************
 
 UBOOL PermVecGrade
@@ -577,6 +577,32 @@ UBOOL PermVecGrade
 
                 break;
 
+            case ARRAY_RAT:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpGradeData->lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
+                    lpMemRes[mpq_get_ctsa (((LPAPLRAT) lpMemRht)++, NULL) - PV1] = uRht;
+                } // End FOR
+
+                break;
+
+            case ARRAY_VFP:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpGradeData->lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
+                    lpMemRes[mpf_get_ctsa (((LPAPLVFP) lpMemRht)++, NULL) - PV1] = uRht;
+                } // End FOR
+
+                break;
+
             defstop
                 break;
         } // End SWITCH
@@ -610,6 +636,32 @@ UBOOL PermVecGrade
                         goto ERROR_EXIT;
 
                     lpMemRes[aplNELMRht1 - apaOffRht] = uRht;
+                } // End FOR
+
+                break;
+
+            case ARRAY_RAT:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpGradeData->lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
+                    lpMemRes[aplNELMRht1 - mpq_get_ctsa (((LPAPLRAT) lpMemRht)++, NULL)] = uRht;
+                } // End FOR
+
+                break;
+
+            case ARRAY_VFP:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (*lpGradeData->lpbCtrlBreak)
+                        goto ERROR_EXIT;
+
+                    lpMemRes[aplNELMRht1 - mpf_get_ctsa (((LPAPLVFP) lpMemRht)++, NULL)] = uRht;
                 } // End FOR
 
                 break;

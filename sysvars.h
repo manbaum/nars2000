@@ -31,7 +31,7 @@
 #define DEF_QUADFC_GLB      hGlbQuadFC_SYS
 #define DEF_QUADFEATURE_CWS aplDefaultFEATURE
 #define DEF_QUADFEATURE_GLB hGlbQuadFEATURE_SYS
-#define DEF_QUADFPC_CWS     53
+#define DEF_QUADFPC_CWS     128
 #define DEF_QUADIC_CWS      aplDefaultIC
 #define DEF_QUADIC_GLB      hGlbQuadIC_SYS
 #define DEF_QUADIO_CWS          1

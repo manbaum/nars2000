@@ -335,6 +335,7 @@ UBOOL CmdSave_EM
                                                  1,                                 // Object NELM
                                                  0,                                 // Object rank
                                                  NULL,                              // Ptr to object dimensions
+                                                 NULL,                              // Ptr to common VFP array precision (0 if none) (may be NULL)
                                                  NULL);                             // Ptr to array header
                             // Split cases based upon the immediate type
                             switch (stFlags.ImmType)
@@ -1175,7 +1176,8 @@ LPAPLCHAR SavedWsFormGlbVar
     APLINT       apaOff,                // APA offset
                  apaMul;                // ... multiplier
     APLUINT      uObj,                  // WS object loop counter
-                 uQuadPP;               // []PP save area
+                 uQuadPP,               // []PP save area
+                 uCommPrec;             // Common precision for an array of VFP numbers (0 if none)
     LPVOID       lpMemObj = NULL;       // Ptr to WS object global memory
     LPAPLCHAR    lpMemProKeyName,       // Ptr to profile keyname
                  lpaplCharStart;        // Ptr to start of buffer
@@ -1256,12 +1258,13 @@ LPAPLCHAR SavedWsFormGlbVar
     //   "BIFCHNLA"     %d     %d   *(%d )
     //   %c %d %d %*(d )
     lpaplChar =
-      AppendArrayHeader (lpaplChar,                         // Ptr to output save area
-                         TranslateArrayTypeToChar (aplTypeObj),// Object storage type as WCHAR
-                         aplNELMObj,                        // Object NELM
-                         aplRankObj,                        // Object rank
-                         VarArrayBaseToDim (lpMemObj),      // Ptr to object dimensions
-                         lpHeader);                         // Ptr to array header
+      AppendArrayHeader (lpaplChar,                             // Ptr to output save area
+                         TranslateArrayTypeToChar (aplTypeObj), // Object storage type as WCHAR
+                         aplNELMObj,                            // Object NELM
+                         aplRankObj,                            // Object rank
+                         VarArrayBaseToDim (lpMemObj),          // Ptr to object dimensions
+                        &uCommPrec,                             // Ptr to common VFP array precision (0 if none) (may be NULL)
+                         lpHeader);                             // Ptr to array header
 #undef  lpHeader
     // Skip over the header and dimensions to the data
     lpMemObj = VarArrayBaseToData (lpMemObj, aplRankObj);
@@ -1382,6 +1385,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                              1,                                 // Object NELM
                                              0,                                 // Object rank
                                              NULL,                              // Ptr to object dimensions
+                                             NULL,                              // Ptr to common VFP array precision (0 if none) (may be NULL)
                                              NULL);                             // Ptr to array header
                         // Split cases based upon the immediate type
                         switch (stFlags.ImmType)
@@ -1501,7 +1505,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                       UTF16_BAR,            // Char to use as overbar
                                       FALSE,                // TRUE iff the number if to be formatted with trailing zeros
                                       TRUE,                 // TRUE iff we're to substitute text for infinity
-                                      TRUE);                // TRUE iff we're to precede the display with (FPC)
+                                      uCommPrec EQ 0);      // TRUE iff we're to precede the display with (FPC)
                 break;
 
             defstop
@@ -1584,10 +1588,16 @@ LPAPLCHAR AppendArrayHeader
      APLNELM           aplNELMObj,              // Object NELM
      APLRANK           aplRankObj,              // Object rank
      LPAPLDIM          lpaplDimObj,             // Ptr to object dimensions
+     LPAPLUINT         lpuCommPrec,             // Ptr to common VFP array precision (0 if none) (may be NULL)
      LPVARARRAY_HEADER lpHeader)                // Ptr to array header
 
 {
     APLRANK uObj;                   // Loop counter
+
+    // If common VFP array precision requested, ...
+    if (lpuCommPrec)
+        // Initialize it as none
+        *lpuCommPrec = 0;
 
     // Append the storage type as a WCHAR
     *lpaplChar++ = aplCharObj;
@@ -1622,25 +1632,57 @@ LPAPLCHAR AppendArrayHeader
         // Check for array property:  PV0
         if (lpHeader->PV0)
         {
-            lstrcpyW (lpaplChar, AP_PV0);
-            lpaplChar += strcountof (AP_PV0);
-            *lpaplChar++ = L' ';
+            lstrcpyW (lpaplChar, AP_PV0);           // Copy the prefix
+            lpaplChar += strcountof (AP_PV0);       // Skip over it
+            *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF
 
         // Check for array property:  PV1
         if (lpHeader->PV1)
         {
-            lstrcpyW (lpaplChar, AP_PV1);
-            lpaplChar += strcountof (AP_PV1);
-            *lpaplChar++ = L' ';
+            lstrcpyW (lpaplChar, AP_PV1);           // Copy the prefix
+            lpaplChar += strcountof (AP_PV1);       // Skip over it
+            *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF
 
         // Check for array property:  All2s
         if (lpHeader->All2s)
         {
-            lstrcpyW (lpaplChar, AP_ALL2S);
-            lpaplChar += strcountof (AP_ALL2S);
-            *lpaplChar++ = L' ';
+            lstrcpyW (lpaplChar, AP_ALL2S);         // Copy the prefix
+            lpaplChar += strcountof (AP_ALL2S);     // Skip over it
+            *lpaplChar++ = L' ';                    // Append a trailing blank
+        } // End IF
+
+        // If common VFP array precision requested, ...
+        if (lpuCommPrec)
+        {
+            LPAPLVFP lpaplVfp;
+
+            // Skip over the header and dimensions to the data
+            lpaplVfp = VarArrayBaseToData (lpHeader, aplRankObj);
+
+            // Get the initial precision
+            *lpuCommPrec = mpf_get_prec (lpaplVfp++);
+
+            for (uObj = 1; uObj < aplNELMObj; uObj++)
+            if (*lpuCommPrec NE mpf_get_prec (lpaplVfp++))
+            {
+                // Mark as none
+                *lpuCommPrec = 0;
+
+                break;
+            } // End FOR
+
+            // If there's a common precision, ...
+            if (*lpuCommPrec NE 0)
+            {
+                lstrcpyW (lpaplChar, AP_FPC);       // Copy the prefix
+                lpaplChar += strcountof (AP_FPC);   // Skip over it
+                lpaplChar +=
+                  wsprintfW (lpaplChar,             // Format the common precision
+                             L"%I64u ",             // Note trailing blank
+                            *lpuCommPrec);
+            } // End IF
         } // End IF
 
         if (lpaplChar[-1] NE L'(')

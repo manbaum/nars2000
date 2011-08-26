@@ -1179,6 +1179,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     HGLOBAL           hGlbObj,              // Object global memory handle
                       hGlbChk;              // Result from CheckGlobals
     APLUINT           ByteObj,              // # bytes needed for the object
+                      uCommPrec = 0,        // Common precision for array of VFP numbers
                       uObj;                 // Loop counter
     STFLAGS           stFlags = {0};        // SymTab flags
     LPSYMENTRY        lpSymEntry,           // Ptr to STE for HGLOBAL
@@ -1351,6 +1352,17 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     {
                         lpHeader->All2s = TRUE;
                         lpwSrc += strcountof (AP_ALL2S);
+                    } else
+                    if (strncmpW (lpwSrc, AP_FPC, strcountof (AP_FPC)) EQ 0)
+                    {
+                        lpwSrc += strcountof (AP_FPC);
+
+                        // Scan the common precision
+                        sscanfW (lpwSrc, SCANFSTR_APLUINT, &uCommPrec);
+
+                        // Skip over the digits
+                        while (isdigit ((char) *lpwSrc))
+                            lpwSrc++;
                     } else
                     {
                         MBC ("Unknown array property when loading workspace -- Load terminated.");
@@ -1602,7 +1614,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             lpwSrc = SkipPastCharW (lpwSrc, L')');
                         } else
                             // Set the default precision
-                            mpf_set_default_prec (uOldPrec);
+                            mpf_set_default_prec ((mp_bitcnt_t) ((uCommPrec EQ 0) ? uOldPrec : uCommPrec));
 
                         // Convert the string from WCHAR to char
                         lpwStr = lpwSrc; lpStr = (LPCHAR) lpwStr;

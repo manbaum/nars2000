@@ -567,6 +567,17 @@ UBOOL LoadWorkspace_EM
                         lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
                         lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
                         lpSymEntry->stData.stLongest   = aplLongestObj;
+
+                        // If this var is []FPC, set the VFP constants and PTD vars
+                        if (lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
+                         && IsThisSysName (lpSymEntry, WS_UTF16_QUAD L"fpc"))
+                        {
+                            // Initialize the precision-specific VFP constants
+                            InitVfpConstants (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FPC]->stData.stInteger);
+
+                            // Initialize PerTabData vars
+                            InitPTDVars (lpMemPTD);
+                        } // End IF
                     } // End IF
                 } // End IF/ELSE
 
@@ -733,6 +744,33 @@ NORMAL_EXIT:
     return bRet;
 } // End LoadWorkspace_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $IsThisSysName
+//
+//  Is this SYMENTRY that of a particular SysName?
+//***************************************************************************
+
+UBOOL IsThisSysName
+    (LPSYMENTRY lpSymEntry,
+     LPWCHAR    wszSysName)
+
+{
+    LPWCHAR lpwGlbName;                 // Ptr to SymEntry's name's global memory
+    UBOOL   bRet;                       // TRUE iff the result is valid
+
+    // Lock the memory to get a ptr to it
+    lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+    // Compare the names
+    bRet = lstrcmpiW (lpwGlbName, wszSysName) EQ 0;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;
+
+    return bRet;
+} // End IsThisSysname
 
 
 //***************************************************************************

@@ -1654,7 +1654,8 @@ LPAPLCHAR AppendArrayHeader
         } // End IF
 
         // If common VFP array precision requested, ...
-        if (lpuCommPrec)
+        if (lpuCommPrec
+         && IsVfp (lpHeader->ArrType))
         {
             LPAPLVFP lpaplVfp;
 

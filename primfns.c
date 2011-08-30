@@ -3320,6 +3320,12 @@ UBOOL IsTknImmed
 //  Set SkipRefCntIncr flag in a variable/function/operator array.
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SetVFOArraySRCIFlag"
+#else
+#define APPEND_NAME
+#endif
+
 void SetVFOArraySRCIFlag
     (LPTOKEN lptkVFO)                   // Ptr to var/fcn/opr token
 
@@ -3357,16 +3363,21 @@ void SetVFOArraySRCIFlag
         else
         // If the array is a var?
         if (IsTknTypeVar (lptkVFO->tkFlags.TknType))
+        {
             // Set the Variable flag which says to skip the next
             //   IncrRefCnt
             vfoHdrPtrs.lpMemVar->SkipRefCntIncr = TRUE;
-        else
+#ifdef DEBUG_REFCNT
+            dprintfWL0 (L"  RefCnt&& in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlbVFO, vfoHdrPtrs.lpMemVar->RefCnt, FNLN);
+#endif
+        } else
             DbgStop ();
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;
     } // End IF
 } // End SetVFOArraySRCIFlag
+#undef  APPEND_NAME
 
 
 #ifdef DEBUG

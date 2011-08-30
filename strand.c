@@ -1385,9 +1385,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                                 // Copy the RAT to a RAT
                                 mpq_init_set    (LPAPL.Rat++, (LPAPLRAT) lpSymGlbNum);
 
-                                // Decrement the refcnt as we're making a copy of the value, not reusing it
-                                DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbNum));
-
                                 break;
 
                             defstop
@@ -1398,6 +1395,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbNum); lpMemNum = NULL;
 
+////////////////////// If it's a scalar global numeric, ...
+////////////////////if (IsScalar (aplRankNum)
+//////////////////// && IsGlbNum (aplTypeNum))
+////////////////////    // Decrement the refcnt as we're making a copy of the value, not reusing it
+////////////////////    FreeResultGlobalVar (MakePtrTypeGlb (hGlbNum));
                     break;
 
                 defstop
@@ -1465,7 +1467,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                                 break;
                         } // End SWITCH
 
-
                         break;
                     } else
                     {
@@ -1519,17 +1520,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                                 // Convert the RAT to a VFP
                                 mpf_init_set_q  (LPAPL.Vfp++, (LPAPLRAT) lpSymGlbNum);
 
-                                // Decrement the refcnt as we're making a copy of the value, not reusing it
-                                DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbNum));
-
                                 break;
 
                             case ARRAY_VFP:
                                 // Copy the VFP to a VFP
                                 mpf_init_copy   (LPAPL.Vfp++, (LPAPLVFP) lpSymGlbNum);
-
-                                // Decrement the refcnt as we're making a copy of the value, not reusing it
-                                DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbNum));
 
                                 break;
 
@@ -1541,6 +1536,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbNum); lpMemNum = NULL;
 
+////////////////////// If it's a scalar global numeric, ...
+////////////////////if (IsScalar (aplRankNum)
+//////////////////// && IsGlbNum (aplTypeNum))
+////////////////////    // Decrement the refcnt as we're making a copy of the value, not reusing it
+////////////////////    FreeResultGlobalVar (MakePtrTypeGlb (hGlbNum));
                     break;
 
                 defstop

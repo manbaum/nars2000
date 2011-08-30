@@ -2648,7 +2648,7 @@ LPAPLCHAR FormatArrSimple
                 aplChrNCols,        // # cols for char arrays
                 aplRealNRows,       // # real rows
                 aplRealRow;         // Loop counter
-    UINT        uActLen,            // Actual length
+    APLUINT     uActLen,            // Actual length
                 uLead,              // # leading blanks
                 uLeadBefore,        // # leading blanks before test for []PW
                 uCol,               // Column #
@@ -2732,7 +2732,7 @@ LPAPLCHAR FormatArrSimple
         {
             // If this row's col offset is non-zero, fill with leading blanks
             if (uColOff)
-                FillMemoryW (lpwszOut, uColOff, L' ');
+                FillMemoryW (lpwszOut, (APLU3264) uColOff, L' ');
 
             // Loop through the cols
             for (aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
@@ -2769,12 +2769,16 @@ LPAPLCHAR FormatArrSimple
 
                 // If this is raw output,
                 // break the line if it would exceed []PW
-                //   and the line is non-empty.
                 uCol = (UINT) (lpwszOut - lpwszOutStart);
                 if (bRawOutput
-                 && DEF_INDENT < uCol
                  && uQuadPW < (uLeadBefore + uCmpWid + uCol))
                 {
+                    UBOOL   bLineCont = FALSE;  // TRUE iff this line is a continuation
+                    WCHAR   wch;                // The replaced WCHAR
+                    LPWCHAR lpwsz = lpaplChar;  // Ptr to input stream
+                    APLDIM  uLineLen;           // Remaining line length to output
+                    APLUINT uOutLen;            // Output length for this line
+
                     // Ensure properly terminated
                     *lpwszOut = WC_EOS;
 
@@ -2782,15 +2786,50 @@ LPAPLCHAR FormatArrSimple
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         return NULL;
 
-                    // Output the line
-                    AppendLine (lpwszOutStart, TRUE, TRUE);
+                    // If there's something on the line, ...
+                    if (uCol)
+                        // Output the line
+                        AppendLine (lpwszOutStart, FALSE, FALSE);
+
+                    // Output the leading blanks
+                    if (uLeadBefore)
+                    {
+                        FillMemoryW (lpwszOut, (APLU3264) uLeadBefore, L' ');
+                        lpwszOut[uLeadBefore] = WC_EOS;
+                        AppendLine (lpwszOut, FALSE, FALSE);
+                    } // End IF
+
+                    uLineLen = uCmpWid;                         // Get line length remaining to be output
+                    uOutLen = uQuadPW - (uCol + uLeadBefore);   // # chars available on line
+
+                    while (uOutLen < uLineLen)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            return NULL;
+
+                        // Because AppendLine works on single zero-terminated lines,
+                        //   we need to create one
+                        wch = lpwsz[uOutLen];                   // Save the ending char
+                        lpwsz[uOutLen] = WC_EOS;                // Terminate the line
+                        AppendLine (lpwsz, bLineCont, TRUE);    // Display the line
+                        lpwsz[uOutLen] = wch;                   // Restore the ending char
+
+                        lpwsz += uOutLen;                       // Skip over what we just output
+                        uLineLen  -= uOutLen;                   // Less how much we output
+                        uOutLen = uQuadPW - DEF_INDENT;         // Take into account the indent
+                        bLineCont = TRUE;                       // Lines from here on are continuations
+
+                        if (uOutLen < uLineLen)
+                            AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
+                    } // End WHILE
 
                     // Reset the line start
                     lpwszOut = lpw = *lplpwszOut;
 
                     // Fill the output area with all blanks
                     uCol = (UINT) aplLastDim - (UINT) (*lplpwszOut - lpwszOutStart);
-                    FillMemoryW (lpw, uCol, L' ');
+                    FillMemoryW (lpw, (APLU3264) uCol, L' ');
 
                     // Skip over leading indent
                     lpwszOut += DEF_INDENT;
@@ -2816,7 +2855,7 @@ LPAPLCHAR FormatArrSimple
                 } // End IF/ELSE
 
                 // Copy the next value
-                CopyMemoryW (lpwszOut, lpaplChar, uActLen);
+                CopyMemoryW (lpwszOut, lpaplChar, (APLU3264) uActLen);
                 lpwszOut += uActLen;    // Skip over the formatted string
                 uCol     += uActLen;    // ...
 
@@ -2870,7 +2909,7 @@ LPAPLCHAR FormatArrSimple
 
             // Fill the output area with all blanks
             uCol = (UINT) aplLastDim - (UINT) (*lplpwszOut - lpwszOutStart);
-            FillMemoryW (lpwszOut, uCol, L' ');
+            FillMemoryW (lpwszOut, (APLU3264) uCol, L' ');
         } // End IF
     } // End FOR
 

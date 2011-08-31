@@ -1097,6 +1097,8 @@ void SysFnDR_ConvertIntToChar
 
     // Convert an integer to APLCHARs
     IntFloatToAplchar (lpMemRes, &aplIntRht);
+
+    *lpbRet = TRUE;
 } // End SysFnDR_ConvertIntToChar
 
 

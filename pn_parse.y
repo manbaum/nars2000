@@ -1169,20 +1169,25 @@ void PN_NumCalc
                 // Handle negative sign
                 uAcc = bSigned = (lppnLocalVars->lpszNumAccum[uOff] EQ OVERBAR1);
 
-                // Loop through the digits
-                for (; bRet && uAcc < uLen; uAcc++)
-                {
-                    aplInteger = _imul64 (aplInteger, 10, &bRet);
-                    if (bRet)
-                        aplInteger = _iadd64 (aplInteger, lppnLocalVars->lpszNumAccum[uOff + uAcc] - '0', &bRet);
-                } // End FOR
-
+                // If the number is negative, ...
+                if (bSigned)
+                    // Loop through the digits
+                    for (; bRet && uAcc < uLen; uAcc++)
+                    {
+                        aplInteger = _imul64 (aplInteger, 10, &bRet);
+                        if (bRet)
+                            aplInteger = _isub64 (aplInteger, lppnLocalVars->lpszNumAccum[uOff + uAcc] - '0', &bRet);
+                    } // End FOR
+                else
+                    // Loop through the digits
+                    for (; bRet && uAcc < uLen; uAcc++)
+                    {
+                        aplInteger = _imul64 (aplInteger, 10, &bRet);
+                        if (bRet)
+                            aplInteger = _iadd64 (aplInteger, lppnLocalVars->lpszNumAccum[uOff + uAcc] - '0', &bRet);
+                    } // End FOR
                 if (bRet)
                 {
-                    if (bSigned)
-                        // can't overflow as there are more negative than positive numbers
-                        aplInteger = -aplInteger;
-
                     // Save in the result
                     lpYYArg->at.aplInteger = aplInteger;
 

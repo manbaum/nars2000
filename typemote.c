@@ -1619,6 +1619,7 @@ void TPT_BOOL2INT
 
 {
     lptkArg->tkData.tkInteger = BIT0 & lptkArg->tkData.tkInteger;
+    lptkArg->tkFlags.ImmType  = IMMTYPE_INT;
 } // TPT_BOOL2INT
 
 
@@ -1630,7 +1631,8 @@ void TPT_BOOL2FLT
     (LPTOKEN lptkArg)
 
 {
-    lptkArg->tkData.tkFloat = (APLFLOAT) lptkArg->tkData.tkInteger;
+    lptkArg->tkData.tkFloat  = (APLFLOAT) lptkArg->tkData.tkInteger;
+    lptkArg->tkFlags.ImmType = IMMTYPE_FLOAT;
 } // TPT_BOOL2FLT
 
 
@@ -1658,6 +1660,7 @@ void TPT_BOOL2RAT
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
     // Mark as an array (not immediate)
     lptkArg->tkFlags.TknType = TKT_VARARRAY;
+    lptkArg->tkFlags.ImmType = IMMTYPE_RAT;
 } // TPT_BOOL2RAT
 
 
@@ -1685,6 +1688,7 @@ void TPT_BOOL2VFP
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
     // Mark as an array (not immediate)
     lptkArg->tkFlags.TknType = TKT_VARARRAY;
+    lptkArg->tkFlags.ImmType = IMMTYPE_VFP;
 } // TPT_BOOL2VFP
 
 
@@ -1696,7 +1700,8 @@ void TPT_INT2FLT
     (LPTOKEN lptkArg)
 
 {
-    lptkArg->tkData.tkFloat = (APLFLOAT) lptkArg->tkData.tkInteger;
+    lptkArg->tkData.tkFloat  = (APLFLOAT) lptkArg->tkData.tkInteger;
+    lptkArg->tkFlags.ImmType = IMMTYPE_FLOAT;
 } // TPT_INT2FLT
 
 
@@ -1724,6 +1729,7 @@ void TPT_INT2RAT
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
     // Mark as an array
     lptkArg->tkFlags.TknType = TKT_VARARRAY;
+    lptkArg->tkFlags.ImmType = IMMTYPE_RAT;
 } // TPT_INT2RAT
 
 
@@ -1751,6 +1757,7 @@ void TPT_INT2VFP
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
     // Mark as an array
     lptkArg->tkFlags.TknType = TKT_VARARRAY;
+    lptkArg->tkFlags.ImmType = IMMTYPE_VFP;
 } // TPT_INT2VFP
 
 
@@ -1778,6 +1785,7 @@ void TPT_FLT2VFP
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
     // Mark as an array
     lptkArg->tkFlags.TknType = TKT_VARARRAY;
+    lptkArg->tkFlags.ImmType = IMMTYPE_VFP;
 } // TPT_FLT2VFP
 
 
@@ -1789,7 +1797,8 @@ void TPT_APA2FLT
     (LPTOKEN lptkArg)
 
 {
-    lptkArg->tkData.tkFloat = (APLFLOAT) lptkArg->tkData.tkInteger;
+    lptkArg->tkData.tkFloat  = (APLFLOAT) lptkArg->tkData.tkInteger;
+    lptkArg->tkFlags.ImmType = IMMTYPE_FLOAT;
 } // TPT_APA2FLT
 
 
@@ -1817,6 +1826,7 @@ void TPT_APA2RAT
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
     // Mark as an array
     lptkArg->tkFlags.TknType = TKT_VARARRAY;
+    lptkArg->tkFlags.ImmType = IMMTYPE_RAT;
 } // TPT_APA2RAT
 
 
@@ -1844,6 +1854,7 @@ void TPT_APA2VFP
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
     // Mark as an array
     lptkArg->tkFlags.TknType = TKT_VARARRAY;
+    lptkArg->tkFlags.ImmType = IMMTYPE_VFP;
 } // TPT_APA2VFP
 
 
@@ -1891,6 +1902,7 @@ void TPT_RAT2VFP
     // Check for errors
     if (lptkArg->tkData.tkGlbData EQ NULL)
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
+    lptkArg->tkFlags.ImmType = IMMTYPE_VFP;
 } // TPT_RAT2VFP
 
 

@@ -167,6 +167,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     LPTOKEN           lptkAxis;             // Ptr to axis token (may be NULL)
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
                       lpYYFcnStrLft;        // Ptr to left operand function strand
+    PL_YYSTYPE        YYFcnStrLft;          // Temporary left operand function strand for alternating scans
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
     LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
@@ -434,6 +435,10 @@ RESTART_ALLOC:
 ////////tkLftArg.tkData.tkGlbData  =            // To be filled in below
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 RESTART_EXCEPTION:
+        // Copy the current left operand function strand
+        //   to substitute into when we're doing alternating scans
+        YYFcnStrLft = *lpYYFcnStrLft;
+
         // Loop through the right arg calling the
         //   function strand between data, storing in the
         //   result
@@ -450,9 +455,10 @@ RESTART_EXCEPTION:
             //   each being successive reductions of leading elements in the
             //   vector under consideration.
 
-            // If this function is associative, speed it up
+            // If this function is associative or alternating, speed it up
             if ((lpPrimFlagsLft->AssocBool && IsSimpleBool (aplTypeRht))
-             || (lpPrimFlagsLft->AssocNumb && IsSimpleGlbNum (aplTypeRht)))
+             || (lpPrimFlagsLft->AssocNumb && IsSimpleGlbNum (aplTypeRht))
+             ||  lpPrimFlagsLft->Alter)
             {
                 // Calculate the first index in this vector
                 uRht = uDimRht + 0 * uDimHi;
@@ -517,6 +523,8 @@ RESTART_EXCEPTION:
                                     // Tell the header about it
                                     lpMemHdrRes->ArrType = aplTypeRes;
 
+                                    // Note that we don't go to RESTART_ALLOC because we know
+                                    //   that integer and float are the same size (8 bytes)
                                     goto RESTART_EXCEPTION;
                                 } // End IF/ELSE
 
@@ -615,6 +623,11 @@ RESTART_EXCEPTION:
                                               apaOffRht,    // APA offset (if needed)
                                               apaMulRht,    // APA multiplier (if needed)
                                              &tkRhtArg);    // Ptr to token in which to place the value
+                    // In case we blew up, check to see if we must blow up tkRhtArg
+                    //   (whose storage type is in aplTypeRht)
+                    if (aplTypeRes NE aplTypeRht)
+                        (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkRhtArg);
+
                     // Execute the left operand between the left & right args
                     if (lpPrimProtoLft)
                         // Note that we cast the function strand to LPTOKEN
@@ -622,12 +635,12 @@ RESTART_EXCEPTION:
                         //   function which takes a function token, and one to a
                         //   primitive operator which takes a function strand
                         lpYYRes = (*lpPrimProtoLft) (&tkLftArg,         // Ptr to left arg token
-                                            (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
+                                           (LPTOKEN) &YYFcnStrLft,      // Ptr to left operand function strand
                                                      &tkRhtArg,         // Ptr to right arg token
                                                       lptkAxis);        // Ptr to axis token (may be NULL)
                     else
                         lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
-                                                      lpYYFcnStrLft,    // Ptr to function strand
+                                                     &YYFcnStrLft,      // Ptr to function strand
                                                      &tkRhtArg,         // Ptr to right arg token
                                                       lptkAxis);        // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens
@@ -693,6 +706,8 @@ RESTART_EXCEPTION:
                                         // Tell the header about it
                                         lpMemHdrRes->ArrType = aplTypeRes;
 
+                                        // Note that we don't go to RESTART_ALLOC because we kn ow
+                                        //   that integer and float are the same size (8 bytes)
                                         goto RESTART_EXCEPTION;
                                     } // End IF/ELSE
 
@@ -773,6 +788,37 @@ RESTART_EXCEPTION:
                         defstop
                             break;
                     } // End SWITCH
+
+                    // If the left operand is alternating, ...
+                    if (lpPrimFlagsLft->Alter)
+                    {
+                        // Split cases based upon the current left operand
+                        switch (YYFcnStrLft.tkToken.tkData.tkChar)
+                        {
+                            case UTF16_BAR:
+                                YYFcnStrLft.tkToken.tkData.tkChar = UTF16_PLUS;
+
+                                break;
+
+                            case UTF16_PLUS:
+                                YYFcnStrLft.tkToken.tkData.tkChar = UTF16_BAR;
+
+                                break;
+
+                            case UTF16_COLONBAR:
+                                YYFcnStrLft.tkToken.tkData.tkChar = UTF16_TIMES;
+
+                                break;
+
+                            case UTF16_TIMES:
+                                YYFcnStrLft.tkToken.tkData.tkChar = UTF16_COLONBAR;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End IF
                 } // End FOR
 
                 // Free the left arg token
@@ -914,6 +960,8 @@ RESTART_EXCEPTION:
                                     // Tell the header about it
                                     lpMemHdrRes->ArrType = aplTypeRes;
 
+                                    // Note that we don't go to RESTART_ALLOC because we know
+                                    //   that integer and float are the same size (8 bytes)
                                     goto RESTART_EXCEPTION;
                                 } // End IF/ELSE
 

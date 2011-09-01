@@ -1407,7 +1407,7 @@ void UnlocalizeSTEs
 
 {
     HGLOBAL      hGlbData;          // STE global memory handle
-    LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     UINT         numSymEntries,     // # LPSYMENTRYs localized
                  numSym;            // Loop counter
     LPSYMENTRY   lpSymEntryNxt,     // Ptr to next localized LPSYMENTRY on the SIS
@@ -1501,6 +1501,17 @@ void UnlocalizeSTEs
 
             // Restore the previous STE
             *lpSymEntryCur = *lpSymEntryNxt;
+
+            // If this var is []FPC, set the VFP constants and PTD vars
+            if (lpSymEntryCur->stFlags.ObjName EQ OBJNAME_SYS
+             && IsThisSysName (lpSymEntryCur, WS_UTF16_QUAD L"fpc"))
+            {
+                // Initialize the precision-specific VFP constants
+                InitVfpConstants (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FPC]->stData.stInteger);
+
+                // Initialize PerTabData vars
+                InitPTDVars (lpMemPTD);
+            } // End IF
         } // End FOR/IF
 
         // Loop through the entries on the FOR/FORLCL stmt stack

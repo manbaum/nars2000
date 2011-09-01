@@ -249,7 +249,7 @@ void InitVfpConstants
     (APLUINT uDefPrec)          // Default VFP precision
 
 {
-////APLUINT uRes;
+////WCHAR   wszTemp[1024];
     APLVFP  mpfTmp1 = {0},
             mpfTmp2 = {0},
             mpfTmp3;

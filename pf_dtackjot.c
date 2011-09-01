@@ -2775,8 +2775,6 @@ LPAPLCHAR FormatArrSimple
                 {
                     UBOOL   bLineCont = FALSE;  // TRUE iff this line is a continuation
                     WCHAR   wch;                // The replaced WCHAR
-                    LPWCHAR lpwsz = lpaplChar;  // Ptr to input stream
-                    APLDIM  uLineLen;           // Remaining line length to output
                     APLUINT uOutLen;            // Output length for this line
 
                     // Ensure properly terminated
@@ -2799,10 +2797,9 @@ LPAPLCHAR FormatArrSimple
                         AppendLine (lpwszOut, FALSE, FALSE);
                     } // End IF
 
-                    uLineLen = uCmpWid;                         // Get line length remaining to be output
                     uOutLen = uQuadPW - (uCol + uLeadBefore);   // # chars available on line
 
-                    while (uOutLen < uLineLen)
+                    while (uOutLen < uActLen)
                     {
                         // Check for Ctrl-Break
                         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -2810,17 +2807,18 @@ LPAPLCHAR FormatArrSimple
 
                         // Because AppendLine works on single zero-terminated lines,
                         //   we need to create one
-                        wch = lpwsz[uOutLen];                   // Save the ending char
-                        lpwsz[uOutLen] = WC_EOS;                // Terminate the line
-                        AppendLine (lpwsz, bLineCont, TRUE);    // Display the line
-                        lpwsz[uOutLen] = wch;                   // Restore the ending char
+                        wch = lpaplChar[uOutLen];                   // Save the ending char
+                        lpaplChar[uOutLen] = WC_EOS;                // Terminate the line
+                        AppendLine (lpaplChar, bLineCont, TRUE);    // Display the line
+                        lpaplChar[uOutLen] = wch;                   // Restore the ending char
 
-                        lpwsz += uOutLen;                       // Skip over what we just output
-                        uLineLen  -= uOutLen;                   // Less how much we output
-                        uOutLen = uQuadPW - DEF_INDENT;         // Take into account the indent
-                        bLineCont = TRUE;                       // Lines from here on are continuations
+                        lpaplChar += uOutLen;                       // Skip over what we just output
+                        uActLen   -= uOutLen;                       // Less how much we output
+                        uCmpWid   -= uOutLen;                       // ...
+                        uOutLen = uQuadPW - DEF_INDENT;             // Take into account the indent
+                        bLineCont = TRUE;                           // Lines from here on are continuations
 
-                        if (uOutLen < uLineLen)
+                        if (uOutLen < uActLen)
                             AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
                     } // End WHILE
 

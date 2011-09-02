@@ -1,7 +1,24 @@
 Version 0.0.3.1 consists of the following Builds:
 
 
-Build #869 -- Version 0.0.3.0
+Build #870 -- Version 0.0.3.1
+-----------------------------
+
+* Miscellaneous Changes
+
+Directory trunk:
+
+DISPLAY.C:
+  Improve comments.
+
+MPFNS.C:
+  Include debugging stmts in <mpf_mod>.
+
+PF_STILE.C:
+  Improve comment.
+
+
+Build #869 -- Version 0.0.3.1
 -----------------------------
 
 * Fix Bug:  When Unlocalizing []FPC, set The FPC-Dependent Vars

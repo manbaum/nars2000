@@ -1315,7 +1315,7 @@ APLUINT mpf_get_ua
 
 
 //***************************************************************************
-//  &mpf_mod
+//  $mpf_mod
 //
 //  Calculate aplLft % aplRht
 //***************************************************************************
@@ -1327,14 +1327,36 @@ void mpf_mod
 
 {
     APLVFP aplTmp = {0};
+#ifdef DEBUG
+    char szTemp1[1024],
+         szTemp2[1024];
+    int  expptr1,
+         expptr2;
+#endif
 
     // Initialize the temp
     mpf_init (&aplTmp);
 
+#ifdef DEBUG
+    mpf_get_str (szTemp1, &expptr1, 10, 200, aplLft);
+    mpf_get_str (szTemp2, &expptr2, 10, 200, aplRht);
+#endif
     mpf_div   (&aplTmp,  aplLft,  aplRht);
+#ifdef DEBUG
+    mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
+#endif
     mpf_floor (&aplTmp, &aplTmp);
+#ifdef DEBUG
+    mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
+#endif
     mpf_mul   (&aplTmp,  aplRht, &aplTmp);
+#ifdef DEBUG
+    mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
+#endif
     mpf_sub   (dest   ,  aplLft, &aplTmp);
+#ifdef DEBUG
+    mpf_get_str (szTemp1, &expptr1, 10, 200, dest);
+#endif
 
     // We no longer need this storage
     Myf_clear (&aplTmp);

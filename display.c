@@ -728,13 +728,13 @@ LPAPLCHAR FormatImmed
     {
         case IMMTYPE_BOOL:
             lpaplChar =
-              FormatAplint (lpaplChar,                          // Ptr to outoput save area
+              FormatAplint (lpaplChar,                          // Ptr to output save area
                             BIT0 & *(LPAPLBOOL) lpaplLongest);  // The value to format
             break;
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplint (lpaplChar,                          // Ptr to outoput save area
+              FormatAplint (lpaplChar,                          // Ptr to output save area
                             *(LPAPLINT) lpaplLongest);          // The value to format
             break;
 
@@ -1701,7 +1701,7 @@ LPAPLCHAR FormatAplVfp
                            UTF16_OVERBAR,           // Char to use as overbar
                            FALSE,                   // TRUE iff nDigits is # fractional digits
                            FALSE,                   // TRUE iff we're to substitute text for infinity
-                           FALSE);                  // TRUE iff we're to precede the display with (FPC)
+                           FALSE);                  // TRUE iff we're to precede the display with (FPCnnn)
 } // End FormatAplVfp
 
 
@@ -1721,7 +1721,7 @@ LPAPLCHAR FormatAplVfpFC
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
      UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
-     UBOOL      bPrecFPC)           // TRUE iff we're to precede the display with (FPC)
+     UBOOL      bPrecFPC)           // TRUE iff we're to precede the display with (FPCnnn)
 
 {
     mp_exp_t  expptr;               // Ptr to exponent shift
@@ -1733,14 +1733,14 @@ LPAPLCHAR FormatAplVfpFC
               iUnderflow;           // # trailing underflow digits
     LPCHAR    lpRawFmt;             // Ptr to raw formatted #
 
-    // If we're to precede the display with (FPC), ...
+    // If we're to precede the display with (FPCnnn), ...
     if (bPrecFPC)
     {
         // Append leading marker
         *lpaplChar++ = L'(';
 
         lpaplChar =
-          FormatAplint (lpaplChar,                  // Ptr to outoput save area
+          FormatAplint (lpaplChar,                  // Ptr to output save area
                         mpf_get_prec (&aplVfp));    // The value to format
         // Append trailing marker overwriting the trailing space
         lpaplChar[-1] = L')';
@@ -1752,7 +1752,7 @@ LPAPLCHAR FormatAplVfpFC
     mpf_get_str (lpRawFmt,
                 &expptr,
                  10,
-                abs ((UINT) nDigits),
+                 abs ((UINT) nDigits),
                 &aplVfp);
     // Get the char length
     iLen = lstrlen (lpRawFmt);

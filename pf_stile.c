@@ -563,7 +563,7 @@ APLRAT PrimFnDydStileRisRvR
 
 
 //***************************************************************************
-//  $PrimFnDydStile VisVvV
+//  $PrimFnDydStileVisVvV
 //
 //  Primitive scalar function dyadic Stile:  V {is} V fn V
 //***************************************************************************

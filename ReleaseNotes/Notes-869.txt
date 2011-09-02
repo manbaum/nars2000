@@ -1,4 +1,4 @@
-Build #869 -- Version 0.0.3.0
+Build #869 -- Version 0.0.3.1
 -----------------------------
 
 * Fix Bug:  When Unlocalizing []FPC, set The FPC-Dependent Vars

@@ -134,8 +134,10 @@ void ShowHideChildWindows
         // Set the focus to the active window
         hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
         if (hWndAct)
+        {
             SetFocus (hWndAct);
-        else
+            SendMessageW ((HWND) GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC), WM_SETCURSOR, 0, 0);
+        } else
             DbgStop ();
     } else
     // We're hiding, ...

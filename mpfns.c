@@ -719,8 +719,6 @@ APLINT mpq_get_sa
     UBOOL        bRet;
     APLUINTUNION dwSplit;
 
-    Assert (GMP_LIMB_BITS EQ 32);
-
     // Check the denominator and range
     bRet = (IsMpz1 (mpq_denref (src))
          && 0 <= mpz_cmp (mpq_numref (src), &mpzMinInt)
@@ -1183,8 +1181,6 @@ APLINT mpf_get_sa
 ////WCHAR wszTemp[1024];
 #endif
 
-    Assert (GMP_LIMB_BITS EQ 32);
-
     // Check the fractional part and range
     bRet = (mpf_integer_p (src) NE 0
          && 0 <= mpf_cmp (src, &mpfMinInt)
@@ -1286,8 +1282,6 @@ APLUINT mpf_get_ua
 {
     APLUINTUNION dwSplit;
 
-    Assert (GMP_LIMB_BITS EQ 32);
-
     // Check the fractional part and range
     *lpbRet = (mpf_integer_p (src) NE 0
             && 0 <= mpf_cmp (src, &mpfMinInt)
@@ -1321,9 +1315,29 @@ APLUINT mpf_get_ua
 //***************************************************************************
 
 void mpf_mod
-    (mpf_ptr dest,
-     mpf_ptr aplLft,
-     mpf_ptr aplRht)
+    (mpf_ptr dest,          // Destination
+     mpf_ptr aplOpr,        // Operand
+     mpf_ptr aplMod)        // Modulus
+
+{
+    // Due to precision limitations, the result of <mpf_mod_sub>
+    //   might not be less than the modulus, so we iterate until it is
+    mpf_mod_sub (dest, aplOpr, aplMod);
+    while (mpf_cmp (dest, aplMod) > 0)
+        mpf_mod_sub (dest, dest  , aplMod);
+} // End mpf_mod
+
+
+//***************************************************************************
+//  $mpf_mod_sub
+//
+//  Calculate aplLft % aplRht
+//***************************************************************************
+
+void mpf_mod_sub
+    (mpf_ptr dest,          // Destination
+     mpf_ptr aplOpr,        // Operand
+     mpf_ptr aplMod)        // Modulus
 
 {
     APLVFP aplTmp = {0};
@@ -1338,10 +1352,10 @@ void mpf_mod
     mpf_init (&aplTmp);
 
 #ifdef DEBUG
-    mpf_get_str (szTemp1, &expptr1, 10, 200, aplLft);
-    mpf_get_str (szTemp2, &expptr2, 10, 200, aplRht);
+    mpf_get_str (szTemp1, &expptr1, 10, 200, aplOpr);
+    mpf_get_str (szTemp2, &expptr2, 10, 200, aplMod);
 #endif
-    mpf_div   (&aplTmp,  aplLft,  aplRht);
+    mpf_div   (&aplTmp,  aplOpr,  aplMod);
 #ifdef DEBUG
     mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
 #endif
@@ -1349,18 +1363,18 @@ void mpf_mod
 #ifdef DEBUG
     mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
 #endif
-    mpf_mul   (&aplTmp,  aplRht, &aplTmp);
+    mpf_mul   (&aplTmp,  aplMod, &aplTmp);
 #ifdef DEBUG
     mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
 #endif
-    mpf_sub   (dest   ,  aplLft, &aplTmp);
+    mpf_sub   (dest   ,  aplOpr, &aplTmp);
 #ifdef DEBUG
     mpf_get_str (szTemp1, &expptr1, 10, 200, dest);
 #endif
 
     // We no longer need this storage
     Myf_clear (&aplTmp);
-} // End mpf_mod
+} // End mpf_mod_sub
 
 
 //***************************************************************************

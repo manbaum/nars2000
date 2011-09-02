@@ -73,10 +73,6 @@ extern PRIMSPEC PrimSpecUpStile;
 #define PrimOpSlashBar_EM_YY    PrimOpSlash_EM_YY
 #define PrimOpSlopeBar_EM_YY    PrimOpSlope_EM_YY
 
-// These vars are needed by the InitxxxConstants routines
-mp_bitcnt_t mpfPrec;
-mpfr_prec_t mpfrPrec;
-
 // This var is needed by the GSL routines.
 double __infinity;
 
@@ -153,13 +149,9 @@ void InitGlbNumConstants
     // Use our own memory management functions for MPIR/MPFR
     mp_set_memory_functions (mp_alloc, mp_realloc, mp_free);
 
-    // Get the default precisions
-    mpfPrec  = mpf_get_default_prec  ();
-    mpfrPrec = mpfr_get_default_prec ();
-
-    // Set the default precision for the following VFP constants
-    mpf_set_default_prec (DEF_QUADFPC_CWS);
-    mpfr_set_default_prec (DEF_QUADFPC_CWS);
+    // Set the default precision for the following 64-bit VFP constants
+    mpf_set_default_prec (128);
+    mpfr_set_default_prec (128);
 
     // Initialize the MPI, RAT, and VFP constants
     mpz_init_set_str (&mpzMinInt  , "-9223372036854775808", 10);

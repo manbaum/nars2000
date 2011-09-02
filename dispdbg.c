@@ -40,6 +40,7 @@ extern UINT auLinNumHEAPALLOC[MAXOBJ];
 extern LPCHAR lpaFileNameGLBALLOC[MAXOBJ];
 extern LPCHAR lpaFileNameSEMAPHORE[MAXOBJ];
 
+#if FLINTAVL == 1
 /* The array of mpz's used by the F_mpz type */
 extern __mpz_struct * fmpz_arr;
 
@@ -47,6 +48,7 @@ extern __mpz_struct * fmpz_arr;
 extern ULONG * fmpz_unused_arr;
 
 extern ULONG fmpz_num_unused;
+#endif
 #endif
 
 
@@ -841,6 +843,7 @@ void DisplayHeap
          || hGlb EQ mpfHalf._mp_d
            )
             continue;
+#if FLINTAVL == 1
         // Loop through FLINT's cache of fmpzs
         for (j = 0; j < (int) fmpz_num_unused; j++)
         if (hGlb EQ fmpz_arr[fmpz_unused_arr[j]]._mp_d)
@@ -848,7 +851,7 @@ void DisplayHeap
         // If we found a match, ...
         if (j < (int) fmpz_num_unused)
             continue;
-
+#endif
         wsprintfW (wszTemp,
                    L"hGlb=%p (%S#%d)",
                    hGlb,

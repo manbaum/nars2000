@@ -2787,8 +2787,11 @@ LPAPLCHAR FormatArrSimple
                     // If there's something on the line, ...
                     if (uCol)
                         // Output the line
-                        AppendLine (lpwszOutStart, FALSE, FALSE);
+                        AppendLine (lpwszOutStart, FALSE, uQuadPW <= (uLeadBefore + uCol));
 
+                    if (uQuadPW <= (uLeadBefore + uCol))
+                        uCol = DEF_INDENT - uLeadBefore;
+                    else
                     // Output the leading blanks
                     if (uLeadBefore)
                     {
@@ -3822,7 +3825,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                   aplCharOverbar,           // Char to use as overbar
                                                   TRUE,                     // TRUE iff nDigits is # fractional digits
                                                   FALSE,                    // TRUE iff we're to substitute text for infinity
-                                                  FALSE);                   // TRUE iff we're to precede the display with (FPC)
+                                                  FALSE);                   // TRUE iff we're to precede the display with (FPCnnn)
                                 break;
 
                             defstop

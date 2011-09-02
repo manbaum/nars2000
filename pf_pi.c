@@ -568,7 +568,7 @@ APLRAT PrimFnDydPiRisRvR
     APLRAT        mpqRes = {0};         // The result
     APLINT        aplIntegerLft;        // Left arg as an integer
     UBOOL         bRet;                 // TRUE iff the result is valid
-    APLMPI        aplMPIRht,            // Right arg as MP integer
+    APLMPI        aplMPIRht = {0},      // Right arg as MP integer
                   aplMPIRes;            // Result    ...
 
     // Get ptr to PerTabData global memory
@@ -582,7 +582,7 @@ APLRAT PrimFnDydPiRisRvR
 
     // Check the (singleton) left arg
     if (!mpq_integer_p (&aplRatLft)
-     || mpq_cmp_ui (&aplRatLft,                0, 1) <= 0
+/////|| mpq_cmp_ui (&aplRatLft,                0, 1) <  0
      || mpq_cmp_ui (&aplRatLft, NUMTHEORY_LENGTH, 1) >= 0)
         goto DOMAIN_EXIT;
 
@@ -591,7 +591,7 @@ APLRAT PrimFnDydPiRisRvR
         goto DOMAIN_EXIT;
 
     // Copy the right arg as an integer
-    aplMPIRht = *mpq_numref (&aplRatRht);
+    mpz_init_set (&aplMPIRht, mpq_numref (&aplRatRht));
 
     // Get the left arg as an integer
     //  (Ignore the value in bRet as we know it's an integer)
@@ -641,16 +641,19 @@ APLRAT PrimFnDydPiRisRvR
             break;
     } // End SWITCH
 
-    // Initialize the result
+    // Initialize the result to 0/1
     mpq_init (&mpqRes);
 
     // Copy the return value to the numerator of the result
     mpz_set (mpq_numref (&mpqRes), &aplMPIRes);
 
-    return mpqRes;
+    goto NORMAL_EXIT;
 
 DOMAIN_EXIT:
     RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+NORMAL_EXIT:
+    Myz_clear (&aplMPIRes);
+    Myz_clear (&aplMPIRht);
 
     return mpqRes;
 } // End PrimFnDydPiRisRvR
@@ -662,6 +665,12 @@ DOMAIN_EXIT:
 //  Primitive scalar function dyadic Pi:  V {is} V fn V
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydPiVisVvV"
+#else
+#define APPEND_NAME
+#endif
+
 APLVFP PrimFnDydPiVisVvV
     (APLVFP     aplVfpLft,
      APLVFP     aplVfpRht,
@@ -669,11 +678,38 @@ APLVFP PrimFnDydPiVisVvV
 
 {
     APLVFP mpfRes = {0};
+    APLRAT mpqLft = {0},
+           mpqRht = {0},
+           mpqRes;
 
-    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+    // Convert the VFP to a RAT
+    mpq_init_set_f (&mpqLft, &aplVfpLft);
+    mpq_init_set_f (&mpqRht, &aplVfpRht);
 
-    return mpfRes;
+    __try
+    {
+        // Call the RvR code
+        mpqRes = PrimFnDydPiRisRvR (mpqLft, mpqRht, lpPrimSpec);
+    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPiVisVvV"))
+    {
+#ifdef DEBUG
+        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+        // Display message for unhandled exception
+        DisplayException ();
+    } // End __try/__except
+
+    // Convert the RAT to a VFP
+    mpf_init_set_q (&mpfRes, &mpqRes);
+
+    // We no longer need this storage
+    Myq_clear (&mpqRes);
+    Myq_clear (&mpqRht);
+    Myq_clear (&mpqLft);
+
+    return mpfRes;      // To keep the compiler happy
 } // End PrimFnDydPiVisVvV
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1055,7 +1091,7 @@ void ProcessPrime
 
         case NUMTHEORY_DIVSUM:
             // If this prime divides N, ...
-            if (uPrimeCnt++)
+            if (uPrimeCnt)
             {
                 APLMPI mpzTmp2 = {0};
 
@@ -1066,7 +1102,10 @@ void ProcessPrime
                 mpz_sub_ui (&mpzTmp2, &aplMPIRht, 1);
 
                 // Tmp = exp (p, uPrimeCnt + 1)
-                mpz_pow_ui (&mpzTmp, &aplMPIRht, uPrimeCnt);
+                mpz_pow_ui (&mpzTmp, &aplMPIRht, uPrimeCnt + 1);
+
+                // Tmp = Tmp - 1
+                mpz_sub_ui (&mpzTmp, &mpzTmp, 1);
 
                 // Tmp = Tmp / (p - 1)
                 mpz_div    (&mpzTmp, &mpzTmp, &mpzTmp2);

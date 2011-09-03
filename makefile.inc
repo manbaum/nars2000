@@ -101,8 +101,10 @@ MPIR_INC = $(MPIR)build.vc10\lib\x64\$(BUILD_DIR)^\
 !endif
 
 MPFR_INC = $(MPFR)
-FLINT_INC=$(FLINT)include$(WIN)^\
-LIB_DIR=$(NARSROOT)mpir\OldLibs^\
+MPIR_INC = $(NARSROOT)mpir^\
+MPFR_INC = $(MPIR_INC)
+FLINT_INC= $(FLINT)include$(WIN)^\
+LIB_DIR  = $(NARSROOT)mpir\OldLibs^\
 
 !if [if not exist $(MPIR_INC)*.h  exit 1]
 !error Incorrect value for MPIR_INC=$(MPIR_INC)
@@ -247,7 +249,8 @@ INITIAL_EXE:
         @$(RC) $(RCFLAGS) $(RCDEFINES) -r -fo$@ %s
 
 {$(MS)}.c{$(O)}.obj:
-        @Set INCLUDE=$(MS);$(MPIR_INC);$(MSVC)include;$(SDK)include;.;$(O)
+####    @Set INCLUDE=$(MS);$(MPIR_INC);$(MSVC)include;$(SDK)include;.;$(O)
+        @Set INCLUDE=$(I98);$(O);$(NARSROOT)mpfrmpir\static\mpfr
         @if exist $@ del $@
 !if "$(WIN)" == "64"
         @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32 /D WIN64 /D __x86_64__ /D "UNICODE" %s

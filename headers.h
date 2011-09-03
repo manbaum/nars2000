@@ -29,6 +29,7 @@
 // Disable stack checking
 #pragma check_stack(off)
 
+#include "mpir.h"
 #include "mpfr.h"
 #include "macros.h"
 #include "enums.h"

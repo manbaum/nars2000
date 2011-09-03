@@ -1042,7 +1042,7 @@ static APLCHAR MonHeader[] =
   L"Z" $IS MFON_MonDomino L" R";
 
 static APLCHAR MonLine1[] =
-  L"Z" $IS L"(" $REVERSE $RHO L"R)" $RHO L"(" $TRANSPOSE L"Z)" $DOMINO L"(" $TRANSPOSE L"Z)+." $TIMES L"Z" $IS $COMMABAR L"R";
+  L"Z" $IS L"(" $REVERSE $RHO L"R)" $RHO L"(" $DOMINO L"(" $TRANSPOSE L"Z)+." $TIMES L"Z)+." $TIMES $TRANSPOSE L"Z" $IS $COMMABAR L"R";
 
 static LPAPLCHAR MonBody[] =
 {MonLine1,

@@ -2172,10 +2172,12 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'c'\n\n"
                                          L"Unicode:  0x2229 or 8745"},
         {UTF16_LEFTSHOEUNDERBAR   , {0}, L"LeftShoeUnderbar",
+                                         L"Subset:             L" WS_UTF16_LEFTSHOEUNDERBAR L"R\n"
                                          L"Multiset (Subset):  L" WS_UTF16_LEFTSHOEUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'Z'\n\n"
                                          L"Unicode:  0x2286 or 8838"},
         {UTF16_RIGHTSHOEUNDERBAR  , {0}, L"RightShoeUnderbar",
+                                         L"Superset:             L" WS_UTF16_RIGHTSHOEUNDERBAR L"R\n"
                                          L"Multiset (Superset):  L" WS_UTF16_RIGHTSHOEUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'X'\n\n"
                                          L"Unicode:  0x2287 or 8839"},

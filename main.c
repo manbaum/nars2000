@@ -4178,6 +4178,22 @@ int PASCAL WinMain
     MSG     Msg;                    // Message for GetMessageW loop
     UINT    uCnt;                   // Loop counter
     INITCOMMONCONTROLSEX icex;      // Common control class struc
+    OSVERSIONINFO osvi = {0};       // Version info
+
+    // Ensure that the system meets our minimum requirements (WinXP = 5.1)
+    osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
+    GetVersionEx (&osvi);
+
+    if (!((osvi.dwMajorVersion > 5)
+      || ((osvi.dwMajorVersion == 5)
+       && (osvi.dwMinorVersion >= 1))))
+    {
+        MessageBoxW (NULL,
+                     L"Sorry, but the minimum OS version for " WS_APPNAME L" is WinXP.",
+                     lpwszAppName,
+                     MB_OK | MB_ICONERROR);
+        return -1;
+    } // End IF
 
     // Initialize common controls.
     icex.dwSize = sizeof (INITCOMMONCONTROLSEX);

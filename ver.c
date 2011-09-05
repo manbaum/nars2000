@@ -69,7 +69,7 @@ void LclFileVersionStrW
 
     // Read in the file version info
     if (!GetFileVersionInfoW (lpwszFileName, dwVerHandle, dwVerSize, lpwVer))
-        goto FREE;
+        goto ERROR_EXIT1;
 
     // Get the translation string
     // Note that we must put the VarFileInfo string into read-write
@@ -79,7 +79,7 @@ void LclFileVersionStrW
     // so it can lstrcmpi against various possible cases).
 ////if (!VerQueryValue (lpVer, "\\VarFileInfo\\Translation", &lpBuf, &cb))
     if (!VerQueryValueW (lpwVer, wszVarFileInfo, &lpwBuf, &cb))
-        goto FREE;
+        goto ERROR_EXIT2;
 
     // Extract the translation value (with the swapped words)
     dwTrans = *(DWORD FAR *)lpwBuf;
@@ -87,11 +87,35 @@ void LclFileVersionStrW
                WS_SLOPE L"StringFileInfo" WS_SLOPE L"%08lX" WS_SLOPE L"FileVersion",
                MAKELONG (HIWORD (dwTrans), LOWORD (dwTrans)));
     if (!VerQueryValueW (lpwVer, wszTemp, &lpwBuf, &cb))
-        goto FREE;
+        goto ERROR_EXIT3;
 
     // Copy to local storage as we're about to free the memory
     lstrcpyW (wszFileVer, lpwBuf);
-FREE:
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT1:
+#ifdef DEBUG
+    MB ("Error from GetFileVersionInfoW");
+#endif
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT2:
+#ifdef DEBUG
+    MB ("Error from VerQueryvalueW # 1");
+#endif
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT3:
+#ifdef DEBUG
+    MB ("Error from VerQueryvalueW # 2");
+#endif
+
+    goto NORMAL_EXIT;
+
+NORMAL_EXIT:
     LocalFree (hLoc);       // Free the local memory
 } // End LclFileVersionStrW
 

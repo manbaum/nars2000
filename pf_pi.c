@@ -203,7 +203,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     APLSTYPE          aplTypeRht,       // Right arg storage type
                       aplTypeRes;       // Result ...
     APLNELM           aplNELMRht,       // Right arg NELM
-                      aplNELMRes;       // Result    ...
+                      aplNELMRes = 0;   // Result    ...
     APLRANK           aplRankRht;       // Right arg rank
     HGLOBAL           hGlbRht,          // Right arg global memory handle
                       hGlbRes = NULL;   // Result global memory handle
@@ -327,7 +327,12 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
       PrimFnPiCommon (lpMemTmp,             // Ptr to result global memory
                       NUMTHEORY_FACTOR,     // Function index
                      &aplMPIRht,            // Value to factor
-                      lpbCtrlBreak);        // Ptr to Ctrl-Break flag
+                      lpbCtrlBreak,         // Ptr to Ctrl-Break flag
+                     &bRet);                // Ptr to TRUE iff the result is valid
+    // Check for error
+    if (!bRet)
+        goto NONCE_EXIT;
+
     // Get the actual NELM
     aplNELMRes = mpz_get_sa (&aplMPIRes, &bRet);
 
@@ -402,6 +407,11 @@ RIGHT_LENGTH_EXIT:
 
 RIGHT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkRhtArg);
     goto ERROR_EXIT;
 
@@ -609,7 +619,11 @@ APLRAT PrimFnDydPiRisRvR
               PrimFnPiCommon (NULL,             // Ptr to result global memory (may be NULL)
                               aplIntegerLft,    // Function index
                              &aplMPIRht,        // Value to factor
-                              lpbCtrlBreak);    // Ptr to Ctrl-Break flag
+                              lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                             &bRet);            // Ptr to TRUE iff the result is valid
+            // Check for error
+            if (!bRet)
+                goto NONCE_EXIT;
             break;
 
         case NUMTHEORY_ISPRIME:         // TRUE iff the given # is prime
@@ -646,6 +660,11 @@ APLRAT PrimFnDydPiRisRvR
 
     // Copy the return value to the numerator of the result
     mpz_set (mpq_numref (&mpqRes), &aplMPIRes);
+
+    goto NORMAL_EXIT;
+
+NONCE_EXIT:
+    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     goto NORMAL_EXIT;
 
@@ -728,7 +747,8 @@ APLMPI PrimFnPiCommon
     (LPAPLMPI  lpMemRes,            // Ptr to result global memory (may be NULL)
      APLUINT   uFcnIndex,           // Function index (see enum NUMTHEORY)
      LPAPLMPI  mpzRht,              // Ptr to value to factor
-     LPUBOOL   lpbCtrlBreak)        // Ptr to Ctrl-Break flag
+     LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
+     LPUBOOL   lpbRet)              // Ptr to TRUE iff the result is valid
 
 {
     APLUINT      uRes,              // Loop counter
@@ -818,7 +838,11 @@ APLMPI PrimFnPiCommon
 
         // Try to factor aplIntegerRht using various methods
         Myz_clear (&aplPrime);
-        aplPrime = PrimeFactor (*mpzRht, &procPrime);
+        aplPrime = PrimeFactor (*mpzRht, &procPrime, lpbRet);
+
+        // Check for error
+        if (!*lpbRet)
+            goto NONCE_EXIT;
 
         // If it's divisible, ...
         if (mpz_divisible_p (mpzRht, &aplPrime))
@@ -887,6 +911,7 @@ APLMPI PrimFnPiCommon
 
     goto NORMAL_EXIT;
 
+NONCE_EXIT:
 ERROR_EXIT:
     mpz_set_sa (&aplPrime, -2);
 NORMAL_EXIT:
@@ -908,7 +933,8 @@ NORMAL_EXIT:
 
 APLMPI PrimeFactor
     (APLMPI         mpzNumber,          // The number to factor
-     LPPROCESSPRIME lpProcPrime)        // Ptr to PROCESSPRIME struc
+     LPPROCESSPRIME lpProcPrime,        // Ptr to PROCESSPRIME struc
+     LPUBOOL        lpbRet)             // Ptr to TRUE iff the result is valid
 
 {
     APLMPI  mpzFactor1 = {0},           // Factor #1
@@ -940,7 +966,7 @@ APLMPI PrimeFactor
 
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
-                goto ERROR_EXIT;
+                goto BREAK_EXIT;
 
             switch (uVal)
             {
@@ -953,7 +979,11 @@ APLMPI PrimeFactor
                         dprintfWL0 (L"MyRho:     %S", mpz_get_str (szTemp1, 10, &mpzFactor1));
 #endif
                         Myz_clear (&mpzRes);
-                        mpzRes = PrimeFactor (mpzFactor1, lpProcPrime);
+                        mpzRes = PrimeFactor (mpzFactor1, lpProcPrime, lpbRet);
+
+                        // Check for error
+                        if (!*lpbRet)
+                            goto NONCE_EXIT;
 
                         goto NORMAL_EXIT;
                     } else
@@ -964,7 +994,7 @@ APLMPI PrimeFactor
 #endif
                     // Check for Ctrl-Break
                     if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
-                        goto ERROR_EXIT;
+                        goto BREAK_EXIT;
 
                     break;
 
@@ -985,7 +1015,11 @@ APLMPI PrimeFactor
                     mpz_set_sa (&mpzFactor1, uVal);
 
                     Myz_clear (&mpzRes);
-                    mpzRes = PrimeFactor (mpzFactor1, lpProcPrime);
+                    mpzRes = PrimeFactor (mpzFactor1, lpProcPrime, lpbRet);
+
+                    // Check for error
+                    if (!*lpbRet)
+                        goto NONCE_EXIT;
 
                     goto NORMAL_EXIT;
             } // End SWITCH
@@ -1000,7 +1034,7 @@ APLMPI PrimeFactor
 
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
-            goto ERROR_EXIT;
+            goto BREAK_EXIT;
 
         if (uVal)
         {
@@ -1014,7 +1048,11 @@ APLMPI PrimeFactor
                 Myz_clear (&mpzRes);
 
                 // Try again with the smaller # so as to try to return factors in ascending order
-                mpzRes = PrimeFactor ((mpz_cmp (&mpzFactor1, &mpzFactor2) < 0) ? mpzFactor1 : mpzFactor2, lpProcPrime);
+                mpzRes = PrimeFactor ((mpz_cmp (&mpzFactor1, &mpzFactor2) < 0) ? mpzFactor1 : mpzFactor2, lpProcPrime, lpbRet);
+
+                // Check for error
+                if (!*lpbRet)
+                    goto NONCE_EXIT;
             } // End IF/ELSE/...
 
             goto NORMAL_EXIT;
@@ -1024,12 +1062,17 @@ APLMPI PrimeFactor
     if (MyFactor_mpqs (&mpzRes))
         goto NORMAL_EXIT;
 #endif
+    if (mpz_likely_prime_p (&mpzRes, GetMemPTD ()->randState, 0))
+    {
 #ifdef DEBUG
-    dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));
+        dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));
 #endif
-    goto NORMAL_EXIT;
+        goto NORMAL_EXIT;
+    } // End IF
 
-ERROR_EXIT:
+    *lpbRet = FALSE;
+NONCE_EXIT:
+BREAK_EXIT:
 NORMAL_EXIT:
     Myz_clear (&mpzFactor1);
     Myz_clear (&mpzFactor2);
@@ -1237,7 +1280,7 @@ APLMPI PrimFnPiNthPrime
     //   http://oeis.org/A006988/
     mpz_init_set_ui (&mpzRes, 10000);               // 1E4
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 104729);
 
@@ -1247,7 +1290,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E5
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 1299709);
 
@@ -1257,7 +1300,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E6
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 15485863);
 
@@ -1267,7 +1310,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E7
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 179424673);
 
@@ -1277,7 +1320,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E8
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 2038074743);
 
@@ -1287,7 +1330,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E9
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 22801763489);
 
@@ -1297,7 +1340,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E10
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 252097800623);
 
@@ -1307,7 +1350,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E11
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 2760727302517);
 
@@ -1317,7 +1360,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E12
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 29996224275833);
 
@@ -1327,7 +1370,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E13
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 323780508946331);
 
@@ -1337,7 +1380,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E14
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 3475385758524527);
 
@@ -1347,7 +1390,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E15
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 37124508045065437);
 
@@ -1357,7 +1400,7 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E16
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 4185296581467695669);
 
@@ -1367,20 +1410,21 @@ APLMPI PrimFnPiNthPrime
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E18
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_str (&mpzRes, "44211790234832169331", 10);
 
         return mpzRes;
     } // End IF
 
-    // Initialize the result
-    mpz_set (&mpzTmp, &aplMPIArg);
+    // Initialize the temp
+    mpz_init_set (&mpzTmp, &aplMPIArg);
 
     // Check the list of small primes
     if (mpz_cmp_ui (&mpzTmp, PRECOMPUTED_NUM_PRIMES) <= 0)
     {
         mpz_set_ui (&mpzRes, 0);
+
         while (mpz_sub_ui (&mpzTmp, &mpzTmp, 1), mpz_sgn (&mpzTmp) > 0)
         {
             // Add to get the next prime
@@ -1390,8 +1434,6 @@ APLMPI PrimFnPiNthPrime
             if (CheckCtrlBreak (*lpbCtrlBreak))
                 goto ERROR_EXIT;
         } // End WHILE
-
-        return mpzRes;
     } else
     {
         // Initialize
@@ -1407,11 +1449,11 @@ APLMPI PrimFnPiNthPrime
             if (CheckCtrlBreak (*lpbCtrlBreak))
                 goto ERROR_EXIT;
         } // End WHILE
-
-        return mpzRes;
     } // End IF/ELSE
-
 ERROR_EXIT:
+    // We no longer need this storage
+    Myz_clear (&mpzTmp);
+
     return mpzRes;
 } // End PrimFnPiNthPrime
 
@@ -1437,7 +1479,7 @@ APLMPI PrimFnPiNumPrimes
     //   http://oeis.org/A006880
     mpz_init_set_ui (&mpzRes, 10000);               // 1E4
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 1229);
 
@@ -1447,7 +1489,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E5
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 9592);
 
@@ -1457,9 +1499,9 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E6
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
-        mpz_init_set_sa (&mpzRes, 78498);
+        mpz_set_sa (&mpzRes, 78498);
 
         return mpzRes;
     } // End IF
@@ -1467,9 +1509,9 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E7
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
-        mpz_init_set_sa (&mpzRes, 664579);
+        mpz_set_sa (&mpzRes, 664579);
 
         return mpzRes;
     } // End IF
@@ -1477,9 +1519,9 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E8
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
-        mpz_init_set_sa (&mpzRes, 5761455);
+        mpz_set_sa (&mpzRes, 5761455);
 
         return mpzRes;
     } // End IF
@@ -1487,9 +1529,9 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E9
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
-        mpz_init_set_sa (&mpzRes, 50847534);
+        mpz_set_sa (&mpzRes, 50847534);
 
         return mpzRes;
     } // End IF
@@ -1497,9 +1539,9 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E10
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
-        mpz_init_set_sa (&mpzRes, 455052511);
+        mpz_set_sa (&mpzRes, 455052511);
 
         return mpzRes;
     } // End IF
@@ -1507,9 +1549,9 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E11
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
-        mpz_init_set_sa (&mpzRes, 4118054813);
+        mpz_set_sa (&mpzRes, 4118054813);
 
         return mpzRes;
     } // End IF
@@ -1517,9 +1559,9 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E12
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
-        mpz_init_set_sa (&mpzRes, 37607912018);
+        mpz_set_sa (&mpzRes, 37607912018);
 
         return mpzRes;
     } // End IF
@@ -1527,7 +1569,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E13
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 346065536839);
 
@@ -1537,7 +1579,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E14
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 3204941750802);
 
@@ -1547,7 +1589,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E15
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 29844570422669);
 
@@ -1557,7 +1599,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E16
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 279238341033925);
 
@@ -1567,7 +1609,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E17
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 2623557157654233);
 
@@ -1577,7 +1619,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E18
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 24739954287740860);
 
@@ -1587,7 +1629,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E19
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 234057667276344607);
 
@@ -1597,7 +1639,7 @@ APLMPI PrimFnPiNumPrimes
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E20
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg))
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
         mpz_set_sa (&mpzRes, 2220819602560918840);
 

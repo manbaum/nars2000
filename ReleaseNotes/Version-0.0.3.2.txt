@@ -1,6 +1,21 @@
 Version 0.0.3.2 consists of the following Builds:
 
 
+Build #880 -- Version 0.0.3.2
+-----------------------------
+
+* Fix Bug:  Signal NONCE ERROR If We Can't Factor A Number
+* Fix Bug:  Nth Prime and # Primes Not Working
+
+Directory trunk:
+
+PF_QDOT.C:
+  In <PrimFnMonQuoteDotRisR>, blow up to VFP if non-integral or numerator too large.
+
+SC_LOAD.C:
+  Fix typo.
+
+
 Build #879 -- Version 0.0.3.2
 -----------------------------
 
@@ -20,7 +35,7 @@ PF_PI.C:
   Fix Bug:  In <PrimFnPiNumPrimes>, don't re-initialize already initialized temps.
 
 VER.C:
-  In <LclFileVersionStrW, include debugging stmts to figure out why it fails in Wine.
+  In <LclFileVersionStrW>, include debugging stmts to figure out why it fails in Wine.
 
 VERSION.RC:
   Increment version to 0.0.3.2.

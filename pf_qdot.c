@@ -326,44 +326,21 @@ APLRAT PrimFnMonQuoteDotRisR
                                 ICNDX_QDOTn,
                                 aplRatRht,
                                 mpqRes);
-    // Initialize the result to 0/1
-    mpq_init (&mpqRes);
-
     // If the denominator is 1,
     //   and the numerator fts in a UINT, ...
-    if (IsMpz1 (mpq_denref (&aplRatRht))
+    if (mpq_integer_p (&aplRatRht)
      && mpz_fits_slong_p (mpq_numref (&aplRatRht)) NE 0)
     {
+        // Initialize the result to 0/1
+        mpq_init (&mpqRes);
+
         // Extract the numerator
         uRht = mpz_get_si (mpq_numref (&aplRatRht));
 
         // Compute the factorial
         mpz_fac_ui (mpq_numref (&mpqRes), uRht);
     } else
-    {
-        APLVFP  mpfRes  = {0};
-        APLMPFR mpfrRes = {0};
-
-        // Convert the data to mpfr-format
-        mpfr_init_set_q (&mpfrRes, &aplRatRht, MPFR_RNDN);
-        mpfr_add_ui     (&mpfrRes, &mpfrRes, 1, MPFR_RNDN);
-
-        // Let MPFR handle it
-        mpfr_gamma (&mpfrRes, &mpfrRes, MPFR_RNDN);
-#ifdef DEBUG
-        mpfr_free_cache ();
-#endif
-        // Convert the data to mpf-format
-        mpf_init   (&mpfRes);
-        mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-        // Convert the result to RAT
-        mpq_set_f (&mpqRes, &mpfRes);
-
-        // We no longer need this storage
-        Myf_clear  (&mpfRes);
-        mpfr_clear (&mpfrRes);
-    } // End IF/ELSE
+        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
 
     return mpqRes;
 } // End PrimFnMonQuoteDotRisR
@@ -776,8 +753,8 @@ APLRAT PrimFnDydQuoteDotRisRvR
 
     // If both denominators are 1,
     //   and the left numerator fits in a UINT, ...
-    if (IsMpz1 (mpq_denref (&aplRatLft))
-     && IsMpz1 (mpq_denref (&aplRatRht))
+    if (mpq_integer_p (&aplRatLft)
+     && mpq_integer_p (&aplRatRht)
      && mpz_fits_slong_p (mpq_numref (&aplRatLft)) NE 0)
     {
         // Extract the numerator
@@ -786,25 +763,7 @@ APLRAT PrimFnDydQuoteDotRisRvR
         // Compute the binomial coefficient
         mpz_bin_ui (mpq_numref (&mpqRes), mpq_numref (&mpqRes), uLft);
     } else
-    {
-        APLVFP aplVfpLft = {0},
-               aplVfpRht = {0},
-               mpfRes;
-
-        mpf_init  (&aplVfpLft);
-        mpf_init  (&aplVfpRht);
-        mpf_set_q (&aplVfpLft, &aplRatLft);
-        mpf_set_q (&aplVfpRht, &aplRatRht);
-
-        mpfRes = PrimFnDydQuoteDotVisVvV (aplVfpLft, aplVfpRht, NULL);
-
-        mpq_set_f (&mpqRes, &mpfRes);
-
-        // We no longer need this storage
-        Myf_clear (&aplVfpRht);
-        Myf_clear (&aplVfpLft);
-        Myf_clear (&mpfRes   );
-    } // End IF/ELSE
+        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
 
     return mpqRes;
 } // End PrimFnDydQuoteDotRisRvR

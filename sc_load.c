@@ -1675,7 +1675,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         lpwSrc = &lpwWS[wc EQ L' '];
                     } // End FOR
 
-                    // Restore the default preecision
+                    // Restore the default precision
                     mpf_set_default_prec (uOldPrec);
 
                     break;

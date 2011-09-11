@@ -27,6 +27,7 @@
 %{
 #define STRICT
 #include <windows.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <stdio.h>
 #include "headers.h"
@@ -1794,7 +1795,12 @@ LPPN_YYSTYPE PN_MakeVfpPoint
      LPPN_YYSTYPE  lpYYExponent)        // The exponent part (may be NULL)
 
 {
-    UINT uOff;                          // Starting offset
+    UINT   uOff,                        // Starting offset
+           uDig,                        // # significant digits
+           uArg,                        // Loop counter
+           uLen;                        // # accumulated chars
+    mp_bitcnt_t uOldPrec,               // Old precision
+                uNewPrec;               // # significant bits
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -1803,13 +1809,37 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     // Initialize the starting offset
     uOff = lpYYArg->uNumOff;
 
+    // Get # accumulated chars
+    uLen = lstrlen (&lppnLocalVars->lpszNumAccum[uOff]);
+
+    // Calculate the # significant digits in the number
+    for (uDig = uArg = 0; uArg < uLen; uArg++)
+    if (isdigit (lppnLocalVars->lpszNumAccum[uOff + uArg]))
+        uDig++;
+
+    // Convert the # significant digits to # significant bits
+    //   via the formula 1 + floor (log2 (10^N))
+    //                 = 1 + floor (N x log2 (10))
+    //   where log2 (10) = (ln (10)) / (ln (2))
+    //                   = M_LN10 / M_LN2
+    uNewPrec = 1 + (mp_bitcnt_t) floor (uDig * M_LN10 / M_LN2);
+
     // If present, ...
     if (lpYYExponent)
         // Insert the exponent separator
         lppnLocalVars->lpszNumAccum[lpYYExponent->uNumOff - 1] = 'e';
 
+    // Get and save the current precision
+    uOldPrec = mpf_get_default_prec ();
+
+    // Set the default precision to the larger ...
+    mpf_set_default_prec (max (uNewPrec, uOldPrec));
+
     // Use MPFR routine
     mpf_init_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszNumAccum[uOff], 10);
+
+    // Restore the default precision
+    mpf_set_default_prec (uOldPrec);
 
     // Change the type to VFP
     lpYYArg->chType = PN_NUMTYPE_VFP;

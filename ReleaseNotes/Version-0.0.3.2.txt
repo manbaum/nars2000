@@ -1,11 +1,23 @@
 Version 0.0.3.2 consists of the following Builds:
 
 
+Build #881 -- Version 0.0.3.2
+-----------------------------
+
+* Fix Bug:  Set Precision Of VFP Constants Based On # Digits
+
+Directory trunk:
+
+PN_PARSE.Y:
+  In <PN_MakeVfpPoint>, calculate the # significant bits in the number and
+    set the precision to the larger of that and the current precision so as
+    not to under-represent the precision of a constant.
+
+
 Build #880 -- Version 0.0.3.2
 -----------------------------
 
-* Fix Bug:  Signal NONCE ERROR If We Can't Factor A Number
-* Fix Bug:  Nth Prime and # Primes Not Working
+* Fix Bug:  Blow Up !R and L!R To VFP If Non-integral
 
 Directory trunk:
 
@@ -25,7 +37,7 @@ Build #879 -- Version 0.0.3.2
 Directory trunk:
 
 PF_PI.C:
-  Return TRUE/FALSE from <PrimFnPCommon>.
+  Return TRUE/FALSE from <PrimFnPiCommon>.
   Return TRUE/FALSE from <PrimeFactor>.
   Fix Bug:  In <PrimeFactor>, test indeterminate result for pseudo-primality
     and signal a NONCE ERROR if not likely a prime.

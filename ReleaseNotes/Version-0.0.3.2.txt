@@ -1,6 +1,18 @@
 Version 0.0.3.2 consists of the following Builds:
 
 
+Build #886 -- Version 0.0.3.2
+-----------------------------
+
+* Fix Bug:  Use Correct Arg When Specifying # Significant Digits
+
+Directory trunk:
+
+QF_FMT.C:
+  Fix Bug:  Use <fsDig> instead of <fsWid> for # significant digits.
+  Fix Bug:  Convert from significant to fractional digits when using that.
+
+
 Build #885 -- Version 0.0.3.2
 -----------------------------
 

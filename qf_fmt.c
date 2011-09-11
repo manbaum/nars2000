@@ -1843,6 +1843,7 @@ void QFMT_CommonEFI
     LPAPLCHAR    lpaplChar;                 // Ptr to next available byte
     int          fsWid,                     // Field width
                  iWid;                      // ...
+    APLINT       iFrcDig;                   // # fractional digits
     APLU3264     fsDig;                     // Precision for F-format, significant digits for E-format
     UBOOL        bContinue,                 // TRUE iff we're to continue with Symbol Substitution
                  bZeroFill,                 // TRUE iff we're still doing Zero Fill
@@ -2071,7 +2072,7 @@ void QFMT_CommonEFI
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpItm,            // The value to format
-                                     -fsWid,                // # significant digits (0 = all)
+                            -(APLINT) fsDig,                // # significant digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
@@ -2086,7 +2087,7 @@ void QFMT_CommonEFI
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpItm,            // The value to format
-                                     -fsWid,                // # significant digits (0 = all)
+                            -(APLINT) fsDig,                // # significant digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
@@ -2132,13 +2133,16 @@ void QFMT_CommonEFI
                     // Convert the RAT to a VFP
                     mpf_init_set_q (&aplVfpItm, &aplRatItm);
 
+                    // The # fractional digits is fsDig + 1 unless the VFP is an integer, or is between -1 and 1
+                    iFrcDig = (mpf_integer_p (&aplVfpItm) || (mpf_cmp_si (&aplVfpItm, -1) >= 0 && mpf_cmp_si (&aplVfpItm, 1) <= 0)) ? fsDig : fsDig + 1;
+
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpItm,            // The value to format
-                                      fsWid,                // # significant digits (0 = all)
+                                      iFrcDig,              // # fractional digits
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
-                                      FALSE,                // TRUE iff nDigits is # fractional digits
+                                      TRUE,                 // TRUE iff nDigits is # fractional digits
                                       FALSE,                // TRUE iff we're to substitute text for infinity
                                       FALSE);               // TRUE iff we're to precede the display with (FPC)
                     // We no longer need this storage
@@ -2147,13 +2151,16 @@ void QFMT_CommonEFI
                     break;
 
                 case IMMTYPE_VFP:
+                    // The # fractional digits is fsDig + 1 unless the VFP is an integer, or is between -1 and 1
+                    iFrcDig = (mpf_integer_p (&aplVfpItm) || (mpf_cmp_si (&aplVfpItm, -1) >= 0 && mpf_cmp_si (&aplVfpItm, 1) <= 0)) ? fsDig : fsDig + 1;
+
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpItm,            // The value to format
-                                      fsWid,                // # significant digits (0 = all)
+                                      iFrcDig,              // # fractional digits
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
-                                      FALSE,                // TRUE iff nDigits is # fractional digits
+                                      TRUE,                 // TRUE iff nDigits is # fractional digits
                                       FALSE,                // TRUE iff we're to substitute text for infinity
                                       FALSE);               // TRUE iff we're to precede the display with (FPC)
                     break;
@@ -2256,7 +2263,7 @@ void QFMT_CommonEFI
                     lpaplChar =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpTmp,            // The value to format
-                                      fsWid,                // # significant digits (0 = all)
+                                      fsDig,                // # significant digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits

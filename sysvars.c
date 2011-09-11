@@ -2602,7 +2602,7 @@ UBOOL ValidSetFPC_EM
     if (bRet)
     {
         // Initialize VFP constants as the default precision has changed
-        InitVfpConstants (lptkNamArg->tkData.tkSym->stData.stInteger);
+        InitVfpPrecision (lptkNamArg->tkData.tkSym->stData.stInteger);
 
         // Initialize PerTabData vars
         InitPTDVars (GetMemPTD ());
@@ -2682,7 +2682,7 @@ UBOOL ValidNdxFPC
     if (bRet)
     {
         // Initialize VFP constants as the default precision has changed
-        InitVfpConstants (*(LPAPLINT) lpaplLongestRht);
+        InitVfpPrecision (*(LPAPLINT) lpaplLongestRht);
 
         // Initialize PerTabData vars
         InitPTDVars (GetMemPTD ());
@@ -2947,7 +2947,7 @@ UBOOL ValidSetPP_EM
                                DEF_MIN_QUADPP,      // Minimum value
                bResetVars.PP ? DEF_QUADPP_CWS
                              : (UINT) uQuadPP_CWS,  // Default ...
-                               DEF_MAX_QUADPP,      // Maximum ...
+                               DEF_MAX_QUADPPVFP,   // Maximum ...
                                bRangeLimit.PP);     // TRUE iff range limiting
 } // End ValidSetPP_EM
 
@@ -2957,7 +2957,7 @@ UBOOL ValidSetPP_EM
 //
 //  Validate a single value before assigning it to a position in []PP.
 //
-//  We allow any number between DEF_MIN_QUADPP and DEF_MAX_QUADPP inclusive.
+//  We allow any number between DEF_MIN_QUADPP and DEF_MAX_QUADPPVFP inclusive.
 //***************************************************************************
 
 UBOOL ValidNdxPP
@@ -3017,7 +3017,7 @@ UBOOL ValidNdxPP
     return
       ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
                            DEF_MIN_QUADPP,                  // Low range value (inclusive)
-                           DEF_MAX_QUADPP,                  // High ...
+                           DEF_MAX_QUADPPVFP,               // High ...
                            bRangeLimit.PP);                 // TRUE iff we're range limiting
 } // End ValidNdxPP
 

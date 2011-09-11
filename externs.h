@@ -2054,10 +2054,6 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 #endif
 ;
 
-
-EXTERN
-APLUINT nDigitsFPC;             // # decimal digits in []FPC
-
 #include "typemote.h"
 
 #define ENUMS_DEFINED

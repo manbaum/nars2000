@@ -941,7 +941,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_PP_UD);
 
                         // Set the range
-                        SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADPP,  DEF_MAX_QUADPP );
+                        SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADPP,  DEF_MAX_QUADPPVFP);
 
                         // Set the initial position
                         SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadPP_CWS, 0));

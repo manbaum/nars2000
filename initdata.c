@@ -232,63 +232,19 @@ void InitPTDVars
 
 
 //***************************************************************************
-//  $InitVfpConstants
+//  $InitVfpPrecision
 //
-//  Initalize the VFP constants whenever the default precision changes
+//  Initalize the VFP default precision
 //***************************************************************************
 
-void InitVfpConstants
+void InitVfpPrecision
     (APLUINT uDefPrec)          // Default VFP precision
 
 {
-////WCHAR   wszTemp[1024];
-    APLVFP  mpfTmp1 = {0},
-            mpfTmp2 = {0},
-            mpfTmp3;
-    APLMPFR mpfrRes = {0};
-
     // Set the new default precision
     mpf_set_default_prec  ((UINT) uDefPrec);
-    mpfr_set_default_prec ((UINT) uDefPrec);
-
-    mpf_init (&mpfTmp1);
-    mpf_init (&mpfTmp2);
-
-    // Calculate the # digits this precision represents
-    // N = 1 + floor (log (2 ^ uDefPrec)) / log (10)
-////nDigitsFPC = 1 + (APLINT) (floor (log (pow (2, (UINT) uDefPrec)) / log (10.0)));
-
-    nDigitsFPC = 157;
-
-    mpf_set_ui    (&mpfTmp1, 1);
-#ifdef DEBUG
-////*FormatAplVfp (wszTemp, mpfTmp1, 200) = WC_EOS;
-#endif
-    mpf_mul_2exp  (&mpfTmp1, &mpfTmp1, (UINT) uDefPrec);
-#ifdef DEBUG
-////*FormatAplVfp (wszTemp, mpfTmp1, 200) = WC_EOS;
-#endif
-    mpf_set_ui    (&mpfTmp2, 10                );
-#ifdef DEBUG
-////*FormatAplVfp (wszTemp, mpfTmp2, 200) = WC_EOS;
-#endif
-    mpfTmp3 = PrimFnDydCircleStarVisVvV (mpfTmp2, mpfTmp1, NULL);
-#ifdef DEBUG
-////*FormatAplVfp (wszTemp, mpfTmp3, 200) = WC_EOS;
-#endif
-    mpf_floor     (&mpfTmp1, &mpfTmp3          );
-#ifdef DEBUG
-////*FormatAplVfp (wszTemp, mpfTmp1, 200) = WC_EOS;
-#endif
-    nDigitsFPC = 1 + mpf_get_si (&mpfTmp1);
-
-    // We no longer need this storage
-    Myf_clear (&mpfTmp3);
-
-    // We no longer need this storage
-    Myf_clear (&mpfTmp2);
-    Myf_clear (&mpfTmp1);
-} // End InitVfpConstants
+    mpfr_set_default_prec ((UINT) (32 * ((uDefPrec+ 32 - 1) / 32)));
+} // End InitVfpPrecision
 
 
 //***************************************************************************

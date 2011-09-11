@@ -71,7 +71,7 @@
 
 #define DEF_MIN_QUADPP       1                  // Minimum value for []PP
 #define DEF_MAX_QUADPP64    17                  // Maximum ...            for IEEE 64-bits
-#define DEF_MAX_QUADPP      INT_MAX             // Maximum ...
+#define DEF_MAX_QUADPPVFP   INT_MAX             // Maximum ...            for VFP numbers
 
 #define DEF_MIN_QUADPW       30                 // Minimum value for []PW
 #define DEF_MAX_QUADPW      255                 // Maximum ...

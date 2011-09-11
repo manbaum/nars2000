@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <float.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include "headers.h"
 
@@ -1326,6 +1327,7 @@ LPAPLCHAR FormatFloatFC
                          (int) -nDigits,            // # significant digits
                                 s,                  // Ptr to raw formatted number
                                 decpt,              // Exponent
+                                DEF_MAX_QUADPP64,   // Maximum # significant digits
                                 aplCharDecimal,     // Char to use as decimal separator
                                 aplCharOverbar);    // Char to use as overbar
                 break;
@@ -1502,6 +1504,7 @@ LPAPLCHAR FormatFloatFC
                               (int) nDigits,            // # significant digits
                                     s,                  // Ptr to raw formatted number
                                     decpt,              // Exponent
+                                    DEF_MAX_QUADPP64,   // Maximum # significant digits
                                     aplCharDecimal,     // Char to use as decimal separator
                                     aplCharOverbar);    // Char to use as overbar
                 else
@@ -1592,13 +1595,13 @@ LPAPLCHAR FormatExpFmt
      int       nDigits,                     // # significant digits
      LPCHAR    s,                           // Ptr to raw formatted number
      int       decpt,                       // Exponent
+     APLINT    iSigDig,                     // # significant digits
      APLCHAR   aplCharDecimal,              // Char to use as decimal separator
      APLCHAR   aplCharOverbar)              // Char to use as overbar
 
 {
     UBOOL     bExact;                       // TRUE iff to be formatted with exactly
                                             // nDigits significant digits
-    APLINT    iSigDig;                      // # significant digits
 
     // Check for exactly nDigits significant digits
     bExact = (nDigits < 0);
@@ -1606,9 +1609,6 @@ LPAPLCHAR FormatExpFmt
     // If so, make positive
     if (bExact)
         nDigits = -nDigits;
-
-    // Get the maximum # significant digits
-    iSigDig = DEF_MAX_QUADPP64;
 
     // If there's only one significant digit, ...
     if (nDigits EQ 1)
@@ -1726,6 +1726,7 @@ LPAPLCHAR FormatAplVfpFC
 {
     mp_exp_t  expptr;               // Ptr to exponent shift
     APLINT    iLen,                 // String length
+              iDiff,                // ...           difference between maximum digits and requested # digits
               iRes;                 // Loop counter
     UBOOL     bNeg;                 // TRUE iff the number is negative
     APLINT    iDecPt = 0,           // Position of the decimal point (0 = none)
@@ -1748,20 +1749,47 @@ LPAPLCHAR FormatAplVfpFC
 
     lpRawFmt = (LPCHAR) lpaplChar;
 
+    // If we're not displaying in E-format, ...
+    if (nDigits >= 0)
+    {
+        // Format the VFP at maximum # digits
+        mpf_get_str (lpRawFmt,              // Ptr to output save area
+                    &expptr,                // Ptr to exponent save area
+                     10,                    // Base of number system
+                     0,                     // # significant digits (0 = all)
+                    &aplVfp);               // Ptr to VFP number
+        // Get the char length
+        iDiff = lstrlen (lpRawFmt);
+    } // End IF
+
     // Format the VFP
-    mpf_get_str (lpRawFmt,
-                &expptr,
-                 10,
-                 abs ((UINT) nDigits),
-                &aplVfp);
+    mpf_get_str (lpRawFmt,                  // Ptr to output save area
+                &expptr,                    // Ptr to exponent save area
+                 10,                        // Base of number system
+                 abs ((UINT) nDigits),      // # significant digits (0 = all)
+                &aplVfp);                   // Ptr to VFP number
     // Get the char length
     iLen = lstrlen (lpRawFmt);
+
+    // If we're not displaying in E-format, ...
+    if (nDigits >= 0)
+        // Get the difference in char lengths
+        iDiff -= iLen;
 
     // If displaying fractional digits, ...
     if (bFractDigs)
     {
+        UINT uDig;                  // # significant digits based on the precision
+
+        // Convert the precision to the # digits it represents
+        //   via the formula  1 + floor (log10 (2^P))
+        //                  = 1 + floor (P x log10 (2))
+        //   where log10 (2) = (ln (2)) / (ln (10))
+        //                   = M_LN2 / M_LN10
+        uDig = 1 + (UINT) floor (mpf_get_prec (&aplVfp) * M_LN2 / M_LN10);
+
         // Calculate the # trailing underflow digits
-        iUnderflow = nDigits - max (nDigitsFPC, (APLUINT) iLen);
+        iUnderflow = abs64 (nDigits) - max (uDig, (APLUINT) iLen);
         iUnderflow = max (iUnderflow, 0);
     } else
         iUnderflow = 0;
@@ -1784,9 +1812,10 @@ LPAPLCHAR FormatAplVfpFC
         // Format the number with exactly nDigits significant digits
         lpaplChar =
           FormatExpFmt (lpaplChar,          // Ptr to output save area
-                 (int) -nDigits,            // # significant digits
+                  (int) nDigits,            // # significant digits
                         lpRawFmt,           // Ptr to raw formatted number
                         expptr,             // Exponent
+                        DEF_MAX_QUADPPVFP,  // Maximum # significant digits
                         aplCharDecimal,     // Char to use as decimal separator
                         aplCharOverbar);    // Char to use as overbar
     } else
@@ -1844,9 +1873,24 @@ LPAPLCHAR FormatAplVfpFC
         // If the # significant digits is smaller than the exponent, ...
         if (iLen < (bNeg + expptr))
         {
-            // Fill in trailing zeros sufficient for the decimal point
-            FillMemoryW (&lpaplChar[iLen], (APLU3264) (bNeg + expptr - iLen), L'0');
-            iLen = bNeg + expptr;
+            // If there are enough digits displayed, ...
+            if (iDiff EQ 0)
+            {
+                // Fill in trailing zeros sufficient for the decimal point
+                FillMemoryW (&lpaplChar[iLen], (APLU3264) (bNeg + expptr - iLen), L'0');
+                iLen = bNeg + expptr;
+            } else
+            {
+                // Otherwise, use E-notation to indicate that []PP is too small
+                lpaplChar[iLen] = L'E';
+                iLen =
+                  FormatAplintFC (&lpaplChar[iLen + 1],     // Ptr to output save area
+                                   bNeg + expptr - iLen,    // The value to format
+                                   aplCharOverbar)          // Char to use as overbar
+                  - lpaplChar;
+                // Delete the trailing blank from the length
+                iLen--;
+            } // End IF/ELSE
         } else
         // If the # significant digits is larger than the exponent, ...
         if (iLen > (bNeg + expptr))

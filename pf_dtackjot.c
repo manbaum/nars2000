@@ -3397,6 +3397,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+    APLVFP       aplVfpItm = {0};   // Temp VFP number
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -3806,14 +3807,29 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     // If the item is a global numeric, ...
                     if (IsGlbNum (aplTypeRht))
                     {
+                        // No longer all character
+                        bAllChar = FALSE;
+
                         // hGlbItmRht is actually a ptr to the global numeric data
                         // Split cases based upon the item storage type
                         switch (aplTypeRht)
                         {
                             case ARRAY_RAT:
+                                // Convert the RAT to a VFP
+                                mpf_init_set_q (&aplVfpItm, (LPAPLRAT) hGlbItmRht);
+
                                 lpaplChar =
-                                  FormatAplRat (lpaplChar,                  // Ptr to output save area
-                                               *(LPAPLRAT) hGlbItmRht);     // The value to format
+                                  FormatAplVfpFC (lpaplChar,                // Ptr to output save area
+                                                  aplVfpItm,                // The value to format
+                                                  iPrc,                     // Use this many significant digits for VFP
+                                                  aplCharDecimal,           // Char to use as decimal separator
+                                                  aplCharOverbar,           // Char to use as overbar
+                                                  TRUE,                     // TRUE iff nDigits is # fractional digits
+                                                  FALSE,                    // TRUE iff we're to substitute text for infinity
+                                                  FALSE);                   // TRUE iff we're to precede the display with (FPCnnn)
+                                // We no longer need this storage
+                                Myf_clear (&aplVfpItm);
+
                                 break;
 
                             case ARRAY_VFP:

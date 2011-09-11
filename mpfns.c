@@ -305,8 +305,8 @@ void mpz_set_sa
 ////mp_limb_t vl;
     APLUINT abs_val;
 
-    // Ensure there's room for two limbs
-    mpz_realloc2 (dest, BITS_IN_APLINT / GMP_NUMB_BITS);
+    // Ensure there's room for 64 bits
+    mpz_realloc2 (dest, BITS_IN_APLINT);
 ////vl = (mp_limb_t) (unsigned long int) (val >= 0 ? val : -val);
     abs_val = abs64 (val);
 
@@ -340,8 +340,8 @@ void mpz_set_ua
 {
     mp_size_t size;
 
-    // Ensure there's room for two limbs
-    mpz_realloc2 (dest, BITS_IN_APLINT / GMP_NUMB_BITS);
+    // Ensure there's room for 64 bits
+    mpz_realloc2 (dest, BITS_IN_APLINT);
 
     dest->_mp_d[0] = LODWORD (val);
     dest->_mp_d[1] = HIDWORD (val);

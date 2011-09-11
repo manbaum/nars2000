@@ -234,15 +234,16 @@ APLVFP PrimFnMonCircleStarVisV
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
-#if 0
+#if OWN_EXPLOG
     APLMPI mpzTmp = {0};
     APLVFP mpfRes = {0},
            mpfTmp = {0},
            mpfLn2;
     signed long log2x;
     int    log2xSign;
+#else
+    APLVFP  mpfRes  = {0};
+    APLMPFR mpfrRes = {0};
 #endif
     // Check for indeterminates:  {log} 0
     if (IsMpf0 (&aplVfpRht))
@@ -260,22 +261,7 @@ APLVFP PrimFnMonCircleStarVisV
      || mpf_cmp_ui (&aplVfpRht, 0) < 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-        // Convert the data to mpfr-format
-        mpfr_init  (&mpfrRes);
-        mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
-
-        // Let MPFR handle it
-        mpfr_log   (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-        // Convert the data to mpf-format
-        mpf_init   (&mpfRes);
-        mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-        // We no longer need this storage
-        mpfr_clear (&mpfrRes);
-
-        return mpfRes;
-#if 0
+#if OWN_EXPLOG
     // Initialize the result
     mpf_init_copy (&mpfRes, &aplVfpRht);
 
@@ -344,6 +330,22 @@ APLVFP PrimFnMonCircleStarVisV
     // We no longer need this storage
     Myf_clear (&mpfTmp);
     Myf_clear (&mpfLn2);
+
+    return mpfRes;
+#else
+    // Convert the data to mpfr-format
+    mpfr_init  (&mpfrRes);
+    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+
+    // Let MPFR handle it
+    mpfr_log   (&mpfrRes, &mpfrRes, MPFR_RNDN);
+
+    // Convert the data to mpf-format
+    mpf_init   (&mpfRes);
+    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpfr_clear (&mpfrRes);
 
     return mpfRes;
 #endif

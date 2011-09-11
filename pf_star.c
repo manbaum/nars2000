@@ -299,8 +299,9 @@ APLVFP PrimFnMonStarVisV
 
     return mpfRes;
 #else
+#ifdef DEBUG
     mpfr_buildopt_tls_p ();
-
+#endif
     // Convert the data to mpfr-format
     mpfr_init  (&mpfrRes);
     mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);

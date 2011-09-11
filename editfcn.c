@@ -2082,24 +2082,10 @@ LRESULT WINAPI LclEditCtrlWndProc
             if (lpMemPTD EQ NULL)
                 break;
 
-            // If requested to do so, change []PW to track the new width
             if (IzitSM (GetParent (hWnd))   // If Edit Ctrl for SM,
-             && OptionFlags.bAdjustPW       // and requested to do so,
              && nWidth NE 0)                // and width is non-zero
-            {
-                APLUINT aplInteger;
-
-                // Calculate new width in chars
-                aplInteger = nWidth / GetFSIndAveCharSize (FONTENUM_SM)->cx;
-
-                // Validate the incoming value
-                if (ValidateIntegerTest (&aplInteger,       // Ptr to the integer to test
-                                          DEF_MIN_QUADPW,   // Low range value (inclusive)
-                                          DEF_MAX_QUADPW,   // High ...
-                                          bRangeLimit.PW))  // TRUE iff we're range limiting
-                    // Save as new []PW
-                    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
-            } // End IF
+                // Change []PW to track the new width
+                RespecifyNewQuadPW (hWnd, nWidth);
 
             PERFMON
 ////////////PERFMONSHOW
@@ -3027,24 +3013,14 @@ LRESULT WINAPI LclEditCtrlWndProc
             return (lpUndoBeg NE lpUndoNxt);
 
         case WM_REDO:
-                break;
-
-            DbgBrk ();              // ***FINISHME*** -- Make Redo work??
+////////////DbgBrk ();              // ***FINISHME*** -- Make Redo work??
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-                    break;
+            break;
 
         case WM_CUT:                // 0 = wParam
                                     // 0 = lParam
@@ -3366,6 +3342,11 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Save the handle
             SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
 
+            // If Edit Ctrl for SM, ...
+            if (IzitSM (hWndParent))
+                // Change []PW to track the new width
+                RespecifyNewQuadPW (hWnd, 0);
+
             break;                  // Pass on to the Edit Ctrl
         } // End WM_SETFONT
 
@@ -3621,6 +3602,48 @@ LRESULT WINAPI LclEditCtrlWndProc
         DrawLineNumsFE (hWnd);
     return lResult;
 } // End LclEditCtrlWndProc
+
+
+//***************************************************************************
+//  $RespecifyNewQuadPW
+//
+//  If allowed, respecify a new []PW based on the new SM font
+//***************************************************************************
+
+void RespecifyNewQuadPW
+    (HWND hWndEC,                   // EC window handle
+     int  nWidth)                   // Window width in pixels (0 = calculate it)
+
+{
+    APLUINT aplInteger;
+
+    // If we are requested to do so, ...
+    if (OptionFlags.bAdjustPW)
+    {
+        // If the incoming width is to be calcualted here, ...
+        if (nWidth EQ 0)
+        {
+            RECT rc;
+
+            // Get the EC window's client rectangle
+            GetClientRect (hWndEC, &rc);
+
+            // Calculate the client area width
+            nWidth = rc.right - rc.left;
+        } // End IF
+
+        // Calculate new width in chars
+        aplInteger = nWidth / GetFSIndAveCharSize (FONTENUM_SM)->cx;
+
+        // Validate the incoming value
+        if (ValidateIntegerTest (&aplInteger,       // Ptr to the integer to test
+                                  DEF_MIN_QUADPW,   // Low range value (inclusive)
+                                  DEF_MAX_QUADPW,   // High ...
+                                  bRangeLimit.PW))  // TRUE iff we're range limiting
+            // Save as new []PW
+            GetMemPTD ()->htsPTD.lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
+    } // End IF
+} // End RespecifynewQuadPW
 
 
 //***************************************************************************

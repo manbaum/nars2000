@@ -12,14 +12,14 @@ function fnInsertCSS (&$out, &$text)
     {
         foreach ($tag as $attr => $val)
             if ($attr == 'href'
-             && $val  == 'extensions/apl.css')
-                return;
+             && $val  == '/extensions/apl.css')
+                return false;
     } // End FOREACH
 
     // Add a stylesheet
     $out->addLink (array ('rel'  => 'stylesheet',
                           'type' => 'text/css',
-                          'href' => 'extensions/apl.css'
+                          'href' => '/extensions/apl.css'
                          ));
     return true;
 } // End fnInsertCSS

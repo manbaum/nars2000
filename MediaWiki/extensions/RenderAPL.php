@@ -3,40 +3,40 @@
 // MediaWiki extension to apply a consistent style to APL expressions
 //   by defining a new tag name <apl>...</apl>.
 
-$wgExtensionFunctions[] = "wfAPLExtension";
+$wgHooks['ParserFirstCallInit'][] = 'wfAPLExtension';
 
-$FontName = "SImPL";
+$FontName = 'SImPL';
 
-function wfAPLExtension ()
+function wfAPLExtension (&$parser)
 {
-    global $wgParser;
-
     // Register the extension with the WikiText parser
     // the first parameter is the name of the new tag.
     // In this case it defines the tag <apl> ... </apl>
     // the second parameter is the callback function for
     // processing the text between the tags
-    $wgParser->setHook( "apl",  "renderAPL" );
-    $wgParser->setHook( "apll", "renderAPLlarge" );
+    $parser->setHook( "apl",  "renderAPL" );
+    $parser->setHook( "apll", "renderAPLlarge" );
+
+    return true;
 } // End wfAPLExtension
 
 
 // The callback function for converting the input text to HTML output
-function renderAPL ($input, $argv, &$parser)
+function renderAPL ($input, $args, $parser, $frame)
 {
-    return renderAPLcom ($input, $argv, &$parser, false, false);
+    return renderAPLcom ($input, $args, false, false);
 } // End renderAPL
 
 
 // The callback function for converting the input text to HTML output
-function renderAPLlarge ($input, $argv, &$parser)
+function renderAPLlarge ($input, $args, $parser, $frame)
 {
-    return renderAPLcom ($input, $argv, &$parser, true, true);
+    return renderAPLcom ($input, $args, true, true);
 } // End renderAPLlarge
 
 
 // The callback function for converting the input text to HTML output
-function renderAPLcom ($input, $argv, &$parser, $bLargeSize, $bBoldWeight)
+function renderAPLcom ($input, $argv, $bLargeSize, $bBoldWeight)
 {
     global $FontName;
 
@@ -68,7 +68,7 @@ function renderAPLcom ($input, $argv, &$parser, $bLargeSize, $bBoldWeight)
     if ($bBoldWeight)
         $style .= 'font-weight: bold; ';
 
-    return '<span style="' . $style . '">' . $input . '</span>';
+    return htmlspecialchars ('<span style="' . $style . '">' . $input . '</span>');
 } // End renderAPLcom
 
 ?>

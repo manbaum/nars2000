@@ -1371,6 +1371,14 @@ LPAPLCHAR FormatFloatFC
                             nDigits--;
                             iSigDig--;
                         } // End WHILE
+
+                        // End with zeros or underflow chars for nDigits
+                        while (nDigits > 0)
+                        {
+                            *lpaplChar++ = (iSigDig > 0) ? L'0' : L'_';
+                            nDigits--;
+                            iSigDig--;
+                        } // End WHILE
                 } else
                 {
                     // Copy no more than decpt digits to the result

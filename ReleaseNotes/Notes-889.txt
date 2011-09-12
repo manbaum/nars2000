@@ -1,7 +1,7 @@
 Build #889 -- Version 0.0.3.2
 -----------------------------
 
-* Fill With Trailing Zeros In Dyadic Format For NUmbers Between -1 and 1
+* Fill With Trailing Zeros In Dyadic Format For Numbers Between -1 and 1
 
 Directory trunk:
 

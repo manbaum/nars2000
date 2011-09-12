@@ -1618,6 +1618,16 @@ LPAPLCHAR FormatExpFmt
     if (bExact)
         nDigits = -nDigits;
 
+    // If the number is negative, ...
+    if (s[0] EQ '-')
+    {
+        // Copy it to the result
+        *lpaplChar++ = aplCharOverbar;
+
+        // Skip over it
+        s++;
+    } // End IF
+
     // If there's only one significant digit, ...
     if (nDigits EQ 1)
     {
@@ -1805,10 +1815,29 @@ LPAPLCHAR FormatAplVfpFC
     if (iLen EQ 0)
     {
         // "Format" the number
-        lpaplChar[0] = L'0';
+        *lpaplChar++ = L'0';
 
-        // Skip over the formatted number
-        lpaplChar++;
+        // If displaying fractional digits, ...
+        if (bFractDigs)
+        {
+            // If we're formatting in E-format, ...
+            if (nDigits < 0)
+            {
+                *lpaplChar++ = aplCharDecimal;
+
+                FillMemoryW (lpaplChar, (APLU3264) ((-nDigits) - 1), L'0');
+                lpaplChar += (-nDigits) - 1;
+
+                *lpaplChar++ = L'E';
+                *lpaplChar++ = L'0';
+            } else
+            {
+                *lpaplChar++ = aplCharDecimal;
+
+                FillMemoryW (lpaplChar, (APLU3264)    nDigits      , L'0');
+                lpaplChar += nDigits;
+            } // End IF
+        } // End IF
     } else
     // If we're formatting in E-format, ...
     if (nDigits < 0)
@@ -1832,7 +1861,7 @@ LPAPLCHAR FormatAplVfpFC
         for (iRes = iLen - 1; iRes >= 0; iRes--)
             lpaplChar[iRes] = ((LPCHAR) lpaplChar)[iRes];
 
-        // Convert a leading minus to aplCharOverbar
+        // Check for negative
         bNeg = (lpaplChar[0] EQ L'-');
 
         // Check for Infinity
@@ -1851,6 +1880,7 @@ LPAPLCHAR FormatAplVfpFC
             // Get the absolute value of the exponent
             expptr = -expptr;
 
+            // If displaying fractional digits, ...
             if (bFractDigs)
                 iDelDigits = expptr;
             else
@@ -1870,13 +1900,18 @@ LPAPLCHAR FormatAplVfpFC
             // Fill in the leading zeros
             FillMemoryW (&lpaplChar[bNeg + 2], expptr, L'0');
 
-            // If fractional digits, ...
+            // If displaying fractional digits, ...
             if (bFractDigs)
-                //     "0."  Digits
-                iLen  = 2 + nDigits;
-            else
-                //     "0." Leading
-                iLen += 2 + expptr;
+            {
+                if (nDigits > ((iLen - bNeg) - expptr))
+                    // Fill in the trailing zeros
+                    FillMemoryW (&lpaplChar[iLen + 2], (APLU3264) (nDigits - ((iLen - bNeg) - expptr)), L'0');
+
+                //       Neg  "0."  Digits
+                iLen  = bNeg + 2 + nDigits;
+            } else
+                //            "0." Leading
+                iLen +=        2 + expptr;
         } else
         // If the # significant digits is smaller than the exponent, ...
         if (iLen < (bNeg + expptr))
@@ -1911,7 +1946,7 @@ LPAPLCHAR FormatAplVfpFC
             iLen++;
         } // End IF/ELSE
 
-        // If we're displaying fractional digits, ...
+        // If displaying fractional digits, ...
         if (bFractDigs)
         {
             // If the # digits after the decimal point is less than nDigits, ...

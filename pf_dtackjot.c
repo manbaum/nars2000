@@ -3986,7 +3986,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     // If we're using E-format, ...
                     if (iPrc < 0)
                     {
-                        // Find the length of the exponent
+                        // Find the length of the exponent (counting the 'E')
                         uMaxExp = uLen - (UINT) ((SkipToCharW (lpaplCharIni, L'E') - lpaplCharIni));
 
                         // Save the old value in case we overflow
@@ -4120,7 +4120,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                 if (lpaplCharExp[0]
                  && lpaplCharExp NE lpaplChar)      // In case the overflow char is 'E'
                 {
-                    // Find the length of the exponent
+                    // Find the length of the exponent (counting the 'E')
                     uMaxExp = uLen - (UINT) (lpaplCharExp - lpaplChar);
 
                     // Calculate the difference between the longest and the current length

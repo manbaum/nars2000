@@ -1,10 +1,27 @@
 Version 0.0.3.2 consists of the following Builds:
 
 
+Build #890 -- Version 0.0.3.2
+-----------------------------
+
+* Fix Bugs In Formatting VFP Numbers
+
+Directory trunk:
+
+DISPLAY.C:
+  Fix Bug:  In <FormatExpFmt>, handle negative numbers.
+  Fix Bug:  In <FormatAplVfpFC>, handle format of zero.
+  Fix Bug:  In <FormatAplVfpFC>, fill in trailing zeros when displaying fractional digits.
+  Improve comments.
+
+PF_DTACKJOT.C:
+  Improve comments.
+
+
 Build #889 -- Version 0.0.3.2
 -----------------------------
 
-* Fill With Trailing Zeros In Dyadic Format For NUmbers Between -1 and 1
+* Fill With Trailing Zeros In Dyadic Format For Numbers Between -1 and 1
 
 Directory trunk:
 

@@ -96,6 +96,72 @@ Downloads</h1>
   <form id="DisplayForm" action="">&nbsp;
     <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="return DisplayTab ();" />
   </form>
+</div>
+
+<div class="section">
+  <h2 id="Changes">Changes</h2>
+
+  <table border="0" cellspacing="2" cellpadding="2" summary="">
+    <tr>
+      <td valign="top">
+        <p>Rather than gather email addresses, maintain a mailing list, deal with
+          privacy issues, etc., I'd prefer that if you are interested in being
+          notified when a new version is released that you sign up with a (free)
+          service that does this such as the one linked to on the right of this
+          section (for new releases) and/or the main page (for new features).</p>
+      </td>
+
+      <td valign="top">
+        <table style="display:inline; width:100px; font-family: arial, helvetica;" border="0" cellpadding="0" cellspacing="0" summary="">
+          <tr>
+            <td bgcolor="#999999" align="center">
+              <span style="color:white; font-size: 12px; font-weight:normal; letter-spacing: 1px;">Be notified of<br />page updates</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <form style="margin-bottom:0;" action="http://www.changedetection.com/detect.html" method="get" target="ChangeDetectionWiz">
+                <input style="width:100px;"
+                       type="text"
+                       name="email"
+                       value="enter email" />
+                <table style="font-family: arial, helvetica;" width="100%" border="0" cellspacing="0" cellpadding="0" summary="">
+                  <tr>
+                    <td align="left" valign="top">
+                      <small>
+                      <input type="submit"
+                             name="enter"
+                             value=" OK "
+                             onclick="somewin=window.open('http://www.changedetection.com/detect.html', 'ChangeDetectionWiz','resizable=yes,scrollbars=yes,width=624,height=460');somewin.focus()" />
+                      </small>
+                    </td>
+                    <td align="right" valign="top">
+                      <a href="http://www.changedetection.com/privacy.html"
+                         target="ChangeDetectionPrivacy"
+                         onclick="somewin=window.open('http://www.changedetection.com/privacy.html', 'ChangeDetectionPrivacy','resizable=yes,scrollbars=yes,width=624,height=390');somewin.focus()">
+                      <span style="font-size: 10px">it's private</span></a>
+                      <br />
+                    </td>
+                  </tr>
+                </table>
+              </form>
+            </td>
+          </tr>
+          <tr style="height:28px;">
+            <td style="font-size: 10px; " align="center" valign="bottom">
+              powered by
+              <br />
+              <a  href="http://www.changedetection.com/">ChangeDetection</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h2 id="Download_Files">Download Files</h2>
 
   <table border="0" cellspacing="0" summary="">
     <tr>
@@ -286,16 +352,6 @@ var gAllFiles = false;
   <h2 id="Statistics">Statistics On The Most Current File Release</h2>
 
   <pre style="margin-left: 1em;"><?php readfile ($DirName . "linestat.txt");?></pre>
-</div>
-
-<div class="section">
-  <h2 id="Changes">Changes</h2>
-
-  <p>Rather than gather email addresses, maintain a mailing list, deal with
-    privacy issues, etc., I'd prefer that if you are interested in being
-    notified when a new version is released that you sign up with a (free)
-    service that does this such as the one linked to at the bottom of this
-    page (for new releases) and/or the main page (for new features).</p>
 </div>
 
 <?php include "/www/htdocs/ValidXHTML-CSS.html" ?>

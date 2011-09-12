@@ -551,8 +551,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     bTableRes = (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
     if (bTableRes)
     {
-        aplLastAxis = aplRankRht - 1;
-        aplNELMAxis = aplRankRht - 1;
+        aplLastAxis = max (aplRankRht, 1) - 1;
+        aplNELMAxis = max (aplRankRht, 1) - 1;
     } else
     // Empty axis means insert new last unit coordinate
     if (IsEmpty (aplNELMAxis))
@@ -574,9 +574,9 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
     // Calculate the rank of the result
     if (bFract)
-        aplRankRes = aplRankRht + 1;
+        aplRankRes = max (aplRankRht, 1) + 1;
     else
-        aplRankRes = aplRankRht + 1 - aplNELMAxis;
+        aplRankRes = max (aplRankRht, 1) + 1 - aplNELMAxis;
 
     //***************************************************************
     // Optimize ravel of a vector

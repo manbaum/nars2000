@@ -210,7 +210,9 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL hGlbRht;            // Right arg global memory handle
+    APLSTYPE aplTypeRht;            // Right arg storage type
+    APLRANK  aplRankRht;            // Right arg rank
+    HGLOBAL  hGlbRht;               // Right arg global memory handle
 
     //***************************************************************
     // Comma-bar is not sensitive to the axis operator,
@@ -220,6 +222,9 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
     if (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR
      && lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -240,16 +245,19 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
                 break;          // Join common global code
             } // End IF
 
-            // Handle the immediate case
-            return PrimFnMonCommaImm_EM_YY
-                   (lptkRhtArg->tkData.tkSym->stFlags.ImmType,      // Immediate type
-                    lptkRhtArg->tkData.tkSym->stData.stLongest,     // Immediate value
+            // Handle the scalar case
+            return PrimFnMonCommaScalar_EM_YY
+                   (TranslateImmTypeToArrayType (lptkRhtArg->tkData.tkSym->stFlags.ImmType),    // Array storage type
+                    lptkRhtArg->tkData.tkSym->stData.stLongest,     // Immediate value if simple scalar
+                    NULL,                                           // Right arg global memory handle (or NULL if simple scalar)
                     lptkAxis,                                       // Ptr to axis token (may be NULL)
                     lptkFunc);                                      // Ptr to function token
         case TKT_VARIMMED:
-            return PrimFnMonCommaImm_EM_YY
-                   (lptkRhtArg->tkFlags.ImmType,                    // Immediate type
-                    lptkRhtArg->tkData.tkLongest,                   // Immediate value
+            // Handle the scalar case
+            return PrimFnMonCommaScalar_EM_YY
+                   (TranslateImmTypeToArrayType (lptkRhtArg->tkFlags.ImmType),  // Array storage type
+                    lptkRhtArg->tkData.tkLongest,                   // Immediate value if simple scalar
+                    NULL,                                           // Right arg global memory handle (or NULL if simple scalar)
                     lptkAxis,                                       // Ptr to axis token (may be NULL)
                     lptkFunc);                                      // Ptr to function token
         case TKT_VARARRAY:
@@ -259,6 +267,15 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
             // Get the global memory handle
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
+            // If it's a scalar, ...
+            if (IsScalar (aplRankRht))
+                // Handle the scalar case
+                return PrimFnMonCommaScalar_EM_YY
+                       (aplTypeRht,                                 // Array storage type
+                        0,                                          // Immediate value if simple scalar
+                        hGlbRht,                                    // Right arg global memory handle (or NULL if simple scalar)
+                        lptkAxis,                                   // Ptr to axis token (may be NULL)
+                        lptkFunc);                                  // Ptr to function token
             break;          // Join common global code
 
         defstop
@@ -277,28 +294,29 @@ AXIS_SYNTAX_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnMonCommaImm_EM_YY
+//  $PrimFnMonCommaScalar_EM_YY
 //
-//  Monadic Comma ("ravel/table") on an immediate value.
+//  Monadic Comma ("ravel/table") on a scalar value.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCommaImm_EM_YY"
+#define APPEND_NAME     L" -- PrimFnMonCommaScalar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
-    (IMM_TYPES     immType,         // Right arg Immediate type (see IMM_TYPES)
-     APLLONGEST    aplLongest,      // Ptr to right arg value
+LPPL_YYSTYPE PrimFnMonCommaScalar_EM_YY
+    (ARRAY_TYPES   aplTypeRht,      // Right arg storage type (see ARRAY_TYPES)
+     APLLONGEST    aplLongest,      // Right arg immediate value if simple scalar
+     HGLOBAL       hGlbRht,         // Right arg global memory handle (or NULL if simple scalar)
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
      LPTOKEN       lptkFunc)        // Ptr to function token
 
 {
-    APLSTYPE     aplTypeRes;        // Result storage type
     APLRANK      aplRankRes;        // Result rank
     HGLOBAL      hGlbRes;           // Result global memory handle
-    LPVOID       lpMemRes;          // Ptr to result global memory
+    LPVOID       lpMemRes,          // Ptr to result global memory
+                 lpMemRht;          // Ptr to right arg global memory
     UBOOL        bFract = FALSE,    // TRUE iff axis has fractional values
                  bTableRes;         // TRUE iff function is UTF16_COMMABAR
     APLUINT      ByteRes;           // # bytes in the result
@@ -344,13 +362,10 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     bTableRes = (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
     aplRankRes = 1 + bTableRes;
 
-    // Set the result storage type
-    aplTypeRes = TranslateImmTypeToArrayType (immType);
-
     //***************************************************************
     // Calculate space needed for the result
     //***************************************************************
-    ByteRes = CalcArraySize (aplTypeRes, 1, aplRankRes);
+    ByteRes = CalcArraySize (aplTypeRht, 1, aplRankRes);
 
     //***************************************************************
     // Check for overflow
@@ -371,7 +386,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = aplTypeRes;
+    lpHeader->ArrType    = aplTypeRht;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -387,9 +402,19 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
+    // If there's a global memory handle, ...
+    if (hGlbRht)
+    {
+        // Lock the memory to get a handle to it
+        lpMemRht = MyGlobalLock (hGlbRht);
+
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
+    } // End IF
+
     // Copy the immediate value to the result
     // Split cases based upon the result storage type
-    switch (aplTypeRes)
+    switch (aplTypeRht)
     {
         case ARRAY_BOOL:
             *((LPAPLBOOL)  lpMemRes) = (APLBOOL)  aplLongest;
@@ -411,9 +436,31 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
 
             break;
 
+        case ARRAY_NESTED:
+            *((LPAPLNESTED) lpMemRes) = CopySymGlbInd_PTB (lpMemRht);
+
+            break;
+
+        case ARRAY_RAT:
+            mpq_init_set  ((LPAPLRAT) lpMemRes, (LPAPLRAT) lpMemRht);
+
+            break;
+
+        case ARRAY_VFP:
+            mpf_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemRht);
+
+            break;
+
         defstop
             break;
     } // End SWITCH
+
+    // If there's a global memory handle, ...
+    if (hGlbRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -434,7 +481,7 @@ WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
     return NULL;
-} // End PrimFnMonCommaImm_EM_YY
+} // End PrimFnMonCommaScalar_EM_YY
 #undef  APPEND_NAME
 
 
@@ -501,6 +548,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
 
+    Assert (!IsScalar (aplRankRht));
+
     // Check for axis present
     if (lptkAxis NE NULL)
     {
@@ -551,8 +600,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     bTableRes = (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
     if (bTableRes)
     {
-        aplLastAxis = max (aplRankRht, 1) - 1;
-        aplNELMAxis = max (aplRankRht, 1) - 1;
+        aplLastAxis = aplRankRht - 1;
+        aplNELMAxis = aplRankRht - 1;
     } else
     // Empty axis means insert new last unit coordinate
     if (IsEmpty (aplNELMAxis))
@@ -574,9 +623,9 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
     // Calculate the rank of the result
     if (bFract)
-        aplRankRes = max (aplRankRht, 1) + 1;
+        aplRankRes = aplRankRht + 1;
     else
-        aplRankRes = max (aplRankRht, 1) + 1 - aplNELMAxis;
+        aplRankRes = aplRankRht + 1 - aplNELMAxis;
 
     //***************************************************************
     // Optimize ravel of a vector

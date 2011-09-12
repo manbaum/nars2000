@@ -92,10 +92,6 @@ Downloads</h1>
         necessary.</p>
     </li>
   </ol>
-
-  <form id="DisplayForm" action="">&nbsp;
-    <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="return DisplayTab ();" />
-  </form>
 </div>
 
 <div class="section">
@@ -162,6 +158,10 @@ Downloads</h1>
 
 <div class="section">
   <h2 id="Download_Files">Download Files</h2>
+
+  <form id="DisplayForm" action="">&nbsp;
+    <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="return DisplayTab ();" />
+  </form>
 
   <table border="0" cellspacing="0" summary="">
     <tr>

@@ -1685,10 +1685,11 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     uBitMaskLft = uBitMaskRht = BIT0;
     uBitIndexRes = 0;
 
-    // If the left arg is not a scalar,
+    // If the left arg is not a scalar or is a global numeric,
     //   skip over its header and dimensions to the data
     //   and get the APA values if appropriate
-    if (!IsScalar (aplRankLft))
+    if (!IsScalar (aplRankLft)
+     || IsGlbNum (aplTypeLft))
     {
         // Skip over the header and dimensions to the data
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
@@ -1705,10 +1706,11 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
         } // End IF
     } // End IF
 
-    // If the right arg is not a scalar,
+    // If the right arg is not a scalar or is a global numeric,
     //   skip over its header and dimensions to the data
     //   and get the APA values if appropriate
-    if (!IsScalar (aplRankRht))
+    if (!IsScalar (aplRankRht)
+     || IsGlbNum (aplTypeRht))
     {
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
@@ -2538,6 +2540,46 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             } // End FOR
                         break;
 
+                    case ARRAY_RAT:     // Res = NESTED, Lft = RAT
+                        // Loop through the left arg's trailing dimensions
+                        for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLNESTED) lpMemRes)++ =
+                            lpSymTmp =
+                              MakeGlbEntry_EM (ARRAY_RAT,       // Entry type
+                                   ((LPAPLRAT) lpMemLft)++,     // Ptr to the value
+                                               TRUE,            // TRUE iff we should initialize the target first
+                                               lptkFunc);       // Ptr to function token
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_VFP:     // Res = NESTED, Lft = VFP
+                        // Loop through the left arg's trailing dimensions
+                        for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLNESTED) lpMemRes)++ =
+                            lpSymTmp =
+                              MakeGlbEntry_EM (ARRAY_VFP,       // Entry type
+                                   ((LPAPLVFP) lpMemLft)++,     // Ptr to the value
+                                               TRUE,            // TRUE iff we should initialize the target first
+                                               lptkFunc);       // Ptr to function token
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } // End FOR
+
+                        break;
+
                     defstop
                         break;
                 } // End SWITCH
@@ -2722,6 +2764,46 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (*((LPAPLNESTED) lpMemRht)++);
                             } // End FOR
+                        break;
+
+                    case ARRAY_RAT:     // Res = NESTED, Rht = RAT
+                        // Loop through the right arg's trailing dimensions
+                        for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLNESTED) lpMemRes)++ =
+                            lpSymTmp =
+                              MakeGlbEntry_EM (ARRAY_RAT,       // Entry type
+                                   ((LPAPLRAT) lpMemRht)++,     // Ptr to the value
+                                               TRUE,            // TRUE iff we should initialize the target first
+                                               lptkFunc);       // Ptr to function token
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_VFP:     // Res = NESTED, Rht = VFP
+                        // Loop through the right arg's trailing dimensions
+                        for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                        {
+                            // Check for Ctrl-Break
+                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                                goto ERROR_EXIT;
+
+                            *((LPAPLNESTED) lpMemRes)++ =
+                            lpSymTmp =
+                              MakeGlbEntry_EM (ARRAY_VFP,       // Entry type
+                                   ((LPAPLVFP) lpMemRht)++,     // Ptr to the value
+                                               TRUE,            // TRUE iff we should initialize the target first
+                                               lptkFunc);       // Ptr to function token
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } // End FOR
+
                         break;
 
                     defstop

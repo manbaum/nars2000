@@ -612,6 +612,18 @@ UBOOL PrimFnDydEqualUnderbarSimple
         for (uDim = 0; uDim < (APLINT) aplRankLft; uDim++)
         if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
             return FALSE;
+    } else
+    // If lpMemLft/lpMemRht point to their headers, ...
+    if (bHeader)
+    {
+        // If the left arg is global numeric, ...
+        if (IsGlbNum (aplTypeLft))
+            // Skip over the header and dimensions to the data
+            lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        // If the right arg is global numeric, ...
+        if (IsGlbNum (aplTypeRht))
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     } // End IF
 
     // lpMemLft and lpMemRht now point to the data

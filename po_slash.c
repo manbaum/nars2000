@@ -823,12 +823,14 @@ RESTART_EXCEPTION:
                     case ARRAY_RAT:
                         tkRhtArg.tkFlags.ImmType  = IMMTYPE_RAT;
                         lpSymGlbRht               = &((LPAPLRAT)  lpMemRht)[uRht];
+                        mpq_set (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
 
                         break;
 
                     case ARRAY_VFP:
                         tkRhtArg.tkFlags.ImmType  = IMMTYPE_VFP;
                         lpSymGlbRht               = &((LPAPLVFP)  lpMemRht)[uRht];
+                        mpf_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                         break;
 

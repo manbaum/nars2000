@@ -24,21 +24,24 @@ function wfAPLExtension (&$parser)
 // The callback function for converting the input text to HTML output
 function renderAPL ($input, $args, $parser, $frame)
 {
-    return renderAPLcom ($input, $args, false, false);
+    return renderAPLcom ($input, $args, $parser, false, false);
 } // End renderAPL
 
 
 // The callback function for converting the input text to HTML output
 function renderAPLlarge ($input, $args, $parser, $frame)
 {
-    return renderAPLcom ($input, $args, true, true);
+    return renderAPLcom ($input, $args, $parser, true, true);
 } // End renderAPLlarge
 
 
 // The callback function for converting the input text to HTML output
-function renderAPLcom ($input, $argv, $bLargeSize, $bBoldWeight)
+function renderAPLcom ($input, $argv, $parser, $bLargeSize, $bBoldWeight)
 {
     global $FontName;
+
+    // Disable caching for these parser tags
+    $parser->disableCache ();
 
     // $argv is an array containing any arguments passed to the
     // extension like <example argument="foo" bar>..
@@ -68,7 +71,7 @@ function renderAPLcom ($input, $argv, $bLargeSize, $bBoldWeight)
     if ($bBoldWeight)
         $style .= 'font-weight: bold; ';
 
-    return htmlspecialchars ('<span style="' . $style . '">' . $input . '</span>');
+    return '<span style="' . $style . '">' . $input . '</span>';
 } // End renderAPLcom
 
 ?>

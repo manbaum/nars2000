@@ -528,7 +528,7 @@ APLINT PrimFnDydPiIisFvF
 
     // Attempt to convert the float to an integer using System CT
     aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-    if (!bRet)
+    if (!bRet && aplIntegerLft NE NUMTHEORY_NUMPRIMES)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return PrimFnDydPiIisIvI (aplIntegerLft, aplIntegerRht, lpPrimSpec);
@@ -580,6 +580,10 @@ APLRAT PrimFnDydPiRisRvR
     UBOOL         bRet;                 // TRUE iff the result is valid
     APLMPI        aplMPIRht = {0},      // Right arg as MP integer
                   aplMPIRes;            // Result    ...
+    APLBOOL       bQuadIO;              // []IO
+
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -592,20 +596,36 @@ APLRAT PrimFnDydPiRisRvR
 
     // Check the (singleton) left arg
     if (!mpq_integer_p (&aplRatLft)
-/////|| mpq_cmp_ui (&aplRatLft,                0, 1) <  0
+/////|| mpq_cmp_ui (&aplRatLft,                0, 1) <  0   // Unnecessary as the next comp is unsigned
      || mpq_cmp_ui (&aplRatLft, NUMTHEORY_LENGTH, 1) >= 0)
-        goto DOMAIN_EXIT;
-
-    // Check the (singleton) right arg
-    if (mpq_sgn (&aplRatRht) <= 0)
-        goto DOMAIN_EXIT;
-
-    // Copy the right arg as an integer
-    mpz_init_set (&aplMPIRht, mpq_numref (&aplRatRht));
+        goto LEFT_DOMAIN_EXIT;
 
     // Get the left arg as an integer
     //  (Ignore the value in bRet as we know it's an integer)
     aplIntegerLft = mpq_get_sa (&aplRatLft, &bRet);
+
+    // Allow Nth Prime right arg to be 0 if origin-0
+    if (!(mpq_cmp_ui (&aplRatRht, bQuadIO, 1) >= 0
+      && aplIntegerLft EQ NUMTHEORY_NTHPRIME))
+    {
+        // Check the (singleton) right arg
+        if (mpq_sgn (&aplRatRht) <= 0)
+            goto RIGHT_DOMAIN_EXIT;
+    } // End IF
+
+    // Initialize the temp
+    mpz_init (&aplMPIRht);
+
+    // Allow Num Primes right arg to be fractional
+    if (aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
+    {
+        mpq_init_set (&mpqRes, &aplRatRht);
+        mpq_floor    (&mpqRes, &mpqRes);
+        mpz_set      (&aplMPIRht, mpq_numref (&mpqRes));
+        Myq_clear    (&mpqRes);
+    } else
+        // Copy the right arg as an integer
+        mpz_set (&aplMPIRht, mpq_numref (&aplRatRht));
 
     // Split cases based upon the left arg
     switch (aplIntegerLft)
@@ -668,7 +688,8 @@ NONCE_EXIT:
 
     goto NORMAL_EXIT;
 
-DOMAIN_EXIT:
+LEFT_DOMAIN_EXIT:
+RIGHT_DOMAIN_EXIT:
     RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 NORMAL_EXIT:
     Myz_clear (&aplMPIRes);
@@ -987,7 +1008,12 @@ APLMPI PrimeFactor
 
                         goto NORMAL_EXIT;
                     } else
+                    {
                         uVal = MyTinyqs (&mpzRes, &mpzFactor1, &mpzFactor2, lpProcPrime->lpbCtrlBreak);
+
+                        if (mpz_cmp_ui (&mpzFactor1, 1) EQ 0)
+                            uVal = 0;
+                    } // End IF
 #ifdef DEBUG
                     if (uVal)
                         dprintfWL0 (L"MyTinyqs:  %S %S", mpz_get_str (szTemp1, 10, &mpzFactor1), mpz_get_str (szTemp2, 10, &mpzFactor2));
@@ -1026,6 +1052,9 @@ APLMPI PrimeFactor
         } else
         {
             uVal = MyTinyqs (&mpzRes, &mpzFactor1, &mpzFactor2, lpProcPrime->lpbCtrlBreak);
+
+            if (mpz_cmp_ui (&mpzFactor1, 1) EQ 0)
+                uVal = 0;
 #ifdef DEBUG
             if (uVal)
                 dprintfWL0 (L"MyTinyqs:  %S %S", mpz_get_str (szTemp1, 10, &mpzFactor1), mpz_get_str (szTemp2, 10, &mpzFactor2));
@@ -1193,8 +1222,8 @@ APLMPI PrimFnPiIsPrime
     // Initialize the result to 0
     mpz_init (&mpzRes);
 
-    if (mpz_cmp_ui (&aplMPIArg, 1) > 1)
-        mpz_set_ui (&mpzRes, mpz_likely_prime_p (&mpzRes, lpMemPTD->randState, 0));
+    if (mpz_cmp_ui (&aplMPIArg, 1) > 0)
+        mpz_set_ui (&mpzRes, mpz_likely_prime_p (&aplMPIArg, lpMemPTD->randState, 0));
 
     return mpzRes;
 } // End PrimFnPiIsPrime
@@ -1274,11 +1303,16 @@ APLMPI PrimFnPiNthPrime
     APLMPI  mpzRes = {0},           // The result
             mpzTmp = {0};           // Temporary
     UINT    uRes = 0;               // Loop counter
+    APLBOOL bQuadIO;                // []IO
+
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     // Handle special cases
     // The following answers were obtained from
     //   http://oeis.org/A006988/
     mpz_init_set_ui (&mpzRes, 10000);               // 1E4
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1289,6 +1323,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E5
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1299,6 +1334,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E6
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1309,6 +1345,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E7
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1319,6 +1356,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E8
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1329,6 +1367,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E9
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1339,6 +1378,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E10
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1349,6 +1389,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E11
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1359,6 +1400,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E12
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1369,6 +1411,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E13
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1379,6 +1422,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E14
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1389,6 +1433,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E15
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1399,6 +1444,7 @@ APLMPI PrimFnPiNthPrime
 
     // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E16
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1408,7 +1454,19 @@ APLMPI PrimFnPiNthPrime
     } // End IF
 
     // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E17
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+
+    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
+    {
+        mpz_set_sa (&mpzRes, 394906913903735329);
+
+        return mpzRes;
+    } // End IF
+
+    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E18
+    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
 
     if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
     {
@@ -1420,28 +1478,38 @@ APLMPI PrimFnPiNthPrime
     // Initialize the temp
     mpz_init_set (&mpzTmp, &aplMPIArg);
 
+    // Convert to origin-1
+    mpz_add_ui (&mpzTmp, &mpzTmp, 1 - GetQuadIO ());
+
     // Check the list of small primes
     if (mpz_cmp_ui (&mpzTmp, PRECOMPUTED_NUM_PRIMES) <= 0)
     {
+        // Initialize the result
         mpz_set_ui (&mpzRes, 0);
 
-        while (mpz_sub_ui (&mpzTmp, &mpzTmp, 1), mpz_sgn (&mpzTmp) > 0)
+        do
         {
             // Add to get the next prime
             mpz_add_ui (&mpzRes, &mpzRes, prime_delta[uRes++]);
 
+            // Back off the count
+            mpz_sub_ui (&mpzTmp, &mpzTmp, 1);
+
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpbCtrlBreak))
                 goto ERROR_EXIT;
-        } // End WHILE
+        } while (mpz_sgn (&mpzTmp) > 0);
     } else
     {
         // Initialize
         mpz_set_sa (&mpzRes, PRECOMPUTED_PRIME_MAX);
         mpz_sub_ui (&mpzTmp, &mpzTmp, PRECOMPUTED_NUM_PRIMES);
 
-        while (mpz_sub_ui (&mpzTmp, &mpzTmp, 1), mpz_sgn (&mpzTmp) > 0)
+        while (mpz_sgn (&mpzTmp) > 0)
         {
+            // Back off the count
+            mpz_sub_ui (&mpzTmp, &mpzTmp, 1);
+
             // Calculate the next prime
             mpz_nextprime (&mpzRes, &mpzRes);
 

@@ -358,7 +358,9 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                   lpMemRht;         // Ptr to right ...
     LPTOKEN       lptkTmpArg;       // Ptr to temp arg token
     UBOOL         bNumLft,          // TRUE iff left arg is simple numeric
-                  bNumRht;          // ...      right ...
+                  bNumRht,          // ...      right ...
+                  bHeader = TRUE;   // TRUE iff lpMemLft/Rht point to header
+                                    //   otherwise they point to data
     APLINT        aplIntegerLft,    // Left arg as integer
                   aplIntegerRht,    // Right ...
                   aplIntegerRes;    // Result   ...
@@ -453,6 +455,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                     else
                         // Point to the data
                         lpMemRht = &aplLongestRht;
+                    bHeader = FALSE;
                 } else
                 {
                     // Ensure Simple Numeric vs. Simple Numeric or Char vs. Char
@@ -496,7 +499,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
             aplIntegerRes =
               PrimFnDydEqualUnderbarSimple (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
                                             lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
-                                            TRUE, lpbCtrlBreak);
+                                            bHeader, lpbCtrlBreak);
             break;
 
         case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested

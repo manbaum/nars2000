@@ -789,9 +789,6 @@ APLRAT PrimFnDydStarRisRvR
         if (mpq_sgn (&aplRatRht) < 0)
             // Invert it
             mpq_inv (&mpqRes, &mpqRes);
-
-        // Canonicalize the number
-        mpq_canonicalize (&mpqRes);
     } else
     // If the base is negative, ...
     if (mpq_sgn (&aplRatLft) < 0)

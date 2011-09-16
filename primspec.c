@@ -1222,6 +1222,8 @@ RESTART_EXCEPTION_VARNAMED:
                         goto DOMAIN_EXIT;
 
                     case EXCEPTION_WS_FULL:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
                         goto WSFULL_EXIT;
 
                     case EXCEPTION_NONCE_ERROR:

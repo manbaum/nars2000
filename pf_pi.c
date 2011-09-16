@@ -566,6 +566,12 @@ APLFLOAT PrimFnDydPiFisIvI
 //  Primitive scalar function dyadic Pi:  R {is} R fn R
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydPiRisRvR"
+#else
+#define APPEND_NAME
+#endif
+
 APLRAT PrimFnDydPiRisRvR
     (APLRAT     aplRatLft,
      APLRAT     aplRatRht,
@@ -579,8 +585,9 @@ APLRAT PrimFnDydPiRisRvR
     APLINT        aplIntegerLft;        // Left arg as an integer
     UBOOL         bRet;                 // TRUE iff the result is valid
     APLMPI        aplMPIRht = {0},      // Right arg as MP integer
-                  aplMPIRes;            // Result    ...
+                  aplMPIRes = {0};      // Result    ...
     APLBOOL       bQuadIO;              // []IO
+    EXCEPTION_CODES exceptionCode = EXCEPTION_SUCCESS;
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -626,7 +633,8 @@ APLRAT PrimFnDydPiRisRvR
     } else
         // Copy the right arg as an integer
         mpz_set (&aplMPIRht, mpq_numref (&aplRatRht));
-
+    __try
+    {
     // Split cases based upon the left arg
     switch (aplIntegerLft)
     {
@@ -674,6 +682,30 @@ APLRAT PrimFnDydPiRisRvR
         defstop
             break;
     } // End SWITCH
+    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPiVisVvV"))
+    {
+#ifdef DEBUG
+        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+        // Save the exception code
+        exceptionCode = MyGetExceptionCode ();
+
+        // Split cases based upon the ExceptionCode
+        switch (exceptionCode)
+        {
+            case EXCEPTION_DOMAIN_ERROR:
+            case EXCEPTION_NONCE_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto ERROR_EXIT;
+
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+        } // End SWITCH
+    } // End __try/__except
 
     // Initialize the result to 0/1
     mpq_init (&mpqRes);
@@ -684,19 +716,24 @@ APLRAT PrimFnDydPiRisRvR
     goto NORMAL_EXIT;
 
 NONCE_EXIT:
-    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+    exceptionCode = EXCEPTION_NONCE_ERROR;
 
     goto NORMAL_EXIT;
 
 LEFT_DOMAIN_EXIT:
 RIGHT_DOMAIN_EXIT:
-    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    exceptionCode = EXCEPTION_DOMAIN_ERROR;
+ERROR_EXIT:
 NORMAL_EXIT:
     Myz_clear (&aplMPIRes);
     Myz_clear (&aplMPIRht);
 
+    if (exceptionCode NE EXCEPTION_SUCCESS)
+        RaiseException (exceptionCode, 0, 0, NULL);
+
     return mpqRes;
 } // End PrimFnDydPiRisRvR
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -720,7 +757,8 @@ APLVFP PrimFnDydPiVisVvV
     APLVFP mpfRes = {0};
     APLRAT mpqLft = {0},
            mpqRht = {0},
-           mpqRes;
+           mpqRes = {0};
+    EXCEPTION_CODES exceptionCode = EXCEPTION_SUCCESS;
 
     // Convert the VFP to a RAT
     mpq_init_set_f (&mpqLft, &aplVfpLft);
@@ -735,17 +773,36 @@ APLVFP PrimFnDydPiVisVvV
 #ifdef DEBUG
         dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        // Display message for unhandled exception
-        DisplayException ();
+        // Save the exception code
+        exceptionCode = MyGetExceptionCode ();
+
+        // Split cases based upon the ExceptionCode
+        switch (exceptionCode)
+        {
+            case EXCEPTION_DOMAIN_ERROR:
+            case EXCEPTION_NONCE_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto ERROR_EXIT;
+
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+        } // End SWITCH
     } // End __try/__except
 
     // Convert the RAT to a VFP
     mpf_init_set_q (&mpfRes, &mpqRes);
-
+ERROR_EXIT:
     // We no longer need this storage
     Myq_clear (&mpqRes);
     Myq_clear (&mpqRht);
     Myq_clear (&mpqLft);
+
+    if (exceptionCode NE EXCEPTION_SUCCESS)
+        RaiseException (exceptionCode, 0, 0, NULL);
 
     return mpfRes;      // To keep the compiler happy
 } // End PrimFnDydPiVisVvV
@@ -1289,6 +1346,82 @@ APLMPI PrimFnPiPrevPrime
 
 
 //***************************************************************************
+//  $NthPrime
+//
+//  Calculate the Nth prime if it's between small consecutive powers of ten
+//***************************************************************************
+
+UBOOL NthPrime
+    (LPAPLMPI mpzRes,               // The current power of ten
+     LPAPLMPI aplMPIArg,            // The number to check (origin-sensitive)
+     LPUBOOL  lpbCtrlBreak,         // Ptr to Ctrl-Break flag
+     UBOOL    bQuadIO,              // []IO
+     APLUINT  aplIntRes,            // The result if mpzRes EQ aplMPIArg (0 = use char)
+     LPCHAR   lpCharRes)            // Character form of the result if it's too large for a 64-bit integer (NULL is not used)
+
+{
+    UBOOL  bRet = FALSE;            // TRUE iff the result is valid or Ctrl-Break pressed
+    APLMPI mpzTmp = {0},            // Temporary
+           mpzTen = {0},            // ...
+           mpzArg = {0};            // ...
+
+    // Initialize the temps
+    mpz_init (&mpzTmp);
+    mpz_init (&mpzTen);
+    mpz_init (&mpzArg);
+
+    // Convert to origin-1
+    mpz_add_ui (&mpzArg, aplMPIArg, 1 - GetQuadIO ());
+
+    // Copy as the next power of ten
+    mpz_mul_ui (&mpzTmp, mpzRes, 10);
+
+    // If the origin-1 arg is between these powers of ten, ...
+    if (mpz_cmp ( mpzRes, &mpzArg) <= 0
+     && mpz_cmp (&mpzArg, &mpzTmp) <  0)
+    {
+        // Copy the power of ten
+        mpz_set (&mpzTen,  mpzRes);
+
+        // Set the Nth prime for the power of ten in mpzRes
+        if (lpCharRes EQ NULL)
+            mpz_set_sa  (mpzRes, aplIntRes);
+        else
+            mpz_set_str (mpzRes, lpCharRes, 10);
+
+        while (mpz_cmp (&mpzArg, &mpzTen) > 0)
+        {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
+            // Increment the count
+            mpz_add_ui (&mpzTen, &mpzTen, 1);
+
+            // Calculate the next prime
+            mpz_nextprime (mpzRes, mpzRes);
+        } // End WHILE
+
+        // Mark as valid result
+        bRet = TRUE;
+    } // End IF
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    // Mark as Ctrl-Break pressed
+    bRet = TRUE;
+NORMAL_EXIT:
+    // We no longer need this storage
+    Myz_clear (&mpzArg);
+    Myz_clear (&mpzTen);
+    Myz_clear (&mpzTmp);
+
+    return bRet;
+} // End NthPrime
+
+
+//***************************************************************************
 //  $PrimFnPiNthPrime
 //
 //  Return the Nth prime
@@ -1300,9 +1433,7 @@ APLMPI PrimFnPiNthPrime
      LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    APLMPI  mpzRes = {0},           // The result
-            mpzTmp = {0};           // Temporary
-    UINT    uRes = 0;               // Loop counter
+    APLMPI  mpzRes = {0};           // The result
     APLBOOL bQuadIO;                // []IO
 
     // Get the current value of []IO
@@ -1311,219 +1442,161 @@ APLMPI PrimFnPiNthPrime
     // Handle special cases
     // The following answers were obtained from
     //   http://oeis.org/A006988/
-    mpz_init_set_ui (&mpzRes, 10000);               // 1E4
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    mpz_init_set_ui (&mpzRes, 1);                   // 1E0
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 2, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 104729);
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E1
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 29, NULL))
+        goto NORMAL_EXIT;
 
-        return mpzRes;
-    } // End IF
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E2
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 541, NULL))
+        goto NORMAL_EXIT;
 
-    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E3
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 7919, NULL))
+        goto NORMAL_EXIT;
+
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E4
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 104729, NULL))
+        goto NORMAL_EXIT;
+
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E5
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 1299709, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 1299709);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E6
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 15485863, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 15485863);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E7
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 179424673, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 179424673);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E8
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 2038074743, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 2038074743);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E9
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 22801763489, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 22801763489);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E10
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 252097800623, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 252097800623);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E11
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 2760727302517, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 2760727302517);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E12
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 29996224275833, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 29996224275833);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E13
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 323780508946331, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 323780508946331);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E14
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 3475385758524527, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 3475385758524527);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E15
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 37124508045065437, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 37124508045065437);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E16
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 394906913903735329, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 4185296581467695669);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E17
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 4185296581467695669, NULL))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 394906913903735329);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E18
-    mpz_sub_ui (&mpzRes, &mpzRes, 1 - bQuadIO);
+    if (NthPrime (&mpzRes, &aplMPIArg, lpbCtrlBreak, bQuadIO, 0, "44211790234832169331"))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_str (&mpzRes, "44211790234832169331", 10);
-
-        return mpzRes;
-    } // End IF
-
-    // Initialize the temp
-    mpz_init_set (&mpzTmp, &aplMPIArg);
-
-    // Convert to origin-1
-    mpz_add_ui (&mpzTmp, &mpzTmp, 1 - GetQuadIO ());
-
-    // Check the list of small primes
-    if (mpz_cmp_ui (&mpzTmp, PRECOMPUTED_NUM_PRIMES) <= 0)
-    {
-        // Initialize the result
-        mpz_set_ui (&mpzRes, 0);
-
-        do
-        {
-            // Add to get the next prime
-            mpz_add_ui (&mpzRes, &mpzRes, prime_delta[uRes++]);
-
-            // Back off the count
-            mpz_sub_ui (&mpzTmp, &mpzTmp, 1);
-
-            // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
-                goto ERROR_EXIT;
-        } while (mpz_sgn (&mpzTmp) > 0);
-    } else
-    {
-        // Initialize
-        mpz_set_sa (&mpzRes, PRECOMPUTED_PRIME_MAX);
-        mpz_sub_ui (&mpzTmp, &mpzTmp, PRECOMPUTED_NUM_PRIMES);
-
-        while (mpz_sgn (&mpzTmp) > 0)
-        {
-            // Back off the count
-            mpz_sub_ui (&mpzTmp, &mpzTmp, 1);
-
-            // Calculate the next prime
-            mpz_nextprime (&mpzRes, &mpzRes);
-
-            // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
-                goto ERROR_EXIT;
-        } // End WHILE
-    } // End IF/ELSE
-ERROR_EXIT:
     // We no longer need this storage
-    Myz_clear (&mpzTmp);
+    Myz_clear (&mpzRes);
 
+    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
+NORMAL_EXIT:
     return mpzRes;
 } // End PrimFnPiNthPrime
+
+
+//***************************************************************************
+//  $NumPrimes
+//
+//  Calculate the # primes between small consecutive powers of ten
+//***************************************************************************
+
+UBOOL NumPrimes
+    (LPAPLMPI mpzRes,               // The current power of ten
+     LPAPLMPI aplMPIArg,            // The number to check
+     LPUBOOL  lpbCtrlBreak,         // Ptr to Ctrl-Break flag
+     APLUINT  aplIntRes)            // The result if mpzRes EQ aplMPIArg
+
+{
+    UBOOL  bRet = FALSE;            // TRUE iff the result is valid or Ctrl-Break pressed
+    APLMPI mpzTmp = {0},            // Temporary
+           mpzTen = {0};            // ...
+
+    // Initialize the temps
+    mpz_init (&mpzTmp);
+    mpz_init (&mpzTen);
+
+    // Copy as the next power of ten
+    mpz_mul_ui (&mpzTmp, mpzRes, 10);
+
+    // If the origin-1 arg is between these powers of ten, ...
+    if (mpz_cmp ( mpzRes, aplMPIArg) <= 0
+     && mpz_cmp (aplMPIArg, &mpzTmp) <  0)
+    {
+        // Copy as the current power of ten
+        mpz_set (&mpzTen, mpzRes);
+
+        // Initialize the current count
+        mpz_set_sa (mpzRes, aplIntRes);
+
+        // Loop through mpz_nextprime
+        while (mpz_cmp (aplMPIArg, &mpzTen) > 0)
+        {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
+            // Calculate the next prime
+            mpz_nextprime (&mpzTen, &mpzTen);
+
+            // Count in another prime
+            mpz_add_ui (mpzRes, mpzRes, 1);
+        } // End WHILE
+
+        // If the arg is < the prime, ...
+        if (mpz_cmp (aplMPIArg, &mpzTen) < 0)
+            // Subtract out the extra one
+            mpz_sub_ui (mpzRes, mpzRes, 1);
+
+        // Mark as valid result
+        bRet = TRUE;
+    } // End IF
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    // Mark as Ctrl-Break pressed
+    bRet = TRUE;
+NORMAL_EXIT:
+    // We no longer need this storage
+    Myz_clear (&mpzTen);
+    Myz_clear (&mpzTmp);
+
+    return bRet;
+} // End NumPrimes
 
 
 //***************************************************************************
@@ -1539,232 +1612,100 @@ APLMPI PrimFnPiNumPrimes
 
 {
     APLMPI mpzRes = {0};            // The result
-    APLUINT uRes;                   // Loop counter
-    APLINT  uPrime;                 // The current prime
 
     // Handle special cases
     // The following answers were obtained from
     //   http://oeis.org/A006880
-    mpz_init_set_ui (&mpzRes, 10000);               // 1E4
+    mpz_init_set_ui (&mpzRes, 1);                   // 1E0
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 0))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 1229);
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E1
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 4))
+        goto NORMAL_EXIT;
 
-        return mpzRes;
-    } // End IF
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E2
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 25))
+        goto NORMAL_EXIT;
 
-    // Shift over the comparison value
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E3
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 168))
+        goto NORMAL_EXIT;
+
+    mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E4
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 1229))
+        goto NORMAL_EXIT;
+
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E5
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 9592))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 9592);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E6
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 78498))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 78498);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E7
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 664579))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 664579);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E8
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 5761455))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 5761455);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E9
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 50847534))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 50847534);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E10
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 455052511))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 455052511);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E11
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 4118054813))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 4118054813);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E12
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 37607912018))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 37607912018);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E13
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 346065536839))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 346065536839);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E14
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 3204941750802))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 3204941750802);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E15
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 29844570422669))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 29844570422669);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E16
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 279238341033925))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 279238341033925);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E17
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 2623557157654233))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 2623557157654233);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E18
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 24739954287740860))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 24739954287740860);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E19
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 234057667276344607))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 234057667276344607);
-
-        return mpzRes;
-    } // End IF
-
-    // Shift over the comparison value
     mpz_mul_ui (&mpzRes, &mpzRes, 10);              // 1E20
+    if (NumPrimes (&mpzRes, &aplMPIArg, lpbCtrlBreak, 2220819602560918840))
+        goto NORMAL_EXIT;
 
-    if (mpz_cmp (&mpzRes, &aplMPIArg) EQ 0)
-    {
-        mpz_set_sa (&mpzRes, 2220819602560918840);
+    // We no longer need this storage
+    Myz_clear (&mpzRes);
 
-        return mpzRes;
-    } // End SWITCH
+    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
-    // Run through the list of small primes
-    for (uPrime = uRes = 0;
-         uRes < PRECOMPUTED_NUM_PRIMES;
-         uRes++)
-    {
-        // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
-            goto ERROR_EXIT;
-
-        // Calculate the next prime
-        uPrime += prime_delta[uRes];
-
-        // Check the prime
-        if (mpz_cmp_ui (&aplMPIArg, (UINT) uPrime) < 0)
-        {
-            // Initialize the result
-            mpz_set_sa (&mpzRes, uRes);
-
-            return mpzRes;
-        } // End IF
-    } // End FOR
-
-    // Initialize the current prime
-    mpz_set_sa (&mpzRes, uPrime);
-
-    // Loop through mp_next_prime
-    while (TRUE)
-    {
-        // Calculate the next prime
-        mpz_nextprime (&mpzRes, &mpzRes);
-
-        // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
-            goto ERROR_EXIT;
-
-        // Check the prime
-        if (mpz_cmp (&aplMPIArg, &mpzRes) < 0)
-        {
-            // Initialize the result
-            mpz_set_sa (&mpzRes, uRes);
-
-            return mpzRes;
-        } // End IF
-
-        // Count in another prime
-        uRes++;
-    } // End WHILE
-ERROR_EXIT:
-    // Initialize the result
-    mpz_set_sa (&mpzRes, uRes);
-
+NORMAL_EXIT:
     return mpzRes;
 } // End PrimFnPiNumPrimes
 

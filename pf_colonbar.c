@@ -428,9 +428,6 @@ APLRAT PrimFnDydColonBarRisRvR
     // Divide the Rationals
     mpq_div (&mpqRes, &aplRatLft, &aplRatRht);
 
-    // Canonicalize the Rational
-    mpq_canonicalize (&mpqRes);
-
     return mpqRes;
 } // End PrimFnDydColonBarRisRvR
 

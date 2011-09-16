@@ -305,14 +305,19 @@ void mpz_set_sa
 ////mp_limb_t vl;
     APLUINT abs_val;
 
-    // Ensure there's room for 64 bits
-    mpz_realloc2 (dest, BITS_IN_APLINT);
-////vl = (mp_limb_t) (unsigned long int) (val >= 0 ? val : -val);
-    abs_val = abs64 (val);
+    // If the value is zero, ...
+    if (val EQ 0)
+        mpz_set_ui (dest, 0);
+    else
+    {
+        // Ensure there's room for 64 bits
+        mpz_realloc2 (dest, BITS_IN_APLINT);
+////////vl = (mp_limb_t) (unsigned long int) (val >= 0 ? val : -val);
+        abs_val = abs64 (val);
 
-    dest->_mp_d[0] = LODWORD (abs_val);
-    dest->_mp_d[1] = HIDWORD (abs_val);
-    size = 1 + (HIDWORD (abs_val) NE 0);
+        dest->_mp_d[0] = LODWORD (abs_val);
+        dest->_mp_d[1] = HIDWORD (abs_val);
+        size = 1 + (HIDWORD (abs_val) NE 0);
 
 ////#if GMP_NAIL_BITS != 0
 ////    if (vl > GMP_NUMB_MAX)
@@ -323,7 +328,8 @@ void mpz_set_sa
 ////    }
 ////#endif
 
-    dest->_mp_size = (int) ((val >= 0) ? size : -size);
+        dest->_mp_size = (int) ((val >= 0) ? size : -size);
+    } // End IF
 } // End mpz_set_sa
 
 
@@ -815,36 +821,46 @@ void mpq_set_sa
     MP_INT mpzNum = {0},
            mpzDen = {0};
 
-    // Initialize the numerator
-    mpz_init (&mpzNum);
+    Assert (den NE 0);
 
-    // Get the high-order long
-    mpz_set_si (&mpzNum, HIAPLINT (num));
+    // If the numerator is zero, ...
+    if (num EQ 0)
+        mpq_set_ui (dest, 0, 1);
+    else
+    {
+        // Initialize the numerator
+        mpz_init (&mpzNum);
 
-    // Shift to upper long
-    mpz_mul_2exp (&mpzNum, &mpzNum, BITS_IN_APLINT / 2);
+        // Get the high-order long
+        mpz_set_si (&mpzNum, HIAPLINT (num));
 
-    // Add in the low long
-    mpz_add_ui (&mpzNum, &mpzNum, LOAPLINT (num));
+        // Shift to upper long
+        mpz_mul_2exp (&mpzNum, &mpzNum, BITS_IN_APLINT / 2);
 
-    // Initialize the denominator
-    mpz_init (&mpzDen);
+        // Add in the low long
+        mpz_add_ui (&mpzNum, &mpzNum, LOAPLINT (num));
 
-    // Get the high-order long
-    mpz_set_ui (&mpzDen, HIAPLUINT (den));
+        // Initialize the denominator
+        mpz_init (&mpzDen);
 
-    // Shift to upper long
-    mpz_mul_2exp (&mpzDen, &mpzDen, BITS_IN_APLINT / 2);
+        // Get the high-order long
+        mpz_set_ui (&mpzDen, HIAPLUINT (den));
 
-    // Add in the low long
-    mpz_add_ui (&mpzDen, &mpzDen, LOAPLINT (den));
+        // Shift to upper long
+        mpz_mul_2exp (&mpzDen, &mpzDen, BITS_IN_APLINT / 2);
 
-    // Set as numerator and denominator
-    mpq_set_num (dest, &mpzNum); mpz_clear (&mpzNum);
-    mpq_set_den (dest, &mpzDen); mpz_clear (&mpzDen);
+        // Add in the low long
+        mpz_add_ui (&mpzDen, &mpzDen, LOAPLINT (den));
 
-    // Canonicalize the Rational
-    mpq_canonicalize (dest);
+        // Set as numerator and denominator
+        mpq_set_num (dest, &mpzNum); mpz_clear (&mpzNum);
+        mpq_set_den (dest, &mpzDen); mpz_clear (&mpzDen);
+
+        // If the denominator is NE 1, ...
+        if (den NE 1)
+            // Canonicalize the Rational
+            mpq_canonicalize (dest);
+    } // End IF
 } // End mpq_set_sa
 
 

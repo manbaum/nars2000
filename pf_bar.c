@@ -454,9 +454,6 @@ APLRAT PrimFnDydBarRisRvR
     // Subtract the Rationals
     mpq_sub (&mpqRes, &aplRatLft, &aplRatRht);
 
-    // Canonicalize the Rational
-    mpq_canonicalize (&mpqRes);
-
     return mpqRes;
 } // End PrimFnDydBarRisRvR
 

@@ -1059,8 +1059,10 @@ LPAPLCHAR FormatAplRatFC
 
     lpRawFmt = (LPCHAR) lpaplChar;
 
-    // Canonicalize the arg
-    mpq_canonicalize (&aplRat);
+    // If the denominator is NE 1, ...
+    if (mpz_cmp_ui (mpq_denref (&aplRat), 1) NE 0)
+        // Canonicalize the arg
+        mpq_canonicalize (&aplRat);
 
     // Format the num/den
     mpq_get_str (lpRawFmt, 10, &aplRat);

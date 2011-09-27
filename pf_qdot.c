@@ -761,7 +761,7 @@ APLRAT PrimFnDydQuoteDotRisRvR
         uLft = mpz_get_si (mpq_numref (&aplRatLft));
 
         // Compute the binomial coefficient
-        mpz_bin_ui (mpq_numref (&mpqRes), mpq_numref (&mpqRes), uLft);
+        mpz_bin_ui (mpq_numref (&mpqRes), mpq_numref (&aplRatRht), uLft);
     } else
         RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
 
@@ -790,8 +790,8 @@ APLVFP PrimFnDydQuoteDotVisVvV
     aplLft = PrimFnMonQuoteDotVisV (aplVfpLft, NULL);   // !L
     aplRht = PrimFnMonQuoteDotVisV (aplVfpRht, NULL);   // !R
 
-    mpf_init_copy (&aplTmp, &aplVfpRht);                 // R
-    mpf_sub      (&aplTmp, &aplTmp, &aplVfpLft);        // R-L
+    mpf_init_copy (&aplTmp, &aplVfpRht);                // R
+    mpf_sub       (&aplTmp, &aplTmp, &aplVfpLft);       // R-L
     mpfRes = PrimFnMonQuoteDotVisV (aplTmp, NULL);      // !R-L
 
     mpf_mul (&mpfRes, &aplLft, &mpfRes);                // (!L) * !R-L

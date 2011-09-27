@@ -50,7 +50,7 @@ Build #899 -- Version 0.0.3.3
 -----------------------------
 
 * Allow R In 6{pi}R To Be Fractional
-* Allow 5{pi}0 In Origin[0
+* Allow 5{pi}0 In Origin-0
 * Handle Quadratic Sieve Returning Factor Of One
 * Fix Bug:  2{pi}R Fails
 * Make 5{pi}R To Be Origin-Sensitive

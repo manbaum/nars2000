@@ -1,6 +1,22 @@
 Version 0.0.3.4 consists of the following Builds:
 
 
+Build #903 -- Version 0.0.3.4
+-----------------------------
+
+* Fix Bug:  Handle ReAlloc In Dyadic Reduction
+
+Directory trunk:
+
+PO_SLASH.C:
+  In <PrimOpDydSlashInsertDim_EM>, handle the case where we
+    ReAlloc the arg to insert a unit dimension and the array
+    moves.
+
+REBAR.C:
+  Improve comments.
+
+
 Build #902 -- Version 0.0.3.4
 -----------------------------
 

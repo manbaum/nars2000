@@ -2391,7 +2391,7 @@ typedef struct tagLANGCHARS
                                          },
         {L'p'                     , {0}, L"Pi point notation",
                                          L"This notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
-                                         L"as in 0.5p1 for " WS_UTF16_PI L"/2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI L"/3."
+                                         L"as in 0.5p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"3."
                                          },
         {L'r'                     , {0}, L"Rational Point Notation",
                                          L"This notation allows you to enter Rational numbers as in 1r3, or, if the denominator is 1, using the suffix x as in 123x.  "
@@ -2403,7 +2403,8 @@ typedef struct tagLANGCHARS
                                          },
         {L'x'                     , {0}, L"Euler point notation",
                                          L"This notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "
-                                         L"as in 3x2 for three times e squared where e is the base of the natural logarithm."
+                                         L"as in 3x2 for three times e squared where e is the base of the natural logarithm.\r\n\r\n"
+                                         L"A suffix \"x\" on  a numeric integer constant such as 123x indicates that the constant is a rational number."
                                          },
     };
 

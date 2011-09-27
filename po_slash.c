@@ -2650,8 +2650,13 @@ UBOOL PrimOpDydSlashInsertDim_EM
     if (*lphGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
-    // If the handle is moveable, GlobalReAlloc returns the same handle
-    Assert (hGlbTmp EQ *lphGlbRes);
+    // Make it a global ptr type
+    *lphGlbRes = MakePtrTypeGlb (*lphGlbRes);
+
+    // Check to see if GlobalReAlloc returns the same handle
+    if (hGlbTmp NE *lphGlbRes)
+        // Save back into the result
+        lpYYRes->tkToken.tkData.tkGlbData = *lphGlbRes;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);

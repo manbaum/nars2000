@@ -689,6 +689,11 @@ UBOOL IsLocalName
     WCHAR    sysName[32];               // Temp storage for sysnames in lowercase
     APLU3264 uLineLen;                  // Line length
 
+    // If the Edit Ctrl window handle is not from a Function Editor window, ...
+    if (!IzitFE (GetParent (hWndEC)))
+        // The given name can't be local
+        return FALSE;
+
     // If this is a sysname, ...
     if (IsSysName (lpwszStr))
     {

@@ -2553,5 +2553,109 @@ void TPA_VFP2VFP
 
 
 //***************************************************************************
+//  $TCA_FLT2INT
+//***************************************************************************
+
+void TCA_FLT2INT
+    (LPAPLFLOAT  lpaplFloat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplInteger = GetNextInteger (lpaplFloat, ARRAY_FLOAT, uInt);
+} // TCA_FLT2INT
+
+
+//***************************************************************************
+//  $TCA_FLT2RAT
+//***************************************************************************
+
+void TCA_FLT2RAT
+    (LPAPLFLOAT  lpaplFloat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myq_init (&lpAllTypes->aplRat);
+
+    mpq_set_d (&lpAllTypes->aplRat, lpaplFloat[uInt]);
+} // TCA_FLT2RAT
+
+
+//***************************************************************************
+//  $TCA_RAT2INT
+//***************************************************************************
+
+void TCA_RAT2INT
+    (LPAPLRAT    lpaplRat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplInteger = mpq_get_ctsa (&lpaplRat[uInt], NULL);
+} // TCA_RAT2INT
+
+
+//***************************************************************************
+//  $TCA_RAT2FLT
+//***************************************************************************
+
+void TCA_RAT2FLT
+    (LPAPLRAT    lpaplRat,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplFloat = mpq_get_d (&lpaplRat[uInt]);
+} // TCA_RAT2FLT
+
+
+//***************************************************************************
+//  $TCA_VFP2INT
+//***************************************************************************
+
+void TCA_VFP2INT
+    (LPAPLVFP    lpaplVfp,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplInteger = mpf_get_ctsa (&lpaplVfp[uInt], NULL);
+} // TCA_VFP2INT
+
+
+//***************************************************************************
+//  $TCA_VFP2FLT
+//***************************************************************************
+
+void TCA_VFP2FLT
+    (LPAPLVFP    lpaplVfp,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    lpAllTypes->aplFloat = mpf_get_d (&lpaplVfp[uInt]);
+} // TCA_VFP2FLT
+
+
+//***************************************************************************
+//  $TCA_VFP2RAT
+//***************************************************************************
+
+void TCA_VFP2RAT
+    (LPAPLVFP    lpaplVfp,
+     APLINT      uInt,
+     LPALLTYPES  lpAllTypes)
+
+{
+    // Initialize the result
+    Myq_init (&lpAllTypes->aplRat);
+
+    mpq_set_f  (&lpAllTypes->aplRat, &lpaplVfp[uInt]);
+} // TCA_VFP2RAT
+
+
+//***************************************************************************
 //  End of File: typemote.c
 //***************************************************************************

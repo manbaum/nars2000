@@ -542,6 +542,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\pf_dotdot.c"
+				>
+			</File>
+			<File
 				RelativePath=".\pf_dshoe.c"
 				>
 			</File>

@@ -362,16 +362,17 @@ void InitPrimFns
     InitPrimFn (UTF16_RIGHTTACK         , &PrimFnRightTack_EM_YY         ); // Alt-'|' - right tack
 ////                                                                        // Alt-'}' - zilde
     InitPrimFn (UTF16_COMMABAR          , &PrimFnCommaBar_EM_YY          ); // Alt-'~' - comma-bar
-    InitPrimFn (UTF16_CIRCUMFLEX        , &PrimFnUpCaret_EM_YY           );
-    InitPrimFn (UTF16_BAR               , &PrimFnBar_EM_YY               );
-    InitPrimFn (UTF16_PLUS              , &PrimFnPlus_EM_YY              );
-    InitPrimFn (UTF16_STILE             , &PrimFnStile_EM_YY             );
-    InitPrimFn (UTF16_STILE2            , &PrimFnStile_EM_YY             );
-    InitPrimFn (UTF16_TILDE2            , &PrimFnTilde_EM_YY             );
-    InitPrimFn (UTF16_COMMA             , &PrimFnComma_EM_YY             );
-    InitPrimFn (UTF16_SLASH             , &PrimFnSlash_EM_YY             );
-    InitPrimFn (UTF16_SLOPE             , &PrimFnSlope_EM_YY             );
-    InitPrimFn (UTF16_STAR              , &PrimFnStar_EM_YY              );
+    InitPrimFn (UTF16_CIRCUMFLEX        , &PrimFnUpCaret_EM_YY           ); //     '^'
+    InitPrimFn (UTF16_BAR               , &PrimFnBar_EM_YY               ); //     '-'
+    InitPrimFn (UTF16_DOT               , &PrimFnDotDot_EM_YY            ); //     '.'
+    InitPrimFn (UTF16_PLUS              , &PrimFnPlus_EM_YY              ); //     '+'
+    InitPrimFn (UTF16_STILE             , &PrimFnStile_EM_YY             ); //     '|'
+    InitPrimFn (UTF16_STILE2            , &PrimFnStile_EM_YY             ); //     '|'
+    InitPrimFn (UTF16_TILDE2            , &PrimFnTilde_EM_YY             ); //     '~'
+    InitPrimFn (UTF16_COMMA             , &PrimFnComma_EM_YY             ); //     ','
+    InitPrimFn (UTF16_SLASH             , &PrimFnSlash_EM_YY             ); //     '/'
+    InitPrimFn (UTF16_SLOPE             , &PrimFnSlope_EM_YY             ); //     '\'
+    InitPrimFn (UTF16_STAR              , &PrimFnStar_EM_YY              ); //     '*'
 ////                                                                        //         - dot (inner product)
 ////                                                                        //         - jotdot (outer product)
 } // End InitPrimFns
@@ -584,6 +585,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_CIRCUMFLEX        , &PrimProtoFnUpCaret_EM_YY           );   //         -
     InitPrimProtoFn (UTF16_BAR               , &PrimProtoFnBar_EM_YY               );   //         -
     InitPrimProtoFn (UTF16_PLUS              , &PrimProtoFnPlus_EM_YY              );   //         -
+    InitPrimProtoFn (UTF16_DOT               , &PrimProtoFnDotDot_EM_YY            );   //         -
     InitPrimProtoFn (UTF16_STILE             , &PrimProtoFnStile_EM_YY             );   //         -
     InitPrimProtoFn (UTF16_STILE2            , &PrimProtoFnStile_EM_YY             );   //         -
     InitPrimProtoFn (UTF16_TILDE2            , &PrimProtoFnTilde_EM_YY             );   //         -
@@ -628,17 +630,10 @@ void InitPrimProtoOp
      LPPRIMOPS lpPrimOp)
 
 {
-    if (PrimProtoFnsTab[PRIMTAB_MASK & wchFn])
+    if (PrimProtoOpsTab[PRIMTAB_MASK & wchFn])
         DbgStop ();
     else
-        // Note the white lie we tell here (LPPRIMFNS) instead of
-        //   (LPPRIMOPS) so we can use one table for both primitive
-        //   functions and operators.  When the prototype function
-        //   for a primitive function is called, lptkFunc is a ptr
-        //   to the primitive function token.  When the prototype
-        //   function for a primitive operator is called, the same
-        //   parameter is a ptr to the function strand.
-        PrimProtoFnsTab[PRIMTAB_MASK & wchFn] = (LPPRIMFNS) lpPrimOp;
+        PrimProtoOpsTab[PRIMTAB_MASK & wchFn] = lpPrimOp;
 } // End InitPrimProtoOp
 
 

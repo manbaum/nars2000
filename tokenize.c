@@ -4839,7 +4839,24 @@ TKCOLINDICES CharTransTK
         case UTF16_INFINITY:
             return TKCOL_INFINITY;
 
-        case L'.':
+        case UTF16_DOT:
+            // If the next symbol is a dot, ...
+            if (lptkLocalVars->lpwszCur[1] EQ UTF16_DOT)
+            {
+                // If we're not Syntax Coloring, ...
+                if (!lptkLocalVars->lpMemClrNxt)
+                    // Skip over it
+                    lptkLocalVars->uChar++;
+
+                return TKCOL_PRIM_FN;
+            } else
+            // If the previous symbol is a dot, and
+            //   we're Syntax Coloring, ...
+            if (lptkLocalVars->lpwszCur > lptkLocalVars->lpwszOrig
+             && lptkLocalVars->lpwszCur[-1] EQ UTF16_DOT
+             && lptkLocalVars->lpMemClrNxt)
+                return TKCOL_PRIM_FN;
+
             return TKCOL_DOT;
 
         case L'0':

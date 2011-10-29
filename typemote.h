@@ -20,6 +20,45 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#define TP_MAT                                                                                                                                                     \
+{/*     BOOL          INT          FLT         CHAR         HETERO       NESTED       LIST          APA          RAT          VFP         INIT     */              \
+   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,HETE),M(BOOL,HETE),M(BOOL,NEST),M(BOOL,ERR ),M(BOOL,INT ),M(BOOL,RAT ),M(BOOL,VFP ),M(BOOL,BOOL)},   /* BOOL */  \
+   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,HETE),M(INT ,HETE),M(INT ,NEST),M(INT ,ERR ),M(INT ,INT ),M(INT ,RAT ),M(INT ,VFP ),M(INT ,INT )},   /* INT  */  \
+   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,HETE),M(FLT ,HETE),M(FLT ,NEST),M(FLT ,ERR ),M(FLT ,FLT ),M(FLT ,VFP ),M(FLT ,VFP ),M(FLT ,FLT )},   /* FLT  */  \
+   {M(CHAR,HETE),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,CHAR),M(CHAR,HETE),M(CHAR,NEST),M(CHAR,ERR ),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,CHAR)},   /* CHAR */  \
+   {M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,NEST),M(HETE,ERR ),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE)},   /* HETE */  \
+   {M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,ERR ),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST)},   /* NEST */  \
+   {M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR )},   /* LIST */  \
+   {M(APA ,INT ),M(APA ,INT ),M(APA ,FLT ),M(APA ,HETE),M(APA ,HETE),M(APA ,NEST),M(APA ,ERR ),M(APA ,INT ),M(APA ,RAT ),M(APA ,VFP ),M(APA ,INT )},   /* APA  */  \
+   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HETE),M(RAT ,HETE),M(RAT ,NEST),M(RAT ,ERR ),M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,RAT )},   /* RAT  */  \
+   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HETE),M(VFP ,HETE),M(VFP ,NEST),M(VFP ,ERR ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP )},   /* VFP  */  \
+   {M(INIT,BOOL),M(INIT,INT ),M(INIT,FLT ),M(INIT,CHAR),M(INIT,HETE),M(INIT,NEST),M(INIT,ERR ),M(INIT,INT ),M(INIT,RAT ),M(INIT,VFP ),M(INIT,INIT)},   /* INIT */  \
+}
+
+// ARRAY_xxx Type Promotion result matrix
+EXTERN
+APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
+#ifdef DEFINE_VALUES
+
+#define ARRAY_FLT       ARRAY_FLOAT
+#define ARRAY_HETE      ARRAY_HETERO
+#define ARRAY_NEST      ARRAY_NESTED
+#define ARRAY_ERR       ARRAY_ERROR
+#define ARRAY_INIT      ARRAY_ERROR
+
+#define M(a,b)          ARRAY_##b
+= TP_MAT
+#undef  M
+
+#undef  ARRAY_INIT
+#undef  ARRAY_ERR
+#undef  ARRAY_NEST
+#undef  ARRAY_HETE
+#undef  ARRAY_FLT
+
+#endif
+;
+
 typedef void (*TPT_ACTION)  (LPTOKEN);
 
 #ifdef DEFINE_VALUES
@@ -38,8 +77,6 @@ void           TPT_APA2RAT  (LPTOKEN);
 void           TPT_APA2VFP  (LPTOKEN);
 void           TPT_RAT2VFP  (LPTOKEN);
 #endif
-
-#define M(a,b)          TPT_##a##2##b
 
 #define TPT_BOOL2BOOL   TPT_IDENT
 #define TPT_INT2INT     TPT_IDENT
@@ -96,7 +133,11 @@ void           TPT_RAT2VFP  (LPTOKEN);
 EXTERN
 TPT_ACTION aTypeTknPromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #ifdef DEFINE_VALUES
+
+#define M(a,b)          TPT_##a##2##b
  = TP_MAT
+#undef  M
+
 #endif
 ;
 
@@ -151,8 +192,6 @@ TPT_ACTION aTypeTknPromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #undef  TPT_INT2INT
 #undef  TPT_BOOL2BOOL
 
-#undef  M
-
 
 typedef void (*TP_ACTION)    (LPVOID, APLINT, LPALLTYPES);
 
@@ -196,8 +235,6 @@ void           TPA_VFP2NEST  (LPAPLVFP    , APLINT, LPALLTYPES);
 void           TPA_VFP2VFP   (LPAPLVFP    , APLINT, LPALLTYPES);
 #endif
 
-#define M(a,b)          TPA_##a##2##b
-
 #define TPA_BOOL2ERR    TPA_ERROR
 #define TPA_INT2ERR     TPA_ERROR
 #define TPA_FLT2ERR     TPA_ERROR
@@ -225,7 +262,11 @@ void           TPA_VFP2VFP   (LPAPLVFP    , APLINT, LPALLTYPES);
 // Type Promotion Action matrix
 TP_ACTION aTypeActPromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #ifdef DEFINE_VALUES
+
+#define M(a,b)          TPA_##a##2##b
  = TP_MAT
+#undef  M
+
 #endif
 ;
 
@@ -253,7 +294,130 @@ TP_ACTION aTypeActPromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
 #undef  TPA_INT2ERR
 #undef  TPA_BOOL2ERR
 
+
+#define TC_MAT                                                                                                                                                     \
+{/*     BOOL          INT          FLT         CHAR         HETERO       NESTED       LIST          APA          RAT          VFP     */              \
+   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,ERR ),M(BOOL,ERR ),M(BOOL,ERR ),M(BOOL,ERR ),M(BOOL,ERR ),M(BOOL,RAT ),M(BOOL,VFP )},   /* BOOL */  \
+   {M(INT ,BOOL),M(INT ,INT ),M(INT ,FLT ),M(INT ,ERR ),M(INT ,ERR ),M(INT ,ERR ),M(INT ,ERR ),M(INT ,ERR ),M(INT ,RAT ),M(INT ,VFP )},   /* INT  */  \
+   {M(FLT ,BOOL),M(FLT ,INT ),M(FLT ,FLT ),M(FLT ,ERR ),M(FLT ,ERR ),M(FLT ,ERR ),M(FLT ,ERR ),M(FLT ,ERR ),M(FLT ,RAT ),M(FLT ,VFP )},   /* FLT  */  \
+   {M(CHAR,ERR ),M(CHAR,ERR ),M(CHAR,ERR ),M(CHAR,CHAR),M(CHAR,ERR ),M(CHAR,ERR ),M(CHAR,ERR ),M(CHAR,ERR ),M(CHAR,ERR ),M(CHAR,ERR )},   /* CHAR */  \
+   {M(HETE,ERR ),M(HETE,ERR ),M(HETE,ERR ),M(HETE,ERR ),M(HETE,HETE),M(HETE,ERR ),M(HETE,ERR ),M(HETE,ERR ),M(HETE,ERR ),M(HETE,ERR )},   /* HETE */  \
+   {M(NEST,ERR ),M(NEST,ERR ),M(NEST,ERR ),M(NEST,ERR ),M(NEST,ERR ),M(NEST,NEST),M(NEST,ERR ),M(NEST,ERR ),M(NEST,ERR ),M(NEST,ERR )},   /* NEST */  \
+   {M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR )},   /* LIST */  \
+   {M(APA ,BOOL),M(APA ,INT ),M(APA ,FLT ),M(APA ,ERR ),M(APA ,ERR ),M(APA ,ERR ),M(APA ,ERR ),M(APA ,ERR ),M(APA ,RAT ),M(APA ,VFP )},   /* APA  */  \
+   {M(RAT ,BOOL),M(RAT ,INT ),M(RAT ,FLT ),M(RAT ,ERR ),M(RAT ,ERR ),M(RAT ,ERR ),M(RAT ,ERR ),M(RAT ,ERR ),M(RAT ,RAT ),M(RAT ,VFP )},   /* RAT  */  \
+   {M(VFP ,BOOL),M(VFP ,INT ),M(VFP ,FLT ),M(VFP ,ERR ),M(VFP ,ERR ),M(VFP ,ERR ),M(VFP ,ERR ),M(VFP ,ERR ),M(VFP ,RAT ),M(VFP ,VFP )},   /* VFP  */  \
+}
+
+typedef void (*TC_ACTION)    (LPVOID, APLINT, LPALLTYPES);
+
+#ifdef DEFINE_VALUES
+void           TCA_FLT2BOOL  (LPAPLFLOAT  , APLINT, LPALLTYPES);
+void           TCA_FLT2INT   (LPAPLFLOAT  , APLINT, LPALLTYPES);
+void           TCA_FLT2RAT   (LPAPLFLOAT  , APLINT, LPALLTYPES);
+
+void           TCA_RAT2BOOL  (LPAPLRAT    , APLINT, LPALLTYPES);
+void           TCA_RAT2INT   (LPAPLRAT    , APLINT, LPALLTYPES);
+void           TCA_RAT2FLT   (LPAPLRAT    , APLINT, LPALLTYPES);
+
+void           TCA_VFP2BOOL  (LPAPLVFP    , APLINT, LPALLTYPES);
+void           TCA_VFP2INT   (LPAPLVFP    , APLINT, LPALLTYPES);
+void           TCA_VFP2FLT   (LPAPLVFP    , APLINT, LPALLTYPES);
+void           TCA_VFP2RAT   (LPAPLVFP    , APLINT, LPALLTYPES);
+#endif
+
+#define TCA_BOOL2ERR    TCA_ERROR
+#define TCA_INT2ERR     TCA_ERROR
+#define TCA_FLT2ERR     TCA_ERROR
+#define TCA_CHAR2ERR    TCA_ERROR
+#define TCA_HETE2ERR    TCA_ERROR
+#define TCA_NEST2ERR    TCA_ERROR
+#define TCA_LIST2ERR    TCA_ERROR
+#define TCA_APA2ERR     TCA_ERROR
+#define TCA_RAT2ERR     TCA_ERROR
+#define TCA_VFP2ERR     TCA_ERROR
+#define TCA_INIT2ERR    TCA_ERROR
+
+#define TCA_ERROR       TPA_ERROR
+#define TCA_BOOL2BOOL   TPA_BOOL2BOOL
+#define TCA_BOOL2INT    TPA_BOOL2INT
+#define TCA_BOOL2FLT    TPA_BOOL2FLT
+#define TCA_BOOL2RAT    TPA_BOOL2RAT
+#define TCA_BOOL2VFP    TPA_BOOL2VFP
+#define TCA_INT2BOOL    TPA_INT2INT
+#define TCA_INT2INT     TPA_INT2INT
+#define TCA_INT2FLT     TPA_INT2FLT
+#define TCA_INT2RAT     TPA_INT2RAT
+#define TCA_INT2VFP     TPA_INT2VFP
+#define TCA_FLT2FLT     TPA_FLT2FLT
+#define TCA_FLT2VFP     TPA_FLT2VFP
+#define TCA_CHAR2CHAR   TPA_CHAR2CHAR
+#define TCA_APA2BOOL    TPA_APA2INT
+#define TCA_APA2INT     TPA_APA2INT
+#define TCA_APA2FLT     TPA_APA2FLT
+#define TCA_APA2RAT     TPA_APA2RAT
+#define TCA_APA2VFP     TPA_APA2VFP
+#define TCA_RAT2VFP     TPA_RAT2VFP
+#define TCA_HETE2HETE   TPA_HETE2HETE
+#define TCA_NEST2NEST   TPA_NEST2NEST
+#define TCA_RAT2RAT     TPA_RAT2RAT
+#define TCA_VFP2VFP     TPA_VFP2VFP
+
+#define TCA_FLT2BOOL    TCA_FLT2INT
+#define TCA_RAT2BOOL    TCA_RAT2INT
+#define TCA_VFP2BOOL    TCA_VFP2INT
+
+// Type Conversion Action matrix
+TC_ACTION aTypeActConvert[ARRAY_LENGTH][ARRAY_LENGTH]
+#ifdef DEFINE_VALUES
+
+#define M(a,b)          TCA_##a##2##b
+ = TC_MAT
 #undef  M
+
+#endif
+;
+
+#undef  TCA_VFP2BOOL
+#undef  TCA_RAT2BOOL
+#undef  TCA_FLT2BOOL
+
+#undef  TCA_VFP2VFP
+#undef  TCA_RAT2RAT
+#undef  TCA_NEST2NEST
+#undef  TCA_HETE2HETE
+#undef  TCA_RAT2VFP
+#undef  TCA_APA2VFP
+#undef  TCA_APA2RAT
+#undef  TCA_APA2FLT
+#undef  TCA_APA2INT
+#undef  TCA_APA2BOOL
+#undef  TCA_CHAR2CHAR
+#undef  TCA_FLT2VFP
+#undef  TCA_FLT2FLT
+#undef  TCA_INT2VFP
+#undef  TCA_INT2RAT
+#undef  TCA_INT2FLT
+#undef  TCA_INT2INT
+#undef  TCA_INT2BOOL
+#undef  TCA_BOOL2VFP
+#undef  TCA_BOOL2RAT
+#undef  TCA_BOOL2FLT
+#undef  TCA_BOOL2INT
+#undef  TCA_BOOL2BOOL
+#undef  TCA_ERROR
+
+#undef  TCA_INIT2ERR
+#undef  TCA_VFP2ERR
+#undef  TCA_RAT2ERR
+#undef  TCA_APA2ERR
+#undef  TCA_LIST2ERR
+#undef  TCA_NEST2ERR
+#undef  TCA_HETE2ERR
+#undef  TCA_CHAR2ERR
+#undef  TCA_FLT2ERR
+#undef  TCA_INT2ERR
+#undef  TCA_BOOL2ERR
 
 
 //***************************************************************************

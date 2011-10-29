@@ -50,7 +50,8 @@ typedef enum tagMFO
     MFOE_SD           ,         // 18:  Symmetric Difference
     MFOE_MonDomino    ,         // 19:  Monadic Domino for global numerics
     MFOE_DydDomino    ,         // 1A:  Dyadic  ...
-    MFOE_LENGTH                 // 1B:  # entries in this enum
+    MFOE_DydDotDot    ,         // 1B:  Dyadic DotDot
+    MFOE_LENGTH                 // 1C:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -81,9 +82,11 @@ typedef enum tagMFO
 #define MFON_SD             L"#SD"
 #define MFON_MonDomino      L"#MonDomino"
 #define MFON_DydDomino      L"#DydDomino"
+#define MFON_DydDotDot      L"#DydDotDot"
 
 // Magic Function/Operator Variables
 #define $AND            WS_UTF16_UPCARET
+#define $CEILING        WS_UTF16_UPSTILE
 #define $COMMABAR       WS_UTF16_COMMABAR
 #define $COMMENT        WS_UTF16_LAMP
 #define $COMMUTE        WS_UTF16_DIERESISTILDE
@@ -101,6 +104,7 @@ typedef enum tagMFO
 #define $EPSILON        WS_UTF16_EPSILON
 #define $EXECUTE        WS_UTF16_UPTACKJOT
 #define $FIRST          WS_UTF16_UPARROW
+#define $FLOOR          WS_UTF16_DOWNSTILE
 #define $FORMAT         WS_UTF16_DOWNTACKJOT
 #define $GE             WS_UTF16_RIGHTCARETUNDERBAR
 #define $GOTO           WS_UTF16_RIGHTARROW
@@ -138,6 +142,7 @@ typedef enum tagMFO
 #define $PSUPERSET      WS_UTF16_RIGHTSHOE
 #define $QUAD           WS_UTF16_QUAD
 #define $QUAD_ALX       WS_UTF16_QUAD L"ALX"
+#define $QUAD_CT        WS_UTF16_QUAD L"CT"
 #define $QUAD_DM        WS_UTF16_QUAD L"DM"
 #define $QUAD_ELX       WS_UTF16_QUAD L"ELX"
 #define $QUAD_ERROR     WS_UTF16_QUAD L"ERROR"

@@ -2267,12 +2267,22 @@ LPPRIMFNS GetPrototypeFcnPtr
     switch (lptkFunc->tkFlags.TknType)
     {
         case TKT_FCNIMMED:
+            // Get a ptr to the prototype function for the first symbol (a function)
+            return PrimProtoFnsTab[SymTrans (lptkFunc)];
+
         case TKT_OP1IMMED:
         case TKT_OP2IMMED:
         case TKT_OP3IMMED:
         case TKT_OPJOTDOT:
-            // Get a ptr to the prototype function for the first symbol (a function or operator)
-            return PrimProtoFnsTab[SymTrans (lptkFunc)];
+            // Note the white lie we tell here (LPPRIMFNS) instead of
+            //   (LPPRIMOPS) so we can use one function (GetPrototypeFcnPtr)
+            //   for both primitive functions and operators.  When the
+            //   prototype function for a primitive function is called,
+            //   lptkFunc is a ptr to the primitive function token.
+            //   When the prototype function for a primitive operator
+            //   is called, the same parameter is a ptr to the function strand.
+            // Get a ptr to the prototype function for the first symbol (an operator)
+            return (LPPRIMFNS) PrimProtoOpsTab[SymTrans (lptkFunc)];
 
         case TKT_FCNARRAY:
             // Split cases based upon the function array signature

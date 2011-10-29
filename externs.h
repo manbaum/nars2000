@@ -436,7 +436,10 @@ EXTERN
 LPPRIMFNS PrimFnsTab[PRIMTAB_LEN];      // The jump table for all primitive functions
 
 EXTERN
-LPPRIMFNS PrimProtoFnsTab[PRIMTAB_LEN]; // The jump table for all primitive functions/operator prototypes
+LPPRIMFNS PrimProtoFnsTab[PRIMTAB_LEN]; // The jump table for all primitive functions prototypes
+
+EXTERN
+LPPRIMOPS PrimProtoOpsTab[PRIMTAB_LEN]; // The jump table for all primitive operator prototypes
 
 EXTERN
 LPPRIMSPEC PrimSpecTab[PRIMTAB_LEN];    // The table of corresponding LPPRIMSPECs
@@ -1259,42 +1262,6 @@ UINT uTypeMap[]
 #ifdef DEFINE_VALUES
 //  BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA, RAT, VFP
  = {   0,   1,     2,    4,      5,      6,    7,   3,   8,   9}
-#endif
-;
-
-#define TP_MAT                                                                                                                                                     \
-{/*     BOOL          INT          FLT         CHAR         HETERO       NESTED       LIST          APA          RAT          VFP         INIT     */              \
-   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,HETE),M(BOOL,HETE),M(BOOL,NEST),M(BOOL,ERR ),M(BOOL,INT ),M(BOOL,RAT ),M(BOOL,VFP ),M(BOOL,BOOL)},   /* BOOL */  \
-   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,HETE),M(INT ,HETE),M(INT ,NEST),M(INT ,ERR ),M(INT ,INT ),M(INT ,RAT ),M(INT ,VFP ),M(INT ,INT )},   /* INT  */  \
-   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,HETE),M(FLT ,HETE),M(FLT ,NEST),M(FLT ,ERR ),M(FLT ,FLT ),M(FLT ,VFP ),M(FLT ,VFP ),M(FLT ,FLT )},   /* FLT  */  \
-   {M(CHAR,HETE),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,CHAR),M(CHAR,HETE),M(CHAR,NEST),M(CHAR,ERR ),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,HETE),M(CHAR,CHAR)},   /* CHAR */  \
-   {M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,NEST),M(HETE,ERR ),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE),M(HETE,HETE)},   /* HETE */  \
-   {M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,ERR ),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST),M(NEST,NEST)},   /* NEST */  \
-   {M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR ),M(LIST,ERR )},   /* LIST */  \
-   {M(APA ,INT ),M(APA ,INT ),M(APA ,FLT ),M(APA ,HETE),M(APA ,HETE),M(APA ,NEST),M(APA ,ERR ),M(APA ,INT ),M(APA ,RAT ),M(APA ,VFP ),M(APA ,INT )},   /* APA  */  \
-   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HETE),M(RAT ,HETE),M(RAT ,NEST),M(RAT ,ERR ),M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,RAT )},   /* RAT  */  \
-   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HETE),M(VFP ,HETE),M(VFP ,NEST),M(VFP ,ERR ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP )},   /* VFP  */  \
-   {M(INIT,BOOL),M(INIT,INT ),M(INIT,FLT ),M(INIT,CHAR),M(INIT,HETE),M(INIT,NEST),M(INIT,ERR ),M(INIT,INT ),M(INIT,RAT ),M(INIT,VFP ),M(INIT,INIT)},   /* INIT */  \
-}
-
-// ARRAY_xxx Type Promotion result matrix
-APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1]
-#ifdef DEFINE_VALUES
-=
-#define M(a,b)          ARRAY_##b
-#define ARRAY_FLT       ARRAY_FLOAT
-#define ARRAY_HETE      ARRAY_HETERO
-#define ARRAY_NEST      ARRAY_NESTED
-#define ARRAY_ERR       ARRAY_ERROR
-#define ARRAY_INIT      ARRAY_ERROR
-TP_MAT
-#undef  ARRAY_INIT
-#undef  ARRAY_ERR
-#undef  ARRAY_NEST
-#undef  ARRAY_HETE
-#undef  ARRAY_FLT
-#undef  M
-
 #endif
 ;
 

@@ -74,6 +74,7 @@
   #include "pf_dcaret.pro"
   #include "pf_deltastile.pro"
   #include "pf_domino.pro"
+  #include "pf_dotdot.pro"
   #include "pf_dshoe.pro"
   #include "pf_dstile.pro"
   #include "pf_dtack.pro"

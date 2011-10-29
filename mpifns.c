@@ -2757,7 +2757,7 @@ int mpiq_set_str
     q = strchr (p, '/');
     if (q
      && mpz_set_str (mpq_denref (rop), &q[1], base) EQ 0
-     && mpz_cmp_ui  (mpq_denref (rop), 0))
+     && mpz_cmp_ui  (mpq_denref (rop), 0) EQ 0)
     {
         // Set to the appropriate signed infinity
         mpq_set_inf (rop, p[0] EQ '-');

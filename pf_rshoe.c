@@ -379,7 +379,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
     // Trundle through the right arg ensuring that, except for scalars,
     //   all of the items have the same rank
-    if (!IsSimple (aplTypeRht))
+    if (!IsSimpleGlbNum (aplTypeRht))
     for (uRht = 0; uRht < aplNELMNstRht; uRht++)
     {
         // Split cases based upon the ptr type of the item
@@ -443,8 +443,9 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // aplNELMAxis contains the # elements in the axis.
     //***************************************************************
 
-    // If the right arg is simple, the result is the same as the right arg
-    if (IsSimple (aplTypeRht))
+    // If the right arg is simple or global numeric,
+    //   the result is the same as the right arg
+    if (IsSimpleGlbNum (aplTypeRht))
     {
         // Copy the right arg
         hGlbRes = CopySymGlbDirAsGlb (hGlbRht);

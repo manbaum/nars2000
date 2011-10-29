@@ -380,25 +380,21 @@ APLINT mpz_get_sa
     UBOOL        bRet;
     APLUINTUNION dwSplit;
 
-    // Check the denominator and range
+    // Check the range
     bRet = (0 <= mpz_cmp (src, &mpzMinInt)
          &&      mpz_cmp (src, &mpzMaxInt) <= 0);
     if (lpbRet)
         *lpbRet = bRet;
-    if (bRet)
-    {
 #if GMP_LIMB_BITS == 32
-        dwSplit.dwords[0] = mpz_getlimbn (src, 0);
-        dwSplit.dwords[1] = mpz_getlimbn (src, 1);
+    dwSplit.dwords[0] = mpz_getlimbn (src, 0);
+    dwSplit.dwords[1] = mpz_getlimbn (src, 1);
 #else
-        dwSplit.aplInt    = mpz_getlimbn (src, 0);
+    dwSplit.aplInt    = mpz_getlimbn (src, 0);
 #endif
-        if (mpz_sgn (src) < 0)
-            return -dwSplit.aplInt;
-        else
-            return  dwSplit.aplInt;
-    } else
-        return 0;
+    if (mpz_sgn (src) < 0)
+        return -dwSplit.aplInt;
+    else
+        return  dwSplit.aplInt;
 } // End mpz_get_sa
 
 
@@ -722,29 +718,28 @@ APLINT mpq_get_sa
      LPUBOOL lpbRet)
 
 {
-    UBOOL        bRet;
-    APLUINTUNION dwSplit;
+    APLMPI mpzDiv = {0};
+    APLINT aplInteger;
+    UBOOL  bRet;
 
-    // Check the denominator and range
-    bRet = (IsMpz1 (mpq_denref (src))
-         && 0 <= mpz_cmp (mpq_numref (src), &mpzMinInt)
+    // Check the range
+    bRet = (0 <= mpz_cmp (mpq_numref (src), &mpzMinInt)
          &&      mpz_cmp (mpq_numref (src), &mpzMaxInt) <= 0);
     if (lpbRet)
         *lpbRet = bRet;
-    if (bRet)
-    {
-#if GMP_LIMB_BITS == 32
-        dwSplit.dwords[0] = mpz_getlimbn (mpq_numref (src), 0);
-        dwSplit.dwords[1] = mpz_getlimbn (mpq_numref (src), 1);
-#else
-        dwSplit.aplInt    = mpz_getlimbn (mpq_numref (src), 0);
-#endif
-        if (mpz_sgn (mpq_numref (src)) < 0)
-            return -dwSplit.aplInt;
-        else
-            return  dwSplit.aplInt;
-    } else
-        return 0;
+    // Initialize the quotient
+    mpz_init (&mpzDiv);
+
+    // Divide the numerator by the denominator
+    mpz_fdiv_q (&mpzDiv, mpq_numref (src), mpq_denref (src));
+
+    // Convert the MPI to an integer
+    aplInteger = mpz_get_sa (&mpzDiv, NULL);
+
+    // We no longer need this storage
+    Myz_clear (&mpzDiv);
+
+    return aplInteger;
 } // End mpq_get_sa
 
 
@@ -784,7 +779,7 @@ APLINT mpq_get_ctsa
     // Calculate the relative difference between the source and its ceil
     mpf_reldiff (&mpfTmp2, &mpfTmp2, &mpfSrc);
 
-    // Compare the relative diff with []CT
+    // Compare the relative diff with SYS_CT
     if (fabs (mpf_get_d (&mpfTmp1)) < SYS_CT)
     {
         mpf_floor (&mpfTmp1, &mpfSrc);
@@ -862,6 +857,33 @@ void mpq_set_sa
             mpq_canonicalize (dest);
     } // End IF
 } // End mpq_set_sa
+
+
+//***************************************************************************
+//  &mpq_sub_ui
+//***************************************************************************
+
+void mpq_sub_ui
+    (mpq_ptr dest,
+     mpq_ptr src,
+     UINT    num,
+     UINT    den)
+
+{
+    APLRAT mpqTmp = {0};
+
+    // Initialize the temp
+    mpq_init (&mpqTmp);
+
+    // Save the UINT as a RAT
+    mpq_set_ui (&mpqTmp, num, den);
+
+    // Subtract the UINT
+    mpq_sub (dest, src, &mpqTmp);
+
+    // We no longer need this storage
+    Myq_clear (&mpqTmp);
+} // End mpq_sub_ui
 
 
 //***************************************************************************
@@ -1191,45 +1213,22 @@ APLINT mpf_get_sa
      LPUBOOL lpbRet)
 
 {
-    UBOOL        bRet;
-    APLUINTUNION dwSplit;
-#ifdef DEBUG
-////WCHAR wszTemp[1024];
-#endif
+    APLRAT mpqTmp = {0};
+    APLINT aplInteger;
 
-    // Check the fractional part and range
-    bRet = (mpf_integer_p (src) NE 0
-         && 0 <= mpf_cmp (src, &mpfMinInt)
-         &&      mpf_cmp (src, &mpfMaxInt) <= 0);
-    if (lpbRet)
-        *lpbRet = bRet;
-    // If the fractional part is zero and the integer part is in range, ...
-    if (bRet)
-    {
-        APLMPI aplTmp,
-               aplSrc;
+    // Initialize the temp
+    mpq_init (&mpqTmp);
 
-        mpz_init     (&aplSrc);
-        mpz_init     (&aplTmp);
-        mpz_set_f    (&aplSrc, src);
-////   *FormatAplMpi (wszTemp, *src  , 0) = WC_EOS; DbgMsgW (wszTemp);
-        mpz_fdiv_q_2exp (&aplTmp, &aplSrc, BITS_IN_APLINT / 2);
-////   *FormatAplMpi (wszTemp, aplTmp, 0) = WC_EOS; DbgMsgW (wszTemp);
-        dwSplit.dwords[1] = mpz_get_si (&aplTmp);
-        mpz_mul_2exp (&aplTmp, &aplTmp, BITS_IN_APLINT / 2);
-////   *FormatAplMpi (wszTemp, aplTmp, 0) = WC_EOS; DbgMsgW (wszTemp);
-        mpz_sub      (&aplTmp, &aplSrc, &aplTmp);
-////   *FormatAplMpi (wszTemp, aplTmp, 0) = WC_EOS; DbgMsgW (wszTemp);
-        dwSplit.dwords[0] = mpz_get_ui (&aplTmp);
+    // Convert the number to RAT
+    mpq_set_f (&mpqTmp, src);
 
-        // We no longer need this storage
-        Myz_clear (&aplTmp);
-        Myz_clear (&aplSrc);
+    // Get the integer within
+    aplInteger = mpq_get_sa (&mpqTmp, lpbRet);
 
-        return dwSplit.aplInt;
-    } else
-        // Return a known value
-        return 0;
+    // We no longer need this storage
+    Myq_clear (&mpqTmp);
+
+    return aplInteger;
 } // End mpf_get_sa
 
 
@@ -1409,8 +1408,6 @@ int mpf_cmp_ct
      APLFLOAT fQuadCT)
 
 {
-    APLVFP mpfTmp = {0};
-    UBOOL  bRet;
 #if defined (DEBUG) && FALSE
     WCHAR  wszTemp[1024];
     APLVFP mpfFmt = {0};
@@ -1418,32 +1415,95 @@ int mpf_cmp_ct
     *FormatAplVfp (wszTemp, aplVfpLft, 0) = WC_EOS; DbgMsgW (wszTemp);
     *FormatAplVfp (wszTemp, aplVfpRht, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
-    // So as to avoid dividing by zero, if either arg is zero, ...
-    if (!IsMpf0 (&aplVfpLft)
-     && !IsMpf0 (&aplVfpRht))
+    // So as to avoid dividing by zero, if neither arg is zero, ...
+    if (!IsMpf0 (&aplVfpLft)                    // Lft NE 0
+     && !IsMpf0 (&aplVfpRht)                    // Rht NE 0
+     && mpf_cmp (&aplVfpLft, &aplVfpRht) NE 0   // Lft NE Rht
+     && fQuadCT NE 0)                           // []CT NE 0
     {
-        // Initialize the temp
-        mpf_init (&mpfTmp);
+        APLVFP mpfLftAbs = {0},
+               mpfRhtAbs = {0};
+        UBOOL  bRet = TRUE;         // TRUE iff the result in iRet is valid
+        int    iRet;                // The result
 
-        // Calculate the relative difference
-        mpf_reldiff (&mpfTmp, &aplVfpLft, &aplVfpRht);
+        // Use an algorithm similar to the one in _CompareCT
+
+        // Initialize the temps
+        mpf_init (&mpfLftAbs);
+        mpf_init (&mpfRhtAbs);
+
+        // Get the absolute values
+        mpf_abs (&mpfLftAbs, &aplVfpLft);
+        mpf_abs (&mpfRhtAbs, &aplVfpRht);
+
+        // If the signs differ, ...
+        if (mpf_sgn (&mpfLftAbs) NE mpf_sgn (&mpfRhtAbs))
+            bRet = FALSE;
+        else
+        {
+            APLVFP mpfCT     = {0},
+                   mpfHoodLo = {0};
+
+            // Initialize the temps
+            mpf_init (&mpfCT);
+            mpf_init (&mpfHoodLo);
+
+            // Convert the comparison tolerance
+            mpf_set_d (&mpfCT, fQuadCT);
+
+            // Calculate the low end of the left neighborhood of (|Rht)
+////////////aplHoodLo = aplRhtAbs - aplRhtAbs * fQuadCT;
+            mpf_mul (&mpfHoodLo, &mpfRhtAbs, &mpfCT);
+            mpf_sub (&mpfHoodLo, &mpfRhtAbs, &mpfHoodLo);
+
+            // If (|Rht) is greater than (|Lft),
+            // and (|Lft) is in the
+            //    left-neighborhood of (|Rht) with CT, return 1
+////////////if (aplHoodLo <= aplLftAbs
+//////////// &&              aplLftAbs < aplRhtAbs)
+////////////    return TRUE;
+            if (mpf_cmp (&mpfHoodLo, &mpfLftAbs)             <= 0
+             && mpf_cmp (            &mpfLftAbs, &mpfRhtAbs) <  0)
+                iRet = 0;
+            else
+            {
+                // Calculate the low end of the left neighborhood of (|Lft)
+////////////////aplHoodLo = aplLftAbs - aplLftAbs * fQuadCT;
+                mpf_mul (&mpfHoodLo, &mpfLftAbs, &mpfCT);
+                mpf_sub (&mpfHoodLo, &mpfLftAbs, &mpfHoodLo);
+
+                // If (|Lft) is greater than (|Rht),
+                // and (|Rht) is in the
+                //    left-neighborhood of (|Lft) with CT, return 1
+////////////////if (aplHoodLo <= aplRhtAbs
+//////////////// &&              aplRhtAbs < aplLftAbs)
+////////////////    return TRUE;
+                if (mpf_cmp (&mpfHoodLo, &mpfRhtAbs)             <= 0
+                 && mpf_cmp (            &mpfRhtAbs, &mpfLftAbs) <  0)
+                    iRet = 0;
+                else
+                    bRet = FALSE;
+            } // End IF/ELSE
 
 #if defined (DEBUG) && FALSE
-        *FormatAplVfp (wszTemp, mpfTmp, 0) = WC_EOS;
-        DbgMsgW (wszTemp);
-        mpf_init_set_d (&mpfFmt, fQuadCT);
-        *FormatAplVfp (wszTemp, mpfFmt, 0) = WC_EOS;
-        DbgMsgW (wszTemp);
-        Myf_clear (&mpfFmt);
+            *FormatAplVfp (wszTemp, mpfTmp, 0) = WC_EOS;
+            DbgMsgW (wszTemp);
+            mpf_init_set_d (&mpfFmt, fQuadCT);
+            *FormatAplVfp (wszTemp, mpfFmt, 0) = WC_EOS;
+            DbgMsgW (wszTemp);
+            Myf_clear (&mpfFmt);
 #endif
-        // Compare the relative diff with []CT
-        bRet = (fabs (mpf_get_d (&mpfTmp)) < fQuadCT);
+            // We no longer need this storage
+            Myf_clear (&mpfHoodLo);
+            Myf_clear (&mpfCT    );
+        } // End IF/ELSE
 
         // We no longer need this storage
-        Myf_clear (&mpfTmp);
+        Myf_clear (&mpfRhtAbs);
+        Myf_clear (&mpfLftAbs);
 
         if (bRet)
-            return 0;
+            return iRet;
     } // End IF
 
     return mpf_cmp (&aplVfpLft, &aplVfpRht);

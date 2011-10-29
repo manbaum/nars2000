@@ -205,6 +205,7 @@ APLINT PrimFnMonUpStileIisF
      || fabs (aplFloatRht) >= Float2Pow53)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
+    // Use the code in DownStile
     return (APLINT) -PrimFnMonDownStileFisF (-aplFloatRht, lpPrimSpec);
 } // End PrimFnMonUpStileIisF
 
@@ -220,6 +221,7 @@ APLFLOAT PrimFnMonUpStileFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Use the code in DownStile
     return -PrimFnMonDownStileFisF (-aplFloatRht, lpPrimSpec);
 } // End PrimFnMonUpStileFisF
 
@@ -235,13 +237,23 @@ APLRAT PrimFnMonUpStileRisR
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLRAT mpqRes = {0};
+    APLRAT mpqRes = {0},
+           mpqTmp = {0};
 
-    // Initialize the result to 0/1
-    mpq_init (&mpqRes);
+    // Initialize the temp to 0/1
+    mpq_init (&mpqTmp);
 
-    // Divide the numerator by the denominator
-    mpz_cdiv_q (mpq_numref (&mpqRes), mpq_numref (&aplRatRht), mpq_denref (&aplRatRht));
+    // Negate the temp to use with DownStile
+    mpq_neg (&mpqTmp, &aplRatRht);
+
+    // Use the code in DownStile
+    mpqRes = PrimFnMonDownStileRisR (mpqTmp, NULL);
+
+    // Negate the result after calling RisR
+    mpq_neg (&mpqRes, &mpqRes);
+
+    // We no longer need this storage
+    Myq_clear (&mpqTmp);
 
     return mpqRes;
 } // End PrimFnMonUpStileRisR
@@ -258,13 +270,23 @@ APLVFP PrimFnMonUpStileVisV
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLVFP mpfRes = {0};
+    APLVFP mpfRes = {0},
+           mpfTmp = {0};
 
-    // Initialize the result
-    mpf_init (&mpfRes);
+    // Initialize the temp to 0
+    mpf_init (&mpfTmp);
 
-    // Find the ceiling of the Variable FP
-    mpf_ceil (&mpfRes, &aplVfpRht);
+    // Negate the temp to use with DownStile
+    mpf_neg (&mpfTmp, &aplVfpRht);
+
+    // Use the code in DownStile
+    mpfRes = PrimFnMonDownStileVisV (mpfTmp, NULL);
+
+    // Negate the result after calling VisV
+    mpf_neg (&mpfRes, &mpfRes);
+
+    // We no longer need this storage
+    Myf_clear (&mpfTmp);
 
     return mpfRes;
 } // End PrimFnMonUpStileVisV

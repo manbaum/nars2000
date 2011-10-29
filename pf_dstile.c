@@ -274,13 +274,13 @@ APLFLOAT PrimFnMonDownStileFisF
     {
         if (PrimFnDydEqualBisFvF (aplFloatRht,
                                   (APLFLOAT) aplNear,
-                                  lpPrimSpec))
+                                  NULL))
             return aplNear;
         else
             return aplNear - 1;
     } // End IF
 
-    // aplNear is zer0
+    // aplNear is zero
 
     // If Rht is between (-[]CT) and 0 (inclusive),
     //   return 0; othewise, return -1
@@ -303,13 +303,103 @@ APLRAT PrimFnMonDownStileRisR
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLRAT mpqRes = {0};
+    APLRAT mpqRes   = {0},
+           mpqFloor = {0},
+           mpqCeil  = {0},
+           mpqTmp1  = {0},
+           mpqTmp2  = {0},
+           mpqNear  = {0};
 
-    // Initialize the result to 0/1
-    mpq_init (&mpqRes);
+    // Check for ± infinity
+    if (IsMpqInfinity (&aplRatRht))
+        // Copy to the result
+        mpq_init_set  (&mpqRes, &aplRatRht);
+    else
+    {
+        // Initialize the temps
+        mpq_init (&mpqRes);
+        mpq_init (&mpqFloor);
+        mpq_init (&mpqCeil );
+        mpq_init (&mpqTmp1);
+        mpq_init (&mpqTmp2);
+        mpq_init (&mpqNear);
 
-    // Divide the numerator by the denominator
-    mpz_fdiv_q (mpq_numref (&mpqRes), mpq_numref (&aplRatRht), mpq_denref (&aplRatRht));
+        // Get the exact floor and ceiling
+        mpq_floor (&mpqFloor, &aplRatRht);
+        mpq_ceil  (&mpqCeil , &aplRatRht);
+
+        // Calculate the integer nearest the right arg
+
+        mpq_sub (&mpqTmp1, &aplRatRht, &mpqFloor);
+        mpq_sub (&mpqTmp2, &mpqCeil  , &aplRatRht);
+
+        // Split cases based upon the signum of the difference between
+        //   (the number and its floor) and (the ceiling and the number)
+        switch (mpq_cmp (&mpqTmp1, &mpqTmp2))
+        {
+            case  1:
+                mpq_set (&mpqNear, &mpqCeil);
+
+                break;
+
+            case  0:
+                mpq_abs (&mpqTmp1, &mpqFloor);
+                mpq_abs (&mpqTmp2, &mpqFloor);
+
+                // They are equal, so use the one with the larger absolute value
+                mpq_set (&mpqNear, ((mpq_cmp (&mpqTmp1, &mpqTmp2) > 0) ? &mpqFloor
+                                                                       : &mpqCeil));
+                break;
+
+            case -1:
+                mpq_set (&mpqNear, &mpqFloor);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // If Near is < Rht, return Near
+        if (mpq_cmp (&mpqNear, &aplRatRht) < 0)
+            mpq_set (&mpqRes, &mpqNear);
+        else
+        {
+            // If Near is non-zero, and
+            //   Rht is tolerantly-equal to Near,
+            //   return Near; otherwise, return Near - 1
+            if (mpq_sgn (&mpqNear) NE 0)
+            {
+                mpq_set (&mpqRes, &mpqNear);
+
+                if (!PrimFnDydEqualBisRvR (aplRatRht,
+                                           mpqNear,
+                                           NULL))
+                    mpq_sub_ui (&mpqRes, &mpqRes, 1, 1);
+            } else
+            {
+                // mpfNear is zero
+
+                // Get []CT as a VFP
+                mpq_set_d (&mpqTmp1, GetQuadCT ());
+
+                // If Rht is between (-[]CT) and 0 (inclusive),
+                //   return 0; othewise, return -1
+                if (mpq_cmp (&mpqTmp1, &aplRatRht) <= 0
+                 && mpq_sgn (&aplRatRht)           <= 0)
+                    mpq_set_si (&mpqRes,  0, 1);
+                else
+                    mpq_set_si (&mpqRes, -1, 1);
+            } // End IF/ELSE
+        } // End IF/ELSE
+
+        // We no longer need this storage
+        Myq_clear (&mpqNear);
+        Myq_clear (&mpqTmp2);
+        Myq_clear (&mpqTmp1);
+        Myq_clear (&mpqCeil);
+        Myq_clear (&mpqFloor);
+    } // End IF/ELSE
 
     return mpqRes;
 } // End PrimFnMonDownStileRisR
@@ -326,13 +416,103 @@ APLVFP PrimFnMonDownStileVisV
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLVFP mpfRes = {0};
+    APLVFP mpfRes   = {0},
+           mpfFloor = {0},
+           mpfCeil  = {0},
+           mpfTmp1  = {0},
+           mpfTmp2  = {0},
+           mpfNear  = {0};
 
-    // Initialize the result
-    mpf_init (&mpfRes);
+    // Check for ± infinity
+    if (IsMpfInfinity (&aplVfpRht))
+        // Copy to the result
+        mpf_init_copy (&mpfRes, &aplVfpRht);
+    else
+    {
+        // Initialize the temps
+        mpf_init (&mpfRes);
+        mpf_init (&mpfFloor);
+        mpf_init (&mpfCeil );
+        mpf_init (&mpfTmp1);
+        mpf_init (&mpfTmp2);
+        mpf_init (&mpfNear);
 
-    // Find the floor of the Variable FP
-    mpf_floor (&mpfRes, &aplVfpRht);
+        // Get the exact floor and ceiling
+        mpf_floor (&mpfFloor, &aplVfpRht);
+        mpf_ceil  (&mpfCeil , &aplVfpRht);
+
+        // Calculate the integer nearest the right arg
+
+        mpf_sub (&mpfTmp1, &aplVfpRht, &mpfFloor);
+        mpf_sub (&mpfTmp2, &mpfCeil  , &aplVfpRht);
+
+        // Split cases based upon the signum of the difference between
+        //   (the number and its floor) and (the ceiling and the number)
+        switch (mpf_cmp (&mpfTmp1, &mpfTmp2))
+        {
+            case  1:
+                mpf_set (&mpfNear, &mpfCeil);
+
+                break;
+
+            case  0:
+                mpf_abs (&mpfTmp1, &mpfFloor);
+                mpf_abs (&mpfTmp2, &mpfFloor);
+
+                // They are equal, so use the one with the larger absolute value
+                mpf_set (&mpfNear, ((mpf_cmp (&mpfTmp1, &mpfTmp2) > 0) ? &mpfFloor
+                                                                       : &mpfCeil));
+                break;
+
+            case -1:
+                mpf_set (&mpfNear, &mpfFloor);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // If Near is < Rht, return Near
+        if (mpf_cmp (&mpfNear, &aplVfpRht) < 0)
+            mpf_set (&mpfRes, &mpfNear);
+        else
+        {
+            // If Near is non-zero, and
+            //   Rht is tolerantly-equal to Near,
+            //   return Near; otherwise, return Near - 1
+            if (mpf_sgn (&mpfNear) NE 0)
+            {
+                mpf_set (&mpfRes, &mpfNear);
+
+                if (!PrimFnDydEqualBisVvV (aplVfpRht,
+                                           mpfNear,
+                                           NULL))
+                    mpf_sub_ui (&mpfRes, &mpfRes, 1);
+            } else
+            {
+                // aplNear is zero
+
+                // Get []CT as a VFP
+                mpf_set_d (&mpfTmp1, GetQuadCT ());
+
+                // If Rht is between (-[]CT) and 0 (inclusive),
+                //   return 0; othewise, return -1
+                if (mpf_cmp (&mpfTmp1, &aplVfpRht) <= 0
+                 && mpf_sgn (&aplVfpRht)           <= 0)
+                    mpf_set_si (&mpfRes,  0);
+                else
+                    mpf_set_si (&mpfRes, -1);
+            } // End IF/ELSE
+        } // End IF/ELSE
+
+        // We no longer need this storage
+        Myf_clear (&mpfNear);
+        Myf_clear (&mpfTmp2);
+        Myf_clear (&mpfTmp1);
+        Myf_clear (&mpfCeil);
+        Myf_clear (&mpfFloor);
+    } // End IF/ELSE
 
     return mpfRes;
 } // End PrimFnMonDownStileVisV

@@ -730,7 +730,8 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
                  bQuadIO;           // []IO
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLUINT      ByteRes;           // # bytes in the result
-    APLLONGEST   aplLongestNam;     // Name arg immediate value
+    APLLONGEST   aplLongestNam,     // Name arg immediate value
+                 aplLongestSub;     // Item ...
     IMM_TYPES    immTypeSub;        // Name arg item immediate type
 
     // Get the current value of []IO
@@ -854,16 +855,26 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
     GetNextValueGlb (hGlbNam,           // Item global memory handle
                      aplLongestLst,     // Index into item
                     &hGlbSub,           // Ptr to result global memory handle (may be NULL)
-                     NULL,              // Ptr to result immediate value (may be NULL)
+                    &aplLongestSub,     // Ptr to result immediate value (may be NULL)
                     &immTypeSub);       // Ptr to result immediate type (may be NULL)
     // Split cases based upon the immediate type
     switch (aplTypeRes)
     {
         case ARRAY_NESTED:
         case ARRAY_HETERO:
-            // Copy the global memory handle to the result
-            *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (hGlbSub);
-
+            // If the item is an immediate as in the 2nd item in (1r2 2r3) 1, ...
+            if (hGlbSub EQ NULL)
+            {
+                *((LPAPLNESTED) lpMemRes) =
+                  MakeSymEntry_EM (immTypeSub,
+                                  &aplLongestSub,
+                                   lptkFunc);
+                // Check on error
+                if (*((LPAPLNESTED) lpMemRes) EQ NULL)
+                    goto WSFULL_EXIT;
+            } else
+                // Copy the global memory handle to the result
+                *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (hGlbSub);
             break;
 
         case ARRAY_RAT:

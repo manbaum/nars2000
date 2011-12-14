@@ -20,8 +20,7 @@
 
 WIN=64
 
-QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
-L98=$(SDK)Lib\x64;$(MSVC)lib\amd64;$(QDEBUG)
+L98=$(SDK)Lib\x64;$(MSVC)lib\amd64
 
 LD="$(MSVC)bin\amd64\link.exe"
 CC="$(MSVC)bin\amd64\cl.exe"

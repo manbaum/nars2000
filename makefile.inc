@@ -46,12 +46,20 @@
 !error Environment variable MSVC= not defined.
 !endif
 
-!ifndef MPIR
-!error Environment variable MPIR= not defined.
+!ifndef MS_DIR
+!error Environment variable MS_DIR= not defined.
 !endif
 
-!ifndef MPFR
-!error Environment variable MPFR= not defined.
+!ifndef MPIR_DIR
+!error Environment variable MPIR_DIR= not defined.
+!endif
+
+!ifndef MPFR_DIR
+!error Environment variable MPFR_DIR= not defined.
+!endif
+
+!ifndef FLINT_DIR
+!error Environment variable FLINT_DIR= not defined.
 !endif
 
 !ifndef SDK
@@ -75,6 +83,9 @@ OLDPATH=$(PATH)                 # Save the current path
 GSL_INC=$(GSL_DIR)include\      # Directory of GSL includes
 GSL_LIB=$(GSL_DIR)libgsl$(WIN)-double.lib # GSL library
 
+QDEBUG=$(NARSROOT)qdebug\       # Directory for QDEBUG files/libraries
+L98=$(L98);$(QDEBUG)
+
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
 ###CFLAGS_DEBUG=/Zi /D "DEBUG"
@@ -88,23 +99,14 @@ BUILD_DIR=Release
 
 !if "$(WIN)" == "32"
 FLINTAVL=1                      # 1 iff flint32.lib is available
-###LIB_DIR=$(NARSROOT)lib\Win32\$(BUILD_DIR)^\
-###MPIR_DIR = $(MPIR)build.vc10\lib\Win32\$(BUILD_DIR)^\
-###MPFR_DIR = $(MPFR)build.vc10\lib\Win32\$(BUILD_DIR)^\
-MPIR_INC = $(MPIR)build.vc10\lib\Win32\$(BUILD_DIR)^\
 !else
 FLINTAVL=0                      # 1 iff flint64.lib is available
-###LIB_DIR=$(NARSROOT)lib\x64\$(BUILD_DIR)^\
-###MPIR_DIR = $(MPIR)build.vc10\lib\x64\$(BUILD_DIR)^\
-###MPFR_DIR = $(MPFR)build.vc10\lib\x64\$(BUILD_DIR)^\
-MPIR_INC = $(MPIR)build.vc10\lib\x64\$(BUILD_DIR)^\
 !endif
 
-MPFR_INC = $(MPFR)
-MPIR_INC = $(NARSROOT)mpir^\
-MPFR_INC = $(MPIR_INC)
-FLINT_INC= $(FLINT)include$(WIN)^\
-LIB_DIR  = $(NARSROOT)mpir\OldLibs^\
+MS_INC = $(MS_DIR)
+MPIR_INC = $(MPIR_DIR)include^\
+MPFR_INC = $(MPFR_DIR)include^\
+FLINT_INC= $(FLINT_DIR)include^\
 
 !if [if not exist $(MPIR_INC)*.h  exit 1]
 !error Incorrect value for MPIR_INC=$(MPIR_INC)
@@ -119,7 +121,7 @@ LIB_DIR  = $(NARSROOT)mpir\OldLibs^\
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(GSL_DIR)include
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS_INC);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(GSL_INC)
 
 MV=makever
 
@@ -129,13 +131,17 @@ LINKDEBUG=0
 
 !if "$(FLINTAVL)" == "1"
 !if "$(DEBUG)" == "1"
-FLINT_LIB = $(LIB_DIR)flint$(WIN)d.lib
+FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN)d.lib
 !else
-FLINT_LIB = $(LIB_DIR)flint$(WIN).lib
+FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN).lib
 !endif
 !else
 FLINT_LIB =
 !endif
+
+MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN).lib
+MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN).lib
+
 CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"
 
 ## Load all source file names
@@ -168,8 +174,8 @@ LIBS_WEXE = gdi32.lib           \
             qdebug32.lib        \
 !endif
             libcmt.lib          \
-            $(LIB_DIR)mpir$(WIN).lib  \
-            $(LIB_DIR)mpfr$(WIN).lib  \
+            $(MPIR_LIB)         \
+            $(MPFR_LIB)         \
             $(FLINT_LIB)        \
             $(GSL_LIB)
 
@@ -199,7 +205,7 @@ B=$(BIN)ND$(WIN)\               # Define output directory for binaries
 !endif
 OC=RET\COM\                     # Define output directory for common intermediate files
 
-FONT=SImPL-Medium.ttf           # Default APL TrueType font
+FONT=$(NARSROOT)SImPL-Medium.ttf # Default APL TrueType font
 
 
 ALL:    DIR                 \
@@ -248,9 +254,8 @@ INITIAL_EXE:
         @if exist $@ del $@
         @$(RC) $(RCFLAGS) $(RCDEFINES) -r -fo$@ %s
 
-{$(MS)}.c{$(O)}.obj:
-####    @Set INCLUDE=$(MS);$(MPIR_INC);$(MSVC)include;$(SDK)include;.;$(O)
-        @Set INCLUDE=$(I98);$(O);$(NARSROOT)mpfrmpir\static\mpfr
+{$(MS_DIR)}.c{$(O)}.obj:
+        @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
 !if "$(WIN)" == "64"
         @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32 /D WIN64 /D __x86_64__ /D "UNICODE" %s
@@ -308,9 +313,9 @@ DEP:    DIR                     \
         @echo $(@F)
         @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(WS)=$$(WS) %s > $@
 
-{$(MS)}.c{$(O)}.dep:
+{$(MS_DIR)}.c{$(O)}.dep:
         @echo $(@F)
-        @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(MS)=$$(MS) %s > $@
+        @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(MS_DIR)=$$(MS_DIR) %s > $@
 
 {}.rc{$(O)}.dev:
         @echo $(@F)
@@ -338,7 +343,7 @@ PRO:    DIR                     \
         @echo $(@F)
         @php $(MAKEPRO) %s $@
 
-{$(MS)}.c{$(O)}.pro:
+{$(MS_DIR)}.c{$(O)}.pro:
         @echo $(@F)
         @php $(MAKEPRO) %s $@
 
@@ -392,31 +397,31 @@ $(O)pn_parse.obj:       $(O)$(@B).c     $(PN_PARSE_DEP)
 $(O)editctrl.obj:       $(WS)$(@B).c    $(EDITCTRL_DEP)     $(WS)local.h
 
 ## Msieve-specific files
-$(O)mp.obj:             $(MS)$(@B).c    $(MP_DEP)           $(MS)mp.h
-$(O)prime_delta.obj:    $(MS)$(@B).c    $(PRIME_DELTA_DEP)  $(MS)common.h
-$(O)smallfact.obj:      $(MS)$(@B).c    $(SMALLFACT_DEP)    $(MS)common.h
-$(O)squfof.obj:         $(MS)$(@B).c    $(SQUFOF_DEP)       $(MS)common.h
-$(O)tinyqs.obj:         $(MS)$(@B).c    $(TINYQS_DEP)       $(MS)common.h
+$(O)mp.obj:             $(MS_DIR)$(@B).c    $(MP_DEP)           $(MS_DIR)mp.h
+$(O)prime_delta.obj:    $(MS_DIR)$(@B).c    $(PRIME_DELTA_DEP)  $(MS_DIR)common.h
+$(O)smallfact.obj:      $(MS_DIR)$(@B).c    $(SMALLFACT_DEP)    $(MS_DIR)common.h
+$(O)squfof.obj:         $(MS_DIR)$(@B).c    $(SQUFOF_DEP)       $(MS_DIR)common.h
+$(O)tinyqs.obj:         $(MS_DIR)$(@B).c    $(TINYQS_DEP)       $(MS_DIR)common.h
 
 #ifdef MPQS_ENABLED
 ## Msieve-MPQS-specific files
-$(O)gf2.obj:            $(MS)$(@B).c    $(GF2_DEP)          $(MS)mpqs.h
-$(O)lanczos.obj:        $(MS)$(@B).c    $(LANCZOS_DEP)      $(MS)lanczos.h
-$(O)lanczos_pre.obj:    $(MS)$(@B).c    $(LANCZOS_PRE_DEP)  $(MS)lanczos.h
-$(O)lanczos_matmul0.obj: $(MS)$(@B).c   $(LANCZOS_MATMUL0_DEP)  $(MS)lanczos.h
-$(O)lanczos_matmul1.obj: $(MS)$(@B).c   $(LANCZOS_MATMUL1_DEP)  $(MS)lanczos.h
-$(O)lanczos_matmul2.obj: $(MS)$(@B).c   $(LANCZOS_MATMUL2_DEP)  $(MS)lanczos.h
-$(O)lanczos_vv.obj:     $(MS)$(@B).c    $(LANCZOS_VV_DEP)   $(MS)lanczos.h
-$(O)matmul_util.obj:    $(MS)$(@B).c    $(MATMUL_UTIL_DEP)  $(MS)lanczos.h
-$(O)mpqs.obj:           $(MS)$(@B).c    $(MPQS_DEP)         $(MS)mpqs.h
-$(O)prime_sieve.obj:    $(MS)$(@B).c    $(PRIME_SIEVE_DEP)  $(MS)common.h
-##$(O)relation.obj:       $(MS)$(@B).c    $(RELATION_DEP)     $(MS)mpqs.h
-$(O)sieve.obj:          $(MS)$(@B).c    $(SIEVE_DEP)        $(MS)mpqs.h
-$(O)sqrt.obj:           $(MS)$(@B).c    $(SQRT_DEP)         $(MS)mpqs.h
+$(O)gf2.obj:            $(MS_DIR)$(@B).c    $(GF2_DEP)          $(MS_DIR)mpqs.h
+$(O)lanczos.obj:        $(MS_DIR)$(@B).c    $(LANCZOS_DEP)      $(MS_DIR)lanczos.h
+$(O)lanczos_pre.obj:    $(MS_DIR)$(@B).c    $(LANCZOS_PRE_DEP)  $(MS_DIR)lanczos.h
+$(O)lanczos_matmul0.obj: $(MS_DIR)$(@B).c   $(LANCZOS_MATMUL0_DEP)  $(MS_DIR)lanczos.h
+$(O)lanczos_matmul1.obj: $(MS_DIR)$(@B).c   $(LANCZOS_MATMUL1_DEP)  $(MS_DIR)lanczos.h
+$(O)lanczos_matmul2.obj: $(MS_DIR)$(@B).c   $(LANCZOS_MATMUL2_DEP)  $(MS_DIR)lanczos.h
+$(O)lanczos_vv.obj:     $(MS_DIR)$(@B).c    $(LANCZOS_VV_DEP)   $(MS_DIR)lanczos.h
+$(O)matmul_util.obj:    $(MS_DIR)$(@B).c    $(MATMUL_UTIL_DEP)  $(MS_DIR)lanczos.h
+$(O)mpqs.obj:           $(MS_DIR)$(@B).c    $(MPQS_DEP)         $(MS_DIR)mpqs.h
+$(O)prime_sieve.obj:    $(MS_DIR)$(@B).c    $(PRIME_SIEVE_DEP)  $(MS_DIR)common.h
+##$(O)relation.obj:       $(MS_DIR)$(@B).c    $(RELATION_DEP)     $(MS_DIR)mpqs.h
+$(O)sieve.obj:          $(MS_DIR)$(@B).c    $(SIEVE_DEP)        $(MS_DIR)mpqs.h
+$(O)sqrt.obj:           $(MS_DIR)$(@B).c    $(SQRT_DEP)         $(M_DIRS)mpqs.h
 #endif
 
-$(MS)common.h:          $(MS)msieve.h
-$(MS)mp.h:              $(MS)util.h
+$(MS_DIR)common.h:      $(MS_DIR)msieve.h
+$(MS_DIR)mp.h:          $(MS_DIR)util.h
 
 ## NARS-specific files
 $(O)assign.obj:         $(@B).c         $(ASSIGN_DEP)
@@ -608,8 +613,8 @@ OBJS=   $(SRC:???=obj)                  \
 
 $(O)$(ENAME).exe:       $(OBJS)             \
                         $(DEFFILE)          \
-                        $(LIB_DIR)mpir$(WIN).lib  \
-                        $(LIB_DIR)mpfr$(WIN).lib  \
+                        $(MPIR_LIB)         \
+                        $(MPFR_LIB)         \
                         $(FLINT_LIB)        \
                         $(GSL_LIB)          \
                         makefile.inc        \

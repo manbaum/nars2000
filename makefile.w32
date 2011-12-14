@@ -20,8 +20,7 @@
 
 WIN=32
 
-QDEBUG=qdebug\                  # Directory for QDEBUG files/libraries
-L98=$(SDK)LIB;$(MSVC)LIB;$(QDEBUG)
+L98=$(SDK)LIB;$(MSVC)LIB
 
 LD="$(MSVC)bin\link.exe"
 CC="$(MSVC)bin\cl.exe"

@@ -134,7 +134,7 @@
   #include "po_slope.pro"
   #include "primfns.pro"
   #include "primspec.pro"
-  #include "qdebug\qdebug.pro"
+  #include "qdebug.pro"
   #include "qf_a.pro"
   #include "qf_at.pro"
   #include "qf_av.pro"

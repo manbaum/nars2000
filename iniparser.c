@@ -45,8 +45,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>      // For sscanfW
 #include <ctype.h>
 
-#include <gmp.h>
-#include "mpfr.h"
+#define MP_INT        int
+#define MP_RAT        int
+#define __mpf_struct  int
+#define __mpfr_struct int
+
 #include "macros.h"
 #include "defines.h"
 #include "types.h"

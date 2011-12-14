@@ -50,8 +50,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 
-#include <gmp.h>
-#include "mpfr.h"
+#define MP_INT        int
+#define MP_RAT        int
+#define __mpf_struct  int
+#define __mpfr_struct int
+
 #include "macros.h"
 #include "enums.h"
 #include "defines.h"

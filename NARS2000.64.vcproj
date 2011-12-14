@@ -62,7 +62,7 @@
             <Tool
                 Name="VCCLCompilerTool"
                 Optimization="0"
-                AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS)&quot;;&quot;$(MPIR)build.vc10\lib\x64\Debug\&quot;;&quot;$(MPFR)&quot;;&quot;$(FLINT)include64&quot;;&quot;$(GSL_DIR)&quot;"
+                AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS_DIR)&quot;;&quot;$(MPIR_DIR)include&quot;;&quot;$(MPFR_DIR)include&quot;;&quot;$(FLINT_DIR)include&quot;;&quot;$(NARSROOT)qdebug&quot;"
                 PreprocessorDefinitions="DEBUG;RESDEBUG=1;_CRT_SECURE_NO_WARNINGS;FLINTAVL=0;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_AMD64_;_M_AMD64;_WIN64"
                 StringPooling="false"
                 MinimalRebuild="false"
@@ -89,8 +89,8 @@
                 Name="VCLinkerTool"
                 LinkLibraryDependencies="false"
                 UseLibraryDependencyInputs="false"
-                AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib qdebug\qdebug32.lib mpir64.lib mpfr64.lib $(GSL_DIR)libgsl64-double.lib"
-                AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64;&quot;$(NARSROOT)mpir\OldLibs&quot;"
+                AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib qdebug64.lib mpir64.lib mpfr64.lib libgsl64-double.lib"
+                AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;$(FLINT_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;"
                 GenerateManifest="false"
                 AdditionalManifestDependencies="NARS2000.exe.manifest64"
                 IgnoreAllDefaultLibraries="true"
@@ -125,7 +125,7 @@
             <Tool
                 Name="VCPostBuildEventTool"
                 Description="Copy default APL font"
-                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
+                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy $(NARSROOT)SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
             />
         </Configuration>
         <Configuration
@@ -167,7 +167,7 @@
                 Name="VCCLCompilerTool"
                 Optimization="1"
                 FavorSizeOrSpeed="2"
-                AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;"
+                AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS_DIR)&quot;;&quot;$(MPIR_DIR)include&quot;;&quot;$(MPFR_DIR)include&quot;;&quot;$(FLINT_DIR)include&quot;;&quot;$(NARSROOT)qdebug&quot;"
                 PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=0x0701;_AMD64_;_M_AMD64;_WIN64"
                 StringPooling="false"
                 MinimalRebuild="false"
@@ -194,8 +194,8 @@
                 Name="VCLinkerTool"
                 LinkLibraryDependencies="false"
                 UseLibraryDependencyInputs="false"
-                AdditionalOptions="comctl32.lib Wininet.lib $(NARSROOT)gsl\libgsl64-double.lib version.lib libcmt.lib oldnames.lib dbghelp.lib"
-                AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64"
+                AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib dbghelp.lib qdebug64.lib mpir64.lib mpfr64.lib libgsl64-double.lib"
+                AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;$(FLINT_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;"
                 GenerateManifest="false"
                 AdditionalManifestDependencies="NARS2000.exe.manifest64"
                 IgnoreAllDefaultLibraries="true"
@@ -230,7 +230,7 @@
             <Tool
                 Name="VCPostBuildEventTool"
                 Description="Copy default APL font"
-                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
+                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy $(NARSROOT)SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
             />
         </Configuration>
     </Configurations>
@@ -465,25 +465,8 @@
                 >
             </File>
             <File
-                RelativePath="$(MS)mp.c"
+                RelativePath="$(MS_DIR)mp.c"
                 >
-                <FileConfiguration
-                    Name="Debug64|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="&quot;$(MS)&quot;;&quot;$(NARSROOT)gmp-static&quot;"
-                    />
-                </FileConfiguration>
-                <FileConfiguration
-                    Name="Debug32|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
-                        PreprocessorDefinitions="/D WIN32"
-                    />
-                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\mpfns.c"
@@ -624,22 +607,6 @@
             <File
                 RelativePath=".\pf_pi.c"
                 >
-                <FileConfiguration
-                    Name="Debug64|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="&quot;$(MS)&quot;;&quot;$(NARSROOT)gmp-static&quot;"
-                    />
-                </FileConfiguration>
-                <FileConfiguration
-                    Name="Debug32|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
-                    />
-                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\pf_plus.c"
@@ -830,25 +797,8 @@
                 >
             </File>
             <File
-                RelativePath="$(MS)prime_delta.c"
+                RelativePath="$(MS_DIR)prime_delta.c"
                 >
-                <FileConfiguration
-                    Name="Debug64|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="&quot;$(MS)&quot;;&quot;$(NARSROOT)gmp-static&quot;"
-                    />
-                </FileConfiguration>
-                <FileConfiguration
-                    Name="Debug32|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
-                        PreprocessorDefinitions="/D WIN32"
-                    />
-                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\primfns.c"
@@ -1043,48 +993,16 @@
                 >
             </File>
             <File
-                RelativePath="$(MS)smallfact.c"
+                RelativePath="$(MS_DIR)smallfact.c"
                 >
-                <FileConfiguration
-                    Name="Debug64|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="&quot;$(MS)&quot;;&quot;$(NARSROOT)gmp-static&quot;"
-                    />
-                </FileConfiguration>
-                <FileConfiguration
-                    Name="Debug32|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
-                    />
-                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\sort.c"
                 >
             </File>
             <File
-                RelativePath="$(MS)squfof.c"
+                RelativePath="$(MS_DIR)squfof.c"
                 >
-                <FileConfiguration
-                    Name="Debug64|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="&quot;$(MS)&quot;;&quot;$(NARSROOT)gmp-static&quot;"
-                    />
-                </FileConfiguration>
-                <FileConfiguration
-                    Name="Debug32|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
-                    />
-                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\strand.c"
@@ -1111,25 +1029,8 @@
                 >
             </File>
             <File
-                RelativePath="$(MS)tinyqs.c"
+                RelativePath="$(MS_DIR)tinyqs.c"
                 >
-                <FileConfiguration
-                    Name="Debug64|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="&quot;$(MS)&quot;;&quot;$(NARSROOT)gmp-static&quot;"
-                    />
-                </FileConfiguration>
-                <FileConfiguration
-                    Name="Debug32|Win32"
-                    >
-                    <Tool
-                        Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories="$(MS);$(NARSROOT)gmp-static"
-                        PreprocessorDefinitions="/D WIN32"
-                    />
-                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\tokenize.c"

@@ -26,6 +26,10 @@
 #include <commctrl.h>
 #include "headers.h"
 
+#ifndef USER_DEFAULT_SCREEN_DPI
+  #define USER_DEFAULT_SCREEN_DPI 96
+#endif
+
 // Save area for old WS/ED/OW Toolbar window procedure address
 WNDPROC lpfnOldWS_ED_OWToolbarWndProc;
 
@@ -229,6 +233,13 @@ TBBUTTON tbButtonsOW[IMAGEINDEX_OW_LENGTH + IMAGEINDEX_OW_LENGTH0] =
 #define NUMBUTTONS_OW       IMAGEINDEX_OW_LENGTH
 #define NUMBUTTONS_OW0      IMAGEINDEX_OW_LENGTH0
 
+
+//***************************************************************
+// Subclass window procedure
+//***************************************************************
+
+COMBOBOXINFO cbi = {sizeof (cbi)};      // ComboBoxInfo struc
+WNDPROC lpfnOldFontsComboLboxWndProc;   // Save area for old FontNames ComboLbox window proc
 
 
 //***************************************************************************
@@ -967,7 +978,7 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
     POINT            pt;                    // Mouse coords
     APLI3264         iCnt;                  // Index of non-separator item (may be negative)
     static UBOOL     bTrackMouse = FALSE;   // TRUE iff tracking the mouse
-    TOOLINFOW        tti = {0};             // For Tooltip Ctrl tracking
+    TOOLINFOW        tti;                   // For Tooltip Ctrl tracking
 #define NOLASTCNT    0x3FFFFFFF
     static APLI3264  iLastCnt = NOLASTCNT;  // Last valid index
     TBBUTTON         tbbi;                  // For Toolbar Button Info
@@ -989,7 +1000,7 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
             if (hWndTT EQ NULL)
             {
                 // Create it
-                hWndTT = CreateTooltip ();
+                hWndTT = CreateTooltip (TRUE);
                 if (hWndTT EQ NULL)
                     return -1;      // Mark as in error
             } // End IF
@@ -998,6 +1009,7 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
             SetMaxTipWidth (hWndTT);
 
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            ZeroMemory (&tti, sizeof (tti));
             if (fComctl32FileVer >= 6)
                 tti.cbSize = sizeof (tti);
             else
@@ -1064,6 +1076,7 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                     if (iLastCnt NE NOLASTCNT)
                     {
                         // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+                        ZeroMemory (&tti, sizeof (tti));
                         if (fComctl32FileVer >= 6)
                             tti.cbSize = sizeof (tti);
                         else
@@ -1112,6 +1125,7 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                 RECT rcHit;         // This item's bounding rectangle
 
                 // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+                ZeroMemory (&tti, sizeof (tti));
                 if (fComctl32FileVer >= 6)
                     tti.cbSize = sizeof (tti);
                 else
@@ -1219,6 +1233,7 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
             ReleaseCapture ();
 
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            ZeroMemory (&tti, sizeof (tti));
             if (fComctl32FileVer >= 6)
                 tti.cbSize = sizeof (tti);
             else
@@ -1406,34 +1421,44 @@ LRESULT APIENTRY FW_RBWndProc
      LPARAM lParam)     // ...
 
 {
-    static TOOLINFOW tti = {0};             // For Tooltip Ctrl
-    RECT             rc;                    // Temporary rectangle
-    static HWND      hWndTT;                // Tooltip window handle
+           TOOLINFOW tti;                       // For Tooltip Ctrl
+           RECT      rc;                        // Temporary rectangle
+    static HWND      hWndTT,                    // Tooltip window handle
+                     hWndTT_CBL;                // ...                   for ComboLbox
+    static HFONT     hFontCBFN = NULL;          // Font Name ComboBox font handle
 
 ////LCLODSAPI ("FW_RB: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_CREATE:
             // Create a Tooltip window
-            hWndTT = CreateTooltip ();
+            hWndTT = CreateTooltip (TRUE);
 
             // Check for errors
             if (hWndTT EQ NULL)
                 return -1;                      // Stop the whole process
 
+            // Create a Tooltip window for the ComboLbox
+            hWndTT_CBL = CreateTooltip (FALSE);
+
+            // Check for errors
+            if (hWndTT_CBL EQ NULL)
+                return -1;                      // Stop the whole process
+
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            ZeroMemory (&tti, sizeof (tti));
             if (fComctl32FileVer >= 6)
                 tti.cbSize = sizeof (tti);
             else
                 tti.cbSize = TTTOOLINFOW_V2_SIZE;
 
             //***************************************************************
-            // Create a Combobox Ctrl for the font name
+            // Create a ComboBox Ctrl for the font name
             //***************************************************************
             hWndCBFN_FW =
               CreateWindowExW (0L,                  // Extended styles
                                WC_COMBOBOXW,
-                               L"Font Window Font Name Combobox",// For debugging only
+                               L"Font Window Font Name ComboBox",// For debugging only
                                0                    // Styles
                              | WS_CHILD
                              | WS_BORDER
@@ -1442,6 +1467,8 @@ LRESULT APIENTRY FW_RBWndProc
                              | CBS_DROPDOWNLIST
                              | CBS_SORT
                              | CBS_AUTOHSCROLL
+                             | CBS_OWNERDRAWFIXED
+                             | CBS_HASSTRINGS
                                ,
                                xComboFN,            // X-position
                                0,                   // Y-...
@@ -1466,19 +1493,35 @@ LRESULT APIENTRY FW_RBWndProc
             // Attach the Tooltip window to it
             SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
 
-            // Fill the Combobox with Font Names
+            // Get the ComboBox info
+            SendMessageW (hWndCBFN_FW, CB_GETCOMBOBOXINFO, 0, (LPARAM) &cbi);
+
+            Assert (hWndCBFN_FW EQ cbi.hwndCombo);
+
+            // Save the TT window handle as a window property
+            SetPropW (cbi.hwndList, L"hWndTT", hWndTT_CBL);
+
+            // Get the default font for the Font name ComboBox
+            hFontCBFN = GetComboBoxFont (hWnd, hFontCBFN, hWndTT_CBL);
+
+            // Subclass the Fonts ComboLbox so we can display a Tooltip
+            (HANDLE_PTR) lpfnOldFontsComboLboxWndProc =
+              SetWindowLongPtrW (cbi.hwndList,
+                                 GWLP_WNDPROC,
+                                 (APLU3264) (LONG_PTR) (WNDPROC) &LclFontsComboLboxWndProc);
+            // Fill the ComboBox with Font Names
             ReadAplFontNames (hWndCBFN_FW);
 
-            // Change the font name in the Comboxbox in the Font Window
+            // Change the font name in the ComboBox in the Font Window
             InitFontName ();
 
             //***************************************************************
-            // Create a Combobox Ctrl for the font style
+            // Create a ComboBox Ctrl for the font style
             //***************************************************************
             hWndCBFS_FW =
               CreateWindowExW (0L,                  // Extended styles
                                WC_COMBOBOXW,
-                               L"Font Window Font Style Combobox",// For debugging only
+                               L"Font Window Font Style ComboBox",// For debugging only
                                0                    // Styles
                              | WS_CHILD
                              | WS_BORDER
@@ -1509,16 +1552,16 @@ LRESULT APIENTRY FW_RBWndProc
             // Attach the Tooltip window to it
             SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
 
-            // Fill the Combobox with Font Styles
+            // Fill the ComboBox with Font Styles
             SendMessageW (hWndCBFS_FW, CB_ADDSTRING, 0, (LPARAM) L"Regular");
             SendMessageW (hWndCBFS_FW, CB_ADDSTRING, 0, (LPARAM) L"Italic");
             SendMessageW (hWndCBFS_FW, CB_ADDSTRING, 0, (LPARAM) L"Bold");
             SendMessageW (hWndCBFS_FW, CB_ADDSTRING, 0, (LPARAM) L"Bold Italic");
 
-            // Change the font style in the Comboxbox in the Font Window
+            // Change the font style in the ComboBox in the Font Window
             InitFontStyle ();
 
-            // Get the outer dimensions of the combobox
+            // Get the outer dimensions of the ComboBox
             GetWindowRect (hWndCBFS_FW, &rc);
 
             //***************************************************************
@@ -1613,6 +1656,63 @@ LRESULT APIENTRY FW_RBWndProc
 
             break;
 
+        case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // Control identifier
+        {                           // lpdis = (LPDRAWITEMSTRUCT) lParam; // Item-drawing information
+#ifdef DEBUG
+            UINT             idCtl = (UINT) wParam;
+            LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT) lParam;
+#else
+  #define idCtl       ((UINT) wParam)
+  #define lpdis       ((LPDRAWITEMSTRUCT) lParam)
+#endif
+            // Split cases based upon the id
+            switch (idCtl)
+            {
+                case IDWC_CBFN_FW:
+                    Assert (lpdis->CtlType EQ ODT_COMBOBOX);
+
+                    // Split cases based upon the item action
+                    switch (lpdis->itemAction)
+                    {
+                        WCHAR wszTemp[1024];
+                        UINT  uLen;
+
+                        case ODA_DRAWENTIRE:
+                        case ODA_SELECT:
+                            // Get the text of the item to display
+                            uLen = (UINT)
+                              SendMessageW (hWndCBFN_FW, CB_GETLBTEXT, lpdis->itemID, (LPARAM) &wszTemp);
+
+                            Assert (uLen < countof (wszTemp));
+
+                            // Draw the text
+                            DrawTextW (lpdis->hDC,
+                                       wszTemp,
+                                       uLen,
+                                      &lpdis->rcItem,
+                                       0
+                                     | DT_SINGLELINE
+                                     | DT_NOPREFIX
+                                      );
+                            break;
+
+                        case ODA_FOCUS:     // Ignore changes in focus
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+#ifndef DEBUG
+  #undef  lpdis
+  #undef  idCtl
+#endif
+        } // End WM_DRAWITEM
+
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
             // Uninitialize window-specific resources
@@ -1620,6 +1720,9 @@ LRESULT APIENTRY FW_RBWndProc
 
             // Initialize window-specific resources
             FW_RB_Create (hWnd);
+
+            // Get the default font for the Font name ComboBox
+            hFontCBFN = GetComboBoxFont (hWnd, hFontCBFN, hWndTT_CBL);
 
             break;                  // Continue with next handler
 
@@ -1686,14 +1789,14 @@ LRESULT APIENTRY FW_RBWndProc
 
         case MYWM_NEWFONT:
         {
-            APLU3264 uCurSel,           // Index of the current Combobox selection
+            APLU3264 uCurSel,           // Index of the current ComboBox selection
                      uStyle;            // Current style
 
-            // Get the index of current selection in the Font Name Combobox
+            // Get the index of current selection in the Font Name ComboBox
             uCurSel =
               SendMessageW (hWndCBFN_FW, CB_GETCURSEL, 0, 0);
 
-            // Get the current selection text from the Font Name Combobox
+            // Get the current selection text from the Font Name ComboBox
             SendMessageW (hWndCBFN_FW, CB_GETLBTEXT, uCurSel, (LPARAM) &lfSM.lfFaceName);
 
             // Get and save the current point size
@@ -1721,14 +1824,21 @@ LRESULT APIENTRY FW_RBWndProc
             return FALSE;           // We handled the msg
 
         case WM_DESTROY:
-            // Unregister the Tooltip for the Font Name Combobox
+            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            ZeroMemory (&tti, sizeof (tti));
+            if (fComctl32FileVer >= 6)
+                tti.cbSize = sizeof (tti);
+            else
+                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+
+            // Unregister the Tooltip for the Font Name ComboBox
             tti.hwnd     = hWndCBFN_FW;
             tti.uId      = (UINT_PTR) hWndCBFN_FW;
             SendMessageW (hWndTT,
                           TTM_DELTOOLW,
                           0,
                           (LPARAM) &tti);
-            // Unregister the Tooltip for the Font Style Combobox
+            // Unregister the Tooltip for the Font Style ComboBox
             tti.hwnd     = hWndCBFS_FW;
             tti.uId      = (UINT_PTR) hWndCBFS_FW;
             SendMessageW (hWndTT,
@@ -1762,6 +1872,20 @@ LRESULT APIENTRY FW_RBWndProc
                 DestroyWindow (hWndTT); hWndTT = NULL;
             } // End IF
 
+            // If the Tooltip window is still present, ...
+            if (hWndTT_CBL)
+            {
+                // Destroy it
+                DestroyWindow (hWndTT_CBL); hWndTT_CBL = NULL;
+            } // End IF
+
+            // If the Tooltip font is still present, ...
+            if (hFontCBFN)
+            {
+                // We no longer need this resource
+                DeleteObject (hFontCBFN); hFontCBFN = NULL;
+            } // End IF
+
             return FALSE;           // We handled the msg
 
         default:
@@ -1771,6 +1895,384 @@ LRESULT APIENTRY FW_RBWndProc
 ////LCLODSAPI ("FW_RBZ:", hWnd, message, wParam, lParam);
     return DefWindowProcW (hWnd, message, wParam, lParam);
 } // End FW_RBWndProc
+
+
+//***************************************************************************
+//  $GetComboBoxFont
+//
+//  Get teh ComboBox font
+//***************************************************************************
+
+HFONT GetComboBoxFont
+    (HWND  hWnd,                            // ComboBox window handle
+     HFONT hFont,                           // Incoming font (may be NULL)
+     HWND  hWndTT_CBL)                      // Tooltip window handle for Font Window ComboBox
+
+{
+    HDC       hDC;                          // Client DC for font sizing
+    LOGFONTW  lf;                           // LOGFONT for font sizing
+////NONCLIENTMETRICSW ncMetrics = {sizeof (NONCLIENTMETRICSW)};
+    int       iLogPixelsX;               // # horizontal pixels per inch in the DC
+
+    // If the incoming font is valid, ...
+    if (hFont)
+    {
+        // We no longer need this resource
+        DeleteObject (hFont); hFont = NULL;
+    } // End IF
+
+    // ANSI_FIXED_POINT
+    // ANSI_VAR_FONT
+    // DEVICE_DEFAULT_FONT
+    // DEFAULT_GUI_FONT
+    // OEM_FIXED_POINT
+    // SYSTEM_FONT
+    // SYSTEM_FIXED_POINT
+    hFont = GetStockObject (SYSTEM_FONT);
+
+    // Convert the font into a LOGFONT
+    GetObjectW (hFont, sizeof (lf), &lf);
+
+    // Get a DC for the window's client area
+    hDC = MyGetDC (hWnd);
+
+    // Get the # horizontal pixels per inch in the DC
+    iLogPixelsX = GetDeviceCaps (hDC, LOGPIXELSX);
+
+    // We no longer need this resource
+    MyReleaseDC (hWnd, hDC); hDC = NULL;
+
+////// Get the non-client metrics for the system including LOGFONTs for default fonts
+////SystemParametersInfoW (SPI_GETNONCLIENTMETRICS, ncMetrics.cbSize, &ncMetrics, 0);
+
+    // Copy the LOGFONTW struc
+    // (on Windows 7 Pro, these are all Segoe UI, not the font used for a ComboBox)
+////lf = ncMetrics.lfCaptionFont  ;
+////lf = ncMetrics.lfSmCaptionFont;
+////lf = ncMetrics.lfMenuFont     ;
+////lf = ncMetrics.lfStatusFont   ;
+////lf = ncMetrics.lfMessageFont  ;
+
+    // Scale the width & height accordingly
+    lf.lfHeight = MulDiv (lf.lfHeight, iLogPixelsX, USER_DEFAULT_SCREEN_DPI);
+    lf.lfWidth  = MulDiv (lf.lfWidth , iLogPixelsX, USER_DEFAULT_SCREEN_DPI);
+
+    // Make a font from the LOGFONTW
+    hFont = CreateFontIndirectW (&lf);
+
+    // Tell the Tooltip Ctrl to use it as well
+    SendMessageW (hWndTT_CBL, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
+
+    // Tell the ComboBox Ctrl to use it as well
+    SendMessageW (cbi.hwndCombo, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
+
+    return hFont;
+} // End GetComboBoxFont
+
+
+//***************************************************************************
+//  $LclFontsComboLboxWndProc
+//
+//  Local font name ComboLbox subclass procedure
+//***************************************************************************
+
+LRESULT WINAPI LclFontsComboLboxWndProc
+    (HWND   hWnd,                           // Window handle
+     UINT   message,                        // Type of message
+     WPARAM wParam,                         // Additional information
+     LPARAM lParam)                         // ...
+
+{
+    static HWND      hWndTT = NULL;         // Tooltip window handle
+           RECT      rcHit;                 // This item's bounding rectangle
+    static WCHAR     wszTemp[1024];         // Save area for selection text
+    static int       iCurSel;               // Index of current selection
+    static int       iLstSel = LB_ERR;
+           TOOLINFOW tti;                   // For Tooltip Ctrl
+    static UBOOL     bTrackMouse = FALSE;   // TRUE iff tracking the mouse
+    static TRACKMOUSEEVENT tme = {sizeof (TRACKMOUSEEVENT)};
+
+////LCLODSAPI ("LFLB: ", hWnd, message, wParam, lParam);
+
+    if (hWndTT EQ NULL)
+        // Get the Tooltip window handle
+        hWndTT = (HWND) GetPropW (hWnd, L"hWndTT");
+
+    Assert (hWndTT NE NULL);
+    Assert (hWnd EQ cbi.hwndList);
+
+    // Split cases based upon the message
+    switch (message)
+    {
+        case WM_MOUSEMOVE:          // fwKeys = wParam;        // key flags
+                                    // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
+                                    // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
+        {
+#ifdef DEBUG
+            int xPos = LOSHORT (lParam),
+                yPos = HISHORT (lParam);
+#else
+  #define xPos  (LOSHORT (lParam))
+  #define yPos  (HISHORT (lParam))
+#endif
+
+            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            ZeroMemory (&tti, sizeof (tti));
+            if (fComctl32FileVer >= 6)
+                tti.cbSize = sizeof (tti);
+            else
+                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+
+            // Initialize the struct
+            tti.hwnd = hWnd;
+            tti.uId  = (UINT_PTR) hWnd;
+
+            // Get the current ListBox selection index
+            iCurSel = LOSHORT (SendMessageW (hWnd, LB_ITEMFROMPOINT, 0, MAKELONG (xPos, yPos)));
+
+            // If this index is different from the last and we're tracking the mouse, ...
+            if (iCurSel NE iLstSel
+             && bTrackMouse)
+            {
+                // We need to toggle the Tooltip tracking state off/on to tell the
+                //   Tooltip Ctrl to resend TTN_GETDISPINFOW.
+
+                // Clear tracking and capture
+                SendMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+            } // End IF
+
+            // If the index is valid, ...
+            if (iCurSel NE LB_ERR)
+            {
+                // If we're not already tracking the mouse, ...
+                if (!bTrackMouse)
+                {
+                    // Fill in the TOOLINFOW struc
+                    tti.uFlags   = 0
+                                 | TTF_IDISHWND
+                                 | TTF_TRACK
+                                 | TTF_ABSOLUTE
+                                 ;
+////////////////////tti.hwnd     = cbi.hwndList;        // Initialized above
+////////////////////tti.uId      = (UINT_PTR) cbi.hwndList; // ...
+////////////////////tti.rect     =                      // Not used with TTF_IDISHWND
+////////////////////tti.hinst    =                      // Not used except with string resources
+////                tti.lpszText = LPSTR_TEXTCALLBACKW;
+                    tti.lpszText = L" ";                            // MUST be non-empty
+////////////////////tti.lParam   =                      // Not used by this code
+
+                    // Activate the Tooltip Ctrl
+                    SendMessageW (hWndTT, TTM_ACTIVATE, TRUE, 0);
+
+                    // Attach the Tooltip window to it
+                    SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
+
+                    // Fill in the struc
+                    tme.hwndTrack = hWnd;
+                    tme.dwFlags   = TME_LEAVE;
+
+                    // Ask to be notified when the mouse leaves the ListBox
+                    TrackMouseEvent (&tme);
+
+                    // Activate tracking the Tooltip
+                    SendMessageW (hWndTT, TTM_TRACKACTIVATE, TRUE, (LPARAM) &tti);
+
+                    // Mark as tracking
+                    bTrackMouse = TRUE;
+                } // End IF
+
+                // If this index is different from the last, ...
+                if (iCurSel NE iLstSel)
+                {
+                    RECT  rcLbox,                   // Client area of Lbox
+                          rcTT = {0, 0, 0, 0};      // Tooltip drawing rectangle
+                    HDC   hDC;                      // Client DC for Lbox
+                    HFONT hFont,                    // Font handle for TT
+                          hFontOld;                 // Old font for DC
+
+                    // Activate the Tooltip Ctrl
+                    SendMessageW (hWndTT, TTM_ACTIVATE, TRUE, 0);
+
+                    // Point to the buffer
+                    tti.lpszText = wszTemp;
+
+                    // Get the current tooltip info
+                    SendMessageW (hWndTT, TTM_GETTOOLINFOW, 0, (LPARAM) &tti);
+
+                    // Save the new last index
+                    iLstSel = iCurSel;
+
+                    // Get the selection text
+                    SendMessageW (hWnd, LB_GETTEXT, iCurSel, (LPARAM) wszTemp);
+
+                    // Get the width of the ComboLbox client area
+                    GetClientRect (hWnd, &rcLbox);
+
+                    // Get a DC for the window's client area
+                    hDC = MyGetDC (hWnd);
+
+                    // Get the font for the tooltip
+                    hFont = (HFONT)
+                      SendMessageW (hWndTT, WM_GETFONT, 0, 0);
+
+                    // Put it into effect
+                    hFontOld = SelectObject (hDC, hFont);
+
+                    // Get the length (in pixels) of the tooltip text
+                    DrawTextW (hDC,
+                               wszTemp,
+                               -1,
+                              &rcTT,
+                               0
+                             | DT_CALCRECT
+                             | DT_NOPREFIX
+                             | DT_SINGLELINE
+                               );
+                    // Put the old font back into effect
+                    SelectObject (hDC, hFontOld);
+
+                    // We no longer need this resource
+                    MyReleaseDC (hWnd, hDC); hDC = NULL;
+
+                    // If the tooltip text is longer than the Lbox client area, ...
+                    if (rcTT.right > rcLbox.right)
+                    {
+                        // Tell the Tooltip Ctrl about it
+////////////////////////SendMessageW (hWndTT, TTM_UPDATETIPTEXTW, 0, (LPARAM) &tti);
+                        SendMessageW (hWndTT, TTM_SETTOOLINFOW, 0, (LPARAM) &tti);
+
+                        // Get the item's bounding rectangle
+                        SendMessageW (hWnd, LB_GETITEMRECT, iCurSel, (LPARAM) &rcHit);
+
+                        // Adjust the ListBox rectangle to match the Tooltip Ctrl
+                        SendMessageW (hWndTT, TTM_ADJUSTRECT, TRUE, (LPARAM) &rcHit);
+
+                        // Convert coordinates
+                        ClientToScreen (hWnd, (LPPOINT) &rcHit);
+
+                        // Tell the Tooltip Ctrl the new position
+                        SendMessageW (hWndTT, TTM_TRACKPOSITION, 0, MAKELONG (rcHit.left, rcHit.top));
+                    } else
+                        // De-activate the Tooltip Ctrl
+                        SendMessageW (hWndTT, TTM_ACTIVATE, FALSE, 0);
+                } // End IF
+            } else
+            {
+                // The mouse is outside our window
+                // Clear tracking and capture
+                PostMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+
+                // Mark as no longer tracking
+                bTrackMouse = FALSE;
+            } // End IF
+
+            break;
+#ifndef DEBUG
+  #undef  yPos
+  #undef  xPos
+#endif
+        } // End WM_MOUSEMOVE
+
+        case WM_MOUSELEAVE:         // fwKeys = wParam;        // key flags
+                                    // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
+                                    // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
+            // The mouse is outside our window and
+            //   we no longer need this resource
+
+            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            ZeroMemory (&tti, sizeof (tti));
+            if (fComctl32FileVer >= 6)
+                tti.cbSize = sizeof (tti);
+            else
+                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+
+            // Fill in the struc
+            tti.hwnd = hWnd;
+            tti.uId  = (UINT_PTR) hWnd;
+
+            // Tell the Tooltip Ctrl to stop tracking
+            SendMessageW (hWndTT, TTM_TRACKACTIVATE, FALSE, (LPARAM) &tti);
+
+            // Unregister the Tooltip for the Font Name ComboLbox
+            SendMessageW (hWndTT,
+                          TTM_DELTOOLW,
+                          0,
+                          (LPARAM) &tti);
+            // Fill in the struc
+            tme.hwndTrack = hWnd;
+            tme.dwFlags   = TME_CANCEL
+                          | TME_LEAVE;
+            // Cancel tracking
+            TrackMouseEvent (&tme);
+
+            // Mark as no longer valid
+            iLstSel = LB_ERR;
+
+            // Mark as no longer tracking
+            bTrackMouse = FALSE;
+
+            break;
+
+        case WM_NOTIFY:             // idCtrl = (int) wParam;
+        {                           // pnmh = (LPNMHDR) lParam;
+#ifdef DEBUG
+            LPNMHDR         lpnmhdr = (LPNMHDR) lParam;
+            LPNMTTDISPINFOW lpnmtdi = (LPNMTTDISPINFOW) lParam;
+            WPARAM          idCtl   = wParam;
+#else
+  #define lpnmhdr         ((LPNMHDR) lParam)
+  #define lpnmtdi         ((LPNMTTDISPINFOW) lParam)
+  #define idCtl           ((WPARAM) wParam)
+#endif
+            // Split cases based upon the code
+            switch (lpnmhdr->code)
+            {
+                case TTN_SHOW:
+////                // Reposition the Tooltip Ctrl on top of the ComboLbox
+////                SetWindowPos (hWndTT,
+////                              HWND_TOP,
+////                              0, 0, 0, 0,
+////                              0
+////                            | SWP_NOSIZE
+////                            | SWP_NOMOVE
+////                            | SWP_NOACTIVATE
+////                             );
+                    // Reposition the ComboLbox not to be topmost
+                    SetWindowPos (hWnd,
+                                  HWND_NOTOPMOST,
+                                  0, 0, 0, 0,
+                                  0
+                                | SWP_NOSIZE
+                                | SWP_NOMOVE
+                                | SWP_NOACTIVATE
+                                 );
+                    return FALSE;       // Use default positioning
+////////////////////return TRUE;        // We positioned the TT
+
+                default:
+                    break;
+            } // End SWITCH
+
+            break;
+#ifndef DEBUG
+  #undef  idCtl
+  #undef  lpnmtdi
+  #undef  lpnmhdr
+#endif
+        } // End WM_NOTIFY
+
+        default:
+            break;
+    } // End SWITCH
+
+////LCLODSAPI ("LFLBZ: ", hWnd, message, wParam, lParam);
+    return
+      CallWindowProcW (lpfnOldFontsComboLboxWndProc,
+                       hWnd,
+                       message,
+                       wParam,
+                       lParam);     // Pass on down the line
+} // End LclFontsComboLboxWndProc
 
 
 //***************************************************************************
@@ -1785,10 +2287,10 @@ void InitFontBand
 
 {
     REBARBANDINFOW rbBand;      // Rebar band info struc
-    RECT           rcCB;        // Rectangle for Combobox in Font Window
+    RECT           rcCB;        // Rectangle for ComboBox in Font Window
 ////UINT           uItem;       // Index of this band
 
-    // Get the outside dimensions of the Combobox in the Font Window
+    // Get the outside dimensions of the ComboBox in the Font Window
     GetWindowRect (hWndCBFN_FW, &rcCB);
 
     // Initialize the band info struc
@@ -2427,7 +2929,7 @@ typedef struct tagLANGCHARS
                       hFontOld;                 // Old font
     RECT              rcChar;                   // Rectangle around largest char
     static UBOOL      bTrackMouse = FALSE;      // TRUE iff tracking the mouse
-    static TOOLINFOW  tti = {0};                // ...
+           TOOLINFOW  tti;                      // ...
     static HWND       hWndTT;                   // Tooltip window handle
 
 ////LCLODSAPI ("LW_RB: ", hWnd, message, wParam, lParam);
@@ -2435,7 +2937,7 @@ typedef struct tagLANGCHARS
     {
         case WM_CREATE:
             // Create a Tooltip window
-            hWndTT = CreateTooltip ();
+            hWndTT = CreateTooltip (TRUE);
 
             // Check for errors
             if (hWndTT EQ NULL)
@@ -2445,6 +2947,7 @@ typedef struct tagLANGCHARS
             SetTTFontLW (hWndTT);
 
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+            ZeroMemory (&tti, sizeof (tti));
             if (fComctl32FileVer >= 6)
                 tti.cbSize = sizeof (tti);
             else

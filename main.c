@@ -46,6 +46,10 @@
 
 CRITICAL_SECTION CSOPthread;            // Critical Section Object for pthread
 
+#ifdef DEBUG
+extern int Debug = 1;
+#endif
+
 
 //************************** Data Area **************************************
 
@@ -955,10 +959,10 @@ void CreateNewFontSM
                       &tmSM,
                       &GetFSDirAveCharSize (FONTENUM_SM)->cx,
                       &GetFSDirAveCharSize (FONTENUM_SM)->cy);
-    // Change the font name in the Comboxbox in the Font Window
+    // Change the font name in the ComboBox in the Font Window
     InitFontName ();
 
-    // Change the font style in the Comboxbox in the Font Window
+    // Change the font style in the ComboBox in the Font Window
     InitFontStyle ();
 
     // Change the point size in the Listbox/UpDown Controls in the Font Window
@@ -973,7 +977,7 @@ void CreateNewFontSM
 //***************************************************************************
 //  $InitFontName
 //
-//  Initialize the Font Name in the Font Window Combobox
+//  Initialize the Font Name in the Font Window ComboBox
 //***************************************************************************
 
 void InitFontName
@@ -999,7 +1003,7 @@ void InitFontName
 //***************************************************************************
 //  $InitFontStyle
 //
-//  Initialize the Font Style in the Font Window Combobox
+//  Initialize the Font Style in the Font Window ComboBox
 //***************************************************************************
 
 void InitFontStyle
@@ -1013,7 +1017,7 @@ void InitFontStyle
     uItem = (lfSM.lfWeight >= FW_BOLD) * 2
           +  lfSM.lfItalic;
 
-    // Change the font style in the Comboxbox in the Font Window
+    // Change the font style in the ComboBox in the Font Window
     SendMessageW (hWndCBFS_FW, CB_SETCURSEL, uItem, 0);
 } // End InitFontStyle
 
@@ -1261,7 +1265,7 @@ void ApplyNewFontVE
 //***************************************************************************
 
 HWND CreateTooltip
-    (void)
+    (UBOOL bBalloon)            // TRUE iff we use balloon TTs
 
 {
     HWND hWnd;
@@ -1276,7 +1280,7 @@ HWND CreateTooltip
 
                      | TTS_NOANIMATE
                      | TTS_ALWAYSTIP
-                     | TTS_BALLOON
+                     | (bBalloon ? TTS_BALLOON : TTS_NOFADE)
                      | TTS_NOPREFIX
                        ,                    // Styles
                        CW_USEDEFAULT,       // X-coord
@@ -1313,7 +1317,7 @@ UBOOL CreateChildWindows
     // Create the Tooltip window first so that
     // the other windows can reference it.
     //***************************************************************
-    hWndTT = CreateTooltip ();
+    hWndTT = CreateTooltip (TRUE);
     if (hWndTT EQ NULL)
         return FALSE;       // Stop the whole process
 

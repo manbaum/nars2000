@@ -235,6 +235,13 @@ TBBUTTON tbButtonsOW[IMAGEINDEX_OW_LENGTH + IMAGEINDEX_OW_LENGTH0] =
 
 
 //***************************************************************
+//  Language Window
+//***************************************************************
+
+int nLangBands = 1;             // # Language bands (actually it's a height multiplier)
+
+
+//***************************************************************
 // Subclass window procedure
 //***************************************************************
 
@@ -2911,7 +2918,6 @@ typedef struct tagLANGCHARS
     };
 
 #define LANGCHARS_LENGTH        countof (langChars)
-#define LANGCHARS_NSEPS         11
 #define LANGCHARS_SEPWIDTH      8
 #define LANGCHARS_LEFTMARGIN    5
 #define LANGCHARS_RIGHTMARGIN   5
@@ -2972,6 +2978,54 @@ typedef struct tagLANGCHARS
 
             break;
 
+#define fwSizeType  wParam
+#define nWidth      (LOWORD (lParam))
+#define nHeight     (HIWORD (lParam))
+        case WM_SIZE:               // fwSizeType = wParam;      // Resizing flag
+                                    // nWidth = LOWORD(lParam);  // Width of client area
+                                    // nHeight = HIWORD(lParam); // Height of client area
+            if (fwSizeType NE SIZE_MINIMIZED)
+            {
+                RECT  rcWindow;                 // Window rectangle
+                UINT  uWidth;                   // Char width
+                int   nBands;                   // Expected # bands
+                DWORD dwBtnSize;                // Button size
+
+                // Get the actual window size
+                GetWindowRect (hWnd, &rcWindow);
+
+                // Calculate the available window width
+                uWidth = rcWindow.right - rcWindow.left;
+
+                if (uWidth NE 0)
+                {
+                    // Calculate the horizontal & vertical span across APL chars
+                    dwBtnSize = (DWORD)
+                      SendMessageW (hWnd, MYWM_GETCLIENTSIZE, 0, 0);
+
+                    // Calculate the expected # Language Bands
+                    nBands = ((GET_X_LPARAM (dwBtnSize) - LANGCHARS_LEFTMARGIN) + uWidth - 1)/ uWidth;
+
+                    // If the band count changes, ...
+                    if (nLangBands NE nBands)
+                    {
+                        // Save as new count
+                        nLangBands = nBands;
+
+                        // Update the Language Bar
+                        InitLanguageBand (SendMessageW (hWndRB, RB_IDTOINDEX, IDWC_LW_RB, 0));
+
+                        // Invalidate the window
+                        InvalidateRect (hWnd, NULL, FALSE);
+                    } // End IF
+                } // End IF
+            } // End IF
+
+            break;                  // *MUST* pass on to DefMDIChildProcW
+#undef  nHeight
+#undef  nWidth
+#undef  fwSizeType
+
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
             // Uninitialize window-specific resources
@@ -2985,9 +3039,9 @@ typedef struct tagLANGCHARS
         case WM_NOTIFY:             // idCtrl = (int) wParam;
         {                           // pnmh = (LPNMHDR) lParam;
 #ifdef DEBUG
-            LPNMHDR         lpnmhdr = (LPNMHDR) lParam;
-            LPNMTTDISPINFOW lpnmtdi = (LPNMTTDISPINFOW) lParam;
-            WPARAM          idCtl   = wParam;
+            LPNMHDR            lpnmhdr = (LPNMHDR) lParam;
+            LPNMTTDISPINFOW    lpnmtdi = (LPNMTTDISPINFOW) lParam;
+            WPARAM             idCtl   = wParam;
 #else
   #define lpnmhdr         ((LPNMHDR) lParam)
   #define lpnmtdi         ((LPNMTTDISPINFOW) lParam)
@@ -3296,7 +3350,7 @@ typedef struct tagLANGCHARS
             hFontOld = SelectObject (hDCMem, hFontTmp);
 
             // Initialize the width and height
-            uWidth = LANGCHARS_LEFTMARGIN;
+            uWidth  = LANGCHARS_LEFTMARGIN;
             uHeight = 0;
 
             // Loop through the chars
@@ -3348,6 +3402,7 @@ typedef struct tagLANGCHARS
         case WM_PAINT:
         {
             RECT        rcUpdate,           // Update rectangle
+                        rcClient,           // Client rectangle
                         rcChar;             // Rectangle around largest char
             HBRUSH      hBrush;             // Background brush handle
             HDC         hDCMem;             // Memory DC
@@ -3355,7 +3410,8 @@ typedef struct tagLANGCHARS
                         hBitmapOld;         // Old bitmap
             HFONT       hFontOld;           // Old font
             PAINTSTRUCT ps;                 // Paint struc
-            UINT        uWidth;             // Char width
+            UINT        uWidth,             // Char width
+                        uHeight;            // Line height
             DWORD       dwBtnSize;          // Button size
 
             // Get the update rectangle
@@ -3390,7 +3446,10 @@ typedef struct tagLANGCHARS
             //   with the class background brush
             FillRect (hDCMem, &rcUpdate, hBrush);
 
-            // Calculate the vertical span across APL chars
+            // Calculate the client rectangle
+            GetClientRect (hWnd, &rcClient);
+
+            // Calculate the horizontal & vertical span across APL chars
             dwBtnSize = (DWORD)
               SendMessageW (hWnd, MYWM_GETCLIENTSIZE, 0, 0);
 
@@ -3424,6 +3483,17 @@ typedef struct tagLANGCHARS
                                );
                     // Calculate the char width
                     uWidth = (rcTemp.right - rcTemp.left) + LANGCHARS_RIGHTPAD;
+
+                    // If the new width exceeds the window width, ...
+                    if ((rcChar.left + uWidth) > (UINT) rcClient.right)
+                    {
+                        uHeight = rcChar.bottom - rcChar.top;
+
+////////////////////////rcChar.right  -= rcChar.left;
+                        rcChar.left    = LANGCHARS_LEFTMARGIN;
+                        rcChar.top     = rcChar.bottom;
+                        rcChar.bottom += uHeight;
+                    } // End IF
 
                     // Set the right edge to the width of the char
                     rcChar.right = rcChar.left + uWidth;
@@ -3570,7 +3640,7 @@ void InitLanguageBand
     dwBtnSize = (DWORD)
       SendMessageW (hWndLW_RB, MYWM_GETCLIENTSIZE, 0, 0);
     cxLW_RB = GET_X_LPARAM (dwBtnSize);
-    cyLW_RB = GET_Y_LPARAM (dwBtnSize);
+    cyLW_RB = GET_Y_LPARAM (dwBtnSize) * nLangBands;
 
     // Initialize the band info struc
     ZeroMemory (&rbBand, sizeof (rbBand));
@@ -3589,7 +3659,7 @@ void InitLanguageBand
     rbBand.fStyle     = 0
                       | RBBS_CHILDEDGE
                       | RBBS_GRIPPERALWAYS
-////                  | RBBS_BREAK
+                      | RBBS_BREAK
 ////                  | RBBS_USECHEVRON
                       ;
 ////rbBand.clrFore    =
@@ -3598,7 +3668,7 @@ void InitLanguageBand
 ////rbBand.cch        =
 ////rbBand.iImage     =
     rbBand.hwndChild  = hWndLW_RB;
-    rbBand.cxMinChild = cxLW_RB;
+    rbBand.cxMinChild = 700;            // ***FIXME*** -- calculate the correct minimum width (say, up to and including Grade Down)
     rbBand.cyMinChild = cyLW_RB;
     rbBand.cxIdeal    = cxLW_RB;
     rbBand.cx         = cxLW_RB;

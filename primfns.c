@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1169,7 +1169,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                                                 lptkFunc,
                                                 aplNELMRht,
                                                &aplTypeRht);
-    if (aplTypeRes EQ ARRAY_ERROR)
+    if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
     Assert (IsSimpleNum (aplTypeRes)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -500,7 +500,7 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
                                                 lptkFunc,
                                                 aplNELMRht,
                                                &aplTypeRht);
-    if (aplTypeRes EQ ARRAY_ERROR)
+    if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
     Assert (IsSimpleNum (aplTypeRes)
@@ -813,7 +813,7 @@ UBOOL PrimIdentFnScalarCommon_EM
                                                              lptkFunc,
                                                              aplNELMItm,
                                                             &aplTypeItm);
-                if (aplTypeRes2 EQ ARRAY_ERROR)
+                if (IsErrorType (aplTypeRes2))
                     goto DOMAIN_EXIT;
 
                 Assert (IsSimpleNum (aplTypeRes2)
@@ -1049,7 +1049,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                                                &aplTypeRht,
                                                 lptkFunc);
     // Check for DOMAIN ERROR
-    if (aplTypeRes EQ ARRAY_ERROR)
+    if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
     // Allocate a new YYRes
@@ -1686,7 +1686,7 @@ HGLOBAL PrimFnMonGlb_EM
 #undef  lpHeader
 
     // Check for DOMAIN ERROR
-    if (aplTypeRes EQ ARRAY_ERROR)
+    if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
     // In case the result is APA
@@ -2334,7 +2334,7 @@ RESTART_EXCEPTION:
                                                                         &aplTypeRht2,
                                                                          lptkFunc);
                             // Check for DOMAIN ERROR
-                            if (aplTypeRes2 EQ ARRAY_ERROR)
+                            if (IsErrorType (aplTypeRes2))
                                 goto DOMAIN_EXIT;
 
                             // Copy the SYMENTRY as the same type as the result
@@ -2906,7 +2906,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                                 lptkFunc,
                                                 aplNELMRht,
                                                &aplTypeRht);
-    if (aplTypeRes EQ ARRAY_ERROR)
+    if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
     Assert (IsSimpleNum (aplTypeRes)
@@ -3949,7 +3949,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                                 lptkFunc,
                                                 aplNELMRht,
                                                &aplTypeRht);
-    if (aplTypeRes EQ ARRAY_ERROR)
+    if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
     // Special case APA result
@@ -9667,7 +9667,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                                                 lptkFunc,
                                                 aplNELMRht,
                                                &aplTypeRht);
-    if (aplTypeRes EQ ARRAY_ERROR)
+    if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
     // Special case APA result
@@ -9899,7 +9899,7 @@ HGLOBAL PrimFnDydSiScSiSc_EM
                                                 lptkFunc,
                                                 1,
                                                &aplTypeRht);
-    if (aplTypeRes EQ ARRAY_ERROR)
+    if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
     if (PrimFnDydSiScSiScSub_EM (&tkRes,

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -497,7 +497,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 aplTypeSub = TranslateImmTypeToArrayType (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType);
 
                 // Keep track of the type of the first simple scalar
-                if (aplType1SS EQ ARRAY_ERROR)
+                if (IsErrorType (aplType1SS))
                     aplType1SS = aplTypeSub;
                 break;
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -176,17 +176,20 @@
 #define SIGN_APLFLOAT(a)    (((LPAPLFLOATSTR) &a)->bSign) // ... APLFLOAT
 
 
+// Define macro for detecting error array type
+#define IsErrorType(ArrType)            (ArrType EQ ARRAY_ERROR)
+
 // Define macro for detecting simple array type
 /////// IsSimple(ArrType)               ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA || (ArrType) EQ ARRAY_FLOAT || (ArrType) EQ ARRAY_CHAR || (ArrType) EQ ARRAY_HETERO)
-#define IsSimple(ArrType)               (uTypeMap[ArrType] <= uTypeMap[ARRAY_HETERO])
+#define IsSimple(ArrType)               ((!IsErrorType (ArrType)) && uTypeMap[ArrType] <= uTypeMap[ARRAY_HETERO])
 
 // Define macro for detecting simple non-heterogeneous array type
 /////// IsSimpleNH(ArrType)             ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA || (ArrType) EQ ARRAY_FLOAT || (ArrType) EQ ARRAY_CHAR)
-#define IsSimpleNH(ArrType)             (uTypeMap[ArrType] < uTypeMap[ARRAY_HETERO])
+#define IsSimpleNH(ArrType)             ((!IsErrorType (ArrType)) && uTypeMap[ArrType] < uTypeMap[ARRAY_HETERO])
 
 // Define macro for detecting simple numeric array type
 /////// IsSimpleNum(ArrType)            ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA || (ArrType) EQ ARRAY_FLOAT)
-#define IsSimpleNum(ArrType)            (uTypeMap[ArrType] < uTypeMap[ARRAY_CHAR])
+#define IsSimpleNum(ArrType)            ((!IsErrorType (ArrType)) && uTypeMap[ArrType] < uTypeMap[ARRAY_CHAR])
 
 // Define macro for detecting simple Boolean array type
 #define IsSimpleBool(ArrType)           ((ArrType) EQ ARRAY_BOOL)

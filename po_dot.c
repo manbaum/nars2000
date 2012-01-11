@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -647,7 +647,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                                            &lpYYFcnStrRht->tkToken,
                                             aplFrstRht,
                                            &aplTypeRht);
-        if (aplTypeCmp EQ ARRAY_ERROR)
+        if (IsErrorType (aplTypeCmp))
             goto RIGHT_OPERAND_DOMAIN_EXIT;
         // For the moment, APA is treated as INT
         if (IsSimpleAPA (aplTypeCmp))
@@ -660,7 +660,7 @@ RESTART_INNERPROD_CMP:
                                            &lpYYFcnStrLft->tkToken,
                                             aplInnrMax,
                                            &aplTypeCmp);
-        if (aplTypeRes EQ ARRAY_ERROR)
+        if (IsErrorType (aplTypeRes))
             goto LEFT_OPERAND_DOMAIN_EXIT;
 
         // If the result is empty, make it Boolean

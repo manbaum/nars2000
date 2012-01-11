@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -804,28 +804,6 @@ LRESULT WINAPI LclTabCtrlWndProc
             if (gOverTabIndex >= iDelTabIndex)
                 gOverTabIndex--;
 
-            // If the current tab is the one being deleted,
-            //   the index of the new tab is one to the right
-            //   if there is a tab there, or one to the left.
-            // Note that within this message, we haven't deleted
-            //   the tab as yet, so the indexing doesn't need
-            //   to take that into account.
-            iNewTabIndex = TabCtrl_GetCurSel (hWnd);
-            if (iNewTabIndex EQ iDelTabIndex)
-            {
-                int iItemCount;
-
-                // Get the # active tabs ("- 1" to exclude the one we're deleting)
-                iItemCount = TabCtrl_GetItemCount (hWnd) - 1;
-
-                // Izit the rightmost tab?
-                if (iNewTabIndex EQ iItemCount)
-                    iNewTabIndex--;
-                else
-                if (iNewTabIndex < (iItemCount - 1))
-                    iNewTabIndex++;
-            } // End IF
-
             // Reset this tab's color index bit
             ResetTabColorIndex (lpMemPTD->crIndex);
 
@@ -842,6 +820,32 @@ LRESULT WINAPI LclTabCtrlWndProc
                                message,
                                wParam,
                                lParam); // Pass on down the line
+#ifdef DEBUG
+            // Zap the ptr
+            lpMemPTD = NULL;
+#endif
+            // If the current tab is the one being deleted,
+            //   the index of the new tab is one to the right
+            //   if there is a tab there, or one to the left.
+            // Note that within this message, we haven't deleted
+            //   the tab as yet, so the indexing doesn't need
+            //   to take that into account.
+            iNewTabIndex = TabCtrl_GetCurSel (hWnd);
+            if (iNewTabIndex EQ iDelTabIndex)
+            {
+                int iItemCount;
+
+                // Get the # active tabs
+                iItemCount = TabCtrl_GetItemCount (hWnd);
+
+                // Izit the rightmost tab?
+                if (iNewTabIndex EQ iItemCount)
+                    iNewTabIndex--;
+                else
+                if (iNewTabIndex < (iItemCount - 1))
+                    iNewTabIndex++;
+            } // End IF
+
             // If it's valid, ...
             if (iNewTabIndex NE -1)
             {

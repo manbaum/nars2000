@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2952,26 +2952,11 @@ typedef struct tagLANGCHARS
             // Set the Tooltip font for the Language window
             SetTTFontLW (hWndTT);
 
-            // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
-            ZeroMemory (&tti, sizeof (tti));
-            if (fComctl32FileVer >= 6)
-                tti.cbSize = sizeof (tti);
-            else
-                tti.cbSize = TTTOOLINFOW_V2_SIZE;
+            // Fill in the TOOLINFOW struc
+            InitToolInfoW (hWnd, &tti);
+
             // Initialize window-specific resources
             LW_RB_Create (hWnd);
-
-            // Fill in the TOOLINFOW struc
-            tti.uFlags   = 0
-                         | TTF_IDISHWND
-                         | TTF_TRACK
-                         ;
-            tti.hwnd     = hWnd;
-            tti.uId      = (UINT_PTR) hWnd;
-////////////tti.rect     =                      // Not used with TTF_IDISHWND
-////////////tti.hinst    =                      // Not used except with string resources
-            tti.lpszText = LPSTR_TEXTCALLBACKW;
-////////////tti.lParam   =                      // Not used by this code
 
             // Attach the Tooltip window to it
             SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
@@ -3255,6 +3240,9 @@ typedef struct tagLANGCHARS
                 // If not already tracking, ...
                 if (!bTrackMouse)
                 {
+                    // Fill in the TOOLINFOW struc
+                    InitToolInfoW (hWnd, &tti);
+
                     // Capture the mouse
                     SetCapture (hWnd);
 
@@ -3287,6 +3275,9 @@ typedef struct tagLANGCHARS
             // The mouse is outside our window and
             //   we no longer need this resource
             ReleaseCapture ();
+
+            // Fill in the TOOLINFOW struc
+            InitToolInfoW (hWnd, &tti);
 
             // Tell the Tooltip Ctrl to stop tracking
             SendMessageW (hWndTT, TTM_TRACKACTIVATE, FALSE, (LPARAM) &tti);
@@ -3568,6 +3559,9 @@ typedef struct tagLANGCHARS
             return FALSE;           // We handled the msg
 
         case WM_DESTROY:
+            // Fill in the TOOLINFOW struc
+            InitToolInfoW (hWnd, &tti);
+
             // Unregister the Tooltip for the Language Window
             SendMessageW (hWndTT,
                           TTM_DELTOOLW,
@@ -3592,6 +3586,38 @@ typedef struct tagLANGCHARS
 ////LCLODSAPI ("LW_RBZ:", hWnd, message, wParam, lParam);
     return DefWindowProcW (hWnd, message, wParam, lParam);
 } // End LW_RBWndProc
+
+
+//***************************************************************************
+//  $InitToolInfoW
+//
+//  Initialize the TOOLINFOW struc
+//***************************************************************************
+
+void InitToolInfoW
+    (HWND        hWnd,                  // Callback window handle
+     LPTOOLINFOW lptti)                 // Ptr to TOOLINFOW struc
+
+{
+    // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
+    ZeroMemory (lptti, sizeof (*lptti));
+    if (fComctl32FileVer >= 6)
+        lptti->cbSize = sizeof (*lptti);
+    else
+        lptti->cbSize = TTTOOLINFOW_V2_SIZE;
+
+    // Fill in the TOOLINFOW struc
+    lptti->uFlags   = 0
+                    | TTF_IDISHWND
+                    | TTF_TRACK
+                    ;
+    lptti->hwnd     = hWnd;
+    lptti->uId      = (UINT_PTR) hWnd;
+////lptti->rect     =                       // Not used with TTF_IDISHWND
+////lptti->hinst    =                       // Not used except with string resources
+    lptti->lpszText = LPSTR_TEXTCALLBACKW;
+////lptti->lParam   =                       // Not used by this code
+} // End InitToolInfoW
 
 
 //***************************************************************************

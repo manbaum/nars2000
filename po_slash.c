@@ -1342,6 +1342,11 @@ NORMAL_EXIT:
 
             break;
 
+        case ARRAY_ERROR:
+            Assert (lpYYRes EQ NULL);
+
+            break;
+
         defstop
             break;
     } // End SWITCH

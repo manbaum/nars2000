@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -85,6 +85,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 {
     APLSTYPE     aplTypeRht;        // Right arg storage type
     APLRANK      aplRankRht;        // Right arg rank
+    APLNELM      aplNELMRht;        // Right arg NELM
     HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
                  hGlbRes = NULL,    // Result    ...
                  hGlbTmp;           // Temporary ...
@@ -118,7 +119,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
     if (IsMultiRank (aplRankRht))
@@ -186,6 +187,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
     // Execute the right arg
     lpYYRes2 =
       PrimFnMonUpTackJotCommon_EM_YY (lpMemRht,     // Ptr to text of line to execute
+                                      aplNELMRht,   // Length of the line to execute
                                       FALSE,        // TRUE iff we should free lpwszCompLine
                                       TRUE,         // TRUE iff we should return a NoValue YYRes
                                       FALSE,        // TRUE iff we should act on errors

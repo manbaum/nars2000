@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -386,11 +386,12 @@ UBOOL TransferInverseArr2_EM
 
         // Execute the statement starting with lpwName
         exitType =
-          PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
-                                       lpMemPTD,    // Ptr to PerTabData global memory
-                                       lpwName,     // Ptr to text of line to execute
-                                       TRUE,        // TRUE iff we should act on errors
-                                       NULL);       // Ptr to function token
+          PrimFnMonUpTackJotCSPLParse (hWndEC,              // Edit Ctrl window handle
+                                       lpMemPTD,            // Ptr to PerTabData global memory
+                                       lpwName,             // Ptr to text of line to execute
+                                       lstrlenW (lpwName),  // Length of the line to execute
+                                       TRUE,                // TRUE iff we should act on errors
+                                       NULL);               // Ptr to function token
         // Split cases based upon the exit type
         switch (exitType)
         {
@@ -529,11 +530,12 @@ UBOOL TransferInverseFcn2_EM
 
     // Execute the statement starting with lpwData
     exitType =
-      PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
-                                   lpMemPTD,    // Ptr to PerTabData global memory
-                                   lpwData,     // Ptr to text of line to execute
-                                   TRUE,        // TRUE iff we should act on errors
-                                   NULL);       // Ptr to function token
+      PrimFnMonUpTackJotCSPLParse (hWndEC,              // Edit Ctrl window handle
+                                   lpMemPTD,            // Ptr to PerTabData global memory
+                                   lpwData,             // Ptr to text of line to execute
+                                   lstrlenW (lpwData),  // Length of the line to execute
+                                   TRUE,                // TRUE iff we should act on errors
+                                   NULL);               // Ptr to function token
     Assert (exitType EQ EXITTYPE_NODISPLAY
          || exitType EQ EXITTYPE_NOVALUE
          || exitType EQ EXITTYPE_ERROR);
@@ -1057,11 +1059,12 @@ UBOOL TransferInverseNum1_EM
 
         // Execute the statement starting with lpwName
         exitType =
-          PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
-                                       lpMemPTD,    // Ptr to PerTabData global memory
-                                       lpwName,     // Ptr to text of line to execute
-                                       TRUE,        // TRUE iff we should act on errors
-                                       NULL);       // Ptr to function token
+          PrimFnMonUpTackJotCSPLParse (hWndEC,              // Edit Ctrl window handle
+                                       lpMemPTD,            // Ptr to PerTabData global memory
+                                       lpwName,             // Ptr to text of line to execute
+                                       lstrlenW (lpwName),  // Length of the line to execute
+                                       TRUE,                // TRUE iff we should act on errors
+                                       NULL);               // Ptr to function token
         Assert (exitType EQ EXITTYPE_NODISPLAY
              || exitType EQ EXITTYPE_ERROR);
         if (exitType EQ EXITTYPE_ERROR)

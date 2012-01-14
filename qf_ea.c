@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,6 +110,8 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
                  aplTypeRht;        // right ...
     APLRANK      aplRankLft,        // Left arg rank
                  aplRankRht;        // right ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht;        // Right ...
     HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
                  hGlbRht = NULL;    // Right ...
     LPAPLCHAR    lpMemLft = NULL,   // Ptr to left arg global memory
@@ -136,8 +138,8 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, NULL, &aplRankLft, NULL);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT & RIGHT RANK ERRORs
     if (IsMultiRank (aplRankLft))
@@ -158,13 +160,14 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
     if (hGlbRht)
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    else
+     else
         // Point to the immediate value
         lpMemRht = (LPAPLCHAR) &aplLongestRht;
 
     // Execute the right arg
     lpYYRes =
       PrimFnMonUpTackJotCommon_EM_YY (lpMemRht,     // Ptr to text of line to execute
+                                      aplNELMRht,   // Length of the line to execute
                                       FALSE,        // TRUE iff we should free lpwszCompLine
                                       FALSE,        // TRUE iff we should return a NoValue YYRes
                                       FALSE,        // TRUE iff we should act on errors
@@ -190,6 +193,7 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
     // Execute the left arg
     lpYYRes =
       PrimFnMonUpTackJotCommon_EM_YY (lpMemLft,     // Ptr to text of line to execute
+                                      aplNELMLft,   // Length of the line to execute
                                       FALSE,        // TRUE iff we should free lpwszCompLine
                                       TRUE,         // TRUE iff we should return a NoValue YYRes
                                       TRUE,         // TRUE iff we should act on errors

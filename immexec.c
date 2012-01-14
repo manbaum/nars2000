@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,9 @@ typedef struct tagWFSO          // Struct for WaitForSingleObject
                  hThread;       // Thread handle
     HWND         hWndEC;        // Edit Ctrl window handle
 } WFSO, *LPWFSO;
+
+#define EXEC_QUAD_ELX_TXT   WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX"
+#define EXEC_QUAD_ELX_LEN   strcountof (EXEC_QUAD_ELX_TXT)
 
 
 //***************************************************************************
@@ -532,7 +535,8 @@ DWORD WINAPI ImmExecStmtInThread
                         exitType =
                           PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
                                                        lpMemPTD,                                // Ptr to PerTabData global memory
-                                                       WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                                       EXEC_QUAD_ELX_TXT,                       // Ptr to text of line to execute
+                                                       EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
                                                        TRUE,                                    // TRUE iff we should act on errors
                                                        NULL);                                   // Ptr to function token
                     // Set the reset flag
@@ -572,7 +576,8 @@ DWORD WINAPI ImmExecStmtInThread
                     exitType =
                       PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
                                                    lpMemPTD,                                // Ptr to PerTabData global memory
-                                                   WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                                   EXEC_QUAD_ELX_TXT,                       // Ptr to text of line to execute
+                                                   EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
                                                    TRUE,                                    // TRUE iff we should act on errors
                                                    NULL);                                   // Ptr to function token
                 // Set the reset flag
@@ -738,7 +743,8 @@ EXIT_TYPES ActOnError
     exitType =
       PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
                                    lpMemPTD,                                // Ptr to PerTabData global memory
-                                   WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to text of line to execute
+                                   EXEC_QUAD_ELX_TXT,                       // Ptr to text of line to execute
+                                   EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
                                    TRUE,                                    // TRUE iff we should act on errors
                                    NULL);                                   // Ptr to function token
     // Split cases based upon the exit type

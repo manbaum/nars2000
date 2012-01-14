@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1936,11 +1936,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
 #ifdef DEBUG
                 exitType =
 #endif
-                PrimFnMonUpTackJotCSPLParse (hWndEC,    // Edit Ctrl window handle
-                                             lpMemPTD,  // Ptr to PerTabData global memory
-                                             lpwLine,   // Ptr to text of line to execute
-                                             TRUE,      // TRUE iff we should act on errors
-                                             NULL);     // Ptr to function token
+                PrimFnMonUpTackJotCSPLParse (hWndEC,                // Edit Ctrl window handle
+                                             lpMemPTD,              // Ptr to PerTabData global memory
+                                             lpwLine,               // Ptr to text of line to execute
+                                             lstrlenW (lpwLine),    // Length of the line to execute
+                                             TRUE,                  // TRUE iff we should act on errors
+                                             NULL);                 // Ptr to function token
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 
                 // Restore lpMemPTD->lpwszTemp

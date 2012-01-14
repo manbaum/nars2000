@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4023,7 +4023,9 @@ HGLOBAL Tokenize_EM
             wchOrig = lpwszLine[uChar];
 
         // Check for line continuation char
-        if (wchOrig EQ AC_LF)
+        if (wchOrig EQ AC_LF
+         && tkLocalVars.State[0] NE TKROW_QUOTE1A
+         && tkLocalVars.State[0] NE TKROW_QUOTE2A)
         {
             TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
             TOKEN_DATA tkData = {0};            // Token data  ...

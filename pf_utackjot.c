@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -239,6 +239,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
 
     return
       PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine,    // Ptr to text of line to execute
+                                      1,                // Length of the line to execute
                                       TRUE,             // TRUE iff we should free lpwszCompLine
                                       TRUE,             // TRUE iff we should return a NoValue YYRes
                                       TRUE,             // TRUE iff we should act on errors
@@ -312,6 +313,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
 
     return
       PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine,    // Ptr to text of line to execute
+                                      aplNELMRht,       // Length of the line to execute
                                       TRUE,             // TRUE iff we should free lpwszCompLine
                                       TRUE,             // TRUE iff we should return a NoValue YYRes
                                       TRUE,             // TRUE iff we should act on errors
@@ -333,6 +335,7 @@ WSFULL_EXIT:
 
 LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     (LPAPLCHAR   lpwszCompLine,     // Ptr to text of line to execute
+     APLNELM     aplNELMComp,       // Length of the line to execute
      UBOOL       bFreeCompLine,     // TRUE iff we should free lpwszCompLine
      UBOOL       bMakeNoValue,      // TRUE iff we should return a NoValue YYRes
      UBOOL       bActOnErrors,      // TRUE iff we should act on errors
@@ -356,6 +359,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
       PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
                                    lpMemPTD,        // Ptr to PerTabData global memory
                                    lpwszCompLine,   // Ptr to text of line to execute
+                                   aplNELMComp,     // Length of the line to execute
                                    bActOnErrors,    // TRUE iff we should act on errors
                                    lptkFunc);       // Ptr to function token
     // Split cases based upon the exit type
@@ -443,6 +447,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     (HWND         hWndEC,               // Edit Ctrl window handle
      LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      LPAPLCHAR    lpwszCompLine,        // Ptr to text of line to execute
+     APLNELM      aplNELMComp,          // Length of the line to execute
      UBOOL        bActOnErrors,         // TRUE iff we should act on errors
      LPTOKEN      lptkFunc)             // Ptr to function token
 
@@ -463,7 +468,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     // Tokenize the line
     hGlbTknHdr =
       Tokenize_EM (lpwszCompLine,               // The line to tokenize (not necessarily zero-terminated)
-                   lstrlenW (lpwszCompLine),    // NELM of lpwszLine
+                   aplNELMComp,                 // Length of the line to execute
                    hWndEC,                      // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    1,                           // Function line # (0 = header)
                   &ErrorMessageDirect,          // Ptr to error handling function (may be NULL)

@@ -468,6 +468,22 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             bPrimDydScal = TRUE;
         } // End IF/ELSE
     } else
+    // If the function is left or right tack, ...
+    if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_LEFTTACK
+     || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_RIGHTTACK)
+    {
+        // If the right arg is APA, ...
+        if (IsSimpleAPA (aplTypeRht))
+        {
+            // If the APA is Boolean, ...
+            if (IsBooleanValue (apaOffRht)
+             && apaMulRht EQ 0)
+                aplTypeRes = ARRAY_BOOL;
+            else
+                aplTypeRes = ARRAY_INT;
+        } else
+            aplTypeRes = aplTypeRht;
+    } else
         aplTypeRes = ARRAY_NESTED;
 RESTART_ALLOC:
     // Calculate space needed for the result
@@ -705,6 +721,98 @@ RESTART_EXCEPTION_APA:
                                            + apaFltMulRht * uFltDimHi * (uFltDimAxRht * (uFltDimAxRht - 1)) / 2;
             } // End FOR/FOR
         } // End IF/ELSE
+    } else
+    // If the function is left or right tack, ...
+    if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_LEFTTACK
+     || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_RIGHTTACK)
+    {
+        // Initialize in case Boolean result
+        uBitIndex = 0;
+
+        // Loop through the right arg
+        for (uLo = 0; uLo < uDimLo; uLo++)
+        for (uHi = 0; uHi < uDimHi; uHi++)
+        {
+            // Calculate the starting index in the right arg of this vector
+            uDimRht = uLo * uDimHi * uDimAxRht + uHi;
+
+            // If the function is left tack, ...
+            if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_LEFTTACK)
+                // Calculate the index of first element in this vector
+                uRht = uDimRht;
+            else
+                // Calculate the index of last element in this vector
+                uRht = uDimRht + (uDimAxRht - 1) * uDimHi;
+
+            // Get the first/last value in the vector from the right arg token
+            GetNextValueToken (lptkRhtArg,      // Ptr to the token
+                               uRht,            // Index to use
+                               NULL,            // Ptr to the integer (or Boolean) (may be NULL)
+                               NULL,            // ...        float (may be NULL)
+                               NULL,            // ...        char (may be NULL)
+                              &aplLongestRht,   // ...        longest (may be NULL)
+                              &lpSymGlbRht,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                               NULL,            // ...        immediate type (see IMM_TYPES) (may be NULL)
+                               NULL);           // ...        array type:  ARRAY_TYPES (may be NULL)
+            // Split cases based upon the result type
+            switch (aplTypeRes)
+            {
+                case ARRAY_BOOL:
+                    // If the leading/trailing bit is a 1, ...
+                    if (aplLongestRht & BIT0)
+                        // Save in the result
+                        *((LPAPLBOOL) lpMemRes) |= BIT0 << uBitIndex;
+
+                    // Check for end-of-byte
+                    if (++uBitIndex EQ NBIB)
+                    {
+                        uBitIndex = 0;              // Start over
+                        ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                    } // End IF
+
+                    break;
+
+                case ARRAY_INT:
+                    // Save in the result
+                    *((LPAPLINT) lpMemRes)++ = (APLINT) aplLongestRht;
+
+                    break;
+
+                case ARRAY_FLOAT:
+                    // Save in the result
+                    *((LPAPLFLOAT) lpMemRes)++ = *(LPAPLFLOAT) &aplLongestRht;
+
+                    break;
+
+                case ARRAY_CHAR:
+                    // Save in the result
+                    *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestRht;
+
+                    break;
+
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
+                    // Save in the result
+                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
+
+                    break;
+
+                case ARRAY_RAT:
+                    // Save in the result
+                    mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) lpSymGlbRht);
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Save in the result
+                    mpf_init_set (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbRht);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End FOR/FOR
     } else
     {
         // Fill in the right arg token

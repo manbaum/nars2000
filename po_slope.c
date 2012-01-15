@@ -149,6 +149,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                       uDimHi,               // ...                   above ...
                       uDimRht,              // Starting index in right arg of current vector
                       uDimAxRht,            // Right arg axis dimension
+                      uAx,                  // Loop counter for uDimAxRht
                       uRht,                 // Right arg loop counter
                       ByteRes;              // # bytes in the result
     APLINT            apaOffRht,            // Right arg APA offset
@@ -253,6 +254,18 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     //***************************************************************
     // From here on, the right arg is a vector or higher rank array
     //***************************************************************
+
+    // If the function is right tack, return the right arg unchanged
+    if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_RIGHTTACK)
+    {
+        // Increment the right arg reference count so we can copy it
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbRht));
+
+        // Copy the right arg
+        hGlbRes = hGlbRht;
+
+        goto YYALLOC_EXIT;
+    } // End IF
 
     // The rank of the result is the same as that of the right arg
     aplRankRes = aplRankRht;
@@ -365,6 +378,21 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                 goto DOMAIN_EXIT;
         } // End IF/ELSE
     } else
+    // If the function is left tack, ...
+    if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_LEFTTACK)
+    {
+        // If the right arg is APA, ...
+        if (IsSimpleAPA (aplTypeRht))
+        {
+            // If the APA is Boolean, ...
+            if (IsBooleanValue (apaOffRht)
+             && apaMulRht EQ 0)
+                aplTypeRes = ARRAY_BOOL;
+            else
+                aplTypeRes = ARRAY_INT;
+        } else
+            aplTypeRes = aplTypeRht;
+    } else
         aplTypeRes = ARRAY_NESTED;
 RESTART_ALLOC:
     // Calculate space needed for the result
@@ -402,6 +430,130 @@ RESTART_ALLOC:
 
     // lpMemRes now points to its data
 
+    // If the function is left tack, ...
+    if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_LEFTTACK)
+    {
+        HGLOBAL lpSymGlbRht;
+
+        // Loop through the right arg
+        for (uLo = 0; uLo < uDimLo; uLo++)
+        for (uHi = 0; uHi < uDimHi; uHi++)
+        {
+            // Calculate the starting index in the right arg of this vector
+            uDimRht = uLo * uDimHi * uDimAxRht + uHi;
+
+            // Get the first value in the vector from the right arg token
+            GetNextValueToken (lptkRhtArg,      // Ptr to the token
+                               uDimRht,         // Index to use
+                               NULL,            // Ptr to the integer (or Boolean) (may be NULL)
+                               NULL,            // ...        float (may be NULL)
+                               NULL,            // ...        char (may be NULL)
+                              &aplLongestRht,   // ...        longest (may be NULL)
+                              &lpSymGlbRht,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                               NULL,            // ...        immediate type (see IMM_TYPES) (may be NULL)
+                               NULL);           // ...        array type:  ARRAY_TYPES (may be NULL)
+            // Split cases based upon the result type
+            switch (aplTypeRes)
+            {
+                case ARRAY_BOOL:
+                    // If the leading bit is a 1, ...
+                    if (aplLongestRht & BIT0)
+                    // Loop through the elements in the vector along the axis
+                    for (uAx = 0; uAx < uDimAxRht; uAx++)
+                    {
+                        // Calculate the index of the next element in this vector
+                        uRht = uDimRht + uAx * uDimHi;
+
+                        // Save in the result
+                        ((LPAPLBOOL) lpMemRes)[uRht >> LOG2NBIB] |= BIT0 << (MASKLOG2NBIB & (UINT) uRht);
+                    } // End IF/FOR
+
+                    break;
+
+                case ARRAY_INT:
+                    // Loop through the elements in the vector along the axis
+                    for (uAx = 0; uAx < uDimAxRht; uAx++)
+                    {
+                        // Calculate the index of the next element in this vector
+                        uRht = uDimRht + uAx * uDimHi;
+
+                        // Save in the result
+                        ((LPAPLINT) lpMemRes)[uRht] = (APLINT) aplLongestRht;
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_FLOAT:
+                    // Loop through the elements in the vector along the axis
+                    for (uAx = 0; uAx < uDimAxRht; uAx++)
+                    {
+                        // Calculate the index of the next element in this vector
+                        uRht = uDimRht + uAx * uDimHi;
+
+                        // Save in the result
+                        ((LPAPLFLOAT) lpMemRes)[uRht] = *(LPAPLFLOAT) &aplLongestRht;
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_CHAR:
+                    // Loop through the elements in the vector along the axis
+                    for (uAx = 0; uAx < uDimAxRht; uAx++)
+                    {
+                        // Calculate the index of the next element in this vector
+                        uRht = uDimRht + uAx * uDimHi;
+
+                        // Save in the result
+                        ((LPAPLCHAR) lpMemRes)[uRht] = (APLCHAR) aplLongestRht;
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
+                    // Loop through the elements in the vector along the axis
+                    for (uAx = 0; uAx < uDimAxRht; uAx++)
+                    {
+                        // Calculate the index of the next element in this vector
+                        uRht = uDimRht + uAx * uDimHi;
+
+                        // Save in the result
+                        ((LPAPLNESTED) lpMemRes)[uRht] = CopySymGlbDir_PTB (lpSymGlbRht);
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_RAT:
+                    // Loop through the elements in the vector along the axis
+                    for (uAx = 0; uAx < uDimAxRht; uAx++)
+                    {
+                        // Calculate the index of the next element in this vector
+                        uRht = uDimRht + uAx * uDimHi;
+
+                        // Save in the result
+                        mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], (LPAPLRAT) lpSymGlbRht);
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Loop through the elements in the vector along the axis
+                    for (uAx = 0; uAx < uDimAxRht; uAx++)
+                    {
+                        // Calculate the index of the next element in this vector
+                        uRht = uDimRht + uAx * uDimHi;
+
+                        // Save in the result
+                        mpf_init_set (&((LPAPLVFP) lpMemRes)[uRht], (LPAPLVFP) lpSymGlbRht);
+                    } // End FOR
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End FOR/FOR
+    } else
     // If this is a fast Boolean operation, ...
     if (bFastBool)
     {
@@ -445,7 +597,6 @@ RESTART_EXCEPTION:
         for (uLo = 0; uLo < uDimLo; uLo++)
         for (uHi = 0; uHi < uDimHi; uHi++)
         {
-            APLUINT uAx;            // Loop counter for uDimAxRht
             APLINT  iDim;           // Loop counter for aplIntegerLftAbs
 
             // Calculate the starting index in the right arg of this vector

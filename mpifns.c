@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include <windows.h>
 #include <math.h>               // For fabs
 #include <float.h>              // For _finite, etc.
-#include "mpir.h"
 #include "headers.h"
 
 #define POS_INFINITY            (0x7FF0000000000000)

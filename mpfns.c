@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -286,84 +286,8 @@ void mpz_init_set_sa
 
 {
     mpz_init (dest);
-    mpz_set_sa (dest, val);
+    mpz_set_sx (dest, val);
 } // End mpz_init_set_sa
-
-
-//***************************************************************************
-//  $mpz_set_sa
-//
-//  Save an APLINT value as an MP Integer
-//***************************************************************************
-
-void mpz_set_sa
-    (mpz_ptr dest,
-     APLINT  val)
-
-{
-    mp_size_t size;
-////mp_limb_t vl;
-    APLUINT abs_val;
-
-    // If the value is zero, ...
-    if (val EQ 0)
-        mpz_set_ui (dest, 0);
-    else
-    {
-        // Ensure there's room for 64 bits
-        mpz_realloc2 (dest, BITS_IN_APLINT);
-////////vl = (mp_limb_t) (unsigned long int) (val >= 0 ? val : -val);
-        abs_val = abs64 (val);
-
-        dest->_mp_d[0] = LODWORD (abs_val);
-        dest->_mp_d[1] = HIDWORD (abs_val);
-        size = 1 + (HIDWORD (abs_val) NE 0);
-
-////#if GMP_NAIL_BITS != 0
-////    if (vl > GMP_NUMB_MAX)
-////    {
-////        MPZ_REALLOC (dest, 2);
-////        dest->_mp_d[1] = vl >> GMP_NUMB_BITS;
-////        size = 2;
-////    }
-////#endif
-
-        dest->_mp_size = (int) ((val >= 0) ? size : -size);
-    } // End IF
-} // End mpz_set_sa
-
-
-//***************************************************************************
-//  $mpz_set_ua
-//
-//  Save an APLUINT value as an MP Integer
-//***************************************************************************
-
-void mpz_set_ua
-    (mpz_ptr dest,
-     APLUINT val)
-
-{
-    mp_size_t size;
-
-    // Ensure there's room for 64 bits
-    mpz_realloc2 (dest, BITS_IN_APLINT);
-
-    dest->_mp_d[0] = LODWORD (val);
-    dest->_mp_d[1] = HIDWORD (val);
-    size = 1 + (HIDWORD (val) NE 0);
-
-////#if BITS_PER_ULONG > GMP_NUMB_BITS  /* avoid warnings about shift amount */
-////    if (val > GMP_NUMB_MAX)
-////    {
-////        MPZ_REALLOC (dest, 2);
-////        dest->_mp_d[1] = val >> GMP_NUMB_BITS;
-////        size = 2;
-////    }
-////#endif
-
-    dest->_mp_size = (int) size;
-} // End mpz_set_ua
 
 
 //***************************************************************************
@@ -823,35 +747,11 @@ void mpq_set_sa
         mpq_set_ui (dest, 0, 1);
     else
     {
-        // Initialize the numerator
-        mpz_init (&mpzNum);
+        // Initialize the numerator and denominator
+        mpz_set_sx (mpq_numref (dest), num);
+        mpz_set_sx (mpq_denref (dest), den);
 
-        // Get the high-order long
-        mpz_set_si (&mpzNum, HIAPLINT (num));
-
-        // Shift to upper long
-        mpz_mul_2exp (&mpzNum, &mpzNum, BITS_IN_APLINT / 2);
-
-        // Add in the low long
-        mpz_add_ui (&mpzNum, &mpzNum, LOAPLINT (num));
-
-        // Initialize the denominator
-        mpz_init (&mpzDen);
-
-        // Get the high-order long
-        mpz_set_ui (&mpzDen, HIAPLUINT (den));
-
-        // Shift to upper long
-        mpz_mul_2exp (&mpzDen, &mpzDen, BITS_IN_APLINT / 2);
-
-        // Add in the low long
-        mpz_add_ui (&mpzDen, &mpzDen, LOAPLINT (den));
-
-        // Set as numerator and denominator
-        mpq_set_num (dest, &mpzNum); mpz_clear (&mpzNum);
-        mpq_set_den (dest, &mpzDen); mpz_clear (&mpzDen);
-
-        // If the denominator is NE 1, ...
+        // Only if we need to canonicalize, ...
         if (den NE 1)
             // Canonicalize the Rational
             mpq_canonicalize (dest);

@@ -89,12 +89,14 @@ L98=$(L98);$(QDEBUG)
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
 ###CFLAGS_DEBUG=/Zi /D "DEBUG"
-CFLAGS_DEBUG=/D "DEBUG"
+CFLAGS_DEBUG=/Z7 /D "DEBUG"
 BUILD_DIR=Debug
+DEBUG_LIBSUFFIX=d
 !else
 RESDEBUG=0
 CFLAGS_DEBUG=
 BUILD_DIR=Release
+DEBUG_LIBSUFFIX=
 !endif
 
 !if "$(WIN)" == "32"
@@ -130,16 +132,12 @@ MV=makever
 LINKDEBUG=0
 
 !if "$(FLINTAVL)" == "1"
-!if "$(DEBUG)" == "1"
-FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN)d.lib
-!else
-FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN).lib
-!endif
+FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN)$(DEBUG_LIBSUFFIX).lib
 !else
 FLINT_LIB =
 !endif
 
-MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN).lib
+MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
 MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN).lib
 
 CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"

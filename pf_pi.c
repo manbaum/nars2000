@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 #define STRICT
 #include <windows.h>
-#include <mpir.h>
 #include "headers.h"
 #include "common.h"
 
@@ -951,7 +950,7 @@ APLMPI PrimFnPiCommon
     switch (uFcnIndex)
     {
         case NUMTHEORY_FACTOR:
-            mpz_set_sa (&aplPrime, aplNELMRes);
+            mpz_set_sx (&aplPrime, aplNELMRes);
 
             break;
 
@@ -966,7 +965,7 @@ APLMPI PrimFnPiCommon
             // If the prime factors are all unique, ...
             if (procPrime.bSquareFree)
                 // Return (-1) * (the parity of the # factors)
-                mpz_set_sa (&aplPrime, (aplNELMRes & BIT0) ? -1 : 1);
+                mpz_set_sx (&aplPrime, (aplNELMRes & BIT0) ? -1 : 1);
             else
                 // The prime factors are not all unique
                 mpz_set_ui (&aplPrime, 0);
@@ -991,7 +990,7 @@ APLMPI PrimFnPiCommon
 
 NONCE_EXIT:
 ERROR_EXIT:
-    mpz_set_sa (&aplPrime, -2);
+    mpz_set_sx (&aplPrime, -2);
 NORMAL_EXIT:
     // We no longer need this storage
      Myz_clear (&procPrime.mpzDivisor);
@@ -1089,13 +1088,13 @@ APLMPI PrimeFactor
                     if (uVal < PRECOMPUTED_PRIME_NEXT2)
                     {
                         // It's a prime:  return it
-                        mpz_set_sa (&mpzRes, uVal);
+                        mpz_set_sx (&mpzRes, uVal);
 
                         goto NORMAL_EXIT;
                     } // End IF
 
                     // Otherwise, it may be composite:  try to factor it
-                    mpz_set_sa (&mpzFactor1, uVal);
+                    mpz_set_sx (&mpzFactor1, uVal);
 
                     Myz_clear (&mpzRes);
                     mpzRes = PrimeFactor (mpzFactor1, lpProcPrime, lpbRet);
@@ -1212,7 +1211,7 @@ void ProcessPrime
             if (uPrimeCnt)
             {
 ////////////////lpProcPrime->uDivisor *= (uPrimeCnt + 1);
-                mpz_set_sa (&mpzTmp, uPrimeCnt + 1);
+                mpz_set_sx (&mpzTmp, uPrimeCnt + 1);
                 mpz_mul (&lpProcPrime->mpzDivisor, &lpProcPrime->mpzDivisor, &mpzTmp);
             } // End IF
 
@@ -1385,7 +1384,7 @@ UBOOL NthPrime
 
         // Set the Nth prime for the power of ten in mpzRes
         if (lpCharRes EQ NULL)
-            mpz_set_sa  (mpzRes, aplIntRes);
+            mpz_set_sx  (mpzRes, aplIntRes);
         else
             mpz_set_str (mpzRes, lpCharRes, 10);
 
@@ -1560,7 +1559,7 @@ UBOOL NumPrimes
         mpz_set (&mpzTen, mpzRes);
 
         // Initialize the current count
-        mpz_set_sa (mpzRes, aplIntRes);
+        mpz_set_sx (mpzRes, aplIntRes);
 
         // Loop through mpz_nextprime
         while (mpz_cmp (aplMPIArg, &mpzTen) > 0)

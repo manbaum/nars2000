@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2022,6 +2022,9 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 ;
 
 #include "typemote.h"
+
+#define mpz_set_sa      mpz_set_sx
+#define mpz_set_ua      mpz_set_ux
 
 #define ENUMS_DEFINED
 #undef  EXTERN

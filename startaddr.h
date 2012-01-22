@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -309,8 +309,6 @@ typedef struct tagSTART_ADDRESSES
     "mp_alloc"                  , (LPUCHAR) &mp_alloc                   ,
     "mp_realloc"                , (LPUCHAR) &mp_realloc                 ,
     "mp_free"                   , (LPUCHAR) &mp_free                    ,
-    "mpz_set_sa"                , (LPUCHAR) &mpz_set_sa                 ,
-    "mpz_set_ua"                , (LPUCHAR) &mpz_set_ua                 ,
     "mpq_init_set"              , (LPUCHAR) &mpq_init_set               ,
     "mpq_init_set_sa"           , (LPUCHAR) &mpq_init_set_sa            ,
     "mpq_init_set_si"           , (LPUCHAR) &mpq_init_set_si            ,

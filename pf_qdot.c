@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,9 +28,9 @@
 #define __GSL_MATRIX_COMPLEX_LONG_DOUBLE_H__
 
 #include "headers.h"
-#include "gsl/gsl_sf_gamma.h"
-#include "gsl/gsl_sf_result.h"
-#include "gsl/gsl_errno.h"
+#include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_sf_result.h>
+#include <gsl/gsl_errno.h>
 
 
 #ifndef PROTO

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -807,7 +807,10 @@ void DisplayHeap
     (void)
 
 {
-    int     i, j;               // Loop counters
+    int     i;                  // Loop counters
+#if FLINTAVL == 1
+    int     j;                  // Loop counters
+#endif
     HGLOBAL hGlb;               // Current global memory handle
     WCHAR   wszTemp[1024];      // Ptr to temporary output area
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory

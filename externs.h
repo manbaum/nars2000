@@ -1937,6 +1937,21 @@ typedef WCHAR (*LPWSZLIBDIRS)[_MAX_PATH];   // Ptr to LibDirs
 
 
 //***************************************************************************
+//  Prime factoring strucs
+//***************************************************************************
+
+typedef struct tagMEMTMP
+{
+    HGLOBAL  hGlbMem;               // 00:  Global memory handle
+    LPAPLMPI lpMemOrg,              // 04:  Ptr to original base
+             lpMemNxt;              // 08:  Ptr to current
+    UINT     uNumEntry,             // 0C:  # valid entries
+             uMaxEntry;             // 10:  # entries allocated
+                                    // 14:  Length
+} MEMTMP, *LPMEMTMP;
+
+
+//***************************************************************************
 //  Global Numeric Constants
 //***************************************************************************
 

@@ -105,6 +105,10 @@ typedef union tagWORDSPLIT
 } WORDSPLIT;
 
 
+#define INIT_FACTOR_CNT     100
+#define INIT_FACTOR_INC     100
+
+
 //***************************************************************************
 //  $PrimFnPi_EM_YY
 //
@@ -207,7 +211,6 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     HGLOBAL           hGlbRht,          // Right arg global memory handle
                       hGlbRes = NULL;   // Result global memory handle
     LPVOID            lpMemRes = NULL;  // Ptr to result global memory
-    LPAPLMPI          lpMemTmp;         // Ptr to temporary data
     APLINT            aplIntegerRht;    // Right arg integer value
     UBOOL             bRet;             // TRUE iff the result is valid
     APLUINT           ByteRes,          // # bytes in the result
@@ -217,11 +220,8 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
     APLMPI            aplMPIRht = {0},  // Right arg as MP integer
                       aplMPIRes = {0};  // Result    ...
-    LPPERTABDATA      lpMemPTD;         // Ptr to PerTabData global memory
     LPVOID            lpMemRht;         // Ptr to right arg global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
+    MEMTMP            memTmp = {0};     // Temporary memory for factors
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -271,7 +271,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
             lpMemRht = MyGlobalLock (hGlbRht);
 
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, ((LPVARARRAY_HEADER) lpMemRht)->Rank);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Save in local var
             mpz_init_set (&aplMPIRht, mpq_numref ((LPAPLRAT) lpMemRht));
@@ -292,7 +292,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
             lpMemRht = MyGlobalLock (hGlbRht);
 
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, ((LPVARARRAY_HEADER) lpMemRht)->Rank);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Save in local var
             mpz_init_set_f (&aplMPIRht, (LPAPLVFP) lpMemRht);
@@ -316,24 +316,44 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     if (mpz_sgn (&aplMPIRht) <= 0)
         goto RIGHT_DOMAIN_EXIT;
 
-    // Point to the MPI data
-    lpMemTmp = (LPAPLMPI) lpMemPTD->lpwszTemp;
+    // Allocate memory for the APLMPI factors
+    memTmp.hGlbMem =
+      DbgGlobalAlloc (GHND, INIT_FACTOR_CNT * sizeof (APLMPI));
+
+    // Check for error
+    if (memTmp.hGlbMem EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    memTmp.lpMemOrg =
+    memTmp.lpMemNxt =
+      MyGlobalLock (memTmp.hGlbMem);
+
+    // Initialize the # allocated entries
+    memTmp.uMaxEntry = INIT_FACTOR_CNT;
 
     // Factor the given number
 
     // Call common routine
     aplMPIRes =
-      PrimFnPiCommon (lpMemTmp,             // Ptr to result global memory
+      PrimFnPiCommon (&memTmp,              // Ptr to factor struc (may be NULL)
                       NUMTHEORY_FACTOR,     // Function index
                      &aplMPIRht,            // Value to factor
                       lpbCtrlBreak,         // Ptr to Ctrl-Break flag
                      &bRet);                // Ptr to TRUE iff the result is valid
     // Check for error
     if (!bRet)
-        goto NONCE_EXIT;
+    {
+        if (mpz_cmp_si (&aplMPIRes, -1) EQ 0)
+            goto NONCE_EXIT;
+        else
+            goto WSFULL_EXIT;
+    } // End IF
 
     // Get the actual NELM
-    aplNELMRes = mpz_get_sa (&aplMPIRes, &bRet);
+    aplNELMRes = memTmp.uNumEntry;
+
+    Assert (aplNELMRes EQ mpz_get_sa (&aplMPIRes, &bRet));
 
     // Check for Ctrl-Break
     if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -377,7 +397,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     // Copy the MPI data to the result as RAT
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         // Copy the MPI value as a RAT
-        mpq_init_set_z (((LPAPLRAT) lpMemRes)++, &lpMemTmp[uRes]);
+        mpq_init_set_z (((LPAPLRAT) lpMemRes)++, &memTmp.lpMemOrg[uRes]);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -432,12 +452,18 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    // If we filled in aplMPIRes, ...
-    if (aplMPIRes._mp_d)
+    // Free the storage in memTmp.lpMemOrg (if any)
+    for (uRes = 0; uRes < memTmp.uNumEntry; uRes++)
+        Myz_clear (&memTmp.lpMemOrg[uRes]);
+
+    // If we allocated memory for the factors, ...
+    if (memTmp.lpMemOrg)
     {
-        // Free the storage in lpMemTmp
-        for (uRes = 0; uRes < aplNELMRes; uRes++)
-            Myz_clear (&lpMemTmp[uRes]);
+        // We no longer need this ptr
+        MyGlobalUnlock (memTmp.lpMemOrg); memTmp.lpMemOrg = memTmp.lpMemNxt = NULL;
+
+        // We no longer need this storage
+        MyGlobalFree (memTmp.hGlbMem); memTmp.hGlbMem = NULL;
     } // End IF
 
     // We no longer need this storage
@@ -643,7 +669,7 @@ APLRAT PrimFnDydPiRisRvR
         case NUMTHEORY_TOTIENT:         // Totient function (# positive integers coprime to N)
             // Call common routine
             aplMPIRes =
-              PrimFnPiCommon (NULL,             // Ptr to result global memory (may be NULL)
+              PrimFnPiCommon (NULL,             // Ptr to factor struc (may be NULL)
                               aplIntegerLft,    // Function index
                              &aplMPIRht,        // Value to factor
                               lpbCtrlBreak,     // Ptr to Ctrl-Break flag
@@ -821,11 +847,11 @@ ERROR_EXIT:
 #endif
 
 APLMPI PrimFnPiCommon
-    (LPAPLMPI  lpMemRes,            // Ptr to result global memory (may be NULL)
-     APLUINT   uFcnIndex,           // Function index (see enum NUMTHEORY)
-     LPAPLMPI  mpzRht,              // Ptr to value to factor
-     LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
-     LPUBOOL   lpbRet)              // Ptr to TRUE iff the result is valid
+    (LPMEMTMP     lpMemTmp,         // Ptr to factor struc (may be NULL)
+     APLUINT      uFcnIndex,        // Function index (see enum NUMTHEORY)
+     LPAPLMPI     mpzRht,           // Ptr to value to factor
+     LPUBOOL      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+     LPUBOOL      lpbRet)           // Ptr to TRUE iff the result is valid
 
 {
     APLUINT      uRes,              // Loop counter
@@ -844,6 +870,9 @@ APLMPI PrimFnPiCommon
     procPrime.lpbCtrlBreak = lpbCtrlBreak;
     get_random_seeds (&procPrime.seed1, &procPrime.seed2);
 
+    // Initialize the result
+    *lpbRet = TRUE;
+
     // Initialize the temps
     mpz_init (&aplTmp);
     mpz_init (&aplPrime);
@@ -859,30 +888,33 @@ APLMPI PrimFnPiCommon
         if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
-        // Initialize the prime count and the prime
-        uPrimeCnt = 0;
+        // Initialize the prime
         uPrime += prime_delta[uRes];
         mpz_set_ui (&aplPrime, (UINT) uPrime);
 
         // If it's divisible, ...
         if (mpz_divisible_p (mpzRht, &aplPrime))
+        {
             // Remove all occurrences of this prime from mpzRht
             uPrimeCnt = (UINT) mpz_remove (mpzRht, mpzRht, &aplPrime);
 
-        // If this prime divides N, ...
-        if (uPrimeCnt)
-        {
-            // Accumulate into the result
+            // Count it in
             aplNELMRes += uPrimeCnt;
 
             // Process this prime factor
             ProcessPrime (aplPrime, uPrimeCnt, &procPrime);
 
             // If we're saving the values, ...
-            if (lpMemRes)
+            if (lpMemTmp)
             while (uPrimeCnt--)
+            {
+                // Resize the factor struc if needed
+                if (!ResizeFactorStruc (lpMemTmp))
+                    goto WSFULL_EXIT;
+
                 // Save in the result
-                mpz_init_set (lpMemRes++, &aplPrime);
+                mpz_init_set (lpMemTmp->lpMemNxt++, &aplPrime); lpMemTmp->uNumEntry++;
+            } // End WHILE
         } // End IF
     } // End FOR
 
@@ -890,21 +922,22 @@ APLMPI PrimFnPiCommon
     if (mpz_cmp_ui (mpzRht, 1) > 0
      && mpz_cmp_sa (mpzRht, PRECOMPUTED_PRIME_NEXT2) < 0)   // = 100003L*100003L
     {
-        // If we're saving the values, ...
-        if (lpMemRes)
-        {
-            // Zero the memory
-            ZeroMemory (lpMemRes, sizeof (APLMPI));
-
-            // Save in the result
-            mpz_init_set (((APLMPI *) lpMemRes)++, mpzRht);
-        } // End IF
-
          // Count it in
          aplNELMRes++;
 
         // Process this prime factor
         ProcessPrime (*mpzRht, 1, &procPrime);
+
+        // If we're saving the values, ...
+        if (lpMemTmp)
+        {
+            // Resize the factor struc if needed
+            if (!ResizeFactorStruc (lpMemTmp))
+                goto WSFULL_EXIT;
+
+            // Save in the result
+            mpz_init_set (lpMemTmp->lpMemNxt++, mpzRht); lpMemTmp->uNumEntry++;
+        } // End IF
     } else
     // Loop until we have no more factors
     while (mpz_cmp_ui (mpzRht, 1) > 0)
@@ -923,28 +956,29 @@ APLMPI PrimFnPiCommon
 
         // If it's divisible, ...
         if (mpz_divisible_p (mpzRht, &aplPrime))
+        {
             // Remove all occurrences of this prime from mpzRht
             uPrimeCnt = (UINT) mpz_remove (mpzRht, mpzRht, &aplPrime);
 
-        // If this prime divides N, ...
-        if (uPrimeCnt)
-        {
-            // Accumulate into the result
+            // Count it in
             aplNELMRes += uPrimeCnt;
 
             // Process this prime factor
             ProcessPrime (aplPrime, uPrimeCnt, &procPrime);
 
             // If we're saving the values, ...
-            if (lpMemRes)
+            if (lpMemTmp)
             while (uPrimeCnt--)
+            {
+                // Resize the factor struc if needed
+                if (!ResizeFactorStruc (lpMemTmp))
+                    goto WSFULL_EXIT;
+
                 // Save in the result
-                mpz_init_set (lpMemRes++, &aplPrime);
+                mpz_init_set (lpMemTmp->lpMemNxt++, &aplPrime); lpMemTmp->uNumEntry++;
+            } // End WHILE
         } // End IF
     } // End WHILE
-
-    // We no longer need this storage
-    mpz_clear (&aplTmp);
 
     // Split cases based upon the function index
     switch (uFcnIndex)
@@ -989,16 +1023,76 @@ APLMPI PrimFnPiCommon
     goto NORMAL_EXIT;
 
 NONCE_EXIT:
-ERROR_EXIT:
+    mpz_set_sx (&aplPrime, -1);
+
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
     mpz_set_sx (&aplPrime, -2);
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    // If we're saving the values, ...
+    if (lpMemTmp)
+    for (uRes = 0; uRes < lpMemTmp->uNumEntry; uRes++)
+        Myz_clear (&lpMemTmp->lpMemOrg[uRes]);
 NORMAL_EXIT:
     // We no longer need this storage
-     Myz_clear (&procPrime.mpzDivisor);
-     Myz_clear (&procPrime.mpzTotient);
+    Myz_clear (&aplTmp);
+    Myz_clear (&procPrime.mpzDivisor);
+    Myz_clear (&procPrime.mpzTotient);
 
     return aplPrime;
 } // End PrimFnPiCommon
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ResizeFactorStruc
+//
+//  Resize the factor memory struc if needed
+//***************************************************************************
+
+UBOOL ResizeFactorStruc
+    (LPMEMTMP lpMemTmp)
+
+{
+    HGLOBAL  hGlbMem;
+    APLU3264 uFactors;
+
+    // If we're at the current maximum, ...
+    if (lpMemTmp->uNumEntry EQ lpMemTmp->uMaxEntry)
+    {
+        // Compute the # factors
+        uFactors = (lpMemTmp->lpMemNxt - lpMemTmp->lpMemOrg);
+
+        // Unlock so we may reallocate it
+        MyGlobalUnlock (lpMemTmp->lpMemOrg); lpMemTmp->lpMemOrg = lpMemTmp->lpMemNxt = NULL;
+
+        hGlbMem =
+          MyGlobalReAlloc (lpMemTmp->hGlbMem,
+                           (lpMemTmp->uMaxEntry + INIT_FACTOR_INC) * sizeof (APLMPI),
+                           GMEM_MOVEABLE | GMEM_ZEROINIT);
+        if (hGlbMem)
+        {
+            // Save the (possibly new) global memory handle
+            lpMemTmp->hGlbMem = hGlbMem;
+
+            // Lock the memory to get a ptr to it
+            lpMemTmp->lpMemOrg = MyGlobalLock (lpMemTmp->hGlbMem);
+
+            // Point to the current entry
+            lpMemTmp->lpMemNxt = lpMemTmp->lpMemOrg + uFactors;
+
+            // Count in the new maximum
+            lpMemTmp->uMaxEntry += INIT_FACTOR_INC;
+        } else
+            return FALSE;
+    } // End IF
+
+    return TRUE;
+} // End ResizeFactorStruc
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1647,7 +1647,7 @@ void TPT_BOOL2RAT
     APLRAT aplRat;
 
     // Convert the BOOL to a RAT
-    mpq_init_set_sa (&aplRat, BIT0 & lptkArg->tkData.tkInteger, 1);
+    mpq_init_set_sx (&aplRat, BIT0 & lptkArg->tkData.tkInteger, 1);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1675,7 +1675,7 @@ void TPT_BOOL2VFP
     APLVFP aplVfp;
 
     // Convert the BOOL to a VFP
-    mpf_init_set_sa (&aplVfp, BIT0 & lptkArg->tkData.tkInteger);
+    mpf_init_set_sx (&aplVfp, BIT0 & lptkArg->tkData.tkInteger);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1716,7 +1716,7 @@ void TPT_INT2RAT
     APLRAT aplRat;
 
     // Convert the INT to a RAT
-    mpq_init_set_sa (&aplRat, lptkArg->tkData.tkInteger, 1);
+    mpq_init_set_sx (&aplRat, lptkArg->tkData.tkInteger, 1);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1744,7 +1744,7 @@ void TPT_INT2VFP
     APLVFP aplVfp;
 
     // Convert the INT to a VFP
-    mpf_init_set_sa (&aplVfp, lptkArg->tkData.tkInteger);
+    mpf_init_set_sx (&aplVfp, lptkArg->tkData.tkInteger);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1813,7 +1813,7 @@ void TPT_APA2RAT
     APLRAT aplRat;
 
     // Convert the APA to a RAT
-    mpq_init_set_sa (&aplRat, lptkArg->tkData.tkInteger, 1);
+    mpq_init_set_sx (&aplRat, lptkArg->tkData.tkInteger, 1);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1841,7 +1841,7 @@ void TPT_APA2VFP
     APLVFP aplVfp;
 
     // Convert the APA to a VFP
-    mpf_init_set_sa (&aplVfp, lptkArg->tkData.tkInteger);
+    mpf_init_set_sx (&aplVfp, lptkArg->tkData.tkInteger);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -2021,7 +2021,7 @@ void TPA_BOOL2RAT
     // Initialize the result
     Myq_init (&lpAllTypes->aplRat);
 
-    mpq_set_sa (&lpAllTypes->aplRat, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), 1);
+    mpq_set_sx (&lpAllTypes->aplRat, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), 1);
 } // TPA_BOOL2RAT
 
 
@@ -2038,7 +2038,7 @@ void TPA_BOOL2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set_sa (&lpAllTypes->aplVfp, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt));
+    mpf_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt));
 } // TPA_BOOL2VFP
 
 
@@ -2129,7 +2129,7 @@ void TPA_INT2RAT
     // Initialize the result
     Myq_init (&lpAllTypes->aplRat);
 
-    mpq_set_sa (&lpAllTypes->aplRat, GetNextInteger (lpaplInteger, ARRAY_INT, uInt), 1);
+    mpq_set_sx (&lpAllTypes->aplRat, GetNextInteger (lpaplInteger, ARRAY_INT, uInt), 1);
 } // TPA_INT2RAT
 
 
@@ -2146,7 +2146,7 @@ void TPA_INT2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set_sa (&lpAllTypes->aplVfp, GetNextInteger (lpaplInteger, ARRAY_INT, uInt));
+    mpf_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplInteger, ARRAY_INT, uInt));
 } // TPA_INT2VFP
 
 
@@ -2372,7 +2372,7 @@ void TPA_APA2RAT
     // Initialize the result
     Myq_init (&lpAllTypes->aplRat);
 
-    mpq_set_sa (&lpAllTypes->aplRat, GetNextInteger (lpaplAPA, ARRAY_APA, uInt), 1);
+    mpq_set_sx (&lpAllTypes->aplRat, GetNextInteger (lpaplAPA, ARRAY_APA, uInt), 1);
 } // TPA_APA2RAT
 
 
@@ -2389,7 +2389,7 @@ void TPA_APA2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set_sa (&lpAllTypes->aplVfp, GetNextInteger (lpaplAPA, ARRAY_APA, uInt));
+    mpf_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplAPA, ARRAY_APA, uInt));
 } // TPA_APA2VFP
 
 

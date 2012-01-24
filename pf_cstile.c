@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -822,14 +822,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 break;
 
             case ARRAY_RAT:
-                aplIntegerLft = mpq_get_sa ((LPAPLRAT) VarArrayBaseToData (lpMemLft, aplRankLft), &bRet);
+                aplIntegerLft = mpq_get_sx ((LPAPLRAT) VarArrayDataFmBase (lpMemLft), &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
 
                 break;
 
             case ARRAY_VFP:
-                aplIntegerLft = mpf_get_sa ((LPAPLVFP) VarArrayBaseToData (lpMemLft, aplRankLft), &bRet);
+                aplIntegerLft = mpf_get_sx ((LPAPLVFP) VarArrayDataFmBase (lpMemLft), &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
 
@@ -926,7 +926,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
                     // Attempt to convert the RAT to an INT
-                    *lpMemRot++ = mpq_get_sa (lpMemRat++, &bRet);
+                    *lpMemRot++ = mpq_get_sx (lpMemRat++, &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;
                 } // End FOR
@@ -938,7 +938,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
                     // Attempt to convert the VFP to an INT
-                    *lpMemRot++ = mpf_get_sa (lpMemVfp++, &bRet);
+                    *lpMemRot++ = mpf_get_sx (lpMemVfp++, &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;
                 } // End FOR

@@ -1414,12 +1414,12 @@ RESTART_EXCEPTION_VARIMMED:
                         switch (lptkRhtArg->tkFlags.ImmType)
                         {
                             case IMMTYPE_BOOL:  // Res = VFP, Rht = BOOL
-                                mpf_set_sa (&mpfArg, lptkRhtArg->tkData.tkBoolean & BIT0);
+                                mpf_set_sx (&mpfArg, lptkRhtArg->tkData.tkBoolean & BIT0);
 
                                 break;
 
                             case IMMTYPE_INT:   // Res = VFP, Rht = INT
-                                mpf_set_sa (&mpfArg, lptkRhtArg->tkData.tkBoolean);
+                                mpf_set_sx (&mpfArg, lptkRhtArg->tkData.tkBoolean);
 
                                 break;
 
@@ -2520,7 +2520,7 @@ RESTART_EXCEPTION:
                                 goto ERROR_EXIT;
 
                             // Convert the INT to a VFP
-                            mpf_set_sa (&mpfRes, *((LPAPLINT) lpMemRht)++);
+                            mpf_set_sx (&mpfRes, *((LPAPLINT) lpMemRht)++);
 
                             // Save in result
                             *((LPAPLVFP) lpMemRes)++ =
@@ -2539,7 +2539,7 @@ RESTART_EXCEPTION:
                                 goto ERROR_EXIT;
 
                             // Convert the APA to a VFP
-                            mpf_set_sa (&mpfRes, apaOffRht + apaMulRht * uRes);
+                            mpf_set_sx (&mpfRes, apaOffRht + apaMulRht * uRes);
 
                             // Save in result
                             *((LPAPLVFP) lpMemRes)++ =
@@ -4530,7 +4530,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_RAT:     // Res = BOOL, Lft = BOOL/INT (S), Rht = HETERO:RAT  (M)
                                         // Convert the BOOL/INT to a RAT
-                                        mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                        mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4541,7 +4541,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_VFP:     // Res = BOOL, Lft = BOOL/INT (S), Rht = HETERO:VFP  (M)
                                         // Convert the BOOL/INT to a VFP
-                                        mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                        mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4711,7 +4711,7 @@ RESTART_EXCEPTION:
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = RAT (S), Rht = HETERO:BOOL (M)
                                     case ARRAY_INT:     // Res = BOOL, Lft = RAT (S), Rht = HETERO:INT  (M)
                                         // Convert the BOOL/INT to a RAT
-                                        mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+                                        mpq_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4798,7 +4798,7 @@ RESTART_EXCEPTION:
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = VFP (S), Rht = HETERO:BOOL (M)
                                     case ARRAY_INT:     // Res = BOOL, Lft = VFP (S), Rht = HETERO:INT  (M)
                                         // Convert the BOOL/INT to a VFP
-                                        mpf_set_sa (&aplVfpRht, aplIntegerRht);
+                                        mpf_set_sx (&aplVfpRht, aplIntegerRht);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -5115,7 +5115,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5147,7 +5147,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5363,7 +5363,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a RAT
-                                mpq_set_sa (&aplRatRht, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex), 1);
+                                mpq_set_sx (&aplRatRht, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex), 1);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5390,7 +5390,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatRht, *((LPAPLINT) lpMemRht)++, 1);
+                                mpq_set_sx (&aplRatRht, *((LPAPLINT) lpMemRht)++, 1);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5416,7 +5416,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the APA to a RAT
-                                mpq_set_sa (&aplRatRht, apaOffRht + apaMulRht * uRes, 1);
+                                mpq_set_sx (&aplRatRht, apaOffRht + apaMulRht * uRes, 1);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5539,7 +5539,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a VFP
-                                mpf_set_sa (&aplVfpRht, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex));
+                                mpf_set_sx (&aplVfpRht, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex));
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5566,7 +5566,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sa (&aplVfpRht, *((LPAPLINT) lpMemRht)++);
+                                mpf_set_sx (&aplVfpRht, *((LPAPLINT) lpMemRht)++);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5592,7 +5592,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the APA to a VFP
-                                mpf_set_sa (&aplVfpRht, apaOffRht + apaMulRht * uRes);
+                                mpf_set_sx (&aplVfpRht, apaOffRht + apaMulRht * uRes);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -6212,7 +6212,7 @@ RESTART_EXCEPTION:
                 case ARRAY_INT:             // Res = RAT, Lft = INT(S)
                 case ARRAY_APA:             // Res = RAT, Lft = APA(S)
                     // Convert the INT to a RAT
-                    mpq_init_set_sa (&aplRatLft, aplIntegerLft, 1);
+                    mpq_init_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
@@ -6231,7 +6231,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatRht,
+                                mpq_set_sx (&aplRatRht,
                                              GetNextInteger (lpMemRht, aplTypeRht, uRes),
                                              1);
                                 // Save in result
@@ -6319,7 +6319,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatRht,
+                                mpq_set_sx (&aplRatRht,
                                              GetNextInteger (lpMemRht, aplTypeRht, uRes),
                                              1);
                                 // Save in result
@@ -6404,7 +6404,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatRht,
+                                mpq_set_sx (&aplRatRht,
                                              GetNextInteger (lpMemRht, aplTypeRht, uRes),
                                              1);
                                 // Save in result
@@ -6460,7 +6460,7 @@ RESTART_EXCEPTION:
                 case ARRAY_INT:             // Res = VFP, Lft = INT(S)
                 case ARRAY_APA:             // Res = VFP, Lft = APA(S)
                     // Convert the INT to a VFP
-                    mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                    mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
@@ -6576,7 +6576,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sa (&aplVfpRht,
+                                mpf_set_sx (&aplVfpRht,
                                              GetNextInteger (lpMemRht, aplTypeRht, uRes));
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
@@ -6675,7 +6675,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sa (&aplVfpRht,
+                                mpf_set_sx (&aplVfpRht,
                                              GetNextInteger (lpMemRht, aplTypeRht, uRes));
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
@@ -7131,8 +7131,8 @@ RESTART_EXCEPTION:
                         case ARRAY_INT:     // Res = BOOL,                  Rht = INT  (S)
                         case ARRAY_APA:     // Res = BOOL,                  Rht = APA  (S)
                             // Convert the BOOL/INT to a RAT
-                            mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
-                            mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+                            mpq_init_set_sx (&aplRatRht, aplIntegerRht, 1);
+                            mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
 
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7331,7 +7331,7 @@ RESTART_EXCEPTION:
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = HETERO:BOOL (M), Rht = RAT (S)
                                     case ARRAY_INT:     // Res = BOOL, Lft = HETERO:INT  (M), Rht = RAT (S)
-                                        mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                        mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                         *((LPAPLBOOL)  lpMemRes) |=
                                           (*lpPrimSpec->BisRvR) (aplRatLft,
@@ -7414,7 +7414,7 @@ RESTART_EXCEPTION:
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = HETERO:BOOL (M), Rht = VFP (S)
                                     case ARRAY_INT:     // Res = BOOL, Lft = HETERO:INT  (M), Rht = VFP (S)
-                                        mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                        mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                         *((LPAPLBOOL)  lpMemRes) |=
                                           (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -7717,7 +7717,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_RAT:     // Res = BOOL, Lft = RAT  (M), Rht = BOOL/INT(S)
                             // Initialize the temp
-                            mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+                            mpq_init_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7746,7 +7746,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL, Lft = VFP  (M), Rht = BOOL/INT(S)
                             // Initialize the temp
-                            mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+                            mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7878,7 +7878,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_RAT:     // Res = BOOL, Lft = RAT (M),   Rht = APA(S)
                             // Initialize temp
-                            mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+                            mpq_init_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7907,7 +7907,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL, Lft = VFP (M),   Rht = APA(S)
                             // Initialize temp
-                            mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+                            mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -8130,7 +8130,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a RAT
-                                mpq_set_sa (&aplRatLft, BIT0 & (*(LPAPLBOOL) lpMemLft) >> uBitIndex, 1);
+                                mpq_set_sx (&aplRatLft, BIT0 & (*(LPAPLBOOL) lpMemLft) >> uBitIndex, 1);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8157,7 +8157,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatLft, *((LPAPLINT) lpMemLft)++, 1);
+                                mpq_set_sx (&aplRatLft, *((LPAPLINT) lpMemLft)++, 1);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8183,7 +8183,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the APA to a RAT
-                                mpq_set_sa (&aplRatLft, apaOffLft + apaMulLft * uRes, 1);
+                                mpq_set_sx (&aplRatLft, apaOffLft + apaMulLft * uRes, 1);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8309,7 +8309,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a VFP
-                                mpf_set_sa (&aplVfpLft, BIT0 & (*(LPAPLBOOL) lpMemLft) >> uBitIndex);
+                                mpf_set_sx (&aplVfpLft, BIT0 & (*(LPAPLBOOL) lpMemLft) >> uBitIndex);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8336,7 +8336,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sa (&aplVfpLft, *((LPAPLINT) lpMemLft)++);
+                                mpf_set_sx (&aplVfpLft, *((LPAPLINT) lpMemLft)++);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8362,7 +8362,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the APA to a VFP
-                                mpf_set_sa (&aplVfpLft, apaOffLft + apaMulLft * uRes);
+                                mpf_set_sx (&aplVfpLft, apaOffLft + apaMulLft * uRes);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8840,7 +8840,7 @@ RESTART_EXCEPTION:
                 case ARRAY_INT:             // Res = RAT,                   Rht = INT(S)
                 case ARRAY_APA:             // Res = RAT,                   Rht = APA(S)
                     // Convert the INT to a RAT
-                    mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+                    mpq_init_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
@@ -8859,7 +8859,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
+                                mpq_set_sx (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
 
                                 // Save in result
                                 *((LPAPLRAT)   lpMemRes)++ =
@@ -8946,7 +8946,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
+                                mpq_set_sx (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
 
                                 // Save in result
                                 *((LPAPLRAT)   lpMemRes)++ =
@@ -9030,7 +9030,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
+                                mpq_set_sx (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
 
                                 // Save in result
                                 *((LPAPLRAT)   lpMemRes)++ =
@@ -9085,7 +9085,7 @@ RESTART_EXCEPTION:
                 case ARRAY_INT:             // Res = VFP,                   Rht = INT(S)
                 case ARRAY_APA:             // Res = VFP,                   Rht = APA(S)
                     // Convert the INT to a VFP
-                    mpf_set_sa (&aplVfpRht, aplIntegerRht);
+                    mpf_set_sx (&aplVfpRht, aplIntegerRht);
 
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
@@ -9201,7 +9201,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+                                mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -9290,7 +9290,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+                                mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -10073,7 +10073,7 @@ RESTART_EXCEPTION_IMMED:
                                 case ARRAY_INT:         // Res = BOOL, Lft = INT
                                 case ARRAY_APA:         // Res = BOOL, Lft = APA
                                     // Convert the BOOL/INT/APA to a RAT
-                                    mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                    mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                     break;
 
@@ -10105,7 +10105,7 @@ RESTART_EXCEPTION_IMMED:
                                 case ARRAY_INT:         // Res = BOOL, Lft = INT
                                 case ARRAY_APA:         // Res = BOOL, Lft = APA
                                     // Convert the BOOL/INT/APA to a VFP
-                                    mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                    mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                     break;
 
@@ -10149,7 +10149,7 @@ RESTART_EXCEPTION_IMMED:
                                 case ARRAY_INT:         // Res = BOOL, Rht = INT
                                 case ARRAY_APA:         // Res = BOOL, Rht = APA
                                     // Convert the BOOL/INT/APA to a RAT
-                                    mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+                                    mpq_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                                     break;
 
@@ -10181,7 +10181,7 @@ RESTART_EXCEPTION_IMMED:
                                 case ARRAY_INT:         // Res = BOOL, Rht = INT
                                 case ARRAY_APA:         // Res = BOOL, Rht = APA
                                     // Convert the BOOL/INT/APA to a VFP
-                                    mpf_set_sa (&aplVfpRht, aplIntegerRht);
+                                    mpf_set_sx (&aplVfpRht, aplIntegerRht);
 
                                     break;
 
@@ -10351,7 +10351,7 @@ RESTART_EXCEPTION_IMMED:
                     case ARRAY_BOOL:            // Res = RAT, Lft = BOOL
                     case ARRAY_INT:             // Res = RAT, Lft = INT
                     case ARRAY_APA:             // Res = RAT, Lft = APA
-                        mpq_init_set_sa (&aplRatLft, aplIntegerLft, 1);
+                        mpq_init_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                         break;
 
@@ -10378,7 +10378,7 @@ RESTART_EXCEPTION_IMMED:
                     case ARRAY_BOOL:            // Res = RAT, Rht = BOOL
                     case ARRAY_INT:             // Res = RAT, Rht = INT
                     case ARRAY_APA:             // Res = RAT, Rht = APA
-                        mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+                        mpq_init_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                         break;
 
@@ -10464,7 +10464,7 @@ RESTART_EXCEPTION_IMMED:
                     case ARRAY_BOOL:            // Res = VFP, Lft = BOOL
                     case ARRAY_INT:             // Res = VFP, Lft = INT
                     case ARRAY_APA:             // Res = VFP, Lft = APA
-                        mpf_init_set_sa (&aplVfpLft, aplIntegerLft);
+                        mpf_init_set_sx (&aplVfpLft, aplIntegerLft);
 
                         break;
 
@@ -10495,7 +10495,7 @@ RESTART_EXCEPTION_IMMED:
                     case ARRAY_BOOL:            // Res = VFP, Rht = BOOL
                     case ARRAY_INT:             // Res = VFP, Rht = INT
                     case ARRAY_APA:             // Res = VFP, Rht = APA
-                        mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+                        mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
 
                         break;
 
@@ -10937,7 +10937,7 @@ RESTART_EXCEPTION_SINGLETON:
                                     case ARRAY_INT:         // Res = BOOL, Lft = INT
                                     case ARRAY_APA:         // Res = BOOL, Lft = APA
                                         // Convert the BOOL/INT/APA to a RAT
-                                        mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                        mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                         break;
 
@@ -10969,7 +10969,7 @@ RESTART_EXCEPTION_SINGLETON:
                                     case ARRAY_INT:         // Res = BOOL, Rht = INT
                                     case ARRAY_APA:         // Res = BOOL, Rht = APA
                                         // Convert the BOOL/INT/APA to a VFP
-                                        mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                        mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                         break;
 
@@ -11013,7 +11013,7 @@ RESTART_EXCEPTION_SINGLETON:
                                     case ARRAY_INT:         // Res = BOOL, Rht = INT
                                     case ARRAY_APA:         // Res = BOOL, Rht = APA
                                         // Convert the BOOL/INT/APA to a RAT
-                                        mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+                                        mpq_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                                         break;
 
@@ -11045,7 +11045,7 @@ RESTART_EXCEPTION_SINGLETON:
                                     case ARRAY_INT:         // Res = BOOL, Rht = INT
                                     case ARRAY_APA:         // Res = BOOL, Rht = APA
                                         // Convert the BOOL/INT/APA to a VFP
-                                        mpf_set_sa (&aplVfpRht, aplIntegerRht);
+                                        mpf_set_sx (&aplVfpRht, aplIntegerRht);
 
                                         break;
 
@@ -11178,7 +11178,7 @@ RESTART_EXCEPTION_SINGLETON:
                         case ARRAY_BOOL:            // Res = RAT, Lft = BOOL
                         case ARRAY_INT:             // Res = RAT, Lft = INT
                         case ARRAY_APA:             // Res = RAT, Lft = APA
-                            mpq_init_set_sa (&aplRatLft, aplIntegerLft, 1);
+                            mpq_init_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                             break;
 
@@ -11205,7 +11205,7 @@ RESTART_EXCEPTION_SINGLETON:
                         case ARRAY_BOOL:            // Res = RAT, Rht = BOOL
                         case ARRAY_INT:             // Res = RAT, Rht = INT
                         case ARRAY_APA:             // Res = RAT, Rht = APA
-                            mpq_init_set_sa (&aplRatRht, aplIntegerRht, 1);
+                            mpq_init_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                             break;
 
@@ -11244,7 +11244,7 @@ RESTART_EXCEPTION_SINGLETON:
                         case ARRAY_BOOL:            // Res = VFP, Lft = BOOL
                         case ARRAY_INT:             // Res = VFP, Lft = INT
                         case ARRAY_APA:             // Res = VFP, Lft = APA
-                            mpf_init_set_sa (&aplVfpLft, aplIntegerLft);
+                            mpf_init_set_sx (&aplVfpLft, aplIntegerLft);
 
                             break;
 
@@ -11275,7 +11275,7 @@ RESTART_EXCEPTION_SINGLETON:
                         case ARRAY_BOOL:            // Res = VFP, Rht = BOOL
                         case ARRAY_INT:             // Res = VFP, Rht = INT
                         case ARRAY_APA:             // Res = VFP, Rht = APA
-                            mpf_init_set_sa (&aplVfpRht, aplIntegerRht);
+                            mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
 
                             break;
 
@@ -11947,7 +11947,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_RAT:     // Res = BOOL(Axis), Lft = BOOL, Rht = RAT    (one hetero, one simple)
                                             // Convert the Boolean to a RAT
-                                            mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                            mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -11958,7 +11958,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_VFP:     // Res = BOOL(Axis), Lft = BOOL, Rht = VFP    (one hetero, one simple)
                                             // Convert the Boolean to a VFP
-                                            mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                            mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12007,7 +12007,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_RAT:     // Res = BOOL(Axis), Lft = INT,   Rht = RAT   (one hetero, one simple)
                                             // Convert the integer to a RAT
-                                            mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                            mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12018,7 +12018,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_VFP:     // Res = BOOL(Axis), Lft = INT,   Rht = VFP   (one hetero, one simple)
                                             // Convert the integer to a VFP
-                                            mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                            mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12127,7 +12127,7 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = RAT, Rht = BOOL (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(Axis), Lft = RAT, Rht = INT  (one hetero, one simple)
                                             // Convert the INT to a RAT
-                                            mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+                                            mpq_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12191,7 +12191,7 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = VFP, Rht = BOOL (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(Axis), Lft = VFP, Rht = INT  (one hetero, one simple)
                                             // Convert the INT to a VFP
-                                            mpf_set_sa (&aplVfpRht, aplIntegerRht);
+                                            mpf_set_sx (&aplVfpRht, aplIntegerRht);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12323,7 +12323,7 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_INT:         // Res = BOOL(Axis), Lft = INT
                                         case ARRAY_APA:         // Res = BOOL(Axis), Lft = APA
                                             // Convert the BOOL/INT/APA to a RAT
-                                            mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uLft), 1);
+                                            mpq_set_sx (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uLft), 1);
 
                                             break;
 
@@ -12355,7 +12355,7 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_INT:         // Res = BOOL(Axis), Lft = INT
                                         case ARRAY_APA:         // Res = BOOL(Axis), Lft = APA
                                             // Convert the BOOL/INT/APA to a VFP
-                                            mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft));
+                                            mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft));
 
                                             break;
 
@@ -12399,7 +12399,7 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_INT:         // Res = BOOL(Axis), Rht = INT
                                         case ARRAY_APA:         // Res = BOOL(Axis), Rht = APA
                                             // Convert the BOOL/INT/APA to a RAT
-                                            mpq_set_sa (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRht), 1);
+                                            mpq_set_sx (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRht), 1);
 
                                             break;
 
@@ -12431,7 +12431,7 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_INT:         // Res = BOOL(Axis), Rht = INT
                                         case ARRAY_APA:         // Res = BOOL(Axis), Rht = APA
                                             // Convert the BOOL/INT/APA to a VFP
-                                            mpf_set_sa (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRht));
+                                            mpf_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRht));
 
                                             break;
 
@@ -12696,7 +12696,7 @@ RESTART_EXCEPTION_AXIS:
                             case ARRAY_INT:             // Res = RAT(Axis), Lft = INT
                             case ARRAY_APA:             // Res = RAT(Axis), Lft = APA
                                 // Convert the BOOL/INT/APA to a RAT
-                                mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uLft), 1);
+                                mpq_set_sx (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uLft), 1);
 
                                 break;
 
@@ -12726,7 +12726,7 @@ RESTART_EXCEPTION_AXIS:
                             case ARRAY_INT:             // Res = RAT(Axis), Rht = INT
                             case ARRAY_APA:             // Res = RAT(Axis), Rht = APA
                                 // Convert the BOOL/INT/APA to a RAT
-                                mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+                                mpq_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                                 break;
 
@@ -12795,7 +12795,7 @@ RESTART_EXCEPTION_AXIS:
                             case ARRAY_INT:             // Res = VFP(Axis), Lft = INT
                             case ARRAY_APA:             // Res = VFP(Axis), Lft = APA
                                 // Convert the BOOL/INT/APA to a VFP
-                                mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft));
+                                mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft));
 
                                 break;
 
@@ -12830,7 +12830,7 @@ RESTART_EXCEPTION_AXIS:
                             case ARRAY_INT:             // Res = VFP(Axis), Rht = INT
                             case ARRAY_APA:             // Res = VFP(Axis), Rht = APA
                                 // Convert the BOOL/INT/APA to a VFP
-                                mpf_set_sa (&aplVfpRht, aplIntegerRht);
+                                mpf_set_sx (&aplVfpRht, aplIntegerRht);
 
                                 break;
 
@@ -13482,7 +13482,7 @@ RESTART_EXCEPTION_NOAXIS:
                                             break;
 
                                         case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = BOOL, Rht = RAT    (one hetero, one simple)
-                                            mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                            mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisRvR) (aplRatLft,
@@ -13491,7 +13491,7 @@ RESTART_EXCEPTION_NOAXIS:
                                             break;
 
                                         case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = BOOL, Rht = VFP    (one hetero, one simple)
-                                            mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                            mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -13537,7 +13537,7 @@ RESTART_EXCEPTION_NOAXIS:
                                             break;
 
                                         case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = INT , Rht = RAT    (one hetero, one simple)
-                                            mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                            mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisRvR) (aplRatLft,
@@ -13546,7 +13546,7 @@ RESTART_EXCEPTION_NOAXIS:
                                             break;
 
                                         case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = INT , Rht = VFP    (one hetero, one simple)
-                                            mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                            mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -13652,7 +13652,7 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:     // Res = BOOL(No Axis), Lft = RAT  , Rht = INT   (one hetero, one simple)
                                         case ARRAY_APA:     // Res = BOOL(No Axis), Lft = RAT  , Rht = APA   (one hetero, one simple)
                                             // Convert the BOOL/INT to a RAT
-                                            mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+                                            mpq_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisRvR) (*(LPAPLRAT) lpSymGlbLft,
@@ -13714,7 +13714,7 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:     // Res = BOOL(No Axis), Lft = VFP  , Rht = INT   (one hetero, one simple)
                                         case ARRAY_APA:     // Res = BOOL(No Axis), Lft = VFP  , Rht = APA   (one hetero, one simple)
                                             // Convert the BOOL/INT to a VFP
-                                            mpf_set_sa (&aplVfpRht, aplIntegerRht);
+                                            mpf_set_sx (&aplVfpRht, aplIntegerRht);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
@@ -13827,7 +13827,7 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:         // Res = BOOL(No Axis), Lft = INT
                                         case ARRAY_APA:         // Res = BOOL(No Axis), Lft = APA
                                             // Convert the BOOL/INT/APA to a RAT
-                                            mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
+                                            mpq_set_sx (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
 
                                             break;
 
@@ -13859,7 +13859,7 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:         // Res = BOOL(No Axis), Lft = INT
                                         case ARRAY_APA:         // Res = BOOL(No Axis), Lft = APA
                                             // Convert the BOOL/INT/APA to a VFP
-                                            mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+                                            mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
 
                                             break;
 
@@ -13903,7 +13903,7 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:         // Res = BOOL(No Axis), Rht = INT
                                         case ARRAY_APA:         // Res = BOOL(No Axis), Rht = APA
                                             // Convert the BOOL/INT/APA to a RAT
-                                            mpq_set_sa (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRes), 1);
+                                            mpq_set_sx (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRes), 1);
 
                                             break;
 
@@ -13935,7 +13935,7 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:         // Res = BOOL(No Axis), Rht = INT
                                         case ARRAY_APA:         // Res = BOOL(No Axis), Rht = APA
                                             // Convert the BOOL/INT/APA to a VFP
-                                            mpf_set_sa (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes));
+                                            mpf_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes));
 
                                             break;
 
@@ -14120,7 +14120,7 @@ RESTART_EXCEPTION_NOAXIS:
                             case ARRAY_INT:         // Res = RAT(No Axis), Lft = INT
                             case ARRAY_APA:         // Res = RAT(No Axis), Lft = APA
                                 // Convert the BOOL/INT/APA to a RAT
-                                mpq_set_sa (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
+                                mpq_set_sx (&aplRatLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), 1);
 
                                 break;
 
@@ -14150,7 +14150,7 @@ RESTART_EXCEPTION_NOAXIS:
                             case ARRAY_INT:         // Res = RAT(No Axis), Rht = INT
                             case ARRAY_APA:         // Res = RAT(No Axis), Rht = APA
                                 // Convert the BOOL/INT/APA to a RAT
-                                mpq_set_sa (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRes), 1);
+                                mpq_set_sx (&aplRatRht, GetNextInteger (lpMemRht, aplTypeRht, uRes), 1);
 
                                 break;
 
@@ -14205,7 +14205,7 @@ RESTART_EXCEPTION_NOAXIS:
                             case ARRAY_INT:         // Res = VFP(No Axis), Lft = INT
                             case ARRAY_APA:         // Res = VFP(No Axis), Lft = APA
                                 // Convert the BOOL/INT/APA to a VFP
-                                mpf_set_sa (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+                                mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
 
                                 break;
 
@@ -14240,7 +14240,7 @@ RESTART_EXCEPTION_NOAXIS:
                             case ARRAY_INT:         // Res = VFP(No Axis), Rht = INT
                             case ARRAY_APA:         // Res = VFP(No Axis), Rht = APA
                                 // Convert the BOOL/INT/APA to a VFP
-                                mpf_set_sa (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes));
+                                mpf_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes));
 
                                 break;
 

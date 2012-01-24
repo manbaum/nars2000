@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -198,7 +198,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 
         case ARRAY_RAT:
             // Attempt to convert the rational to an APLINT
-            aplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            aplLongestRht = mpq_get_sx ((LPAPLRAT) lpSymGlbRht, &bRet);
             if (!bRet)
                 goto DOMAIN_EXIT;
 
@@ -209,7 +209,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an APLINT
-            aplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            aplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
             if (!bRet)
                 goto DOMAIN_EXIT;
 
@@ -324,12 +324,12 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                     // Initialize and save the value
-                    mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplLongestRht + iRes, 1);
+                    mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, aplLongestRht + iRes, 1);
             else
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                     // Initialize and save the value
-                    mpq_init_set_sa (((LPAPLRAT) lpMemRes)++,                 iRes, 1);
+                    mpq_init_set_sx (((LPAPLRAT) lpMemRes)++,                 iRes, 1);
             break;
 
         case ARRAY_VFP:
@@ -340,12 +340,12 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                     // Initialize and save the value
-                    mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplLongestRht + iRes);
+                    mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, aplLongestRht + iRes);
             else
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                     // Initialize and save the value
-                    mpf_init_set_sa (((LPAPLVFP) lpMemRes)++,                 iRes);
+                    mpf_init_set_sx (((LPAPLVFP) lpMemRes)++,                 iRes);
             break;
 
         defstop
@@ -1209,7 +1209,7 @@ UBOOL PrimFnDydIotaBvN
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an APLINT
-                uTmp = mpq_get_sa (&((LPAPLRAT) lpMemRht)[uRht], &bRet);
+                uTmp = mpq_get_sx (&((LPAPLRAT) lpMemRht)[uRht], &bRet);
                 if (bRet && IsBooleanValue (uTmp))
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[uTmp];
@@ -1220,7 +1220,7 @@ UBOOL PrimFnDydIotaBvN
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                uTmp = mpf_get_sa (&((LPAPLVFP) lpMemRht)[uRht], &bRet);
+                uTmp = mpf_get_sx (&((LPAPLVFP) lpMemRht)[uRht], &bRet);
                 if (bRet && IsBooleanValue (uTmp))
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[uTmp];
@@ -1319,13 +1319,13 @@ UBOOL PrimFnDydIotaAvN_EM
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerRht = mpq_get_sa (((LPAPLRAT) lpMemRht)++, &bRet);
+                aplIntegerRht = mpq_get_sx (((LPAPLRAT) lpMemRht)++, &bRet);
 
                 break;
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerRht = mpf_get_sa (((LPAPLVFP) lpMemRht)++, &bRet);
+                aplIntegerRht = mpf_get_sx (((LPAPLVFP) lpMemRht)++, &bRet);
 
                 break;
 
@@ -1490,14 +1490,14 @@ UBOOL PrimFnDydIotaIvI_EM
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerRht = mpq_get_sa (&((LPAPLRAT) lpMemRht)[iRes], &bRet);
+                aplIntegerRht = mpq_get_sx (&((LPAPLRAT) lpMemRht)[iRes], &bRet);
                 if (!bRet)
                     goto NOMATCH;
                 break;
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerRht = mpf_get_sa (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
+                aplIntegerRht = mpf_get_sx (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
                 if (!bRet)
                     goto NOMATCH;
                 break;
@@ -1531,14 +1531,14 @@ UBOOL PrimFnDydIotaIvI_EM
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerRht = mpq_get_sa (&((LPAPLRAT) lpMemRht)[iRht], &bRet);
+                aplIntegerRht = mpq_get_sx (&((LPAPLRAT) lpMemRht)[iRht], &bRet);
                 if (!bRet)
                     goto NOMATCH;
                 break;
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerRht = mpf_get_sa (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
+                aplIntegerRht = mpf_get_sx (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
                 if (!bRet)
                     goto NOMATCH;
                 break;
@@ -2011,7 +2011,7 @@ UBOOL PrimFnDydIotaPvN_EM
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerRht = mpq_get_sa (((LPAPLRAT) lpMemRht)++, &bRet);
+                aplIntegerRht = mpq_get_sx (((LPAPLRAT) lpMemRht)++, &bRet);
 
                 // If it succeeded, ...
                 if (bRet)
@@ -2021,7 +2021,7 @@ UBOOL PrimFnDydIotaPvN_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerRht = mpf_get_sa (((LPAPLVFP) lpMemRht)++, &bRet);
+                aplIntegerRht = mpf_get_sx (((LPAPLVFP) lpMemRht)++, &bRet);
 
                 // If it succeeded, ...
                 if (bRet)
@@ -2310,7 +2310,7 @@ UBOOL PrimFnDydIotaRvN_EM
             case ARRAY_INT:
             case ARRAY_APA:
                 // Get the next integer from the right arg
-                mpq_set_sa (&aplRatRht,
+                mpq_set_sx (&aplRatRht,
                              GetNextInteger (lpMemRht,      // Ptr to global memory
                                              aplTypeRht,    // Storage type
                                              iRht),         // Index
@@ -2322,7 +2322,7 @@ UBOOL PrimFnDydIotaRvN_EM
                 aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[iRht], &bRet);
                 if (!bRet)
                     goto NOMATCH;
-                mpq_set_sa (&aplRatRht, aplLongestRht, 1);
+                mpq_set_sx (&aplRatRht, aplLongestRht, 1);
 
                 break;
 
@@ -2603,7 +2603,7 @@ UBOOL PrimFnDydIotaVvN_EM
             case ARRAY_INT:
             case ARRAY_APA:
                 // Get the next integer from the right arg
-                mpf_set_sa (&aplVfpRht,
+                mpf_set_sx (&aplVfpRht,
                              GetNextInteger (lpMemRht,      // Ptr to global memory
                                              aplTypeRht,    // Storage type
                                              iRht));        // Index
@@ -2614,7 +2614,7 @@ UBOOL PrimFnDydIotaVvN_EM
                 aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[iRht], &bRet);
                 if (!bRet)
                     goto NOMATCH;
-                mpf_set_sa (&aplVfpRht, aplLongestRht);
+                mpf_set_sx (&aplVfpRht, aplLongestRht);
 
                 break;
 

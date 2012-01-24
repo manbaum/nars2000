@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2831,7 +2831,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a RAT
-                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplIntegerLft, 1);
+                                mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, aplIntegerLft, 1);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -2842,7 +2842,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a RAT
-                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE, 1);
+                                mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE, 1);
 
                                 // Shift over the bit mask
                                 uBitMaskLft <<= 1;
@@ -2867,7 +2867,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplIntegerLft, 1);
+                                mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, aplIntegerLft, 1);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -2878,7 +2878,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, *((LPAPLINT) lpMemLft)++, 1);
+                                mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, *((LPAPLINT) lpMemLft)++, 1);
                             } // End FOR
                         break;
 
@@ -2891,7 +2891,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 goto ERROR_EXIT;
 
                             // Convert the APA to a RAT
-                            mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, apaOffLft + apaMulLft * uEndLft++, 1);
+                            mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, apaOffLft + apaMulLft * uEndLft++, 1);
                         } // End FOR
 
                         break;
@@ -2940,7 +2940,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a RAT
-                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplIntegerRht, 1);
+                                mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, aplIntegerRht, 1);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -2951,7 +2951,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a RAT
-                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE, 1);
+                                mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE, 1);
 
                                 // Shift over the bit mask
                                 uBitMaskRht <<= 1;
@@ -2976,7 +2976,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, aplIntegerRht, 1);
+                                mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, aplIntegerRht, 1);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -2987,7 +2987,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a RAT
-                                mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, *((LPAPLINT) lpMemRht)++, 1);
+                                mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, *((LPAPLINT) lpMemRht)++, 1);
                             } // End FOR
                         break;
 
@@ -3000,7 +3000,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 goto ERROR_EXIT;
 
                             // Convert the APA to a RAT
-                            mpq_init_set_sa (((LPAPLRAT) lpMemRes)++, apaOffRht + apaMulRht * uEndRht++, 1);
+                            mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, apaOffRht + apaMulRht * uEndRht++, 1);
                         } // End FOR
 
                         break;
@@ -3056,7 +3056,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerLft);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, aplIntegerLft);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -3067,7 +3067,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE);
 
                                 // Shift over the bit mask
                                 uBitMaskLft <<= 1;
@@ -3092,7 +3092,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerLft);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, aplIntegerLft);
                             } // End FOR
                         else
                             // Loop through the left arg's trailing dimensions
@@ -3103,7 +3103,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemLft)++);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemLft)++);
                             } // End FOR
                         break;
 
@@ -3116,7 +3116,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 goto ERROR_EXIT;
 
                             // Convert the APA to a VFP
-                            mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, apaOffLft + apaMulLft * uEndLft++);
+                            mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, apaOffLft + apaMulLft * uEndLft++);
                         } // End FOR
 
                         break;
@@ -3217,7 +3217,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -3228,7 +3228,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE);
 
                                 // Shift over the bit mask
                                 uBitMaskRht <<= 1;
@@ -3253,7 +3253,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -3264,7 +3264,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemRht)++);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemRht)++);
                             } // End FOR
                         break;
 
@@ -3277,7 +3277,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 goto ERROR_EXIT;
 
                             // Convert the APA to a VFP
-                            mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, apaOffRht + apaMulRht * uEndRht++);
+                            mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, apaOffRht + apaMulRht * uEndRht++);
                         } // End FOR
 
                         break;
@@ -3293,7 +3293,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the FLT to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -3304,7 +3304,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_init_set_sa (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemRht)++);
+                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemRht)++);
                             } // End FOR
                         break;
 

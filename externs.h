@@ -2038,9 +2038,6 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 
 #include "typemote.h"
 
-#define mpz_set_sa      mpz_set_sx
-#define mpz_set_ua      mpz_set_ux
-
 #define ENUMS_DEFINED
 #undef  EXTERN
 

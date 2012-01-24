@@ -251,7 +251,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
         case ARRAY_INT:
         case ARRAY_APA:
             // Save in local var
-            mpz_init_set_sa (&aplMPIRht, aplIntegerRht);
+            mpz_init_set_sx (&aplMPIRht, aplIntegerRht);
 
             break;
 
@@ -262,7 +262,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
                 goto RIGHT_DOMAIN_EXIT;
 
             // Save in local var
-            mpz_init_set_sa (&aplMPIRht, aplIntegerRht);
+            mpz_init_set_sx (&aplMPIRht, aplIntegerRht);
 
             break;
 
@@ -353,7 +353,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     // Get the actual NELM
     aplNELMRes = memTmp.uNumEntry;
 
-    Assert (aplNELMRes EQ mpz_get_sa (&aplMPIRes, &bRet));
+    Assert (aplNELMRes EQ mpz_get_sx (&aplMPIRes));
 
     // Check for Ctrl-Break
     if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -634,7 +634,7 @@ APLRAT PrimFnDydPiRisRvR
 
     // Get the left arg as an integer
     //  (Ignore the value in bRet as we know it's an integer)
-    aplIntegerLft = mpq_get_sa (&aplRatLft, &bRet);
+    aplIntegerLft = mpq_get_sx (&aplRatLft, &bRet);
 
     // Allow Nth Prime right arg to be 0 if origin-0
     if (!(mpq_cmp_ui (&aplRatRht, bQuadIO, 1) >= 0
@@ -920,7 +920,7 @@ APLMPI PrimFnPiCommon
 
     // Check against the smallest # not factorable by trial division
     if (mpz_cmp_ui (mpzRht, 1) > 0
-     && mpz_cmp_sa (mpzRht, PRECOMPUTED_PRIME_NEXT2) < 0)   // = 100003L*100003L
+     && mpz_cmp_sx (mpzRht, PRECOMPUTED_PRIME_NEXT2) < 0)   // = 100003L*100003L
     {
          // Count it in
          aplNELMRes++;
@@ -1429,7 +1429,7 @@ APLMPI PrimFnPiPrevPrime
     } else
     if (mpz_cmp_ui (&aplMPIArg, 3) EQ 0)
     {
-        mpz_init_set_sa (&mpzRes, 2);
+        mpz_init_set_sx (&mpzRes, 2);
 
         return mpzRes;
     } else

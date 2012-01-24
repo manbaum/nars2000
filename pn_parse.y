@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -871,7 +871,7 @@ void PN_actBOOL_RAT
 
 {
     // Convert the value from BOOL to RAT
-    mpq_init_set_sa (&lpSrc->at.aplRat, lpSrc->at.aplInteger, 1);
+    mpq_init_set_sx (&lpSrc->at.aplRat, lpSrc->at.aplInteger, 1);
 
     lpSrc->chType = PN_NUMTYPE_RAT;
 } // End PN_actBOOL_RAT
@@ -886,7 +886,7 @@ void PN_actBOOL_VFP
 
 {
     // Convert the value from BOOL to VFP
-    mpf_init_set_sa (&lpSrc->at.aplVfp, lpSrc->at.aplInteger);
+    mpf_init_set_sx (&lpSrc->at.aplVfp, lpSrc->at.aplInteger);
 
     lpSrc->chType = PN_NUMTYPE_VFP;
 } // End PN_actBOOL_VFP
@@ -916,7 +916,7 @@ void PN_actINT_RAT
 
 {
     // Convert the value from INT to RAT
-    mpq_init_set_sa (&lpSrc->at.aplRat, lpSrc->at.aplInteger, 1);
+    mpq_init_set_sx (&lpSrc->at.aplRat, lpSrc->at.aplInteger, 1);
 
     lpSrc->chType = PN_NUMTYPE_RAT;
 } // End PN_actINT_RAT
@@ -931,7 +931,7 @@ void PN_actINT_VFP
 
 {
     // Convert the value from INT to VFP
-    mpf_init_set_sa (&lpSrc->at.aplVfp, lpSrc->at.aplInteger);
+    mpf_init_set_sx (&lpSrc->at.aplVfp, lpSrc->at.aplInteger);
 
     lpSrc->chType = PN_NUMTYPE_VFP;
 } // End PN_actINT_VFP
@@ -1359,7 +1359,7 @@ LPPN_YYSTYPE PN_MakeBasePoint
             } // End IF
 
             // Convert the base value to Rational
-            mpq_init_set_sa (&lpYYBase->at.aplRat, lpYYBase->at.aplInteger, 1);
+            mpq_init_set_sx (&lpYYBase->at.aplRat, lpYYBase->at.aplInteger, 1);
 
             // Get the ptr to the end of the AlphaInt string
             lpszAlphaInt = &lppnLocalVars->lpszAlphaInt[uLen - 1];

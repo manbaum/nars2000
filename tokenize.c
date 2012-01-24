@@ -3442,7 +3442,7 @@ UBOOL MergeNumbers
                             for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
                             {
                                 // Save in the result
-                                mpq_init_set_sa (&((LPAPLRAT) lpMemRes)[uPrv],
+                                mpq_init_set_sx (&((LPAPLRAT) lpMemRes)[uPrv],
                                                   (uBitMask & *(LPAPLBOOL) lpMemPrv) NE 0,
                                                   1);
                                 // Shift over the bit mask
@@ -3462,7 +3462,7 @@ UBOOL MergeNumbers
                             // Loop through the previous token's values
                             for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
                                 // Save in the result
-                                mpq_init_set_sa (&((LPAPLRAT) lpMemRes)[uPrv],
+                                mpq_init_set_sx (&((LPAPLRAT) lpMemRes)[uPrv],
                                                  *((LPAPLINT) lpMemPrv)++,
                                                   1);
                             break;
@@ -3486,7 +3486,7 @@ UBOOL MergeNumbers
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                             // Save the new value as a Rational
-                            mpq_init_set_sa (&((LPAPLRAT) lpMemRes)[aplNELMPrv],
+                            mpq_init_set_sx (&((LPAPLRAT) lpMemRes)[aplNELMPrv],
                                               lppnLocalVars->at.aplInteger,
                                               1);
                             break;
@@ -3514,7 +3514,7 @@ UBOOL MergeNumbers
                             for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
                             {
                                 // Save in the result
-                                mpf_init_set_sa (&((LPAPLVFP) lpMemRes)[uPrv],
+                                mpf_init_set_sx (&((LPAPLVFP) lpMemRes)[uPrv],
                                                   (uBitMask & *(LPAPLBOOL) lpMemPrv) NE 0);
                                 // Shift over the bit mask
                                 uBitMask <<= 1;
@@ -3533,7 +3533,7 @@ UBOOL MergeNumbers
                             // Loop through the previous token's values
                             for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
                                 // Save in the result
-                                mpf_init_set_sa (&((LPAPLVFP) lpMemRes)[uPrv],
+                                mpf_init_set_sx (&((LPAPLVFP) lpMemRes)[uPrv],
                                                  *((LPAPLINT) lpMemPrv)++);
                             break;
 
@@ -3575,7 +3575,7 @@ UBOOL MergeNumbers
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                             // Save the new value as a VFP
-                            mpf_init_set_sa (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
+                            mpf_init_set_sx (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
                                               lppnLocalVars->at.aplInteger);
                             break;
 

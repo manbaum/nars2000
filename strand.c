@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1324,7 +1324,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             {
                 case TKT_VARIMMED:
                     // Convert the INT to a RAT
-                    mpq_init_set_sa (LPAPL.Rat++, lpYYToken->tkToken.tkData.tkInteger, 1);
+                    mpq_init_set_sx (LPAPL.Rat++, lpYYToken->tkToken.tkData.tkInteger, 1);
 
                     break;
 
@@ -1336,7 +1336,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     if (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
                     {
                         // Convert the INT to a RAT
-                        mpq_init_set_sa (LPAPL.Rat++, lpYYToken->tkToken.tkData.tkSym->stData.stInteger, 1);
+                        mpq_init_set_sx (LPAPL.Rat++, lpYYToken->tkToken.tkData.tkSym->stData.stInteger, 1);
 
                         break;
                     } else
@@ -1377,7 +1377,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                             case ARRAY_BOOL:
                             case ARRAY_INT:
                                 // Convert the BOOL/INT to a RAT
-                                mpq_init_set_sa (LPAPL.Rat++, aplLongestNum, 1);
+                                mpq_init_set_sx (LPAPL.Rat++, aplLongestNum, 1);
 
                                 break;
 
@@ -1422,7 +1422,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
                             // Convert the INT to a VFP
-                            mpf_init_set_sa (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkInteger);
+                            mpf_init_set_sx (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkInteger);
 
                             break;
 
@@ -1452,7 +1452,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                             case IMMTYPE_BOOL:
                             case IMMTYPE_INT:
                                 // Convert the BOOL/INT to a RAT
-                                mpf_init_set_sa (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkSym->stData.stInteger);
+                                mpf_init_set_sx (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkSym->stData.stInteger);
 
                                 break;
 
@@ -1506,7 +1506,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                             case ARRAY_BOOL:
                             case ARRAY_INT:
                                 // Convert the BOOL/INT to a VFP
-                                mpf_init_set_sa (LPAPL.Vfp++, aplLongestNum);
+                                mpf_init_set_sx (LPAPL.Vfp++, aplLongestNum);
 
                                 break;
 

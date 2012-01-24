@@ -1600,7 +1600,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                         case ARRAY_INT:
                         case ARRAY_APA:
                             // Convert the BOOL/INT/APA to a RAT
-                            mpq_set_sa (&aplRatTmp, GetNextInteger (lpMemLft, aplTypeLft, uRow * uNumColsLft + uCol), 1);
+                            mpq_set_sx (&aplRatTmp, GetNextInteger (lpMemLft, aplTypeLft, uRow * uNumColsLft + uCol), 1);
 
                             break;
 
@@ -1644,7 +1644,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                         case ARRAY_INT:
                         case ARRAY_APA:
                             // Convert the BOOL/INT/APA to a RAT
-                            mpq_set_sa (&aplRatTmp, GetNextInteger (lpMemRht, aplTypeRht, uRow * uNumColsRht + uCol), 1);
+                            mpq_set_sx (&aplRatTmp, GetNextInteger (lpMemRht, aplTypeRht, uRow * uNumColsRht + uCol), 1);
 
                             break;
 

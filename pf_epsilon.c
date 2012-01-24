@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1287,7 +1287,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpq_init_set_sa ((*(LPAPLRAT *) lplpMemRes)++, (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE, 1);
+                        mpq_init_set_sx ((*(LPAPLRAT *) lplpMemRes)++, (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE, 1);
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -1310,7 +1310,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpq_init_set_sa ((*(LPAPLRAT *) lplpMemRes)++, *((LPAPLINT) lpMemRht)++, 1);
+                        mpq_init_set_sx ((*(LPAPLRAT *) lplpMemRes)++, *((LPAPLINT) lpMemRht)++, 1);
                     } // End FOR
 
                     break;
@@ -1323,7 +1323,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpq_init_set_sa ((*(LPAPLRAT *) lplpMemRes)++, apaOffRht + apaMulRht * uRht, 1);
+                        mpq_init_set_sx ((*(LPAPLRAT *) lplpMemRes)++, apaOffRht + apaMulRht * uRht, 1);
                     } // End FOR
 
                     break;
@@ -1344,12 +1344,12 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                 switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                                 {
                                     case IMMTYPE_BOOL:  // Res = RAT   , Rht = NESTED:BOOL
-                                        mpq_init_set_sa ((*(LPAPLRAT *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stBoolean, 1);
+                                        mpq_init_set_sx ((*(LPAPLRAT *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stBoolean, 1);
 
                                         break;
 
                                     case IMMTYPE_INT:   // Res = RAT   , Rht = NESTED:INT
-                                        mpq_init_set_sa ((*(LPAPLRAT *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stInteger, 1);
+                                        mpq_init_set_sx ((*(LPAPLRAT *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stInteger, 1);
 
                                         break;
 
@@ -1416,7 +1416,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set_sa ((*(LPAPLVFP *) lplpMemRes)++, (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE);
+                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE);
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -1439,7 +1439,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set_sa ((*(LPAPLVFP *) lplpMemRes)++, *((LPAPLINT) lpMemRht)++);
+                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, *((LPAPLINT) lpMemRht)++);
                     } // End FOR
 
                     break;
@@ -1465,7 +1465,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set_sa ((*(LPAPLVFP *) lplpMemRes)++, apaOffRht + apaMulRht * uRht);
+                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, apaOffRht + apaMulRht * uRht);
                     } // End FOR
 
                     break;
@@ -1486,12 +1486,12 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                 switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                                 {
                                     case IMMTYPE_BOOL:  // Res = VFP   , Rht = NESTED:BOOL
-                                        mpf_init_set_sa ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stBoolean);
+                                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stBoolean);
 
                                         break;
 
                                     case IMMTYPE_INT:   // Res = VFP   , Rht = NESTED:INT
-                                        mpf_init_set_sa ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stInteger);
+                                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stInteger);
 
                                         break;
 
@@ -2173,7 +2173,7 @@ UBOOL PrimFnDydEpsilonNvB
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an APLINT
-                uTmp = mpq_get_sa (&((LPAPLRAT) lpMemLft)[uLft], &bRet);
+                uTmp = mpq_get_sx (&((LPAPLRAT) lpMemLft)[uLft], &bRet);
                 if (bRet && IsBooleanValue (uTmp))
                     // Save the appropriate value in the result
                     *lpMemRes |= Found[uTmp] << uBitIndex;
@@ -2184,7 +2184,7 @@ UBOOL PrimFnDydEpsilonNvB
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                uTmp = mpf_get_sa (&((LPAPLVFP) lpMemLft)[uLft], &bRet);
+                uTmp = mpf_get_sx (&((LPAPLVFP) lpMemLft)[uLft], &bRet);
                 if (bRet && IsBooleanValue (uTmp))
                     // Save the appropriate value in the result
                     *lpMemRes |= Found[uTmp] << uBitIndex;
@@ -2288,13 +2288,13 @@ UBOOL PrimFnDydEpsilonNvA_EM
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerLft = mpq_get_sa (((LPAPLRAT) lpMemLft)++, &bRet);
+                aplIntegerLft = mpq_get_sx (((LPAPLRAT) lpMemLft)++, &bRet);
 
                 break;
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerLft = mpf_get_sa (((LPAPLVFP) lpMemLft)++, &bRet);
+                aplIntegerLft = mpf_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
 
                 break;
 
@@ -3000,7 +3000,7 @@ UBOOL PrimFnDydEpsilonNvR_EM
             case ARRAY_INT:
             case ARRAY_APA:
                 // Convert the BOOL/INT/APA to a RAT
-                mpq_set_sa (&aplRatLft,
+                mpq_set_sx (&aplRatLft,
                              GetNextInteger (lpMemLft,      // Ptr to global memory
                                              aplTypeLft,    // Storage type
                                              iLft),         // Index
@@ -3294,7 +3294,7 @@ UBOOL PrimFnDydEpsilonNvV_EM
             case ARRAY_INT:
             case ARRAY_APA:
                 // Convert the BOOL/INT/APA to a VFP
-                mpf_set_sa (&aplVfpLft,
+                mpf_set_sx (&aplVfpLft,
                              GetNextInteger (lpMemLft,      // Ptr to global memory
                                              aplTypeLft,    // Storage type
                                              iLft));        // Index
@@ -3487,13 +3487,13 @@ UBOOL PrimFnDydEpsilonNvP_EM
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerLft = mpq_get_sa (((LPAPLRAT) lpMemLft)++, &bRet);
+                aplIntegerLft = mpq_get_sx (((LPAPLRAT) lpMemLft)++, &bRet);
 
                 break;
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerLft = mpf_get_sa (((LPAPLVFP) lpMemLft)++, &bRet);
+                aplIntegerLft = mpf_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
 
                 break;
 

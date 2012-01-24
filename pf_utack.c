@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -613,7 +613,7 @@ RESTART_EXCEPTION:
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                         case ARRAY_APA:
-                            mpq_set_sa (&aplRatRht, aplLongestRht, 1);
+                            mpq_set_sx (&aplRatRht, aplLongestRht, 1);
 
                             break;
 
@@ -657,7 +657,7 @@ RESTART_EXCEPTION:
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                         case ARRAY_APA:
-                            mpq_set_sa (&aplRatLft, aplLongestLft, 1);
+                            mpq_set_sx (&aplRatLft, aplLongestLft, 1);
 
                             break;
 
@@ -703,7 +703,7 @@ RESTART_EXCEPTION:
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                         case ARRAY_APA:
-                            mpf_set_sa (&aplVfpRht, aplLongestRht);
+                            mpf_set_sx (&aplVfpRht, aplLongestRht);
 
                             break;
 
@@ -755,7 +755,7 @@ RESTART_EXCEPTION:
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                         case ARRAY_APA:
-                            mpf_set_sa (&aplVfpLft, aplLongestLft);
+                            mpf_set_sx (&aplVfpLft, aplLongestLft);
 
                             break;
 

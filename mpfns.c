@@ -274,22 +274,7 @@ void mpz_init_set_f
 } // End mpz_init_set_f
 
 
-//***************************************************************************
-//  $mpz_init_set_sa
-//
-//  Save an APLINT value as an MP Integer
-//***************************************************************************
-
-void mpz_init_set_sa
-    (mpz_ptr dest,
-     APLINT  val)
-
-{
-    mpz_init (dest);
-    mpz_set_sx (dest, val);
-} // End mpz_init_set_sa
-
-
+#if FALSE
 //***************************************************************************
 //  $mpz_get_sa
 //
@@ -320,15 +305,16 @@ APLINT mpz_get_sa
     else
         return  dwSplit.aplInt;
 } // End mpz_get_sa
+#endif
 
 
 //***************************************************************************
-//  $mpz_cmp_sa
+//  $mpz_cmp_sx
 //
 //  Compare an MP Integer with an APLINT value
 //***************************************************************************
 
-int mpz_cmp_sa
+int mpz_cmp_sx
     (mpz_ptr dest,
      APLINT  val)
 
@@ -336,12 +322,12 @@ int mpz_cmp_sa
     MP_INT aplTmp = {0};
     int    iRes;
 
-    mpz_init_set_sa (&aplTmp, val);
+    mpz_init_set_sx (&aplTmp, val);
     iRes = mpz_cmp (dest, &aplTmp);
     mpz_clear (&aplTmp);
 
     return iRes;
-} // End mpz_cmp_sa
+} // End mpz_cmp_sx
 
 
 //***************************************************************************
@@ -516,20 +502,20 @@ void mpq_init_set
 
 
 //***************************************************************************
-//  $mpq_init_set_sa
+//  $mpq_init_set_sx
 //
 //  Save an APLINT value as a Rational
 //***************************************************************************
 
-void mpq_init_set_sa
+void mpq_init_set_sx
     (mpq_ptr dest,
      APLINT  num,
      APLUINT den)
 
 {
     mpq_init (dest);
-    mpq_set_sa (dest, num, den);
-} // End mpq_init_set_sa
+    mpq_set_sx (dest, num, den);
+} // End mpq_init_set_sx
 
 
 //***************************************************************************
@@ -632,12 +618,12 @@ void mpq_init_set_str
 
 
 //***************************************************************************
-//  $mpq_get_sa
+//  $mpq_get_sx
 //
 //  Convert an APLRAT to an APLINT
 //***************************************************************************
 
-APLINT mpq_get_sa
+APLINT mpq_get_sx
     (mpq_ptr src,
      LPUBOOL lpbRet)
 
@@ -658,13 +644,13 @@ APLINT mpq_get_sa
     mpz_fdiv_q (&mpzDiv, mpq_numref (src), mpq_denref (src));
 
     // Convert the MPI to an integer
-    aplInteger = mpz_get_sa (&mpzDiv, NULL);
+    aplInteger = mpz_get_sx (&mpzDiv);
 
     // We no longer need this storage
     Myz_clear (&mpzDiv);
 
     return aplInteger;
-} // End mpq_get_sa
+} // End mpq_get_sx
 
 
 //***************************************************************************
@@ -707,14 +693,14 @@ APLINT mpq_get_ctsa
     if (fabs (mpf_get_d (&mpfTmp1)) < SYS_CT)
     {
         mpf_floor (&mpfTmp1, &mpfSrc);
-        aplInt = mpf_get_sa (&mpfTmp1, lpbRet);
+        aplInt = mpf_get_sx (&mpfTmp1, lpbRet);
     } else
     if (fabs (mpf_get_d (&mpfTmp2)) < SYS_CT)
     {
         mpf_ceil  (&mpfTmp2, &mpfSrc);
-        aplInt = mpf_get_sa (&mpfTmp2, lpbRet);
+        aplInt = mpf_get_sx (&mpfTmp2, lpbRet);
     } else
-        aplInt = mpf_get_sa (&mpfSrc , lpbRet);
+        aplInt = mpf_get_sx (&mpfSrc , lpbRet);
 
     // We no longer need this storage
     Myf_clear (&mpfTmp2);
@@ -726,12 +712,12 @@ APLINT mpq_get_ctsa
 
 
 //***************************************************************************
-//  $mpq_set_sa
+//  $mpq_set_sx
 //
 //  Save an APLINT value as a Rational
 //***************************************************************************
 
-void mpq_set_sa
+void mpq_set_sx
     (mpq_ptr dest,
      APLINT  num,
      APLUINT den)
@@ -756,7 +742,7 @@ void mpq_set_sa
             // Canonicalize the Rational
             mpq_canonicalize (dest);
     } // End IF
-} // End mpq_set_sa
+} // End mpq_set_sx
 
 
 //***************************************************************************
@@ -1017,12 +1003,12 @@ void mpf_copy
 
 
 //***************************************************************************
-//  $mpf_set_sa
+//  $mpf_set_sx
 //
 //  Save an APLINT value as a Variable FP
 //***************************************************************************
 
-void mpf_set_sa
+void mpf_set_sx
     (mpf_ptr dest,
      APLINT  val)
 
@@ -1035,7 +1021,7 @@ void mpf_set_sa
 
     // Add in the low long
     mpf_add_ui (dest, dest, LOAPLINT (val));
-} // End mpf_set_sa
+} // End mpf_set_sx
 
 
 //***************************************************************************
@@ -1055,19 +1041,19 @@ void mpf_init_copy
 
 
 //***************************************************************************
-//  $mpf_init_set_sa
+//  $mpf_init_set_sx
 //
 //  Save an APLINT value as a Variable FP
 //***************************************************************************
 
-void mpf_init_set_sa
+void mpf_init_set_sx
     (mpf_ptr dest,
      APLINT  val)
 
 {
     mpf_init (dest);
-    mpf_set_sa (dest, val);
-} // End mpf_init_set_sa
+    mpf_set_sx (dest, val);
+} // End mpf_init_set_sx
 
 
 //***************************************************************************
@@ -1103,12 +1089,12 @@ void mpf_init_set_z
 
 
 //***************************************************************************
-//  $mpf_get_sa
+//  $mpf_get_sx
 //
 //  Convert a VFP to an APLINT
 //***************************************************************************
 
-APLINT mpf_get_sa
+APLINT mpf_get_sx
     (mpf_ptr src,
      LPUBOOL lpbRet)
 
@@ -1123,13 +1109,13 @@ APLINT mpf_get_sa
     mpq_set_f (&mpqTmp, src);
 
     // Get the integer within
-    aplInteger = mpq_get_sa (&mpqTmp, lpbRet);
+    aplInteger = mpq_get_sx (&mpqTmp, lpbRet);
 
     // We no longer need this storage
     Myq_clear (&mpqTmp);
 
     return aplInteger;
-} // End mpf_get_sa
+} // End mpf_get_sx
 
 
 //***************************************************************************
@@ -1167,14 +1153,14 @@ APLINT mpf_get_ctsa
     if (fabs (mpf_get_d (&mpfTmp1)) < SYS_CT)
     {
         mpf_floor (&mpfTmp1, src);
-        aplInt = mpf_get_sa (&mpfTmp1, lpbRet);
+        aplInt = mpf_get_sx (&mpfTmp1, lpbRet);
     } else
     if (fabs (mpf_get_d (&mpfTmp2)) < SYS_CT)
     {
         mpf_ceil  (&mpfTmp2, src);
-        aplInt = mpf_get_sa (&mpfTmp2, lpbRet);
+        aplInt = mpf_get_sx (&mpfTmp2, lpbRet);
     } else
-        aplInt = mpf_get_sa (src     , lpbRet);
+        aplInt = mpf_get_sx (src     , lpbRet);
 
     // We no longer need this storage
     Myf_clear (&mpfTmp2);

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -314,14 +314,14 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an integer using System CT
-                aplIntegerLft = mpq_get_sa ((LPAPLRAT) lpSymGlbLft, &bRet);
+                aplIntegerLft = mpq_get_sx ((LPAPLRAT) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
                 break;
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an integer using System CT
-                aplIntegerLft = mpf_get_sa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                aplIntegerLft = mpf_get_sx ((LPAPLVFP) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
                 break;
@@ -460,7 +460,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             case ARRAY_RAT:
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
-                    aplIntegerLft = mpq_get_sa (((LPAPLRAT) lpMemLft)++, &bRet);
+                    aplIntegerLft = mpq_get_sx (((LPAPLRAT) lpMemLft)++, &bRet);
                     if (!bRet || aplIntegerLft < 0)
                         goto LEFT_DOMAIN_EXIT;
                     uDimAxRes += aplIntegerLft;
@@ -473,7 +473,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             case ARRAY_VFP:
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
-                    aplIntegerLft = mpf_get_sa (((LPAPLVFP) lpMemLft)++, &bRet);
+                    aplIntegerLft = mpf_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
                     if (!bRet || aplIntegerLft < 0)
                         goto LEFT_DOMAIN_EXIT;
                     uDimAxRes += aplIntegerLft;

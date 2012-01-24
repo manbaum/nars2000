@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -536,7 +536,7 @@ UBOOL CheckAxisGlb
             for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
             {
                 // Attempt to fit the RAT into an APLINT
-                aplRankLcl = mpq_get_sa (lpaplRat++, &bRet);
+                aplRankLcl = mpq_get_sx (lpaplRat++, &bRet);
                 aplRankLcl -= bQuadIO; // Less the index origin
 
                 // Check for negative indices [-aplRankCmp, -1]
@@ -582,7 +582,7 @@ UBOOL CheckAxisGlb
             for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
             {
                 // Attempt to fit the VFP into an APLINT
-                aplRankLcl = mpf_get_sa (lpaplVfp++, &bRet);
+                aplRankLcl = mpf_get_sx (lpaplVfp++, &bRet);
                 aplRankLcl -= bQuadIO; // Less the index origin
 
                 // Check for negative indices [-aplRankCmp, -1]

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -783,7 +783,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the BOOL to a RAT
-                        mpq_set_sa (&aplRatLft,
+                        mpq_set_sx (&aplRatLft,
                                      (uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE,
                                      1);
                         if (mpq_cmp (&aplRatLft, ((LPAPLRAT) lpMemRht)++) NE 0)
@@ -817,7 +817,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the BOOL to a VFP
-                        mpf_set_sa (&aplVfpLft,
+                        mpf_set_sx (&aplVfpLft,
                                      (uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE);
                         // Compare the two VFPs relative to []CT
                         bRet = (mpf_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
@@ -921,7 +921,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the INT to a RAT
-                        mpq_set_sa (&aplRatLft, *((LPAPLINT) lpMemLft)++, 1);
+                        mpq_set_sx (&aplRatLft, *((LPAPLINT) lpMemLft)++, 1);
 
                         if (mpq_cmp (&aplRatLft, ((LPAPLRAT) lpMemRht)++) NE 0)
                             bRet = FALSE;
@@ -944,7 +944,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the INT to a VFP
-                        mpf_set_sa (&aplVfpLft, *((LPAPLINT) lpMemLft)++);
+                        mpf_set_sx (&aplVfpLft, *((LPAPLINT) lpMemLft)++);
 
                         // Compare the two VFPs relative to []CT
                         bRet = (mpf_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
@@ -1119,7 +1119,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the INT to a RAT
-                        mpq_set_sa (&aplRatLft, apaOff + apaMul * uDim, 1);
+                        mpq_set_sx (&aplRatLft, apaOff + apaMul * uDim, 1);
 
                         if (mpq_cmp (&aplRatLft, ((LPAPLRAT) lpMemRht)++) NE 0)
                             bRet = FALSE;
@@ -1142,7 +1142,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the APA to a VFP
-                        mpf_set_sa (&aplVfpLft, apaOff + apaMul * uDim);
+                        mpf_set_sx (&aplVfpLft, apaOff + apaMul * uDim);
 
                         // Compare the two VFPs relative to []CT
                         bRet = (mpf_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
@@ -1254,14 +1254,14 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                         break;
 
                                     case ARRAY_RAT:     // Lft = HETERO:BOOL,  Rht = HETERO:RAT
-                                        mpq_set_sa (&aplRatLft, aplIntegerLft, 1);
+                                        mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
 
                                         if (mpq_cmp (&aplRatLft, (LPAPLRAT) lpSymGlbRht) NE 0)
                                             bRet = FALSE;
                                         break;
 
                                     case ARRAY_VFP:     // Lft = HETERO:BOOL,  Rht = HETERO:VFP
-                                        mpf_set_sa (&aplVfpLft, aplIntegerLft);
+                                        mpf_set_sx (&aplVfpLft, aplIntegerLft);
 
                                         if (mpf_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
                                             bRet = FALSE;
@@ -1344,7 +1344,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                 {
                                     case ARRAY_BOOL:    // Lft = HETERO:RAT,  Rht = HETERO:BOOL
                                     case ARRAY_INT:     // Lft = HETERO:RAT,  Rht = HETERO:INT
-                                        mpq_set_sa (&aplRatRht, aplIntegerRht, 1);
+                                        mpq_set_sx (&aplRatRht, aplIntegerRht, 1);
 
                                         if (mpq_cmp ((LPAPLRAT) lpSymGlbLft, &aplRatRht) NE 0)
                                             bRet = FALSE;
@@ -1387,7 +1387,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                 {
                                     case ARRAY_BOOL:    // Lft = HETERO:VFP,  Rht = HETERO:BOOL
                                     case ARRAY_INT:     // Lft = HETERO:VFP,  Rht = HETERO:INT
-                                        mpf_set_sa (&aplVfpRht, aplIntegerRht);
+                                        mpf_set_sx (&aplVfpRht, aplIntegerRht);
 
                                         if (mpf_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
                                             bRet = FALSE;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -910,7 +910,7 @@ UBOOL ValidateInteger_EM
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an integer
-            aplInteger = mpq_get_sa ((LPAPLRAT) lpMemRht, &bRet);
+            aplInteger = mpq_get_sx ((LPAPLRAT) lpMemRht, &bRet);
 
             // Test the value
             if (bRangeLimit || bRet)
@@ -922,7 +922,7 @@ UBOOL ValidateInteger_EM
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an integer
-            aplInteger = mpf_get_sa ((LPAPLVFP) lpMemRht, &bRet);
+            aplInteger = mpf_get_sx ((LPAPLVFP) lpMemRht, &bRet);
 
             // Test the value
             if (bRangeLimit || bRet)
@@ -2505,13 +2505,13 @@ UBOOL ValidNdxFEATURE
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an INT
-            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpq_get_sx ((LPAPLRAT) lpSymGlbRht, &bRet);
 
             break;
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -2652,13 +2652,13 @@ UBOOL ValidNdxFPC
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an INT
-            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpq_get_sx ((LPAPLRAT) lpSymGlbRht, &bRet);
 
             break;
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -2786,13 +2786,13 @@ UBOOL ValidNdxIC
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an integer
-            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpq_get_sx ((LPAPLRAT) lpSymGlbRht, &bRet);
 
             break;
 
         case ARRAY_VFP:
             // Attempt to convert the RAT to an integer
-            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -2881,13 +2881,13 @@ UBOOL ValidNdxIO
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an INT
-            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpq_get_sx ((LPAPLRAT) lpSymGlbRht, &bRet);
 
             break;
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -2992,13 +2992,13 @@ UBOOL ValidNdxPP
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an INT
-            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpq_get_sx ((LPAPLRAT) lpSymGlbRht, &bRet);
 
             break;
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -3269,13 +3269,13 @@ UBOOL ValidNdxPW
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an INT
-            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpq_get_sx ((LPAPLRAT) lpSymGlbRht, &bRet);
 
             break;
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -3363,13 +3363,13 @@ UBOOL ValidNdxRL
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an INT
-            *lpaplLongestRht = mpq_get_sa ((LPAPLRAT) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpq_get_sx ((LPAPLRAT) lpSymGlbRht, &bRet);
 
             break;
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sa ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 

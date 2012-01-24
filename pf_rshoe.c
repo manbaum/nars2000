@@ -752,7 +752,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             {
                                 case IMMTYPE_BOOL:
                                 case IMMTYPE_INT:
-                                    mpq_set_sa (&((LPAPLRAT)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger, 1);
+                                    mpq_set_sx (&((LPAPLRAT)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger, 1);
 
                                     break;
 
@@ -780,7 +780,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             {
                                 case IMMTYPE_BOOL:
                                 case IMMTYPE_INT:
-                                    mpf_set_sa (&((LPAPLVFP)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger);
+                                    mpf_set_sx (&((LPAPLVFP)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger);
 
                                     break;
 
@@ -1027,7 +1027,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     case ARRAY_BOOL:
                                     case ARRAY_INT:
                                     case ARRAY_APA:
-                                        mpq_init_set_sa (&((LPAPLRAT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                        mpq_init_set_sx (&((LPAPLRAT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
                                                          GetNextInteger (lpMemSub, aplTypeSub, uSub), 1);
                                         break;
 
@@ -1085,7 +1085,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     case ARRAY_BOOL:
                                     case ARRAY_INT:
                                     case ARRAY_APA:
-                                        mpf_init_set_sa (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                        mpf_init_set_sx (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
                                                          GetNextInteger (lpMemSub, aplTypeSub, uSub));
                                         break;
 

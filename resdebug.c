@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1389,21 +1389,20 @@ LPVOID _MyHeapAlloc
 
     __try
     {
-        lpMem = HeapAlloc (hHeap, dwFlags, dwBytes);
+////////lpMem = HeapAlloc (hHeap, dwFlags, dwBytes);
+        lpMem = dlmalloc (dwBytes);
     } __except (CheckException (GetExceptionInformation (), L"HeapAlloc"))
     {
 #ifdef DEBUG
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        if (!lpMem)
-        {
+        Assert (lpMem EQ NULL);
 #ifdef DEBUG
-            if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
-                DisplayHeap ();
+        if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
+            DisplayHeap ();
 #endif
-            MBWC (MyGetExceptionStr ());
-            DbgBrk ();
-        } // End IF
+        MBWC (MyGetExceptionStr ());
+        DbgBrk ();
     } // End __try/__except
 
     if (lpMem)
@@ -1446,21 +1445,20 @@ HGLOBAL _MyHeapReAlloc
 
     __try
     {
-        hGlb = HeapReAlloc (hHeap, dwFlags, lpMem, dwBytes);
-    } __except (CheckException (GetExceptionInformation (), L"HeapAlloc"))
+////////hGlb = HeapReAlloc (hHeap, dwFlags, lpMem, dwBytes);
+        hGlb = dlrealloc (lpMem, dwBytes);
+    } __except (CheckException (GetExceptionInformation (), L"HeapReAlloc"))
     {
 #ifdef DEBUG
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        if (!hGlb)
-        {
+        Assert (hGlb EQ NULL);
 #ifdef DEBUG
-            if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
-                DisplayHeap ();
+        if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
+            DisplayHeap ();
 #endif
-            MBWC (MyGetExceptionStr ());
-            DbgBrk ();
-        } // End IF
+        MBWC (MyGetExceptionStr ());
+        DbgBrk ();
     } // End __try/__except
 
 #ifdef DEBUG
@@ -1499,7 +1497,9 @@ UBOOL _MyHeapFree
 
     _DeleObj (OBJ_HEAPALLOC, lpMem);
 
-    return HeapFree (hHeap, dwFlags, lpMem);
+////return HeapFree (hHeap, dwFlags, lpMem);
+    dlfree (lpMem);
+    return TRUE;
 } // _MyHeapFree
 
 

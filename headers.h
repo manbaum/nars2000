@@ -29,6 +29,7 @@
 // Disable stack checking
 #pragma check_stack(off)
 
+#include <setjmp.h>
 #include <stdint.h>
 #include <mpir.h>
 #include <mpfr.h>
@@ -72,6 +73,7 @@
 #include "fmtspec.h"
 #include "primes.h"
 #include "mpifns.h"
+#include "malloc.h"
 
 #pragma pack(pop)
 

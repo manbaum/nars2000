@@ -473,6 +473,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\malloc.c"
+				>
+			</File>
+			<File
 				RelativePath="$(MS_DIR)mp.c"
 				>
 			</File>

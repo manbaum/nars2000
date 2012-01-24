@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -318,26 +318,26 @@ UBOOL CreateAppDataDirs
 //***************************************************************************
 //  $ReadAplFontNames
 //
-//  Read the [APL Fonts] names and fill a Combobox with them
+//  Read the [APL Fonts] names and fill a ComboBox with them
 //***************************************************************************
 
 void ReadAplFontNames
-    (HWND hWndCB)               // Window handle to Combobox
+    (HWND hWndCB)               // Window handle to ComboBox
 
 {
-    UINT  uNumFonts,            // # APL Fonts
-          uCnt;                 // Loop counter
+    int   iNumFonts,            // # APL Fonts
+          iCnt;                 // Loop counter
     WCHAR wszTemp[1024],        // Temporary storage for string results
           wszCount[8];          // Save area for formatted APL Fonts counter
 
     // If there's an [APL Fonts] section, ...
-    uNumFonts =
+    iNumFonts =
       GetPrivateProfileIntW (SECTNAME_APLFONTS,     // Ptr to the section name
                              KEYNAME_COUNT,         // Ptr to the key name
                              -1,                    // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // If there is no [APL Fonts] section, ...
-    if (uNumFonts EQ -1)
+    if (iNumFonts <= 0)
     {
         // Fill with the default APL fonts
         AppendAplFont (hWndCB, L"APL2 Unicode Italic"   );
@@ -348,10 +348,10 @@ void ReadAplFontNames
         AppendAplFont (hWndCB, L"SImPL medium"          );
     } else
     // Loop through the Font Names
-    for (uCnt = 0; uCnt < uNumFonts; uCnt++)
+    for (iCnt = 0; iCnt < iNumFonts; iCnt++)
     {
         // Format the counter
-        wsprintfW (wszCount, L"%d", uCnt);
+        wsprintfW (wszCount, L"%d", iCnt);
 
         // Read in the Font Name
         GetPrivateProfileStringW (SECTNAME_APLFONTS,    // Ptr to the section name
@@ -362,7 +362,7 @@ void ReadAplFontNames
                                   lpwszIniFile);        // Ptr to the file name
         // If the name is present, ...
         if (wszTemp[0])
-            // Append it to the Combobox
+            // Append it to the ComboBox
             AppendAplFont (hWndCB, wszTemp);
     } // End IF/ELSE/FOR
 } // End ReadAplFontNames
@@ -371,11 +371,11 @@ void ReadAplFontNames
 //***************************************************************************
 //  $AppendAplFont
 //
-//  Append an APL font to a Combobox, first ensuring that it's present
+//  Append an APL font to a ComboBox, first ensuring that it's present
 //***************************************************************************
 
 void AppendAplFont
-    (HWND    hWndCB,            // Window handle to Combobox
+    (HWND    hWndCB,            // Window handle to ComboBox
      LPWCHAR lpwFontName)       // Ptr to APL font name
 
 {
@@ -405,12 +405,12 @@ void AppendAplFont
 //***************************************************************************
 //  $WriteAplFontNames
 //
-//  Write out the APL Font Names from a given Combobox
+//  Write out the APL Font Names from a given ComboBox
 //    to the [APL Fonts] section
 //***************************************************************************
 
 void WriteAplFontNames
-    (HWND hWndCB)               // Window handle to Combobox
+    (HWND hWndCB)               // Window handle to ComboBox
 
 {
     UINT  uNumFonts,            // # APL Fonts

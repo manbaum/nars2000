@@ -7633,6 +7633,17 @@ EXIT_TYPES ParseLine
                                            NULL);
                 break;
 
+            case EXCEPTION_WS_FULL:
+                // Set the exit type
+                plLocalVars.ExitType = EXITTYPE_ERROR;
+
+                // Mark as in error
+                uRet = 1;
+                uError = ERRORCODE_ELX;
+                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                           NULL);
+                break;
+
             default:
                 // Display message for unhandled exception
                 DisplayException ();

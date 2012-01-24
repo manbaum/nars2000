@@ -808,6 +808,7 @@ void DisplayHeap
 
 {
     int     i;                  // Loop counters
+    APLINT  aplSize;            // Size of the global memory
 #if FLINTAVL == 1
     int     j;                  // Loop counters
 #endif
@@ -855,9 +856,14 @@ void DisplayHeap
         if (j < (int) fmpz_num_unused)
             continue;
 #endif
+        // Get the size of the global memory
+////////aplSize = HeapSize (GetProcessHeap (), 0, hGlb);
+        aplSize = dlmalloc_usable_size (hGlb);
+
         wsprintfW (wszTemp,
-                   L"hGlb=%p (%S#%d)",
+                   L"hGlb=%p, size=%I64u (%S#%d)",
                    hGlb,
+                   aplSize,
                    "",      // lpaFileNameHEAPALLOC[i],
                    auLinNumHEAPALLOC[i]);
         DbgMsgW (wszTemp);

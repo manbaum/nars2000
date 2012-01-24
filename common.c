@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -542,6 +542,10 @@ UBOOL IsValidPtr
      UINT   uLen)
 
 {
+    if (lpMemSrc EQ (LPVOID) -1
+     || ((LPBYTE) lpMemSrc) < (LPBYTE) (64*1024))
+        return FALSE;
+
     __try
     {
         return !IsBadReadPtr (lpMemSrc, uLen);
@@ -549,6 +553,8 @@ UBOOL IsValidPtr
     {
         return FALSE;
     } // End __try/__except
+
+    return FALSE;
 } // End IsValidPtr
 
 

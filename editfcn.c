@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1516,8 +1516,9 @@ HRESULT DrawTextFLsub
         OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
         SelectObject (hdc, hfOrig);
 
-        // Release the linked font
+        // Release the linked font and mappings
         IMLangFontLink_ReleaseFont (pfl, hfLinked);
+        IMLangFontLink_ResetFontMapping (pfl);
     } // End IF/ELSE
 
     // Update the string count

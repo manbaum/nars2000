@@ -24,7 +24,6 @@
 #include <windows.h>
 #include <math.h>               // For fabs
 #include "headers.h"
-////#include "mp-old.h"
 
 #define int32   int
 
@@ -42,12 +41,25 @@ LPVOID mp_alloc
     LPVOID lpMemRes;
 
     lpMemRes =
+#ifdef DEBUG
       MyHeapAlloc (GetProcessHeap (),
-                   HEAP_ZERO_MEMORY, // | HEAP_GENERATE_EXCEPTIONS,
+                   0
+                 | HEAP_ZERO_MEMORY
+                 | HEAP_GENERATE_EXCEPTIONS
+                   ,
                    size);
+#else
+      dlmalloc (size);
+#endif
     if (lpMemRes EQ NULL)
-        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
-    else
+    {
+#ifdef DEBUG
+        APLINT aplSize = size;
+
+        dprintfWL0 (L"###Heap allocation failure:  size = %I64u", aplSize);
+#endif
+        longjmp (heapFull, 1);
+    } else
     {
 #ifdef DEBUG
         if (gDbgLvl >= gVfpLvl)
@@ -82,13 +94,28 @@ LPVOID mp_realloc
     LPVOID lpMemRes;
 
     lpMemRes =
+#ifdef DEBUG
       MyHeapReAlloc (GetProcessHeap (),
-                     HEAP_ZERO_MEMORY,  // | HEAP_GENERATE_EXCEPTIONS,
+                     0
+                   | HEAP_ZERO_MEMORY
+                   | HEAP_GENERATE_EXCEPTIONS
+                     ,
                      lpMem,
                      new_size);
+#else
+      dlrealloc (lpMem, new_size);
+#endif
     if (lpMemRes EQ NULL)
-        RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
-    else
+    {
+#ifdef DEBUG
+        APLINT aplOldSize = old_size,
+               aplUseSize = dlmalloc_usable_size (lpMem),
+               aplNewSize = new_size;
+
+        dprintfWL0 (L"###Heap re-allocation failure:  OldSize = %I64u, UseSize = %I64u, NewSize = %I64u", aplOldSize, aplUseSize, aplNewSize);
+#endif
+        longjmp (heapFull, 2);
+    } else
     {
 #ifdef DEBUG
         if (gDbgLvl >= gVfpLvl)
@@ -121,9 +148,13 @@ void mp_free
      size_t size)           // Size         ...
 
 {
+#ifdef DEBUG
     MyHeapFree (GetProcessHeap (),
                 0,
                 lpMem);
+#else
+    dlfree (lpMem);
+#endif
 #ifdef DEBUG
     if (gDbgLvl >= gVfpLvl)
     {
@@ -137,6 +168,7 @@ void mp_free
     } // End IF
 #endif
 } // End mp_free
+
 
 //***************************************************************************
 //  $mpz_invalid

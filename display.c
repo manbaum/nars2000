@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -229,6 +229,14 @@ UBOOL DisplayGlbArr_EM
     APLUINT      uOutLen;           // Output length for this line
     MEMVIRTSTR   lclMemVirtStr[1] = {0};// Room for one GuardAlloc
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+    jmp_buf      oldHeapFull;       // Save area for previous jmp_buf
+
+    // Save the previous heapFull
+    *oldHeapFull = *heapFull;
+
+    // Set the heapFull for a longjmp
+    if (setjmp (heapFull) NE 0)
+        goto WSFULL_EXIT;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -686,6 +694,9 @@ LIMIT_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
+    // Restore previous heapFull
+    *heapFull = *oldHeapFull;
+
     // If we allocated virtual storage, ...
     if (lclMemVirtStr[0].IniAddr)
     {

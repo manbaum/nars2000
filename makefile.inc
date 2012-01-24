@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2011 Sudley Place Software
+#     Copyright (C) 2006-2012 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -453,6 +453,7 @@ $(O)inifile.obj:        $(@B).c         $(INIFILE_DEP)
 $(O)iniparser.obj:      $(@B).c         $(INIPARSER_DEP)
 $(O)initdata.obj:       $(@B).c         $(INITDATA_DEP)
 $(O)main.obj:           $(@B).c         $(MAIN_DEP)
+$(O)malloc.obj:         $(@B).c         $(MALLOC_DEP)
 $(O)mpfns.obj:          $(@B).c         $(MPFNS_DEP)
 $(O)mpifns.obj:         $(@B).c         $(MPIFNS_DEP)
 $(O)perfmon.obj:        $(@B).c         $(PERFMON_DEP)

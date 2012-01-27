@@ -799,9 +799,9 @@ LRESULT WINAPI LclTabCtrlWndProc
             if (lpMemPTD->bExecuting)
                 break;
 
-            // If gOverTabIndex is this tab or to the right of it,
-            //    decrement gOverTabIndex.
-            if (gOverTabIndex >= iDelTabIndex)
+            // If gOverTabIndex is this tab or to the right of it, ...
+            if (gOverTabIndex && gOverTabIndex >= iDelTabIndex)
+                // Decrement it
                 gOverTabIndex--;
 
             // Reset this tab's color index bit
@@ -824,37 +824,14 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Zap the ptr
             lpMemPTD = NULL;
 #endif
-            // If the current tab is the one being deleted,
-            //   the index of the new tab is one to the right
-            //   if there is a tab there, or one to the left.
-            // Note that within this message, we haven't deleted
-            //   the tab as yet, so the indexing doesn't need
-            //   to take that into account.
-            iNewTabIndex = TabCtrl_GetCurSel (hWnd);
-            if (iNewTabIndex EQ iDelTabIndex)
-            {
-                int iItemCount;
+            // Set as new tab index
+            iNewTabIndex = gOverTabIndex;
 
-                // Get the # active tabs
-                iItemCount = TabCtrl_GetItemCount (hWnd);
+            // Select the new tab
+            TabCtrl_SetCurSel (hWnd, iNewTabIndex);
 
-                // Izit the rightmost tab?
-                if (iNewTabIndex EQ iItemCount)
-                    iNewTabIndex--;
-                else
-                if (iNewTabIndex < (iItemCount - 1))
-                    iNewTabIndex++;
-            } // End IF
-
-            // If it's valid, ...
-            if (iNewTabIndex NE -1)
-            {
-                // Select it
-                TabCtrl_SetCurSel (hWndTC, iNewTabIndex);
-
-                // Call common code to show/hide the tab windows
-                TabCtrl_SelChange ();
-            } // End IF
+            // Call common code to show/hide the tab windows
+            TabCtrl_SelChange ();
 
             // Save as new tab ID
             gCurTabID = TranslateTabIndexToID (iNewTabIndex);

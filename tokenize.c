@@ -4845,8 +4845,11 @@ TKCOLINDICES CharTransTK
             // If the next symbol is a dot, ...
             if (lptkLocalVars->lpwszCur[1] EQ UTF16_DOT)
             {
-                // If we're not Syntax Coloring, ...
-                if (!lptkLocalVars->lpMemClrNxt)
+                // If we're not Syntax Coloring and we're not in a char string, ...
+                if (!lptkLocalVars->lpMemClrNxt
+                 &&  lptkLocalVars->State[0] NE TKROW_QUOTE1A
+                 &&  lptkLocalVars->State[0] NE TKROW_QUOTE2A
+                   )
                     // Skip over it
                     lptkLocalVars->uChar++;
 

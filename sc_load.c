@@ -539,6 +539,7 @@ UBOOL LoadWorkspace_EM
                                              &aplTypeObj,       // Ptr to storage type (may be NULL)
                                              &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                               FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
+                                              FALSE,            // TRUE iff this is called from )COPY
                                               hWndEC,           // Edit Ctrl window handle
                                              &lpSymLink,        // Ptr to ptr to SYMENTRY link
                                               wszVersion,       // Workspace version text
@@ -931,6 +932,7 @@ LPWCHAR ParseSavedWsVar_EM
      LPAPLSTYPE    lpaplTypeObj,        // Ptr to storage type (may be NULL)
      LPUBOOL       lpbImmed,            // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
      UBOOL         bSymTab,             // TRUE iff to save SymTabAppend values, FALSE to save values directly
+     UBOOL         bCopyCmd,            // TRUE iff this is called from )COPY
      HWND          hWndEC,              // Edit Ctrl window handle
      LPSYMENTRY   *lplpSymLink,         // Ptr to ptr to SYMENTRY link
      LPWCHAR       lpwszVersion,        // Ptr to workspace version text
@@ -977,8 +979,8 @@ LPWCHAR ParseSavedWsVar_EM
         lpSymEntry =
           SymTabLookupName (lpwSrc, &stFlags);
 
-        // If it's not found or has no value, load it from the [Globals] section
-        if (lpSymEntry EQ NULL || !lpSymEntry->stFlags.Value)
+        // If called from )COPY, it's not found, or has no value, load it from the [Globals] section
+        if (bCopyCmd || lpSymEntry EQ NULL || !lpSymEntry->stFlags.Value)
         {
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (FMTSTR_GLBCNT)
@@ -1567,6 +1569,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                               NULL,         // Ptr to storage type (may be NULL)
                                               NULL,         // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                               TRUE,         // TRUE iff to save SymTabAppend values, FALSE to save values directly
+                                              FALSE,        // TRUE iff this is called from )COPY
                                               hWndEC,       // Edit Ctrl window handle
                                               lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                               lpwszVersion, // Ptr to workspace version text

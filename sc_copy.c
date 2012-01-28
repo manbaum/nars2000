@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -509,6 +509,7 @@ int CopyWsVars
                                  &aplTypeObj,       // Ptr to storage type (may be NULL)
                                  &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                   FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
+                                  TRUE,             // TRUE iff this is called from )COPY
                                   hWndEC,           // Edit Ctrl window handle
                                   lplpSymLink,      // Ptr to ptr to SYMENTRY link
                                   lpwszVersion,     // Ptr to workspace version text

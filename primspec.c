@@ -12738,7 +12738,7 @@ RESTART_EXCEPTION_AXIS:
 
                             case ARRAY_RAT:             // Res = RAT(Axis), Rht = RAT
                                 // Copy the RAT to a RAT
-                                mpq_set    (&aplRatRht, &((LPAPLRAT) lpMemRht)[uLft]);
+                                mpq_set    (&aplRatRht, &((LPAPLRAT) lpMemRht)[uRht]);
 
                                 break;
 

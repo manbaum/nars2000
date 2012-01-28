@@ -2247,7 +2247,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
  *  EDIT_PaintLine
  *
  */
-static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev, long lFlags, INT yLine)
+static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev, long lFlags, INT yLine, INT vlc, INT y_offset)
 {
     INT s = es->selection_start;
     INT e = es->selection_end;
@@ -2260,9 +2260,7 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev, long lFlag
     HBRUSH hBrush;
 
     if (es->style & ES_MULTILINE) {
-        INT vlc = get_vertical_line_count(es);
-
-        if ((line < es->y_offset) || (line > es->y_offset + vlc) || (line >= es->line_count))
+        if ((line < y_offset) || (line > y_offset + vlc) || (line >= es->line_count))
             return;
     } else if (line)
         return;
@@ -4144,27 +4142,40 @@ static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg, long lFlags)
         SetTextColor(dc, GetSysColor(COLOR_GRAYTEXT));
     GetClipBox(dc, &rcRgn);
     if (es->style & ES_MULTILINE) {
-        INT vlc = get_vertical_line_count(es);
-        INT nLOP = ((es->line_height - 1) + rcClient.bottom - rcClient.top) / es->line_height;
-        for (i = es->y_offset ; i <= es->y_offset + min(vlc, es->line_count - 1) ; i++) {
+        INT vlc,
+            nLOP,
+            y_offset;
+
+        if (lFlags & PRF_SELECTION)
+        {
+            vlc = es->line_count;
+            y_offset = 0;
+        } else
+        {
+            vlc = get_vertical_line_count(es);
+            y_offset = es->y_offset;
+        } // End IF/ELSE
+
+        nLOP = ((es->line_height - 1) + rcClient.bottom - rcClient.top) / es->line_height;
+        for (i = y_offset ; i <= y_offset + min(vlc, es->line_count - 1) ; i++) {
             EDIT_GetLineRect(es, i, 0, -1, &rcLine);
             if (lFlags & PRF_SELECTION  )
             {
                 if (LineHasSelection (es, i))
-                    EDIT_PaintLine(es, dc, i, rev, lFlags, yLine++);
+                    EDIT_PaintLine(es, dc, i, rev, lFlags, yLine++, vlc, y_offset);
             } else
             if (lFlags & PRF_CURRENTPAGE)
             {
                 if (LineOnCurrentPage (es, i, nLOP))
-                    EDIT_PaintLine(es, dc, i, rev, lFlags, yLine++);
+                    EDIT_PaintLine(es, dc, i, rev, lFlags, yLine++, vlc, y_offset);
             } else
             if (IntersectRect(&rc, &rcRgn, &rcLine))
-                EDIT_PaintLine(es, dc, i, rev, lFlags, -1);
+                EDIT_PaintLine(es, dc, i, rev, lFlags, -1, vlc, y_offset);
         }
     } else {
         EDIT_GetLineRect(es, 0, 0, -1, &rcLine);
         if (IntersectRect(&rc, &rcRgn, &rcLine))
-            EDIT_PaintLine(es, dc, 0, rev, lFlags, -1);
+            EDIT_PaintLine(es, dc, 0, rev, lFlags, -1, get_vertical_line_count(es), es->y_offset);
     }
     if (es->font)
         SelectObject(dc, old_font);

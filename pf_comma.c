@@ -400,7 +400,7 @@ LPPL_YYSTYPE PrimFnMonCommaScalar_EM_YY
         *(1 + VarArrayBaseToDim (lpMemRes)) = 1;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // If there's a global memory handle, ...
     if (hGlbRht)
@@ -653,7 +653,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Check to see if there is reordering
     if (hGlbAxis)
@@ -1628,7 +1628,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
     // Skip over the result header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the dimensions of the larger rank arg
     for (uRht = 0; uRht < aplRankTmp; uRht++)
@@ -1692,7 +1692,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
      || IsGlbNum (aplTypeLft))
     {
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // If the left arg is an APA, ...
         if (IsSimpleAPA (aplTypeLft))
@@ -1713,7 +1713,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
      || IsGlbNum (aplTypeRht))
     {
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
         // If the right arg is an APA, ...
         if (IsSimpleAPA (aplTypeRht))
@@ -3293,7 +3293,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                     goto ERROR_EXIT;
 
                                 // Convert the FLT to a VFP
-                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, aplIntegerRht);
+                                mpf_init_set_d (((LPAPLVFP) lpMemRes)++, aplFloatRht);
                             } // End FOR
                         else
                             // Loop through the right arg's trailing dimensions
@@ -3303,8 +3303,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                // Convert the INT to a VFP
-                                mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, *((LPAPLINT) lpMemRht)++);
+                                // Convert the FLT to a VFP
+                                mpf_init_set_d (((LPAPLVFP) lpMemRes)++, *((LPAPLFLOAT) lpMemRht)++);
                             } // End FOR
                         break;
 

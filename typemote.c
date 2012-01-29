@@ -511,6 +511,9 @@ UNLOCK_EXIT:
                     // Split cases based upon the item storage type
                     switch (aplTypeSub)
                     {
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_FLOAT:
                         case ARRAY_NESTED:
                             // Check storage type
                             aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];

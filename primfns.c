@@ -909,7 +909,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    Assert (IsNested (aplType));
+                    Assert (IsNested (aplType) || IsSimpleHet (aplType));
 
                     // It's a valid HGLOBAL array
                     Assert (IsGlbTypeVarInd_PTB (lpMemArr));
@@ -1898,7 +1898,7 @@ HGLOBAL CopyArray_EM
                                 break;
 
                             case PTRTYPE_HGLOBAL:
-                                Assert (IsNested (aplType));
+                                Assert (IsNested (aplType) || IsSimpleHet (aplType));
 
                                 // It's a valid HGLOBAL array
                                 Assert (IsGlbTypeVarInd_PTB (lpMemSrc));

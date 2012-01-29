@@ -82,28 +82,22 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecPi};
 
 typedef enum tagNUMTHEORY
 {
-    NUMTHEORY_FACTOR = -1 ,         // -1:  Factor function
-    NUMTHEORY_DIVCNT      ,         // 00:  Divisor count function
-    NUMTHEORY_DIVSUM      ,         // 01:  Divisor sum function
+    NUMTHEORY_ISPRIME   =  0  ,     // 00:  TRUE iff the given # is prime
+    NUMTHEORY_NEXTPRIME =  1  ,     // 01:  Next prime after a given #
+    NUMTHEORY_PREVPRIME = -1  ,     //-01:  Prev prime before a given #
+    NUMTHEORY_NUMPRIMES =  2  ,     // 02:  # primes <= a given #
+    NUMTHEORY_NTHPRIME  = -2  ,     //-02:  Nth prime
 
-    NUMTHEORY_ISPRIME     ,         // 02:  TRUE iff the given # is prime
-    NUMTHEORY_NEXTPRIME   ,         // 03:  Next prime after a given #
-    NUMTHEORY_PREVPRIME   ,         // 04:  Prev prime before a given #
-    NUMTHEORY_NTHPRIME    ,         // 05:  Nth prime
-    NUMTHEORY_NUMPRIMES   ,         // 06:  # primes <= a given #
+    NUMTHEORY_DIVCNT    = 10  ,     // 0A:  Divisor count function
+    NUMTHEORY_DIVSUM    = 11  ,     // 0B:  Divisor sum function
+    NUMTHEORY_MOBIUS    = 12  ,     // 0C:  Mobius function
+    NUMTHEORY_TOTIENT   = 13  ,     // 0D:  Totient function
 
-    NUMTHEORY_MOBIUS      ,         // 07:  Mobius function
-    NUMTHEORY_TOTIENT     ,         // 08:  Totient function
-    NUMTHEORY_LENGTH                // 09:  # entries
+    NUMTHEORY_FACTOR    = 20  ,     // 14:  Factor function (the # is arbitrary and may be changed)
 } NUMTHEORY, *LPNUMTHEORY;
 
-
-typedef union tagWORDSPLIT
-{
-    APLUINT aplInteger;
-    UINT    words[2];
-} WORDSPLIT;
-
+#define NUMTHEORY_MIN       -2      // Minimum valid index
+#define NUMTHEORY_MAX       13      // Maximum ...
 
 #define INIT_FACTOR_CNT     100
 #define INIT_FACTOR_INC     100
@@ -112,7 +106,7 @@ typedef union tagWORDSPLIT
 //***************************************************************************
 //  $PrimFnPi_EM_YY
 //
-//  Primitive function for monadic and dyadic Pi ("Prime Decomposition" and "Number Theoretic")
+//  Primitive function for monadic and dyadic Pi ("Prime Factors" and "Number Theoretic")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -188,7 +182,7 @@ LPPL_YYSTYPE PrimProtoFnPi_EM_YY
 //***************************************************************************
 //  $PrimFnMonPi_EM_YY
 //
-//  Primitive function for monadic Pi ("Prime Decomposition")
+//  Primitive function for monadic Pi ("Prime Factors")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -504,9 +498,9 @@ APLSTYPE PrimSpecPiStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // No Boolean or Integer results for Pi
+    // No Boolean or Float results for Dyadic Pi
     if (IsSimpleNum (aplTypeRes))
-        aplTypeRes = ARRAY_INT;
+        aplTypeRes = ARRAY_RAT;
 
     return aplTypeRes;
 } // End PrimSpecPiStorageTypeDyd
@@ -628,13 +622,13 @@ APLRAT PrimFnDydPiRisRvR
 
     // Check the (singleton) left arg
     if (!mpq_integer_p (&aplRatLft)
-/////|| mpq_cmp_ui (&aplRatLft,                0, 1) <  0   // Unnecessary as the next comp is unsigned
-     || mpq_cmp_ui (&aplRatLft, NUMTHEORY_LENGTH, 1) >= 0)
+     || mpq_cmp_si (&aplRatLft, NUMTHEORY_MIN, 1) < 0
+     || mpq_cmp_si (&aplRatLft, NUMTHEORY_MAX, 1) > 0)
         goto LEFT_DOMAIN_EXIT;
 
     // Get the left arg as an integer
     //  (Ignore the value in bRet as we know it's an integer)
-    aplIntegerLft = mpq_get_sx (&aplRatLft, &bRet);
+    aplIntegerLft = mpz_get_si (mpq_numref (&aplRatLft));
 
     // Allow Nth Prime right arg to be 0 if origin-0
     if (!(mpq_cmp_ui (&aplRatRht, bQuadIO, 1) >= 0
@@ -663,10 +657,10 @@ APLRAT PrimFnDydPiRisRvR
     // Split cases based upon the left arg
     switch (aplIntegerLft)
     {
-        case NUMTHEORY_DIVCNT:          // Divisor function (count of divisors of N)
-        case NUMTHEORY_DIVSUM:          // Divisor function (sum of divisors of N)
-        case NUMTHEORY_MOBIUS:          // Mobius function
-        case NUMTHEORY_TOTIENT:         // Totient function (# positive integers coprime to N)
+        case NUMTHEORY_DIVCNT:          //  0A:  Divisor function (count of divisors of N)
+        case NUMTHEORY_DIVSUM:          //  0B:  Divisor function (sum of divisors of N)
+        case NUMTHEORY_MOBIUS:          //  0C:  Mobius function
+        case NUMTHEORY_TOTIENT:         //  0D:  Totient function (# positive integers coprime to N)
             // Call common routine
             aplMPIRes =
               PrimFnPiCommon (NULL,             // Ptr to factor struc (may be NULL)
@@ -679,27 +673,27 @@ APLRAT PrimFnDydPiRisRvR
                 goto NONCE_EXIT;
             break;
 
-        case NUMTHEORY_ISPRIME:         // TRUE iff the given # is prime
+        case NUMTHEORY_ISPRIME:         //  00:  TRUE iff the given # is prime
             aplMPIRes =
               PrimFnPiIsPrime   (aplMPIRht, lpbCtrlBreak, lpMemPTD);
             break;
 
-        case NUMTHEORY_NEXTPRIME:       // Next prime after a given #
+        case NUMTHEORY_NEXTPRIME:       //  01:  Next prime after a given #
             aplMPIRes =
               PrimFnPiNextPrime (aplMPIRht, lpbCtrlBreak, lpMemPTD);
             break;
 
-        case NUMTHEORY_PREVPRIME:       // Prev prime before a given #
+        case NUMTHEORY_PREVPRIME:       // -01:  Prev prime before a given #
             aplMPIRes =
               PrimFnPiPrevPrime (aplMPIRht, lpbCtrlBreak, lpMemPTD);
             break;
 
-        case NUMTHEORY_NTHPRIME:        // Nth prime
+        case NUMTHEORY_NTHPRIME:        // -02:  Nth prime
             aplMPIRes =
               PrimFnPiNthPrime  (aplMPIRht, lpbCtrlBreak, lpMemPTD);
             break;
 
-        case NUMTHEORY_NUMPRIMES:       // # primes <= a given #
+        case NUMTHEORY_NUMPRIMES:       //  02:  # primes <= a given #
             aplMPIRes =
               PrimFnPiNumPrimes (aplMPIRht, lpbCtrlBreak, lpMemPTD);
             break;
@@ -837,7 +831,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $PrimFnPiCommon
 //
-//  Common primitive function for monadic/dyadic Pi ("Prime Decomposition")
+//  Common primitive function for monadic/dyadic Pi ("Prime Factors")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -988,14 +982,14 @@ APLMPI PrimFnPiCommon
 
             break;
 
-        case NUMTHEORY_DIVCNT:
-        case NUMTHEORY_DIVSUM:
+        case NUMTHEORY_DIVCNT:          // 10 {pi} R
+        case NUMTHEORY_DIVSUM:          // 11 {pi} R
             // Copy to result var
             mpz_set (&aplPrime, &procPrime.mpzDivisor);
 
             break;
 
-        case NUMTHEORY_MOBIUS:
+        case NUMTHEORY_MOBIUS:          // 12 {pi} R
             // If the prime factors are all unique, ...
             if (procPrime.bSquareFree)
                 // Return (-1) * (the parity of the # factors)
@@ -1005,17 +999,17 @@ APLMPI PrimFnPiCommon
                 mpz_set_ui (&aplPrime, 0);
             break;
 
-        case NUMTHEORY_TOTIENT:
+        case NUMTHEORY_TOTIENT:         // 13 {pi} R
             // Copy to result var
             mpz_set (&aplPrime, &procPrime.mpzTotient);
 
             break;
 
-        case NUMTHEORY_ISPRIME:
-        case NUMTHEORY_NEXTPRIME:
-        case NUMTHEORY_PREVPRIME:
-        case NUMTHEORY_NTHPRIME:
-        case NUMTHEORY_NUMPRIMES:
+        case NUMTHEORY_ISPRIME:         //  0 {pi} R
+        case NUMTHEORY_NEXTPRIME:       //  1 {pi} R
+        case NUMTHEORY_PREVPRIME:       // -1 {pi} R
+        case NUMTHEORY_NUMPRIMES:       //  2 {pi} R
+        case NUMTHEORY_NTHPRIME:        // -2 {pi} R
         defstop
             break;
     } // End SWITCH
@@ -1283,13 +1277,13 @@ void ProcessPrime
         case NUMTHEORY_FACTOR:
             break;
 
-        case NUMTHEORY_MOBIUS:
+        case NUMTHEORY_MOBIUS:      // 12 {pi} R
             // Accumulate the square-free state
             lpProcPrime->bSquareFree &= (uPrimeCnt <= 1);
 
             break;
 
-        case NUMTHEORY_TOTIENT:
+        case NUMTHEORY_TOTIENT:     // 13 {pi} R
             // If this prime divides N, ...
             if (uPrimeCnt)
             {
@@ -1300,7 +1294,7 @@ void ProcessPrime
 
             break;
 
-        case NUMTHEORY_DIVCNT:
+        case NUMTHEORY_DIVCNT:      // 10 {pi} R
             // If this prime divides N, ...
             if (uPrimeCnt)
             {
@@ -1311,7 +1305,7 @@ void ProcessPrime
 
             break;
 
-        case NUMTHEORY_DIVSUM:
+        case NUMTHEORY_DIVSUM:      // 11 {pi} R
             // If this prime divides N, ...
             if (uPrimeCnt)
             {
@@ -1341,11 +1335,11 @@ void ProcessPrime
 
             break;
 
-        case NUMTHEORY_ISPRIME:
-        case NUMTHEORY_NEXTPRIME:
-        case NUMTHEORY_PREVPRIME:
-        case NUMTHEORY_NTHPRIME:
-        case NUMTHEORY_NUMPRIMES:
+        case NUMTHEORY_ISPRIME:     //  0 {pi} R
+        case NUMTHEORY_NEXTPRIME:   //  1 {pi} R
+        case NUMTHEORY_PREVPRIME:   // -1 {pi} R
+        case NUMTHEORY_NUMPRIMES:   //  2 {pi} R
+        case NUMTHEORY_NTHPRIME:    // -2 {pi} R
         defstop
             break;
     } // End SWITCH
@@ -1356,7 +1350,7 @@ void ProcessPrime
 
 
 //***************************************************************************
-//  $PrimFnPiIsPrime
+//  $PrimFnPiIsPrime        0 {pi} R
 //
 //  Return TRUE or FALSE for whether or not a given # is a prime
 //***************************************************************************
@@ -1380,7 +1374,7 @@ APLMPI PrimFnPiIsPrime
 
 
 //***************************************************************************
-//  $PrimFnPiNextPrime
+//  $PrimFnPiNextPrime      1 {pi} R
 //
 //  Return the next prime after than a given #
 //***************************************************************************
@@ -1407,7 +1401,7 @@ APLMPI PrimFnPiNextPrime
 
 
 //***************************************************************************
-//  $PrimFnPiPrevPrime
+//  $PrimFnPiPrevPrime      -1 {pi} R
 //
 //  Return the Prev prime before a given #
 //***************************************************************************
@@ -1439,7 +1433,7 @@ APLMPI PrimFnPiPrevPrime
 
 
 //***************************************************************************
-//  $NthPrime
+//  $NthPrime               -2 {pi} R   subroutine
 //
 //  Calculate the Nth prime if it's between small consecutive powers of ten
 //***************************************************************************
@@ -1515,7 +1509,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnPiNthPrime
+//  $PrimFnPiNthPrime       -2 {pi} R
 //
 //  Return the Nth prime
 //***************************************************************************
@@ -1622,7 +1616,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $NumPrimes
+//  $NumPrimes              2 {pi} R    subroutine
 //
 //  Calculate the # primes between small consecutive powers of ten
 //***************************************************************************
@@ -1693,7 +1687,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnPiNumPrimes
+//  $PrimFnPiNumPrimes      2 {pi} R
 //
 //  Return # primes <= a given #
 //***************************************************************************

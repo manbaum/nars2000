@@ -1,6 +1,18 @@
 Version 0.0.3.4 consists of the following Builds:
 
 
+Build #939 -- Version 0.0.3.4
+-----------------------------
+
+* Renumber {pi} Functions
+
+Directory trunk:
+
+PF_PI.C:
+REBAR.C:
+  Renumber {pi} functions.
+
+
 Build #938 -- Version 0.0.3.4
 -----------------------------
 

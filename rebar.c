@@ -2702,16 +2702,16 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'S' or Alt-Shift-'s'\n\n"
                                          L"Unicode:  0x00A7 or 167"},
         {UTF16_PI                 , {0}, L"Pi",
-                                         L"Prime decomposition:      " WS_UTF16_PI L"R\n"
-                                         L"Divisor Count Function:  0" WS_UTF16_PI L"R\n"
-                                         L"Divisor Sum Function:    1" WS_UTF16_PI L"R\n"
-                                         L"Primality Test:          2" WS_UTF16_PI L"R\n"
-                                         L"Next Prime:              3" WS_UTF16_PI L"R\n"
-                                         L"Previous Prime:          4" WS_UTF16_PI L"R\n"
-                                         L"Nth Prime:               5" WS_UTF16_PI L"R\n"
-                                         L"Number of Primes:        6" WS_UTF16_PI L"R\n"
-                                         L"M" L"\x00F6" L"bius Function:         7" WS_UTF16_PI L"R\n"
-                                         L"Totient Function:        8" WS_UTF16_PI L"R\n\n"
+                                         L"Prime Factors:            " WS_UTF16_PI L"R\n"
+                                         L"Primality Test:          0" WS_UTF16_PI L"R\n"
+                                         L"Next Prime:              1" WS_UTF16_PI L"R\n"
+                                         L"Previous Prime:         " WS_UTF16_OVERBAR L"1" WS_UTF16_PI L"R\n"
+                                         L"Number of Primes:        2" WS_UTF16_PI L"R\n"
+                                         L"Nth Prime:              " WS_UTF16_OVERBAR L"2" WS_UTF16_PI L"R\n"
+                                         L"Divisor Count Function: 10" WS_UTF16_PI L"R\n"
+                                         L"Divisor Sum Function:   11" WS_UTF16_PI L"R\n"
+                                         L"M" L"\x00F6" L"bius Function:        12" WS_UTF16_PI L"R\n"
+                                         L"Totient Function:       13" WS_UTF16_PI L"R\n\n"
                                          L"Keyboard:  Alt-'p'\n\n"
                                          L"Unicode:  0x03C0 or 960"},
         LANGCHARS_SEPARATOR

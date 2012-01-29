@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -521,6 +521,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                    aplNELMItm,              // Item      ...
                    aplColsRes,              // Result    cols
                    aplColsCur,              // Current   col #
+                   aplRowsRht,              // Right arg rows
                    aplColsRht,              // Right arg cols
                    aplColsItm;              // Item      cols
     APLRANK        aplRankLft,              // Left  arg rank
@@ -536,6 +537,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                    lpMemItm;                // ...    item      ...
     LPPL_YYSTYPE   lpYYRes = NULL;          // Ptr to the result
     APLNELM        uCnt,                    // Loop counter
+                   uCol,                    // ...
+                   uRow,                    // ...
                    uLen,                    // Accumulated row product
                    aplNumCols,              // # accumulated cols in the right arg
                    aplNumRows,              // ...           rows ...
@@ -626,7 +629,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
         aplNELMNst = max (1, aplNELMRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
         // Loop through the right arg elements
         for (uCnt = aplNumCols = aplNumRows = 0; uCnt < aplNELMNst; uCnt++)
@@ -697,7 +700,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
 
     // Skip over the header and dimensions to the data
     if (hGlbLft)
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
     // At this point, the left arg is a simple char vector, and
     //  the right arg is either a simple array, or a nested vector
@@ -724,14 +727,14 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
 
     // Loop through the right arg cols
     //   where a scalar/vector is treated as a one-column matrix
-    for (uCnt = uFmtStr = aplColsRes = aplColsCur = 0,
-           lpfsCur = lpfsInit,
-           nCols = 1;
-         (uCnt < aplNumCols)
-      || (lpfsCur->fmtSpecVal EQ FMTSPECVAL_T)
-      || (lpfsCur->fmtSpecVal EQ FMTSPECVAL_X)
-      || (lpfsCur->fmtSpecVal EQ FMTSPECVAL_TXT);
-        )
+    uCnt = uFmtStr = aplColsRes = aplColsCur = 0;
+    lpfsCur = lpfsInit;
+    nCols = 1;
+    while (uCnt < aplNumCols
+       || lpfsCur->fmtSpecVal EQ FMTSPECVAL_T
+       || lpfsCur->fmtSpecVal EQ FMTSPECVAL_X
+       || lpfsCur->fmtSpecVal EQ FMTSPECVAL_TXT
+          )
     {
         // Split cases based upon the format spec
         switch (lpfsCur->fmtSpecVal)
@@ -741,6 +744,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
             case FMTSPECVAL_F:
             case FMTSPECVAL_G:
             case FMTSPECVAL_I:
+            case FMTSPECVAL_R:
                 // Calc the # remaining cols
                 nCols = aplNumCols - uCnt;
 
@@ -823,7 +827,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                 // Else quit
                 break;
         } // End IF
-    } // End FOR
+    } // End WHILE
 
     // Ensure there's at least one column-absorbing format spec
     //   or no columns
@@ -862,7 +866,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     (VarArrayBaseToDim (lpMemRes))[1] = aplColsRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 2);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Fill the result with blanks
     FillMemoryW (lpMemRes, (APLU3264) (aplColsRes * aplNumRows), L' ');
@@ -891,133 +895,33 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     {
         LPSYMENTRY lpSymEntry;          // Ptr to STE
 
-        // Loop through the right arg cols
-        //   where a scalar/vector is treated as a one-row matrix
-        for (uCnt = 0; uCnt < aplColsRht; uCnt++)
-        // Split cases based upon the item ptr type
-        switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uCnt]))
+        // Set the # rows in the right arg
+        aplRowsRht = aplNELMRht / max (aplColsRht, 1);
+
+        // Loop through the right arg rows & cols
+        for (uRow = 0; uRow < aplRowsRht; uRow++)
+        for (uCol = 0; uCol < aplColsRht; uCol++)
         {
-            case PTRTYPE_STCONST:
-                // Get the STE ptr
-                lpSymEntry = ((LPAPLHETERO) lpMemRht)[uCnt];
+            // Set the ravel index
+            uCnt = uCol + uRow * aplColsRht;
 
-                // Get the item storage type
-                aplTypeItm = TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType);
+            // Split cases based upon the item ptr type
+            switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uCnt]))
+            {
+                case PTRTYPE_STCONST:
+                    // Get the STE ptr
+                    lpSymEntry = ((LPAPLHETERO) lpMemRht)[uCnt];
 
-                // Get a ptr to the item value
-                lpMemItm = &lpSymEntry->stData.stLongest;
+                    // Get the item storage type
+                    aplTypeItm = TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType);
 
-                // Format the item into the result
-                SysFnDydFMTSimp (aplTypeItm,            // Item storage type
-                                 1,                     // Item # cols
-                                 1,                     // Item # rows
-                                 aplColsRes,            // Result # cols
-                                 lpMemItm,              // Ptr to item global memory
-                                 lpfsInit,              // Ptr to first FMTSPECSTR
-                                &lpfsNext,              // ...    ptr to next  ...
-                                 lpfsEnd,               // ...    end of the FMTSPECSTRs
-                                &fsRep,                 // ...    iteration count
-                                 lpMemRes,              // Ptr to ptr to result global memory data
-                                &aplCurColRes);         // Ptr to current result col
-                break;
+                    // Get a ptr to the item value
+                    lpMemItm = &lpSymEntry->stData.stLongest;
 
-            case PTRTYPE_HGLOBAL:
-                // Get the global memory handle
-                hGlbItm = ((LPAPLNESTED) lpMemRht)[uCnt];
-
-                // Get the attributes (Type, NELM, and Rank)
-                //   of the right arg item
-                AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, &aplColsItm);
-
-                // Count the # cols & rows in the item
-                if (IsMultiRank (aplRankItm))
-                {
-                    aplNumCols = aplColsItm;
-                    aplNumRows = 1;                     // Initial value for FOR loop
-                } else
-                {
-                    aplNumCols = 1;
-                    aplNumRows = aplColsItm;            // Initial value for FOR loop
-                } // End IF/ELSE
-
-                // Lock the memory to get a ptr to it
-                lpMemItm = MyGlobalLock (hGlbItm);
-
-                // Skip over the header to the dimensions
-                lpMemItm = VarArrayBaseToDim (lpMemItm);
-
-                // Count the # rows in the item
-                if (aplRankItm)
-                {
-                    // Loop through all but the last col
-                    while (--aplRankItm)
-                        aplNumRows *= *((LPAPLDIM) lpMemItm)++;
-
-                    // Skip over the last column
-                    ((LPAPLDIM) lpMemItm)++;
-                } // End IF
-
-                // Now, lpMemItm points to the data
-
-                // If the item is heterogeneous, ...
-                if (IsSimpleHet (aplTypeItm))
-                {
-                    APLDIM       uCol,              // Loop counter
-                                 uRow,              // ...
-                                 aplCCR = 0;        // Temporary aplCurColRes
-                    LPFMTSPECSTR lpfsCol;           // Ptr to FMTSPECSTR for this col
-                    LPSYMENTRY   lpSymEntry;        // Ptr to STE
-                    FMTSPECVAL   fmtSpecRes;        // Last FMTSPECVAL
-
-                    // Initialize the FMTSPECSTR
-                    lpfsCol = lpfsInit;
-
-                    // Loop through the item cols
-                    for (uCol = 0; uCol < aplNumCols; uCol++)
-                    {
-                        // Loop through the item rows
-                        for (uRow = 0; uRow < aplNumRows; uRow++)
-                        {
-                            // Get a ptr to the STE
-                            lpSymEntry = ((LPAPLHETERO) lpMemItm)[uRow *aplNumCols + uCol];
-
-                            // Get the storage type
-                            aplTypeItm = TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType);
-
-                            // Calculate next offset within lpMemRes
-                            aplCurColRes = aplCCR + uRow * aplColsRes;
-
-                            // Respecify the ptr to the next FMTPSECSTR
-                            lpfsNext = lpfsCol;
-
-                            // Format the item into the result
-                            fmtSpecRes =
-                              SysFnDydFMTSimp (aplTypeItm,                      // Item storage type
-                                               1,                               // Item # cols
-                                               1,                               // Item # rows
-                                               aplColsRes,                      // Result # cols
-                                              &lpSymEntry->stData.stLongest,    // Ptr to item global memory
-                                               lpfsInit,                        // Ptr to first FMTSPECSTR
-                                              &lpfsNext,                        // ...    ptr to next  ...
-                                               lpfsEnd,                         // ...    end of the FMTSPECSTRs
-                                              &fsRep,                           // ...    iteration count
-                                               lpMemRes,                        // Ptr to ptr to result global memory data
-                                              &aplCurColRes);                   // Ptr to current result col
-                        } // End FOR
-
-                        // Save the last CurColRes for the next col
-                        //   unless it's an absolute tab
-                        if (fmtSpecRes NE FMTSPECVAL_T)
-                            aplCCR = aplCurColRes - ((uRow - 1) * aplColsRes);
-
-                        // Save the ptr to the next FMTSPECSTR for the next col
-                        lpfsCol = lpfsNext;
-                    } // End FOR
-                } else
                     // Format the item into the result
                     SysFnDydFMTSimp (aplTypeItm,            // Item storage type
-                                     aplNumCols,            // Item # cols
-                                     aplNumRows,            // Item # rows
+                                     1,                     // Item # cols
+                                     1,                     // Item # rows
                                      aplColsRes,            // Result # cols
                                      lpMemItm,              // Ptr to item global memory
                                      lpfsInit,              // Ptr to first FMTSPECSTR
@@ -1026,14 +930,122 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                                     &fsRep,                 // ...    iteration count
                                      lpMemRes,              // Ptr to ptr to result global memory data
                                     &aplCurColRes);         // Ptr to current result col
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
+                    break;
 
-                break;
+                case PTRTYPE_HGLOBAL:
+                    // Get the global memory handle
+                    hGlbItm = ((LPAPLNESTED) lpMemRht)[uCnt];
 
-            defstop
-                break;
-        } // End FOR/SWITCH
+                    // Get the attributes (Type, NELM, and Rank)
+                    //   of the right arg item
+                    AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, &aplColsItm);
+
+                    // Count the # cols & rows in the item
+                    if (IsMultiRank (aplRankItm))
+                    {
+                        aplNumCols = aplColsItm;
+                        aplNumRows = 1;                     // Initial value for FOR loop
+                    } else
+                    {
+                        aplNumCols = 1;
+                        aplNumRows = aplColsItm;            // Initial value for FOR loop
+                    } // End IF/ELSE
+
+                    // Lock the memory to get a ptr to it
+                    lpMemItm = MyGlobalLock (hGlbItm);
+
+                    // Skip over the header to the dimensions
+                    lpMemItm = VarArrayBaseToDim (lpMemItm);
+
+                    // Count the # rows in the item
+                    if (aplRankItm)
+                    {
+                        // Loop through all but the last col
+                        while (--aplRankItm)
+                            aplNumRows *= *((LPAPLDIM) lpMemItm)++;
+
+                        // Skip over the last column
+                        ((LPAPLDIM) lpMemItm)++;
+                    } // End IF
+
+                    // Now, lpMemItm points to the data
+
+                    // If the item is heterogeneous, ...
+                    if (IsSimpleHet (aplTypeItm))
+                    {
+                        APLDIM       uCol,              // Loop counter
+                                     uRow,              // ...
+                                     aplCCR = 0;        // Temporary aplCurColRes
+                        LPFMTSPECSTR lpfsCol;           // Ptr to FMTSPECSTR for this col
+                        LPSYMENTRY   lpSymEntry;        // Ptr to STE
+                        FMTSPECVAL   fmtSpecRes;        // Last FMTSPECVAL
+
+                        // Initialize the FMTSPECSTR
+                        lpfsCol = lpfsInit;
+
+                        // Loop through the item cols
+                        for (uCol = 0; uCol < aplNumCols; uCol++)
+                        {
+                            // Loop through the item rows
+                            for (uRow = 0; uRow < aplNumRows; uRow++)
+                            {
+                                // Get a ptr to the STE
+                                lpSymEntry = ((LPAPLHETERO) lpMemItm)[uRow *aplNumCols + uCol];
+
+                                // Get the storage type
+                                aplTypeItm = TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType);
+
+                                // Calculate next offset within lpMemRes
+                                aplCurColRes = aplCCR + uRow * aplColsRes;
+
+                                // Respecify the ptr to the next FMTPSECSTR
+                                lpfsNext = lpfsCol;
+
+                                // Format the item into the result
+                                fmtSpecRes =
+                                  SysFnDydFMTSimp (aplTypeItm,                      // Item storage type
+                                                   1,                               // Item # cols
+                                                   1,                               // Item # rows
+                                                   aplColsRes,                      // Result # cols
+                                                  &lpSymEntry->stData.stLongest,    // Ptr to item global memory
+                                                   lpfsInit,                        // Ptr to first FMTSPECSTR
+                                                  &lpfsNext,                        // ...    ptr to next  ...
+                                                   lpfsEnd,                         // ...    end of the FMTSPECSTRs
+                                                  &fsRep,                           // ...    iteration count
+                                                   lpMemRes,                        // Ptr to ptr to result global memory data
+                                                  &aplCurColRes);                   // Ptr to current result col
+                            } // End FOR
+
+                            // Save the last CurColRes for the next col
+                            //   unless it's an absolute tab
+                            if (fmtSpecRes NE FMTSPECVAL_T)
+                                aplCCR = aplCurColRes - ((uRow - 1) * aplColsRes);
+
+                            // Save the ptr to the next FMTSPECSTR for the next col
+                            lpfsCol = lpfsNext;
+                        } // End FOR
+                    } else
+                        // Format the item into the result
+                        SysFnDydFMTSimp (aplTypeItm,            // Item storage type
+                                         aplNumCols,            // Item # cols
+                                         aplNumRows,            // Item # rows
+                                         aplColsRes,            // Result # cols
+                                         lpMemItm,              // Ptr to item global memory
+                                         lpfsInit,              // Ptr to first FMTSPECSTR
+                                        &lpfsNext,              // ...    ptr to next  ...
+                                         lpfsEnd,               // ...    end of the FMTSPECSTRs
+                                        &fsRep,                 // ...    iteration count
+                                         lpMemRes,              // Ptr to ptr to result global memory data
+                                        &aplCurColRes);         // Ptr to current result col
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbItm); lpMemItm = NULL;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End FOR/FOR
     } // End IF/ELSE
 
     // Unprotect the format save area
@@ -1245,22 +1257,23 @@ FMTSPECVAL SysFnDydFMTSimp
                             case FMTSPECVAL_E:
                             case FMTSPECVAL_F:
                             case FMTSPECVAL_I:
+                            case FMTSPECVAL_R:
                                 // Loop through the item rows
                                 for (uRow = 0; uRow < aplRowsItm; uRow++)
-                                    // Continue with code common to E- F- I-format specs
-                                    QFMT_CommonEFI (*lplpfsNxt,                                     // Ptr to FMTSPECSTR
-                                                     aplTypeItm,                                    // Item storage type
-                                                     fmtSpecRes,                                    // Result format spec
-                                                     lpMemItm,                                      // Ptr to item global memory
-                                                     uRow,                                          // Row #
-                                                     aplColsItm,                                    // Item # cols
-                                                     aplColsRes,                                    // Result # cols
-                                                     aplCurColItm,                                  // Current item col in current row
-                                                     aplCurColRes,                                  // ...     result ...
-                                                     lpwszFormat,                                   // Ptr to formatted item
-                                                     lpwSub,                                        // Ptr to Symbol Substitution
-                                                    &lpMemRes[(uRow * aplColsRes) + aplCurColRes],  // Ptr to result global memory
-                                                    &surrText);                                     // Ptr to Surrounding Text info
+                                    // Continue with code common to E- F- I- R-format specs
+                                    QFMT_CommonEFIR (*lplpfsNxt,                                    // Ptr to FMTSPECSTR
+                                                      aplTypeItm,                                   // Item storage type
+                                                      fmtSpecRes,                                   // Result format spec
+                                                      lpMemItm,                                     // Ptr to item global memory
+                                                      uRow,                                         // Row #
+                                                      aplColsItm,                                   // Item # cols
+                                                      aplColsRes,                                   // Result # cols
+                                                      aplCurColItm,                                 // Current item col in current row
+                                                      aplCurColRes,                                 // ...     result ...
+                                                      lpwszFormat,                                  // Ptr to formatted item
+                                                      lpwSub,                                       // Ptr to Symbol Substitution
+                                                     &lpMemRes[(uRow * aplColsRes) + aplCurColRes], // Ptr to result global memory
+                                                     &surrText);                                    // Ptr to Surrounding Text info
                                 break;
 
                             case FMTSPECVAL_T:
@@ -1587,7 +1600,7 @@ void QFMT_CommonG
                     &aplLongestItm,                         // Ptr to result immediate value (may be NULL)
                     &immTypeItm);                           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
     // Fill in the background if present (R-modifier)
-    if ((lpfsNxt)->bR)
+    if (lpfsNxt->bR)
         QFMT_FillBg (lpfsNxt, lpMemRes);
 
     // Get the value as an integer/float
@@ -1815,12 +1828,12 @@ void QFMT_CommonG
 
 
 //***************************************************************************
-//  $QFMT_CommonEFI
+//  $QFMT_CommonEFIR
 //
-//  Code common to E- F- and I-format specs
+//  Code common to E- F- I- and R-format specs
 //***************************************************************************
 
-void QFMT_CommonEFI
+void QFMT_CommonEFIR
     (LPFMTSPECSTR lpfsNxt,                  // Ptr to FMTSPECSTR
      APLSTYPE     aplTypeItm,               // Item storage type
      FMTSPECVAL   fmtSpecRes,               // Result format spec
@@ -1852,11 +1865,11 @@ void QFMT_CommonEFI
                  lpwEnd,                    // Ptr to end of ...
                  lpwSymChar;                // Ptr to symbol to substitute
     HGLOBAL      lpSymGlbItm;               // Ptr to global numeric item
-    APLRAT       aplRatItm,                 // Item as RAT
+    APLRAT       aplRatItm = {0},           // Item as RAT
                  aplRat10 = {0},            // Constant RAT
                  aplRat1  = {0},            // ...
                  aplRatTmp = {0};           // Temporary RAT
-    APLVFP       aplVfpItm,                 // Item as VFP
+    APLVFP       aplVfpItm = {0},           // Item as VFP
                  aplVfp10 = {0},            // Constant VFP
                  aplVfpTmp = {0};           // Temporary VFP
 
@@ -1865,6 +1878,8 @@ void QFMT_CommonEFI
     // Modifiers allowed for F-format:  all
     // ...       not ...             :  none
     // Modifiers allowed for I-format:  all
+    // ...       not ...             :  none
+    // Modifiers allowed for R-format:  all
     // ...       not ...             :  none
 
     // Initialize variables
@@ -1896,7 +1911,7 @@ void QFMT_CommonEFI
     } // End IF
 
     // Fill in the background if present (R-modifier)
-    if ((lpfsNxt)->bR)
+    if (lpfsNxt->bR)
         QFMT_FillBg (lpfsNxt, lpMemRes);
 
     // Split cases based upon the immediate storage type
@@ -1916,14 +1931,14 @@ void QFMT_CommonEFI
             break;
 
         case IMMTYPE_RAT:
-            aplRatItm = *(LPAPLRAT) lpSymGlbItm;
+            mpq_init_set (&aplRatItm, (LPAPLRAT) lpSymGlbItm);
             aplFltItm = mpq_get_d (&aplRatItm);
             aplIntItm = (APLINT) aplFltItm;
 
             break;
 
         case IMMTYPE_VFP:
-            aplVfpItm = *(LPAPLVFP) lpSymGlbItm;
+            mpf_init_set (&aplVfpItm, (LPAPLVFP) lpSymGlbItm);
             aplFltItm = mpf_get_d (&aplVfpItm);
             aplIntItm = (APLINT) aplFltItm;
 
@@ -1941,13 +1956,41 @@ void QFMT_CommonEFI
                          aplIntItm,                         // Next value as an integer
                          aplFltItm,                         // ...              float
                          lpMemRes))                         // Ptr to result global memory
-        // Move to the next row
-        return;
+        // Move to the next item
+        goto NORMAL_EXIT;
 
     // Blank if zero (B-modifier)
-    if (lpfsNxt->bB && aplIntItm EQ 0)
-        // Move to the next row
-        return;
+    if (lpfsNxt->bB)
+    switch (immTypeItm)
+    {
+        case IMMTYPE_BOOL:
+        case IMMTYPE_INT:
+            if (aplIntItm EQ 0)
+                // Move to the next item
+                goto NORMAL_EXIT;
+            break;
+
+        case IMMTYPE_FLOAT:
+            if (aplFltItm EQ 0)
+                // Move to the next item
+                goto NORMAL_EXIT;
+            break;
+
+        case IMMTYPE_RAT:
+            if (mpq_cmp_ui (&aplRatItm, 0, 1) EQ 0)
+                // Move to the next item
+                goto NORMAL_EXIT;
+            break;
+
+        case IMMTYPE_VFP:
+            if (mpf_cmp_ui (&aplVfpItm, 0) EQ 0)
+                // Move to the next item
+                goto NORMAL_EXIT;
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // Scale the value (K-modifier)
     if (lpfsNxt->bK)
@@ -1962,6 +2005,7 @@ void QFMT_CommonEFI
         {
             case FMTSPECVAL_E:
             case FMTSPECVAL_F:
+            case FMTSPECVAL_R:
                 // If the scaling factor is negative, ...
                 if (fsScl < 0)
                 {
@@ -2133,13 +2177,10 @@ void QFMT_CommonEFI
                     // Convert the RAT to a VFP
                     mpf_init_set_q (&aplVfpItm, &aplRatItm);
 
-                    // The # fractional digits is fsDig + 1 unless the VFP is an integer, or is between -1 and 1
-                    iFrcDig = (mpf_integer_p (&aplVfpItm) || (mpf_cmp_si (&aplVfpItm, -1) >= 0 && mpf_cmp_si (&aplVfpItm, 1) <= 0)) ? fsDig : fsDig + 1;
-
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpItm,            // The value to format
-                                      iFrcDig,              // # fractional digits
+                                      fsDig,                // # fractional digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       TRUE,                 // TRUE iff nDigits is # fractional digits
@@ -2151,13 +2192,10 @@ void QFMT_CommonEFI
                     break;
 
                 case IMMTYPE_VFP:
-                    // The # fractional digits is fsDig + 1 unless the VFP is an integer, or is between -1 and 1
-                    iFrcDig = (mpf_integer_p (&aplVfpItm) || (mpf_cmp_si (&aplVfpItm, -1) >= 0 && mpf_cmp_si (&aplVfpItm, 1) <= 0)) ? fsDig : fsDig + 1;
-
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpItm,            // The value to format
-                                      iFrcDig,              // # fractional digits
+                                      fsDig,                // # fractional digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       TRUE,                 // TRUE iff nDigits is # fractional digits
@@ -2192,18 +2230,101 @@ void QFMT_CommonEFI
             // Skip over the decimal point
             lpwSrc++;
 
-            Assert (fsDig >= (APLU3264) (lpwEnd - lpwSrc));
+            // If within bounds (otherwise Overflow), ...
+            if (fsDig >= (APLU3264) (lpwEnd - lpwSrc))
+            {
+                // Reduce the desired # significant digits by the actual amount
+                fsDig -= (lpwEnd - lpwSrc);
 
-            // Reduce the desired # significant digits by the actual amount
-            fsDig -= (lpwEnd - lpwSrc);
+                // Fill the tail of the result with enough zeros
+                //   to pad out to fsDig digits
+                while (fsDig--)
+                    *lpwEnd++ = L'0';
 
-            // Fill the tail of the result with enough zeros
-            //   to pad out to fsDig digits
-            while (fsDig--)
-                *lpwEnd++ = L'0';
+                // Ensure properly terminated
+                *lpwEnd = WC_EOS;
+            } // End IF
+
+            break;
+
+        case FMTSPECVAL_R:
+            // Split cases based upon the immediate storage type
+            switch (immTypeItm)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                    mpq_init_set_sx (&aplRatTmp, aplIntItm, 1);
+
+                    break;
+
+                case IMMTYPE_FLOAT:
+                    mpq_init_set_d  (&aplRatTmp, aplFltItm);
+
+                    break;
+
+                case IMMTYPE_RAT:
+                    mpq_init_set    (&aplRatTmp, &aplRatItm);
+
+                    break;
+
+                case IMMTYPE_VFP:
+                    mpq_init_set_f  (&aplRatTmp, &aplVfpItm);
+
+                    break;
+
+                case IMMTYPE_CHAR:
+                defstop
+                    break;
+            } // End SWITCH
+
+            // The # fractional digits is fsDig + 1 unless the RAT is an integer, or is between -1 and 1
+            iFrcDig = (mpq_integer_p (&aplRatItm) || (mpq_cmp_si (&aplRatItm, -1, 1) >= 0 && mpq_cmp_si (&aplRatItm, 1, 1) <= 0)) ? fsDig : fsDig + 1;
+
+            lpwEnd =
+              FormatAplRatFC (lpwszFormat,          // Ptr to output save area
+                              aplRatTmp,            // The value to format
+                              UTF16_OVERBAR,        // Char to use as overbar
+                              L'r',                 // Char to use as rational separator
+                              FALSE);               // TRUE iff we're to substitute text for infinity
+
+            // We no longer need this storage
+            Myq_clear (&aplRatTmp);
 
             // Ensure properly terminated
-            *lpwEnd = WC_EOS;
+            *--lpwEnd = WC_EOS;
+
+            // Get ptr to rational point
+            lpwSrc = strchrW (lpwszFormat, L'r');
+
+            // If there's no decimal point, ...
+            if (lpwSrc EQ NULL)
+            {
+                // Append a blank
+                *lpwEnd++ = L' ';
+
+                // Point to the end of the formatted number
+                lpwSrc = lpwEnd;
+
+                // Ensure properly terminated
+                *lpwEnd = WC_EOS;
+            } else
+                // Skip over it
+                lpwSrc++;
+
+            // If within bounds (otherwise Overflow), ...
+            if (fsDig >= (APLU3264) (lpwEnd - lpwSrc))
+            {
+                // Reduce the desired # significant digits by the actual amount
+                fsDig -= (lpwEnd - lpwSrc);
+
+                // Fill the tail of the result with enough blanks
+                //   to pad out to fsDig digits
+                while (fsDig--)
+                    *lpwEnd++ = L' ';
+
+                // Ensure properly terminated
+                *lpwEnd = WC_EOS;
+            } // End IF
 
             break;
 
@@ -2288,19 +2409,28 @@ void QFMT_CommonEFI
             break;
     } // End SWITCH
 
-    // If the item is a global numeric, ...
+    // If the item is Global Numeric, ...
     if (IsImmGlbNum (immTypeItm))
+    // Split cases based upon the item type
+    switch (immTypeItm)
     {
-        if (IsImmRat (immTypeItm))
-        {
-            Myq_clear (&aplRat10);
-            Myq_clear (&aplRat1);
-        } else
-        if (IsImmVfp (immTypeItm))
-            Myf_clear (&aplVfp10);
-        else
-            DbgStop ();
-    } // End IF
+        case IMMTYPE_RAT:
+            // Set the sign of aplFltItm for subsequent use in the
+            //   following comparisons in case the GlbNum is too large
+            aplFltItm = mpq_cmp_ui (&aplRatItm, 0, 1);
+
+            break;
+
+        case IMMTYPE_VFP:
+            // Set the sign of aplFltItm for subsequent use in the
+            //   following comparisons in case the GlbNum is too large
+            aplFltItm = mpf_cmp_ui (&aplVfpItm, 0);
+
+            break;
+
+        defstop
+            break;
+    } // End IF/SWITCH
 
     // Calculate length of and ptr to negative text to prepend (M-modifier)
     if (lpfsNxt->bM && aplFltItm <  0)
@@ -2352,7 +2482,7 @@ void QFMT_CommonEFI
 
     // Substitute symbols
     // At this point, no substitution has occurred so we can assume that
-    //   the Decimal Point is UTF16_DOT
+    //   the Decimal Point is UTF16_DOT or L'r'
     //   the Thousands Separator is UTF16_COMMA
     //   the Exponent Separator is L'E', and
     //   the Zero Fill value is L'0'.
@@ -2395,6 +2525,12 @@ void QFMT_CommonEFI
 
         case UTF16_DOT:
             *lpwSymChar++ = lpwSub[SYMSUB_DECIMAL_SEP];
+            bZeroFill = FALSE;
+
+            break;
+
+        case L'r':
+            *lpwSymChar++ = lpwSub[SYMSUB_RATIONAL_SEP];
             bZeroFill = FALSE;
 
             break;
@@ -2480,7 +2616,25 @@ void QFMT_CommonEFI
     } else
         // Insert overflow chars
         FillMemoryW (lpMemRes, fsWid, lpwSub[SYMSUB_OVERFLOW_FILL]);
-} // End QFMT_CommonEFI
+NORMAL_EXIT:
+    // If the item is a global numeric, ...
+    if (IsImmGlbNum (immTypeItm))
+    {
+        if (IsImmRat (immTypeItm))
+        {
+            Myq_clear (&aplRat10);
+            Myq_clear (&aplRat1);
+        } else
+        if (IsImmVfp (immTypeItm))
+            Myf_clear (&aplVfp10);
+        else
+            DbgStop ();
+    } // End IF
+
+    // We no longer need this storage
+    Myf_clear (&aplVfpItm);
+    Myq_clear (&aplRatItm);
+} // End QFMT_CommonEFIR
 
 
 //***************************************************************************

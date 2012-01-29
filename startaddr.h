@@ -688,7 +688,7 @@ typedef struct tagSTART_ADDRESSES
     "SysFnDydFMT_EM_YY"         , (LPUCHAR) &SysFnDydFMT_EM_YY          ,
     "SysFnDydFMTSimp"           , (LPUCHAR) &SysFnDydFMTSimp            ,
     "QFMT_CommonG"              , (LPUCHAR) &QFMT_CommonG               ,
-    "QFMT_CommonEFI"            , (LPUCHAR) &QFMT_CommonEFI             ,
+    "QFMT_CommonEFIR"           , (LPUCHAR) &QFMT_CommonEFIR            ,
     "QFMT_ZeroFill"             , (LPUCHAR) &QFMT_ZeroFill              ,
     "QFMT_ThousandSep"          , (LPUCHAR) &QFMT_ThousandsSep          ,
     "QFMT_FillBg"               , (LPUCHAR) &QFMT_FillBg                ,

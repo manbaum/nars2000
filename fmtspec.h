@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,6 +60,7 @@ typedef enum tagFSCOL_INDICES       // FSA column indices for Format Specificati
 //   be sure to make a corresponding change to
 //   <fsaActTableFS> and <CharTransFS> in <fmtspec.c>
 
+// The available letters are DHJUVWY.
 
 // The order of the values of these constants *MUST* match the
 //   row order in <fsaActTableFS>.
@@ -110,10 +111,11 @@ typedef enum tagFMT_SPEC_VAL
     FMTSPECVAL_F,                   // 02:  F-...
     FMTSPECVAL_G,                   // 03:  G-...
     FMTSPECVAL_I,                   // 04:  I-...
-    FMTSPECVAL_T,                   // 05:  T-...
-    FMTSPECVAL_X,                   // 06:  X-...
-    FMTSPECVAL_TXT,                 // 07:  Text-...
-    FMTSPECVAL_ERR,                 // 08:  Error
+    FMTSPECVAL_R,                   // 05:  R-...
+    FMTSPECVAL_T,                   // 06:  T-...
+    FMTSPECVAL_X,                   // 07:  X-...
+    FMTSPECVAL_TXT,                 // 08:  Text-...
+    FMTSPECVAL_ERR,                 // 09:  Error
 } FMTSPECVAL, *LPFMTSPECVAL;
 
 
@@ -137,9 +139,9 @@ typedef struct tagFMT_SPEC_STR
          bInuse:1,                  //      00002000:  ...      Entry is inuse
          :18;                       //      FFFFC000:  Available bits
     UINT fsRep,                     // 04:  Repetition factor for this fmt spec (valid iff bRep EQ TRUE)
-         fsDig,                     // 08:  Precision for F-format, significant digits for E-format
+         fsDig,                     // 08:  Precision for F- and R-format, significant digits for E-format
          nestRep,                   // 0C:  Nesting repetition factor
-         fmtSpecVal;                // 10:  Format specification value:  FMTSPECVAL_xx (A E F G I T X TXT)
+         fmtSpecVal;                // 10:  Format specification value:  FMTSPECVAL_xx (A E F G I R T X TXT)
     int  fsWid,                     // 14:  Format width or (signed) count for T/X
          fsScl;                     // 18:  Signed scale factor (valid iff bK EQ TRUE)
                                     //      OffsetS are all measured from the start of the individual fmtspec
@@ -171,7 +173,7 @@ typedef struct tagO_CHAIN           // Struct for an entry in the O-modifier cha
 
 // Standard symbols (1st char in each S-qualifier pair)
 // These chars must be in the same order as the folowing enum
-#define STDSYMSUB           L"*.,0_Z9E"
+#define STDSYMSUB           L"*.,0_Z9Er"
 
 typedef enum tagSYM_SUB             // Symbol Substitution enum
 {
@@ -183,7 +185,8 @@ typedef enum tagSYM_SUB             // Symbol Substitution enum
     SYMSUB_Z_CHAR,                  // 05:  Z (G-format pattern char)
     SYMSUB_9_CHAR,                  // 06:  9 (G-format pattern char)
     SYMSUB_EXPONENT_SEP,            // 07:  E (Exponent separator)
-    SYMSUB_LENGTH,                  // 08:  # entries in this enum
+    SYMSUB_RATIONAL_SEP,            // 08:  r (Rational number separator)
+    SYMSUB_LENGTH,                  // 09:  # entries in this enum
 } SYMSUB, *LPSYMSUB;
 
 

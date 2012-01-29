@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ FSACTSTR fsaActTableFS [][FSCOL_LENGTH]
   {FSROW_SPEC    , fnSetModO },         // 0C:  ...            O
   {FSROW_SPEC    , fnSetText },         // 0D:  ...            P
   {FSROW_SPEC    , fnSetText },         // 0E:  ...            Q
-  {FSROW_SPEC    , fnSetText },         // 0F:  ...            R
+  {FSROW_SPEC    , fnSetR    },         // 0F:  ...            R
   {FSROW_SPEC    , fnSetText },         // 10:  ...            S
   {FSROW_CHKEOS  , fnSetQual },         // 11:  ...            T
   {FSROW_CHKEOS  , fnSetQual },         // 12:  ...            X
@@ -77,7 +77,7 @@ FSACTSTR fsaActTableFS [][FSCOL_LENGTH]
   {FSROW_SPEC    , fnSetModO },         // 0C:  ...            O
   {FSROW_SPEC    , fnSetText },         // 0D:  ...            P
   {FSROW_SPEC    , fnSetText },         // 0E:  ...            Q
-  {FSROW_SPEC    , fnSetText },         // 0F:  ...            R
+  {FSROW_SPEC    , fnSetR    },         // 0F:  ...            R
   {FSROW_SPEC    , fnSetText },         // 10:  ...            S
   {FSROW_CHKEOS  , fnSetQual },         // 11:  ...            T
   {FSROW_CHKEOS  , fnSetQual },         // 12:  ...            X
@@ -335,6 +335,34 @@ FORMAT_EXIT:
 
 
 //***************************************************************************
+//  $fnSetR
+//
+//  Handle either Rational format (Rnn.nn) or Background Qualifier (R<...>)
+//***************************************************************************
+
+UBOOL fnSetR
+    (LPFSLOCALVARS lpfsLocalVars)           // Ptr to FmtSpecStr local vars
+
+{
+    // Izit Rational format?
+    if (isdigit (lpfsLocalVars->lpwszCur[1]))
+    {
+        UBOOL bRet;
+
+        // Handle as R-format spec
+        bRet = fnSetQual (lpfsLocalVars);
+
+        // If all went well, ...
+        if (bRet)
+            lpfsLocalVars->State = FSROW_CHKEOS;
+
+        return bRet;
+    } else
+        return fnSetText (lpfsLocalVars);
+} // End fnSetR
+
+
+//***************************************************************************
 //  $fnSetText
 //
 //  Save the text of a qualifier
@@ -571,6 +599,8 @@ UINT SaveText
 ////////wSymSub[SYMSUB_PRECISION_LOSS] = L'_';      // Already set by = STDSYMSUB
 ////////wSymSub[SYMSUB_Z_CHAR]         = L'Z';      // Already set by = STDSYMSUB
 ////////wSymSub[SYMSUB_9_CHAR]         = L'9';      // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_EXPONENT_CHAR]  = L'E';      // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_RATIONAL_CHAR]  = L'r';      // Already set by = STDSYMSUB
 
         // Loop through the symbol substitutions
         for (uCnt = 0; uCnt < uScanTxtLenChars; uCnt += 2)
@@ -733,6 +763,8 @@ UBOOL fnSetModO
     UBOOL    bNeg;                          // TRUE iff the number is negative
 
     Assert (lpfsLocalVars->lpwszCur[0] EQ L'O');
+
+    // ***FIXME*** -- Allow RAT (and VFP?) numbers
 
     // Skip over it
     lpfsLocalVars->lpwszCur++;
@@ -989,6 +1021,54 @@ UBOOL fnSetQual
                 goto FORMAT_EXIT;
 
             // Modifiers allowed for F-format:  all
+            // ...       not ...             :  none
+
+////////////// Check for disallowed modifiers
+////////////if (0
+//////////// || lpfsCur->bB
+//////////// || lpfsCur->bC
+//////////// || lpfsCur->bK
+//////////// || lpfsCur->bL
+//////////// || lpfsCur->bM
+//////////// || lpfsCur->bN
+//////////// || lpfsCur->bO
+//////////// || lpfsCur->bP
+//////////// || lpfsCur->bQ
+//////////// || lpfsCur->bR
+//////////// || lpfsCur->bS
+//////////// || lpfsCur->bZ
+//////////// || lpfsCur->bRep
+////////////   )
+////////////    goto FORMAT_EXIT;
+            break;
+
+        case L'R':
+            // Save as the format specification
+            lpfsCur->fmtSpecVal = FMTSPECVAL_R;
+
+            // Skip over the R-fmtspec
+            lpfsLocalVars->lpwszCur++;
+            lpfsLocalVars->uChar++;
+
+            // Scan the text for the width
+            // On return:
+            //   lpfsLocalVars->uChar and lpfsLocalVars->lpwszCur are incremented.
+            if (1 NE ScanNumberFS (lpfsLocalVars, L"%u", &lpfsCur->fsWid, FALSE, 1))
+                goto FORMAT_EXIT;
+
+            if (*lpfsLocalVars->lpwszCur++ NE L'.')
+                goto FORMAT_EXIT;
+
+            // Skip over the decimal separator and the "- 1" for the FOR stmt
+            lpfsLocalVars->uChar += 1 + 1;
+
+            // Scan the text for the precision
+            // On return:
+            //   lpfsLocalVars->uChar and lpfsLocalVars->lpwszCur are incremented.
+            if (1 NE ScanNumberFS (lpfsLocalVars, L"%u", &lpfsCur->fsDig, FALSE, 1))
+                goto FORMAT_EXIT;
+
+            // Modifiers allowed for R-format:  all
             // ...       not ...             :  none
 
 ////////////// Check for disallowed modifiers

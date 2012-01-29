@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3821,10 +3821,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                 lpaplChar =
                                   FormatAplVfpFC (lpaplChar,                // Ptr to output save area
                                                   aplVfpItm,                // The value to format
-                                                  iPrc,                     // Use this many significant digits for VFP
+                                                  iPrc,                     // # significant/fractional digits (0 = all)
                                                   aplCharDecimal,           // Char to use as decimal separator
                                                   aplCharOverbar,           // Char to use as overbar
-                                                  TRUE,                     // TRUE iff nDigits is # fractional digits
+                                                  iPrc >= 0,                // TRUE iff nDigits is # fractional digits
                                                   FALSE,                    // TRUE iff we're to substitute text for infinity
                                                   FALSE);                   // TRUE iff we're to precede the display with (FPCnnn)
                                 // We no longer need this storage
@@ -3836,10 +3836,10 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                 lpaplChar =
                                   FormatAplVfpFC (lpaplChar,                // Ptr to output save area
                                                  *(LPAPLVFP) hGlbItmRht,    // The value to format
-                                                  iPrc,                     // Use this many significant digits for VFP
+                                                  iPrc,                     // # significant/fractional digits (0 = all)
                                                   aplCharDecimal,           // Char to use as decimal separator
                                                   aplCharOverbar,           // Char to use as overbar
-                                                  TRUE,                     // TRUE iff nDigits is # fractional digits
+                                                  iPrc >= 0,                // TRUE iff nDigits is # fractional digits
                                                   FALSE,                    // TRUE iff we're to substitute text for infinity
                                                   FALSE);                   // TRUE iff we're to precede the display with (FPCnnn)
                                 break;

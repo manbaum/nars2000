@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1503,9 +1503,9 @@ LPAPLCHAR SavedWsFormGlbVar
                                       0,                    // # significant digits (0 = all)
                                       L'.',                 // Char to use as decimal separator
                                       UTF16_BAR,            // Char to use as overbar
-                                      FALSE,                // TRUE iff the number if to be formatted with trailing zeros
+                                      FALSE,                // TRUE iff nDigits is # fractional digits
                                       TRUE,                 // TRUE iff we're to substitute text for infinity
-                                      uCommPrec EQ 0);      // TRUE iff we're to precede the display with (FPC)
+                                      uCommPrec EQ 0);      // TRUE iff we're to precede the display with (FPCnnn)
                 break;
 
             defstop

@@ -1791,14 +1791,21 @@ LPAPLCHAR FormatAplVfpFC
                     &aplVfp);               // Ptr to VFP number
         // Get the char length
         iDiff = lstrlen (lpRawFmt);
-    } // End IF
+    } else
+    {
+        Assert (!bFractDigs);
+
+        expptr = 0;
+    } // End IF/ELSE
 
     // Format the VFP
-    mpf_get_str (lpRawFmt,                  // Ptr to output save area
-                &expptr,                    // Ptr to exponent save area
-                 10,                        // Base of number system
-                 abs ((UINT) nDigits),      // # significant digits (0 = all)
-                &aplVfp);                   // Ptr to VFP number
+    mpf_get_str (lpRawFmt,                      // Ptr to output save area
+                &expptr,                        // Ptr to exponent save area
+                 10,                            // Base of number system
+                 abs ((UINT) nDigits)           // # significant digits (0 = all)
+               + (bFractDigs ? expptr : 0),     // If nDigits is # fractional, add in expptr
+                                                //   to get # significant digits
+                &aplVfp);                       // Ptr to VFP number
     // Get the char length
     iLen = lstrlen (lpRawFmt);
 
@@ -1830,26 +1837,24 @@ LPAPLCHAR FormatAplVfpFC
         // "Format" the number
         *lpaplChar++ = L'0';
 
+        // If we're formatting in E-format, ...
+        if (nDigits < 0)
+        {
+            *lpaplChar++ = aplCharDecimal;
+
+            FillMemoryW (lpaplChar, (APLU3264) ((-nDigits) - 1), L'0');
+            lpaplChar += (-nDigits) - 1;
+
+            *lpaplChar++ = L'E';
+            *lpaplChar++ = L'0';
+        } else
         // If displaying fractional digits, ...
         if (bFractDigs)
         {
-            // If we're formatting in E-format, ...
-            if (nDigits < 0)
-            {
-                *lpaplChar++ = aplCharDecimal;
+            *lpaplChar++ = aplCharDecimal;
 
-                FillMemoryW (lpaplChar, (APLU3264) ((-nDigits) - 1), L'0');
-                lpaplChar += (-nDigits) - 1;
-
-                *lpaplChar++ = L'E';
-                *lpaplChar++ = L'0';
-            } else
-            {
-                *lpaplChar++ = aplCharDecimal;
-
-                FillMemoryW (lpaplChar, (APLU3264)    nDigits      , L'0');
-                lpaplChar += nDigits;
-            } // End IF
+            FillMemoryW (lpaplChar, (APLU3264)    nDigits      , L'0');
+            lpaplChar += nDigits;
         } // End IF
     } else
     // If we're formatting in E-format, ...

@@ -81,7 +81,6 @@ BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
 OLDPATH=$(PATH)                 # Save the current path
 GSL_INC=$(GSL_DIR)include\      # Directory of GSL includes
-GSL_LIB=$(GSL_DIR)libgsl$(WIN)-double.lib # GSL library
 
 QDEBUG=$(NARSROOT)qdebug\       # Directory for QDEBUG files/libraries
 L98=$(L98);$(QDEBUG)
@@ -98,6 +97,8 @@ CFLAGS_DEBUG=
 BUILD_DIR=Release
 DEBUG_LIBSUFFIX=
 !endif
+
+GSL_LIB=$(GSL_DIR)libgsl$(WIN)$(DEBUG_LIBSUFFIX)-double.lib # GSL library
 
 !if "$(WIN)" == "32"
 FLINTAVL=1                      # 1 iff flint32.lib is available

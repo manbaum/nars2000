@@ -89,7 +89,7 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
 				UseLibraryDependencyInputs="false"
-				AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib qdebug32.lib mpir32.lib mpfr32.lib flint32d.lib libgsl32-double.lib"
+				AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib qdebug32.lib mpir32.lib mpfr32.lib flint32d.lib libgsl32d-double.lib"
 				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(FLINT_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;"
 				GenerateManifest="false"
 				ManifestFile=""

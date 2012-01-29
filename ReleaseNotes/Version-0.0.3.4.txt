@@ -1,6 +1,18 @@
 Version 0.0.3.4 consists of the following Builds:
 
 
+Build #938 -- Version 0.0.3.4
+-----------------------------
+
+* Fix Bug:  )CLOSE Doesn't Select The Incoming Tab
+
+Directory trunk:
+
+SYSCMDS.C:
+  Update copyright year.
+  In <CmdClose_EM>, set the over tab index so we know the current tab.
+
+
 Build #937 -- Version 0.0.3.4
 -----------------------------
 

@@ -10325,24 +10325,29 @@ RESTART_EXCEPTION_IMMED:
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbTmp)
                         goto WSFULL_EXIT;
-                } else
-                    hGlbTmp = *lphGlbRes;
-
-                // Lock the memory to get a ptr to it
-                lpMemRes = MyGlobalLock (hGlbTmp);
+                    // Lock the memory to get a ptr to it
+                    lpMemRes = MyGlobalLock (hGlbTmp);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-                // Fill in the header
-                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                lpHeader->ArrType    = aplTypeRes;
-////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-                lpHeader->RefCnt     = 1;
-                lpHeader->NELM       = 1;
-                lpHeader->Rank       = 0;
+                    // Fill in the header
+                    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                    lpHeader->ArrType    = aplTypeRes;
+////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                    lpHeader->RefCnt     = 1;
+                    lpHeader->NELM       = 1;
+                    lpHeader->Rank       = 0;
 #undef  lpHeader
+                } else
+                {
+                    hGlbTmp = *lphGlbRes;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemRes = MyGlobalLock (hGlbTmp);
+                } // End IF/ELSE
+
                 // Skip over the header and dimensions to the data
-                lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+                lpMemRes = VarArrayDataFmBase (lpMemRes);
 
                 // Promote the left arg to Rational
                 // Split cases based upon the left arg type
@@ -10438,24 +10443,29 @@ RESTART_EXCEPTION_IMMED:
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (!hGlbTmp)
                         goto WSFULL_EXIT;
-                } else
-                    hGlbTmp = *lphGlbRes;
-
-                // Lock the memory to get a ptr to it
-                lpMemRes = MyGlobalLock (hGlbTmp);
+                    // Lock the memory to get a ptr to it
+                    lpMemRes = MyGlobalLock (hGlbTmp);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-                // Fill in the header
-                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                lpHeader->ArrType    = aplTypeRes;
-////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-                lpHeader->RefCnt     = 1;
-                lpHeader->NELM       = 1;
-                lpHeader->Rank       = 0;
+                    // Fill in the header
+                    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                    lpHeader->ArrType    = aplTypeRes;
+////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                    lpHeader->RefCnt     = 1;
+                    lpHeader->NELM       = 1;
+                    lpHeader->Rank       = 0;
 #undef  lpHeader
+                } else
+                {
+                    hGlbTmp = *lphGlbRes;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemRes = MyGlobalLock (hGlbTmp);
+                } // End IF/ELSE
+
                 // Skip over the header and dimensions to the data
-                lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+                lpMemRes = VarArrayDataFmBase (lpMemRes);
 
                 // Promote the left arg to VFP
                 // Split cases based upon the left arg type

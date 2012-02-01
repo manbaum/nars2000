@@ -847,6 +847,13 @@ void DisplayHeap
          || hGlb EQ mpfHalf._mp_d
            )
             continue;
+        // Loop through NthPowerTab
+        for (j = 0; j < (int) NthPowerCnt; j++)
+        if (hGlb EQ NthPowerTab[j].aplMPI._mp_d)
+            break;
+        // If we found a match, ...
+        if (j < (int) NthPowerCnt)
+            continue;
 #if FLINTAVL == 1
         // Loop through FLINT's cache of fmpzs
         for (j = 0; j < (int) fmpz_num_unused; j++)

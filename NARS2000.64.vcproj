@@ -89,7 +89,7 @@
                 Name="VCLinkerTool"
                 LinkLibraryDependencies="false"
                 UseLibraryDependencyInputs="false"
-                AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib mpir64d.lib mpfr64.lib libgsl64d-double.lib /nodefaultlib:libcmt.lib"
+                AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib mpir64d.lib mpfr64.lib libgsl64d-double.lib"
                 AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(FLINT_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;"
                 GenerateManifest="false"
                 AdditionalManifestDependencies="NARS2000.exe.manifest64"

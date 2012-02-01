@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -205,6 +205,14 @@ typedef enum tagTIMER_SOURCE
     TIMERSOURCE_PC    ,         // 02:  Performance Counters
     TIMERSOURCE_PC2MS ,         // 03:  Performance Counters scaled to Milliseconds
 } TIMER_SOURCE, *LPTIMER_SOURCE;
+
+
+typedef enum tagTABSTATE        // Table State for Nth and Number of Primes
+{
+    TABSTATE_NTHPRIMETAB = 0,   // 0:  Use NthPrimeTab ...
+    TABSTATE_NTHPOWERTAB    ,   // 1:  Use NthPowerTab table
+    TABSTATE_LASTVALUE      ,   // 2:  Use last value (NTHPRIMESTR)
+} TABSTATE, *LPTABSTATE;
 
 
 //***************************************************************************

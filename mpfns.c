@@ -368,29 +368,30 @@ int mpz_cmp_sx
 //  Return the value of the next likely prime
 //***************************************************************************
 
-APLMPI mpz_next_prime
-    (LPAPLMPI      mpzArg,          // The starting number
+UBOOL mpz_next_prime
+    (LPAPLMPI      mpzRes,          // The result
+     LPAPLMPI      mpzArg,          // The starting number
      LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
      LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    APLMPI mpzRes = {0};
-
     // Copy the arg
-    mpz_init_set (&mpzRes, mpzArg);
+    mpz_set (mpzRes, mpzArg);
 
     // Increment to the previous odd number
-    mpz_add_ui (&mpzRes, &mpzRes, mpz_odd_p (&mpzRes) ? 2 : 1);
+    mpz_add_ui (mpzRes, mpzRes, mpz_odd_p (mpzRes) ? 2 : 1);
 
-    while (!mpz_likely_prime_p (&mpzRes, lpMemPTD->randState, 0))
+    while (!mpz_likely_prime_p (mpzRes, lpMemPTD->randState, 0))
     {
         if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
-        mpz_add_ui (&mpzRes, &mpzRes, 2);
+        mpz_add_ui (mpzRes, mpzRes, 2);
     } // End WHILE
+
+    return TRUE;
 ERROR_EXIT:
-    return mpzRes;
+    return FALSE;
 } // End mpz_next_prime
 
 
@@ -400,29 +401,30 @@ ERROR_EXIT:
 //  Return the value of the previous likely prime
 //***************************************************************************
 
-APLMPI mpz_prev_prime
-    (LPAPLMPI      mpzArg,          // The starting number
+UBOOL mpz_prev_prime
+    (LPAPLMPI      mpzRes,          // The result
+     LPAPLMPI      mpzArg,          // The starting number
      LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
      LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    APLMPI mpzRes = {0};
-
     // Copy the arg
-    mpz_init_set (&mpzRes, mpzArg);
+    mpz_set (mpzRes, mpzArg);
 
     // Decrement to the previous odd number
-    mpz_sub_ui (&mpzRes, &mpzRes, mpz_odd_p (&mpzRes) ? 2 : 1);
+    mpz_sub_ui (mpzRes, mpzRes, mpz_odd_p (mpzRes) ? 2 : 1);
 
-    while (!mpz_likely_prime_p (&mpzRes, lpMemPTD->randState, 0))
+    while (!mpz_likely_prime_p (mpzRes, lpMemPTD->randState, 0))
     {
         if (CheckCtrlBreak (*lpbCtrlBreak))
             goto ERROR_EXIT;
 
-        mpz_sub_ui (&mpzRes, &mpzRes, 2);
+        mpz_sub_ui (mpzRes, mpzRes, 2);
     } // End WHILE
+
+    return TRUE;
 ERROR_EXIT:
-    return mpzRes;
+    return FALSE;
 } // End mpz_prev_prime
 
 

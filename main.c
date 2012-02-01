@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -931,14 +931,8 @@ void ApplyNewFontLW
     (HFONT hFont)                   // Font handle to use
 
 {
-    APLU3264 uItem;                 // Index of current item
-
-    // Get the index of the existing Language Bar
-    uItem =
-      SendMessageW (hWndRB, RB_IDTOINDEX, IDWC_LW_RB, 0);
-
     // Update the Language Bar
-    InitLanguageBand (uItem);
+    InitLanguageBand (SendMessageW (hWndRB, RB_IDTOINDEX, IDWC_LW_RB, 0));
 } // End ApplyNewFontLW
 
 
@@ -1641,11 +1635,14 @@ LRESULT APIENTRY MFWndProc
             return FALSE;           // We handled the msg
         } // End MYWM_RESIZE
 
-        case WM_SIZE:                       // uFlags = (UINT) wParam
-                                            // cx = LOWORD (lParam)
-                                            // cy = HIWORD (lParam)
-            if (wParam EQ SIZE_MAXIMIZED
-             || wParam EQ SIZE_RESTORED)
+#define fwSizeType  wParam
+#define nWidth      (LOWORD (lParam))
+#define nHeight     (HIWORD (lParam))
+        case WM_SIZE:               // fwSizeType = wParam;      // Resizing flag
+                                    // nWidth = LOWORD(lParam);  // Width of client area
+                                    // nHeight = HIWORD(lParam); // Height of client area
+            if (fwSizeType EQ SIZE_MAXIMIZED
+             || fwSizeType EQ SIZE_RESTORED)
             {
                 SIZE S;
                 HDWP hdwp;
@@ -1659,7 +1656,7 @@ LRESULT APIENTRY MFWndProc
                 //   less the height of the Rebar Ctrl
                 SetRect (&rc,
                           0, 0,
-                          LOWORD (lParam), HIWORD (lParam));
+                          nWidth, nHeight);
                 // Run through all tabs (and hence all MDI Client Windows)
                 uTabCnt = TabCtrl_GetItemCount (hWndTC);
 
@@ -1769,6 +1766,9 @@ LRESULT APIENTRY MFWndProc
             } // End IF
 
             break;                  // *MUST* pass on to DefFrameProcW
+#undef  nHeight
+#undef  nWidth
+#undef  fwSizeType
 
         case MYWM_MOVE:
             if (!IsIconic (hWnd))   // If we're not minimized, otherwise
@@ -4324,11 +4324,11 @@ int PASCAL WinMain
 
     PERFMON
 
-    // Initialize tables for Primitive Fns, Operators, etc.
-    InitPrimTabs ();
-
     // Initialize global numeric constants
     InitGlbNumConstants ();
+
+    // Initialize tables for Primitive Fns, Operators, etc.
+    InitPrimTabs ();
 
     PERFMON
 

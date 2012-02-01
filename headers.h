@@ -71,7 +71,6 @@
 #include "termcode.h"
 #include "qf.h"
 #include "fmtspec.h"
-#include "primes.h"
 #include "mpifns.h"
 #include "malloc.h"
 

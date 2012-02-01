@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -94,6 +94,7 @@ void InitPrimTabs
     InitPrimSpecs ();           // ...        table of PRIMSPECs
     InitPrimFlags ();           // ...        table of primitive fcn/opr flags
     InitIdentityElements ();    // ...        identity elements
+    InitPrimeTabs ();           // ...        prime # tables
 } // End InitPrimTabs
 
 
@@ -903,6 +904,29 @@ void Init1IdentityElement
     // Save if it's float
     PrimIdent[uIndex].fIdentElem = aplFloat;
 } // End Init1IdentityElement
+
+
+//***************************************************************************
+//  $InitPrimeTabs
+//
+//  Initialize prime # tables
+//***************************************************************************
+
+void InitPrimeTabs
+    (void)
+
+{
+    UINT uCnt;
+
+    // Convert the chars in NthPowerCharTab to
+    //   APLMPIs in NthPowerTab
+    for (uCnt = 0; uCnt < NthPowerCnt; uCnt++)
+        mpz_init_set_str (&NthPowerTab[uCnt].aplMPI, NthPowerTab[uCnt].lpChar, 10);
+
+    // Initialize the NthPrimeStr values to the last entry in the NthPrimeTab
+    NthPrimeStr.aplNthVal = NthPrimeTab[NthPrimeCnt - 1];
+    NthPrimeStr.aplNthCnt = (NthPrimeCnt - 1) * NthPrimeInc;
+} // End InitPrimeTabs
 
 
 //***************************************************************************

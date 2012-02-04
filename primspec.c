@@ -10344,6 +10344,9 @@ RESTART_EXCEPTION_IMMED:
 
                     // Lock the memory to get a ptr to it
                     lpMemRes = MyGlobalLock (hGlbTmp);
+
+                    // In case we promoted the result, ...
+                    ((LPVARARRAY_HEADER) lpMemRes)->ArrType = aplTypeRes;
                 } // End IF/ELSE
 
                 // Skip over the header and dimensions to the data
@@ -10462,6 +10465,9 @@ RESTART_EXCEPTION_IMMED:
 
                     // Lock the memory to get a ptr to it
                     lpMemRes = MyGlobalLock (hGlbTmp);
+
+                    // In case we promoted the result, ...
+                    ((LPVARARRAY_HEADER) lpMemRes)->ArrType = aplTypeRes;
                 } // End IF/ELSE
 
                 // Skip over the header and dimensions to the data
@@ -11373,6 +11379,9 @@ RESTART_EXCEPTION_SINGLETON:
 
                             // Lock the memory to get a ptr to it
                             lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 #ifdef DEBUG
                             dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
@@ -11414,6 +11423,9 @@ RESTART_EXCEPTION_SINGLETON:
 
                             // Lock the memory to get a ptr to it
                             lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 #ifdef DEBUG
                             dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
@@ -11467,12 +11479,12 @@ RESTART_EXCEPTION_SINGLETON:
                                 // It's now a FLOAT result
                                 aplTypeRes = ARRAY_FLOAT;
 
-                                // Tell the header about it
-                                lpMemHdrRes->ArrType = aplTypeRes;
-
                                 // Restart the pointers
                                 lpMemRes = lpMemHdrRes;
                             } // End IF/ELSE
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 #ifdef DEBUG
                             dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
@@ -12934,6 +12946,9 @@ RESTART_EXCEPTION_AXIS:
                             // Lock the memory to get a ptr to it
                             lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
 
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
+
                             // Re-initialize lpMemOdo
                             for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
                                 lpMemOdo[uRes] = 0;
@@ -12978,6 +12993,9 @@ RESTART_EXCEPTION_AXIS:
 
                             // Lock the memory to get a ptr to it
                             lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 
                             // Re-initialize lpMemOdo
                             for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
@@ -13035,12 +13053,12 @@ RESTART_EXCEPTION_AXIS:
                                 // It's now a FLOAT result
                                 aplTypeRes = ARRAY_FLOAT;
 
-                                // Tell the header about it
-                                lpMemHdrRes->ArrType = aplTypeRes;
-
                                 // Restart the pointers
                                 lpMemRes = lpMemHdrRes;
                             } // End IF/ELSE
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 
                             // Re-initialize lpMemOdo
                             for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
@@ -14343,6 +14361,9 @@ RESTART_EXCEPTION_NOAXIS:
 
                             // Lock the memory to get a ptr to it
                             lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 #ifdef DEBUG
                             dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
@@ -14384,6 +14405,9 @@ RESTART_EXCEPTION_NOAXIS:
 
                             // Lock the memory to get a ptr to it
                             lpMemRes = lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 #ifdef DEBUG
                             dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
@@ -14437,12 +14461,12 @@ RESTART_EXCEPTION_NOAXIS:
                                 // It's now a FLOAT result
                                 aplTypeRes = ARRAY_FLOAT;
 
-                                // Tell the header about it
-                                lpMemHdrRes->ArrType = aplTypeRes;
-
                                 // Restart the pointers
                                 lpMemRes = lpMemHdrRes;
                             } // End IF/ELSE
+
+                            // Tell the header about it
+                            lpMemHdrRes->ArrType = aplTypeRes;
 #ifdef DEBUG
                             dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif

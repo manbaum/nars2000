@@ -5998,7 +5998,7 @@ Train:
                                              // Initialize the function strand (Train) base
                                              $1.lpYYStrandBase = $1.lpYYFcnBase;
 
-                                             FreeResult (&$1);
+/////////////////////////////////////////////FreeResult (&$1);  // DO NOT FREE as we haven't incremented (MakeFcnStrand) as yet
                                              YYERROR3
                                          } else
                                              YYERROR2

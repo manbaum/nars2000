@@ -1,6 +1,18 @@
 Version 0.0.3.4 consists of the following Builds:
 
 
+Build #942 -- Version 0.0.3.4
+-----------------------------
+
+* Fix Bug In Reference Count For Trains
+
+Directory trunk:
+
+PL_PARSE.Y:
+  When forming a Train (even a single function train), don't free the arg on error
+    if it hasn't been incremented as yet.
+
+
 Build #941 -- Version 0.0.3.4
 -----------------------------
 

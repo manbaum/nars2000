@@ -1874,6 +1874,23 @@ int mpiz_likely_prime_p
 
 
 //***************************************************************************
+//  $mpiz_probable_prime_p
+//
+//  Determine if the arg is probably a prime
+//***************************************************************************
+
+int mpiz_probable_prime_p
+    (mpz_t           rop,       // Argument
+     gmp_randstate_t state,     // Random state
+     int             prob,      // Error chance is 1 in 2^prob
+     unsigned long   div)       // Largest excluded prime divisor (0 = none)
+
+{
+    return mpz_probable_prime_p (rop, state, prob, div);    // ***FIXME***
+} // End mpiz_probable_prime_p
+
+
+//***************************************************************************
 //  $mpiz_nextprime
 //
 //  Set result to next prime greater than op

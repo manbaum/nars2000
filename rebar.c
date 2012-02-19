@@ -2703,11 +2703,11 @@ typedef struct tagLANGCHARS
                                          L"Unicode:  0x00A7 or 167"},
         {UTF16_PI                 , {0}, L"Pi",
                                          L"Prime Factors:            " WS_UTF16_PI L"R\n"
+                                         L"Nth Prime:              " WS_UTF16_OVERBAR L"2" WS_UTF16_PI L"R\n"
+                                         L"Previous Prime:         " WS_UTF16_OVERBAR L"1" WS_UTF16_PI L"R\n"
                                          L"Primality Test:          0" WS_UTF16_PI L"R\n"
                                          L"Next Prime:              1" WS_UTF16_PI L"R\n"
-                                         L"Previous Prime:         " WS_UTF16_OVERBAR L"1" WS_UTF16_PI L"R\n"
                                          L"Number of Primes:        2" WS_UTF16_PI L"R\n"
-                                         L"Nth Prime:              " WS_UTF16_OVERBAR L"2" WS_UTF16_PI L"R\n"
                                          L"Divisor Count Function: 10" WS_UTF16_PI L"R\n"
                                          L"Divisor Sum Function:   11" WS_UTF16_PI L"R\n"
                                          L"M" L"\x00F6" L"bius Function:        12" WS_UTF16_PI L"R\n"

@@ -363,6 +363,21 @@ int mpz_cmp_sx
 
 
 //***************************************************************************
+//  $mpz_fits_sx_p
+//
+//  Does the arg fit in a 64-bit signed integer?
+//***************************************************************************
+
+UBOOL mpz_fits_sx_p
+    (LPAPLMPI lpaplMPI)             // The number to check
+
+{
+    return (mpz_cmp_sx (lpaplMPI, MAX_APLINT) <= 0
+         && mpz_cmp_sx (lpaplMPI, MIN_APLINT) >= 0);
+} // End mpz_fits_sx_p
+
+
+//***************************************************************************
 //  $mpz_next_prime
 //
 //  Return the value of the next likely prime

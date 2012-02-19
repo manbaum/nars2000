@@ -396,6 +396,7 @@ UBOOL _MyCloseSemaphore
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _DeleObj (OBJ_SEMAPHORE, hSemaphore);
 
     return bRet;
@@ -432,6 +433,7 @@ HBITMAP _MyCreateCompatibleBitmap
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
@@ -466,6 +468,7 @@ HDC _MyCreateCompatibleDC
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_MEMDC,    hMEMDC,  NULL,       uLine);
 
     return hMEMDC;
@@ -502,6 +505,7 @@ HPEN _MyCreatePen
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_PEN,      hPen,    NULL,       uLine);
 
     return hPen;
@@ -536,6 +540,7 @@ HFONT _MyCreateFontIndirect
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_FONT,     hFont,   NULL,       uLine);
 
     return hFont;
@@ -570,6 +575,7 @@ HFONT _MyCreateFontIndirectW
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_FONT,     hFont,   NULL,       uLine);
 
     return hFont;
@@ -606,6 +612,7 @@ HRGN _MyCreatePolygonRgn
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_REGION,   hRgn,    NULL,       uLine);
 
     return hRgn;
@@ -640,6 +647,7 @@ HRGN _MyCreateRectRgnIndirect
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_REGION,   hRgn,    NULL,       uLine);
 
     return hRgn;
@@ -681,6 +689,7 @@ HANDLE _MyCreateSemaphoreW
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_SEMAPHORE, hSemaphore, lpFileName, uLine);
 
     return hSemaphore;
@@ -715,6 +724,7 @@ HBRUSH _MyCreateSolidBrush
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_BRUSH,    hBrush,  NULL,       uLine);
 
     return hBrush;
@@ -749,6 +759,7 @@ UBOOL _MyDeleteDC
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _DeleObj (OBJ_MEMDC, hMEMDC);
 
     return bRet;
@@ -793,6 +804,7 @@ UBOOL _MyDeleteObject
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _DeleObj (dwType, hObject);
 
     return bRet;
@@ -827,6 +839,7 @@ HDC _MyGetDC
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_DC,       hDC,     NULL,       uLine);
 
     return hDC;
@@ -861,6 +874,7 @@ HDC _MyGetWindowDC
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_DC,       hDC,     NULL,       uLine);
 
     return hDC;
@@ -896,6 +910,7 @@ HBITMAP _MyLoadBitmap
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
@@ -935,6 +950,7 @@ HANDLE _MyLoadImage
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
@@ -970,6 +986,7 @@ UBOOL _MyReleaseDC
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _DeleObj (OBJ_DC, hDC);
 
     return bRet;
@@ -1053,6 +1070,7 @@ LPVOID _MyGlobalAlloc
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_GLBALLOC, lpMem,   lpFileName, uLine);
 
     return lpMem;
@@ -1163,6 +1181,7 @@ LPVOID _MyGlobalLockSub
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _SaveObj (OBJ_GLBLOCK,  hMem,    lpFileName, uLine);
 
     return lpVoid;
@@ -1194,7 +1213,8 @@ UBOOL _MyGlobalUnlock
     } // End IF
 
     bRet = GlobalUnlock (hMem);
-    _DeleObj (OBJ_GLBLOCK, hMem);
+    if (gbResDebug)
+        _DeleObj (OBJ_GLBLOCK, hMem);
 
     return bRet;
 } // End _MyGlobalUnlock
@@ -1322,6 +1342,7 @@ HGLOBAL _MyGlobalReAlloc
         MBC (szTemp);
         DbgBrk ();
     } else
+    if (gbResDebug)
     {
         if (hGlb NE hMem)
         {
@@ -1356,9 +1377,11 @@ HGLOBAL _MyGlobalFree
         _LastTouch (szTemp, hMem, TRUE);
         DbgBrk ();
     } else
+    if (gbResDebug)
         _DeleObj (OBJ_GLBALLOC, hMem);
 
-    CheckMemStat ();
+    if (gbResDebug)
+        CheckMemStat ();
 
     return GlobalFree (hMem);
 } // _MyGlobalFree
@@ -1405,14 +1428,17 @@ LPVOID _MyHeapAlloc
     } // End __try/__except
 
     if (lpMem)
-        _SaveObj (OBJ_HEAPALLOC, lpMem,   NULL,       uLine);
+    {
+        if (gbResDebug)
+            _SaveObj (OBJ_HEAPALLOC, lpMem,   NULL,       uLine);
 #ifdef DEBUG
-    else
+    } else
     {
         DisplayHeap ();
         DbgBrk ();
-    } // End IF
 #endif
+    } // End IF
+
     return lpMem;
 } // End _MyHeapAlloc
 #undef  APPEND_NAME
@@ -1467,6 +1493,7 @@ HGLOBAL _MyHeapReAlloc
     } // End IF
 #endif
     // If the block moved, ...
+    if (gbResDebug)
     if (hGlb && lpMem NE hGlb)
     {
         _DeleObj (OBJ_HEAPALLOC, lpMem);
@@ -1491,9 +1518,11 @@ UBOOL _MyHeapFree
      UINT   uLine)          // Line #
 
 {
-    HeapValidate (hHeap, 0, NULL);
-
-    _DeleObj (OBJ_HEAPALLOC, lpMem);
+    if (gbResDebug)
+    {
+        HeapValidate (hHeap, 0, NULL);
+        _DeleObj (OBJ_HEAPALLOC, lpMem);
+    } // End IF
 
 ////return HeapFree (hHeap, dwFlags, lpMem);
     dlfree (lpMem);

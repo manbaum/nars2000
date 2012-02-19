@@ -34,6 +34,7 @@ Set MPIR_DIR=%NARSROOT%mpir^\
 Set MPFR_DIR=%NARSROOT%mpfr^\
 Set FLINT_DIR=%NARSROOT%flint^\
 Set GSL_DIR=%NARSROOT%gsl^\
+Set ECM_DIR=%NARSROOT%ecm^\
 
 if "%1" == "32" goto W32
 :W64

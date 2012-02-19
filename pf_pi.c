@@ -24,60 +24,7 @@
 #include <windows.h>
 #include "headers.h"
 #include "common.h"
-
-#ifndef PROTO
-PRIMSPEC PrimSpecPi =
-{
-    // Monadic functions
-    NULL,   // &PrimFnMon_EM_YY,
-    NULL,   // &PrimSpecPiStorageTypeMon,
-    NULL,   // &PrimFnMonPiAPA_EM, -- Can't happen w/Pi
-
-    NULL,   // &PrimFnMonPiBisB, -- Can't happen w/Pi
-    NULL,   // &PrimFnMonPiBisI, -- Can't happen w/Pi
-    NULL,   // &PrimFnMonPiBisF, -- Can't happen w/Pi
-
-////               IisB,     // Handled via type promotion (to IisI)
-    NULL,   // &PrimFnMonPiIisI, -- Can't happen w/Pi
-    NULL,   // &PrimFnMonPiIisF, -- Can't happen w/Pi
-
-////               FisB,     // Handled via type promotion (to FisI)
-    NULL,   // &PrimFnMonPiFisI, -- Can't happen w/Pi
-    NULL,   // &PrimFnMonPiFisF, -- Can't happen w/Pi
-
-    NULL,   // &PrimFnMonPiRisR, -- Can't happen w/Pi
-
-////               VisR,    // Handled via type promotion (to VisV)
-    NULL,   // &PrimFnMonPiVisV, -- Can't happen w/Pi
-
-    // Dyadic functions
-    &PrimFnDyd_EM_YY,
-    &PrimSpecPiStorageTypeDyd,
-    NULL,   // &PrimFnDydPiAPA_EM, -- Can't happen w/Pi
-
-    NULL,   // &PrimFnDydPiBisBvB, -- Can't happen w/Pi
-    NULL,   // &PrimFnDydPiBisIvI, -- Can't happen w/Pi
-    NULL,   // &PrimFnDydPiBisFvF, -- Can't happen w/Pi
-    NULL,   // &PrimFnDydPiBisCvC, -- Can't happen w/Pi
-
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    &PrimFnDydPiIisIvI,
-    &PrimFnDydPiIisFvF,
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    &PrimFnDydPiFisIvI,
-    NULL,   // &PrimFnDydPiFisFvF, -- Can't happen w/Pi
-
-    NULL,   // &PrimFnDydPiBisRvR, -- Can't happen w/Pi
-    &PrimFnDydPiRisRvR,
-
-    NULL,   // &PrimFnDydPiBisVvV, -- Can't happen w/Pi
-////                 VisRvR     // Handled via type promotion (to VisVvV)
-    &PrimFnDydPiVisVvV,
-};
-
-static LPPRIMSPEC lpPrimSpec = {&PrimSpecPi};
-#endif
+#include <ecm.h>
 
 
 typedef enum tagNUMTHEORY
@@ -101,6 +48,8 @@ typedef enum tagNUMTHEORY
 
 #define INIT_FACTOR_CNT     100
 #define INIT_FACTOR_INC     100
+
+#define PROBABILITY_IS_PRIME 200    // Error is 1 in 2^prob
 
 
 //***************************************************************************
@@ -127,9 +76,9 @@ LPPL_YYSTYPE PrimFnPi_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonPi_EM_YY              (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonPi_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return PrimFnDydPi_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnPi_EM_YY
 #undef  APPEND_NAME
 
@@ -205,6 +154,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     HGLOBAL           hGlbRht,          // Right arg global memory handle
                       hGlbRes = NULL;   // Result global memory handle
     LPVOID            lpMemRes = NULL;  // Ptr to result global memory
+    APLLONGEST        aplLongestRht;    // Right arg integer value
     APLINT            aplIntegerRht;    // Right arg integer value
     UBOOL             bRet;             // TRUE iff the result is valid
     APLUINT           ByteRes,          // # bytes in the result
@@ -236,7 +186,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
         goto RIGHT_LENGTH_EXIT;
 
     // Get right arg's global ptr
-    aplIntegerRht = GetGlbPtrs (lptkRhtArg, &hGlbRht);
+    aplLongestRht = GetGlbPtrs (lptkRhtArg, &hGlbRht);
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -245,18 +195,24 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
         case ARRAY_INT:
         case ARRAY_APA:
             // Save in local var
-            mpz_init_set_sx (&aplMPIRht, aplIntegerRht);
+            mpz_init_set_sx (&aplMPIRht, (APLINT) aplLongestRht);
+
+            // Set the result storage type
+            aplTypeRes = ARRAY_INT;
 
             break;
 
         case ARRAY_FLOAT:
             // Attempt to convert the float to an integer using System CT
-            aplIntegerRht = FloatToAplint_SCT ((APLFLOAT) aplIntegerRht, &bRet);
+            aplIntegerRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
             if (!bRet)
                 goto RIGHT_DOMAIN_EXIT;
 
             // Save in local var
             mpz_init_set_sx (&aplMPIRht, aplIntegerRht);
+
+            // Set the result storage type
+            aplTypeRes = ARRAY_INT;
 
             break;
 
@@ -279,6 +235,9 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
             // If it's not an integer, ...
             if (!bRet)
                 goto RIGHT_DOMAIN_EXIT;
+            // Set the result storage type
+            aplTypeRes = ARRAY_RAT;
+
             break;
 
         case ARRAY_VFP:
@@ -300,6 +259,9 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
             // If it's not an integer, ...
             if (!bRet)
                 goto RIGHT_DOMAIN_EXIT;
+            // Set the result storage type
+            aplTypeRes = ARRAY_RAT;
+
             break;
 
         default:
@@ -339,7 +301,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     if (!bRet)
     {
         if (mpz_cmp_si (&aplMPIRes, -1) EQ 0)
-            goto NONCE_EXIT;
+            goto RIGHT_NONCE_EXIT;
         else
             goto WSFULL_EXIT;
     } // End IF
@@ -352,9 +314,6 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     // Check for Ctrl-Break
     if (CheckCtrlBreak (*lpbCtrlBreak))
         goto ERROR_EXIT;
-
-    // Set the result storage type
-    aplTypeRes = ARRAY_RAT;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, 1);
@@ -388,10 +347,26 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     // Save and skip over the actual dimension
     *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
 
-    // Copy the MPI data to the result as RAT
-    for (uRes = 0; uRes < aplNELMRes; uRes++)
-        // Copy the MPI value as a RAT
-        mpq_init_set_z (((LPAPLRAT) lpMemRes)++, &memTmp.lpMemOrg[uRes]);
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_INT:
+            // Copy the MPI data to the result as INT
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+                // Get the integer value
+                *((LPAPLINT) lpMemRes)++ = mpz_get_sx (&memTmp.lpMemOrg[uRes]);
+            break;
+
+        case ARRAY_RAT:
+            // Copy the MPI data to the result as RAT
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+                // Copy the MPI value as a RAT
+                mpq_init_set_z (((LPAPLRAT) lpMemRes)++, &memTmp.lpMemOrg[uRes]);
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -423,7 +398,7 @@ RIGHT_DOMAIN_EXIT:
                                lptkRhtArg);
     goto ERROR_EXIT;
 
-NONCE_EXIT:
+RIGHT_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkRhtArg);
     goto ERROR_EXIT;
@@ -470,142 +445,54 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PrimSpecPiStorageTypeDyd
+//  $PrimFnDydPi_EM_YY
 //
-//  Primitive dyadic scalar function special handling:  Storage type
-//***************************************************************************
-
-APLSTYPE PrimSpecPiStorageTypeDyd
-    (APLNELM    aplNELMLft,
-     LPAPLSTYPE lpaplTypeLft,
-     LPTOKEN    lptkFunc,
-     APLNELM    aplNELMRht,
-     LPAPLSTYPE lpaplTypeRht)
-
-{
-    APLSTYPE aplTypeRes;
-
-    // In case the left arg is an empty char,
-    //   change its type to BOOL
-    if (IsEmpty (aplNELMLft) && IsSimpleChar (*lpaplTypeLft))
-        *lpaplTypeLft = ARRAY_BOOL;
-
-    // In case the right arg is an empty char,
-    //   change its type to BOOL
-    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
-        *lpaplTypeRht = ARRAY_BOOL;
-
-    // Calculate the storage type of the result
-    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
-
-    // No Boolean or Float results for Dyadic Pi
-    if (IsSimpleNum (aplTypeRes))
-        aplTypeRes = ARRAY_RAT;
-
-    return aplTypeRes;
-} // End PrimSpecPiStorageTypeDyd
-
-
-//***************************************************************************
-//  $PrimFnDydPiIisIvI
-//
-//  Primitive scalar function dyadic Pi:  I {is} I fn I
-//***************************************************************************
-
-APLINT PrimFnDydPiIisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
-
-{
-    RaiseException (EXCEPTION_RESULT_RAT, 0, 0, NULL);
-
-    return 0;           // To keep the compiler happy
-} // End PrimFnDydPiIisIvI
-
-
-//***************************************************************************
-//  $PrimFnDydPiIisFvF
-//
-//  Primitive scalar function dyadic Pi:  I {is} F fn F
-//***************************************************************************
-
-APLINT PrimFnDydPiIisFvF
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
-
-{
-    APLINT aplIntegerLft,
-           aplIntegerRht;
-    UBOOL  bRet;
-
-    // Attempt to convert the float to an integer using System CT
-    aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
-    if (!bRet)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    // Attempt to convert the float to an integer using System CT
-    aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-    if (!bRet && aplIntegerLft NE NUMTHEORY_NUMPRIMES)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return PrimFnDydPiIisIvI (aplIntegerLft, aplIntegerRht, lpPrimSpec);
-} // End PrimFnDydPiIisFvF
-
-
-//***************************************************************************
-//  $PrimFnDydPiFisIvI
-//
-//  Primitive scalar function dyadic Pi:  F {is} I fn I
+//  Primitive function for dyadic Pi ("Number Theoretic")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnPiFnDydPiFisIvI"
+#define APPEND_NAME     L" -- PrimFnDydPi_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-APLFLOAT PrimFnDydPiFisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+LPPL_YYSTYPE PrimFnDydPi_EM_YY
+    (LPTOKEN lptkLftArg,                // Ptr to left arg token
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return 0.0;         // To keep the compiler happy
-} // End PrimFnDydPiFisIvI
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $PrimFnDydPiRisRvR
-//
-//  Primitive scalar function dyadic Pi:  R {is} R fn R
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPiRisRvR"
-#else
-#define APPEND_NAME
-#endif
-
-APLRAT PrimFnDydPiRisRvR
-    (APLRAT     aplRatLft,
-     APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
-
-{
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht,           // Right ...
+                  aplTypeRes;           // Result   ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht,           // Right ...
+                  aplNELMRes = 0;       // Result   ...
+    APLRANK       aplRankLft,           // Left arg rank
+                  aplRankRht;           // Right ...
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL,       // Right ...
+                  hGlbRes = NULL;       // Result   ...
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL,      // Ptr to right ...
+                  lpMemRes = NULL;      // Ptr to result   ...
+    LPAPLDIM      lpMemDimRht;          // Ptr to right arg dimensions
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLRAT        mpqRes = {0};         // The result
-    APLINT        aplIntegerLft;        // Left arg as an integer
+    APLLONGEST    aplLongestLft,        // Left arg integer value
+                  aplLongestRht;        // Right ...
+    APLINT        aplIntegerLft,        // Left arg as an integer
+                  aplIntegerRht;        // Right ...
+    APLUINT       uCnt,                 // Loop counter
+                  ByteRes;              // # bytes in the result
     UBOOL         bRet;                 // TRUE iff the result is valid
     APLMPI        aplMPIRht = {0},      // Right arg as MP integer
                   aplMPIRes = {0};      // Result    ...
     APLBOOL       bQuadIO;              // []IO
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to result
     EXCEPTION_CODES exceptionCode = EXCEPTION_SUCCESS;
 
     // Get the current value of []IO
@@ -620,80 +507,372 @@ APLRAT PrimFnDydPiRisRvR
     // Get the ptr to the Ctrl-Break flag
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check the (singleton) left arg
-    if (!mpq_integer_p (&aplRatLft)
-     || mpq_cmp_si (&aplRatLft, NUMTHEORY_MIN, 1) < 0
-     || mpq_cmp_si (&aplRatLft, NUMTHEORY_MAX, 1) > 0)
-        goto LEFT_DOMAIN_EXIT;
+    // Get the attributes (Type, NELM, Rank)
+    //   of the args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Get the left arg as an integer
-    aplIntegerLft = mpz_get_si (mpq_numref (&aplRatLft));
+    // Check the left arg
+    if (!IsSingleton (aplNELMLft))
+    {
+        // If it's a matrix or higher, ...
+        if (IsMultiRank (aplRankLft))
+            goto LEFT_RANK_EXIT;
+        else
+            goto LEFT_LENGTH_EXIT;
+    } // End IF
 
-    // Initialize the temp
-    mpz_init (&aplMPIRht);
+    // Get left/right arg's global ptr
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Allow Num Primes right arg to be fractional
-    if (aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
+    // If it's a global, ...
+    if (hGlbRht)
+        // Skip over the header to the dimensions
+        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+
+    // If it's a global, ...
+    if (hGlbLft)
+        // Skip over the header and dimentions to the data
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
+    else
+        lpMemLft = &aplLongestLft;
+
+    // If it's a global, ...
+    if (hGlbRht)
+        // Skip over the header and dimentions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
+    else
+        lpMemRht = &aplLongestRht;
+
+    // Split cases based upon the left arg storage type
+    switch (aplTypeLft)
     {
-        mpq_init_set (&mpqRes, &aplRatRht);
-        mpq_floor    (&mpqRes, &mpqRes);
-        mpz_set      (&aplMPIRht, mpq_numref (&mpqRes));
-        Myq_clear    (&mpqRes);
-    } else
-        // Copy the right arg as an integer
-        mpz_set (&aplMPIRht, mpq_numref (&aplRatRht));
-    __try
-    {
-    // Split cases based upon the left arg
-    switch (aplIntegerLft)
-    {
-        case NUMTHEORY_DIVCNT:          //  0A:  Divisor function (count of divisors of N)
-        case NUMTHEORY_DIVSUM:          //  0B:  Divisor function (sum of divisors of N)
-        case NUMTHEORY_MOBIUS:          //  0C:  Mobius function
-        case NUMTHEORY_TOTIENT:         //  0D:  Totient function (# positive integers coprime to N)
-            // Call common routine
-            aplMPIRes =
-              PrimFnPiCommon (NULL,             // Ptr to factor struc (may be NULL)
-                              aplIntegerLft,    // Function index
-                             &aplMPIRht,        // Value to factor
-                              lpbCtrlBreak,     // Ptr to Ctrl-Break flag
-                             &bRet);            // Ptr to TRUE iff the result is valid
-            // Check for error
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            // Get the left arg as an integer
+            aplIntegerLft = (APLINT) aplLongestLft;
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Attempt to convert the float to an integer using System CT
+            aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
             if (!bRet)
-                goto NONCE_EXIT;
+                goto LEFT_DOMAIN_EXIT;
             break;
 
-        case NUMTHEORY_ISPRIME:         //  00:  TRUE iff the given # is prime
-            aplMPIRes =
-              PrimFnPiIsPrime   (aplMPIRht, lpbCtrlBreak, lpMemPTD);
-            break;
-
-        case NUMTHEORY_NEXTPRIME:       //  01:  Next prime after a given #
-            aplMPIRes =
-              PrimFnPiNextPrime (aplMPIRht, lpbCtrlBreak, lpMemPTD);
-            break;
-
-        case NUMTHEORY_PREVPRIME:       // -01:  Prev prime before a given #
-            aplMPIRes =
-              PrimFnPiPrevPrime (aplMPIRht, lpbCtrlBreak, lpMemPTD);
-            break;
-
-        case NUMTHEORY_NTHPRIME:        // -02:  Nth prime
-            aplMPIRes =
-              PrimFnPiNthPrime  (aplMPIRht, lpbCtrlBreak, lpMemPTD);
-            break;
-
-        case NUMTHEORY_NUMPRIMES:       //  02:  # primes <= a given #
-            aplMPIRes =
-              PrimFnPiNumPrimes (aplMPIRht, lpbCtrlBreak, lpMemPTD);
-            break;
-
-        default:
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
             goto LEFT_DOMAIN_EXIT;
 
+        case ARRAY_RAT:
+            // Get the left arg as an integer
+            aplIntegerLft = mpq_get_sx ((LPAPLRAT) lpMemLft, &bRet);
+
+            if (!bRet)
+                goto LEFT_DOMAIN_EXIT;
+            break;
+
+        case ARRAY_VFP:
+            // Get the left arg as an integer
+            aplIntegerLft = mpf_get_sx ((LPAPLVFP) lpMemLft, &bRet);
+
+            if (!bRet)
+                goto LEFT_DOMAIN_EXIT;
+            break;
+
+        defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPiVisVvV"))
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+            aplTypeRes = ARRAY_INT;
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            goto RIGHT_DOMAIN_EXIT;
+
+        case ARRAY_RAT:
+        case ARRAY_VFP:
+            aplTypeRes = ARRAY_RAT;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+RESTART_RAT:
+    //***************************************************************
+    // Calculate space needed for the result
+    //***************************************************************
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
+
+    //***************************************************************
+    // Check for overflow
+    //***************************************************************
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRht;
+    lpHeader->Rank       = aplRankRht;
+#undef  lpHeader
+
+    // Skip over the header to the dimensions
+    lpMemRes = VarArrayBaseToDim (lpMemRes);
+
+    // Fill in the result's dimensions
+    for (uCnt = 0; uCnt < aplRankRht; uCnt++)
+        *((LPAPLDIM) lpMemRes)++ = *lpMemDimRht++;
+
+    // lpMemRes now points to the data
+
+    // Initialize the temps
+    mpz_init (&aplMPIRht);
+    mpq_init (&mpqRes);
+
+    __try
+    {
+    // Loop through the elements of the right arg
+    for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
+    {
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+                // Get the next element as an integer
+                mpz_set_sx (&aplMPIRht, GetNextInteger (lpMemRht, aplTypeRht, uCnt));
+
+                break;
+
+            case ARRAY_FLOAT:
+                // Allow Next Prime/Prev Prime/Num Primes right arg to be fractional
+                if (aplIntegerLft EQ NUMTHEORY_NEXTPRIME
+                 || aplIntegerLft EQ NUMTHEORY_PREVPRIME
+                 || aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
+                {
+                    mpq_set_d (&mpqRes, ((LPAPLFLOAT) lpMemRht)[uCnt]);
+                    if (aplIntegerLft EQ NUMTHEORY_PREVPRIME)
+                        mpq_ceil (&mpqRes, &mpqRes);
+                    else
+                        mpq_floor (&mpqRes, &mpqRes);
+                    mpz_set   (&aplMPIRht, mpq_numref (&mpqRes));
+
+                    break;
+                } // End IF
+
+                // Attempt to convert the float to an integer using System CT
+                aplIntegerRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
+
+                // If it's not an integer, ...
+                if (!bRet)
+                    goto LEFT_DOMAIN_EXIT;
+
+                // Copy the right arg as an integer
+                mpz_set_sx (&aplMPIRht, aplIntegerRht);
+
+                break;
+
+            case ARRAY_RAT:
+                // Allow Next Prime/Prev Prime/Num Primes right arg to be fractional
+                if (aplIntegerLft EQ NUMTHEORY_NEXTPRIME
+                 || aplIntegerLft EQ NUMTHEORY_PREVPRIME
+                 || aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
+                {
+                    // Convert the RAT to an integer
+                    mpq_set   (&mpqRes, &((LPAPLRAT) lpMemRht)[uCnt]);
+                    if (aplIntegerLft EQ NUMTHEORY_PREVPRIME)
+                        mpq_ceil (&mpqRes, &mpqRes);
+                    else
+                        mpq_floor (&mpqRes, &mpqRes);
+                    mpz_set   (&aplMPIRht, mpq_numref (&mpqRes));
+
+                    break;
+                } // End IF
+
+                // If it's not an integer, ...
+                if (!mpq_integer_p ((LPAPLRAT) lpMemRht))
+                    goto LEFT_DOMAIN_EXIT;
+
+                // Get the next element as a MPI
+                mpz_set (&aplMPIRht, mpq_numref (&((LPAPLRAT) lpMemRht)[uCnt]));
+
+                break;
+
+            case ARRAY_VFP:
+                // Allow Next Prime/Prev Prime/Num Primes right arg to be fractional
+                if (aplIntegerLft EQ NUMTHEORY_NEXTPRIME
+                 || aplIntegerLft EQ NUMTHEORY_PREVPRIME
+                 || aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
+                {
+                    // Convert the VFP to an integer
+                    mpq_set_f (&mpqRes, &((LPAPLVFP) lpMemRht)[uCnt]);
+                    if (aplIntegerLft EQ NUMTHEORY_PREVPRIME)
+                        mpq_ceil (&mpqRes, &mpqRes);
+                    else
+                        mpq_floor (&mpqRes, &mpqRes);
+                    mpz_set   (&aplMPIRht, mpq_numref (&mpqRes));
+
+                    break;
+                } // End IF
+
+                // If it's not an integer, ...
+                if (!mpf_integer_p ((LPAPLVFP) lpMemRht))
+                    goto LEFT_DOMAIN_EXIT;
+
+                // Get the next element as a MPI
+                mpz_set_f (&aplMPIRht, &((LPAPLVFP) lpMemRht)[uCnt]);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Split cases based upon the left arg
+        switch (aplIntegerLft)
+        {
+            case NUMTHEORY_DIVCNT:          //  0A:  Divisor function (count of divisors of N)
+            case NUMTHEORY_DIVSUM:          //  0B:  Divisor function (sum of divisors of N)
+            case NUMTHEORY_MOBIUS:          //  0C:  Mobius function
+            case NUMTHEORY_TOTIENT:         //  0D:  Totient function (# positive integers coprime to N)
+                // If the arg is <= 0, ...
+                if (mpz_sgn (&aplMPIRht) <= 0)
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // Call common routine
+                aplMPIRes =
+                  PrimFnPiCommon (NULL,             // Ptr to factor struc (may be NULL)
+                                  aplIntegerLft,    // Function index
+                                 &aplMPIRht,        // Value to factor
+                                  lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                 &bRet);            // Ptr to TRUE iff the result is valid
+                // Check for error
+                if (!bRet)
+                    goto RIGHT_NONCE_EXIT;
+                break;
+
+            case NUMTHEORY_ISPRIME:         //  00:  TRUE iff the given # is prime
+                // If the arg is <= 0, ...
+                if (mpz_sgn (&aplMPIRht) <= 0)
+                    // Initialize to 0 (FALSE)
+                    mpz_init (&aplMPIRes);
+                else
+                    aplMPIRes =
+                      PrimFnPiIsPrime   (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+                break;
+
+            case NUMTHEORY_NEXTPRIME:       //  01:  Next prime after a given #
+                // If the arg is <= 0, ...
+                if (mpz_sgn (&aplMPIRht) <= 0)
+                    // Initialize to 2 (smallest prime)
+                    mpz_init_set_ui (&aplMPIRes, 2);
+                else
+                    aplMPIRes =
+                      PrimFnPiNextPrime (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+                break;
+
+            case NUMTHEORY_PREVPRIME:       // -01:  Prev prime before a given #
+                // If the arg is <= 0, ...
+                if (mpz_sgn (&aplMPIRht) <= 0)
+                    goto RIGHT_DOMAIN_EXIT;
+                else
+                    aplMPIRes =
+                      PrimFnPiPrevPrime (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+                break;
+
+            case NUMTHEORY_NTHPRIME:        // -02:  Nth prime
+                // If the arg is < bQuadIO, ...
+                if (mpz_cmp_ui (&aplMPIRht, bQuadIO) < 0)
+                    goto RIGHT_DOMAIN_EXIT;
+                else
+                    aplMPIRes =
+                      PrimFnPiNthPrime  (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+                break;
+
+            case NUMTHEORY_NUMPRIMES:       //  02:  # primes <= a given #
+                // If the arg is <= 1, ...
+                if (mpz_cmp_ui (&aplMPIRht, 1) <= 0)
+                    // Initialize to 0 (FALSE)
+                    mpz_init (&aplMPIRes);
+                else
+                    aplMPIRes =
+                      PrimFnPiNumPrimes (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+                break;
+
+            default:
+                goto LEFT_DOMAIN_EXIT;
+
+                break;
+        } // End SWITCH
+
+        // Split cases based upon the result storage type
+        switch (aplTypeRes)
+        {
+            case ARRAY_INT:
+                // Save the new value in the result
+                if (mpz_fits_sx_p (&aplMPIRes))
+                    *((LPAPLINT) lpMemRes)++ = mpz_get_sx (&aplMPIRes);
+                else
+                {
+                    // Promote the result to RAT
+                    aplTypeRes = ARRAY_RAT;
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                    // We no longer need this resource
+                    FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                    goto RESTART_RAT;
+                } // End IF/ELSE
+
+                break;
+
+            case ARRAY_RAT:
+                // Save the new value in the result
+                mpq_init_set_z (((LPAPLRAT) lpMemRes)++, &aplMPIRes);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // We no longer need this storage
+        Myz_clear (&aplMPIRes);
+    } // End FOR
+    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPi_EM_YY"))
     {
         dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
@@ -704,10 +883,14 @@ APLRAT PrimFnDydPiRisRvR
         switch (exceptionCode)
         {
             case EXCEPTION_DOMAIN_ERROR:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto RIGHT_DOMAIN_EXIT;
+
             case EXCEPTION_NONCE_ERROR:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                goto ERROR_EXIT;
+                goto RIGHT_NONCE_EXIT;
 
             default:
                 // Display message for unhandled exception
@@ -717,103 +900,86 @@ APLRAT PrimFnDydPiRisRvR
         } // End SWITCH
     } // End __try/__except
 
-    // Initialize the result to 0/1
-    mpq_init (&mpqRes);
+    // Unlock the result global memory in case TypeDemote actually demotes
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-    // Copy the return value to the numerator of the result
-    mpz_set (mpq_numref (&mpqRes), &aplMPIRes);
+    // Allocate a new YYRes;
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
 
-NONCE_EXIT:
-    exceptionCode = EXCEPTION_NONCE_ERROR;
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
-    goto NORMAL_EXIT;
+LEFT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
 LEFT_DOMAIN_EXIT:
-    exceptionCode = EXCEPTION_DOMAIN_ERROR;
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+RIGHT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this resource
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
+    if (hGlbLft && lpMemLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
+
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    // We no longer need this storage
+    Myq_clear (&mpqRes);
     Myz_clear (&aplMPIRes);
     Myz_clear (&aplMPIRht);
 
-    if (exceptionCode NE EXCEPTION_SUCCESS)
-        RaiseException (exceptionCode, 0, 0, NULL);
-
-    return mpqRes;
-} // End PrimFnDydPiRisRvR
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $PrimFnDydPiVisVvV
-//
-//  Primitive scalar function dyadic Pi:  V {is} V fn V
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPiVisVvV"
-#else
-#define APPEND_NAME
-#endif
-
-APLVFP PrimFnDydPiVisVvV
-    (APLVFP     aplVfpLft,
-     APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
-
-{
-    APLVFP mpfRes = {0};
-    APLRAT mpqLft = {0},
-           mpqRht = {0},
-           mpqRes = {0};
-    EXCEPTION_CODES exceptionCode = EXCEPTION_SUCCESS;
-
-    // Convert the VFP to a RAT
-    mpq_init_set_f (&mpqLft, &aplVfpLft);
-    mpq_init_set_f (&mpqRht, &aplVfpRht);
-
-    __try
-    {
-        // Call the RvR code
-        mpqRes = PrimFnDydPiRisRvR (mpqLft, mpqRht, lpPrimSpec);
-    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPiVisVvV"))
-    {
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-
-        // Save the exception code
-        exceptionCode = MyGetExceptionCode ();
-
-        // Split cases based upon the ExceptionCode
-        switch (exceptionCode)
-        {
-            case EXCEPTION_DOMAIN_ERROR:
-            case EXCEPTION_NONCE_ERROR:
-                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                goto ERROR_EXIT;
-
-            default:
-                // Display message for unhandled exception
-                DisplayException ();
-
-                break;
-        } // End SWITCH
-    } // End __try/__except
-
-    // Convert the RAT to a VFP
-    mpf_init_set_q (&mpfRes, &mpqRes);
-ERROR_EXIT:
-    // We no longer need this storage
-    Myq_clear (&mpqRes);
-    Myq_clear (&mpqRht);
-    Myq_clear (&mpqLft);
-
-    if (exceptionCode NE EXCEPTION_SUCCESS)
-        RaiseException (exceptionCode, 0, 0, NULL);
-
-    return mpfRes;      // To keep the compiler happy
-} // End PrimFnDydPiVisVvV
+    return lpYYRes;
+} // End PrimFnDydPi_EM_YY
 #undef  APPEND_NAME
 
 
@@ -1094,8 +1260,11 @@ APLMPI PrimeFactor
     APLMPI  mpzFactor1 = {0},           // Factor #1
             mpzFactor2 = {0},           // ...     2
             mpzRes     = {0};           // Result
-    APLUINT uVal,                       // Temporary value
+    APLUINT uVal,                       // Temporary unsigned value
             bits;                       // # bits in the value
+    int     iVal;                       // Temporary signed value
+    ecm_params ecmParams;               // ECM parameters
+    UINT    uEcmInit = 0;               // # times ecmParams have been initialized
 #ifdef DEBUG
     char    szTemp1[1024],              // Temporary output save area
             szTemp2[1024];              // ...
@@ -1220,26 +1389,103 @@ APLMPI PrimeFactor
             goto NORMAL_EXIT;
         } // End IF
     } // End IF
-#ifdef MPQS_ENABLED
-    if (MyFactor_mpqs (&mpzRes))
-        goto NORMAL_EXIT;
-#endif
-    if (mpz_likely_prime_p (&mpzRes, GetMemPTD ()->randState, 0))
+
+    if (mpz_probable_prime_p (&mpzRes, GetMemPTD ()->randState, PROBABILITY_IS_PRIME, PRECOMPUTED_PRIME_MAX))
     {
         dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));
 
         goto NORMAL_EXIT;
     } // End IF
 
-    *lpbRet = FALSE;
+#ifdef MPQS_ENABLED
+    if (MyFactor_mpqs (&mpzRes))
+        goto NORMAL_EXIT;
+#endif
+
+#define TryECM(Method)                                                                                          \
+    /* Uninitialize ecmParams */                                                                                \
+    if (uEcmInit)                                                                                               \
+    {                                                                                                           \
+        ecm_clear (ecmParams);                                                                                  \
+        uEcmInit--;                                                                                             \
+    } /* End IF */                                                                                              \
+                                                                                                                \
+    /* Initialize ecmParams */                                                                                  \
+    ecm_init (ecmParams);                                                                                       \
+    uEcmInit++;                                                                                                 \
+    ecmParams->stop_asap = &StopASAP;                                                                           \
+    ecmParams->B1done    = PRECOMPUTED_PRIME_MAX;                                                               \
+    ecmParams->method    = Method;                                                                              \
+                                                                                                                \
+    /* Try ECM */                                                                                               \
+    iVal = ecm_factor (&mpzFactor1, &mpzRes, 10 * ecmParams->B1done, ecmParams);                                \
+                                                                                                                \
+    /* Check for Ctrl-Break */                                                                                  \
+    if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))                                                            \
+        goto BREAK_EXIT;                                                                                        \
+                                                                                                                \
+    /* If there was an error, ... */                                                                            \
+    if (iVal < 0)                                                                                               \
+        goto ERROR_EXIT;                                                                                        \
+    /* If it succeeded, ... */                                                                                  \
+    if (iVal > 0)                                                                                               \
+    {                                                                                                           \
+        /* Copy the new factor to the result */                                                                 \
+        mpz_set (&mpzRes, &mpzFactor1);                                                                         \
+                                                                                                                \
+        goto NORMAL_EXIT;                                                                                       \
+    } /* End IF */                                                                                              \
+                                                                                                                \
+    if (mpz_probable_prime_p (&mpzRes, GetMemPTD ()->randState, PROBABILITY_IS_PRIME, PRECOMPUTED_PRIME_MAX))   \
+    {                                                                                                           \
+        dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));                                        \
+                                                                                                                \
+        goto NORMAL_EXIT;                                                                                       \
+    } /* End IF */
+
+    // Try ECM
+    TryECM (ECM_ECM);
+
+    // Try P-1
+    TryECM (ECM_PM1);
+
+    // Try P+1
+    TryECM (ECM_PP1);
+
 NONCE_EXIT:
+ERROR_EXIT:
+    // Mark as a NONCE ERROR
+    *lpbRet = FALSE;
 BREAK_EXIT:
 NORMAL_EXIT:
+    // If we initialized 'em, ...
+    while (uEcmInit--)
+        // Clear the ECM params
+        ecm_clear (ecmParams);
+
     Myz_clear (&mpzFactor1);
     Myz_clear (&mpzFactor2);
 
     return mpzRes;
 } // End PrimeFactor
+
+
+//***************************************************************************
+//  $StopASAP
+//
+//  Check to see fi we should stop ASAP
+//***************************************************************************
+
+int StopASAP
+    (void)
+
+{
+    LPPLLOCALVARS lpplLocalVars;
+
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    return lpplLocalVars->bCtrlBreak;
+} // End StopASAP
 
 
 //***************************************************************************
@@ -1355,7 +1601,7 @@ APLMPI PrimFnPiIsPrime
     mpz_init (&mpzRes);
 
     if (mpz_cmp_ui (&aplMPIArg, 1) > 0)
-        mpz_set_ui (&mpzRes, mpz_likely_prime_p (&aplMPIArg, lpMemPTD->randState, 0));
+        mpz_set_ui (&mpzRes, mpz_probable_prime_p (&aplMPIArg, lpMemPTD->randState, PROBABILITY_IS_PRIME, 0));
 
     return mpzRes;
 } // End PrimFnPiIsPrime
@@ -1431,6 +1677,8 @@ APLMPI PrimFnPiPrevPrime
 //  $NthPrime               -2 {pi} R   subroutine
 //
 //  Calculate the Nth prime using NthPrimeTab, etc.
+//
+//  This code was influenced by http://dfns.dyalog.com/c_pco.htm from Roger Hui.
 //***************************************************************************
 
 UBOOL NthPrime
@@ -1712,6 +1960,8 @@ ERROR_EXIT:
 //  $NumPrimes              2 {pi} R    subroutine
 //
 //  Calculate the # primes <= mpzArg using NthPrimeTab, etc.
+//
+//  This code was influenced by http://dfns.dyalog.com/c_pco.htm from Roger Hui.
 //***************************************************************************
 
 UBOOL NumPrimes

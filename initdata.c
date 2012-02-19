@@ -38,7 +38,6 @@ extern PRIMSPEC PrimSpecEqual;
 extern PRIMSPEC PrimSpecLeftCaret;
 extern PRIMSPEC PrimSpecLeftCaretUnderbar;
 extern PRIMSPEC PrimSpecNotEqual;
-extern PRIMSPEC PrimSpecPi;
 extern PRIMSPEC PrimSpecPlus;
 extern PRIMSPEC PrimSpecQuoteDot;
 extern PRIMSPEC PrimSpecQuery;
@@ -713,7 +712,6 @@ void InitPrimSpecs
     Init1PrimSpec (UTF16_LEFTCARET         , &PrimSpecLeftCaret         );
     Init1PrimSpec (UTF16_LEFTCARETUNDERBAR , &PrimSpecLeftCaretUnderbar );
     Init1PrimSpec (UTF16_NOTEQUAL          , &PrimSpecNotEqual          );
-    Init1PrimSpec (UTF16_PI                , &PrimSpecPi                );
     Init1PrimSpec (UTF16_PLUS              , &PrimSpecPlus              );
     Init1PrimSpec (UTF16_QUOTEDOT          , &PrimSpecQuoteDot          );
     Init1PrimSpec (UTF16_QUERY             , &PrimSpecQuery             );
@@ -813,7 +811,6 @@ void InitPrimFlags
     Init1PrimFlag (UTF16_LEFTCARET         , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_LI         | PF_INDEX_LESS     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
     Init1PrimFlag (UTF16_LEFTCARETUNDERBAR , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_LI         | PF_INDEX_LESSEQ   , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
     Init1PrimFlag (UTF16_NOTEQUAL          , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_LI | PF_RI | PF_INDEX_NOTEQUAL , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
-    Init1PrimFlag (UTF16_PI                , 0                                     | PF_DS                                             , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
     Init1PrimFlag (UTF16_PLUS              , 0     | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_LI | PF_RI | PF_INDEX_PLUS     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
     Init1PrimFlag (UTF16_QUOTEDOT          , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_LI         | PF_INDEX_LESSEQ   , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );
     Init1PrimFlag (UTF16_QUERY             , 0                             | PF_MS                                                     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY        );

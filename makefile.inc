@@ -62,6 +62,10 @@
 !error Environment variable FLINT_DIR= not defined.
 !endif
 
+!ifndef ECM_DIR
+!error Environment variable ECM_DIR= not defined.
+!endif
+
 !ifndef SDK
 !error Environment variable SDK= not defined.
 !endif
@@ -110,6 +114,7 @@ MS_INC = $(MS_DIR)
 MPIR_INC = $(MPIR_DIR)include^\
 MPFR_INC = $(MPFR_DIR)include^\
 FLINT_INC= $(FLINT_DIR)include^\
+ECM_INC  = $(ECM_DIR)include^\
 
 !if [if not exist $(MPIR_INC)*.h  exit 1]
 !error Incorrect value for MPIR_INC=$(MPIR_INC)
@@ -124,7 +129,7 @@ FLINT_INC= $(FLINT_DIR)include^\
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS_INC);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(GSL_INC)
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS_INC);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(ECM_INC);$(GSL_INC)
 
 MV=makever
 
@@ -140,6 +145,7 @@ FLINT_LIB =
 
 MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
 MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN).lib
+ECM_LIB  = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
 
 CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"
 
@@ -176,6 +182,7 @@ LIBS_WEXE = gdi32.lib           \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
             $(FLINT_LIB)        \
+            $(ECM_LIB)          \
             $(GSL_LIB)
 
 RCFLAGS = /nologo $(VERSION_FLAGS)
@@ -616,6 +623,7 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(MPIR_LIB)         \
                         $(MPFR_LIB)         \
                         $(FLINT_LIB)        \
+                        $(ECM_LIB)          \
                         $(GSL_LIB)          \
                         makefile.inc        \
                         makefile.$(MFEXT)

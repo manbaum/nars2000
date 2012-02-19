@@ -1265,6 +1265,18 @@ UINT uTypeMap[]
 #endif
 ;
 
+EXTERN
+UBOOL gbResDebug
+#ifdef DEFINE_VALUES
+#ifdef RESDEBUG
+ = 1
+#else
+ = 0
+#endif
+#endif
+;
+
+
 //***************************************************************************
 //  Colors
 //***************************************************************************

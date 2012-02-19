@@ -209,10 +209,8 @@ UBOOL CreateNewTab
     cntThread.iTabIndex  = iTabIndex;
     cntThread.bExecLX    = bExecLX;
 
-#ifdef DEBUG
     // Can't call Debugger as it hasn't been created as yet.
 ////dprintfWL9 (L"--Starting thread in <CreateNewTab>.");
-#endif
 
     // Create a new thread
     hThread = CreateThread (NULL,                   // No security attrs
@@ -895,15 +893,15 @@ void FreeGlobalStorage
                                   NULL);        // No name
             // Call )RESET
             CmdReset_EM (L"");
-#ifdef DEBUG
+
             dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
-#endif
+
             // Wait for the semaphore to trigger
             WaitForSingleObject (lpMemPTD->hExitphore,  // Ptr to handle to wait for
                                  INFINITE);             // Timeout value in milliseconds
-#ifdef DEBUG
+
             dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
-#endif
+
             // Close the semaphore handle as it isn't used anymore
             MyCloseSemaphore (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
         } // End IF

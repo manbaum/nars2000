@@ -646,9 +646,8 @@ RESTART_EXCEPTION_APA:
                                                        imul64 (apaMulRht, imul64 (uDimHi, imul64 (uDimAxRht, isub64 (uDimAxRht, 1)) / 2)));
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
                 {
-#ifdef DEBUG
                     dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
+
                     // Split cases based upon the ExceptionCode
                     switch (MyGetExceptionCode ())
                     {
@@ -666,9 +665,9 @@ RESTART_EXCEPTION_APA:
 
                                 // Restart the pointer
                                 lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
-#ifdef DEBUG
+
                                 dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
+
                                 goto RESTART_EXCEPTION_APA;
                             } // End IF
 

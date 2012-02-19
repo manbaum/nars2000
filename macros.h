@@ -161,6 +161,9 @@
   #define Assert(a)                       ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
   #define CheckCtrlBreak(a)               (a)
+
+  #define dprintfWL0(a,...)
+  #define dprintfWL9(a,...)
 #endif
 
 #define imul64(a,b)         _imul64 ((a), (b), NULL)

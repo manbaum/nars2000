@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -347,9 +347,8 @@ int CheckPTDVirtStr
             if (lpIniAddr <= lpInvalidAddr
              &&              lpInvalidAddr <  (lpIniAddr + PAGESIZE))
             {
-#ifdef DEBUG
                 dprintfWL0 (L"Exceeded LIMIT of %08X @ %S", lpLstMVS->MaxSize, lpLstMVS->lpText);
-#endif
+
                 MySetExceptionCode (EXCEPTION_LIMIT_ERROR);
 
                 return EXCEPTION_EXECUTE_HANDLER;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -455,13 +455,15 @@ UBOOL HshTabResize_EM
     iResize = lpHTS->iHshTabIncrNelm;
 
     Assert (HshTabFrisk (lpHTS));
-#ifdef DEBUG
+
     if (TlsGetValue (dwTlsPerTabData))
+    {
         dprintfWL9 (L"||| Resizing the hash table from %u to %u (%S#%d)",
                   lpHTS->iHshTabTotalNelm,
                   lpHTS->iHshTabTotalNelm + iResize,
                   FNLN);
-#endif
+    } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
+
     // We need more entries
     iHshTabNewSize = lpHTS->iHshTabTotalNelm + iResize;
     lpHshTabNew =
@@ -614,13 +616,15 @@ UBOOL HshTabSplitNextEntry_EM
     UBOOL        bRet = TRUE;           // TRUE iff result is valid
 
     Assert (HshTabFrisk (lpHTS));
-#ifdef DEBUG
+
     if (TlsGetValue (dwTlsPerTabData))
+    {
         dprintfWL9 (L"||| Splitting Hash Table entry %u to %u (%S#%d)",
                   lpHTS->lpHshTabSplitNext,
                  &lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm],
                   FNLN);
-#endif
+    } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
+
     // Ensure that &lpHshTabSplitNext[iHshTabBaseNelm] has been allocated.
     // If not, allocate it now
     if (&lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm] >= &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm]
@@ -778,13 +782,15 @@ UBOOL HshTabSplitNextEntry_EM
         lpHTS->lpHshTabSplitNext = lpHTS->lpHshTab;
         lpHTS->iHshTabBaseNelm <<= 1;
         Assert (lpHTS->iHshTabBaseNelm <= lpHTS->iHshTabTotalNelm);
-#ifdef DEBUG
+
         if (TlsGetValue (dwTlsPerTabData))
+        {
             dprintfWL9 (L"||| Shifting uHashMask from %04X to %04X (%S#%d)",
                       lpHTS->uHashMask,
                       uHashMaskNext,
                       FNLN);
-#endif
+        } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
+
         lpHTS->uHashMask = uHashMaskNext;
         Assert (lpHTS->uHashMask < (UINT) (2 * lpHTS->iHshTabBaseNelm / lpHTS->iHshTabEPB));
     } // End IF

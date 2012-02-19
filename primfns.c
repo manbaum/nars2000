@@ -3081,9 +3081,9 @@ void FillSISNxt
     else
         lpMemPTD->lpSISNxt->lpForStmtBase =
         lpMemPTD->lpSISNxt->lpForStmtNext = lpMemPTD->lpForStmtBase;
-#ifdef DEBUG
+
     dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
-#endif
+
     // Link this SIS into the chain, if requested
     if (LinkIntoChain)
     {

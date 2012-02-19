@@ -68,10 +68,12 @@ VOID CALLBACK WaitForImmExecStmt
     // Get ptr to PerTabData global memory
     lpMemPTD = lpMemWFSO->lpMemPTD; // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
     bValid = IsValidPtr (lpMemPTD, sizeof (lpMemPTD));
-#ifdef DEBUG
+
     if (bValid)
+    {
         dprintfWL9 (L"~~WaitForImmExecStmt (%p)", lpMemWFSO->hThread);
-#endif
+    } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
+
     // Get the thread's exit code
     GetExitCodeThread (lpMemWFSO->hThread, (LPDWORD) &exitType);
 
@@ -306,22 +308,20 @@ EXIT_TYPES ImmExecStmt
     {
         // Start 'er up
         ResumeThread (hThread);
-#ifdef DEBUG
+
         dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %p -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
-#endif
+
         // Wait until this thread terminates
         WaitForSingleObject (hThread,              // Handle to wait on
                              INFINITE);            // Wait time in milliseconds
-#ifdef DEBUG
         dprintfWL9 (L"~~WaitForSingleObject (EXIT):   %p -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
-#endif
+
         // Get the exit code
         GetExitCodeThread (hThread, (LPDWORD) &exitType);
     } else
     {
-#ifdef DEBUG
         dprintfWL9 (L"~~RegisterWaitForSingleObject (%p) (%S#%d)", hThread, FNLN);
-#endif
+
         // Lock the memory to get a ptr to it
         lpMemWFSO = MyGlobalLock (hGlbWFSO);
 
@@ -411,9 +411,9 @@ DWORD WINAPI ImmExecStmtInThread
 
         // Save ptr to PerTabData global memory
         TlsSetValue (dwTlsPerTabData, lpMemPTD);
-#ifdef DEBUG
+
         dprintfWL9 (L"--Starting thread in <ImmExecStmtInThread>.");
-#endif
+
         // Get the window handle of the Session Manager
         hWndSM = GetParent (hWndEC);
 
@@ -696,9 +696,8 @@ ERROR_EXIT:
         //   and strip off one level
         UnlocalizeSTEs ();
 
-#ifdef DEBUG
         dprintfWL9 (L"--Ending   thread in <ImmExecStmtInThread>.");
-#endif
+
         // Restore the ptr to the next token on the CS stack
         lpMemPTD->lptkCSNxt = lptkCSBeg;
 

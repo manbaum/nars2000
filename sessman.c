@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,9 +162,9 @@ void AppendLine
 
     // Scroll the caret into view
     SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
-#ifdef DEBUG
+
     dprintfWL9 (L"AppendLine: <%s> (%S#%d)", lpwszLine, FNLN);
-#endif
+
     // Replace the selection (none) with the new line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 
@@ -209,9 +209,9 @@ void ReplaceLine
 
     // Set the selection to this line
     SendMessageW (hWndEC, EM_SETSEL, uLinePos, uLinePos + uLineLen);
-#ifdef DEBUG
+
     dprintfWL9 (L"ReplaceLine: %d:<%s> (%S#%d)", uLineNum, lpwszLine, FNLN);
-#endif
+
     // Replace the selection with the given line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 } // End ReplaceLine
@@ -242,9 +242,9 @@ void ReplaceLastLineCR
 
     // Move the text caret to the end of the buffer
     MoveCaretEOB (hWndEC);
-#ifdef DEBUG
+
     dprintfWL9 (L"ReplaceLastLineCR: <%s> (%S#%d)", lpwszLine, FNLN);
-#endif
+
     // Replace the current (now last) line
     ReplaceLine (hWndEC, lpwszLine, NEG1U);
 
@@ -266,9 +266,8 @@ void ReplaceLastLineCRPmt
     (LPWCHAR lpwszLine)         // Ptr to incoming line text
 
 {
-#ifdef DEBUG
     dprintfWL9 (L"ReplaceLastLineCRPmt: <%s> (%S#%d)", lpwszLine, FNLN);
-#endif
+
     // Replace the last line
     ReplaceLastLineCR (lpwszLine);
 
@@ -463,6 +462,7 @@ void DisplayPrompt
     else
         dprintfWL9 (L"~~DisplayPrompt (%d)", uCaller);
 #endif
+
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
@@ -634,9 +634,8 @@ NORMAL_EXIT:
 
     if (lpMemPTD->lpSISCur->hSemaphore)
     {
-#ifdef DEBUG
         dprintfWL9 (L"~~Releasing semaphore:  %p (%S#%d)", lpMemPTD->lpSISCur->hSemaphore, FNLN);
-#endif
+
         // Signal WaitForInput that we have a result
         MyReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
 

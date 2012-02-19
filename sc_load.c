@@ -401,9 +401,9 @@ UBOOL LoadWorkspace_EM
 ////////////////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in by LocalizeAll
                     lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
 ////////////////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
-#ifdef DEBUG
+
                     dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"LoadWorkspace_EM");
-#endif
+
                     lpMemPTD->lpSISCur               = lpMemPTD->lpSISNxt;
 
                     // Localize all arguments, results, and locals

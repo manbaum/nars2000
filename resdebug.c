@@ -1393,9 +1393,8 @@ LPVOID _MyHeapAlloc
         lpMem = dlmalloc (dwBytes);
     } __except (CheckException (GetExceptionInformation (), L"HeapAlloc"))
     {
-#ifdef DEBUG
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
+
         Assert (lpMem EQ NULL);
 #ifdef DEBUG
         if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
@@ -1449,9 +1448,8 @@ HGLOBAL _MyHeapReAlloc
         hGlb = dlrealloc (lpMem, dwBytes);
     } __except (CheckException (GetExceptionInformation (), L"HeapReAlloc"))
     {
-#ifdef DEBUG
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
+
         Assert (hGlb EQ NULL);
 #ifdef DEBUG
         if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)

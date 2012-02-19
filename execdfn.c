@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -384,9 +384,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 ////lpMemPTD->lpSISNxt->numLabels    =              // Filled in by LocalizeAll
     lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
 ////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
-#ifdef DEBUG
+
     dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
-#endif
 
     //***************************************************************
     // Errors beyond this point must call Unlocalize
@@ -925,15 +924,14 @@ RESTART_AFTER_ERROR:
 
             // Display the default prompt
             DisplayPrompt (hWndEC, 2);
-#ifdef DEBUG
+
             dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
-#endif
+
             // Wait for the semaphore to trigger
             WaitForSingleObject (hSemaphore,            // Ptr to handle to wait for
                                  INFINITE);             // Timeout value in milliseconds
-#ifdef DEBUG
             dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
-#endif
+
             // Get the exit type from the semaphore restart
             exitType = lpMemPTD->ImmExecExitType;
         } // End IF
@@ -1426,9 +1424,9 @@ void UnlocalizeSTEs
         lpSISCur = lpMemPTD->lpSISCur;
 
         Assert (lpSISCur NE NULL);
-#ifdef DEBUG
+
         dprintfWL9 (L"~~Unlocalize:  %p to %p", lpSISCur, lpSISCur->lpSISPrv);
-#endif
+
         // Save the reset flag
         resetFlag = lpSISCur->ResetFlag;
 

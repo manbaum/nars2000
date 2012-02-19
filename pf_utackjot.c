@@ -538,9 +538,8 @@ ERROR_EXIT:
     // If there's a semaphore to signal, ...
     if (hSigaphore)
     {
-#ifdef DEBUG
         dprintfWL9 (L"~~Releasing semaphore:  %p (%S#%d)", hSigaphore, FNLN);
-#endif
+
         MyReleaseSemaphore (hSigaphore, 1, NULL);
 
         // Release our time slice so the released thread can act

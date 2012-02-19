@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -312,9 +312,8 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                                + imul64 (apaMul, imul64 (aplNELMRht,  aplNELMRht - 1) / 2);
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnMonIotaUnderbar_EM_YY"))
                 {
-#ifdef DEBUG
                     dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
+
                     // Split cases based upon the ExceptionCode
                     switch (MyGetExceptionCode ())
                     {

@@ -516,9 +516,9 @@ RESTART_EXCEPTION:
                                 if (!IsSimpleFlt (aplTypeRes))
                                 {
                                     aplTypeRes = ARRAY_FLOAT;
-#ifdef DEBUG
+
                                     dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
+
                                     // We no longer need these ptrs
                                     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 

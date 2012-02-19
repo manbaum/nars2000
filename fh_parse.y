@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -695,7 +695,7 @@ int fh_yylex
             return '\0';
     } // End IF
 
-#if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
+#ifdef YYLEX_DEBUG
     dprintfWL9 (L"==fh_yylex:  TknType = %S, CharIndex = %d",
                 GetTokenTypeName (lpfhLocalVars->lptkNext->tkFlags.TknType),
                 lpfhLocalVars->lptkNext->tkCharIndex);

@@ -695,9 +695,8 @@ APLRAT PrimFnDydPiRisRvR
     } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPiVisVvV"))
     {
-#ifdef DEBUG
         dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
+
         // Save the exception code
         exceptionCode = MyGetExceptionCode ();
 
@@ -780,9 +779,8 @@ APLVFP PrimFnDydPiVisVvV
         mpqRes = PrimFnDydPiRisRvR (mpqLft, mpqRht, lpPrimSpec);
     } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPiVisVvV"))
     {
-#ifdef DEBUG
         dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
+
         // Save the exception code
         exceptionCode = MyGetExceptionCode ();
 
@@ -1131,9 +1129,8 @@ APLMPI PrimeFactor
                     // Try Pollard's Rho
                     if (MyRho (&mpzRes, &mpzFactor1, lpProcPrime))
                     {
-#ifdef DEBUG
                         dprintfWL0 (L"MyRho:     %S", mpz_get_str (szTemp1, 10, &mpzFactor1));
-#endif
+
                         Myz_clear (&mpzRes);
                         mpzRes = PrimeFactor (mpzFactor1, lpProcPrime, lpbRet);
 
@@ -1149,10 +1146,12 @@ APLMPI PrimeFactor
                         if (mpz_cmp_ui (&mpzFactor1, 1) EQ 0)
                             uVal = 0;
                     } // End IF
-#ifdef DEBUG
+
                     if (uVal)
+                    {
                         dprintfWL0 (L"MyTinyqs:  %S %S", mpz_get_str (szTemp1, 10, &mpzFactor1), mpz_get_str (szTemp2, 10, &mpzFactor2));
-#endif
+                    } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
+
                     // Check for Ctrl-Break
                     if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
                         goto BREAK_EXIT;
@@ -1160,9 +1159,8 @@ APLMPI PrimeFactor
                     break;
 
                 default:
-#ifdef DEBUG
                     dprintfWL0 (L"MySqufof:  %I64u", uVal);
-#endif
+
                     // If the value is within trial division, ...
                     if (uVal < PRECOMPUTED_PRIME_NEXT2)
                     {
@@ -1190,10 +1188,10 @@ APLMPI PrimeFactor
 
             if (mpz_cmp_ui (&mpzFactor1, 1) EQ 0)
                 uVal = 0;
-#ifdef DEBUG
             if (uVal)
+            {
                 dprintfWL0 (L"MyTinyqs:  %S %S", mpz_get_str (szTemp1, 10, &mpzFactor1), mpz_get_str (szTemp2, 10, &mpzFactor2));
-#endif
+            } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
         } // End IF
 
         // Check for Ctrl-Break
@@ -1228,9 +1226,8 @@ APLMPI PrimeFactor
 #endif
     if (mpz_likely_prime_p (&mpzRes, GetMemPTD ()->randState, 0))
     {
-#ifdef DEBUG
         dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));
-#endif
+
         goto NORMAL_EXIT;
     } // End IF
 

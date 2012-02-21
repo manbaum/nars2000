@@ -1,6 +1,24 @@
 Version 0.0.3.4 consists of the following Builds:
 
 
+Build #946 -- Version 0.0.3.4
+-----------------------------
+
+* Fix Bug When Replacing Item In Global Numeric Array
+
+Directory trunk:
+
+PF_INDEX.C:
+  Update copyright year.
+  Fix bug with missing case in <ArrayIndexReplace_EM>.
+
+
+Directory trunk\htdocs:
+
+CONTRIBUTORS-BODY.AHTML:
+  Document contribution of GMP-ECM team.
+
+
 Build #945 -- Version 0.0.3.4
 -----------------------------
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3919,6 +3919,8 @@ UBOOL ArrayIndexReplace_EM
     UINT       uBitMask;
     UBOOL      bRet = FALSE;            // TRUE iff the result is valid
     LPSYMENTRY lpSymTmp;                // Ptr to temporary LPSYMENTRY
+    ALLTYPES   atSet = {0};             // Set arg as ALLTYPES
+    LPVOID     lpMemSet;                // Ptr to set arg global memory
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -3986,6 +3988,42 @@ UBOOL ArrayIndexReplace_EM
             {
                 FreeResultGlobalVar (hGlbSubRht); hGlbSubRht = NULL;
             } // End IF
+
+            break;
+
+        case ARRAY_RAT:
+            // Because we have already handled type promotion,
+            //   aplTypeRht is "wider" or equal to aplTypeSet
+
+            // If the set arg is simple, ...
+            if (hGlbSet EQ NULL)
+                lpMemSet = &aplLongestSet;
+            else
+                lpMemSet = hGlbSet;
+
+            // Promote the set arg to the right arg type
+            (*aTypeActConvert[aplTypeSet][aplTypeRht])(lpMemSet, 0, &atSet);
+
+            // Save the result in the right arg
+            ((LPAPLRAT) lpMemRht)[aplIndex] = atSet.aplRat;
+
+            break;
+
+        case ARRAY_VFP:
+            // Because we have already handled type promotion,
+            //   aplTypeRht is "wider" or equal to aplTypeSet
+
+            // If the set arg is simple, ...
+            if (hGlbSet EQ NULL)
+                lpMemSet = &aplLongestSet;
+            else
+                lpMemSet = hGlbSet;
+
+            // Promote the set arg to the right arg type
+            (*aTypeActConvert[aplTypeSet][aplTypeRht])(lpMemSet, 0, &atSet);
+
+            // Save the result in the right arg
+            ((LPAPLVFP) lpMemRht)[aplIndex] = atSet.aplVfp;
 
             break;
 

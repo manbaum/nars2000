@@ -58,10 +58,6 @@
 !error Environment variable MPFR_DIR= not defined.
 !endif
 
-!ifndef FLINT_DIR
-!error Environment variable FLINT_DIR= not defined.
-!endif
-
 !ifndef ECM_DIR
 !error Environment variable ECM_DIR= not defined.
 !endif
@@ -104,16 +100,9 @@ DEBUG_LIBSUFFIX=
 
 GSL_LIB=$(GSL_DIR)libgsl$(WIN)$(DEBUG_LIBSUFFIX)-double.lib # GSL library
 
-!if "$(WIN)" == "32"
-FLINTAVL=1                      # 1 iff flint32.lib is available
-!else
-FLINTAVL=0                      # 1 iff flint64.lib is available
-!endif
-
-MS_INC = $(MS_DIR)
+MS_INC   = $(MS_DIR)
 MPIR_INC = $(MPIR_DIR)include^\
 MPFR_INC = $(MPFR_DIR)include^\
-FLINT_INC= $(FLINT_DIR)include^\
 ECM_INC  = $(ECM_DIR)include^\
 
 !if [if not exist $(MPIR_INC)*.h  exit 1]
@@ -122,26 +111,20 @@ ECM_INC  = $(ECM_DIR)include^\
 !if [if not exist $(MPFR_INC)*.h  exit 1]
 !error Incorrect value for MPFR_INC=$(MPFR_INC)
 !endif
-!if [if not exist $(FLINT_INC)*.h exit 1]
-!error Incorrect value for FLINT_INC=$(FLINT_INC)
+!if [if not exist $(ECM_INC)*.h exit 1]
+!error Incorrect value for ECM_INC=$(ECM_INC)
 !endif
 
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS_INC);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(ECM_INC);$(GSL_INC)
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS_INC);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(GSL_INC)
 
 MV=makever
 
 ## Set the following to 1 to debug linker error 0x460 as in
 ##   mkn LINKDEBUG=1
 LINKDEBUG=0
-
-!if "$(FLINTAVL)" == "1"
-FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN)$(DEBUG_LIBSUFFIX).lib
-!else
-FLINT_LIB =
-!endif
 
 MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
 MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN).lib
@@ -153,7 +136,7 @@ CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)"
 !include makefile.src
 
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
-CFLAGS_WEXE = /nologo /GA /W3 /WX $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS /D "FLINTAVL=$(FLINTAVL)"
+CFLAGS_WEXE = /nologo /GA /W3 /WX $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
 CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS"
 LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT
 !if "$(WIN)" == "64"
@@ -181,7 +164,6 @@ LIBS_WEXE = gdi32.lib           \
             libcmt.lib          \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
-            $(FLINT_LIB)        \
             $(ECM_LIB)          \
             $(GSL_LIB)
 
@@ -622,7 +604,6 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(DEFFILE)          \
                         $(MPIR_LIB)         \
                         $(MPFR_LIB)         \
-                        $(FLINT_LIB)        \
                         $(ECM_LIB)          \
                         $(GSL_LIB)          \
                         makefile.inc        \

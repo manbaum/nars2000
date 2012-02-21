@@ -39,16 +39,6 @@ extern UINT auLinNumHEAPALLOC[MAXOBJ];
 
 extern LPCHAR lpaFileNameGLBALLOC[MAXOBJ];
 extern LPCHAR lpaFileNameSEMAPHORE[MAXOBJ];
-
-#if FLINTAVL == 1
-/* The array of mpz's used by the F_mpz type */
-extern __mpz_struct * fmpz_arr;
-
-/* An array of pointers to mpz's which are not being used presently. */
-extern ULONG * fmpz_unused_arr;
-
-extern ULONG fmpz_num_unused;
-#endif
 #endif
 
 
@@ -807,11 +797,8 @@ void DisplayHeap
     (void)
 
 {
-    int     i;                  // Loop counters
+    int     i, j;               // Loop counters
     APLINT  aplSize;            // Size of the global memory
-#if FLINTAVL == 1
-    int     j;                  // Loop counters
-#endif
     HGLOBAL hGlb;               // Current global memory handle
     WCHAR   wszTemp[1024];      // Ptr to temporary output area
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -854,15 +841,6 @@ void DisplayHeap
         // If we found a match, ...
         if (j < (int) NthPowerCnt)
             continue;
-#if FLINTAVL == 1
-        // Loop through FLINT's cache of fmpzs
-        for (j = 0; j < (int) fmpz_num_unused; j++)
-        if (hGlb EQ fmpz_arr[fmpz_unused_arr[j]]._mp_d)
-            break;
-        // If we found a match, ...
-        if (j < (int) fmpz_num_unused)
-            continue;
-#endif
         // Get the size of the global memory
 ////////aplSize = HeapSize (GetProcessHeap (), 0, hGlb);
         aplSize = dlmalloc_usable_size (hGlb);

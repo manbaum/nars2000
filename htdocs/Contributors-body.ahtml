@@ -61,9 +61,6 @@ Contributors</h1>
     <li>The MPFR team contributed their <a class="linkleft" href="http://www.mpfr.org">Multiple
       Precision Floating-Point Reliable Library</a> code.</li>
 
-    <li>The FLINT team contributed their <a class="linkleft" href="http://www.flintlib.org">Fast
-      Library for Number Theory</a> code.</li>
-
     <li>The GMP ECM team contributed their <a class="linkleft" href="http://ecm.gforge.inria.fr/">Elliptic
       Curve Method for Integer Factorization</a> code.</li>
   </ul>

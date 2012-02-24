@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-201 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -482,13 +482,16 @@ APLRAT PrimFnDydDownCaretRisRvR
     {
         APLRAT mpqRes = {0};
 
+        // Initialize the result
+        mpq_init (&mpqRes);
+
         // Calculate the GCD on the numerators
         mpz_gcd (mpq_numref (&mpqRes),
                  mpq_numref (&aplRatLft),
-                 mpq_numref (&aplRatLft));
+                 mpq_numref (&aplRatRht));
         // The sign of the result is the sign of the left arg
         if (mpz_sgn (mpq_numref (&aplRatLft)) EQ -1)
-            mpz_neg (mpq_numref (&aplRatLft), mpq_numref (&aplRatLft));
+            mpz_neg (mpq_numref (&mpqRes), mpq_numref (&mpqRes));
 
         // Set the denominator to 1
         mpz_set_ui (mpq_denref (&mpqRes), 1);

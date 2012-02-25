@@ -1030,7 +1030,7 @@ RESTART_EXCEPTION:
 #else
                     if (!PrimFnDydSiScSiScSub_EM (&tkRhtArg,
                                                   &lpYYFcnStrLft->tkToken,
-                                                  &hGlbRes,
+                                                   NULL,
                                                    aplTypeRes,
                                                    aplTypeRht2,
                                                    aplIntegerLft,
@@ -1106,6 +1106,9 @@ RESTART_EXCEPTION:
                             // We no longer need this ptr
                             MyGlobalUnlock (hGlbTmp); lpSymGlbRht = NULL;
 
+                            // We no longer need this storage
+                            MyGlobalFree (hGlbTmp); tkRhtArg.tkData.tkGlbData = hGlbTmp = NULL;
+
                             // Point to the data
                             lpSymGlbRht = &aplRatRht;
 
@@ -1129,6 +1132,9 @@ RESTART_EXCEPTION:
 
                             // We no longer need this ptr
                             MyGlobalUnlock (hGlbTmp); lpSymGlbRht = NULL;
+
+                            // We no longer need this storage
+                            MyGlobalFree (hGlbTmp); tkRhtArg.tkData.tkGlbData = hGlbTmp = NULL;
 
                             // Point to the data
                             lpSymGlbRht = &aplVfpRht;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -715,12 +715,20 @@ static APLCHAR DydLine2[] =
   L"L" $IS L"2" $TAKE L"L,1";
 
 static APLCHAR DydLine3[] =
-  L"Z" $IS L"L[0]+L[1]" $TIMES $IOTA L"1+" $DISCLOSE $FLOOR L"((" $DISCLOSE L"R)-0" $DISCLOSE L"L)" $DIVIDE L"1" $DISCLOSE L"L";
+  L"Z" $IS L"((" $DISCLOSE L"R)-0" $DISCLOSE L"L)" $DIVIDE L"|1" $DISCLOSE L"L";
+
+static APLCHAR DydLine4[] =
+  L"L[1]" $IS $ENCLOSE L"(|1" $DISCLOSE L"L)" $TIMES $TIMES L"Z";
+
+static APLCHAR DydLine5[] =
+  L"Z" $IS L"L[0]+L[1]" $TIMES $IOTA L"1+" $DISCLOSE $FLOOR L"|Z";
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,
  DydLine2,
  DydLine3,
+ DydLine4,
+ DydLine5,
 };
 
 MAGIC_FCNOPR MFO_DydDotDot =

@@ -181,6 +181,7 @@ Welcome to NARS2000</h1>
         <li>Primitive dyadic function (<span class="APL">L{rightshoe_}R</span>) (Superset Of)</li>
         <li>Primitive monadic/dyadic functions (<span class="APL">{pi}R</span>) (Prime Decomposition)
           and (<span class="APL">L{pi}R</span>) (Number Theoretic)</li>
+        <li>Primitive dyadic function (<span class="APL">L..R</span>) (Sequence)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>

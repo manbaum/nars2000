@@ -135,7 +135,7 @@ APLU3264 CALLBACK AboutDlgProc
 {
     static HFONT     hFont = NULL;
     static TOOLINFOW tti = {sizeof (tti)};
-    static WCHAR     wszLclAppDPFE[_MAX_PATH];
+    static WCHAR     wszLclAppDPFE[_MAX_PATH + 1024];
 
     // Split cases
     switch (message)
@@ -173,6 +173,24 @@ APLU3264 CALLBACK AboutDlgProc
 
                 // Append the source DPFE
                 lstrcatW (wszLclAppDPFE, wszAppDPFE);
+
+                // Copy the MPIR prefix to the text
+                lstrcatW (wszLclAppDPFE, L" -- MPIR #");
+
+                // Append the MPIR version #
+                wsprintfW (&wszLclAppDPFE[lstrlenW (wszLclAppDPFE)], L"%S", mpir_version);
+
+                // Copy the GMP prefix to the text
+                lstrcatW (wszLclAppDPFE, L" -- GMP #");
+
+                // Append the GMP version #
+                wsprintfW (&wszLclAppDPFE[lstrlenW (wszLclAppDPFE)], L"%S", gmp_version);
+
+                // Copy the MPFR prefix to the text
+                lstrcatW (wszLclAppDPFE, L" -- MPFR #");
+
+                // Append the MPFR version #
+                wsprintfW (&wszLclAppDPFE[lstrlenW (wszLclAppDPFE)], L"%S", mpfr_get_version ());
 #undef  TT_PREFIX
             } // End IF
 

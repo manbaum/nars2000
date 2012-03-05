@@ -321,7 +321,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an integer using System CT
-                aplIntegerLft = mpf_get_sx ((LPAPLVFP) lpSymGlbLft, &bRet);
+                aplIntegerLft = mpfr_get_sx ((LPAPLVFP) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
                 break;
@@ -473,7 +473,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             case ARRAY_VFP:
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
-                    aplIntegerLft = mpf_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
+                    aplIntegerLft = mpfr_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
                     if (!bRet || aplIntegerLft < 0)
                         goto LEFT_DOMAIN_EXIT;
                     uDimAxRes += aplIntegerLft;
@@ -808,10 +808,10 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
 
         case ARRAY_VFP:
             // Initialize the temp
-            mpf_init (&aplVfpRht);
+            mpfr_init0 (&aplVfpRht);
 
             if (IsSingleton (aplNELMRht))
-                mpf_copy (&aplVfpRht, (LPAPLVFP) aplNestRht);
+                mpfr_copy (&aplVfpRht, (LPAPLVFP) aplNestRht);
 
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
@@ -826,7 +826,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     else
                         uLen = lpMemRep[uAx];
                     if (!IsSingleton (aplNELMRht))
-                        mpf_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uDimRht + uAx * uDimHi]);
+                        mpfr_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uDimRht + uAx * uDimHi]);
 
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
@@ -834,7 +834,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAcc * uDimHi], &aplVfpRht);
+                        mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAcc * uDimHi], &aplVfpRht);
                     } // End FOR
                 } // End FOR
             } // End FOR/FOR

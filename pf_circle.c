@@ -233,9 +233,9 @@ APLVFP PrimFnMonCircleVisV
     APLVFP mpfRes = {0};
 
     // Initialize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
-    mpf_mul (&mpfRes, &aplVfpRht, &GetMemPTD ()->mpfPi);
+    mpfr_mul (&mpfRes, &aplVfpRht, &GetMemPTD ()->mpfrPi, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonCircleVisV
@@ -577,12 +577,12 @@ APLVFP PrimFnDydCircleVisVvV
     APLINT aplLft;
 
     // Ensure the left arg is valid
-    if (mpf_integer_p (&aplVfpLft)
-     && mpf_cmp_si (&aplVfpLft, -7) >= 0
-     && mpf_cmp_si (&aplVfpLft,  7) <= 0)
+    if (mpfr_integer_p (&aplVfpLft)
+     && mpfr_cmp_si (&aplVfpLft, -7) >= 0
+     && mpfr_cmp_si (&aplVfpLft,  7) <= 0)
     {
         // Get the left arg as an int
-        aplLft = mpf_get_si (&aplVfpLft);
+        aplLft = mpfr_get_si (&aplVfpLft, MPFR_RNDN);
 
         // Split cases based upon the value of the (now) integer left argument
         switch (aplLft)
@@ -597,10 +597,10 @@ APLVFP PrimFnDydCircleVisVvV
                 return sinhVfp (aplVfpRht);
 
             case  4:        // (1 + R * 2) * 0.5
-                mpf_init (&mpfRes);
-                mpf_mul (&mpfRes, &aplVfpRht, &aplVfpRht);  // R * 2
-                mpf_add_ui (&mpfRes, &mpfRes, 1);           // 1 + R * 2
-                mpf_sqrt (&mpfRes, &mpfRes);                // (1 + R * 2) * 0.5
+                mpfr_init0 (&mpfRes);
+                mpfr_mul (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
+                mpfr_add_ui (&mpfRes, &mpfRes, 1         , MPFR_RNDN);  // 1 + R * 2
+                mpfr_sqrt (&mpfRes, &mpfRes              , MPFR_RNDN);  // (1 + R * 2) * 0.5
 
                 return mpfRes;      // sqrt (1 + pow (aplVfpRht, 2));
 
@@ -614,10 +614,10 @@ APLVFP PrimFnDydCircleVisVvV
                 return sinVfp (aplVfpRht);
 
             case  0:        // (1 - R * 2) * 0.5
-                mpf_init (&mpfRes);
-                mpf_mul (&mpfRes, &aplVfpRht, &aplVfpRht);  // R * 2
-                mpf_ui_sub (&mpfRes, 1, &mpfRes);           // 1 - R * 2
-                mpf_sqrt (&mpfRes, &mpfRes);                // (1 - R * 2) * 0.5
+                mpfr_init0 (&mpfRes);
+                mpfr_mul (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
+                mpfr_ui_sub (&mpfRes, 1, &mpfRes         , MPFR_RNDN);  // 1 - R * 2
+                mpfr_sqrt (&mpfRes, &mpfRes              , MPFR_RNDN);  // (1 - R * 2) * 0.5
 
                 return mpfRes;      // sqrt (1 - pow (aplVfpRht, 2));
 
@@ -631,12 +631,12 @@ APLVFP PrimFnDydCircleVisVvV
                 return atanVfp (aplVfpRht);
 
             case -4:        // R x (1 - R * -2) * 0.5
-                mpf_init (&mpfRes);
-                mpf_mul (&mpfRes, &aplVfpRht, &aplVfpRht);  // R * 2
-                mpf_ui_div (&mpfRes, 1, &mpfRes);           // R * -2
-                mpf_ui_sub (&mpfRes, 1, &mpfRes);           // 1 - R * -2
-                mpf_sqrt (&mpfRes, &mpfRes);                // (1 - R * -2) * 0.5
-                mpf_mul (&mpfRes, &mpfRes, &aplVfpRht);     // R x (1 - R * -2) * 0.5
+                mpfr_init0 (&mpfRes);
+                mpfr_mul (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
+                mpfr_ui_div (&mpfRes, 1, &mpfRes         , MPFR_RNDN);          // R * -2
+                mpfr_ui_sub (&mpfRes, 1, &mpfRes         , MPFR_RNDN);          // 1 - R * -2
+                mpfr_sqrt (&mpfRes, &mpfRes              , MPFR_RNDN);               // (1 - R * -2) * 0.5
+                mpfr_mul (&mpfRes, &mpfRes, &aplVfpRht   , MPFR_RNDN);    // R x (1 - R * -2) * 0.5
 
                 return mpfRes;      // aplVfpRht * sqrt (1 - pow (aplVfpRht, -2));
 
@@ -671,22 +671,13 @@ APLVFP tanhVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_tanh  (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_tanh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End tanhVfp
@@ -700,22 +691,13 @@ APLVFP coshVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_cosh  (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_cosh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End coshVfp
@@ -729,22 +711,13 @@ APLVFP sinhVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_sinh  (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_sinh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End sinhVfp
@@ -758,22 +731,13 @@ APLVFP tanVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_tan   (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_tan  (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End tanVfp
@@ -787,22 +751,13 @@ APLVFP cosVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_cos   (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_cos  (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End cosVfp
@@ -816,22 +771,13 @@ APLVFP sinVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_sin   (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_sin  (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End sinVfp
@@ -845,27 +791,18 @@ APLVFP asinVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
     // Check for special cases:  R < -1  or  R > 1
-    if (mpf_cmp_si (&aplVfpRht, -1) < 0
-     || mpf_cmp_si (&aplVfpRht,  1) > 0)
+    if (mpfr_cmp_si (&aplVfpRht, -1) < 0
+     || mpfr_cmp_si (&aplVfpRht,  1) > 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_asin  (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_asin (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End asinVfp
@@ -879,27 +816,18 @@ APLVFP acosVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
     // Check for special cases:  R < -1  or  R > 1
-    if (mpf_cmp_si (&aplVfpRht, -1) < 0
-     || mpf_cmp_si (&aplVfpRht,  1) > 0)
+    if (mpfr_cmp_si (&aplVfpRht, -1) < 0
+     || mpfr_cmp_si (&aplVfpRht,  1) > 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_acos  (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_acos (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End acosVfp
@@ -913,22 +841,13 @@ APLVFP atanVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_atan  (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_atan (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End atanVfp
@@ -942,30 +861,21 @@ APLVFP asinhVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_asinh (&mpfrRes, &mpfrRes, MPFR_RNDN);
+    // Calculate the function
+    mpfr_asinh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     // Check for a NaN
-    if (mpfr_nan_p (&mpfrRes))
+    if (mpfr_nan_p (&mpfRes))
     {
-        mpfr_clear (&mpfrRes);
+        mpfr_clear (&mpfRes);
 
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     } // End IF
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
 
     return mpfRes;
 } // End asinhVfp
@@ -979,30 +889,21 @@ APLVFP acoshVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_acosh (&mpfrRes, &mpfrRes, MPFR_RNDN);
+    // Calculate the function
+    mpfr_acosh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     // Check for a NaN
-    if (mpfr_nan_p (&mpfrRes))
+    if (mpfr_nan_p (&mpfRes))
     {
-        mpfr_clear (&mpfrRes);
+        mpfr_clear (&mpfRes);
 
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     } // End IF
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
 
     return mpfRes;
 } // End acoshVfp
@@ -1016,30 +917,21 @@ APLVFP atanhVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_atanh (&mpfrRes, &mpfrRes, MPFR_RNDN);
+    // Calculate the function
+    mpfr_atanh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     // Check for a NaN
-    if (mpfr_nan_p (&mpfrRes))
+    if (mpfr_nan_p (&mpfRes))
     {
-        mpfr_clear (&mpfrRes);
+        mpfr_clear (&mpfRes);
 
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     } // End IF
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
 
     return mpfRes;
 } // End atanhVfp

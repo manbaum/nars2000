@@ -826,12 +826,18 @@ void DisplayHeap
          || hGlb EQ mpqMaxUInt._mp_den._mp_d
          || hGlb EQ mpqHalf._mp_num._mp_d
          || hGlb EQ mpqHalf._mp_den._mp_d
-         || hGlb EQ mpfMinInt._mp_d
-         || hGlb EQ mpfMaxInt._mp_d
-         || hGlb EQ mpfMaxUInt._mp_d
-         || hGlb EQ lpMemPTD->mpfE._mp_d
-         || hGlb EQ lpMemPTD->mpfPi._mp_d
-         || hGlb EQ mpfHalf._mp_d
+         || hGlb EQ mpfMinInt._mpfr_d
+         || hGlb EQ mpfMaxInt._mpfr_d
+         || hGlb EQ mpfMaxUInt._mpfr_d
+         || hGlb EQ lpMemPTD->mpfrE._mpfr_d
+         || hGlb EQ lpMemPTD->mpfrPi._mpfr_d
+         || hGlb EQ mpfHalf._mpfr_d
+         || hGlb EQ (HGLOBAL) ByteDiff (mpfMinInt       ._mpfr_d, 4)
+         || hGlb EQ (HGLOBAL) ByteDiff (mpfMaxInt       ._mpfr_d, 4)
+         || hGlb EQ (HGLOBAL) ByteDiff (mpfMaxUInt      ._mpfr_d, 4)
+         || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrE ._mpfr_d, 4)
+         || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrPi._mpfr_d, 4)
+         || hGlb EQ (HGLOBAL) ByteDiff (mpfHalf         ._mpfr_d, 4)
            )
             continue;
         // Loop through NthPowerTab

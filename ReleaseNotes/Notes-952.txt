@@ -1,6 +1,3 @@
-Version 0.0.3.5 consists of the following Builds:
-
-
 Build #952 -- Version 0.0.3.5
 -----------------------------
 
@@ -97,26 +94,3 @@ Directory trunk\WineHQ:
 LOCAL.H:
   Change the representation of VFP numbers from mpf_* to mpfr_*
     as mpf_* is now deprecated.
-
-
-Build #951 -- Version 0.0.3.5
------------------------------
-
-* Fix Bug When Stranding Named RAT and FLT Vars
-
-Directory trunk:
-
-MAIN.RC:
-  Update copyright year.
-
-NARS2000.64.VCPROJ:
-  Specify ECM include and lib directories.
-
-STRAND.C:
-  Fix bug in conversion table when stranding named RAT and FLT vars.
-
-VER.C:
-  Include version #s for MPIR, MPFR, and GMP in the tooltip.
-
-VERSION.RC:
-  Increment version to 0.0.3.5.

@@ -60,8 +60,8 @@
 #define LOAPLUINT(a)            (((LPAPLU_SPLIT) &a)->lo)
 #define HIAPLUINT(a)            (((LPAPLU_SPLIT) &a)->hi)
 
-#define LOAPLINT(a)             (((LPAPL_SPLIT) &a)->lo)
-#define HIAPLINT(a)             (((LPAPL_SPLIT) &a)->hi)
+#define LOAPLINT(a)             (((LPAPLI_SPLIT) &a)->lo)
+#define HIAPLINT(a)             (((LPAPLI_SPLIT) &a)->hi)
 
 #define CheckSymEntries()       _CheckSymEntries (FNLN)
 
@@ -314,12 +314,12 @@
 #define IsMpqValid(a)                   ((a)->_mp_num._mp_d NE NULL)
 
 // Define macro for detecting an Variable FP 0
-#define IsMpf0(Vfp)                     (mpf_cmp_si (Vfp, 0) EQ 0)
+#define IsMpf0(Vfp)                     (mpfr_cmp_si (Vfp, 0) EQ 0)
 
 // Define macro for detecting an Variable FP 1
-#define IsMpf1(Vfp)                     (mpf_cmp_si (Vfp, 1) EQ 0)
+#define IsMpf1(Vfp)                     (mpfr_cmp_si (Vfp, 1) EQ 0)
 
-// Define macro for detecting a valid mpf_* var
+// Define macro for detecting a valid mpfr_* var
 #define IsMpfValid(a)                   ((a)->_mp_d NE NULL)
 
 // Define macro for detecting a parenthetic list
@@ -430,10 +430,10 @@
 // Define macro for detecting Rational or VFP infinity
 #define IsMpzInfinity(a)    (mpz_inf_p (a))
 #define IsMpqInfinity(a)    (mpq_inf_p (a))
-#define IsMpfInfinity(a)    (mpf_inf_p (a))
+#define IsMpfInfinity(a)    (mpfr_inf_p (a))
 
 // Define macro for inverting VFP numbers
-#define mpf_inv(rop,op)     mpf_ui_div (rop, 1, op)
+#define mpfr_inv(rop,op,rnd) mpfr_ui_div (rop, 1, op, rnd)
 
 
 //***************************************************************************

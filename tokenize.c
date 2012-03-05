@@ -3514,8 +3514,9 @@ UBOOL MergeNumbers
                             for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
                             {
                                 // Save in the result
-                                mpf_init_set_sx (&((LPAPLVFP) lpMemRes)[uPrv],
-                                                  (uBitMask & *(LPAPLBOOL) lpMemPrv) NE 0);
+                                mpfr_init_set_sx (&((LPAPLVFP) lpMemRes)[uPrv],
+                                                   (uBitMask & *(LPAPLBOOL) lpMemPrv) NE 0,
+                                                   MPFR_RNDN);
                                 // Shift over the bit mask
                                 uBitMask <<= 1;
 
@@ -3533,16 +3534,18 @@ UBOOL MergeNumbers
                             // Loop through the previous token's values
                             for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
                                 // Save in the result
-                                mpf_init_set_sx (&((LPAPLVFP) lpMemRes)[uPrv],
-                                                 *((LPAPLINT) lpMemPrv)++);
+                                mpfr_init_set_sx (&((LPAPLVFP) lpMemRes)[uPrv],
+                                                  *((LPAPLINT) lpMemPrv)++,
+                                                   MPFR_RNDN);
                             break;
 
                         case ARRAY_FLOAT:
                             // Loop through the previous token's values
                             for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
                                 // Save in the result
-                                mpf_init_set_d  (&((LPAPLVFP) lpMemRes)[uPrv],
-                                                 *((LPAPLFLOAT) lpMemPrv)++);
+                                mpfr_init_set_d  (&((LPAPLVFP) lpMemRes)[uPrv],
+                                                  *((LPAPLFLOAT) lpMemPrv)++,
+                                                   MPFR_RNDN);
                             break;
 
                         case ARRAY_RAT:
@@ -3550,8 +3553,9 @@ UBOOL MergeNumbers
                             for (uPrv = 0; uPrv < aplNELMPrv; uPrv++)
                             {
                                 // Save in the result
-                                mpf_init_set_q  (&((LPAPLVFP) lpMemRes)[uPrv],
-                                                  ((LPAPLRAT) lpMemPrv)++);
+                                mpfr_init_set_q  (&((LPAPLVFP) lpMemRes)[uPrv],
+                                                   ((LPAPLRAT) lpMemPrv)++,
+                                                   MPFR_RNDN);
                                 // Free the RAT temp
                                 Myq_clear (&((LPAPLRAT) lpMemPrv)[-1]);
                             } // End FOR
@@ -3575,20 +3579,23 @@ UBOOL MergeNumbers
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                             // Save the new value as a VFP
-                            mpf_init_set_sx (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
-                                              lppnLocalVars->at.aplInteger);
+                            mpfr_init_set_sx (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
+                                               lppnLocalVars->at.aplInteger,
+                                               MPFR_RNDN);
                             break;
 
                         case ARRAY_FLOAT:
                             // Save the new value as a VFP
-                            mpf_init_set_d  (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
-                                              lppnLocalVars->at.aplFloat);
+                            mpfr_init_set_d  (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
+                                               lppnLocalVars->at.aplFloat,
+                                               MPFR_RNDN);
                             break;
 
                         case ARRAY_RAT:
                             // Save the new value as a VFP
-                            mpf_init_set_q  (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
-                                             &lppnLocalVars->at.aplRat);
+                            mpfr_init_set_q  (&((LPAPLVFP) lpMemRes)[aplNELMPrv],
+                                              &lppnLocalVars->at.aplRat,
+                                               MPFR_RNDN);
                             // Free the RAT temp
                             Myq_clear (&lppnLocalVars->at.aplRat);
 

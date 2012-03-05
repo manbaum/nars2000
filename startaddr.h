@@ -142,6 +142,8 @@ typedef struct tagSTART_ADDRESSES
     "FormatImmedFC"             , (LPUCHAR) &FormatImmedFC              ,
     "FormatAplint"              , (LPUCHAR) &FormatAplint               ,
     "FormatAplintFC"            , (LPUCHAR) &FormatAplintFC             ,
+    "FormatAplRat"              , (LPUCHAR) &FormatAplRat               ,
+    "FormatAplRatFC"            , (LPUCHAR) &FormatAplRatFC             ,
     "FormatFloat"               , (LPUCHAR) &FormatFloat                ,
     "FormatFloatFC"             , (LPUCHAR) &FormatFloatFC              ,
 
@@ -315,12 +317,11 @@ typedef struct tagSTART_ADDRESSES
     "mpq_init_set_ui"           , (LPUCHAR) &mpq_init_set_ui            ,
     "mpq_init_set_d"            , (LPUCHAR) &mpq_init_set_d             ,
     "mpq_set_sx"                , (LPUCHAR) &mpq_set_sx                 ,
-    "mpf_set_sx"                , (LPUCHAR) &mpf_set_sx                 ,
-    "mpf_init_set_sx"           , (LPUCHAR) &mpf_init_set_sx            ,
-    "mpf_init_set_q"            , (LPUCHAR) &mpf_init_set_q             ,
-    "mpf_pow"                   , (LPUCHAR) &mpf_pow                    ,
-    "mpf_ui_cmp"                , (LPUCHAR) &mpf_ui_cmp                 ,
-    "mpf_si_cmp"                , (LPUCHAR) &mpf_si_cmp                 ,
+    "mpfr_init_set_sx"          , (LPUCHAR) &mpfr_init_set_sx           ,
+    "mpfr_set_sx"               , (LPUCHAR) &mpfr_set_sx                ,
+    "mpfr_pow"                  , (LPUCHAR) &mpfr_pow                   ,
+    "mpfr_ui_cmp"               , (LPUCHAR) &mpfr_ui_cmp                ,
+    "mpfr_si_cmp"               , (LPUCHAR) &mpfr_si_cmp                ,
     "Myf_clear"                 , (LPUCHAR) &Myf_clear                  ,
 
     // mpifns.c

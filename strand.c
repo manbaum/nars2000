@@ -1422,13 +1422,13 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
                             // Convert the INT to a VFP
-                            mpf_init_set_sx (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkInteger);
+                            mpfr_init_set_sx (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkInteger, MPFR_RNDN);
 
                             break;
 
                         case IMMTYPE_FLOAT:
                             // Convert the FLOAT to a VFP
-                            mpf_init_set_d  (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkFloat  );
+                            mpfr_init_set_d  (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkFloat  , MPFR_RNDN);
 
                             break;
 
@@ -1452,13 +1452,13 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                             case IMMTYPE_BOOL:
                             case IMMTYPE_INT:
                                 // Convert the BOOL/INT to a RAT
-                                mpf_init_set_sx (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkSym->stData.stInteger);
+                                mpfr_init_set_sx (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkSym->stData.stInteger, MPFR_RNDN);
 
                                 break;
 
                             case IMMTYPE_FLOAT:
                                 // Convert the FLOAT to a VFP
-                                mpf_init_set_d  (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkSym->stData.stFloat  );
+                                mpfr_init_set_d  (LPAPL.Vfp++, lpYYToken->tkToken.tkData.tkSym->stData.stFloat  , MPFR_RNDN);
 
                                 break;
 
@@ -1506,25 +1506,25 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                             case ARRAY_BOOL:
                             case ARRAY_INT:
                                 // Convert the BOOL/INT to a VFP
-                                mpf_init_set_sx (LPAPL.Vfp++, aplLongestNum);
+                                mpfr_init_set_sx (LPAPL.Vfp++, aplLongestNum, MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_FLOAT:
                                 // Convert the FLOAT to a VFP
-                                mpf_init_set_d  (LPAPL.Vfp++, *(LPAPLFLOAT) &aplLongestNum);
+                                mpfr_init_set_d  (LPAPL.Vfp++, *(LPAPLFLOAT) &aplLongestNum, MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_RAT:
                                 // Convert the RAT to a VFP
-                                mpf_init_set_q  (LPAPL.Vfp++, (LPAPLRAT) lpSymGlbNum);
+                                mpfr_init_set_q  (LPAPL.Vfp++, (LPAPLRAT) lpSymGlbNum, MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_VFP:
                                 // Copy the VFP to a VFP
-                                mpf_init_copy   (LPAPL.Vfp++, (LPAPLVFP) lpSymGlbNum);
+                                mpfr_init_copy   (LPAPL.Vfp++, (LPAPLVFP) lpSymGlbNum);
 
                                 break;
 
@@ -1660,7 +1660,7 @@ HGLOBAL MakeGlbEntry_EM
         case ARRAY_VFP:
             if (bInit)
                 // Initialize the result and copy the value
-                mpf_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpVal);
+                mpfr_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpVal);
             else
                 // Copy the value
                 *((LPAPLVFP) lpMemRes) = *(LPAPLVFP) lpVal;

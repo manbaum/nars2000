@@ -177,7 +177,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
                  lpMemRes = NULL;   // ...    result ...
     UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    ALLTYPES      atRht = {0};      // Right arg as ALLTYPES
+    ALLTYPES     atRht = {0};       // Right arg as ALLTYPES
 
     // 2..7   == 2 3 4 5 6 7
     // 2 2..7 == 2 4 6
@@ -274,12 +274,12 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
 
         case ARRAY_VFP:
             // Initialize temp vars
-            mpf_init (&aplVfpLft);
-            mpf_init (&aplVfpStep);
-            mpf_init (&aplVfpTmp);
+            mpfr_init0 (&aplVfpLft);
+            mpfr_init0 (&aplVfpStep);
+            mpfr_init0 (&aplVfpTmp);
 
             // Save as VFP
-            mpf_set (&aplVfpLft, (LPAPLVFP) lpMemLft);
+            mpfr_set (&aplVfpLft, (LPAPLVFP) lpMemLft, MPFR_RNDN);
 
             // Save as result storage type
             aplTypeRes = ARRAY_VFP;
@@ -322,7 +322,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
                 break;
 
             case ARRAY_VFP:
-                mpf_set (&aplVfpStep, &((LPAPLVFP) lpMemLft)[1]);
+                mpfr_set (&aplVfpStep, &((LPAPLVFP) lpMemLft)[1], MPFR_RNDN);
 
                 break;
 
@@ -351,7 +351,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
                 break;
 
             case ARRAY_VFP:
-                mpf_set_ui (&aplVfpStep, 1);
+                mpfr_set_ui (&aplVfpStep, 1, MPFR_RNDN);
 
                 break;
 
@@ -451,27 +451,27 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
 
         case ARRAY_VFP:
             // Check for step 0
-            if (mpf_cmp_ui (&aplVfpStep, 0) EQ 0)
+            if (mpfr_cmp_ui (&aplVfpStep, 0) EQ 0)
             {
-                if (mpf_cmp (&aplVfpLft, &atRht.aplVfp) NE 0)
+                if (mpfr_cmp (&aplVfpLft, &atRht.aplVfp) NE 0)
                     goto LEFT_DOMAIN_EXIT;
-                mpf_set_ui (&aplVfpStep, 1);
+                mpfr_set_ui (&aplVfpStep, 1, MPFR_RNDN);
             } // End IF
 
             // Set the sign of the step
-            if (mpf_cmp (&aplVfpLft, &atRht.aplVfp) <= 0)
-                mpf_abs (&aplVfpStep, &aplVfpStep);
+            if (mpfr_cmp (&aplVfpLft, &atRht.aplVfp) <= 0)
+                mpfr_abs (&aplVfpStep, &aplVfpStep, MPFR_RNDN);
             else
             {
-                mpf_abs (&aplVfpStep, &aplVfpStep);
-                mpf_neg (&aplVfpStep, &aplVfpStep);
+                mpfr_abs (&aplVfpStep, &aplVfpStep, MPFR_RNDN);
+                mpfr_neg (&aplVfpStep, &aplVfpStep, MPFR_RNDN);
             } // End IF/ELSE
 
             // The NELM of the result is
-            mpf_sub (&aplVfpTmp, &atRht.aplVfp, &aplVfpLft);
-            mpf_div (&aplVfpTmp, &aplVfpTmp, &aplVfpStep);
-            mpf_abs (&aplVfpTmp, &aplVfpTmp);
-            aplNELMRes = 1 + mpf_get_ctsa (&aplVfpTmp, NULL);     // Rounding to nearest integer within SysCT
+            mpfr_sub (&aplVfpTmp, &atRht.aplVfp, &aplVfpLft, MPFR_RNDN);
+            mpfr_div (&aplVfpTmp, &aplVfpTmp, &aplVfpStep, MPFR_RNDN);
+            mpfr_abs (&aplVfpTmp, &aplVfpTmp, MPFR_RNDN);
+            aplNELMRes = 1 + mpfr_get_ctsa (&aplVfpTmp, NULL);      // Rounding to nearest integer within SysCT
 
             break;
 
@@ -542,8 +542,8 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             // Loop through the result items
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
-                mpf_init_set (((LPAPLVFP) lpMemRes)++, &aplVfpLft);
-                mpf_add (&aplVfpLft, &aplVfpLft, &aplVfpStep);
+                mpfr_init_set (((LPAPLVFP) lpMemRes)++, &aplVfpLft, MPFR_RNDN);
+                mpfr_add (&aplVfpLft, &aplVfpLft, &aplVfpStep, MPFR_RNDN);
             } // End FOR
 
             break;

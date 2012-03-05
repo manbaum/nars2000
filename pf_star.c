@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -218,57 +218,55 @@ APLVFP PrimFnMonStarVisV
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 #else
-    APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
+    APLVFP mpfRes = {0};
 #endif
     // Check for special case:  ^-_
     if (IsMpfNegInfinity (&aplVfpRht))
     {
         // Initialize the result to zero
-        mpf_init (&mpfRes);
+        mpfr_init0 (&mpfRes);
 
         return mpfRes;
     } // End IF
 #ifdef OWN_EXPLOG
     // Initialize the result
-    mpf_init_copy (&mpfRes, &aplVfpRht);
-    mpf_init (&mpfTmp1);
-    mpf_init (&mpfTmp2);
+    mpfr_init_copy (&mpfRes, &aplVfpRht);
+    mpfr_init0 (&mpfTmp1);
+    mpfr_init0 (&mpfTmp2);
 
     // First, represent exp (V) as (2 ^ m) * exp (V - m * log (2))
     //   and m = floor (0.5 + V/log (2)) which bounds
     //   |V - m * log(2) to be less than 0.5 * log (2)
-////log2x = (APLINT) (floor (0.5 + (mpf_get_d (&aplVfpRht) / log (2.0))));
+////log2x = (APLINT) (floor (0.5 + (mpfr_get_d (&aplVfpRht) / log (2.0))));
 
-    // Calculate the log of 2 ...
-    mpf_set_ui (&mpfTmp1, 2);
-    mpfLn2 = LogVfp (mpfTmp1);
+    // Get the log of 2 ...
+    mpfr_const_log2 (&mpfLn2, MPFR_RNDN);
 
     // Divide V by log of 2
-    mpf_div (&mpfTmp1, &aplVfpRht, &mpfLn2);
+    mpfr_div (&mpfTmp1, &aplVfpRht, &mpfLn2, MPFR_RNDN);
 
     // Add 0.5
-    mpf_set_d (&mpfTmp2, 0.5);
-    mpf_add   (&mpfTmp1, &mpfTmp1, &mpfTmp2);
+    mpfr_set_d (&mpfTmp2, 0.5, MPFR_RNDN);
+    mpfr_add   (&mpfTmp1, &mpfTmp1, &mpfTmp2, MPFR_RNDN);
 
     // Floor
-    mpf_floor (&mpfTmp1, &mpfTmp1);
+    mpfr_floor (&mpfTmp1, &mpfTmp1);
 
-    log2x = mpf_get_si (&mpfTmp1);
+    log2x = mpfr_get_si (&mpfTmp1);
 
     // Times m
-    mpf_mul_ui (&mpfTmp1, &mpfLn2, abs ((int) log2x));
+    mpfr_mul_ui (&mpfTmp1, &mpfLn2, abs ((int) log2x), MPFR_RNDN);
     if (log2x < 0)
-        mpf_neg (&mpfTmp1, &mpfTmp1);
+        mpfr_neg (&mpfTmp1, &mpfTmp1, MPFR_RNDN);
     // Subtract from V to yield V - m * log (2)
-    mpf_sub (&mpfRes, &mpfRes, &mpfTmp1);
+    mpfr_sub (&mpfRes, &mpfRes, &mpfTmp1, MPFR_RNDN);
 
     // Calculate the exp of mpfRes via the power series 4.2.1 in Abramowitz & Stegun
     Myf_clear (&mpfTmp2);
     mpfTmp2 = ExpVfp (mpfRes);
 
     // Copy to the result
-    mpf_copy (&mpfRes, &mpfTmp2);
+    mpfr_copy (&mpfRes, &mpfTmp2);
 
     // Finally, convert the result back to normal
     //   by multiplying it by 2 ^ m.
@@ -276,7 +274,7 @@ APLVFP PrimFnMonStarVisV
     switch (signum (log2x))
     {
         case -1:
-            mpf_div_2exp (&mpfRes, &mpfRes, (int) -log2x);
+            mpfr_div_2exp (&mpfRes, &mpfRes, (int) -log2x);
 
             break;
 
@@ -284,7 +282,7 @@ APLVFP PrimFnMonStarVisV
             break;
 
         case  1:
-            mpf_mul_2exp (&mpfRes, &mpfRes, (int)  log2x);
+            mpfr_mul_2exp (&mpfRes, &mpfRes, (int)  log2x);
 
             break;
 
@@ -303,18 +301,10 @@ APLVFP PrimFnMonStarVisV
     mpfr_buildopt_tls_p ();
 #endif
     // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_exp   (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_exp  (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 #endif
@@ -340,20 +330,20 @@ APLVFP ExpVfp
     // exp (z) = 1 + (z/!1) + ((z^2)/!2) + ((z^3)/!3) + ...
 
     // Initialize the result to 0
-    mpf_init_set_ui (&mpfRes, 0);
+    mpfr_init_set_ui (&mpfRes, 0);
 
     // Initialize the base to 1
-    mpf_init_set_ui (&mpfBase, 1);
+    mpfr_init_set_ui (&mpfBase, 1);
 
     // Loop through the # terms
     for (uRes = 0 ; uRes < nDigitsFPC; uRes++)
     {
         // Accumulate the base into the result
-        mpf_add (&mpfRes, &mpfRes, &mpfBase);
+        mpfr_add (&mpfRes, &mpfRes, &mpfBase, MPFR_RNDN);
 
         // Multiply the base by z / (uRes + 1)
-        mpf_mul    (&mpfBase, &mpfBase, &aplVfpRht);
-        mpf_div_ui (&mpfBase, &mpfBase, uRes + 1);
+        mpfr_mul    (&mpfBase, &mpfBase, &aplVfpRht, MPFR_RNDN);
+        mpfr_div_ui (&mpfBase, &mpfBase, uRes + 1, MPFR_RNDN);
     } // End FOR
 
     // We no longer need this storage
@@ -827,71 +817,71 @@ APLVFP PrimFnDydStarVisVvV
 {
     APLVFP mpfRes = {0},
            mpfTmp = {0};
-    UINT   uRht;
 
     // Check for indeterminates:  0 * 0
     if (IsMpf0 (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_0EXP0,
-                                aplVfpRht,
-                                mpfRes);
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_0EXP0,
+                                 aplVfpRht,
+                                 mpfRes);
     // Check for indeterminates:  0 * +_
     if (IsMpf0 (&aplVfpLft)
-     && mpf_cmp (&aplVfpRht, &mpfPosInfinity) EQ 0)
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_0EXPPi,
-                                aplVfpRht,
-                                mpfRes);
+     && mpfr_cmp (&aplVfpRht, &mpfPosInfinity) EQ 0)
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_0EXPPi,
+                                 aplVfpRht,
+                                 mpfRes);
     // Check for indeterminates:  0 * -_
     if (IsMpf0 (&aplVfpLft)
-     && mpf_cmp (&aplVfpRht, &mpfNegInfinity) EQ 0)
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_0EXPNi,
-                                aplVfpRht,
-                                mpfRes);
+     && mpfr_cmp (&aplVfpRht, &mpfNegInfinity) EQ 0)
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_0EXPNi,
+                                 aplVfpRht,
+                                 mpfRes);
     // Check for indeterminates:  L * _ for L <= -1
-    if (mpf_cmp_si (&aplVfpLft, -1) <= 0
-     && mpf_cmp (&aplVfpRht, &mpfPosInfinity) EQ 0)
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_NEXPPi,
-                                aplVfpRht,
-                                mpfRes);
+    if (mpfr_cmp_si (&aplVfpLft, -1) <= 0
+     && mpfr_cmp (&aplVfpRht, &mpfPosInfinity) EQ 0)
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_NEXPPi,
+                                 aplVfpRht,
+                                 mpfRes);
     // Check for indeterminates:  L * R for L < 0 and R not an integer
-    if (mpf_sgn (&aplVfpLft) < 0
-     && !mpf_integer_p (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_NegEXPFrc,
-                                aplVfpRht,
-                                mpfRes);
+    if (mpfr_sgn (&aplVfpLft) < 0
+     && !mpfr_integer_p (&aplVfpRht))
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_NegEXPFrc,
+                                 aplVfpRht,
+                                 mpfRes);
     // Check for special cases:  _ * 0 and -_ * 0
-    if (mpf_inf_p (&aplVfpLft)
+    if (mpfr_inf_p (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_InfEXP0,
-                                aplVfpRht,
-                                mpfRes);
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_InfEXP0,
+                                 aplVfpRht,
+                                 mpfRes);
     // Check for special cases:  1 * _ and 1 * -_
     if (IsMpf1 (&aplVfpLft)
-     && mpf_inf_p (&aplVfpRht))
+     && mpfr_inf_p (&aplVfpRht))
+        mpfr_init_copy (&mpfRes, &aplVfpLft);
+    else
+    // If the exponent is an integer, ...
+    if (mpfr_integer_p (&aplVfpRht))
     {
-        mpf_init_copy (&mpfRes, &aplVfpLft);
+        mpz_t mpzTmp = {0};
 
-        return mpfRes;
-    } // End IF
+        // Initialize the result and temp to 0
+        mpfr_init0  (&mpfRes);
+        mpz_init   ( mpzTmp);
 
-    // If the exponent is an integer that fits in a UINT, ...
-    if (mpf_integer_p (&aplVfpRht) NE 0
-     && mpf_fits_ulong_p (&aplVfpRht))
-    {
-        // Initialize the result to 0
-        mpf_init (&mpfRes);
-
-        // Extract the exponent as a UINT
-        uRht = mpf_get_ui (&aplVfpRht);
+        // Extract the exponent as MPZ
+        mpfr_get_z ( mpzTmp, &aplVfpRht, MPFR_RNDN);
 
         // Compute the power
-        mpf_pow_ui (&mpfRes, &aplVfpLft, uRht);
+        mpfr_pow_z (&mpfRes, &aplVfpLft, mpzTmp, MPFR_RNDN);
+
+        // We no longer need this storage
+        Myz_clear  ( mpzTmp);
     } else
     {
         // General exp a^z = exp (z * ln (a))
@@ -900,7 +890,7 @@ APLVFP PrimFnDydStarVisVvV
         mpfTmp = PrimFnMonCircleStarVisV (aplVfpLft, lpPrimSpec);
 
         // Multiply by the exponent
-        mpf_mul (&mpfTmp, &mpfTmp, &aplVfpRht);
+        mpfr_mul (&mpfTmp, &mpfTmp, &aplVfpRht, MPFR_RNDN);
 
         // Calculate the exp of that
         mpfRes = PrimFnMonStarVisV (mpfTmp, lpPrimSpec);

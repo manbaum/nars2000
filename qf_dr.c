@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -908,10 +908,10 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         lpaplVfp = VarArrayBaseToData (lpHeader, aplRankRht);
 
         // Get the initial precision
-        uCommPrec = mpf_get_prec (lpaplVfp++);
+        uCommPrec = mpfr_get_prec (lpaplVfp++);
 
         for (uRht = 1; uRht < aplNELMRht; uRht++)
-        if (uCommPrec NE mpf_get_prec (lpaplVfp++))
+        if (uCommPrec NE mpfr_get_prec (lpaplVfp++))
         {
             // Mark as none
             uCommPrec = 0;

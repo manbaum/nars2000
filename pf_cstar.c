@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -243,14 +243,13 @@ APLVFP PrimFnMonCircleStarVisV
     int    log2xSign;
 #else
     APLVFP  mpfRes  = {0};
-    APLMPFR mpfrRes = {0};
 #endif
     // Check for indeterminates:  {log} 0
     if (IsMpf0 (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpRht,          // No left arg
-                                ICNDX_LOG0,
-                                aplVfpRht,
-                                mpfRes);
+        return mpfr_QuadICValue (aplVfpRht,         // No left arg
+                                 ICNDX_LOG0,
+                                 aplVfpRht,
+                                 mpfRes);
     // Check for special cases:  {log} _
     if (IsMpfPosInfinity (&aplVfpRht))
         return mpfPosInfinity;
@@ -258,39 +257,39 @@ APLVFP PrimFnMonCircleStarVisV
     // Check for special cases:  {log} -_
     // Check for special cases:  {log} N  for N < 0
     if (IsMpfNegInfinity (&aplVfpRht)
-     || mpf_cmp_ui (&aplVfpRht, 0) < 0)
+     || mpfr_cmp_ui (&aplVfpRht, 0) < 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
 #if OWN_EXPLOG
     // Initialize the result
-    mpf_init_copy (&mpfRes, &aplVfpRht);
+    mpfr_init_copy (&mpfRes, &aplVfpRht);
 
 
 
     // First, represent V as r * 2 ^ m where m is an integer
     //   and r is between 1/sqrt (2) and sqrt (2).
     // This means that log (V) = (log (r)) + m * log (2)
-////log2x = (int) (floor (0.5 + (log (mpf_get_d (&aplVfpRht)) / log (2.0))));
+////log2x = (int) (floor (0.5 + (log (mpfr_get_d (&aplVfpRht)) / log (2.0))));
 
     mpz_init (&mpzTmp);
-    mpf_init (&mpfTmp);
+    mpfr_init0 (&mpfTmp);
 
-    if (mpf_cmp (&mpfRes, &mpfSqrt2) > 0)
+    if (mpfr_cmp (&mpfRes, &mpfSqrt2) > 0)
     {
-        mpf_div (&mpfTmp, &mpfRes, &mpfSqrt2);
-        mpf_floor (&mpfTmp, &mpfTmp);
-        mpz_set_f (&mpzTmp, &mpfTmp);
+        mpfr_div (&mpfTmp, &mpfRes, &mpfSqrt2, MPFR_RNDN);
+        mpfr_floor (&mpfTmp, &mpfTmp);
+        mpz_set_fr (&mpzTmp, &mpfTmp);
         log2x = (int) mpz_sizeinbase (&mpzTmp, 2);
-        mpf_div_2exp (&mpfRes, &mpfRes, log2x);
+        mpfr_div_2exp (&mpfRes, &mpfRes, log2x, MPFR_RNDN);
         log2xSign =  1;
     } else
-    if (mpf_cmp (&mpfInvSqrt2, &mpfRes) > 0)
+    if (mpfr_cmp (&mpfInvSqrt2, &mpfRes) > 0)
     {
-        mpf_div (&mpfTmp, &mpfInvSqrt2, &mpfRes);
-        mpf_floor (&mpfTmp, &mpfTmp);
-        mpz_set_f (&mpzTmp, &mpfTmp);
+        mpfr_div (&mpfTmp, &mpfInvSqrt2, &mpfRes, MPFR_RNDN);
+        mpfr_floor (&mpfTmp, &mpfTmp);
+        mpz_set_fr (&mpzTmp, &mpfTmp);
         log2x = (int) mpz_sizeinbase (&mpzTmp, 2);
-        mpf_mul_2exp (&mpfRes, &mpfRes, log2x);
+        mpfr_mul_2exp (&mpfRes, &mpfRes, log2x, MPFR_RNDN);
         log2xSign = -1;
     } else
         log2x = log2xSign = 0;
@@ -299,15 +298,15 @@ APLVFP PrimFnMonCircleStarVisV
     Myz_clear (&mpzTmp);
 
     // Check the scale as the above calculation of log2x can be off by one
-    while (mpf_cmp (&mpfRes, &mpfSqrt2) > 0)
+    while (mpfr_cmp (&mpfRes, &mpfSqrt2) > 0)
     {
-        mpf_div_ui (&mpfRes, &mpfRes, 2);
+        mpfr_div_ui (&mpfRes, &mpfRes, 2);
         log2x++;
     } // End WHILE
 
-    while (mpf_cmp (&mpfInvSqrt2, &mpfRes) > 0)
+    while (mpfr_cmp (&mpfInvSqrt2, &mpfRes) > 0)
     {
-        mpf_mul_ui (&mpfRes, &mpfRes, 2);
+        mpfr_mul_ui (&mpfRes, &mpfRes, 2, MPFR_RNDN);
         log2x++;
     } // End WHILE
 
@@ -315,17 +314,17 @@ APLVFP PrimFnMonCircleStarVisV
     mpfTmp = LogVfp (mpfRes);
 
     // Copy to the result
-    mpf_copy (&mpfRes, &mpfTmp);
+    mpfr_copy (&mpfRes, &mpfTmp);
 
     // Calculate the log of 2 ...
-    mpf_set_ui (&mpfTmp, 2);
+    mpfr_set_ui (&mpfTmp, 2);
     mpfLn2 = LogVfp (mpfTmp);
 
     // Finally, convert the result back to normal
-    mpf_mul_ui (&mpfTmp, &mpfLn2, log2x);
+    mpfr_mul_ui (&mpfTmp, &mpfLn2, log2x);
     if (log2xSign < 0)
-        mpf_neg (&mpfTmp, &mpfTmp);
-    mpf_add    (&mpfRes, &mpfRes, &mpfTmp);
+        mpfr_neg (&mpfTmp, &mpfTmp);
+    mpfr_add    (&mpfRes, &mpfRes, &mpfTmp, MPFR_RNDN);
 
     // We no longer need this storage
     Myf_clear (&mpfTmp);
@@ -333,19 +332,11 @@ APLVFP PrimFnMonCircleStarVisV
 
     return mpfRes;
 #else
-    // Convert the data to mpfr-format
-    mpfr_init  (&mpfrRes);
-    mpfr_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
+    // Initialize the result
+    mpfr_init0 (&mpfRes);
 
-    // Let MPFR handle it
-    mpfr_log   (&mpfrRes, &mpfrRes, MPFR_RNDN);
-
-    // Convert the data to mpf-format
-    mpf_init   (&mpfRes);
-    mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear (&mpfrRes);
+    // Calculate the function
+    mpfr_log  (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 #endif
@@ -373,36 +364,36 @@ APLVFP LogVfp
            mpfBase  = {0};      // ... base
     UINT   uRes;                // Loop counter
 
-    mpf_init (&mpfRes);
-    mpf_init (&mpfTmp1);
-    mpf_init (&mpfTmp2);
-    mpf_init (&mpfBase);
+    mpfr_init0 (&mpfRes);
+    mpfr_init0 (&mpfTmp1);
+    mpfr_init0 (&mpfTmp2);
+    mpfr_init0 (&mpfBase);
 
     // ln z = 2 * [(1/1)*(z-1)/(z+1) + (1/3)*((z-1)/z+1))^3 + (1/5)*...]
 
     // Calculate Base:  (z-1)/(z+1)
-    mpf_sub_ui (&mpfTmp1, &aplVfpRht, 1);
-    mpf_add_ui (&mpfTmp2, &aplVfpRht, 1);
-    mpf_div    (&mpfBase, &mpfTmp1, &mpfTmp2);
+    mpfr_sub_ui (&mpfTmp1, &aplVfpRht, 1);
+    mpfr_add_ui (&mpfTmp2, &aplVfpRht, 1);
+    mpfr_div    (&mpfBase, &mpfTmp1, &mpfTmp2);
 
     // Calculate the multiplier:  Base^2
-    mpf_mul    (&mpfTmp2, &mpfBase, &mpfBase);
+    mpfr_mul    (&mpfTmp2, &mpfBase, &mpfBase);
 
     // Loop through the # terms
     for (uRes = 0 ; uRes < nDigitsFPC; uRes++)
     {
         // Divide the base by (2 * uRes) + 1
-        mpf_div_ui (&mpfTmp1, &mpfBase, 2 * uRes + 1);
+        mpfr_div_ui (&mpfTmp1, &mpfBase, 2 * uRes + 1);
 
         // Accumulate into the result
-        mpf_add (&mpfRes, &mpfRes, &mpfTmp1);
+        mpfr_add (&mpfRes, &mpfRes, &mpfTmp1);
 
         // Multiply the base by the multiplier
-        mpf_mul (&mpfBase, &mpfBase, &mpfTmp2);
+        mpfr_mul (&mpfBase, &mpfBase, &mpfTmp2);
     } // End FOR
 
     // Multiply by the final 2
-    mpf_mul_ui (&mpfRes, &mpfRes, 2);
+    mpfr_mul_ui (&mpfRes, &mpfRes, 2);
 
     // We no longer need this storage
     Myf_clear (&mpfBase);
@@ -557,30 +548,30 @@ APLVFP PrimFnDydCircleStarVisVvV
     // Check for special cases:  0 {log} ±_
     // Check for special cases:  ±_ {log} 0
     // Check for special cases:  ±_ {log} ±_
-    if ((IsMpf0 (&aplVfpLft) && mpf_inf_p (&aplVfpRht))
-     || (mpf_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
-     || (mpf_inf_p (&aplVfpLft) && mpf_inf_p (&aplVfpRht)))
+    if ((IsMpf0 (&aplVfpLft) && mpfr_inf_p (&aplVfpRht))
+     || (mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
+     || (mpfr_inf_p (&aplVfpLft) && mpfr_inf_p (&aplVfpRht)))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Check for indeterminates:  B {log} B
     if (IsBooleanVfp (&aplVfpLft)
      && IsBooleanVfp (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpLft,
+        return mpfr_QuadICValue (aplVfpLft,
                                 icndxLog[IsMpf1 (&aplVfpLft)][IsMpf1(&aplVfpRht)],
                                 aplVfpRht,
                                 mpfRes);
     // Initialize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
     // The EAS says "If A and B are equal, return one."
-    if (mpf_cmp (&aplVfpLft,  &aplVfpRht) EQ 0)
-        mpf_set_ui (&mpfRes, 1);
+    if (mpfr_cmp (&aplVfpLft,  &aplVfpRht) EQ 0)
+        mpfr_set_ui (&mpfRes, 1, MPFR_RNDN);
     else
     {
         // Calculate log (aplMpfRht) / log (aplVfpLft)
         mpfLft = PrimFnMonCircleStarVisV (aplVfpLft, lpPrimSpec);
         mpfRht = PrimFnMonCircleStarVisV (aplVfpRht, lpPrimSpec);
-        mpf_div (&mpfRes, &mpfRht, &mpfLft);
+        mpfr_div (&mpfRes, &mpfRht, &mpfLft, MPFR_RNDN);
 
         // We no longer need this storage
         Myf_clear (&mpfRht);

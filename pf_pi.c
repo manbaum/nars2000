@@ -248,10 +248,10 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
             lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Save in local var
-            mpz_init_set_f (&aplMPIRht, (LPAPLVFP) lpMemRht);
+            mpz_init_set_fr (&aplMPIRht, (LPAPLVFP) lpMemRht);
 
             // Is it an integer?
-            bRet = mpf_integer_p ((LPAPLVFP) lpMemRht);
+            bRet = mpfr_integer_p ((LPAPLVFP) lpMemRht);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
@@ -578,7 +578,7 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
 
         case ARRAY_VFP:
             // Get the left arg as an integer
-            aplIntegerLft = mpf_get_sx ((LPAPLVFP) lpMemLft, &bRet);
+            aplIntegerLft = mpfr_get_sx ((LPAPLVFP) lpMemLft, &bRet);
 
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
@@ -736,7 +736,7 @@ RESTART_RAT:
                  || aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
                 {
                     // Convert the VFP to an integer
-                    mpq_set_f (&mpqRes, &((LPAPLVFP) lpMemRht)[uCnt]);
+                    mpq_set_fr (&mpqRes, &((LPAPLVFP) lpMemRht)[uCnt]);
                     if (aplIntegerLft EQ NUMTHEORY_PREVPRIME)
                         mpq_ceil (&mpqRes, &mpqRes);
                     else
@@ -747,11 +747,11 @@ RESTART_RAT:
                 } // End IF
 
                 // If it's not an integer, ...
-                if (!mpf_integer_p ((LPAPLVFP) lpMemRht))
+                if (!mpfr_integer_p ((LPAPLVFP) lpMemRht))
                     goto LEFT_DOMAIN_EXIT;
 
                 // Get the next element as a MPI
-                mpz_set_f (&aplMPIRht, &((LPAPLVFP) lpMemRht)[uCnt]);
+                mpz_set_fr (&aplMPIRht, &((LPAPLVFP) lpMemRht)[uCnt], MPFR_RNDN);
 
                 break;
 
@@ -1915,21 +1915,21 @@ APLMPI PrimFnPiNthPrime
                 goto ERROR_EXIT;
         } else
         {
-            APLMPFR mpfrRes = {0};
+            APLVFP mpfRes = {0};
+
+            // Initialize the result
+            mpfr_init0 (&mpfRes);
+            mpfr_set_z (&mpfRes, &mpzArg, MPFR_RNDN);
 
             // Calculate the log10 of mpzArg
-            mpfr_init  (&mpfrRes);
-            mpfr_set_z (&mpfrRes, &mpzArg, MPFR_RNDN);
-
-            // Let MPFR handle it
-            mpfr_log10 (&mpfrRes, &mpfrRes, MPFR_RNDN);
-            mpfr_floor (&mpfrRes, &mpfrRes);
+            mpfr_log10 (&mpfRes, &mpfRes, MPFR_RNDN);
+            mpfr_floor (&mpfRes, &mpfRes);
 
             // Convert the data to an integer
-            uCnt = mpfr_get_si (&mpfrRes, MPFR_RNDN);
+            uCnt = mpfr_get_si (&mpfRes, MPFR_RNDN);
 
             // We no longer need this storage
-            mpfr_clear (&mpfrRes);
+            mpfr_clear (&mpfRes);
 
             // Call common routine
             if (NthPrime (&mpzRes, mpzArg, lpbCtrlBreak, lpMemPTD, bQuadIO, TABSTATE_NTHPOWERTAB, uCnt))

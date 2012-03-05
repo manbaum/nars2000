@@ -3494,7 +3494,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an integer using System CT
-                aplLongestLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
@@ -3609,7 +3609,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
             {
                 // Attempt to convert the VFP to an integer using System CT
-                aplIntegerLft = mpf_get_ctsa (((LPAPLVFP) lpMemLft)++, &bRet);
+                aplIntegerLft = mpfr_get_ctsa (((LPAPLVFP) lpMemLft)++, &bRet);
                 if ((!bRet) || ((!uPar) && aplIntegerLft < 0))
                     goto DOMAIN_EXIT;
                 if (!uPar)
@@ -3763,7 +3763,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     // Get the []FC values we need
     aplCharDecimal  = GetQuadFCValue (FCNDX_DECIMAL_SEP);
     aplCharOverflow = GetQuadFCValue (FCNDX_OVERFLOW_FILL);
-    aplCharOverbar =  GetQuadFCValue (FCNDX_OVERBAR);
+    aplCharOverbar  = GetQuadFCValue (FCNDX_OVERBAR);
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -3816,7 +3816,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                         {
                             case ARRAY_RAT:
                                 // Convert the RAT to a VFP
-                                mpf_init_set_q (&aplVfpItm, (LPAPLRAT) hGlbItmRht);
+                                mpfr_init_set_q (&aplVfpItm, (LPAPLRAT) hGlbItmRht, MPFR_RNDN);
 
                                 lpaplChar =
                                   FormatAplVfpFC (lpaplChar,                // Ptr to output save area

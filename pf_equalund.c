@@ -807,7 +807,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_VFP:     // Lft = BOOL, Rht = VFP
                     // Initialize the temp
-                    mpf_init (&aplVfpLft);
+                    mpfr_init0 (&aplVfpLft);
 
                     // Loop through the elements
                     for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
@@ -817,10 +817,11 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the BOOL to a VFP
-                        mpf_set_sx (&aplVfpLft,
-                                     (uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE);
+                        mpfr_set_sx (&aplVfpLft,
+                                      (uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE,
+                                      MPFR_RNDN);
                         // Compare the two VFPs relative to []CT
-                        bRet = (mpf_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
+                        bRet = (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -934,7 +935,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_VFP:     // Lft = INT, Rht = VFP
                     // Initialize the temp
-                    mpf_init (&aplVfpLft);
+                    mpfr_init0 (&aplVfpLft);
 
                     // Loop through the elements
                     for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
@@ -944,10 +945,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the INT to a VFP
-                        mpf_set_sx (&aplVfpLft, *((LPAPLINT) lpMemLft)++);
+                        mpfr_set_sx (&aplVfpLft, *((LPAPLINT) lpMemLft)++, MPFR_RNDN);
 
                         // Compare the two VFPs relative to []CT
-                        bRet = (mpf_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
+                        bRet = (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
                     } // End FOR
 
                     // We no longer need this storage
@@ -1015,8 +1016,8 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_RAT:     // Lft = FLOAT, Rht = RAT
                     // Initialize the temps
-                    mpf_init (&aplVfpLft);
-                    mpf_init (&aplVfpRht);
+                    mpfr_init0 (&aplVfpLft);
+                    mpfr_init0 (&aplVfpRht);
 
                     // Loop through the elements
                     for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
@@ -1026,13 +1027,13 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the RAT to a VFP
-                        mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+                        mpfr_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
 
                         // Convert the FLOAT to a VFP
-                        mpf_set_q (&aplVfpRht,  ((LPAPLRAT)   lpMemRht)++);
+                        mpfr_set_q (&aplVfpRht,  ((LPAPLRAT)   lpMemRht)++, MPFR_RNDN);
 
                         // Compare the two VFPs relative to []CT
-                        bRet = (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) EQ 0);
+                        bRet = (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) EQ 0);
                     } // End FOR
 
                     // We no longer need this storage
@@ -1043,7 +1044,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_VFP:     // Lft = FLOAT, Rht = VFP
                     // Initialize the temp
-                    mpf_init (&aplVfpLft);
+                    mpfr_init0 (&aplVfpLft);
 
                     // Loop through the elements
                     for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
@@ -1053,10 +1054,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the FLOAT to a VFP
-                        mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+                        mpfr_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
 
                         // Compare the two VFPs relative to []CT
-                        bRet = (mpf_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
+                        bRet = (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
                     } // End FOR
 
                     // We no longer need this storage
@@ -1132,7 +1133,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_VFP:     // Lft = APA, Rht = VFP
                     // Initialize the temp
-                    mpf_init (&aplVfpLft);
+                    mpfr_init0 (&aplVfpLft);
 
                     // Loop through the elements
                     for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
@@ -1142,10 +1143,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                             goto ERROR_EXIT;
 
                         // Convert the APA to a VFP
-                        mpf_set_sx (&aplVfpLft, apaOff + apaMul * uDim);
+                        mpfr_set_sx (&aplVfpLft, apaOff + apaMul * uDim, MPFR_RNDN);
 
                         // Compare the two VFPs relative to []CT
-                        bRet = (mpf_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
+                        bRet = (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
                     } // End FOR
 
                     // We no longer need this storage
@@ -1211,8 +1212,8 @@ UBOOL PrimFnDydEqualUnderbarSimple
             // Initialize the temps
             mpq_init (&aplRatLft);
             mpq_init (&aplRatRht);
-            mpf_init (&aplVfpLft);
-            mpf_init (&aplVfpRht);
+            mpfr_init0 (&aplVfpLft);
+            mpfr_init0 (&aplVfpRht);
 
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
@@ -1261,9 +1262,9 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                         break;
 
                                     case ARRAY_VFP:     // Lft = HETERO:BOOL,  Rht = HETERO:VFP
-                                        mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                        mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
-                                        if (mpf_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
@@ -1294,17 +1295,17 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                         break;
 
                                     case ARRAY_RAT:     // Lft = HETERO:FLOAT, Rht = HETERO:RAT
-                                        mpf_set_d (&aplVfpLft, aplFloatLft);
-                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
+                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
-                                        if (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
                                     case ARRAY_VFP:     // Lft = HETERO:FLOAT, Rht = HETERO:VFP
-                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
-                                        if (mpf_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
@@ -1351,10 +1352,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                         break;
 
                                     case ARRAY_FLOAT:   // Lft = HETERO:RAT,  Rht = HETERO:FLOAT
-                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
-                                        mpf_set_d (&aplVfpRht, aplFloatRht);
+                                        mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
+                                        mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
-                                        if (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
@@ -1369,9 +1370,9 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                         break;
 
                                     case ARRAY_VFP:     // Lft = HETERO:RAT,  Rht = HETERO:VFP
-                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                        mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
-                                        if (mpf_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
@@ -1387,16 +1388,16 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                 {
                                     case ARRAY_BOOL:    // Lft = HETERO:VFP,  Rht = HETERO:BOOL
                                     case ARRAY_INT:     // Lft = HETERO:VFP,  Rht = HETERO:INT
-                                        mpf_set_sx (&aplVfpRht, aplIntegerRht);
+                                        mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
-                                        if (mpf_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
                                     case ARRAY_FLOAT:   // Lft = HETERO:VFP,  Rht = HETERO:FLOAT
-                                        mpf_set_d (&aplVfpRht, aplFloatRht);
+                                        mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
-                                        if (mpf_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
@@ -1406,14 +1407,14 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                         break;
 
                                     case ARRAY_RAT:     // Lft = HETERO:VFP,  Rht = HETERO:RAT
-                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
-                                        if (mpf_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
                                     case ARRAY_VFP:     // Lft = HETERO:VFP,  Rht = HETERO:VFP
-                                        if (mpf_cmp_ct (*(LPAPLVFP) lpSymGlbLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
+                                        if (mpfr_cmp_ct (*(LPAPLVFP) lpSymGlbLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
                                             bRet = FALSE;
                                         break;
 
@@ -1456,8 +1457,8 @@ UBOOL PrimFnDydEqualUnderbarSimple
             // Initialize the temps
             mpq_init (&aplRatLft);
             mpq_init (&aplRatRht);
-            mpf_init (&aplVfpLft);
-            mpf_init (&aplVfpRht);
+            mpfr_init0 (&aplVfpLft);
+            mpfr_init0 (&aplVfpRht);
 
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
@@ -1484,9 +1485,9 @@ UBOOL PrimFnDydEqualUnderbarSimple
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+                        mpfr_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++, MPFR_RNDN);
 
-                        if (mpf_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) NE 0)
+                        if (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) NE 0)
                             bRet = FALSE;
                     } // End FOR
 
@@ -1521,7 +1522,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        if (mpf_cmp_ct (*((LPAPLVFP) lpMemLft)++, *((LPAPLVFP) lpMemRht)++, fQuadCT) NE 0)
+                        if (mpfr_cmp_ct (*((LPAPLVFP) lpMemLft)++, *((LPAPLVFP) lpMemRht)++, fQuadCT) NE 0)
                             bRet = FALSE;
                     } // End FOR
 

@@ -150,24 +150,23 @@ void InitGlbNumConstants
     mp_set_memory_functions (mp_alloc, mp_realloc, mp_free);
 
     // Set the default precision for the following 64-bit VFP constants
-    mpf_set_default_prec (128);
     mpfr_set_default_prec (128);
 
     // Initialize the MPI, RAT, and VFP constants
-    mpz_init_set_str (&mpzMinInt  , "-9223372036854775808", 10);
-    mpz_init_set_str (&mpzMaxInt  ,  "9223372036854775807", 10);
-    mpz_init_set_str (&mpzMaxUInt , "18446744073709551615", 10);
-    mpq_init_set_str (&mpqMinInt  , "-9223372036854775808", 10);
-    mpq_init_set_str (&mpqMaxInt  ,  "9223372036854775807", 10);
-    mpq_init_set_str (&mpqMaxUInt , "18446744073709551615", 10);
-    mpq_init_set_ui  (&mpqHalf    , 1, 2);
-    mpf_init_set_str (&mpfMinInt  , "-9223372036854775808", 10);
-    mpf_init_set_str (&mpfMaxInt  ,  "9223372036854775807", 10);
-    mpf_init_set_str (&mpfMaxUInt , "18446744073709551615", 10);
-    mpf_init_set_d   (&mpfHalf    , 0.5);
+    mpz_init_set_str  (&mpzMinInt  , "-9223372036854775808", 10);
+    mpz_init_set_str  (&mpzMaxInt  ,  "9223372036854775807", 10);
+    mpz_init_set_str  (&mpzMaxUInt , "18446744073709551615", 10);
+    mpq_init_set_str  (&mpqMinInt  , "-9223372036854775808", 10);
+    mpq_init_set_str  (&mpqMaxInt  ,  "9223372036854775807", 10);
+    mpq_init_set_str  (&mpqMaxUInt , "18446744073709551615", 10);
+    mpq_init_set_ui   (&mpqHalf    , 1, 2);
+    mpfr_init_set_str (&mpfMinInt  , "-9223372036854775808", 10, MPFR_RNDN);
+    mpfr_init_set_str (&mpfMaxInt  ,  "9223372036854775807", 10, MPFR_RNDN);
+    mpfr_init_set_str (&mpfMaxUInt , "18446744073709551615", 10, MPFR_RNDN);
+    mpfr_init_set_d   (&mpfHalf    , 0.5                       , MPFR_RNDN);
 
     // Use our own invalid operation functions for MPIR/MPFR
-    mp_set_invalid_functions (mpz_invalid, mpq_invalid, mpf_invalid);
+    mp_set_invalid_functions (mpz_invalid, mpq_invalid, mpfr_invalid);
 } // End InitGlbNumConstants
 
 
@@ -206,28 +205,17 @@ void InitPTDVars
     (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    APLMPFR mpfrTmp = {0};              // MPFR temporary value
-
     // Free these vars unless already free
-    Myf_clear     (&lpMemPTD->mpfPi);
-    Myf_clear     (&lpMemPTD->mpfE);
-
-    // Initialize a temp
-    mpfr_init     (&mpfrTmp);
+    Myf_clear        (&lpMemPTD->mpfrPi);
+    Myf_clear        (&lpMemPTD->mpfrE);
 
     // Create a local value for Pi
-    mpf_init      (&lpMemPTD->mpfPi);
-    mpfr_const_pi (                  &mpfrTmp, MPFR_RNDN);
-    mpfr_get_f    (&lpMemPTD->mpfPi, &mpfrTmp, MPFR_RNDN);
+    mpfr_init0       (&lpMemPTD->mpfrPi);
+    mpfr_const_pi    (&lpMemPTD->mpfrPi, MPFR_RNDN);
 
     // Create a local value for e
-    mpf_init      (&lpMemPTD->mpfE);
-    mpfr_set_ui   (&mpfrTmp, 1, MPFR_RNDN);
-    mpfr_exp      (&mpfrTmp,         &mpfrTmp, MPFR_RNDN);
-    mpfr_get_f    (&lpMemPTD->mpfE , &mpfrTmp, MPFR_RNDN);
-
-    // We no longer need this storage
-    mpfr_clear    (&mpfrTmp);
+    mpfr_init_set_ui (&lpMemPTD->mpfrE,                1, MPFR_RNDN);
+    mpfr_exp         (&lpMemPTD->mpfrE, &lpMemPTD->mpfrE, MPFR_RNDN);
 } // InitPTDVars
 
 
@@ -242,8 +230,7 @@ void InitVfpPrecision
 
 {
     // Set the new default precision
-    mpf_set_default_prec  ((UINT) uDefPrec);
-    mpfr_set_default_prec ((UINT) (32 * ((uDefPrec+ 32 - 1) / 32)));
+    mpfr_set_default_prec ((mpfr_prec_t) uDefPrec);
 } // End InitVfpPrecision
 
 

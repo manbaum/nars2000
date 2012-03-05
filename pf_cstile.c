@@ -617,8 +617,8 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDim +                 uAx  * uDimHi],
-                                  &((LPAPLVFP) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi]);
+                    mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uDim +                 uAx  * uDimHi],
+                                    &((LPAPLVFP) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi]);
                 } // End FOR
             } // End FOR/FOR
 
@@ -829,7 +829,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 break;
 
             case ARRAY_VFP:
-                aplIntegerLft = mpf_get_sx ((LPAPLVFP) VarArrayDataFmBase (lpMemLft), &bRet);
+                aplIntegerLft = mpfr_get_sx ((LPAPLVFP) VarArrayDataFmBase (lpMemLft), &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
 
@@ -938,7 +938,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
                     // Attempt to convert the VFP to an INT
-                    *lpMemRot++ = mpf_get_sx (lpMemVfp++, &bRet);
+                    *lpMemRot++ = mpfr_get_sx (lpMemVfp++, &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;
                 } // End FOR
@@ -1260,8 +1260,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDim +                  uAx           * uDimHi],
-                                  &((LPAPLVFP) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi]);
+                    mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uDim +                  uAx           * uDimHi],
+                                    &((LPAPLVFP) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi]);
                 } // End FOR
             } // End FOR/FOR
 

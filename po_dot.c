@@ -1098,8 +1098,8 @@ RESTART_INNERPROD_RES:
         // Initialize the temps
         mpq_init (&aplRatLft);
         mpq_init (&aplRatRht);
-        mpf_init (&aplVfpLft);
-        mpf_init (&aplVfpRht);
+        mpfr_init0 (&aplVfpLft);
+        mpfr_init0 (&aplVfpRht);
 
         // Initialize the bit index
         uBitIndex = 0;
@@ -1369,7 +1369,7 @@ RESTART_INNERPROD_RES:
 
                             case ARRAY_VFP:
 ////////////////////////////////Myf_clear (&aplVfpLft);
-                                mpf_copy (&aplVfpLft, (LPAPLVFP) lpMem);
+                                mpfr_copy (&aplVfpLft, (LPAPLVFP) lpMem);
                                 lpSymGlbCmpLft = &aplVfpLft;
 
                                 break;
@@ -1527,7 +1527,7 @@ RESTART_INNERPROD_RES:
                         case ARRAY_VFP:
 ////                        Myf_clear (&aplVfpLft);
 ////                        Myf_clear (&aplVfpRht);
-                            mpf_copy (&aplVfpRht, (LPAPLVFP) lpMem);
+                            mpfr_copy (&aplVfpRht, (LPAPLVFP) lpMem);
                             lpSymGlbCmpRht = &aplVfpRht;
 
                             break;
@@ -1582,7 +1582,7 @@ RESTART_INNERPROD_RES:
 
                 case ARRAY_VFP:
                     // Save the accumulated reduction in the result
-                    mpf_init_copy (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
+                    mpfr_init_copy (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
 ////////////////////             *((LPAPLVFP) lpMemRes)++= aplVfpRht;
 
                     break;

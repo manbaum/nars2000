@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -822,13 +822,13 @@ NORMAL_EXIT:
 #define GetNextRAT(lpMem,typeMem,uRes)      ((LPAPLRAT) lpMem)[uRes]
 #define GetNextVFP(lpMem,typeMem,uRes)      ((LPAPLVFP) lpMem)[uRes]
 #define CompareInt(Lft,typeLft,Rht,typeRht) (Lft EQ Rht)
-#define CompareFlt(Lft,typeLft,Rht,typeRht) (CompareCT  ( Lft,  Rht, fQuadCT, NULL))
+#define CompareFlt(Lft,typeLft,Rht,typeRht) (CompareCT   ( Lft,  Rht, fQuadCT, NULL))
 #ifdef RAT_EXACT
-#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp    (&Lft, &Rht         ) EQ 0)
+#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp     (&Lft, &Rht         ) EQ 0)
 #else
-#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp_ct ( Lft,  Rht, fQuadCT) EQ 0)
+#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp_ct  ( Lft,  Rht, fQuadCT) EQ 0)
 #endif
-#define CompareVFP(Lft,typeLft,Rht,typeRht) (mpf_cmp_ct ( Lft,  Rht, fQuadCT) EQ 0)
+#define CompareVFP(Lft,typeLft,Rht,typeRht) (mpfr_cmp_ct ( Lft,  Rht, fQuadCT) EQ 0)
 #define Compare
 //  ***FXME*** -- What to do about fuzzy comparisons not being transitive???
 
@@ -1459,12 +1459,12 @@ void preKmpV
 
     while (i < m)
     {
-        while (j > -1 && mpf_cmp (&x[i], &x[j]) NE 0)
+        while (j > -1 && mpfr_cmp (&x[i], &x[j]) NE 0)
             j = kmpNext[j];
         i++;
         j++;
 
-        if ((i < m) && mpf_cmp (&x[i], &x[j]) EQ 0)
+        if ((i < m) && mpfr_cmp (&x[i], &x[j]) EQ 0)
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
@@ -1826,10 +1826,10 @@ UBOOL CompareRATvVFP
     UBOOL  bRet;                // TRUE iff the result is valid
 
     // Convert the RAT to a VFP
-    mpf_init_set_q (&mpfLft, &aplLft);
+    mpfr_init_set_q (&mpfLft, &aplLft, MPFR_RNDN);
 
     // Compare 'em
-    bRet = (mpf_cmp_ct (mpfLft, aplRht, GetQuadCT ()) EQ 0);
+    bRet = (mpfr_cmp_ct (mpfLft, aplRht, GetQuadCT ()) EQ 0);
 
     // We no longer need this storage
     Myf_clear (&mpfLft);
@@ -1898,10 +1898,10 @@ UBOOL CompareVFPvRAT
     UBOOL  bRet;                // TRUE iff the result is valid
 
     // Convert the RAT to a VFP
-    mpf_init_set_q (&mpfRht, &aplRht);
+    mpfr_init_set_q (&mpfRht, &aplRht, MPFR_RNDN);
 
     // Compare 'em
-    bRet = (mpf_cmp_ct (aplLft, mpfRht, GetQuadCT ()) EQ 0);
+    bRet = (mpfr_cmp_ct (aplLft, mpfRht, GetQuadCT ()) EQ 0);
 
     // We no longer need this storage
     Myf_clear (&mpfRht);

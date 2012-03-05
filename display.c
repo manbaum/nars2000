@@ -521,6 +521,7 @@ UBOOL DisplayGlbArr_EM
             ZeroMemory (lpaplChar, (APLU3264) max (aplNELMRes, 1) * sizeof (APLCHAR));
         else
         {
+            // Check for WS FULL
             if (aplNELMRes NE (APLU3264) aplNELMRes)
                 goto WSFULL_EXIT;
 
@@ -1103,7 +1104,7 @@ LPAPLCHAR FormatAplRatFC
             lpaplChar +=
               ConvertWideToNameLength (lpaplChar,   // Ptr to output save buffer
                                       &wcInf,       // Ptr to incoming chars
-                                        1);         // # chars to convert
+                                       1);          // # chars to convert
         else
             *lpaplChar++ = UTF16_INFINITY;
     } else
@@ -1773,7 +1774,7 @@ LPAPLCHAR FormatAplVfpFC
 
         lpaplChar =
           FormatAplint (lpaplChar,                  // Ptr to output save area
-                        mpf_get_prec (&aplVfp));    // The value to format
+                        mpfr_get_prec (&aplVfp));   // The value to format
         // Append trailing marker overwriting the trailing space
         lpaplChar[-1] = L')';
     } // End IF
@@ -1784,11 +1785,12 @@ LPAPLCHAR FormatAplVfpFC
     if (nDigits >= 0)
     {
         // Format the VFP at maximum # digits
-        mpf_get_str (lpRawFmt,              // Ptr to output save area
-                    &expptr,                // Ptr to exponent save area
-                     10,                    // Base of number system
-                     0,                     // # significant digits (0 = all)
-                    &aplVfp);               // Ptr to VFP number
+        mpfr_get_str (lpRawFmt,             // Ptr to output save area
+                     &expptr,               // Ptr to exponent save area
+                      10,                   // Base of number system
+                      0,                    // # significant digits (0 = all)
+                     &aplVfp,               // Ptr to VFP number
+                      MPFR_RNDN);           // Rounding mode
         // Get the char length
         iDiff = lstrlen (lpRawFmt);
     } else
@@ -1799,15 +1801,28 @@ LPAPLCHAR FormatAplVfpFC
     } // End IF/ELSE
 
     // Format the VFP
-    mpf_get_str (lpRawFmt,                      // Ptr to output save area
-                &expptr,                        // Ptr to exponent save area
-                 10,                            // Base of number system
-                 abs ((UINT) nDigits)           // # significant digits (0 = all)
-               + (bFractDigs ? expptr : 0),     // If nDigits is # fractional, add in expptr
+    mpfr_get_str (lpRawFmt,                     // Ptr to output save area
+                 &expptr,                       // Ptr to exponent save area
+                  10,                           // Base of number system
+                  abs ((UINT) nDigits)          // # significant digits (0 = all)
+                + (bFractDigs ? expptr : 0),    // If nDigits is # fractional, add in expptr
                                                 //   to get # significant digits
-                &aplVfp);                       // Ptr to VFP number
+                 &aplVfp,                       // Ptr to VFP number
+                  MPFR_RNDN);                   // Rounding mode
     // Get the char length
     iLen = lstrlen (lpRawFmt);
+
+    // Check for negative
+    bNeg = (lpRawFmt[0] EQ '-');
+
+    // Delete trailing zeros as <mpf_get_str> does
+    for (iRes = iLen - 1; iRes >= max (expptr + bNeg, 0); iRes--)
+    if (lpRawFmt[iRes] EQ '0')
+    {
+        lpRawFmt[iRes] = AC_EOS;
+        iLen--;
+    } else
+        break;
 
     // If we're not displaying in E-format, ...
     if (nDigits >= 0)
@@ -1824,7 +1839,7 @@ LPAPLCHAR FormatAplVfpFC
         //                  = 1 + floor (P x log10 (2))
         //   where log10 (2) = (ln (2)) / (ln (10))
         //                   = M_LN2 / M_LN10
-        uDig = 1 + (UINT) floor (mpf_get_prec (&aplVfp) * M_LN2 / M_LN10);
+        uDig = 1 + (UINT) floor (mpfr_get_prec (&aplVfp) * M_LN2 / M_LN10);
 
         // Calculate the # trailing underflow digits
         iUnderflow = abs64 (nDigits) - max (uDig, (APLUINT) iLen);
@@ -1832,6 +1847,7 @@ LPAPLCHAR FormatAplVfpFC
     } else
         iUnderflow = 0;
 
+    // If the number is zero, ...
     if (iLen EQ 0)
     {
         // "Format" the number
@@ -1878,9 +1894,6 @@ LPAPLCHAR FormatAplVfpFC
         // Convert the char to WCHAR
         for (iRes = iLen - 1; iRes >= 0; iRes--)
             lpaplChar[iRes] = ((LPCHAR) lpaplChar)[iRes];
-
-        // Check for negative
-        bNeg = (lpaplChar[0] EQ L'-');
 
         // Check for Infinity
         if (lpaplChar[bNeg] EQ DEF_POSINFINITY_CHAR)

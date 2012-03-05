@@ -772,7 +772,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             //   saving the item's prototype
                             for (uSubRest = 0; uSubRest < aplNELMComRest; uSubRest++)
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
-                                mpf_init (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
+                                mpfr_init0 (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
 
                             // Save the VFP in the first position
                             // Split cases based upon the immediate storage type
@@ -780,12 +780,12 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             {
                                 case IMMTYPE_BOOL:
                                 case IMMTYPE_INT:
-                                    mpf_set_sx (&((LPAPLVFP)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger);
+                                    mpfr_set_sx (&((LPAPLVFP)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stInteger, MPFR_RNDN);
 
                                     break;
 
                                 case IMMTYPE_FLOAT:
-                                    mpf_set_d  (&((LPAPLVFP)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stFloat);
+                                    mpfr_set_d  (&((LPAPLVFP)   lpMemRes)[uRht * aplNELMCom], ((LPAPLHETERO) lpMemRht)[uRht]->stData.stFloat, MPFR_RNDN);
 
                                     break;
 
@@ -1085,23 +1085,26 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                     case ARRAY_BOOL:
                                     case ARRAY_INT:
                                     case ARRAY_APA:
-                                        mpf_init_set_sx (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
-                                                         GetNextInteger (lpMemSub, aplTypeSub, uSub));
+                                        mpfr_init_set_sx (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                          GetNextInteger (lpMemSub, aplTypeSub, uSub),
+                                                          MPFR_RNDN);
                                         break;
 
                                     case ARRAY_FLOAT:
-                                        mpf_init_set_d  (&((LPAPLVFP)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
-                                                          ((LPAPLFLOAT) lpMemSub)[uSub]);
+                                        mpfr_init_set_d  (&((LPAPLVFP)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                           ((LPAPLFLOAT) lpMemSub)[uSub],\
+                                                           MPFR_RNDN);
                                         break;
 
                                     case ARRAY_RAT:
-                                        mpf_init_set_q  (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
-                                                         &((LPAPLRAT) lpMemSub)[uSub]);
+                                        mpfr_init_set_q  (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                          &((LPAPLRAT) lpMemSub)[uSub],
+                                                           MPFR_RNDN);
                                         break;
 
                                     case ARRAY_VFP:
-                                        mpf_init_copy   (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
-                                                         &((LPAPLVFP) lpMemSub)[uSub]);
+                                        mpfr_init_copy   (&((LPAPLVFP) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)],
+                                                          &((LPAPLVFP) lpMemSub)[uSub]);
                                         break;
 
                                     case ARRAY_CHAR:        // Can't happen with result VFP
@@ -1119,7 +1122,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                mpf_init     (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
+                                mpfr_init0   (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
                             } // End FOR/FOR
 
                             // Loop through the missing elements in the result (right arg item's rows)
@@ -1131,7 +1134,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 if (CheckCtrlBreak (*lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
-                                mpf_init     (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
+                                mpfr_init0   (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
                             } // End FOR/FOR
 
                             break;
@@ -1611,7 +1614,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                         case ARRAY_VFP:
                             // Initialize the temp
-                            mpf_init (&mpfTmp);
+                            mpfr_init0 (&mpfTmp);
 
                             // Loop through the right arg item's elements
                             //   copying them to the result
@@ -2360,7 +2363,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             lpMemLft = VarArrayBaseToData (lpMemLft, 0);
 
             // Attempt to convert the VFP to an integer using System CT
-            aplLongestLft = mpf_get_ctsa ((LPAPLVFP) lpMemLft, &bRet);
+            aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpMemLft, &bRet);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
@@ -2772,7 +2775,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                             goto ERROR_EXIT;
 
                         // Attempt to convert the VFP to an integer using System CT
-                        aplTmpSubLft = mpf_get_ctsa (&((LPAPLVFP) lpMemSubLft)[iDim], &bRet) - bQuadIO;
+                        aplTmpSubLft = mpfr_get_ctsa (&((LPAPLVFP) lpMemSubLft)[iDim], &bRet) - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft)

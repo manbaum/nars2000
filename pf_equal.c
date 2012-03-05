@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -325,7 +325,7 @@ APLBOOL PrimFnDydEqualBisVvV
 
 {
     // Compare the two VFPs relative to []CT
-    return (mpf_cmp_ct (aplVfpLft, aplVfpRht, GetQuadCT ()) EQ 0);
+    return (mpfr_cmp_ct (aplVfpLft, aplVfpRht, GetQuadCT ()) EQ 0);
 } // End PrimFnDydEqualBisVvV
 
 

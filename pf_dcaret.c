@@ -282,7 +282,7 @@ APLVFP gcdAplVfp
            aplLft,
            aplRht;
 
-    mpf_init (&aplTmp);
+    mpfr_init0 (&aplTmp);
 
     // Ensure both arguments are non-negative
     aplLft = PrimFnMonStileVisV (aplVfpLft, lpPrimSpec);
@@ -294,14 +294,14 @@ APLVFP gcdAplVfp
 ////////aplLft = aplRht % aplLft;
 ////////aplRht = aplTmp;
 
-        mpf_copy (&aplTmp, &aplLft);
-        mpf_mod  (&aplLft, &aplRht, &aplLft);
-        mpf_copy (&aplRht, &aplTmp);
+        mpfr_copy (&aplTmp, &aplLft);
+        mpfr_mod  (&aplLft, &aplRht, &aplLft);
+        mpfr_copy (&aplRht, &aplTmp);
     } // End WHILE
 
     // The sign of the result is the sign of the left argument
-    if (mpf_sgn (&aplVfpLft) < 0)
-        mpf_neg (&aplRht, &aplRht);
+    if (mpfr_sgn (&aplVfpLft) < 0)
+        mpfr_neg (&aplRht, &aplRht, MPFR_RNDN);
 
     // We no longer need this storage
     Myf_clear (&aplTmp);
@@ -517,15 +517,15 @@ APLVFP PrimFnDydDownCaretVisVvV
     APLVFP aplTmp = {0};
 
     // Check for indeterminates:  gcd (±_, 0)  or  gcd (0, ±_)
-    if ((mpf_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
-     || (mpf_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
-        return mpf_QuadICValue (aplVfpLft,
+    if ((mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
+     || (mpfr_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
+        return mpfr_QuadICValue (aplVfpLft,
                                 ICNDX_0GCDInf,
                                 aplVfpRht,
                                 aplTmp);
     // Check for special cases:  gcd (±_, N)  or  gcd (N, ±_)
-    if (mpf_inf_p (&aplVfpLft)
-     || mpf_inf_p (&aplVfpRht))
+    if (mpfr_inf_p (&aplVfpLft)
+     || mpfr_inf_p (&aplVfpRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return gcdAplVfp (aplVfpLft, aplVfpRht, lpPrimSpec);

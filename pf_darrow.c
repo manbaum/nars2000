@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -655,7 +655,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
             case ARRAY_VFP:
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
+                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
 
                 break;
 
@@ -1052,7 +1052,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
             for (uDim = 0; bRet && uDim < aplNELMLft; uDim++)
             {
                 // Attempt to convert the VFP to an integer using System CT
-                aplIntLft = mpf_get_ctsa (&((LPAPLVFP) lpDataLft)[uDim], &bRet);
+                aplIntLft = mpfr_get_ctsa (&((LPAPLVFP) lpDataLft)[uDim], &bRet);
                 if (bRet)
                 {
                     // If there's an axis, ...

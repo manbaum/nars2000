@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1522,7 +1522,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                 for (u = 0; bRet && u < aplNELMLft; u++)
                 {
                     // Attempt to convert the VFP to an integer using System CT
-                    aplIntTmp = mpf_get_ctsa (&((LPAPLVFP) lpDataLft)[u], &bRet);
+                    aplIntTmp = mpfr_get_ctsa (&((LPAPLVFP) lpDataLft)[u], &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;
 
@@ -1685,7 +1685,7 @@ void PrimFnDydRhoLftGlbCopyDim
 
         case ARRAY_VFP:
             for (uLft = 0; uLft < aplNELMLft; uLft++)
-                *lpaplDim++ = (APLDIM) mpf_get_ctsa (((LPAPLVFP) lpDataLft)++, &bRet);
+                *lpaplDim++ = (APLDIM) mpfr_get_ctsa (((LPAPLVFP) lpDataLft)++, &bRet);
             break;
 
         defstop
@@ -2011,7 +2011,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                     lpMemRhtNext = lpMemRhtData;
                 } // End IF
 
-                mpf_init_copy (((LPAPLVFP) lpDataRes)++, ((LPAPLVFP) lpMemRhtNext)++);
+                mpfr_init_copy (((LPAPLVFP) lpDataRes)++, ((LPAPLVFP) lpMemRhtNext)++);
             } // End FOR
 
             break;

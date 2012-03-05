@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -426,46 +426,48 @@ APLVFP PrimFnMonDownStileVisV
     // Check for ± infinity
     if (IsMpfInfinity (&aplVfpRht))
         // Copy to the result
-        mpf_init_copy (&mpfRes, &aplVfpRht);
+        mpfr_init_copy (&mpfRes, &aplVfpRht);
     else
     {
         // Initialize the temps
-        mpf_init (&mpfRes);
-        mpf_init (&mpfFloor);
-        mpf_init (&mpfCeil );
-        mpf_init (&mpfTmp1);
-        mpf_init (&mpfTmp2);
-        mpf_init (&mpfNear);
+        mpfr_init0 (&mpfRes);
+        mpfr_init0 (&mpfFloor);
+        mpfr_init0 (&mpfCeil );
+        mpfr_init0 (&mpfTmp1);
+        mpfr_init0 (&mpfTmp2);
+        mpfr_init0 (&mpfNear);
 
         // Get the exact floor and ceiling
-        mpf_floor (&mpfFloor, &aplVfpRht);
-        mpf_ceil  (&mpfCeil , &aplVfpRht);
+        mpfr_floor (&mpfFloor, &aplVfpRht);
+        mpfr_ceil  (&mpfCeil , &aplVfpRht);
 
         // Calculate the integer nearest the right arg
 
-        mpf_sub (&mpfTmp1, &aplVfpRht, &mpfFloor);
-        mpf_sub (&mpfTmp2, &mpfCeil  , &aplVfpRht);
+        mpfr_sub (&mpfTmp1, &aplVfpRht, &mpfFloor, MPFR_RNDN);
+        mpfr_sub (&mpfTmp2, &mpfCeil  , &aplVfpRht, MPFR_RNDN);
 
         // Split cases based upon the signum of the difference between
         //   (the number and its floor) and (the ceiling and the number)
-        switch (mpf_cmp (&mpfTmp1, &mpfTmp2))
+        switch (mpfr_cmp (&mpfTmp1, &mpfTmp2))
         {
             case  1:
-                mpf_set (&mpfNear, &mpfCeil);
+                mpfr_set (&mpfNear, &mpfCeil, MPFR_RNDN);
 
                 break;
 
             case  0:
-                mpf_abs (&mpfTmp1, &mpfFloor);
-                mpf_abs (&mpfTmp2, &mpfFloor);
+                mpfr_abs (&mpfTmp1, &mpfFloor, MPFR_RNDN);
+                mpfr_abs (&mpfTmp2, &mpfFloor, MPFR_RNDN);
 
                 // They are equal, so use the one with the larger absolute value
-                mpf_set (&mpfNear, ((mpf_cmp (&mpfTmp1, &mpfTmp2) > 0) ? &mpfFloor
-                                                                       : &mpfCeil));
+                mpfr_set (&mpfNear,
+                           ((mpfr_cmp (&mpfTmp1, &mpfTmp2) > 0) ? &mpfFloor
+                                                                : &mpfCeil),
+                           MPFR_RNDN);
                 break;
 
             case -1:
-                mpf_set (&mpfNear, &mpfFloor);
+                mpfr_set (&mpfNear, &mpfFloor, MPFR_RNDN);
 
                 break;
 
@@ -474,35 +476,35 @@ APLVFP PrimFnMonDownStileVisV
         } // End SWITCH
 
         // If Near is < Rht, return Near
-        if (mpf_cmp (&mpfNear, &aplVfpRht) < 0)
-            mpf_set (&mpfRes, &mpfNear);
+        if (mpfr_cmp (&mpfNear, &aplVfpRht) < 0)
+            mpfr_set (&mpfRes, &mpfNear, MPFR_RNDN);
         else
         {
             // If Near is non-zero, and
             //   Rht is tolerantly-equal to Near,
             //   return Near; otherwise, return Near - 1
-            if (mpf_sgn (&mpfNear) NE 0)
+            if (mpfr_sgn (&mpfNear) NE 0)
             {
-                mpf_set (&mpfRes, &mpfNear);
+                mpfr_set (&mpfRes, &mpfNear, MPFR_RNDN);
 
                 if (!PrimFnDydEqualBisVvV (aplVfpRht,
                                            mpfNear,
                                            NULL))
-                    mpf_sub_ui (&mpfRes, &mpfRes, 1);
+                    mpfr_sub_ui (&mpfRes, &mpfRes, 1, MPFR_RNDN);
             } else
             {
                 // aplNear is zero
 
                 // Get []CT as a VFP
-                mpf_set_d (&mpfTmp1, GetQuadCT ());
+                mpfr_set_d (&mpfTmp1, GetQuadCT (), MPFR_RNDN);
 
                 // If Rht is between (-[]CT) and 0 (inclusive),
                 //   return 0; othewise, return -1
-                if (mpf_cmp (&mpfTmp1, &aplVfpRht) <= 0
-                 && mpf_sgn (&aplVfpRht)           <= 0)
-                    mpf_set_si (&mpfRes,  0);
+                if (mpfr_cmp (&mpfTmp1, &aplVfpRht) <= 0
+                 && mpfr_sgn (&aplVfpRht)           <= 0)
+                    mpfr_set_si (&mpfRes,  0, MPFR_RNDN);
                 else
-                    mpf_set_si (&mpfRes, -1);
+                    mpfr_set_si (&mpfRes, -1, MPFR_RNDN);
             } // End IF/ELSE
         } // End IF/ELSE
 
@@ -666,10 +668,10 @@ APLVFP PrimFnDydDownStileVisVvV
     APLVFP mpfRes = {0};
 
     // Compare the two Variable FPs
-    if (mpf_cmp (&aplVfpLft, &aplVfpRht) < 0)
-        mpf_init_copy (&mpfRes, &aplVfpLft);
+    if (mpfr_cmp (&aplVfpLft, &aplVfpRht) < 0)
+        mpfr_init_copy (&mpfRes, &aplVfpLft);
     else
-        mpf_init_copy (&mpfRes, &aplVfpRht);
+        mpfr_init_copy (&mpfRes, &aplVfpRht);
 
     return mpfRes;
 } // End PrimFnDydDownStileVisVvV

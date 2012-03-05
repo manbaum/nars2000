@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -233,10 +233,10 @@ APLVFP PrimFnMonBarVisV
     APLVFP mpfRes = {0};
 
     // Initialize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
     // Negate the Variable FP
-    mpf_neg (&mpfRes, &aplVfpRht);
+    mpfr_neg (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonBarVisV
@@ -475,18 +475,18 @@ APLVFP PrimFnDydBarVisVvV
     // Check for indeterminates:  _ - _  or  ¯_ - ¯_
 
     // If the args are both infinite and of the same signs, ...
-    if (mpf_inf_p (&aplVfpLft)
-     && mpf_inf_p (&aplVfpRht)
-     && mpf_sgn (&aplVfpLft) EQ mpf_sgn (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpRht,          // No left arg
+    if (mpfr_inf_p (&aplVfpLft)
+     && mpfr_inf_p (&aplVfpRht)
+     && mpfr_sgn (&aplVfpLft) EQ mpfr_sgn (&aplVfpRht))
+        return mpfr_QuadICValue (aplVfpRht,         // No left arg
                                 ICNDX_InfSUBInf,
                                 aplVfpRht,
                                 mpfRes);
     // Initialize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
     // Subtract the Variable FP
-    mpf_sub (&mpfRes, &aplVfpLft, &aplVfpRht);
+    mpfr_sub (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnDydBarVisVvV

@@ -309,7 +309,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                         case ARRAY_VFP:
                             // Get the next index
-                            aplLongestItm = mpf_get_ctsa (&((LPAPLVFP) lpMemSub)[uSub], &bRet);
+                            aplLongestItm = mpfr_get_ctsa (&((LPAPLVFP) lpMemSub)[uSub], &bRet);
 
                             break;
 
@@ -768,7 +768,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
             DbgBrk ();
 
             // Attempt to convert the RAT to an INT using System CT
-////        aplLongestLst = mpf_get_ctsa (, &bRet)
+////        aplLongestLst = mpfr_get_ctsa (, &bRet)
 
             break;
 
@@ -914,7 +914,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
             {
                 case PTRTYPE_STCONST:
                     // Copy the global numeric value to the result
-                    mpf_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) hGlbSub);
+                    mpfr_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) hGlbSub);
 
                     break;
 
@@ -926,7 +926,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
                     lpMemSub = VarArrayBaseToData (lpMemSub, 0);
 
                     // Copy the global numeric value to the result
-                    mpf_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemSub);
+                    mpfr_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemSub);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
@@ -1151,7 +1151,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an integer using System CT
-                aplLongestLst = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLst, &bRet);
+                aplLongestLst = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLst, &bRet);
 
                 break;
 
@@ -1224,7 +1224,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
                 break;
 
             case ARRAY_VFP:
-                mpf_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
+                mpfr_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
 
                 break;
 
@@ -3477,7 +3477,7 @@ UBOOL ArrayIndexSetVector_EM
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an integer using System CT
-            aplLongestSubLst = mpf_get_ctsa ((LPAPLVFP) hGlbSubLst, &bRet);
+            aplLongestSubLst = mpfr_get_ctsa ((LPAPLVFP) hGlbSubLst, &bRet);
 
             if (!bRet)
                 goto DOMAIN_EXIT;

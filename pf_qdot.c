@@ -361,43 +361,35 @@ APLVFP PrimFnMonQuoteDotVisV
     APLVFP mpfRes = {0};
 
     // Check for indeterminates:  !N for integer N < 0
-    if (mpf_integer_p (&aplVfpRht)
-     && mpf_cmp_ui (&aplVfpRht, 0) < 0)
-        return mpf_QuadICValue (aplVfpRht,          // No left arg
+    if (mpfr_integer_p (&aplVfpRht)
+     && mpfr_cmp_ui (&aplVfpRht, 0) < 0)
+        return mpfr_QuadICValue (aplVfpRht,         // No left arg
                                 ICNDX_QDOTn,
                                 aplVfpRht,
                                 mpfRes);
     // If the arg is an integer,
     //   and it fits in a ULONG, ...
-    if (mpf_integer_p (&aplVfpRht)
-     && mpf_fits_uint_p (&aplVfpRht))
+    if (mpfr_integer_p (&aplVfpRht)
+     && mpfr_fits_uint_p (&aplVfpRht, MPFR_RNDN))
     {
-        mpz_init (&mpzRes);
-        mpf_init (&mpfRes);
+        mpz_init   (&mpzRes);
+        mpfr_init0 (&mpfRes);
 
-        mpz_fac_ui (&mpzRes, mpf_get_ui (&aplVfpRht));
-        mpf_set_z  (&mpfRes, &mpzRes);
+        mpz_fac_ui (&mpzRes, mpfr_get_ui (&aplVfpRht, MPFR_RNDN));
+        mpfr_set_z (&mpfRes, &mpzRes, MPFR_RNDN);
 
         Myz_clear (&mpzRes);
     } else
     {
-        APLMPFR mpfrRes = {0};
-
-        // Convert the data to mpfr-format
-        mpfr_init_set_f (&mpfrRes, &aplVfpRht, MPFR_RNDN);
-        mpfr_add_ui     (&mpfrRes, &mpfrRes, 1, MPFR_RNDN);
+        // Initialize the result
+        mpfr_init_set (&mpfRes, &aplVfpRht, MPFR_RNDN);
+        mpfr_add_ui   (&mpfRes, &mpfRes, 1, MPFR_RNDN);
 
         // Let MPFR handle it
-        mpfr_gamma (&mpfrRes, &mpfrRes, MPFR_RNDN);
+        mpfr_gamma (&mpfRes, &mpfRes, MPFR_RNDN);
 #ifdef DEBUG
         mpfr_free_cache ();
 #endif
-        // Convert the data to mpf-format
-        mpf_init   (&mpfRes);
-        mpfr_get_f (&mpfRes, &mpfrRes, MPFR_RNDN);
-
-        // We no longer need this storage
-        mpfr_clear (&mpfrRes);
     } // End IF/ELSE
 
     return mpfRes;
@@ -787,15 +779,15 @@ APLVFP PrimFnDydQuoteDotVisVvV
            aplTmp = {0};
 
     // Z = (!R) / (!L) * !R-L
-    aplLft = PrimFnMonQuoteDotVisV (aplVfpLft, NULL);   // !L
-    aplRht = PrimFnMonQuoteDotVisV (aplVfpRht, NULL);   // !R
+    aplLft = PrimFnMonQuoteDotVisV (aplVfpLft, NULL);           // !L
+    aplRht = PrimFnMonQuoteDotVisV (aplVfpRht, NULL);           // !R
 
-    mpf_init_copy (&aplTmp, &aplVfpRht);                // R
-    mpf_sub       (&aplTmp, &aplTmp, &aplVfpLft);       // R-L
-    mpfRes = PrimFnMonQuoteDotVisV (aplTmp, NULL);      // !R-L
+    mpfr_init_copy (&aplTmp, &aplVfpRht);                       // R
+    mpfr_sub       (&aplTmp, &aplTmp, &aplVfpLft, MPFR_RNDN);   // R-L
+    mpfRes = PrimFnMonQuoteDotVisV (aplTmp, NULL);              // !R-L
 
-    mpf_mul (&mpfRes, &aplLft, &mpfRes);                // (!L) * !R-L
-    mpf_div (&mpfRes, &aplRht, &mpfRes);                // (!R) / ((!L) * !R-L)
+    mpfr_mul (&mpfRes, &aplLft, &mpfRes         , MPFR_RNDN);   // (!L) * !R-L
+    mpfr_div (&mpfRes, &aplRht, &mpfRes         , MPFR_RNDN);   // (!R) / ((!L) * !R-L)
 
     // We no longer need this storage
     Myf_clear (&aplRht);

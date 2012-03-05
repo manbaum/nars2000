@@ -804,7 +804,7 @@ RESTART_EXCEPTION_APA:
 
                 case ARRAY_VFP:
                     // Save in the result
-                    mpf_init_set (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbRht);
+                    mpfr_init_set (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpSymGlbRht, MPFR_RNDN);
 
                     break;
 
@@ -849,7 +849,7 @@ RESTART_EXCEPTION_APA:
 
             case ARRAY_VFP:
                 // Initialize the temp
-                mpf_init (&aplVfpRht);
+                mpfr_init0 (&aplVfpRht);
 
                 break;
 
@@ -937,7 +937,7 @@ RESTART_EXCEPTION:
                     case ARRAY_VFP:
                         tkRhtArg.tkFlags.ImmType  = IMMTYPE_VFP;
                         lpSymGlbRht               = &((LPAPLVFP)  lpMemRht)[uRht];
-                        mpf_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                        mpfr_set (&aplVfpRht, (LPAPLVFP) lpSymGlbRht, MPFR_RNDN);
 
                         break;
 
@@ -1125,7 +1125,7 @@ RESTART_EXCEPTION:
                             lpSymGlbRht = VarArrayDataFmBase (lpSymGlbRht);
 
                             // Copy the data
-                            mpf_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                            mpfr_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                             // We no longer need this storage
                             Myf_clear ((LPAPLVFP) lpSymGlbRht);
@@ -1337,7 +1337,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:
                             // Copy the data to the result
-                            mpf_init_copy (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
+                            mpfr_init_copy (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
 
                             break;
 
@@ -1736,7 +1736,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an integer using System CT
-            aplIntegerLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+            aplIntegerLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
 
             break;
 

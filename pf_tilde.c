@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -337,16 +337,16 @@ APLVFP PrimFnMonTildeVisV
     APLVFP mpfRes = {0};
 
     if (IsMpf0 (&aplVfpRht))
-        mpf_init_set_ui (&mpfRes, 1);
+        mpfr_init_set_ui (&mpfRes, 1, MPFR_RNDN);
     else
     if (IsMpf1 (&aplVfpRht))
-        mpf_init_set_ui (&mpfRes, 0);
+        mpfr_init_set_ui (&mpfRes, 0, MPFR_RNDN);
     else
-    if (mpf_cmp_ui (&aplVfpRht, 0) > 0
-     && mpf_cmp_ui (&aplVfpRht, 1) < 0)
+    if (mpfr_cmp_ui (&aplVfpRht, 0) > 0
+     && mpfr_cmp_ui (&aplVfpRht, 1) < 0)
     {
-        mpf_init_set_ui (&mpfRes, 1);
-        mpf_sub         (&mpfRes, &mpfRes, &aplVfpRht);
+        mpfr_init_set_ui (&mpfRes, 1, MPFR_RNDN);
+        mpfr_sub         (&mpfRes, &mpfRes, &aplVfpRht, MPFR_RNDN);
     } else
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 

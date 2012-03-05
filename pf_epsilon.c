@@ -1416,7 +1416,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE);
+                        mpfr_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE, MPFR_RNDN);
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -1439,7 +1439,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, *((LPAPLINT) lpMemRht)++);
+                        mpfr_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, *((LPAPLINT) lpMemRht)++, MPFR_RNDN);
                     } // End FOR
 
                     break;
@@ -1452,7 +1452,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set_d  ((*(LPAPLVFP *) lplpMemRes)++, *((LPAPLFLOAT) lpMemRht)++);
+                        mpfr_init_set_d  ((*(LPAPLVFP *) lplpMemRes)++, *((LPAPLFLOAT) lpMemRht)++, MPFR_RNDN);
                     } // End FOR
 
                     break;
@@ -1465,7 +1465,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, apaOffRht + apaMulRht * uRht);
+                        mpfr_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, apaOffRht + apaMulRht * uRht, MPFR_RNDN);
                     } // End FOR
 
                     break;
@@ -1486,17 +1486,17 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                 switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                                 {
                                     case IMMTYPE_BOOL:  // Res = VFP   , Rht = NESTED:BOOL
-                                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stBoolean);
+                                        mpfr_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stBoolean, MPFR_RNDN);
 
                                         break;
 
                                     case IMMTYPE_INT:   // Res = VFP   , Rht = NESTED:INT
-                                        mpf_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stInteger);
+                                        mpfr_init_set_sx ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stInteger, MPFR_RNDN);
 
                                         break;
 
                                     case IMMTYPE_FLOAT: // Res = VFP   , Rht = NESTED:FLOAT
-                                        mpf_init_set_d  ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stFloat);
+                                        mpfr_init_set_d  ((*(LPAPLVFP *) lplpMemRes)++, (*(LPAPLHETERO) lpMemRht)->stData.stFloat  , MPFR_RNDN);
 
                                         break;
 
@@ -1535,7 +1535,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_set_q  ((*(LPAPLVFP *) lplpMemRes)++, ((LPAPLRAT) lpMemRht)++);
+                        mpfr_init_set_q  ((*(LPAPLVFP *) lplpMemRes)++, ((LPAPLRAT) lpMemRht)++, MPFR_RNDN);
                     } // End FOR
 
                     break;
@@ -1548,7 +1548,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        mpf_init_copy   ((*(LPAPLVFP *) lplpMemRes)++, ((LPAPLVFP) lpMemRht)++);
+                        mpfr_init_copy   ((*(LPAPLVFP *) lplpMemRes)++, ((LPAPLVFP) lpMemRht)++);
                     } // End FOR
 
                     break;
@@ -2184,7 +2184,7 @@ UBOOL PrimFnDydEpsilonNvB
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                uTmp = mpf_get_sx (&((LPAPLVFP) lpMemLft)[uLft], &bRet);
+                uTmp = mpfr_get_sx (&((LPAPLVFP) lpMemLft)[uLft], &bRet);
                 if (bRet && IsBooleanValue (uTmp))
                     // Save the appropriate value in the result
                     *lpMemRes |= Found[uTmp] << uBitIndex;
@@ -2294,7 +2294,7 @@ UBOOL PrimFnDydEpsilonNvA_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerLft = mpf_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
+                aplIntegerLft = mpfr_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
 
                 break;
 
@@ -2734,7 +2734,7 @@ UBOOL PrimFnDydEpsilonNvN_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLFLOAT
-                aplFloatLft = mpf_get_d (&((LPAPLVFP) lpMemLft)[iLft]);
+                aplFloatLft = mpfr_get_d (&((LPAPLVFP) lpMemLft)[iLft], MPFR_RNDN);
 
                 break;
 
@@ -2881,8 +2881,8 @@ UBOOL PrimFnDydEpsilonNvR_EM
     // Initialize the temps
     mpq_init (&aplRatLft);
     mpq_init (&aplRatRht);
-    mpf_init (&aplVfpLft);
-    mpf_init (&aplVfpRht);
+    mpfr_init0 (&aplVfpLft);
+    mpfr_init0 (&aplVfpRht);
 
     // Set the compare w.r.t. []CT flag
     bCompCT = IsVfp (aplTypeLft);
@@ -3021,7 +3021,7 @@ UBOOL PrimFnDydEpsilonNvR_EM
 
             case ARRAY_VFP:
                 // Copy the VFP to a VFP
-                mpf_copy  (&aplVfpLft,
+                mpfr_copy  (&aplVfpLft,
                            &((LPAPLVFP)   lpMemLft)[iLft]);
                 break;
 
@@ -3043,10 +3043,10 @@ UBOOL PrimFnDydEpsilonNvR_EM
             if (bCompCT)
             {
                 // Get the next rational from the right arg
-                mpf_set_q (&aplVfpRht, &lpMemRht[lpMemGupRht[iRht]]);
+                mpfr_set_q (&aplVfpRht, &lpMemRht[lpMemGupRht[iRht]], MPFR_RNDN);
 
                 // Compare 'em
-                iComp = mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT);
+                iComp = mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT);
             } else
             {
                 // Get the next rational from the right arg
@@ -3178,8 +3178,8 @@ UBOOL PrimFnDydEpsilonNvV_EM
                  aplVfpRht = {0};       // Right ...
 
     // Initialize the temps
-    mpf_init (&aplVfpLft);
-    mpf_init (&aplVfpRht);
+    mpfr_init0 (&aplVfpLft);
+    mpfr_init0 (&aplVfpRht);
 
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
@@ -3294,27 +3294,30 @@ UBOOL PrimFnDydEpsilonNvV_EM
             case ARRAY_INT:
             case ARRAY_APA:
                 // Convert the BOOL/INT/APA to a VFP
-                mpf_set_sx (&aplVfpLft,
-                             GetNextInteger (lpMemLft,      // Ptr to global memory
-                                             aplTypeLft,    // Storage type
-                                             iLft));        // Index
+                mpfr_set_sx (&aplVfpLft,
+                              GetNextInteger (lpMemLft,     // Ptr to global memory
+                                              aplTypeLft,   // Storage type
+                                              iLft),        // Index
+                              MPFR_RNDN);                   // Rounding mode
                 break;
 
             case ARRAY_FLOAT:
                 // Convert the FLOAT to a VFP
-                mpf_set_d (&aplVfpLft,
-                           ((LPAPLFLOAT) lpMemLft)[iLft]);
+                mpfr_set_d (&aplVfpLft,
+                           ((LPAPLFLOAT) lpMemLft)[iLft],
+                           MPFR_RNDN);
                 break;
 
             case ARRAY_RAT:
                 // Convert the RAT to a VFP
-                mpf_set_q (&aplVfpLft,
-                           &((LPAPLRAT)   lpMemLft)[iLft]);
+                mpfr_set_q (&aplVfpLft,
+                           &((LPAPLRAT)   lpMemLft)[iLft],
+                           MPFR_RNDN);
                 break;
 
             case ARRAY_VFP:
                 // Copy the VFP to a VFP
-                mpf_copy  (&aplVfpLft,
+                mpfr_copy  (&aplVfpLft,
                            &((LPAPLVFP)   lpMemLft)[iLft]);
                 break;
 
@@ -3333,10 +3336,10 @@ UBOOL PrimFnDydEpsilonNvV_EM
             iRht = (iMin + iMax) / 2;
 
             // Get the next VFP from the right arg
-            mpf_copy (&aplVfpRht, &lpMemRht[lpMemGupRht[iRht]]);
+            mpfr_copy (&aplVfpRht, &lpMemRht[lpMemGupRht[iRht]]);
 
             // Compare 'em
-            iComp = mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT);
+            iComp = mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT);
 
             // Check for a match
             if (iComp EQ 0)
@@ -3493,7 +3496,7 @@ UBOOL PrimFnDydEpsilonNvP_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerLft = mpf_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
+                aplIntegerLft = mpfr_get_sx (((LPAPLVFP) lpMemLft)++, &bRet);
 
                 break;
 

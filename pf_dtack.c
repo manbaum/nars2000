@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -517,7 +517,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
             DbgStop ();                         \
     } /* End IF */
 
-    INIT_REL (mpq_init, mpf_init)
+    INIT_REL (mpq_init, mpfr_init0)
 
     // If the result is Boolean, ...
     if (IsSimpleBool (aplTypeRes))
@@ -663,8 +663,8 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                             break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
                         // Subtract from the right arg item
 ////////////////////////atRht.aplVfp = (atRht.aplVfp - aplVfpRes) / atLft.aplVfp;
-                        mpf_sub (&atRht.aplVfp, &atRht.aplVfp, &aplVfpRes);
-                        mpf_div (&atRht.aplVfp, &atRht.aplVfp, &atLft.aplVfp);
+                        mpfr_sub (&atRht.aplVfp, &atRht.aplVfp, &aplVfpRes   , MPFR_RNDN);
+                        mpfr_div (&atRht.aplVfp, &atRht.aplVfp, &atLft.aplVfp, MPFR_RNDN);
 
                         break;
 

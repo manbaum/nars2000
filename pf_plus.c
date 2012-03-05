@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -222,7 +222,7 @@ APLVFP PrimFnMonPlusVisV
     APLVFP mpfRes = {0};
 
     // Copy the right arg to the result
-    mpf_init_copy (&mpfRes, &aplVfpRht);
+    mpfr_init_copy (&mpfRes, &aplVfpRht);
 
     return mpfRes;
 } // End PrimFnMonPlusVisV
@@ -515,8 +515,8 @@ APLVFP PrimFnDydPlusVisVvV
     APLVFP mpfRes = {0};
 
     // Add the two Variable FPs
-    mpf_init (&mpfRes);
-    mpf_add (&mpfRes, &aplVfpLft, &aplVfpRht);
+    mpfr_init0 (&mpfRes);
+    mpfr_add (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnDydPlusVisVvV

@@ -1219,7 +1219,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
     HGLOBAL           hGlbObj,              // Object global memory handle
                       hGlbChk;              // Result from CheckGlobals
     APLUINT           ByteObj,              // # bytes needed for the object
-                      uCommPrec = 0,        // Common precision for array of VFP numbers
                       uObj;                 // Loop counter
     STFLAGS           stFlags = {0};        // SymTab flags
     LPSYMENTRY        lpSymEntry,           // Ptr to STE for HGLOBAL
@@ -1234,7 +1233,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                       uLineCnt,             // # lines in the current function including the header
                       uCnt,                 // Loop counter
                       Count;                // Temporary count for monitor info
-    mp_bitcnt_t       uDefPrec,             // Default precision to use when inputting VFP numbers
+    mp_prec_t         uDefPrec,             // Default precision to use when inputting VFP numbers
+                      uCommPrec = 0,        // Common precision for array of VFP numbers
                       uOldPrec;             // Old precision to be restored later
     FILETIME          ftCreation,           // Function creation time
                       ftLastMod;            // ...      last modification time
@@ -1620,7 +1620,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                 case ARRAY_VFP:
                     // Get the current precision
-                    uOldPrec = mpf_get_default_prec ();
+                    uOldPrec = mpfr_get_default_prec ();
 
                     // Loop through the elements
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
@@ -1637,7 +1637,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         wc = *lpwWS; *lpwWS = WC_EOS;
 
                         // Initialize the save area
-                        mpf_init ((LPAPLVFP) lpMemObj);
+                        mpfr_init0 ((LPAPLVFP) lpMemObj);
 
                         // If there's a preceding (FPC), ...
                         if (*lpwSrc EQ L'(')
@@ -1649,13 +1649,13 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             sscanfW (lpwSrc, L"%u", &uDefPrec);
 
                             // Set the default precision
-                            mpf_set_default_prec (uDefPrec);
+                            mpfr_set_default_prec (uDefPrec);
 
                             // Skip past the trailing paren
                             lpwSrc = SkipPastCharW (lpwSrc, L')');
                         } else
                             // Set the default precision
-                            mpf_set_default_prec ((mp_bitcnt_t) ((uCommPrec EQ 0) ? uOldPrec : uCommPrec));
+                            mpfr_set_default_prec ((uCommPrec EQ 0) ? uOldPrec : uCommPrec);
 
                         // Convert the string from WCHAR to char
                         lpwStr = lpwSrc; lpStr = (LPCHAR) lpwStr;
@@ -1665,21 +1665,21 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                         // Check for positive infinity
                         if (lstrcmp ((LPCHAR) lpwSrc, TEXT_INFINITY) EQ 0)
-                            mpf_set_inf (((LPAPLVFP) lpMemObj)++, 1);
+                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
                         else
                         // Check for negative infinity
                         if (lstrcmp ((LPCHAR) lpwSrc, "-" TEXT_INFINITY) EQ 0)
-                            mpf_set_inf (((LPAPLVFP) lpMemObj)++, -1);
+                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, -1);
                         else
                             // Convert the string to VFP
-                            mpf_set_str (((LPAPLVFP) lpMemObj)++, (LPCHAR) lpwSrc, 10);
+                            mpfr_set_str (((LPAPLVFP) lpMemObj)++, (LPCHAR) lpwSrc, 10, MPFR_RNDN);
 
                         // Skip to the next field
                         lpwSrc = &lpwWS[wc EQ L' '];
                     } // End FOR
 
                     // Restore the default precision
-                    mpf_set_default_prec (uOldPrec);
+                    mpfr_set_default_prec (uOldPrec);
 
                     break;
 

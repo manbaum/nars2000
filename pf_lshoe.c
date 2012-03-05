@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1146,7 +1146,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
-                    mpf_init_copy (&((LPAPLVFP) lpMemSub)[uSub], &((LPAPLVFP) lpMemRht)[uRht]);
+                    mpfr_init_copy (&((LPAPLVFP) lpMemSub)[uSub], &((LPAPLVFP) lpMemRht)[uRht]);
                 } // End FOR
 
                 // We no longer need this ptr
@@ -1627,7 +1627,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
         case ARRAY_VFP:
             // Attempt to convert the RAT to an INT
-            aplLongestLft = mpf_get_ctsa ((LPAPLVFP) VarArrayBaseToData (lpMemLft, aplRankLft), &bRet);
+            aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) VarArrayBaseToData (lpMemLft, aplRankLft), &bRet);
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
             break;
@@ -1683,7 +1683,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
                 case ARRAY_VFP:
                     // Attempt to convert the RAT to an INT
-                    aplLongestLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                    aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
                     if (!bRet)
                         goto LEFT_DOMAIN_EXIT;
                     break;
@@ -1975,7 +1975,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the RAT to an INT
-                aplLongestLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
                 break;
@@ -2308,7 +2308,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
 
                         case ARRAY_VFP:
                             // Save the next element in the item
-                            mpf_init_copy (((LPAPLVFP) lpMemItm)++, (LPAPLVFP) lpSymGlbRht);
+                            mpfr_init_copy (((LPAPLVFP) lpMemItm)++, (LPAPLVFP) lpSymGlbRht);
 
                             break;
 

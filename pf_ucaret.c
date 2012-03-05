@@ -286,12 +286,12 @@ APLVFP lcmAplVfp
     {
 ////////aplTmp = aplLft * (aplRht / aplTmp);
 
-        mpf_div (&aplTmp, &aplRht, &aplTmp);
-        mpf_mul (&aplTmp, &aplLft, &aplTmp);
+        mpfr_div (&aplTmp, &aplRht, &aplTmp, MPFR_RNDN);
+        mpfr_mul (&aplTmp, &aplLft, &aplTmp, MPFR_RNDN);
 
         // The sign of the result is the sign of the left argument
-        if (mpf_sgn (&aplVfpLft) < 0)
-            mpf_neg (&aplTmp, &aplTmp);
+        if (mpfr_sgn (&aplVfpLft) < 0)
+            mpfr_neg (&aplTmp, &aplTmp, MPFR_RNDN);
     } // End IF
 
     return aplTmp;
@@ -503,15 +503,15 @@ APLVFP PrimFnDydUpCaretVisVvV
     APLVFP aplTmp = {0};
 
     // Check for indeterminates:  lcm (±_, 0)  or  lcm (0, ±_)
-    if ((mpf_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
-     || (mpf_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_0LCMInf,
-                                aplVfpRht,
-                                aplTmp);
+    if ((mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
+     || (mpfr_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_0LCMInf,
+                                 aplVfpRht,
+                                 aplTmp);
     // Check for special cases:  lcm (±_, N)  or  lcm (N, ±_)
-    if (mpf_inf_p (&aplVfpLft)
-     || mpf_inf_p (&aplVfpRht))
+    if (mpfr_inf_p (&aplVfpLft)
+     || mpfr_inf_p (&aplVfpRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return lcmAplVfp (aplVfpLft, aplVfpRht, lpPrimSpec);

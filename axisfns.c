@@ -582,7 +582,7 @@ UBOOL CheckAxisGlb
             for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
             {
                 // Attempt to fit the VFP into an APLINT
-                aplRankLcl = mpf_get_sx (lpaplVfp++, &bRet);
+                aplRankLcl = mpfr_get_sx (lpaplVfp++, &bRet);
                 aplRankLcl -= bQuadIO; // Less the index origin
 
                 // Check for negative indices [-aplRankCmp, -1]

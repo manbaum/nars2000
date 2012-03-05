@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -751,8 +751,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
             case ARRAY_VFP:
                 // Copy element # uRhtWVec from the right arg to lpMemRes
-                mpf_init_copy (&((LPAPLVFP) lpMemRes)[uResWVec],
-                              &((LPAPLVFP) lpMemRht)[uRhtWVec]);
+                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uResWVec],
+                                &((LPAPLVFP) lpMemRht)[uRhtWVec]);
                 break;
 
             defstop
@@ -864,7 +864,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
                 if (IsMpfNULL (&((LPAPLVFP) lpMemRes)[uRes]))
                     // Initialize to 0/1
-                    mpf_init (&((LPAPLVFP) lpMemRes)[uRes]);
+                    mpfr_init0 (&((LPAPLVFP) lpMemRes)[uRes]);
             } // End FOR
 
             break;

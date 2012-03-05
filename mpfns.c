@@ -218,15 +218,15 @@ unsigned long int mpq_invalid
 
 
 //***************************************************************************
-//  $mpf_invalid
+//  $mpfr_invalid
 //***************************************************************************
 
-unsigned long int mpf_invalid
+unsigned long int mpfr_invalid
     (enum MP_ENUM mp_enum,
-     mpf_t             rop,
-     mpf_t             op1,
-     mpf_t             op2,
-     mpf_t             op3,
+     mpfr_t            rop,
+     mpfr_t            op1,
+     mpfr_t            op2,
+     mpfr_t            op3,
      unsigned long int d)
 
 {
@@ -237,7 +237,7 @@ unsigned long int mpf_invalid
 
 
     return 0;       // To keep the compiler happy
-} // End mpf_invalid
+} // End mpfr_invalid
 
 
 //***************************************************************************
@@ -291,19 +291,19 @@ APLMPI mpz_QuadICValue
 
 
 //***************************************************************************
-//  $mpz_init_set_f
+//  $mpz_init_set_fr
 //
 //  Save an APLVFP value as an MP Integer
 //***************************************************************************
 
-void mpz_init_set_f
+void mpz_init_set_fr
     (mpz_ptr  dest,
      LPAPLVFP val)
 
 {
     mpz_init (dest);
-    mpz_set_f (dest, val);
-} // End mpz_init_set_f
+    mpz_set_fr (dest, val, MPFR_RNDN);
+} // End mpz_init_set_fr
 
 
 #if FALSE
@@ -618,19 +618,31 @@ void mpq_init_set_d
 
 
 //***************************************************************************
-//  $mpq_init_set_f
+//  $mpq_init_set_fr
 //
 //  Save a VFP value as a Rational
 //***************************************************************************
 
-void mpq_init_set_f
-    (mpq_ptr dest,
-     mpf_ptr src)
+void mpq_init_set_fr
+    (mpq_ptr  dest,
+     mpfr_ptr src)
 
 {
+    mpf_t mpfTmp = {0};
+
+    // Initialize the dest & temp
     mpq_init (dest);
-    mpq_set_f (dest, src);
-} // End mpq_init_set_f
+    mpf_init (mpfTmp);
+
+    // Convert the MPFR to an MPF
+    mpfr_get_f (mpfTmp, src, MPFR_RNDN);
+
+    // Convert the MPF to a RAT
+    mpq_set_f (dest, mpfTmp);
+
+    // We no longer need this storage
+    mpf_clear (mpfTmp);
+} // End mpq_init_set_fr
 
 
 //***************************************************************************
@@ -719,37 +731,37 @@ APLINT mpq_get_ctsa
     APLINT aplInt;
 
     // Initialize the temps
-    mpf_init (&mpfSrc );
-    mpf_init (&mpfTmp1);
-    mpf_init (&mpfTmp2);
+    mpfr_init0 (&mpfSrc);
+    mpfr_init0 (&mpfTmp1);
+    mpfr_init0 (&mpfTmp2);
 
     // Convert the RAT to a VFP
-    mpf_set_q (&mpfSrc , src);
+    mpfr_set_q (&mpfSrc , src, MPFR_RNDN);
 
     // Get the floor
-    mpf_floor (&mpfTmp1, &mpfSrc);
+    mpfr_floor (&mpfTmp1, &mpfSrc);
 
     // Get the ceil
-    mpf_ceil  (&mpfTmp2, &mpfSrc);
+    mpfr_ceil  (&mpfTmp2, &mpfSrc);
 
     // Calculate the relative difference between the source and its floor
-    mpf_reldiff (&mpfTmp1, &mpfTmp1, &mpfSrc);
+    mpfr_reldiff (&mpfTmp1, &mpfTmp1, &mpfSrc, MPFR_RNDN);
 
     // Calculate the relative difference between the source and its ceil
-    mpf_reldiff (&mpfTmp2, &mpfTmp2, &mpfSrc);
+    mpfr_reldiff (&mpfTmp2, &mpfTmp2, &mpfSrc, MPFR_RNDN);
 
     // Compare the relative diff with SYS_CT
-    if (fabs (mpf_get_d (&mpfTmp1)) < SYS_CT)
+    if (fabs (mpfr_get_d (&mpfTmp1, MPFR_RNDN)) < SYS_CT)
     {
-        mpf_floor (&mpfTmp1, &mpfSrc);
-        aplInt = mpf_get_sx (&mpfTmp1, lpbRet);
+        mpfr_floor (&mpfTmp1, &mpfSrc);
+        aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
     } else
-    if (fabs (mpf_get_d (&mpfTmp2)) < SYS_CT)
+    if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
     {
-        mpf_ceil  (&mpfTmp2, &mpfSrc);
-        aplInt = mpf_get_sx (&mpfTmp2, lpbRet);
+        mpfr_ceil  (&mpfTmp2, &mpfSrc);
+        aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
     } else
-        aplInt = mpf_get_sx (&mpfSrc , lpbRet);
+        aplInt = mpfr_get_sx (&mpfSrc , lpbRet);
 
     // We no longer need this storage
     Myf_clear (&mpfTmp2);
@@ -907,15 +919,15 @@ int mpq_cmp_ct
      && !IsMpq0 (&aplRatRht))
     {
         // Initialize the temps
-        mpf_init (&mpfLft);
-        mpf_init (&mpfRht);
+        mpfr_init0 (&mpfLft);
+        mpfr_init0 (&mpfRht);
 
         // Copy the RAT as a VFP
-        mpf_set_q (&mpfLft, &aplRatLft);
-        mpf_set_q (&mpfRht, &aplRatRht);
+        mpfr_set_q (&mpfLft, &aplRatLft, MPFR_RNDN);
+        mpfr_set_q (&mpfRht, &aplRatRht, MPFR_RNDN);
 
         // Compare the two VFPs relative to []CT
-        bRet = mpf_cmp_ct (mpfLft, mpfRht, fQuadCT) EQ 0;
+        bRet = mpfr_cmp_ct (mpfLft, mpfRht, fQuadCT) EQ 0;
 
         // We no longer need this storage
         Myf_clear (&mpfRht);
@@ -978,12 +990,12 @@ int mpq_integer_p
 //***************************************************************************
 
 //***************************************************************************
-//  $mpf_QuadICValue
+//  $mpfr_QuadICValue
 //
 //  Return the appropriate []IC value
 //***************************************************************************
 
-APLVFP mpf_QuadICValue
+APLVFP mpfr_QuadICValue
     (APLVFP     aplVfpLft,
      IC_INDICES icNdx,
      APLVFP     aplVfpRht,
@@ -994,19 +1006,19 @@ APLVFP mpf_QuadICValue
     {
         case ICVAL_NEG1:
             // Initialize the result to -1
-            mpf_init_set_si (&mpfRes, -1);
+            mpfr_init_set_si (&mpfRes, -1, MPFR_RNDN);
 
             return mpfRes;
 
         case ICVAL_ZERO:
             // Initialize the result to 0
-            mpf_init (&mpfRes);
+            mpfr_init0 (&mpfRes);
 
             return mpfRes;
 
         case ICVAL_ONE:
             // Initialize the result to 1
-            mpf_init_set_si (&mpfRes,  1);
+            mpfr_init_set_si (&mpfRes,  1, MPFR_RNDN);
 
             return mpfRes;
 
@@ -1020,142 +1032,237 @@ APLVFP mpf_QuadICValue
             return mpfNegInfinity;
 
         case ICVAL_LEFT:
-            mpf_init_copy (&mpfRes, &aplVfpLft);
+            mpfr_init_copy (&mpfRes, &aplVfpLft);
 
             return mpfRes;
 
         case ICVAL_RIGHT:
-            mpf_init_copy (&mpfRes, &aplVfpRht);
+            mpfr_init_copy (&mpfRes, &aplVfpRht);
 
             return mpfRes;
 
         defstop
             return mpfRes;
     } // End SWITCH
-} // End mpf_QuadICValue
+} // End mpfr_QuadICValue
 
 
 //***************************************************************************
-//  $mpf_copy
+//  $mpfr_copy
 //
 //  Save an MPF value as a Variable FP with the same precision
 //***************************************************************************
 
-void mpf_copy
-    (mpf_ptr dest,
-     mpf_ptr val)
+void mpfr_copy
+    (mpfr_ptr dest,
+     mpfr_ptr val)
 
 {
-    mpf_set_prec (dest, mpf_get_prec (val));
-    mpf_set      (dest, val);
-} // End mpf_copy
+    mpfr_set_prec (dest, mpfr_get_prec (val));
+    mpfr_set      (dest, val, MPFR_RNDN);
+} // End mpfr_copy
 
 
 //***************************************************************************
-//  $mpf_set_sx
-//
-//  Save an APLINT value as a Variable FP
-//***************************************************************************
-
-void mpf_set_sx
-    (mpf_ptr dest,
-     APLINT  val)
-
-{
-    // Get the high-order long
-    mpf_set_si (dest, HIAPLINT (val));
-
-    // Shift to upper long
-    mpf_mul_2exp (dest, dest, BITS_IN_APLINT / 2);
-
-    // Add in the low long
-    mpf_add_ui (dest, dest, LOAPLINT (val));
-} // End mpf_set_sx
-
-
-//***************************************************************************
-//  $mpf_init_copy
+//  $mpfr_init_copy
 //
 //  Save an MPF value as a Variable FP with the same precision
 //***************************************************************************
 
-void mpf_init_copy
-    (mpf_ptr dest,
-     mpf_ptr val)
+void mpfr_init_copy
+    (mpfr_ptr dest,
+     mpfr_ptr val)
 
 {
-    mpf_init2 (dest, mpf_get_prec (val));
-    mpf_set   (dest, val);
-} // End mpf_init_copy
+    mpfr_init2 (dest, mpfr_get_prec (val));
+    mpfr_set   (dest, val, MPFR_RNDN);
+} // End mpfr_init_copy
 
 
 //***************************************************************************
-//  $mpf_init_set_sx
+//  $mpfr_init_set
+//
+//  Save a VFP value as a Variable FP
+//***************************************************************************
+
+void mpfr_init_set
+    (mpfr_ptr   dest,
+     mpfr_ptr   src,
+     mpfr_rnd_t rnd)
+
+{
+    mpfr_init (dest);       // OK not to be mpfr_init0
+    mpfr_set (dest, src, rnd);
+} // End mpfr_init_set
+
+
+//***************************************************************************
+//  $mpfr_init_set_sx
 //
 //  Save an APLINT value as a Variable FP
 //***************************************************************************
 
-void mpf_init_set_sx
-    (mpf_ptr dest,
-     APLINT  val)
+void mpfr_init_set_sx
+    (mpfr_ptr   dest,
+     APLINT     val,
+     mpfr_rnd_t rnd)
 
 {
-    mpf_init (dest);
-    mpf_set_sx (dest, val);
-} // End mpf_init_set_sx
+    mpfr_init (dest);       // OK not to be mpfr_init0
+    mpfr_set_sx (dest, val, rnd);
+} // End mpfr_init_set_sx
 
 
 //***************************************************************************
-//  $mpf_init_set_q
+//  $mpfr_init_set_ui
 //
-//  Save an APLRAT value as a Variable FP
+//  Save a UINT value as a Variable FP
 //***************************************************************************
 
-void mpf_init_set_q
-    (mpf_ptr   dest,
-     LPAPLRAT  lpVal)
+void mpfr_init_set_ui
+    (mpfr_ptr   dest,
+     UINT       val,
+     mpfr_rnd_t rnd)
 
 {
-    mpf_init (dest);
-    mpf_set_q (dest, lpVal);
-} // End mpf_init_set_q
+    mpfr_init (dest);       // OK not to be mpfr_init0 to avoid recursion
+    mpfr_set_ui (dest, val, rnd);
+} // End mpfr_init_set_ui
 
 
 //***************************************************************************
-//  $mpf_init_set_z
+//  $mpfr_init_set_si
 //
-//  Save an APLMPI value as a Variable FP
+//  Save an INT value as a Variable FP
 //***************************************************************************
 
-void mpf_init_set_z
-    (mpf_ptr   dest,
-     LPAPLMPI  lpVal)
+void mpfr_init_set_si
+    (mpfr_ptr   dest,
+     UINT       val,
+     mpfr_rnd_t rnd)
 
 {
-    mpf_init (dest);
-    mpf_set_z (dest, lpVal);
-} // End mpf_init_set_z
+    mpfr_init (dest);       // OK not to be mpfr_init0
+    mpfr_set_si (dest, val, rnd);
+} // End mpfr_init_set_si
 
 
 //***************************************************************************
-//  $mpf_get_sx
+//  $mpfr_init_set_d
+//
+//  Save a FLT value as a Variable FP
+//***************************************************************************
+
+void mpfr_init_set_d
+    (mpfr_ptr   dest,
+     APLFLOAT   val,
+     mpfr_rnd_t rnd)
+
+{
+    mpfr_init (dest);       // OK not to be mpfr_init0
+    mpfr_set_d (dest, val, rnd);
+} // End mpfr_init_set_d
+
+
+//***************************************************************************
+//  $mpfr_init_set_z
+//
+//  Save a MPZ value as a Variable FP
+//***************************************************************************
+
+void mpfr_init_set_z
+    (mpfr_ptr   dest,
+     LPAPLMPI   val,
+     mpfr_rnd_t rnd)
+
+{
+    mpfr_init (dest);       // OK not to be mpfr_init0
+    mpfr_set_z (dest, val, rnd);
+} // End mpfr_init_set_z
+
+
+//***************************************************************************
+//  $mpfr_init_set_q
+//
+//  Save a RAT value as a Variable FP
+//***************************************************************************
+
+void mpfr_init_set_q
+    (mpfr_ptr   dest,
+     LPAPLRAT   val,
+     mpfr_rnd_t rnd)
+
+{
+    mpfr_init (dest);       // OK not to be mpfr_init0
+    mpfr_set_q (dest, val, rnd);
+} // End mpfr_init_set_q
+
+
+//***************************************************************************
+//  $mpfr_init_set_f
+//
+//  Save a MPF value as a Variable FP
+//***************************************************************************
+
+void mpfr_init_set_f
+    (mpfr_ptr   dest,
+     mpf_ptr    val,
+     mpfr_rnd_t rnd)
+
+{
+    mpfr_init (dest);       // OK not to be mpfr_init0
+    mpfr_set_f (dest, val, rnd);
+} // End mpfr_init_set_f
+
+
+//***************************************************************************
+//  $mpfr_set_sx
+//
+//  Save an APLINT value as a Variable FP
+//***************************************************************************
+
+void mpfr_set_sx
+    (mpfr_ptr   dest,
+     APLINT     val,
+     mpfr_rnd_t rnd)
+
+{
+    ISPLIT apliSplit;
+
+    // Save the (non-negative) value to split
+    apliSplit.aplInt = abs64 (val);
+
+    // Set the upper-DWORD of the arg into the lower-DWORD of the result
+    mpfr_set_ui (dest, apliSplit.hi, rnd);
+
+    // Shift to the upper DWORD of the result
+    mpfr_mul_2ui (dest, dest, 32, MPFR_RNDN);
+
+    // Add in the low-order DWORD of the arg
+    mpfr_add_ui (dest, dest, apliSplit.lo, MPFR_RNDN);
+
+    // Adjust the sign
+    if (signum (val) < 0)
+        mpfr_neg (dest, dest, MPFR_RNDN);
+} // End mpfr_set_sx
+
+
+//***************************************************************************
+//  $mpfr_get_sx
 //
 //  Convert a VFP to an APLINT
 //***************************************************************************
 
-APLINT mpf_get_sx
-    (mpf_ptr src,
+APLINT mpfr_get_sx
+    (mpfr_ptr src,
      LPUBOOL lpbRet)
 
 {
     APLRAT mpqTmp = {0};
     APLINT aplInteger;
 
-    // Initialize the temp
-    mpq_init (&mpqTmp);
-
     // Convert the number to RAT
-    mpq_set_f (&mpqTmp, src);
+    mpq_init_set_fr (&mpqTmp, src);
 
     // Get the integer within
     aplInteger = mpq_get_sx (&mpqTmp, lpbRet);
@@ -1164,17 +1271,17 @@ APLINT mpf_get_sx
     Myq_clear (&mpqTmp);
 
     return aplInteger;
-} // End mpf_get_sx
+} // End mpfr_get_sx
 
 
 //***************************************************************************
-//  $mpf_get_ctsa
+//  $mpfr_get_ctsa
 //
 //  Convert an APLVFP to an APLINT within system CT
 //***************************************************************************
 
-APLINT mpf_get_ctsa
-    (mpf_ptr src,
+APLINT mpfr_get_ctsa
+    (mpfr_ptr src,
      LPUBOOL lpbRet)
 
 {
@@ -1183,115 +1290,130 @@ APLINT mpf_get_ctsa
     APLINT aplInt;
 
     // Initialize the temps
-    mpf_init (&mpfTmp1);
-    mpf_init (&mpfTmp2);
+    mpfr_init0 (&mpfTmp1);
+    mpfr_init0 (&mpfTmp2);
 
     // Get the floor
-    mpf_floor (&mpfTmp1, src);
+    mpfr_floor (&mpfTmp1, src);
 
     // Get the ceil
-    mpf_ceil  (&mpfTmp2, src);
+    mpfr_ceil  (&mpfTmp2, src);
 
     // Calculate the relative difference between the source and its floor
-    mpf_reldiff (&mpfTmp1, &mpfTmp1, src);
+    mpfr_reldiff (&mpfTmp1, &mpfTmp1, src, MPFR_RNDN);
 
     // Calculate the relative difference between the source and its ceil
-    mpf_reldiff (&mpfTmp2, &mpfTmp2, src);
+    mpfr_reldiff (&mpfTmp2, &mpfTmp2, src, MPFR_RNDN);
 
     // Compare the relative diff with []CT
-    if (fabs (mpf_get_d (&mpfTmp1)) < SYS_CT)
+    if (fabs (mpfr_get_d (&mpfTmp1, MPFR_RNDN)) < SYS_CT)
     {
-        mpf_floor (&mpfTmp1, src);
-        aplInt = mpf_get_sx (&mpfTmp1, lpbRet);
+        mpfr_floor (&mpfTmp1, src);
+        aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
     } else
-    if (fabs (mpf_get_d (&mpfTmp2)) < SYS_CT)
+    if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
     {
-        mpf_ceil  (&mpfTmp2, src);
-        aplInt = mpf_get_sx (&mpfTmp2, lpbRet);
+        mpfr_ceil  (&mpfTmp2, src);
+        aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
     } else
-        aplInt = mpf_get_sx (src     , lpbRet);
+        aplInt = mpfr_get_sx (src     , lpbRet);
 
     // We no longer need this storage
     Myf_clear (&mpfTmp2);
     Myf_clear (&mpfTmp1);
 
     return aplInt;
-} // End mpf_get_ctsa
+} // End mpfr_get_ctsa
+
+
+//// //***************************************************************************
+//// //  $mpfr_get_ux
+//// //
+//// //  Convert a VFP to an APLUINT
+//// //***************************************************************************
+////
+//// APLUINT mpfr_get_ux
+////     (mpfr_ptr src,
+////      LPUBOOL lpbRet)
+////
+//// {
+////     // See if it fits
+////     *lpbRet = mpfr_fits_uintmax_p (src, MPFR_RNDN);
+////
+////     // If the fractional part is zero and the integer part is in range, ...
+////     if (*lpbRet)
+////         return mpfr_get_uj (src, MPFR_RNDN);
+////     else
+////         // Return a known value
+////         return 0;
+//// } // End mpfr_get_ux
 
 
 //***************************************************************************
-//  $mpf_get_ua
-//
-//  Convert a VFP to an APLUINT
-//***************************************************************************
-
-APLUINT mpf_get_ua
-    (mpf_ptr src,
-     LPUBOOL lpbRet)
-
-{
-    APLUINTUNION dwSplit;
-
-    // Check the fractional part and range
-    *lpbRet = (mpf_integer_p (src) NE 0
-            && 0 <= mpf_cmp (src, &mpfMinInt)
-            &&      mpf_cmp (src, &mpfMaxInt) <= 0);
-    // If the fractional part is zero and the integer part is in range, ...
-    if (*lpbRet)
-    {
-        APLVFP aplTmp;
-
-        mpf_init     (&aplTmp);
-        mpf_div_2exp (&aplTmp, src    , BITS_IN_APLINT / 2);
-        dwSplit.dwords[1] = mpf_get_ui (&aplTmp);
-        mpf_mul_2exp (&aplTmp, &aplTmp, BITS_IN_APLINT / 2);
-        mpf_sub      (&aplTmp, src    , &aplTmp);
-        dwSplit.dwords[0] = mpf_get_ui (&aplTmp);
-
-        // We no longer need this storage
-        Myf_clear (&aplTmp);
-
-        return dwSplit.aplUInt;
-    } else
-        // Return a known value
-        return 0;
-} // End mpf_get_ua
-
-
-//***************************************************************************
-//  $mpf_mod
+//  $mpfr_mod
 //
 //  Calculate aplLft % aplRht
 //***************************************************************************
 
-void mpf_mod
-    (mpf_ptr dest,          // Destination
-     mpf_ptr aplOpr,        // Operand
-     mpf_ptr aplMod)        // Modulus
+void mpfr_mod
+    (mpfr_ptr dest,          // Destination
+     mpfr_ptr aplOpr,        // Operand
+     mpfr_ptr aplMod)        // Modulus
 
 {
-    // Due to precision limitations, the result of <mpf_mod_sub>
+#if FALSE                   // ***FIXME*** -- Check rounding
+    mpfr_t mpfrOpr = {0},
+           mpfrMod = {0};
+
+    // Copy the Opr & Mod as non-negative numbers
+    mpfr_init_copy (mpfrOpr, aplOpr);
+    mpfr_init_copy (mpfrMod, aplMod);
+
+    if (mpfr_sgn (mpfrOpr) < 0)
+        mpfr_neg (mpfrOpr, mpfrOpr, MPFR_RNDZ);
+    if (mpfr_sgn (mpfrMod) < 0)
+        mpfr_neg (mpfrMod, mpfrMod, MPFR_RNDZ);
+
+    // Compute the modulus
+    mpfr_fmod (dest, mpfrOpr, mpfrMod, MPFR_RNDZ);
+
+    // If the arguments are of opposite sign
+    //   and the result so far is non-zero,
+    //   replace the result with its complement
+    //   in the modulus.
+    if ((mpfr_sgn (aplMod) > 0) NE (mpfr_sgn (aplOpr) > 0)
+     && mpfr_sgn (dest) NE 0)
+        mpfr_sub (dest, aplMod, dest, MPFR_RNDZ);
+
+    // The sign of the result is the sign of the left arg
+    if (mpfr_sgn (aplMod) < 0)
+        mpfr_neg (dest, dest, MPFR_RNDZ);
+#else
+    // Due to precision limitations, the result of <mpfr_mod_sub>
     //   might not be less than the modulus, so we iterate until it is
-    mpf_mod_sub (dest, aplOpr, aplMod);
-    while (mpf_cmp (dest, aplMod) > 0)
-        mpf_mod_sub (dest, dest  , aplMod);
-} // End mpf_mod
+    mpfr_mod_sub (dest, aplOpr, aplMod);
+    while (mpfr_cmp_abs (dest, aplMod) > 0)
+        mpfr_mod_sub (dest, dest  , aplMod);
+#endif
+} // End mpfr_mod
 
 
 //***************************************************************************
-//  $mpf_mod_sub
+//  $mpfr_mod_sub
 //
 //  Calculate aplLft % aplRht
 //***************************************************************************
 
-void mpf_mod_sub
-    (mpf_ptr dest,          // Destination
-     mpf_ptr aplOpr,        // Operand
-     mpf_ptr aplMod)        // Modulus
+void mpfr_mod_sub
+    (mpfr_ptr dest,          // Destination
+     mpfr_ptr aplOpr,        // Operand
+     mpfr_ptr aplMod)        // Modulus
 
 {
+////#define MOD_DEBUG
+
     APLVFP aplTmp = {0};
-#ifdef DEBUG
+#if defined (DEBUG) && defined (MOD_DEBUG)
     char szTemp1[1024],
          szTemp2[1024];
     int  expptr1,
@@ -1299,36 +1421,36 @@ void mpf_mod_sub
 #endif
 
     // Initialize the temp
-    mpf_init (&aplTmp);
+    mpfr_init0 (&aplTmp);
 
-#ifdef DEBUG
-    mpf_get_str (szTemp1, &expptr1, 10, 200, aplOpr);
-    mpf_get_str (szTemp2, &expptr2, 10, 200, aplMod);
+#if defined (DEBUG) && defined (MOD_DEBUG)
+    mpfr_get_str (szTemp1, &expptr1, 10, 200, aplOpr, MPFR_RNDN);
+    mpfr_get_str (szTemp2, &expptr2, 10, 200, aplMod, MPFR_RNDN);
 #endif
-    mpf_div   (&aplTmp,  aplOpr,  aplMod);
-#ifdef DEBUG
-    mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
+    mpfr_div   (&aplTmp,  aplOpr,  aplMod, MPFR_RNDN);
+#if defined (DEBUG) && defined (MOD_DEBUG)
+    mpfr_get_str (szTemp1, &expptr1, 10, 200, &aplTmp, MPFR_RNDN);
 #endif
-    mpf_floor (&aplTmp, &aplTmp);
-#ifdef DEBUG
-    mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
+    mpfr_floor (&aplTmp, &aplTmp);
+#if defined (DEBUG) && defined (MOD_DEBUG)
+    mpfr_get_str (szTemp1, &expptr1, 10, 200, &aplTmp, MPFR_RNDN);
 #endif
-    mpf_mul   (&aplTmp,  aplMod, &aplTmp);
-#ifdef DEBUG
-    mpf_get_str (szTemp1, &expptr1, 10, 200, &aplTmp);
+    mpfr_mul   (&aplTmp,  aplMod, &aplTmp, MPFR_RNDN);
+#if defined (DEBUG) && defined (MOD_DEBUG)
+    mpfr_get_str (szTemp1, &expptr1, 10, 200, &aplTmp, MPFR_RNDN);
 #endif
-    mpf_sub   (dest   ,  aplOpr, &aplTmp);
-#ifdef DEBUG
-    mpf_get_str (szTemp1, &expptr1, 10, 200, dest);
+    mpfr_sub   (dest   ,  aplOpr, &aplTmp, MPFR_RNDN);
+#if defined (DEBUG) && defined (MOD_DEBUG)
+    mpfr_get_str (szTemp1, &expptr1, 10, 200, dest, MPFR_RNDN);
 #endif
 
     // We no longer need this storage
     Myf_clear (&aplTmp);
-} // End mpf_mod_sub
+} // End mpfr_mod_sub
 
 
 //***************************************************************************
-//  $mpf_cmp_ct
+//  $mpfr_cmp_ct
 //
 //  Compare two VFPs relative to a given comparison tolerance
 //
@@ -1337,165 +1459,146 @@ void mpf_mod_sub
 //         -1 if Lft <  Rht
 //***************************************************************************
 
-int mpf_cmp_ct
+int mpfr_cmp_ct
     (APLVFP   aplVfpLft,
      APLVFP   aplVfpRht,
      APLFLOAT fQuadCT)
 
 {
-#if defined (DEBUG) && FALSE
+    int iRet;                       // Result of mpfr_cmp
+
+////#define CT_DEBUG
+
+#if defined (DEBUG) && defined (CT_DEBUG)
     WCHAR  wszTemp[1024];
     APLVFP mpfFmt = {0};
 
-    *FormatAplVfp (wszTemp, aplVfpLft, 0) = WC_EOS; DbgMsgW (wszTemp);
-    *FormatAplVfp (wszTemp, aplVfpRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+////*FormatAplVfp (wszTemp, aplVfpLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+////*FormatAplVfp (wszTemp, aplVfpRht, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
+    // Compare 'em without tolerance
+    iRet = mpfr_cmp (&aplVfpLft, &aplVfpRht);
+
     // So as to avoid dividing by zero, if neither arg is zero, ...
     if (!IsMpf0 (&aplVfpLft)                    // Lft NE 0
      && !IsMpf0 (&aplVfpRht)                    // Rht NE 0
-     && mpf_cmp (&aplVfpLft, &aplVfpRht) NE 0   // Lft NE Rht
+     && iRet NE 0                               // Lft NE Rht
      && fQuadCT NE 0)                           // []CT NE 0
     {
-        APLVFP mpfLftAbs = {0},
-               mpfRhtAbs = {0};
-        UBOOL  bRet = TRUE;         // TRUE iff the result in iRet is valid
-        int    iRet;                // The result
-
         // Use an algorithm similar to the one in _CompareCT
 
-        // Initialize the temps
-        mpf_init (&mpfLftAbs);
-        mpf_init (&mpfRhtAbs);
-
-        // Get the absolute values
-        mpf_abs (&mpfLftAbs, &aplVfpLft);
-        mpf_abs (&mpfRhtAbs, &aplVfpRht);
-
         // If the signs differ, ...
-        if (mpf_sgn (&mpfLftAbs) NE mpf_sgn (&mpfRhtAbs))
-            bRet = FALSE;
-        else
+        if (mpfr_sgn (&aplVfpLft) EQ mpfr_sgn (&aplVfpRht))
         {
-            APLVFP mpfCT     = {0},
+            APLVFP mpfLftAbs = {0},
+                   mpfRhtAbs = {0},
+                   mpfCT     = {0},
                    mpfHoodLo = {0};
 
             // Initialize the temps
-            mpf_init (&mpfCT);
-            mpf_init (&mpfHoodLo);
+            mpfr_init0 (&mpfLftAbs);
+            mpfr_init0 (&mpfRhtAbs);
+
+            // Get the absolute values
+            mpfr_abs (&mpfLftAbs, &aplVfpLft, MPFR_RNDN);
+            mpfr_abs (&mpfRhtAbs, &aplVfpRht, MPFR_RNDN);
+
+            // Initialize the temps
+            mpfr_init0 (&mpfCT);
+            mpfr_init0 (&mpfHoodLo);
 
             // Convert the comparison tolerance
-            mpf_set_d (&mpfCT, fQuadCT);
+            mpfr_set_d (&mpfCT, fQuadCT, MPFR_RNDN);
 
             // Calculate the low end of the left neighborhood of (|Rht)
 ////////////aplHoodLo = aplRhtAbs - aplRhtAbs * fQuadCT;
-            mpf_mul (&mpfHoodLo, &mpfRhtAbs, &mpfCT);
-            mpf_sub (&mpfHoodLo, &mpfRhtAbs, &mpfHoodLo);
-
+            mpfr_mul (&mpfHoodLo, &mpfRhtAbs, &mpfCT    , MPFR_RNDN);
+            mpfr_sub (&mpfHoodLo, &mpfRhtAbs, &mpfHoodLo, MPFR_RNDN);
+#if defined (DEBUG) && defined (CT_DEBUG)
+            lstrcpyW (wszTemp, L"Lo1: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
+            lstrcpyW (wszTemp, L"L1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            lstrcpyW (wszTemp, L"R1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
             // If (|Rht) is greater than (|Lft),
             // and (|Lft) is in the
             //    left-neighborhood of (|Rht) with CT, return 1
 ////////////if (aplHoodLo <= aplLftAbs
 //////////// &&              aplLftAbs < aplRhtAbs)
 ////////////    return TRUE;
-            if (mpf_cmp (&mpfHoodLo, &mpfLftAbs)             <= 0
-             && mpf_cmp (            &mpfLftAbs, &mpfRhtAbs) <  0)
+            if (mpfr_cmp (&mpfHoodLo, &mpfLftAbs)             <= 0
+             && mpfr_cmp (            &mpfLftAbs, &mpfRhtAbs) <  0)
                 iRet = 0;
             else
             {
                 // Calculate the low end of the left neighborhood of (|Lft)
 ////////////////aplHoodLo = aplLftAbs - aplLftAbs * fQuadCT;
-                mpf_mul (&mpfHoodLo, &mpfLftAbs, &mpfCT);
-                mpf_sub (&mpfHoodLo, &mpfLftAbs, &mpfHoodLo);
-
+                mpfr_mul (&mpfHoodLo, &mpfLftAbs, &mpfCT    , MPFR_RNDN);
+                mpfr_sub (&mpfHoodLo, &mpfLftAbs, &mpfHoodLo, MPFR_RNDN);
+#if defined (DEBUG) && defined (CT_DEBUG)
+            lstrcpyW (wszTemp, L"Lo2: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
+            lstrcpyW (wszTemp, L"R2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            lstrcpyW (wszTemp, L"L2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
                 // If (|Lft) is greater than (|Rht),
                 // and (|Rht) is in the
                 //    left-neighborhood of (|Lft) with CT, return 1
 ////////////////if (aplHoodLo <= aplRhtAbs
 //////////////// &&              aplRhtAbs < aplLftAbs)
 ////////////////    return TRUE;
-                if (mpf_cmp (&mpfHoodLo, &mpfRhtAbs)             <= 0
-                 && mpf_cmp (            &mpfRhtAbs, &mpfLftAbs) <  0)
+                if (mpfr_cmp (&mpfHoodLo, &mpfRhtAbs)             <= 0
+                 && mpfr_cmp (            &mpfRhtAbs, &mpfLftAbs) <  0)
                     iRet = 0;
-                else
-                    bRet = FALSE;
             } // End IF/ELSE
 
-#if defined (DEBUG) && FALSE
-            *FormatAplVfp (wszTemp, mpfTmp, 0) = WC_EOS;
-            DbgMsgW (wszTemp);
-            mpf_init_set_d (&mpfFmt, fQuadCT);
-            *FormatAplVfp (wszTemp, mpfFmt, 0) = WC_EOS;
-            DbgMsgW (wszTemp);
-            Myf_clear (&mpfFmt);
+#if defined (DEBUG) && defined (CT_DEBUG)
+////        mpfr_init0 (mpfFmt);
+////        *FormatAplVfp (wszTemp, mpfFmt, 0) = WC_EOS;
+////        DbgMsgW (wszTemp);
+////        mpfr_init_set_d (&mpfFmt, fQuadCT, MPFR_RNDN);
+////        *FormatAplVfp (wszTemp, mpfFmt, 0) = WC_EOS;
+////        DbgMsgW (wszTemp);
+////        Myf_clear (&mpfFmt);
 #endif
             // We no longer need this storage
             Myf_clear (&mpfHoodLo);
             Myf_clear (&mpfCT    );
+            Myf_clear (&mpfRhtAbs);
+            Myf_clear (&mpfLftAbs);
         } // End IF/ELSE
-
-        // We no longer need this storage
-        Myf_clear (&mpfRhtAbs);
-        Myf_clear (&mpfLftAbs);
-
-        if (bRet)
-            return iRet;
     } // End IF
 
-    return mpf_cmp (&aplVfpLft, &aplVfpRht);
-} // End mpf_cmp_ct
+    return iRet;
+} // End mpfr_cmp_ct
 
 
 //***************************************************************************
-//  $mpf_pow
-//***************************************************************************
-
-void mpf_pow
-    (mpf_ptr dest,          // Ptr to (initialized) destination
-     mpf_ptr base,          // Ptr to base
-     mpf_ptr exp)           // Ptr to exponent
-
-{
-    APLVFP mpfTmp;
-
-    // Call common code for exponentiation
-    mpfTmp = PrimFnDydStarVisVvV (*base, *exp, NULL);
-
-    // Copy to the destination
-    mpf_copy (dest, &mpfTmp);
-
-    // We no longer need this storage
-    Myf_clear (&mpfTmp);
-} // End mpf_pow
-
-
-//***************************************************************************
-//  $mpf_ui_cmp
+//  $mpfr_ui_cmp
 //
 //  Compare an unsigned long int and a VFP
 //***************************************************************************
 
-int mpf_ui_cmp
+int mpfr_ui_cmp
     (unsigned long int op1,     // Left arg
-     mpf_t             op2)     // Right arg
+     mpfr_t             op2)     // Right arg
 
 {
-    return -mpf_cmp_ui (op2, op1);
-} // End mpf_ui_cmp
+    return -mpfr_cmp_ui (op2, op1);
+} // End mpfr_ui_cmp
 
 
 //***************************************************************************
-//  $mpf_si_cmp
+//  $mpfr_si_cmp
 //
 //  Compare a signed long int and a VFP
 //***************************************************************************
 
-int mpf_si_cmp
+int mpfr_si_cmp
     (signed long int op1,       // Left arg
-     mpf_t           op2)       // Right arg
+     mpfr_t           op2)       // Right arg
 
 {
-    return -mpf_cmp_si (op2, op1);
-} // End mpf_si_cmp
+    return -mpfr_cmp_si (op2, op1);
+} // End mpfr_si_cmp
 
 
 //***************************************************************************
@@ -1506,10 +1609,10 @@ void Myf_init
     (LPAPLVFP mpfVal)
 
 {
-    if (mpfVal->_mp_d EQ NULL)
-        mpf_init (mpfVal);
+    if (mpfVal->_mpfr_d EQ NULL)
+        mpfr_init0 (mpfVal);
     else
-        mpf_set_prec (mpfVal, mpf_get_default_prec ());
+        mpfr_set_prec (mpfVal, mpfr_get_default_prec ());
 } // End Myf_init
 
 
@@ -1521,14 +1624,14 @@ void Myf_clear
     (LPAPLVFP mpfVal)
 
 {
-    if (mpfVal->_mp_d)
+    if (mpfVal->_mpfr_d)
     {
-        mpf_clear (mpfVal);
-        mpfVal->_mp_d = NULL;
+        mpfr_clear (mpfVal);
+        mpfVal->_mpfr_d = NULL;
     } // End IF
 } // End Myf_clear
 
 
 //***************************************************************************
-//  End of File: primfns.c
+//  End of File: mpfns.c
 //***************************************************************************

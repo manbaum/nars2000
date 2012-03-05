@@ -68,7 +68,7 @@ APLLONGEST ValidateFirstItemToken
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an integer using System CT
-            aplLongestRht = mpf_get_ctsa ((LPAPLVFP) hGlbSubRht, lpbRet);
+            aplLongestRht = mpfr_get_ctsa ((LPAPLVFP) hGlbSubRht, lpbRet);
 
             break;
 
@@ -1234,7 +1234,7 @@ APLINT GetNextVfpIntGlb
     lpMemVfp = VarArrayBaseToData (lpMemVfp, ((LPVARARRAY_HEADER) lpMemVfp)->Rank);
 
     // Convert the next VFP to an INT
-    aplInteger = mpf_get_ctsa (&lpMemVfp[uRes], lpbRet);
+    aplInteger = mpfr_get_ctsa (&lpMemVfp[uRes], lpbRet);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbVfp); lpMemVfp = NULL;

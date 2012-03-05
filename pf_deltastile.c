@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -598,7 +598,7 @@ UBOOL PermVecGrade
                     if (*lpGradeData->lpbCtrlBreak)
                         goto ERROR_EXIT;
 
-                    lpMemRes[mpf_get_ctsa (((LPAPLVFP) lpMemRht)++, NULL) - PV1] = uRht;
+                    lpMemRes[mpfr_get_ctsa (((LPAPLVFP) lpMemRht)++, NULL) - PV1] = uRht;
                 } // End FOR
 
                 break;
@@ -661,7 +661,7 @@ UBOOL PermVecGrade
                     if (*lpGradeData->lpbCtrlBreak)
                         goto ERROR_EXIT;
 
-                    lpMemRes[aplNELMRht1 - mpf_get_ctsa (((LPAPLVFP) lpMemRht)++, NULL)] = uRht;
+                    lpMemRes[aplNELMRht1 - mpfr_get_ctsa (((LPAPLVFP) lpMemRht)++, NULL)] = uRht;
                 } // End FOR
 
                 break;
@@ -1375,8 +1375,8 @@ APLINT PrimFnGradeCompare
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
             // Split cases based upon the comparison of the two values
-            switch (signum (mpf_cmp (&((LPAPLVFP) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
-                                     &((LPAPLVFP) lpMemRht)[aplUIntRht * aplNELMRest + uRest])))
+            switch (signum (mpfr_cmp (&((LPAPLVFP) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                                      &((LPAPLVFP) lpMemRht)[aplUIntRht * aplNELMRest + uRest])))
             {
                 case 1:
                     return  1 * lpGradeData->iMul;

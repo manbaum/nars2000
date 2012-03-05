@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 #undef  mpz_set_si
 #undef  mpz_set_d
 #undef  mpz_set_q
-#undef  mpz_set_f
+#undef  mpz_set_fr
 
 #undef  mpz_get_ui
 #undef  mpz_get_si
@@ -187,7 +187,7 @@
 #undef  mpq_get_d
 
 #undef  mpq_set_d
-#undef  mpq_set_f
+#undef  mpq_set_fr
 
 #undef  mpq_get_str
 
@@ -208,62 +208,62 @@
 #undef  mpq_out_str
 #undef  mpq_inp_str
 
-#undef  mpf_set_d
-#undef  mpf_set_z
-#undef  mpf_set_q
-#undef  mpf_set_str
+#undef  mpfr_set_d
+#undef  mpfr_set_z
+#undef  mpfr_set_q
+#undef  mpfr_set_str
 
-#undef  mpf_init_set_d
-#undef  mpf_init_set_str
+#undef  mpfr_init_set_d
+#undef  mpfr_init_set_str
 
-#undef  mpf_get_d
-#undef  mpf_get_d_2exp
-#undef  mpf_get_si
-#undef  mpf_get_ui
-#undef  mpf_get_str
+#undef  mpfr_get_d
+#undef  mpfr_get_d_2exp
+#undef  mpfr_get_si
+#undef  mpfr_get_ui
+#undef  mpfr_get_str
 
-#undef  mpf_add
-#undef  mpf_add_ui
+#undef  mpfr_add
+#undef  mpfr_add_ui
 
-#undef  mpf_sub
-#undef  mpf_ui_sub
-#undef  mpf_sub_ui
+#undef  mpfr_sub
+#undef  mpfr_ui_sub
+#undef  mpfr_sub_ui
 
-#undef  mpf_mul
-#undef  mpf_mul_ui
+#undef  mpfr_mul
+#undef  mpfr_mul_ui
 
-#undef  mpf_div
-#undef  mpf_ui_div
-#undef  mpf_div_ui
+#undef  mpfr_div
+#undef  mpfr_ui_div
+#undef  mpfr_div_ui
 
-#undef  mpf_sqrt
-#undef  mpf_pow_ui
-#undef  mpf_neg
-#undef  mpf_abs
-#undef  mpf_mul_2exp
-#undef  mpf_div_2exp
+#undef  mpfr_sqrt
+#undef  mpfr_pow_ui
+#undef  mpfr_neg
+#undef  mpfr_abs
+#undef  mpfr_mul_2exp
+#undef  mpfr_div_2exp
 
-#undef  mpf_cmp
-#undef  mpf_cmp_d
-#undef  mpf_cmp_ui
-#undef  mpf_cmp_si
-#undef  mpf_eq
+#undef  mpfr_cmp
+#undef  mpfr_cmp_d
+#undef  mpfr_cmp_ui
+#undef  mpfr_cmp_si
+#undef  mpfr_eq
 
-#undef  mpf_out_str
-#undef  mpf_inp_str
+#undef  mpfr_out_str
+#undef  mpfr_inp_str
 
-#undef  mpf_reldiff
-#undef  mpf_ceil
-#undef  mpf_floor
-#undef  mpf_trunc
-#undef  mpf_integer_p
+#undef  mpfr_reldiff
+#undef  mpfr_ceil
+#undef  mpfr_floor
+#undef  mpfr_trunc
+#undef  mpfr_integer_p
 
-#undef  mpf_fits_ulong_p
-#undef  mpf_fits_slong_p
-#undef  mpf_fits_uint_p
-#undef  mpf_fits_sint_p
-#undef  mpf_fits_ushort_p
-#undef  mpf_fits_sshort_p
+#undef  mpfr_fits_ulong_p
+#undef  mpfr_fits_slong_p
+#undef  mpfr_fits_uint_p
+#undef  mpfr_fits_sint_p
+#undef  mpfr_fits_ushort_p
+#undef  mpfr_fits_sshort_p
 
 
 #define mpz_init_set            mpiz_init_set
@@ -274,7 +274,7 @@
 #define mpz_set_si              mpiz_set_si
 #define mpz_set_d               mpiz_set_d
 #define mpz_set_q               mpiz_set_q
-#define mpz_set_f               mpiz_set_f
+#define mpz_set_fr              mpiz_set_fr
 
 #define mpz_get_ui              mpiz_get_ui
 #define mpz_get_si              mpiz_get_si
@@ -430,7 +430,7 @@
 #define mpq_get_d               mpiq_get_d
 
 #define mpq_set_d               mpiq_set_d
-#define mpq_set_f               mpiq_set_f
+#define mpq_set_fr              mpiq_set_fr
 
 #define mpq_get_str             mpiq_get_str
 
@@ -451,62 +451,62 @@
 #define mpq_out_str             mpiq_out_str
 #define mpq_inp_str             mpiq_inp_str
 
-#define mpf_set_d               mpif_set_d
-#define mpf_set_z               mpif_set_z
-#define mpf_set_q               mpif_set_q
-#define mpf_set_str             mpif_set_str
+#define mpfr_set_d              mpifr_set_d
+#define mpfr_set_z              mpifr_set_z
+#define mpfr_set_q              mpifr_set_q
+#define mpfr_set_str            mpifr_set_str
 
-#define mpf_init_set_d          mpif_init_set_d
-#define mpf_init_set_str        mpif_init_set_str
+#define mpfr_init_set_d         mpifr_init_set_d
+#define mpfr_init_set_str       mpifr_init_set_str
 
-#define mpf_get_d               mpif_get_d
-#define mpf_get_d_2exp          mpif_get_d_2exp
-#define mpf_get_si              mpif_get_si
-#define mpf_get_ui              mpif_get_ui
-#define mpf_get_str             mpif_get_str
+#define mpfr_get_d              mpifr_get_d
+#define mpfr_get_d_2exp         mpifr_get_d_2exp
+#define mpfr_get_si             mpifr_get_si
+#define mpfr_get_ui             mpifr_get_ui
+#define mpfr_get_str            mpifr_get_str
 
-#define mpf_add                 mpif_add
-#define mpf_add_ui              mpif_add_ui
+#define mpfr_add                mpifr_add
+#define mpfr_add_ui             mpifr_add_ui
 
-#define mpf_sub                 mpif_sub
-#define mpf_ui_sub              mpif_ui_sub
-#define mpf_sub_ui              mpif_sub_ui
+#define mpfr_sub                mpifr_sub
+#define mpfr_ui_sub             mpifr_ui_sub
+#define mpfr_sub_ui             mpifr_sub_ui
 
-#define mpf_mul                 mpif_mul
-#define mpf_mul_ui              mpif_mul_ui
+#define mpfr_mul                mpifr_mul
+#define mpfr_mul_ui             mpifr_mul_ui
 
-#define mpf_div                 mpif_div
-#define mpf_ui_div              mpif_ui_div
-#define mpf_div_ui              mpif_div_ui
+#define mpfr_div                mpifr_div
+#define mpfr_ui_div             mpifr_ui_div
+#define mpfr_div_ui             mpifr_div_ui
 
-#define mpf_sqrt                mpif_sqrt
-#define mpf_pow_ui              mpif_pow_ui
-#define mpf_neg                 mpif_neg
-#define mpf_abs                 mpif_abs
-#define mpf_mul_2exp            mpif_mul_2exp
-#define mpf_div_2exp            mpif_div_2exp
+#define mpfr_sqrt               mpifr_sqrt
+#define mpfr_pow_ui             mpifr_pow_ui
+#define mpfr_neg                mpifr_neg
+#define mpfr_abs                mpifr_abs
+#define mpfr_mul_2exp           mpifr_mul_2exp
+#define mpfr_div_2exp           mpifr_div_2exp
 
-#define mpf_cmp                 mpif_cmp
-#define mpf_cmp_d               mpif_cmp_d
-#define mpf_cmp_ui              mpif_cmp_ui
-#define mpf_cmp_si              mpif_cmp_si
-#define mpf_eq                  mpif_eq
+#define mpfr_cmp                mpifr_cmp
+#define mpfr_cmp_d              mpifr_cmp_d
+#define mpfr_cmp_ui             mpifr_cmp_ui
+#define mpfr_cmp_si             mpifr_cmp_si
+#define mpfr_eq                 mpifr_eq
 
-#define mpf_out_str             mpif_out_str
-#define mpf_inp_str             mpif_inp_str
+#define mpfr_out_str            mpifr_out_str
+#define mpfr_inp_str            mpifr_inp_str
 
-#define mpf_reldiff             mpif_reldiff
-#define mpf_ceil                mpif_ceil
-#define mpf_floor               mpif_floor
-#define mpf_trunc               mpif_trunc
-#define mpf_integer_p           mpif_integer_p
+#define mpfr_reldiff            mpifr_reldiff
+#define mpfr_ceil               mpifr_ceil
+#define mpfr_floor              mpifr_floor
+#define mpfr_trunc              mpifr_trunc
+#define mpfr_integer_p          mpifr_integer_p
 
-#define mpf_fits_ulong_p        mpif_fits_ulong_p
-#define mpf_fits_slong_p        mpif_fits_slong_p
-#define mpf_fits_uint_p         mpif_fits_uint_p
-#define mpf_fits_sint_p         mpif_fits_sint_p
-#define mpf_fits_ushort_p       mpif_fits_ushort_p
-#define mpf_fits_sshort_p       mpif_fits_sshort_p
+#define mpfr_fits_ulong_p       mpifr_fits_ulong_p
+#define mpfr_fits_slong_p       mpifr_fits_slong_p
+#define mpfr_fits_uint_p        mpifr_fits_uint_p
+#define mpfr_fits_sint_p        mpifr_fits_sint_p
+#define mpfr_fits_ushort_p      mpifr_fits_ushort_p
+#define mpfr_fits_sshort_p      mpifr_fits_sshort_p
 
 #endif
 

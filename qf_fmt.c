@@ -1905,7 +1905,7 @@ void QFMT_CommonEFIR
             mpq_init_set_ui (&aplRat1 , 1 , 1);
         } else
         if (IsImmVfp (immTypeItm))
-            mpf_init_set_ui (&aplVfp10, 10);
+            mpfr_init_set_ui (&aplVfp10, 10, MPFR_RNDN);
         else
             DbgStop ();
     } // End IF
@@ -1938,8 +1938,8 @@ void QFMT_CommonEFIR
             break;
 
         case IMMTYPE_VFP:
-            mpf_init_set (&aplVfpItm, (LPAPLVFP) lpSymGlbItm);
-            aplFltItm = mpf_get_d (&aplVfpItm);
+            mpfr_init_set (&aplVfpItm, (LPAPLVFP) lpSymGlbItm, MPFR_RNDN);
+            aplFltItm = mpfr_get_d (&aplVfpItm, MPFR_RNDN);
             aplIntItm = (APLINT) aplFltItm;
 
             break;
@@ -1983,7 +1983,7 @@ void QFMT_CommonEFIR
             break;
 
         case IMMTYPE_VFP:
-            if (mpf_cmp_ui (&aplVfpItm, 0) EQ 0)
+            if (mpfr_cmp_ui (&aplVfpItm, 0) EQ 0)
                 // Move to the next item
                 goto NORMAL_EXIT;
             break;
@@ -2017,7 +2017,7 @@ void QFMT_CommonEFIR
                             mpq_div (&aplRatItm, &aplRatItm, &aplRat10);
                         else
                         if (IsImmVfp (immTypeItm))
-                            mpf_div (&aplVfpItm, &aplVfpItm, &aplVfp10);
+                            mpfr_div (&aplVfpItm, &aplVfpItm, &aplVfp10, MPFR_RNDN);
                         else
                             DbgStop ();
                     } else
@@ -2033,7 +2033,7 @@ void QFMT_CommonEFIR
                             mpq_mul (&aplRatItm, &aplRatItm, &aplRat10);
                         else
                         if (IsImmVfp (immTypeItm))
-                            mpf_mul (&aplVfpItm, &aplVfpItm, &aplVfp10);
+                            mpfr_mul (&aplVfpItm, &aplVfpItm, &aplVfp10, MPFR_RNDN);
                         else
                             DbgStop ();
                     } else
@@ -2054,7 +2054,7 @@ void QFMT_CommonEFIR
                             mpq_div (&aplRatItm, &aplRatItm, &aplRat10);
                         else
                         if (IsImmVfp (immTypeItm))
-                            mpf_div (&aplVfpItm, &aplVfpItm, &aplVfp10);
+                            mpfr_div (&aplVfpItm, &aplVfpItm, &aplVfp10, MPFR_RNDN);
                         else
                             DbgStop ();
                     } else
@@ -2070,7 +2070,7 @@ void QFMT_CommonEFIR
                             mpq_mul (&aplRatItm, &aplRatItm, &aplRat10);
                         else
                         if (IsImmVfp (immTypeItm))
-                            mpf_mul (&aplVfpItm, &aplVfpItm, &aplVfp10);
+                            mpfr_mul (&aplVfpItm, &aplVfpItm, &aplVfp10, MPFR_RNDN);
                         else
                             DbgStop ();
                     } else
@@ -2111,7 +2111,7 @@ void QFMT_CommonEFIR
 
                 case IMMTYPE_RAT:
                     // Convert the RAT to a VFP
-                    mpf_init_set_q (&aplVfpItm, &aplRatItm);
+                    mpfr_init_set_q (&aplVfpItm, &aplRatItm, MPFR_RNDN);
 
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
@@ -2175,7 +2175,7 @@ void QFMT_CommonEFIR
 
                 case IMMTYPE_RAT:
                     // Convert the RAT to a VFP
-                    mpf_init_set_q (&aplVfpItm, &aplRatItm);
+                    mpfr_init_set_q (&aplVfpItm, &aplRatItm, MPFR_RNDN);
 
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
@@ -2268,7 +2268,7 @@ void QFMT_CommonEFIR
                     break;
 
                 case IMMTYPE_VFP:
-                    mpq_init_set_f  (&aplRatTmp, &aplVfpItm);
+                    mpq_init_set_fr (&aplRatTmp, &aplVfpItm);
 
                     break;
 
@@ -2375,11 +2375,11 @@ void QFMT_CommonEFIR
 
                 case IMMTYPE_VFP:
                     // Initialize the temp
-                    mpf_init (&aplVfpTmp);
+                    mpfr_init0 (&aplVfpTmp);
 
                     // Round the VFP to the nearest integer
-                    mpf_add   (&aplVfpTmp, &aplVfpItm, &mpfHalf);
-                    mpf_floor (&aplVfpTmp, &aplVfpTmp);
+                    mpfr_add   (&aplVfpTmp, &aplVfpItm, &mpfHalf, MPFR_RNDN);
+                    mpfr_floor (&aplVfpTmp, &aplVfpTmp);
 
                     lpaplChar =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
@@ -2424,7 +2424,7 @@ void QFMT_CommonEFIR
         case IMMTYPE_VFP:
             // Set the sign of aplFltItm for subsequent use in the
             //   following comparisons in case the GlbNum is too large
-            aplFltItm = mpf_cmp_ui (&aplVfpItm, 0);
+            aplFltItm = mpfr_cmp_ui (&aplVfpItm, 0);
 
             break;
 

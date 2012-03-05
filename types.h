@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,8 +46,7 @@ typedef struct tagSYMENTRY *APLHETERO;  // ...         ...           a HETERO ar
 typedef struct tagTOKEN APLLIST;        // ...                       a list
 typedef MP_INT      APLMPI;             // ...         ...           an Arbitrary Precision Integer array
 typedef MP_RAT      APLRAT;             // ...         ...           a Rational Number array
-typedef __mpf_struct APLVFP;            // ...         ...           a Variable-precision Floating Point array
-typedef __mpfr_struct APLMPFR;          // ...         ...           a MPFR array
+typedef __mpfr_struct APLVFP;           // ...         ...           a Variable-precision Floating Point array
 typedef enum tagARRAY_TYPES APLSTYPE;   // Storage type (see ARRAY_TYPES)
 
 typedef ULONGLONG   APLB64;             // Boolean 64 bits
@@ -91,7 +90,6 @@ typedef APLHETERO * LPAPLHETERO;
 typedef APLMPI    * LPAPLMPI;
 typedef APLRAT    * LPAPLRAT;
 typedef APLVFP    * LPAPLVFP;
-typedef APLMPFR   * LPAPLMPFR;
 
 typedef APLB64    * LPAPLB64;
 typedef APLB32    * LPAPLB32;
@@ -101,17 +99,31 @@ typedef APLB08    * LPAPLB08;
 typedef APLLONGEST* LPAPLLONGEST;
 
 #pragma pack(push,4)
+typedef struct tagAPLI_SPLIT
+{
+    UINT lo;
+     int hi;
+} APLI_SPLIT, *LPAPLI_SPLIT;
+
 typedef struct tagAPLU_SPLIT
 {
     UINT lo,
          hi;
 } APLU_SPLIT, *LPAPLU_SPLIT;
 
-typedef struct tagAPL_SPLIT
+typedef union tagISPLIT
 {
-    UINT lo;
-    int  hi;
-} APL_SPLIT, *LPAPL_SPLIT;
+    APLINT  aplInt;
+    struct {UINT lo;
+             int hi;};
+} ISPLIT, *LPISPLIT;
+
+typedef union tagUSPLIT
+{
+    APLUINT aplInt;
+    struct {UINT lo;
+            UINT hi;};
+} USPLIT, *LPUSPLIT;
 #pragma pack(pop)
 
 

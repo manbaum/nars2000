@@ -538,13 +538,13 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 immTypeRes = IMMTYPE_VFP;
 
                 // Copy the value
-                mpf_init_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                mpfr_init_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                 // If the right arg is zero, the result is zero
                 //   as per SVD
                 if (!IsMpf0 (&aplVfpRht))
                     // Invert it
-                    mpf_inv (&aplVfpRht, &aplVfpRht);
+                    mpfr_inv (&aplVfpRht, &aplVfpRht, MPFR_RNDN);
 
                 // Save in the result
                 lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
@@ -863,11 +863,11 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
             for (uCol = 0; uCol < uNumCols; uCol++)
             {
                 // Initialize the entry
-                mpq_init  (&((LPAPLRAT) lpMemTmp)[uRow * uNumRows + uCol]);
+                mpq_init   (&((LPAPLRAT) lpMemTmp)[uRow * uNumRows + uCol]);
 
                 // Copy and convert the entry
-                mpq_set_f (&((LPAPLRAT) lpMemTmp)[uRow * uNumRows + uCol],
-                           &((LPAPLVFP) lpMemRht)[uRow * uNumCols + uCol]);
+                mpq_set_fr (&((LPAPLRAT) lpMemTmp)[uRow * uNumRows + uCol],
+                            &((LPAPLVFP) lpMemRht)[uRow * uNumCols + uCol]);
             } // End FOR/FOR
 
             // Use Gauss-Jordan elimination to invert the matrix
@@ -879,11 +879,12 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
             for (uCol = 0; uCol < uNumCols; uCol++)
             {
                 // Initialize the entry
-                mpf_init (&((LPAPLVFP) lpMemRes)[uRow * uNumRows + uCol]);
+                mpfr_init0 (&((LPAPLVFP) lpMemRes)[uRow * uNumRows + uCol]);
 
                 // Copy and convert the entry
-                mpf_set_q (&((LPAPLVFP) lpMemRes)[uRow * uNumRows + uCol],
-                           &((LPAPLRAT) lpMemTmp)[uRow * uNumRows + uCol]);
+                mpfr_set_q (&((LPAPLVFP) lpMemRes)[uRow * uNumRows + uCol],
+                            &((LPAPLRAT) lpMemTmp)[uRow * uNumRows + uCol],
+                            MPFR_RNDN);
             } // End FOR/FOR
 
             break;
@@ -1590,7 +1591,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                         case ARRAY_VFP:
                             // Convert the VFP to a RAT
-                            mpq_set_f  (&aplRatTmp, &((LPAPLVFP ) lpMemLft)[uRow * uNumColsLft + uCol]);
+                            mpq_set_fr (&aplRatTmp, &((LPAPLVFP ) lpMemLft)[uRow * uNumColsLft + uCol]);
 
                             break;
 
@@ -1634,7 +1635,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                         case ARRAY_VFP:
                             // Convert the VFP to a RAT
-                            mpq_set_f  (&aplRatTmp, &((LPAPLVFP ) lpMemRht)[uRow * uNumColsRht + uCol]);
+                            mpq_set_fr (&aplRatTmp, &((LPAPLVFP ) lpMemRht)[uRow * uNumColsRht + uCol]);
 
                             break;
 
@@ -1669,8 +1670,9 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                         case ARRAY_VFP:
                             // Initialize and convert the RAT to a VFP
-                            mpf_init_set_q (&((LPAPLVFP) lpMemRes)[uRow * uNumColsRes + uCol],
-                                            &lpMemTmpRht          [uRow * uNumColsRes + uCol]);
+                            mpfr_init_set_q (&((LPAPLVFP) lpMemRes)[uRow * uNumColsRes + uCol],
+                                             &lpMemTmpRht          [uRow * uNumColsRes + uCol],
+                                             MPFR_RNDN);
                             break;
 
                         defstop

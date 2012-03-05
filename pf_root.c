@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -216,14 +216,14 @@ APLVFP PrimFnMonRootVisV
 {
     APLVFP mpfRes = {0};
 
-    if (mpf_cmp_ui (&aplVfpRht, 0) < 0)
+    if (mpfr_cmp_ui (&aplVfpRht, 0) < 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Initialize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
     // Extract the square root of a Variable FP
-    mpf_sqrt (&mpfRes, &aplVfpRht);
+    mpfr_sqrt (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonRootVisV
@@ -535,14 +535,14 @@ APLVFP PrimFnDydRootVisVvV
     // Check for indeterminates:  0 * _
     if (IsMpf0 (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpLft,
+        return mpfr_QuadICValue (aplVfpLft,
                                 ICNDX_0EXPPi,
                                 aplVfpRht,
                                 mpfRes);
     // Check for special case:  1 {root} R <==> R * 1 <==> R
     if (IsMpf1 (&aplVfpLft))
     {
-        mpf_init_copy (&mpfRes, &aplVfpRht);
+        mpfr_init_copy (&mpfRes, &aplVfpRht);
         return mpfRes;
     } // End IF
 
@@ -550,46 +550,46 @@ APLVFP PrimFnDydRootVisVvV
     if (IsMpf0 (&aplVfpLft))
     {
         // Check for indeterminate:  0 {root} R where R <= -1
-        if (mpf_cmp_si (&aplVfpRht, -1) <= 0)   // R <= -1
-            return mpf_QuadICValue (aplVfpLft,
+        if (mpfr_cmp_si (&aplVfpRht, -1) <= 0)  // R <= -1
+            return mpfr_QuadICValue (aplVfpLft,
                                     ICNDX_NEXPPi,
                                     aplVfpRht,
                                     mpfRes);
         // Check for special case:  0 {root} R where -1 < R < 0 <==> 0
-        if (mpf_si_cmp (-1, &aplVfpRht   ) < 0  // -1 < R
-         && mpf_cmp_si (    &aplVfpRht, 0) < 0)    //      R < 0)
+        if (mpfr_si_cmp (-1, &aplVfpRht   ) < 0 // -1 < R
+         && mpfr_cmp_si (    &aplVfpRht, 0) < 0)    //      R < 0)
         {
-            mpf_init (&mpfRes);
+            mpfr_init0 (&mpfRes);
             return mpfRes;
         } // End IF
 
         // Check for indeterminate:  0 {root} 0 <==> 0 * _
         if (IsMpf0 (&aplVfpRht))
-            return mpf_QuadICValue (aplVfpLft,
+            return mpfr_QuadICValue (aplVfpLft,
                                     ICNDX_0EXPPi,
                                     aplVfpRht,
                                     mpfRes);
         // Check for special case:  0 {root} R where 0 < R < 1
-        if (mpf_ui_cmp (0, &aplVfpRht   ) < 0   // 0 < R
-         && mpf_cmp_ui (   &aplVfpRht, 1) < 0)  //     R < 1
+        if (mpfr_ui_cmp (0, &aplVfpRht   ) < 0  // 0 < R
+         && mpfr_cmp_ui (   &aplVfpRht, 1) < 0) //     R < 1
         {
-            mpf_init (&mpfRes);
+            mpfr_init0 (&mpfRes);
             return mpfRes;
         } // End IF
 
         // Check for special case:  0 {root} R where R > 1 <==> R * _ <==> _
-        if (mpf_cmp_ui (&aplVfpRht, 1) > 0)     // R > 1
+        if (mpfr_cmp_ui (&aplVfpRht, 1) > 0)    // R > 1
             return mpfPosInfinity;
     } // End IF
 
     // Check for indeterminate:  ±_ {root} 0 <==> 0 * 0
-    if (mpf_inf_p (&aplVfpLft)
+    if (mpfr_inf_p (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpLft,
+        return mpfr_QuadICValue (aplVfpLft,
                                 ICNDX_0EXP0,
                                 aplVfpRht,
                                 mpfRes);
-    if (mpf_cmp_ui (&aplVfpRht, 0) < 0)         // R < 0
+    if (mpfr_cmp_ui (&aplVfpRht, 0) < 0)        // R < 0
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Nth root (V) = exp (ln (a) / N)
@@ -598,7 +598,7 @@ APLVFP PrimFnDydRootVisVvV
     mpfTmp = PrimFnMonCircleStarVisV (aplVfpRht, NULL);
 
     // Divide by N
-    mpf_div (&mpfTmp, &mpfTmp, &aplVfpLft);
+    mpfr_div (&mpfTmp, &mpfTmp, &aplVfpLft, MPFR_RNDN);
 
     // Exp that
     mpfRes = PrimFnMonStarVisV (mpfTmp, NULL);

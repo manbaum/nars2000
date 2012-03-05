@@ -1407,23 +1407,23 @@ RESTART_EXCEPTION_VARIMMED:
 
                 case ARRAY_VFP:                 // Res = VFP
                         // Initialize the arg
-                        mpf_init (&mpfArg);
+                        mpfr_init0 (&mpfArg);
 
                         // Split cases based upon the right arg's storage type
                         switch (lptkRhtArg->tkFlags.ImmType)
                         {
                             case IMMTYPE_BOOL:  // Res = VFP, Rht = BOOL
-                                mpf_set_sx (&mpfArg, lptkRhtArg->tkData.tkBoolean & BIT0);
+                                mpfr_set_sx (&mpfArg, lptkRhtArg->tkData.tkBoolean & BIT0, MPFR_RNDN);
 
                                 break;
 
                             case IMMTYPE_INT:   // Res = VFP, Rht = INT
-                                mpf_set_sx (&mpfArg, lptkRhtArg->tkData.tkBoolean);
+                                mpfr_set_sx (&mpfArg, lptkRhtArg->tkData.tkBoolean, MPFR_RNDN);
 
                                 break;
 
                             case IMMTYPE_FLOAT: // Res = VFP, Rht = FLOAT
-                                mpf_set_d  (&mpfArg, lptkRhtArg->tkData.tkFloat);
+                                mpfr_set_d  (&mpfArg, lptkRhtArg->tkData.tkFloat, MPFR_RNDN);
 
                                 break;
 
@@ -2478,7 +2478,7 @@ RESTART_EXCEPTION:
 
             case ARRAY_VFP:             // Res = VFP
                 // Initialize the temp
-                mpf_init (&mpfRes);
+                mpfr_init0 (&mpfRes);
 
                 // Split cases based upon the right arg's storage type
                 switch (aplTypeRht)
@@ -2492,7 +2492,7 @@ RESTART_EXCEPTION:
                                 goto ERROR_EXIT;
 
                             // Convert the BOOL to a VFP
-                            mpf_set_si (&mpfRes, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex));
+                            mpfr_set_si (&mpfRes, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex), MPFR_RNDN);
 
                             // Save in result
                             *((LPAPLVFP) lpMemRes)++ =
@@ -2517,7 +2517,7 @@ RESTART_EXCEPTION:
                                 goto ERROR_EXIT;
 
                             // Convert the INT to a VFP
-                            mpf_set_sx (&mpfRes, *((LPAPLINT) lpMemRht)++);
+                            mpfr_set_sx (&mpfRes, *((LPAPLINT) lpMemRht)++, MPFR_RNDN);
 
                             // Save in result
                             *((LPAPLVFP) lpMemRes)++ =
@@ -2536,7 +2536,7 @@ RESTART_EXCEPTION:
                                 goto ERROR_EXIT;
 
                             // Convert the APA to a VFP
-                            mpf_set_sx (&mpfRes, apaOffRht + apaMulRht * uRes);
+                            mpfr_set_sx (&mpfRes, apaOffRht + apaMulRht * uRes, MPFR_RNDN);
 
                             // Save in result
                             *((LPAPLVFP) lpMemRes)++ =
@@ -2555,7 +2555,7 @@ RESTART_EXCEPTION:
                                 goto ERROR_EXIT;
 
                             // Convert the FLOAT to a VFP
-                            mpf_set_d (&mpfRes, *((LPAPLFLOAT) lpMemRht)++);
+                            mpfr_set_d (&mpfRes, *((LPAPLFLOAT) lpMemRht)++, MPFR_RNDN);
 
                             // Save in result
                             *((LPAPLVFP) lpMemRes)++ =
@@ -2574,7 +2574,7 @@ RESTART_EXCEPTION:
                                 goto ERROR_EXIT;
 
                             // Convert the RAT to a VFP
-                            mpf_set_q (&mpfRes, ((LPAPLRAT) lpMemRht)++);
+                            mpfr_set_q (&mpfRes, ((LPAPLRAT) lpMemRht)++, MPFR_RNDN);
 
                             // Save in result
                             *((LPAPLVFP) lpMemRes)++ =
@@ -4487,7 +4487,7 @@ RESTART_EXCEPTION:
                         case ARRAY_APA:     // Res = BOOL, Lft = APA  (S)
                             // Initialize the temps
                             mpq_init (&aplRatLft);
-                            mpf_init (&aplVfpLft);
+                            mpfr_init0 (&aplVfpLft);
 
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -4537,7 +4537,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_VFP:     // Res = BOOL, Lft = BOOL/INT (S), Rht = HETERO:VFP  (M)
                                         // Convert the BOOL/INT to a VFP
-                                        mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                        mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4567,8 +4567,8 @@ RESTART_EXCEPTION:
                         case ARRAY_FLOAT:   // Res = BOOL, Lft = FLOAT(S)
                             // Initialize the temps
                             mpq_init (&aplRatLft);
-                            mpf_init (&aplVfpLft);
-                            mpf_init (&aplVfpRht);
+                            mpfr_init0 (&aplVfpLft);
+                            mpfr_init0 (&aplVfpRht);
 
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -4600,10 +4600,10 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_RAT:     // Res = BOOL, Lft = FLOAT (S), Rht = HETERO:RAT  (M)
                                         // Convert the FLOAT to a VFP
-                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4614,7 +4614,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_VFP:     // Res = BOOL, Lft = FLOAT (S), Rht = HETERO:VFP  (M)
                                         // Convert the FLOAT to a VFP
-                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4689,8 +4689,8 @@ RESTART_EXCEPTION:
                         case ARRAY_RAT:     // Res = BOOL, Lft = RAT  (S)
                             // Initialize the temps
                             mpq_init (&aplRatRht);
-                            mpf_init (&aplVfpLft);
-                            mpf_init (&aplVfpRht);
+                            mpfr_init0 (&aplVfpLft);
+                            mpfr_init0 (&aplVfpRht);
 
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -4718,10 +4718,10 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_FLOAT:   // Res = BOOL, Lft = RAT (S), Rht = HETERO:FLOAT(M)
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                        mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                         // Convert the FLOAT to a VFP
-                                        mpf_set_d (&aplVfpRht, aplFloatRht);
+                                        mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4746,7 +4746,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_VFP:     // Res = BOOL, Lft = RAT (S), Rht = HETERO:VFP  (M)
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                        mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4776,8 +4776,8 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL, Lft = VFP  (S)
                             // Initialize the temps
-                            mpf_init (&aplVfpLft);
-                            mpf_init (&aplVfpRht);
+                            mpfr_init0 (&aplVfpLft);
+                            mpfr_init0 (&aplVfpRht);
 
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -4794,7 +4794,7 @@ RESTART_EXCEPTION:
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = VFP (S), Rht = HETERO:BOOL (M)
                                     case ARRAY_INT:     // Res = BOOL, Lft = VFP (S), Rht = HETERO:INT  (M)
                                         // Convert the BOOL/INT to a VFP
-                                        mpf_set_sx (&aplVfpRht, aplIntegerRht);
+                                        mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4805,7 +4805,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_FLOAT:   // Res = BOOL, Lft = VFP (S), Rht = HETERO:FLOAT(M)
                                         // Convert the FLOAT to a VFP
-                                        mpf_set_d (&aplVfpRht, aplFloatRht);
+                                        mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -4822,7 +4822,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_RAT:     // Res = BOOL, Lft = VFP (S), Rht = HETERO:RAT  (M)
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -5133,7 +5133,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL, Lft = INT/APA(S), Rht = VFP(M)
                             // Initialize the temp
-                            mpf_init (&aplVfpLft);
+                            mpfr_init0 (&aplVfpLft);
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -5143,7 +5143,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5268,8 +5268,8 @@ RESTART_EXCEPTION:
 
                         case ARRAY_RAT:     // Res = BOOL, Lft = FLOAT(S), Rht = RAT(M)
                             // Initialize the temp
-                            mpf_init (&aplVfpLft);
-                            mpf_init (&aplVfpRht);
+                            mpfr_init0 (&aplVfpLft);
+                            mpfr_init0 (&aplVfpRht);
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -5279,10 +5279,10 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpLft, aplFloatLft);
+                                mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+                                mpfr_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5305,7 +5305,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL, Lft = FLOAT(S), Rht = VFP(M)
                             // Initialize the temp
-                            mpf_init (&aplVfpLft);
+                            mpfr_init0 (&aplVfpLft);
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -5315,7 +5315,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpLft, aplFloatLft);
+                                mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5344,8 +5344,8 @@ RESTART_EXCEPTION:
                 case ARRAY_RAT:             // Res = BOOL, Lft = RAT  (S)
                     // Initialize the temps
                     mpq_init (&aplRatRht);
-                    mpf_init (&aplVfpLft);
-                    mpf_init (&aplVfpRht);
+                    mpfr_init0 (&aplVfpLft);
+                    mpfr_init0 (&aplVfpRht);
 
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
@@ -5438,10 +5438,10 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++);
+                                mpfr_set_d (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5490,7 +5490,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5520,8 +5520,8 @@ RESTART_EXCEPTION:
 
                 case ARRAY_VFP:             // Res = BOOL, Lft = VFP  (S)
                     // Initialize the temps
-                    mpf_init (&aplVfpLft);
-                    mpf_init (&aplVfpRht);
+                    mpfr_init0 (&aplVfpLft);
+                    mpfr_init0 (&aplVfpRht);
 
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
@@ -5535,7 +5535,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a VFP
-                                mpf_set_sx (&aplVfpRht, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex));
+                                mpfr_set_sx (&aplVfpRht, BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex), MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5562,7 +5562,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sx (&aplVfpRht, *((LPAPLINT) lpMemRht)++);
+                                mpfr_set_sx (&aplVfpRht, *((LPAPLINT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5588,7 +5588,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the APA to a VFP
-                                mpf_set_sx (&aplVfpRht, apaOffRht + apaMulRht * uRes);
+                                mpfr_set_sx (&aplVfpRht, apaOffRht + apaMulRht * uRes, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5614,7 +5614,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++);
+                                mpfr_set_d (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -5640,7 +5640,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+                                mpfr_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -6071,7 +6071,7 @@ RESTART_EXCEPTION:
                                 // Save in result
                                 *((LPAPLFLOAT) lpMemRes)++ =
                                   (*lpPrimSpec->FisFvF) (aplFloatLft,
-                                                         mpf_get_d (((LPAPLVFP) lpMemRht)++),
+                                                         mpfr_get_d (((LPAPLVFP) lpMemRht)++, MPFR_RNDN),
                                                          lpPrimSpec);
                             } // End FOR
 
@@ -6182,7 +6182,7 @@ RESTART_EXCEPTION:
                                 // Save in result
                                 *((LPAPLFLOAT) lpMemRes)++ =
                                   (*lpPrimSpec->FisFvF) (mpq_get_d (( LPAPLRAT) lpSymGlbLft),
-                                                         mpf_get_d (((LPAPLVFP) lpMemRht)++),
+                                                         mpfr_get_d (((LPAPLVFP) lpMemRht)++, MPFR_RNDN),
                                                          lpPrimSpec);
                             } // End FOR
 
@@ -6446,8 +6446,8 @@ RESTART_EXCEPTION:
 
         case ARRAY_VFP:                     // Res = VFP
             // Initialize the temps
-            mpf_init (&aplVfpLft);
-            mpf_init (&aplVfpRht);
+            mpfr_init0 (&aplVfpLft);
+            mpfr_init0 (&aplVfpRht);
 
             // Split cases based upon the storage type of the left arg
             switch (aplTypeLft)
@@ -6456,7 +6456,7 @@ RESTART_EXCEPTION:
                 case ARRAY_INT:             // Res = VFP, Lft = INT(S)
                 case ARRAY_APA:             // Res = VFP, Lft = APA(S)
                     // Convert the INT to a VFP
-                    mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                    mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
@@ -6470,7 +6470,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+                                mpfr_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
@@ -6506,7 +6506,7 @@ RESTART_EXCEPTION:
 
                 case ARRAY_FLOAT:           // Res = VFP, Lft = FLOAT(S)
                     // Convert the FLOAT to a VFP
-                    mpf_set_d (&aplVfpLft, aplFloatLft);
+                    mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
@@ -6520,7 +6520,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+                                mpfr_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
@@ -6562,7 +6562,7 @@ RESTART_EXCEPTION:
                         case ARRAY_INT:     // Res = VFP, Lft = RAT(S), Rht = INT (M)
                         case ARRAY_APA:     // Res = VFP, Lft = RAT(S), Rht = APA (M)
                             // Convert the RAT to a VFP
-                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                            mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -6572,8 +6572,9 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sx (&aplVfpRht,
-                                             GetNextInteger (lpMemRht, aplTypeRht, uRes));
+                                mpfr_set_sx (&aplVfpRht,
+                                              GetNextInteger (lpMemRht, aplTypeRht, uRes),
+                                              MPFR_RNDN);
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
                                   (*lpPrimSpec->VisVvV) (aplVfpLft,
@@ -6585,7 +6586,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_FLOAT:   // Res = VFP, Lft = RAT(S), Rht = FLOAT(M)
                             // Convert the RAT to a VFP
-                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                            mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -6595,8 +6596,9 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpRht,
-                                           *((LPAPLFLOAT) lpMemRht)++);
+                                mpfr_set_d (&aplVfpRht,
+                                             *((LPAPLFLOAT) lpMemRht)++,
+                                             MPFR_RNDN);
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
                                   (*lpPrimSpec->VisVvV) (aplVfpLft,
@@ -6609,7 +6611,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_RAT:     // Res = VFP, Lft = RAT(S), Rht = RAT(M)
                             // Convert the RAT to a VFP
-                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                            mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -6619,7 +6621,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+                                mpfr_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
@@ -6632,7 +6634,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = VFP, Lft = RAT(S), Rht = VFP(M)
                             // Convert the RAT to a VFP
-                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                            mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -6671,8 +6673,9 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sx (&aplVfpRht,
-                                             GetNextInteger (lpMemRht, aplTypeRht, uRes));
+                                mpfr_set_sx (&aplVfpRht,
+                                              GetNextInteger (lpMemRht, aplTypeRht, uRes),
+                                              MPFR_RNDN);
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
                                   (*lpPrimSpec->VisVvV) (*(LPAPLVFP) lpSymGlbLft,
@@ -6691,8 +6694,9 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpRht,
-                                           *((LPAPLFLOAT) lpMemRht)++);
+                                mpfr_set_d (&aplVfpRht,
+                                            *((LPAPLFLOAT) lpMemRht)++,
+                                            MPFR_RNDN);
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
                                   (*lpPrimSpec->VisVvV) (*(LPAPLVFP) lpSymGlbLft,
@@ -6712,7 +6716,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++);
+                                mpfr_set_q (&aplVfpRht, ((LPAPLRAT) lpMemRht)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP) lpMemRes)++ =
@@ -7127,7 +7131,7 @@ RESTART_EXCEPTION:
                         case ARRAY_APA:     // Res = BOOL,                  Rht = APA  (S)
                             // Convert the BOOL/INT to a RAT
                             mpq_init_set_sx (&aplRatRht, aplIntegerRht, 1);
-                            mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
+                            mpfr_init_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7201,7 +7205,7 @@ RESTART_EXCEPTION:
                         case ARRAY_FLOAT:   // Res = BOOL,                  Rht = FLOAT(S)
                             // Convert the FLOAT to a RAT
                             mpq_init_set_d (&aplRatRht, aplFloatRht);
-                            mpf_init_set_d (&aplVfpRht, aplFloatRht);
+                            mpfr_init_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7309,8 +7313,8 @@ RESTART_EXCEPTION:
                         case ARRAY_RAT:     // Res = BOOL,                  Rht = RAT  (S)
                             // Initialize the temps
                             mpq_init (&aplRatLft);
-                            mpf_init (&aplVfpLft);
-                            mpf_init (&aplVfpRht);
+                            mpfr_init0 (&aplVfpLft);
+                            mpfr_init0 (&aplVfpRht);
 
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7341,10 +7345,10 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_FLOAT:   // Res = BOOL, Lft = HETERO:FLT  (M), Rht = RAT (S)
                                         // Convert the FLOAT to a VFP
-                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -7363,7 +7367,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_VFP:     // Res = BOOL, Lft = HETERO:VFP  (M), Rht = RAT (S)
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -7393,7 +7397,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL,                  Rht = VFP  (S)
                             // Initialize the temp
-                            mpf_init (&aplVfpLft);
+                            mpfr_init0 (&aplVfpLft);
 
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7409,7 +7413,7 @@ RESTART_EXCEPTION:
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = HETERO:BOOL (M), Rht = VFP (S)
                                     case ARRAY_INT:     // Res = BOOL, Lft = HETERO:INT  (M), Rht = VFP (S)
-                                        mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                        mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                         *((LPAPLBOOL)  lpMemRes) |=
                                           (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -7424,7 +7428,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_FLOAT:   // Res = BOOL, Lft = HETERO:FLOAT(M), Rht = VFP (S)
                                         // Convert the FLOAT to a VFP
-                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -7435,7 +7439,7 @@ RESTART_EXCEPTION:
 
                                     case ARRAY_RAT:     // Res = BOOL, Lft = HETERO:RAT  (M), Rht = VFP (S)
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                        mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                         // Save in result
                                         *((LPAPLBOOL)  lpMemRes) |=
@@ -7741,7 +7745,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL, Lft = VFP  (M), Rht = BOOL/INT(S)
                             // Initialize the temp
-                            mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
+                            mpfr_init_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -7902,7 +7906,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL, Lft = VFP (M),   Rht = APA(S)
                             // Initialize temp
-                            mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
+                            mpfr_init_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -8034,11 +8038,11 @@ RESTART_EXCEPTION:
 
                         case ARRAY_RAT:     // Res = BOOL, Lft = RAT(M), Rht = FLOAT(S)
                             // Initialize the temps
-                            mpf_init (&aplVfpLft);
-                            mpf_init (&aplVfpRht);
+                            mpfr_init0 (&aplVfpLft);
+                            mpfr_init0 (&aplVfpRht);
 
                             // Convert the FLOAT to a VFP
-                            mpf_set_d (&aplVfpRht, aplFloatRht);
+                            mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -8048,7 +8052,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+                                mpfr_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8071,7 +8075,7 @@ RESTART_EXCEPTION:
 
                         case ARRAY_VFP:     // Res = BOOL, Lft = VFP(M), Rht = FLOAT(S)
                             // Initialize the temp
-                            mpf_init (&aplVfpRht);
+                            mpfr_init0 (&aplVfpRht);
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -8081,7 +8085,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a RAT
-                                mpf_set_d (&aplVfpRht, aplFloatRht);
+                                mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8110,8 +8114,8 @@ RESTART_EXCEPTION:
                 case ARRAY_RAT:             // Res = BOOL,                  Rht = RAT(S)
                     // Initialize the temps
                     mpq_init (&aplRatLft);
-                    mpf_init (&aplVfpLft);
-                    mpf_init (&aplVfpRht);
+                    mpfr_init0 (&aplVfpLft);
+                    mpfr_init0 (&aplVfpRht);
 
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
@@ -8204,10 +8208,10 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+                                mpfr_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8259,7 +8263,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8289,8 +8293,8 @@ RESTART_EXCEPTION:
 
                 case ARRAY_VFP:             // Res = BOOL,                  Rht = VFP(S)
                     // Initialize the temps
-                    mpf_init (&aplVfpLft);
-                    mpf_init (&aplVfpRht);
+                    mpfr_init0 (&aplVfpLft);
+                    mpfr_init0 (&aplVfpRht);
 
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
@@ -8304,7 +8308,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the BOOL to a VFP
-                                mpf_set_sx (&aplVfpLft, BIT0 & (*(LPAPLBOOL) lpMemLft) >> uBitIndex);
+                                mpfr_set_sx (&aplVfpLft, BIT0 & (*(LPAPLBOOL) lpMemLft) >> uBitIndex, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8331,7 +8335,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sx (&aplVfpLft, *((LPAPLINT) lpMemLft)++);
+                                mpfr_set_sx (&aplVfpLft, *((LPAPLINT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8357,7 +8361,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the APA to a VFP
-                                mpf_set_sx (&aplVfpLft, apaOffLft + apaMulLft * uRes);
+                                mpfr_set_sx (&aplVfpLft, apaOffLft + apaMulLft * uRes, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8383,7 +8387,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+                                mpfr_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -8409,7 +8413,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+                                mpfr_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLBOOL)  lpMemRes) |=
@@ -9070,8 +9074,8 @@ RESTART_EXCEPTION:
 
         case ARRAY_VFP:                     // Res = VFP
             // Initialize the temps
-            mpf_init (&aplVfpLft);
-            mpf_init (&aplVfpRht);
+            mpfr_init0 (&aplVfpLft);
+            mpfr_init0 (&aplVfpRht);
 
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
@@ -9080,7 +9084,7 @@ RESTART_EXCEPTION:
                 case ARRAY_INT:             // Res = VFP,                   Rht = INT(S)
                 case ARRAY_APA:             // Res = VFP,                   Rht = APA(S)
                     // Convert the INT to a VFP
-                    mpf_set_sx (&aplVfpRht, aplIntegerRht);
+                    mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
@@ -9094,7 +9098,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+                                mpfr_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -9130,7 +9134,7 @@ RESTART_EXCEPTION:
 
                 case ARRAY_FLOAT:           // Res = VFP,                   Rht = FLOAT(S)
                     // Convert the FLOAT to a VFP
-                    mpf_set_d (&aplVfpRht, aplFloatRht);
+                    mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
@@ -9144,7 +9148,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+                                mpfr_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -9180,7 +9184,7 @@ RESTART_EXCEPTION:
 
                 case ARRAY_RAT:             // Res = VFP,                   Rht = RAT(S)
                     // Convert the RAT to a VFP
-                    mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                    mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
@@ -9196,7 +9200,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+                                mpfr_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -9216,7 +9220,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+                                mpfr_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -9236,7 +9240,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+                                mpfr_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -9285,7 +9289,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the INT to a VFP
-                                mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+                                mpfr_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -9305,7 +9309,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+                                mpfr_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -9325,7 +9329,7 @@ RESTART_EXCEPTION:
                                     goto ERROR_EXIT;
 
                                 // Convert the RAT to a VFP
-                                mpf_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++);
+                                mpfr_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++, MPFR_RNDN);
 
                                 // Save in result
                                 *((LPAPLVFP)   lpMemRes)++ =
@@ -10053,8 +10057,8 @@ RESTART_EXCEPTION_IMMED:
                     // Initialize the temps
                     mpq_init (&aplRatLft);
                     mpq_init (&aplRatRht);
-                    mpf_init (&aplVfpLft);
-                    mpf_init (&aplVfpRht);
+                    mpfr_init0 (&aplVfpLft);
+                    mpfr_init0 (&aplVfpRht);
 
                     // Promote the left arg to the common type
                     switch (aplTypeCom)
@@ -10099,25 +10103,25 @@ RESTART_EXCEPTION_IMMED:
                                 case ARRAY_INT:         // Res = BOOL, Lft = INT
                                 case ARRAY_APA:         // Res = BOOL, Lft = APA
                                     // Convert the BOOL/INT/APA to a VFP
-                                    mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                    mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                     break;
 
                                 case ARRAY_FLOAT:       // Res = BOOL, Lft = FLOAT
                                     // Convert the FLOAT to a VFP
-                                    mpf_set_d (&aplVfpLft, aplFloatLft);
+                                    mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                     break;
 
                                 case ARRAY_RAT:         // Res = BOOL, Lft = RAT
                                     // Convert the RAT to a VFP
-                                    mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                    mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                     break;
 
                                 case ARRAY_VFP:         // Res = BOOL, Lft = VFP
                                     // Copy the VFP to a VFP
-                                    mpf_copy (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                                    mpfr_copy (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                                     break;
 
@@ -10175,25 +10179,25 @@ RESTART_EXCEPTION_IMMED:
                                 case ARRAY_INT:         // Res = BOOL, Rht = INT
                                 case ARRAY_APA:         // Res = BOOL, Rht = APA
                                     // Convert the BOOL/INT/APA to a VFP
-                                    mpf_set_sx (&aplVfpRht, aplIntegerRht);
+                                    mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                                     break;
 
                                 case ARRAY_FLOAT:       // Res = BOOL, Rht = FLOAT
                                     // Convert the FLOAT to a VFP
-                                    mpf_set_d (&aplVfpRht, aplFloatRht);
+                                    mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                     break;
 
                                 case ARRAY_RAT:         // Res = BOOL, Rht = RAT
                                     // Convert the RAT to a VFP
-                                    mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                    mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                     break;
 
                                 case ARRAY_VFP:         // Res = BOOL, Rht = VFP
                                     // Copy the VFP to a VFP
-                                    mpf_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                                    mpfr_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                                     break;
 
@@ -10474,22 +10478,22 @@ RESTART_EXCEPTION_IMMED:
                     case ARRAY_BOOL:            // Res = VFP, Lft = BOOL
                     case ARRAY_INT:             // Res = VFP, Lft = INT
                     case ARRAY_APA:             // Res = VFP, Lft = APA
-                        mpf_init_set_sx (&aplVfpLft, aplIntegerLft);
+                        mpfr_init_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                         break;
 
                     case ARRAY_FLOAT:           // Res = VFP, Lft = FLOAT
-                        mpf_init_set_d  (&aplVfpLft, aplFloatLft);
+                        mpfr_init_set_d  (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                         break;
 
                     case ARRAY_RAT:             // Res = VFP, Lft = RAT
-                        mpf_init_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                        mpfr_init_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                         break;
 
                     case ARRAY_VFP:             // Res = VFP, Lft = VFP
-                        mpf_init_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                        mpfr_init_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                         break;
 
@@ -10505,22 +10509,22 @@ RESTART_EXCEPTION_IMMED:
                     case ARRAY_BOOL:            // Res = VFP, Rht = BOOL
                     case ARRAY_INT:             // Res = VFP, Rht = INT
                     case ARRAY_APA:             // Res = VFP, Rht = APA
-                        mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
+                        mpfr_init_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                         break;
 
                     case ARRAY_FLOAT:           // Res = VFP, Rht = FLOAT
-                        mpf_init_set_d  (&aplVfpRht, aplFloatRht);
+                        mpfr_init_set_d  (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                         break;
 
                     case ARRAY_RAT:             // Res = VFP, Rht = RAT
-                        mpf_init_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                        mpfr_init_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                         break;
 
                     case ARRAY_VFP:             // Res = VFP, Rht = VFP
-                        mpf_init_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                        mpfr_init_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                         break;
 
@@ -10932,8 +10936,8 @@ RESTART_EXCEPTION_SINGLETON:
                         // Initialize the temps
                         mpq_init (&aplRatLft);
                         mpq_init (&aplRatRht);
-                        mpf_init (&aplVfpLft);
-                        mpf_init (&aplVfpRht);
+                        mpfr_init0 (&aplVfpLft);
+                        mpfr_init0 (&aplVfpRht);
 
                         // Promote the left arg to the common type
                         switch (aplTypeCom)
@@ -10978,25 +10982,25 @@ RESTART_EXCEPTION_SINGLETON:
                                     case ARRAY_INT:         // Res = BOOL, Rht = INT
                                     case ARRAY_APA:         // Res = BOOL, Rht = APA
                                         // Convert the BOOL/INT/APA to a VFP
-                                        mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                        mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                         break;
 
                                     case ARRAY_FLOAT:       // Res = BOOL, Rht = FLOAT
                                         // Convert the FLOAT to a VFP
-                                        mpf_set_d (&aplVfpLft, aplFloatLft);
+                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                         break;
 
                                     case ARRAY_RAT:         // Res = BOOL, Rht = RAT
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                        mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                         break;
 
                                     case ARRAY_VFP:         // Res = BOOL, Rht = VFP
                                         // Copy the VFP to a VFP
-                                        mpf_copy (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                                        mpfr_copy (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                                         break;
 
@@ -11054,25 +11058,25 @@ RESTART_EXCEPTION_SINGLETON:
                                     case ARRAY_INT:         // Res = BOOL, Rht = INT
                                     case ARRAY_APA:         // Res = BOOL, Rht = APA
                                         // Convert the BOOL/INT/APA to a VFP
-                                        mpf_set_sx (&aplVfpRht, aplIntegerRht);
+                                        mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                                         break;
 
                                     case ARRAY_FLOAT:       // Res = BOOL, Rht = FLOAT
                                         // Convert the FLOAT to a VFP
-                                        mpf_set_d (&aplVfpRht, aplFloatRht);
+                                        mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                         break;
 
                                     case ARRAY_RAT:         // Res = BOOL, Rht = RAT
                                         // Convert the RAT to a VFP
-                                        mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                         break;
 
                                     case ARRAY_VFP:         // Res = BOOL, Rht = VFP
                                         // Copy the VFP to a VFP
-                                        mpf_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                                        mpfr_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                                         break;
 
@@ -11253,22 +11257,22 @@ RESTART_EXCEPTION_SINGLETON:
                         case ARRAY_BOOL:            // Res = VFP, Lft = BOOL
                         case ARRAY_INT:             // Res = VFP, Lft = INT
                         case ARRAY_APA:             // Res = VFP, Lft = APA
-                            mpf_init_set_sx (&aplVfpLft, aplIntegerLft);
+                            mpfr_init_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_FLOAT:           // Res = VFP, Lft = FLOAT
-                            mpf_init_set_d  (&aplVfpLft, aplFloatLft);
+                            mpfr_init_set_d  (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_RAT:             // Res = VFP, Lft = RAT
-                            mpf_init_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                            mpfr_init_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_VFP:             // Res = VFP, Lft = VFP
-                            mpf_init_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                            mpfr_init_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                             break;
 
@@ -11284,22 +11288,22 @@ RESTART_EXCEPTION_SINGLETON:
                         case ARRAY_BOOL:            // Res = VFP, Rht = BOOL
                         case ARRAY_INT:             // Res = VFP, Rht = INT
                         case ARRAY_APA:             // Res = VFP, Rht = APA
-                            mpf_init_set_sx (&aplVfpRht, aplIntegerRht);
+                            mpfr_init_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_FLOAT:           // Res = VFP, Rht = FLOAT
-                            mpf_init_set_d  (&aplVfpRht, aplFloatRht);
+                            mpfr_init_set_d  (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_RAT:             // Res = VFP, Rht = RAT
-                            mpf_init_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                            mpfr_init_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_VFP:             // Res = VFP, Rht = VFP
-                            mpf_init_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                            mpfr_init_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                             break;
 
@@ -11878,8 +11882,8 @@ RESTART_EXCEPTION_AXIS:
                         // Initialize the temps
                         mpq_init (&aplRatLft);
                         mpq_init (&aplRatRht);
-                        mpf_init (&aplVfpLft);
-                        mpf_init (&aplVfpRht);
+                        mpfr_init0 (&aplVfpLft);
+                        mpfr_init0 (&aplVfpRht);
 
                         // Copy the storage types
                         aplTypeHetLft = aplTypeLft;
@@ -11972,7 +11976,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_VFP:     // Res = BOOL(Axis), Lft = BOOL, Rht = VFP    (one hetero, one simple)
                                             // Convert the Boolean to a VFP
-                                            mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                            mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12032,7 +12036,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_VFP:     // Res = BOOL(Axis), Lft = INT,   Rht = VFP   (one hetero, one simple)
                                             // Convert the integer to a VFP
-                                            mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                            mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12074,8 +12078,8 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_RAT:     // Res = BOOL(Axis), Lft = FLOAT, Rht = RAT  (one hetero, one simple)
                                             // Convert the FLOAT and RAT to a VFP
-                                            mpf_set_d (&aplVfpLft, aplFloatLft);
-                                            mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                            mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
+                                            mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12086,7 +12090,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_VFP:     // Res = BOOL(Axis), Lft = FLOAT, Rht = VFP  (one hetero, one simple)
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpLft, aplFloatLft);
+                                            mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12152,8 +12156,8 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_FLOAT:   // Res = BOOL(Axis), Lft = RAT, Rht = FLOAT(one hetero, one simple)
                                             // Convert the RAT and FLOAT to a VFP
-                                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
-                                            mpf_set_d (&aplVfpRht, aplFloatRht);
+                                            mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
+                                            mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12183,7 +12187,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_VFP:     // Res = BOOL(Axis), Lft = RAT, Rht = VFP  (one hetero, one simple)
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                            mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12205,7 +12209,7 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_BOOL:    // Res = BOOL(Axis), Lft = VFP, Rht = BOOL (one hetero, one simple)
                                         case ARRAY_INT:     // Res = BOOL(Axis), Lft = VFP, Rht = INT  (one hetero, one simple)
                                             // Convert the INT to a VFP
-                                            mpf_set_sx (&aplVfpRht, aplIntegerRht);
+                                            mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12216,7 +12220,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_FLOAT:   // Res = BOOL(Axis), Lft = VFP, Rht = FLOAT(one hetero, one simple)
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpRht, aplFloatRht);
+                                            mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12238,7 +12242,7 @@ RESTART_EXCEPTION_AXIS:
 
                                         case ARRAY_RAT:     // Res = BOOL(Axis), Lft = VFP, Rht = RAT  (one hetero, one simple)
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                            mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                             // Save in result
                                             *((LPAPLBOOL)  lpMemRes) |=
@@ -12302,8 +12306,8 @@ RESTART_EXCEPTION_AXIS:
                         // Initialize the temps
                         mpq_init (&aplRatLft);
                         mpq_init (&aplRatRht);
-                        mpf_init (&aplVfpLft);
-                        mpf_init (&aplVfpRht);
+                        mpfr_init0 (&aplVfpLft);
+                        mpfr_init0 (&aplVfpRht);
 
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -12369,25 +12373,25 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_INT:         // Res = BOOL(Axis), Lft = INT
                                         case ARRAY_APA:         // Res = BOOL(Axis), Lft = APA
                                             // Convert the BOOL/INT/APA to a VFP
-                                            mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft));
+                                            mpfr_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft), MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_FLOAT:       // Res = BOOL(Axis), Lft = FLOAT
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpLft, ((LPAPLFLOAT) lpMemLft)[uLft]);
+                                            mpfr_set_d (&aplVfpLft, ((LPAPLFLOAT) lpMemLft)[uLft], MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_RAT:         // Res = BOOL(Axis), Lft = RAT
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uLft]);
+                                            mpfr_set_q (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uLft], MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_VFP:         // Res = BOOL(Axis), Lft = VFP
                                             // Copy the VFP to a VFP
-                                            mpf_copy (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
+                                            mpfr_copy (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
 
                                             break;
 
@@ -12445,25 +12449,25 @@ RESTART_EXCEPTION_AXIS:
                                         case ARRAY_INT:         // Res = BOOL(Axis), Rht = INT
                                         case ARRAY_APA:         // Res = BOOL(Axis), Rht = APA
                                             // Convert the BOOL/INT/APA to a VFP
-                                            mpf_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRht));
+                                            mpfr_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRht), MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_FLOAT:       // Res = BOOL(Axis), Rht = FLOAT
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpRht, ((LPAPLFLOAT) lpMemRht)[uRht]);
+                                            mpfr_set_d (&aplVfpRht, ((LPAPLFLOAT) lpMemRht)[uRht], MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_RAT:         // Res = BOOL(Axis), Rht = RAT
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uRht]);
+                                            mpfr_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uRht], MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_VFP:         // Res = BOOL(Axis), Rht = VFP
                                             // Copy the VFP to a VFP
-                                            mpf_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
+                                            mpfr_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
 
                                             break;
 
@@ -12777,8 +12781,8 @@ RESTART_EXCEPTION_AXIS:
 
                 case ARRAY_VFP:                     // Res = VFP(Axis)
                     // Initialize the temps
-                    mpf_init (&aplVfpLft);
-                    mpf_init (&aplVfpRht);
+                    mpfr_init0 (&aplVfpLft);
+                    mpfr_init0 (&aplVfpRht);
 
                     // Loop through the left/right args/result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -12809,25 +12813,25 @@ RESTART_EXCEPTION_AXIS:
                             case ARRAY_INT:             // Res = VFP(Axis), Lft = INT
                             case ARRAY_APA:             // Res = VFP(Axis), Lft = APA
                                 // Convert the BOOL/INT/APA to a VFP
-                                mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft));
+                                mpfr_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uLft), MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_FLOAT:           // Res = VFP(Axis), Lft = FLOAT
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d  (&aplVfpLft,  ((LPAPLFLOAT) lpMemLft)[uLft]);
+                                mpfr_set_d  (&aplVfpLft,  ((LPAPLFLOAT) lpMemLft)[uLft], MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_RAT:             // Res = VFP(Axis), Lft = RAT
                                 // Convert the RAT to a VFP
-                                mpf_set_q  (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uLft]);
+                                mpfr_set_q  (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uLft], MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_VFP:             // Res = VFP(Axis), Lft = VFP
                                 // Copy the VFP to a VFP
-                                mpf_copy   (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
+                                mpfr_copy   (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uLft]);
 
                                 break;
 
@@ -12844,25 +12848,25 @@ RESTART_EXCEPTION_AXIS:
                             case ARRAY_INT:             // Res = VFP(Axis), Rht = INT
                             case ARRAY_APA:             // Res = VFP(Axis), Rht = APA
                                 // Convert the BOOL/INT/APA to a VFP
-                                mpf_set_sx (&aplVfpRht, aplIntegerRht);
+                                mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_FLOAT:           // Res = VFP(Axis), Rht = FLOAT
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d  (&aplVfpRht,  ((LPAPLFLOAT) lpMemRht)[uLft]);
+                                mpfr_set_d  (&aplVfpRht,  ((LPAPLFLOAT) lpMemRht)[uLft], MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_RAT:             // Res = VFP(Axis), Rht = RAT
                                 // Convert the RAT to a VFP
-                                mpf_set_q  (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uLft]);
+                                mpfr_set_q  (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uLft], MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_VFP:             // Res = VFP(Axis), Rht = VFP
                                 // Copy the VFP to a VFP
-                                mpf_copy   (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
+                                mpfr_copy   (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRht]);
 
                                 break;
 
@@ -13436,8 +13440,8 @@ RESTART_EXCEPTION_NOAXIS:
                         // Initialize the temps
                         mpq_init (&aplRatLft);
                         mpq_init (&aplRatRht);
-                        mpf_init (&aplVfpLft);
-                        mpf_init (&aplVfpRht);
+                        mpfr_init0 (&aplVfpLft);
+                        mpfr_init0 (&aplVfpRht);
 
                         // Copy the storage types
                         aplTypeHetLft = aplTypeLft;
@@ -13510,7 +13514,7 @@ RESTART_EXCEPTION_NOAXIS:
                                             break;
 
                                         case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = BOOL, Rht = VFP    (one hetero, one simple)
-                                            mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                            mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -13565,7 +13569,7 @@ RESTART_EXCEPTION_NOAXIS:
                                             break;
 
                                         case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = INT , Rht = VFP    (one hetero, one simple)
-                                            mpf_set_sx (&aplVfpLft, aplIntegerLft);
+                                            mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -13605,10 +13609,10 @@ RESTART_EXCEPTION_NOAXIS:
 
                                         case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = FLOAT, Rht = RAT    (one hetero, one simple)
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpLft, aplFloatLft);
+                                            mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                            mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -13617,7 +13621,7 @@ RESTART_EXCEPTION_NOAXIS:
                                             break;
 
                                         case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = FLOAT, Rht = VFP    (one hetero, one simple)
-                                            mpf_set_d (&aplVfpLft, aplFloatLft);
+                                            mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -13681,10 +13685,10 @@ RESTART_EXCEPTION_NOAXIS:
 
                                         case ARRAY_FLOAT:   // Res = BOOL(No Axis), Lft = RAT  , Rht = FLOAT (one hetero, one simple)
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                            mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpRht, aplFloatRht);
+                                            mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -13711,7 +13715,7 @@ RESTART_EXCEPTION_NOAXIS:
 
                                         case ARRAY_VFP:     // Res = BOOL(No Axis), Lft = RAT  , Rht = VFP    (one hetero, one simple)
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                                            mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (aplVfpLft,
@@ -13733,7 +13737,7 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:     // Res = BOOL(No Axis), Lft = VFP  , Rht = INT   (one hetero, one simple)
                                         case ARRAY_APA:     // Res = BOOL(No Axis), Lft = VFP  , Rht = APA   (one hetero, one simple)
                                             // Convert the BOOL/INT to a VFP
-                                            mpf_set_sx (&aplVfpRht, aplIntegerRht);
+                                            mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
@@ -13743,7 +13747,7 @@ RESTART_EXCEPTION_NOAXIS:
 
                                         case ARRAY_FLOAT:   // Res = BOOL(No Axis), Lft = VFP  , Rht = FLOAT (one hetero, one simple)
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpRht, aplFloatRht);
+                                            mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
@@ -13763,7 +13767,7 @@ RESTART_EXCEPTION_NOAXIS:
 
                                         case ARRAY_RAT:     // Res = BOOL(No Axis), Lft = VFP  , Rht = RAT    (one hetero, one simple)
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                                            mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                                             *((LPAPLBOOL)  lpMemRes) |=
                                               (*lpPrimSpec->BisVvV) (*(LPAPLVFP) lpSymGlbLft,
@@ -13825,8 +13829,8 @@ RESTART_EXCEPTION_NOAXIS:
                         // Initialize the temps
                         mpq_init (&aplRatLft);
                         mpq_init (&aplRatRht);
-                        mpf_init (&aplVfpLft);
-                        mpf_init (&aplVfpRht);
+                        mpfr_init0 (&aplVfpLft);
+                        mpfr_init0 (&aplVfpRht);
 
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -13878,25 +13882,25 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:         // Res = BOOL(No Axis), Lft = INT
                                         case ARRAY_APA:         // Res = BOOL(No Axis), Lft = APA
                                             // Convert the BOOL/INT/APA to a VFP
-                                            mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+                                            mpfr_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_FLOAT:       // Res = BOOL(No Axis), Lft = FLOAT
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpLft, ((LPAPLFLOAT) lpMemLft)[uRes]);
+                                            mpfr_set_d (&aplVfpLft, ((LPAPLFLOAT) lpMemLft)[uRes], MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_RAT:         // Res = BOOL(No Axis), Lft = RAT
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uRes]);
+                                            mpfr_set_q (&aplVfpLft, &((LPAPLRAT) lpMemLft)[uRes], MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_VFP:         // Res = BOOL(No Axis), Lft = VFP
                                             // Copy the VFP to a VFP
-                                            mpf_copy (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uRes]);
+                                            mpfr_copy (&aplVfpLft, &((LPAPLVFP) lpMemLft)[uRes]);
 
                                             break;
 
@@ -13954,25 +13958,25 @@ RESTART_EXCEPTION_NOAXIS:
                                         case ARRAY_INT:         // Res = BOOL(No Axis), Rht = INT
                                         case ARRAY_APA:         // Res = BOOL(No Axis), Rht = APA
                                             // Convert the BOOL/INT/APA to a VFP
-                                            mpf_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes));
+                                            mpfr_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes), MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_FLOAT:       // Res = BOOL(No Axis), Rht = FLOAT
                                             // Convert the FLOAT to a VFP
-                                            mpf_set_d (&aplVfpRht, ((LPAPLFLOAT) lpMemRht)[uRes]);
+                                            mpfr_set_d (&aplVfpRht, ((LPAPLFLOAT) lpMemRht)[uRes], MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_RAT:         // Res = BOOL(No Axis), Rht = RAT
                                             // Convert the RAT to a VFP
-                                            mpf_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uRes]);
+                                            mpfr_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[uRes], MPFR_RNDN);
 
                                             break;
 
                                         case ARRAY_VFP:         // Res = BOOL(No Axis), Rht = VFP
                                             // Copy the VFP to a VFP
-                                            mpf_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRes]);
+                                            mpfr_copy (&aplVfpRht, &((LPAPLVFP) lpMemRht)[uRes]);
 
                                             break;
 
@@ -14206,8 +14210,8 @@ RESTART_EXCEPTION_NOAXIS:
 
                 case ARRAY_VFP:                     // Res = VFP(No Axis)
                     // Initialize the temps
-                    mpf_init (&aplVfpLft);
-                    mpf_init (&aplVfpRht);
+                    mpfr_init0 (&aplVfpLft);
+                    mpfr_init0 (&aplVfpRht);
 
                     // Loop through the left/right args/result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -14224,25 +14228,25 @@ RESTART_EXCEPTION_NOAXIS:
                             case ARRAY_INT:         // Res = VFP(No Axis), Lft = INT
                             case ARRAY_APA:         // Res = VFP(No Axis), Lft = APA
                                 // Convert the BOOL/INT/APA to a VFP
-                                mpf_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes));
+                                mpfr_set_sx (&aplVfpLft, GetNextInteger (lpMemLft, aplTypeLft, uRes), MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_FLOAT:       // Res = VFP(No Axis), Lft = FLOAT
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d  (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++);
+                                mpfr_set_d  (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_RAT:         // Res = VFP(No Axis), Lft = RAT
                                 // Convert the RAT to a VFP
-                                mpf_set_q  (&aplVfpLft,  ((LPAPLRAT)   lpMemLft)++);
+                                mpfr_set_q  (&aplVfpLft,  ((LPAPLRAT)   lpMemLft)++, MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_VFP:         // Res = VFP(No Axis), Lft = VFP
                                 // Copy the VFP to a VFP
-                                mpf_copy   (&aplVfpLft,  ((LPAPLVFP)   lpMemLft)++);
+                                mpfr_copy   (&aplVfpLft,  ((LPAPLVFP)   lpMemLft)++);
 
                                 break;
 
@@ -14259,25 +14263,25 @@ RESTART_EXCEPTION_NOAXIS:
                             case ARRAY_INT:         // Res = VFP(No Axis), Rht = INT
                             case ARRAY_APA:         // Res = VFP(No Axis), Rht = APA
                                 // Convert the BOOL/INT/APA to a VFP
-                                mpf_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes));
+                                mpfr_set_sx (&aplVfpRht, GetNextInteger (lpMemRht, aplTypeRht, uRes), MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_FLOAT:       // Res = VFP(No Axis), Rht = FLOAT
                                 // Convert the FLOAT to a VFP
-                                mpf_set_d  (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++);
+                                mpfr_set_d  (&aplVfpRht, *((LPAPLFLOAT) lpMemRht)++, MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_RAT:         // Res = VFP(No Axis), Rht = RAT
                                 // Convert the RAT to a VFP
-                                mpf_set_q  (&aplVfpRht,  ((LPAPLRAT)   lpMemRht)++);
+                                mpfr_set_q  (&aplVfpRht,  ((LPAPLRAT)   lpMemRht)++, MPFR_RNDN);
 
                                 break;
 
                             case ARRAY_VFP:         // Res = VFP(No Axis), Rht = VFP
                                 // Copy the VFP to a VFP
-                                mpf_copy   (&aplVfpRht,  ((LPAPLVFP)   lpMemRht)++);
+                                mpfr_copy   (&aplVfpRht,  ((LPAPLVFP)   lpMemRht)++);
 
                                 break;
 

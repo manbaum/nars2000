@@ -1944,7 +1944,7 @@ HGLOBAL CopyArray_EM
                             ZeroMemory (lpMemDst, sizeof (APLVFP));
 
                             // Copy the source value to the destin
-                            mpf_init_copy ((LPAPLVFP) lpMemDst, (LPAPLVFP) lpMemSrc);
+                            mpfr_init_copy ((LPAPLVFP) lpMemDst, (LPAPLVFP) lpMemSrc);
                         } // End FOR
 
                         break;

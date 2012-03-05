@@ -209,7 +209,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an APLINT
-            aplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
+            aplLongestRht = mpfr_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
             if (!bRet)
                 goto DOMAIN_EXIT;
 
@@ -258,7 +258,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 
         case ARRAY_VFP:
             // If the value is negative, ...
-            if (mpf_sgn             ((LPAPLVFP) lpSymGlbRht)  < 0)
+            if (mpfr_sgn            ((LPAPLVFP) lpSymGlbRht)  < 0)
                 goto DOMAIN_EXIT;
             break;
 
@@ -340,12 +340,12 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                     // Initialize and save the value
-                    mpf_init_set_sx (((LPAPLVFP) lpMemRes)++, aplLongestRht + iRes);
+                    mpfr_init_set_sx (((LPAPLVFP) lpMemRes)++, aplLongestRht + iRes, MPFR_RNDN);
             else
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                     // Initialize and save the value
-                    mpf_init_set_sx (((LPAPLVFP) lpMemRes)++,                 iRes);
+                    mpfr_init_set_sx (((LPAPLVFP) lpMemRes)++,                 iRes, MPFR_RNDN);
             break;
 
         defstop
@@ -1220,7 +1220,7 @@ UBOOL PrimFnDydIotaBvN
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                uTmp = mpf_get_sx (&((LPAPLVFP) lpMemRht)[uRht], &bRet);
+                uTmp = mpfr_get_sx (&((LPAPLVFP) lpMemRht)[uRht], &bRet);
                 if (bRet && IsBooleanValue (uTmp))
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[uTmp];
@@ -1325,7 +1325,7 @@ UBOOL PrimFnDydIotaAvN_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerRht = mpf_get_sx (((LPAPLVFP) lpMemRht)++, &bRet);
+                aplIntegerRht = mpfr_get_sx (((LPAPLVFP) lpMemRht)++, &bRet);
 
                 break;
 
@@ -1497,7 +1497,7 @@ UBOOL PrimFnDydIotaIvI_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerRht = mpf_get_sx (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
+                aplIntegerRht = mpfr_get_sx (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
                 if (!bRet)
                     goto NOMATCH;
                 break;
@@ -1538,7 +1538,7 @@ UBOOL PrimFnDydIotaIvI_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerRht = mpf_get_sx (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
+                aplIntegerRht = mpfr_get_sx (&((LPAPLVFP) lpMemRht)[iRht], &bRet);
                 if (!bRet)
                     goto NOMATCH;
                 break;
@@ -1802,7 +1802,7 @@ UBOOL PrimFnDydIotaNvN_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLFLOAT
-                aplFloatRht = mpf_get_d (&((LPAPLVFP) lpMemRht)[iRht]);
+                aplFloatRht = mpfr_get_d (&((LPAPLVFP) lpMemRht)[iRht], MPFR_RNDN);
 
                 break;
 
@@ -2021,7 +2021,7 @@ UBOOL PrimFnDydIotaPvN_EM
 
             case ARRAY_VFP:
                 // Attempt to convert the VFP to an APLINT
-                aplIntegerRht = mpf_get_sx (((LPAPLVFP) lpMemRht)++, &bRet);
+                aplIntegerRht = mpfr_get_sx (((LPAPLVFP) lpMemRht)++, &bRet);
 
                 // If it succeeded, ...
                 if (bRet)
@@ -2334,7 +2334,7 @@ UBOOL PrimFnDydIotaRvN_EM
 
             case ARRAY_VFP:
                 // Copy the VFP to a RAT
-                mpq_set_f (&aplRatRht, &((LPAPLVFP) lpMemRht)[iRht]);
+                mpq_set_fr (&aplRatRht, &((LPAPLVFP) lpMemRht)[iRht]);
 
                 break;
 
@@ -2499,8 +2499,8 @@ UBOOL PrimFnDydIotaVvN_EM
     fQuadCT = GetQuadCT ();
 
     // Initialize the temps
-    mpf_init (&aplVfpLft);
-    mpf_init (&aplVfpRht);
+    mpfr_init0 (&aplVfpLft);
+    mpfr_init0 (&aplVfpRht);
 
     // Setup the grade-up function token
     tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
@@ -2603,10 +2603,11 @@ UBOOL PrimFnDydIotaVvN_EM
             case ARRAY_INT:
             case ARRAY_APA:
                 // Get the next integer from the right arg
-                mpf_set_sx (&aplVfpRht,
-                             GetNextInteger (lpMemRht,      // Ptr to global memory
-                                             aplTypeRht,    // Storage type
-                                             iRht));        // Index
+                mpfr_set_sx (&aplVfpRht,
+                              GetNextInteger (lpMemRht,     // Ptr to global memory
+                                              aplTypeRht,   // Storage type
+                                              iRht),        // Index
+                              MPFR_RNDN);                   // Rounding mode
                 break;
 
             case ARRAY_FLOAT:
@@ -2614,17 +2615,17 @@ UBOOL PrimFnDydIotaVvN_EM
                 aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[iRht], &bRet);
                 if (!bRet)
                     goto NOMATCH;
-                mpf_set_sx (&aplVfpRht, aplLongestRht);
+                mpfr_set_sx (&aplVfpRht, aplLongestRht, MPFR_RNDN);
 
                 break;
 
             case ARRAY_RAT:
-                mpf_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[iRht]);
+                mpfr_set_q (&aplVfpRht, &((LPAPLRAT) lpMemRht)[iRht], MPFR_RNDN);
 
                 break;
 
             case ARRAY_VFP:
-                mpf_copy  (&aplVfpRht, &((LPAPLVFP) lpMemRht)[iRht]);
+                mpfr_copy  (&aplVfpRht, &((LPAPLVFP) lpMemRht)[iRht]);
 
                 break;
 
@@ -2643,10 +2644,10 @@ UBOOL PrimFnDydIotaVvN_EM
             iLft = (iMin + iMax) / 2;
 
             // Get the next VFP from the left arg
-            mpf_copy (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
+            mpfr_copy (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
 
             // Split cases based upon the signum of the comparison
-            switch (signum (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT)))
+            switch (signum (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT)))
             {
                 case  1:
                     iMax = iLft - 1;
@@ -2670,9 +2671,9 @@ UBOOL PrimFnDydIotaVvN_EM
             for (iLft = iLft - 1; iLft >= 0; iLft--)
             {
                 // Get the next VFP from the left arg
-                mpf_copy (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
+                mpfr_copy (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
 
-                if (mpf_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
+                if (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
                     break;
             } // End FOR
 #ifdef GRADE2ND

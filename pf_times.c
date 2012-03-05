@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -234,7 +234,7 @@ APLVFP PrimFnMonTimesVisV
 {
     APLVFP mpfRes = {0};
 
-    mpf_init_set_si (&mpfRes, mpf_sgn (&aplVfpRht));
+    mpfr_init_set_si (&mpfRes, mpfr_sgn (&aplVfpRht), MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonTimesVisV
@@ -412,25 +412,25 @@ APLVFP PrimFnDydTimesVisVvV
       && IsMpfPosInfinity (&aplVfpRht))
      || (IsMpfPosInfinity (&aplVfpLft)
       && IsMpf0 (&aplVfpRht)))
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_0MULPi,
-                                aplVfpRht,
-                                mpfRes);
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_0MULPi,
+                                 aplVfpRht,
+                                 mpfRes);
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpf0 (&aplVfpLft)
       && IsMpfNegInfinity (&aplVfpRht))
      || (IsMpfNegInfinity (&aplVfpLft)
       && IsMpf0 (&aplVfpRht)))
-        return mpf_QuadICValue (aplVfpLft,
-                                ICNDX_0MULNi,
-                                aplVfpRht,
-                                mpfRes);
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_0MULNi,
+                                 aplVfpRht,
+                                 mpfRes);
 
     // Initalize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
     // Multiply two Variable FPs
-    mpf_mul (&mpfRes, &aplVfpLft, &aplVfpRht);
+    mpfr_mul (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnDydTimesVisVvV

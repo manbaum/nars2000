@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -573,7 +573,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                          uRht < aplNELMRht;
                          uRht++)
                     // Check for a different (and thus unique) value
-                    if (mpf_cmp (&aplLastVfp, &((LPAPLVFP) lpMemRht)[lpMemGup[uRht]]) NE 0)
+                    if (mpfr_cmp (&aplLastVfp, &((LPAPLVFP) lpMemRht)[lpMemGup[uRht]]) NE 0)
                     {
                         // Save as the next unique value's index
                         lpMemGup[aplNELMRes++] = lpMemGup[uRht];
@@ -739,7 +739,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                     // Trundle through the right arg via the grade-up
                     //   copying elements to the result
                     for (uRht = 0; uRht < aplNELMRes; uRht++)
-                        mpf_init_copy (((LPAPLVFP)   lpMemRes)++, &((LPAPLVFP)   lpMemRht)[lpMemTmp[*lpMemGup++]]);
+                        mpfr_init_copy (((LPAPLVFP)   lpMemRes)++, &((LPAPLVFP)   lpMemRht)[lpMemTmp[*lpMemGup++]]);
                     break;
 
                 defstop

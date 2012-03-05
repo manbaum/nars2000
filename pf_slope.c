@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -422,7 +422,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
                     // Attempt to convert the VFP to an INT
-                    aplIntegerLft = mpf_get_ctsa (((LPAPLVFP) lpMemLft)++, &bRet);
+                    aplIntegerLft = mpfr_get_ctsa (((LPAPLVFP) lpMemLft)++, &bRet);
                     if (!bRet || !IsBooleanValue (aplIntegerLft))
                         goto LEFT_DOMAIN_EXIT;
                     uDimLftSum += aplIntegerLft;
@@ -833,12 +833,12 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                     if (uLen)
                     {
                         if (IsSingleton (aplNELMRht))
-                            mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi], (LPAPLVFP) aplNestRht);
+                            mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAx    * uDimHi], (LPAPLVFP) aplNestRht);
                         else
-                            mpf_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi],
-                                          &((LPAPLVFP) lpMemRht)[uDimRht + uAcc++ * uDimHi]);
+                            mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAx    * uDimHi],
+                                            &((LPAPLVFP) lpMemRht)[uDimRht + uAcc++ * uDimHi]);
                     } else
-                        mpf_init (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi]);
+                        mpfr_init0 (&((LPAPLVFP) lpMemRes)[uDimRes + uAx * uDimHi]);
                 } // End FOR
             } // End FOR/FOR
 

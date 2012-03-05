@@ -1072,7 +1072,7 @@ void DemoteData
                         lpMemSub = VarArrayBaseToData (lpMemSub, 0);
 
                         // Copy the data
-                        mpf_init_copy (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemSub)++);
+                        mpfr_init_copy (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemSub)++);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
@@ -1678,7 +1678,7 @@ void TPT_BOOL2VFP
     APLVFP aplVfp;
 
     // Convert the BOOL to a VFP
-    mpf_init_set_sx (&aplVfp, BIT0 & lptkArg->tkData.tkInteger);
+    mpfr_init_set_sx (&aplVfp, BIT0 & lptkArg->tkData.tkInteger, MPFR_RNDN);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1747,7 +1747,7 @@ void TPT_INT2VFP
     APLVFP aplVfp;
 
     // Convert the INT to a VFP
-    mpf_init_set_sx (&aplVfp, lptkArg->tkData.tkInteger);
+    mpfr_init_set_sx (&aplVfp, lptkArg->tkData.tkInteger, MPFR_RNDN);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1775,7 +1775,7 @@ void TPT_FLT2VFP
     APLVFP aplVfp;
 
     // Convert the FLT to a VFP
-    mpf_init_set_d  (&aplVfp, lptkArg->tkData.tkFloat);
+    mpfr_init_set_d  (&aplVfp, lptkArg->tkData.tkFloat, MPFR_RNDN);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1844,7 +1844,7 @@ void TPT_APA2VFP
     APLVFP aplVfp;
 
     // Convert the APA to a VFP
-    mpf_init_set_sx (&aplVfp, lptkArg->tkData.tkInteger);
+    mpfr_init_set_sx (&aplVfp, lptkArg->tkData.tkInteger, MPFR_RNDN);
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
@@ -1888,7 +1888,7 @@ void TPT_RAT2VFP
     lpMemRat = VarArrayBaseToData (lpMemRat, 0);
 
     // Convert the RAT to a VFP
-    mpf_init_set_q (&aplVfp, lpMemRat);
+    mpfr_init_set_q (&aplVfp, lpMemRat, MPFR_RNDN);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRat); lpMemRat = NULL;
@@ -2041,7 +2041,7 @@ void TPA_BOOL2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt));
+    mpfr_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), MPFR_RNDN);
 } // TPA_BOOL2VFP
 
 
@@ -2149,7 +2149,7 @@ void TPA_INT2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplInteger, ARRAY_INT, uInt));
+    mpfr_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplInteger, ARRAY_INT, uInt), MPFR_RNDN);
 } // TPA_INT2VFP
 
 
@@ -2218,7 +2218,7 @@ void TPA_FLT2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set_d  (&lpAllTypes->aplVfp, lpaplFloat[uInt]);
+    mpfr_set_d  (&lpAllTypes->aplVfp, lpaplFloat[uInt], MPFR_RNDN);
 } // TPA_FLT2VFP
 
 
@@ -2392,7 +2392,7 @@ void TPA_APA2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplAPA, ARRAY_APA, uInt));
+    mpfr_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplAPA, ARRAY_APA, uInt), MPFR_RNDN);
 } // TPA_APA2VFP
 
 
@@ -2409,7 +2409,7 @@ void TPA_RAT2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_set_q  (&lpAllTypes->aplVfp, &lpaplRat[uInt]);
+    mpfr_set_q  (&lpAllTypes->aplVfp, &lpaplRat[uInt], MPFR_RNDN);
 } // TPA_RAT2VFP
 
 
@@ -2551,7 +2551,7 @@ void TPA_VFP2VFP
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpf_copy (&lpAllTypes->aplVfp, &lpaplVfp[uInt]);
+    mpfr_copy (&lpAllTypes->aplVfp, &lpaplVfp[uInt]);
 } // TPA_VFP2VFP
 
 
@@ -2624,7 +2624,7 @@ void TCA_VFP2INT
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplInteger = mpf_get_ctsa (&lpaplVfp[uInt], NULL);
+    lpAllTypes->aplInteger = mpfr_get_ctsa (&lpaplVfp[uInt], NULL);
 } // TCA_VFP2INT
 
 
@@ -2638,7 +2638,7 @@ void TCA_VFP2FLT
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplFloat = mpf_get_d (&lpaplVfp[uInt]);
+    lpAllTypes->aplFloat = mpfr_get_d (&lpaplVfp[uInt], MPFR_RNDN);
 } // TCA_VFP2FLT
 
 
@@ -2653,9 +2653,9 @@ void TCA_VFP2RAT
 
 {
     // Initialize the result
-    Myq_init (&lpAllTypes->aplRat);
+    Myq_init   (&lpAllTypes->aplRat);
 
-    mpq_set_f  (&lpAllTypes->aplRat, &lpaplVfp[uInt]);
+    mpq_set_fr (&lpAllTypes->aplRat, &lpaplVfp[uInt]);
 } // TCA_VFP2RAT
 
 

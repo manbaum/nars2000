@@ -305,10 +305,10 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
         mpq_init (&aplRatAcc);
         mpq_init (&aplRatVal);
 
-        mpf_init (&aplVfpLft);
-        mpf_init (&aplVfpRht);
-        mpf_init (&aplVfpAcc);
-        mpf_init (&aplVfpVal);
+        mpfr_init0 (&aplVfpLft);
+        mpfr_init0 (&aplVfpRht);
+        mpfr_init0 (&aplVfpAcc);
+        mpfr_init0 (&aplVfpVal);
     } // End IF
 RESTART_EXCEPTION:
     // Calculate space needed for the result
@@ -430,8 +430,8 @@ RESTART_EXCEPTION:
 
             case ARRAY_VFP:
                 // Initialize accumulator and weighting value
-                mpf_set_ui (&aplVfpAcc, 0);
-                mpf_set_ui (&aplVfpVal, 1);
+                mpfr_set_ui (&aplVfpAcc, 0, MPFR_RNDN);
+                mpfr_set_ui (&aplVfpVal, 1, MPFR_RNDN);
 
                 break;
 
@@ -703,22 +703,22 @@ RESTART_EXCEPTION:
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                         case ARRAY_APA:
-                            mpf_set_sx (&aplVfpRht, aplLongestRht);
+                            mpfr_set_sx (&aplVfpRht, aplLongestRht, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_FLOAT:
-                            mpf_set_d  (&aplVfpRht, *(LPAPLFLOAT) &aplLongestRht);
+                            mpfr_set_d  (&aplVfpRht, *(LPAPLFLOAT) &aplLongestRht, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_RAT:
-                            mpf_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht);
+                            mpfr_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_VFP:
-                            mpf_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+                            mpfr_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
 
                             break;
 
@@ -731,8 +731,8 @@ RESTART_EXCEPTION:
 
                     // Add into accumulator
 ////////////////////aplFloatAcc += InnValFlt * aplFloatRht;
-                    mpf_mul (&aplVfpRht, &aplVfpVal, &aplVfpRht);
-                    mpf_add (&aplVfpAcc, &aplVfpAcc, &aplVfpRht);
+                    mpfr_mul (&aplVfpRht, &aplVfpVal, &aplVfpRht, MPFR_RNDN);
+                    mpfr_add (&aplVfpAcc, &aplVfpAcc, &aplVfpRht, MPFR_RNDN);
 
                     // If the left arg is an array, ...
                     if (hGlbLft)
@@ -755,22 +755,22 @@ RESTART_EXCEPTION:
                         case ARRAY_BOOL:
                         case ARRAY_INT:
                         case ARRAY_APA:
-                            mpf_set_sx (&aplVfpLft, aplLongestLft);
+                            mpfr_set_sx (&aplVfpLft, aplLongestLft, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_FLOAT:
-                            mpf_set_d  (&aplVfpLft, *(LPAPLFLOAT) &aplLongestLft);
+                            mpfr_set_d  (&aplVfpLft, *(LPAPLFLOAT) &aplLongestLft, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_RAT:
-                            mpf_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft);
+                            mpfr_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
 
                             break;
 
                         case ARRAY_VFP:
-                            mpf_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
+                            mpfr_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
 
                             break;
 
@@ -783,7 +783,7 @@ RESTART_EXCEPTION:
 
                     // Multiply into the weighting value
 ////////////////////InnValFlt *= aplFloatLft;
-                    mpf_mul (&aplVfpVal, &aplVfpVal, &aplVfpLft);
+                    mpfr_mul (&aplVfpVal, &aplVfpVal, &aplVfpLft, MPFR_RNDN);
 
                     break;
 
@@ -820,7 +820,7 @@ RESTART_EXCEPTION:
 
             case ARRAY_VFP:
                 // Save in result
-                mpf_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &aplVfpAcc);
+                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &aplVfpAcc);
 
                 break;
 

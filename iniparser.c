@@ -47,7 +47,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #define MP_INT        int
 #define MP_RAT        int
-#define __mpf_struct  int
 #define __mpfr_struct int
 
 #include "macros.h"

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -274,16 +274,16 @@ APLVFP PrimFnMonUpStileVisV
            mpfTmp = {0};
 
     // Initialize the temp to 0
-    mpf_init (&mpfTmp);
+    mpfr_init0 (&mpfTmp);
 
     // Negate the temp to use with DownStile
-    mpf_neg (&mpfTmp, &aplVfpRht);
+    mpfr_neg (&mpfTmp, &aplVfpRht, MPFR_RNDN);
 
     // Use the code in DownStile
     mpfRes = PrimFnMonDownStileVisV (mpfTmp, NULL);
 
     // Negate the result after calling VisV
-    mpf_neg (&mpfRes, &mpfRes);
+    mpfr_neg (&mpfRes, &mpfRes, MPFR_RNDN);
 
     // We no longer need this storage
     Myf_clear (&mpfTmp);
@@ -444,10 +444,10 @@ APLVFP PrimFnDydUpStileVisVvV
     APLVFP mpfRes = {0};
 
     // Compare the two Variable FPs
-    if (mpf_cmp (&aplVfpLft, &aplVfpRht) > 0)
-        mpf_init_copy (&mpfRes, &aplVfpLft);
+    if (mpfr_cmp (&aplVfpLft, &aplVfpRht) > 0)
+        mpfr_init_copy (&mpfRes, &aplVfpLft);
     else
-        mpf_init_copy (&mpfRes, &aplVfpRht);
+        mpfr_init_copy (&mpfRes, &aplVfpRht);
 
     return mpfRes;
 } // End PrimFnDydUpStileVisVvV

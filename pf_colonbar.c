@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -241,15 +241,15 @@ APLVFP PrimFnMonColonBarVisV
 
     // Check for indeterminates:  {div} 0
     if (IsMpf0 (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpRht,          // No left arg
+        return mpfr_QuadICValue (aplVfpRht,         // No left arg
                                 ICNDX_DIV0,
                                 aplVfpRht,
                                 mpfRes);
     // Initialize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
     // Invert the Variable FP
-    mpf_ui_div (&mpfRes, 1, &aplVfpRht);
+    mpfr_ui_div (&mpfRes, 1, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonColonBarVisV
@@ -449,31 +449,31 @@ APLVFP PrimFnDydColonBarVisVvV
     // Check for indeterminates:  0 {div} 0
     if (IsMpf0 (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpf_QuadICValue (aplVfpLft,
+        return mpfr_QuadICValue (aplVfpLft,
                                 ICNDX_0DIV0,
                                 aplVfpRht,
                                 mpfRes);
     // Check for indeterminates:  _ {div} _ (same or different signs)
-    if (mpf_inf_p (&aplVfpLft)
-     && mpf_inf_p (&aplVfpRht))
+    if (mpfr_inf_p (&aplVfpLft)
+     && mpfr_inf_p (&aplVfpRht))
     {
-        if (mpf_sgn (&aplVfpLft) EQ mpf_sgn (&aplVfpRht))
-            return mpf_QuadICValue (aplVfpLft,
+        if (mpfr_sgn (&aplVfpLft) EQ mpfr_sgn (&aplVfpRht))
+            return mpfr_QuadICValue (aplVfpLft,
                                     ICNDX_PiDIVPi,
                                     aplVfpRht,
                                     mpfRes);
         else
-            return mpf_QuadICValue (aplVfpLft,
+            return mpfr_QuadICValue (aplVfpLft,
                                     ICNDX_NiDIVPi,
                                     aplVfpRht,
                                     mpfRes);
     } // End IF
 
     // Initialize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
     // Divide the Variable FPs
-    mpf_div (&mpfRes, &aplVfpLft, &aplVfpRht);
+    mpfr_div (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnDydColonBarVisVvV

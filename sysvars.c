@@ -922,7 +922,7 @@ UBOOL ValidateInteger_EM
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an integer
-            aplInteger = mpf_get_sx ((LPAPLVFP) lpMemRht, &bRet);
+            aplInteger = mpfr_get_sx ((LPAPLVFP) lpMemRht, &bRet);
 
             // Test the value
             if (bRangeLimit || bRet)
@@ -1238,7 +1238,7 @@ UBOOL ValidateFloat_EM
 
         case ARRAY_VFP:
             // Convert the value to a float
-            aplFloat = mpf_get_d ((LPAPLVFP) lpMemRht);
+            aplFloat = mpfr_get_d ((LPAPLVFP) lpMemRht, MPFR_RNDN);
 
             // Test the value
             bRet = ValidateFloatTest (&aplFloat, fValidLo, fValidHi, bRangeLimit);
@@ -2242,7 +2242,7 @@ UBOOL ValidNdxCT
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to a float
-            *((LPAPLFLOAT) lpaplLongestRht) = mpf_get_d ((LPAPLVFP) lpSymGlbRht);
+            *((LPAPLFLOAT) lpaplLongestRht) = mpfr_get_d ((LPAPLVFP) lpSymGlbRht, MPFR_RNDN);
 
             break;
 
@@ -2511,7 +2511,7 @@ UBOOL ValidNdxFEATURE
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpfr_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -2658,7 +2658,7 @@ UBOOL ValidNdxFPC
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpfr_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -2792,7 +2792,7 @@ UBOOL ValidNdxIC
 
         case ARRAY_VFP:
             // Attempt to convert the RAT to an integer
-            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpfr_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -2887,7 +2887,7 @@ UBOOL ValidNdxIO
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpfr_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -2998,7 +2998,7 @@ UBOOL ValidNdxPP
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpfr_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -3275,7 +3275,7 @@ UBOOL ValidNdxPW
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpfr_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 
@@ -3369,7 +3369,7 @@ UBOOL ValidNdxRL
 
         case ARRAY_VFP:
             // Attempt to convert the VFP to an INT
-            *lpaplLongestRht = mpf_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
+            *lpaplLongestRht = mpfr_get_sx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
             break;
 

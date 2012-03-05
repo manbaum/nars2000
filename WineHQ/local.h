@@ -59,6 +59,7 @@ extern int gDbgLvl;
 #include "defines.h"
 #define MP_INT          int
 #define mp_bitcnt_t     int
+#define mp_prec_t       int
 #include "types.h"
 #include "editctrl.h"
 #include "resource.h"

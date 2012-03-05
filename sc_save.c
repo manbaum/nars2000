@@ -1663,10 +1663,10 @@ LPAPLCHAR AppendArrayHeader
             lpaplVfp = VarArrayBaseToData (lpHeader, aplRankObj);
 
             // Get the initial precision
-            *lpuCommPrec = mpf_get_prec (lpaplVfp++);
+            *lpuCommPrec = mpfr_get_prec (lpaplVfp++);
 
             for (uObj = 1; uObj < aplNELMObj; uObj++)
-            if (*lpuCommPrec NE mpf_get_prec (lpaplVfp++))
+            if (*lpuCommPrec NE mpfr_get_prec (lpaplVfp++))
             {
                 // Mark as none
                 *lpuCommPrec = 0;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -326,11 +326,11 @@ APLVFP PrimFnMonQueryVisV
     bQuadIO = GetQuadIO ();
 
     // Check for DOMAIN ERROR
-    if (mpf_cmp_ui (&aplVfpRht, bQuadIO) < 0)
+    if (mpfr_cmp_ui (&aplVfpRht, bQuadIO) < 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // If the VFP is an integer,  ...
-    if (mpf_integer_p (&aplVfpRht))
+    if (mpfr_integer_p (&aplVfpRht))
     {
 #ifdef DEBUG
         LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -341,7 +341,7 @@ APLVFP PrimFnMonQueryVisV
   #define lpMemPTD  GetMemPTD ()
 #endif
         // Initialize the result to R
-        mpz_init_set_f (&mpzRes, &aplVfpRht);
+        mpz_init_set_fr (&mpzRes, &aplVfpRht);
 
         // Generate a uniformly-distributed random number in [0, Rht)
         mpz_urandomm (&mpzRes,
@@ -351,7 +351,7 @@ APLVFP PrimFnMonQueryVisV
         mpz_add_ui (&mpzRes, &mpzRes, bQuadIO);
 
         // Copy to the VFP result
-        mpf_init_set_z (&mpfRes, &mpzRes);
+        mpfr_init_set_z (&mpfRes, &mpzRes, MPFR_RNDN);
 
         // We no longer need this storage
         Myz_clear (&mpzRes);
@@ -489,10 +489,10 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
         aplIntegerRht = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht, &bRet);
     if (bRet && IsVfp (aplTypeLft))
         // Attempt to convert the VFP to an integer using System CT
-        aplIntegerLft = mpf_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+        aplIntegerLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
     if (bRet && IsVfp (aplTypeRht))
         // Attempt to convert the VFP to an integer using System CT
-        aplIntegerRht = mpf_get_ctsa ((LPAPLVFP) lpSymGlbRht, &bRet);
+        aplIntegerRht = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbRht, &bRet);
 
     if (!bRet
      || aplIntegerLft < 0

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -175,7 +175,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                 break;
 
             case ARRAY_VFP:
-                aplLongestRht = mpf_get_ctsa ((LPAPLVFP) VarArrayBaseToData (lpMemRht, aplRankRht), &bRet);
+                aplLongestRht = mpfr_get_ctsa ((LPAPLVFP) VarArrayBaseToData (lpMemRht, aplRankRht), &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 // Check for out of range for Unicode
@@ -448,7 +448,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                                 break;
 
                             case ARRAY_VFP:
-                                aplLongestRht = mpf_get_ctsa ((LPAPLVFP) lpMemHeteroRht, &bRet);
+                                aplLongestRht = mpfr_get_ctsa ((LPAPLVFP) lpMemHeteroRht, &bRet);
 
                                 break;
 
@@ -512,7 +512,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 // Attempt to convert the VFP to an integer using System CT
-                aplLongestRht = mpf_get_ctsa (((LPAPLVFP) lpMemRht)++, &bRet);
+                aplLongestRht = mpfr_get_ctsa (((LPAPLVFP) lpMemRht)++, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
 

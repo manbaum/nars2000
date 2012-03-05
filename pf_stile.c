@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -243,10 +243,10 @@ APLVFP PrimFnMonStileVisV
     APLVFP mpfRes = {0};
 
     // Initialize the result
-    mpf_init (&mpfRes);
+    mpfr_init0 (&mpfRes);
 
     // Calculate the absolute value of a Variable FP
-    mpf_abs (&mpfRes, &aplVfpRht);
+    mpfr_abs (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonStileVisV
@@ -580,70 +580,70 @@ APLVFP PrimFnDydStileVisVvV
     if (IsMpf0 (&aplVfpLft)
      || IsMpf0 (&aplVfpRht))
         // Return the right arg
-        mpf_init_copy (&mpfRes, &aplVfpRht);
+        mpfr_init_copy (&mpfRes, &aplVfpRht);
     else
     // If the right arg is negative infinity, ...
     if (IsMpfNegInfinity (&aplVfpRht))
     {
         // If the left arg is positive, ...
-        if (mpf_sgn (&aplVfpLft) > 0)
-            return mpf_QuadICValue (aplVfpLft,
-                                    ICNDX_PosMODNi,
-                                    aplVfpRht,
-                                    mpfRes);
+        if (mpfr_sgn (&aplVfpLft) > 0)
+            return mpfr_QuadICValue (aplVfpLft,
+                                     ICNDX_PosMODNi,
+                                     aplVfpRht,
+                                     mpfRes);
         // If the left arg is negative, ...
-        if (mpf_sgn (&aplVfpLft) < 0)
-            return mpf_QuadICValue (aplVfpLft,
-                                    ICNDX_NegMODNi,
-                                    aplVfpRht,
-                                    mpfRes);
+        if (mpfr_sgn (&aplVfpLft) < 0)
+            return mpfr_QuadICValue (aplVfpLft,
+                                     ICNDX_NegMODNi,
+                                     aplVfpRht,
+                                     mpfRes);
     } else
     // If the right arg is positive infinity, ...
     if (IsMpfPosInfinity (&aplVfpRht))
     {
         // If the left arg is positive, ...
-        if (mpf_sgn (&aplVfpLft) > 0)
-            return mpf_QuadICValue (aplVfpLft,
-                                    ICNDX_PosMODPi,
-                                    aplVfpRht,
-                                    mpfRes);
+        if (mpfr_sgn (&aplVfpLft) > 0)
+            return mpfr_QuadICValue (aplVfpLft,
+                                     ICNDX_PosMODPi,
+                                     aplVfpRht,
+                                     mpfRes);
         // If the left arg is negative, ...
-        if (mpf_sgn (&aplVfpLft) < 0)
-            return mpf_QuadICValue (aplVfpLft,
-                                    ICNDX_NegMODPi,
-                                    aplVfpRht,
-                                    mpfRes);
+        if (mpfr_sgn (&aplVfpLft) < 0)
+            return mpfr_QuadICValue (aplVfpLft,
+                                     ICNDX_NegMODPi,
+                                     aplVfpRht,
+                                     mpfRes);
     } else
     // If the left arg is negative infinity, ...
     if (IsMpfNegInfinity (&aplVfpLft))
     {
         // If the right arg is positive, ...
-        if (mpf_sgn (&aplVfpRht) > 0)
-            return mpf_QuadICValue (aplVfpLft,
-                                    ICNDX_NiMODPos,
-                                    aplVfpRht,
-                                    mpfRes);
+        if (mpfr_sgn (&aplVfpRht) > 0)
+            return mpfr_QuadICValue (aplVfpLft,
+                                     ICNDX_NiMODPos,
+                                     aplVfpRht,
+                                     mpfRes);
         // Initialize the result with the right arg
-        mpf_init_copy (&mpfRes, &aplVfpRht);
+        mpfr_init_copy (&mpfRes, &aplVfpRht);
     } else
     // If the left arg is positive infinity, ...
     if (IsMpfPosInfinity (&aplVfpLft))
     {
         // If the right arg is negative, ...
-        if (mpf_sgn (&aplVfpRht) < 0)
-            return mpf_QuadICValue (aplVfpLft,
-                                    ICNDX_PiMODNeg,
-                                    aplVfpRht,
-                                    mpfRes);
+        if (mpfr_sgn (&aplVfpRht) < 0)
+            return mpfr_QuadICValue (aplVfpLft,
+                                     ICNDX_PiMODNeg,
+                                     aplVfpRht,
+                                     mpfRes);
         // Initialize the result with the right arg
-        mpf_init_copy (&mpfRes, &aplVfpRht);
+        mpfr_init_copy (&mpfRes, &aplVfpRht);
     } else
     {
         // Initialize the result
-        mpf_init (&mpfRes);
+        mpfr_init0 (&mpfRes);
 
         // Calculate the residue
-        mpf_mod (&mpfRes, &aplVfpRht, &aplVfpLft);
+        mpfr_mod (&mpfRes, &aplVfpRht, &aplVfpLft);
     } // End IF/ELSE/...
 
     return mpfRes;

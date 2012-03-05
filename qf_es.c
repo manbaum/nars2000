@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -233,10 +233,10 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
 
                 case ARRAY_VFP:
                     // Attempt to convert the VFP to an integer using System CT
-                    aplLongestRht1 = mpf_get_ctsa ((LPAPLVFP) lpSymGlbRht1, &bRet);
+                    aplLongestRht1 = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbRht1, &bRet);
                     if (bRet)
                         // Attempt to convert the VFP to an integer using System CT
-                        aplLongestRht2 = mpf_get_ctsa ((LPAPLVFP) lpSymGlbRht2, &bRet);
+                        aplLongestRht2 = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbRht2, &bRet);
                     break;
 
                 defstop

@@ -303,7 +303,7 @@ VfpDecPoint:
 VfpConstants:
           INF 'v'                   {DbgMsgWP (L"%%VfpConstants:  INF 'v'");
                                      // Mark as positive infinity
-                                     mpf_set_infsub (&$1.at.aplVfp, 1);
+                                     mpfr_set_inf (&$1.at.aplVfp, 1);
 
                                      // Mark the result as VFP
                                      $1.chType = PN_NUMTYPE_VFP;
@@ -312,7 +312,7 @@ VfpConstants:
                                     }
     | OVR INF 'v'                   {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
                                      // Mark as negative infinity
-                                     mpf_set_infsub (&$1.at.aplVfp, -1);
+                                     mpfr_set_inf (&$1.at.aplVfp, -1);
 
                                      // Mark the result as VFP
                                      $1.chType = PN_NUMTYPE_VFP;
@@ -321,7 +321,7 @@ VfpConstants:
                                     }
     |     INF 'v' Integer           {DbgMsgWP (L"%%VfpConstants:  INF 'v'" Integer);
                                      // Mark as positive infinity
-                                     mpf_set_infsub (&$1.at.aplVfp, 1);
+                                     mpfr_set_inf (&$1.at.aplVfp, 1);
 
                                      // Mark the result as VFP
                                      $1.chType = PN_NUMTYPE_VFP;
@@ -330,7 +330,7 @@ VfpConstants:
                                     }
     | OVR INF 'v' Integer           {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v' Integer");
                                      // Mark as negative infinity
-                                     mpf_set_infsub (&$1.at.aplVfp, -1);
+                                     mpfr_set_inf (&$1.at.aplVfp, -1);
 
                                      // Mark the result as VFP
                                      $1.chType = PN_NUMTYPE_VFP;
@@ -886,7 +886,7 @@ void PN_actBOOL_VFP
 
 {
     // Convert the value from BOOL to VFP
-    mpf_init_set_sx (&lpSrc->at.aplVfp, lpSrc->at.aplInteger);
+    mpfr_init_set_sx (&lpSrc->at.aplVfp, lpSrc->at.aplInteger, MPFR_RNDN);
 
     lpSrc->chType = PN_NUMTYPE_VFP;
 } // End PN_actBOOL_VFP
@@ -931,7 +931,7 @@ void PN_actINT_VFP
 
 {
     // Convert the value from INT to VFP
-    mpf_init_set_sx (&lpSrc->at.aplVfp, lpSrc->at.aplInteger);
+    mpfr_init_set_sx (&lpSrc->at.aplVfp, lpSrc->at.aplInteger, MPFR_RNDN);
 
     lpSrc->chType = PN_NUMTYPE_VFP;
 } // End PN_actINT_VFP
@@ -946,7 +946,7 @@ void PN_actFLT_VFP
 
 {
     // Convert the value from FLT to VFP
-    mpf_init_set_d  (&lpSrc->at.aplVfp, lpSrc->at.aplFloat);
+    mpfr_init_set_d  (&lpSrc->at.aplVfp, lpSrc->at.aplFloat  , MPFR_RNDN);
 
     lpSrc->chType = PN_NUMTYPE_VFP;
 } // End PN_actFLT_VFP
@@ -963,7 +963,7 @@ void PN_actRAT_VFP
     APLVFP aplVfp = {0};
 
     // Convert the value from RAT to VFP
-    mpf_init_set_q  (&aplVfp, &lpSrc->at.aplRat);
+    mpfr_init_set_q  (&aplVfp, &lpSrc->at.aplRat, MPFR_RNDN);
 
     Myq_clear (&lpSrc->at.aplRat);
 
@@ -1423,12 +1423,12 @@ LPPN_YYSTYPE PN_MakeBasePoint
                    aplVfpTmp     = {0};
 
             // Initialize and set the base value
-            mpf_init_copy (&aplVfpBase, &lpYYBase->at.aplVfp);
+            mpfr_init_copy (&aplVfpBase, &lpYYBase->at.aplVfp);
 
             // Initialize the accumulator and base power
-            mpf_set_ui (&lpYYBase->at.aplVfp, 0);
-            mpf_init_set_ui (&aplVfpPowBase, 1);
-            mpf_init (&aplVfpTmp);
+            mpfr_set_ui (&lpYYBase->at.aplVfp, 0, MPFR_RNDN);
+            mpfr_init_set_ui (&aplVfpPowBase, 1, MPFR_RNDN);
+            mpfr_init0 (&aplVfpTmp);
 
             // Loop through the AlphaInt arg
             for (uAcc = 0; uAcc < uLen; uAcc++)
@@ -1446,12 +1446,12 @@ LPPN_YYSTYPE PN_MakeBasePoint
                     chCur -= 'a' - 10;
 
                 // Times the power base and accumulate
-                mpf_set_ui (&aplVfpTmp, chCur);
-                mpf_mul (&aplVfpTmp, &aplVfpPowBase, &aplVfpTmp);
-                mpf_add (&lpYYBase->at.aplVfp, &lpYYBase->at.aplVfp, &aplVfpTmp);
+                mpfr_set_ui (&aplVfpTmp, chCur, MPFR_RNDN);
+                mpfr_mul (&aplVfpTmp, &aplVfpPowBase, &aplVfpTmp, MPFR_RNDN);
+                mpfr_add (&lpYYBase->at.aplVfp, &lpYYBase->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
 
                 // Shift over the power base
-                mpf_mul (&aplVfpPowBase, &aplVfpPowBase, &aplVfpBase);
+                mpfr_mul (&aplVfpPowBase, &aplVfpPowBase, &aplVfpBase, MPFR_RNDN);
             } // End FOR
 
             // We no longer need this storage
@@ -1619,13 +1619,13 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             APLVFP aplVfpTmp = {0};
 
             // Initialize the temp array
-            mpf_init (&aplVfpTmp);
+            mpfr_init0 (&aplVfpTmp);
 
             // The result is Multiplier x (*1) * Exponent
-            mpf_pow (&aplVfpTmp, &GetMemPTD ()->mpfE, &lpYYExponent->at.aplVfp);
+            mpfr_pow (&aplVfpTmp, &GetMemPTD ()->mpfrE, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 
             // Accumulate in the multiplier
-            mpf_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp);
+            mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
 
             // We no longer need this storage
             Myf_clear (&aplVfpTmp);
@@ -1753,13 +1753,13 @@ LPPN_YYSTYPE PN_MakePiPoint
             APLVFP aplVfpTmp = {0};
 
             // Initialize the temp array
-            mpf_init (&aplVfpTmp);
+            mpfr_init0 (&aplVfpTmp);
 
             // The result is Multiplier x (o1) * Exponent
-            mpf_pow (&aplVfpTmp, &GetMemPTD ()->mpfPi, &lpYYExponent->at.aplVfp);
+            mpfr_pow (&aplVfpTmp, &GetMemPTD ()->mpfrPi, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 
             // Accumulate in the multiplier
-            mpf_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp);
+            mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
 
             // We no longer need this storage
             Myf_clear (&aplVfpTmp);
@@ -1795,12 +1795,12 @@ LPPN_YYSTYPE PN_MakeVfpPoint
      LPPN_YYSTYPE  lpYYExponent)        // The exponent part (may be NULL)
 
 {
-    UINT   uOff,                        // Starting offset
-           uDig,                        // # significant digits
-           uArg,                        // Loop counter
-           uLen;                        // # accumulated chars
-    mp_bitcnt_t uOldPrec,               // Old precision
-                uNewPrec;               // # significant bits
+    UINT      uOff,                     // Starting offset
+              uDig,                     // # significant digits
+              uArg,                     // Loop counter
+              uLen;                     // # accumulated chars
+    mp_prec_t uOldPrec,                 // Old precision
+              uNewPrec;                 // # significant bits
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -1822,7 +1822,7 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     //                 = 1 + floor (N x log2 (10))
     //   where log2 (10) = (ln (10)) / (ln (2))
     //                   = M_LN10 / M_LN2
-    uNewPrec = 1 + (mp_bitcnt_t) floor (uDig * M_LN10 / M_LN2);
+    uNewPrec = 1 + (mp_prec_t) floor (uDig * M_LN10 / M_LN2);
 
     // If present, ...
     if (lpYYExponent)
@@ -1830,16 +1830,16 @@ LPPN_YYSTYPE PN_MakeVfpPoint
         lppnLocalVars->lpszNumAccum[lpYYExponent->uNumOff - 1] = 'e';
 
     // Get and save the current precision
-    uOldPrec = mpf_get_default_prec ();
+    uOldPrec = mpfr_get_default_prec ();
 
     // Set the default precision to the larger ...
-    mpf_set_default_prec (max (uNewPrec, uOldPrec));
+    mpfr_set_default_prec (max (uNewPrec, uOldPrec));
 
     // Use MPFR routine
-    mpf_init_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszNumAccum[uOff], 10);
+    mpfr_init_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszNumAccum[uOff], 10, MPFR_RNDN);
 
     // Restore the default precision
-    mpf_set_default_prec (uOldPrec);
+    mpfr_set_default_prec (uOldPrec);
 
     // Change the type to VFP
     lpYYArg->chType = PN_NUMTYPE_VFP;

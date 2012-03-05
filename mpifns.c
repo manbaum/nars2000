@@ -83,15 +83,17 @@ enum tagMP_ENUM
 } MP_ENUM;
 
 
-typedef unsigned long int (*MPZ_INVALID) (enum MP_ENUM, mpz_t, mpz_t, mpz_t, mpz_t, unsigned long int, unsigned long int);
-typedef unsigned long int (*MPQ_INVALID) (enum MP_ENUM, mpq_t, mpq_t, mpq_t, mpq_t, unsigned long int);
-typedef unsigned long int (*MPF_INVALID) (enum MP_ENUM, mpf_t, mpf_t, mpf_t, mpf_t, unsigned long int);
+typedef unsigned long int (*MPZ_INVALID)  (enum MP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , unsigned long int, unsigned long int);
+typedef unsigned long int (*MPQ_INVALID)  (enum MP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , unsigned long int);
+typedef unsigned long int (*MPFR_INVALID) (enum MP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, unsigned long int);
 
-MPZ_INVALID gmpz_invalid = &mpz_exit;
-MPQ_INVALID gmpq_invalid = &mpq_exit;
-MPF_INVALID gmpf_invalid = &mpf_exit;
+MPZ_INVALID  gmpz_invalid  = &mpz_exit;
+MPQ_INVALID  gmpq_invalid  = &mpq_exit;
+MPFR_INVALID gmpfr_invalid = &mpfr_exit;
 
 #define IsInfinity(a)       (!_finite (a) && !_isnan (a))
+
+#define mpfr_clr_inf(a)     (a)
 
 
 //***************************************************************************
@@ -105,17 +107,17 @@ MPF_INVALID gmpf_invalid = &mpf_exit;
 //***************************************************************************
 
 void mp_get_invalid_functions
-    (unsigned long int (**mpz_invalid) (enum tagMP_ENUM, mpz_t, mpz_t, mpz_t, mpz_t, unsigned long int, unsigned long int),
-     unsigned long int (**mpq_invalid) (enum tagMP_ENUM, mpq_t, mpq_t, mpq_t, mpq_t, unsigned long int),
-     unsigned long int (**mpf_invalid) (enum tagMP_ENUM, mpf_t, mpf_t, mpf_t, mpf_t, unsigned long int))
+    (unsigned long int (**mpz_invalid)  (enum tagMP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , unsigned long int, unsigned long int),
+     unsigned long int (**mpq_invalid)  (enum tagMP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , unsigned long int),
+     unsigned long int (**mpfr_invalid) (enum tagMP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, unsigned long int))
 
 {
     if (mpz_invalid)
-        *mpz_invalid = gmpz_invalid;
+        *mpz_invalid  = gmpz_invalid;
     if (mpq_invalid)
-        *mpq_invalid = gmpq_invalid;
-    if (mpf_invalid)
-        *mpf_invalid = gmpf_invalid;
+        *mpq_invalid  = gmpq_invalid;
+    if (mpfr_invalid)
+        *mpfr_invalid = gmpfr_invalid;
 } // End mp_get_invalid_functions
 
 
@@ -126,17 +128,17 @@ void mp_get_invalid_functions
 //***************************************************************************
 
 void mp_set_invalid_functions
-    (unsigned long int (*mpz_invalid) (enum tagMP_ENUM, mpz_t, mpz_t, mpz_t, mpz_t, unsigned long int, unsigned long int),
-     unsigned long int (*mpq_invalid) (enum tagMP_ENUM, mpq_t, mpq_t, mpq_t, mpq_t, unsigned long int),
-     unsigned long int (*mpf_invalid) (enum tagMP_ENUM, mpf_t, mpf_t, mpf_t, mpf_t, unsigned long int))
+    (unsigned long int (*mpz_invalid)  (enum tagMP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , unsigned long int, unsigned long int),
+     unsigned long int (*mpq_invalid)  (enum tagMP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , unsigned long int),
+     unsigned long int (*mpfr_invalid) (enum tagMP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, unsigned long int))
 
 {
     if (mpz_invalid)
-        gmpz_invalid = mpz_invalid;
+        gmpz_invalid  = mpz_invalid;
     if (mpq_invalid)
-        gmpq_invalid = mpq_invalid;
-    if (mpf_invalid)
-        gmpf_invalid = mpf_invalid;
+        gmpq_invalid  = mpq_invalid;
+    if (mpfr_invalid)
+        gmpfr_invalid = mpfr_invalid;
 } // End mp_set_invalid_functions
 
 
@@ -359,19 +361,20 @@ void mpiz_set_q
 //***************************************************************************
 //  $mpiz_set_f
 //
-//  Set the integer value from a MPF
+//  Set the integer value from a MPFR
 //***************************************************************************
 
-void mpiz_set_f
-    (mpz_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpiz_set_fr
+    (mpz_t     rop,             // Destination
+     mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
-        mpz_set_inf (rop, mpf_sgn (op));
+    if (mpfr_inf_p (op))
+        mpz_set_inf (rop, mpfr_sgn (op));
     else
-        mpz_set_f (mpz_clr_inf (rop), op);
-} // End mpiz_set_f
+        mpz_set_fr (mpz_clr_inf (rop), op, rnd);
+} // End mpiz_set_fr
 
 
 //***************************************************************************
@@ -2834,21 +2837,35 @@ void mpiq_set_d
 
 
 //***************************************************************************
-//  $mpiq_set_f
+//  $mpiq_set_fr
 //
-//  Set the rational value from a MPF
+//  Set the rational value from a MPFR
 //***************************************************************************
 
-void mpiq_set_f
-    (mpq_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpiq_set_fr
+    (mpq_t  rop,                // Destination
+     mpfr_t op)                 // Source
 
 {
-    if (mpf_inf_p (op))
-        mpq_set_inf (rop, mpf_sgn (op));
+    if (mpfr_inf_p (op))
+        mpq_set_inf (rop, mpfr_sgn (op));
     else
-        mpq_set_f (mpq_clr_inf (rop), op);
-} // End mpiq_set_f
+    {
+        mpf_t mpfTmp = {0};
+
+        // Initialize the temp
+        mpf_init (mpfTmp);
+
+        // Convert from MPFR to MPF
+        mpfr_get_f (mpfTmp, op, MPFR_RNDN);
+
+        // Convert from MPF to MPQ
+        mpq_set_f (mpq_clr_inf (rop), mpfTmp);
+
+        // We no longer need this storage
+        mpf_clear (mpfTmp);
+    } // End IF/ELSE
+} // End mpiq_set_fr
 
 
 //***************************************************************************
@@ -3271,26 +3288,26 @@ int mpiq_equal
 
 
 //***************************************************************************
-//  MPF_ Functions
+//  MPFR_ Functions
 //***************************************************************************
 
 //***************************************************************************
-//  &mpf_exit
+//  &mpfr_exit
 //***************************************************************************
 
-unsigned long int mpf_exit
+unsigned long int mpfr_exit
     (enum MP_ENUM mp_enum,
-     mpf_t             rop,
-     mpf_t             op1,
-     mpf_t             op2,
-     mpf_t             op3,
+     mpfr_t            rop,
+     mpfr_t            op1,
+     mpfr_t            op2,
+     mpfr_t            op3,
      unsigned long int d)
 
 {
     exit (0);
 
     return 0;                   // To keep the compiler happy
-} // End mpf_exit
+} // End mpfr_exit
 
 
 //***************************************************************************
@@ -3300,32 +3317,13 @@ unsigned long int mpf_exit
 //***************************************************************************
 
 int IsMpfNULL
-    (mpf_t op)                  // Source
+    (mpfr_t op)                 // Source
 
 {
-    return (op->_mp_prec  EQ 0
-         && op->_mp_size  EQ 0
-         && op->_mp_exp   EQ 0
-         && op->_mp_d     EQ NULL);
+    return (op->_mpfr_prec EQ 0
+         && op->_mpfr_exp  EQ 0
+         && op->_mpfr_d    EQ NULL);
 } // End IsMpfNULL
-
-
-//***************************************************************************
-//  $mpf_inf_p
-//
-//  Is the given value an infinity
-//***************************************************************************
-
-int mpf_inf_p
-    (mpf_t op)                  // Source
-
-{
-    return ((op->_mp_size EQ (mp_size_t) 0x7FFFFFFF
-          || op->_mp_size EQ (mp_size_t) 0x80000000)
-         && op->_mp_prec  EQ 0
-         && op->_mp_exp   EQ 0
-         && op->_mp_d     EQ NULL);
-} // End mpf_inf_p
 
 
 //***************************************************************************
@@ -3335,11 +3333,11 @@ int mpf_inf_p
 //***************************************************************************
 
 int IsMpfPosInfinity
-    (mpf_t op)                  // Source
+    (mpfr_t op)                 // Source
 
 {
-    return (mpf_inf_p (op)
-         && mpf_sgn (op) > 0);
+    return (mpfr_inf_p (op)
+         && mpfr_sgn (op) > 0);
 } // End IsMpfPosInfinity
 
 
@@ -3350,153 +3348,100 @@ int IsMpfPosInfinity
 //***************************************************************************
 
 int IsMpfNegInfinity
-    (mpf_t op)                  // Source
+    (mpfr_t op)                 // Source
 
 {
-    return (mpf_inf_p (op)
-         && mpf_sgn (op) < 0);
+    return (mpfr_inf_p (op)
+         && mpfr_sgn (op) < 0);
 } // End IsMpfNegInfinity
 
 
 //***************************************************************************
-//  $mpf_set_infsub
-//
-//  Set the argument to +/-infinity
-//***************************************************************************
-
-void mpf_set_infsub
-    (mpf_t rop,                 // Destination
-     int   sgn)                 // Sign:  > 0 for +Infinity, < 0 for -Infinity
-
-{
-    // Set the numerator to a special format, properly signed
-    rop->_mp_size  = (sgn > 0) ? (mp_size_t) 0x7FFFFFFF
-                               : (mp_size_t) 0x80000000;
-    rop->_mp_prec  = 0;
-    rop->_mp_exp   = 0;
-    rop->_mp_d     = NULL;
-} // mpf_set_infsub
-
-
-//***************************************************************************
-//  $mpf_set_inf
-//
-//  Set the argument to +/-infinity
-//***************************************************************************
-
-void mpf_set_inf
-    (mpf_t rop,                 // Destination
-     int   sgn)                 // Sign:  > 0 for +Infinity, < 0 for -Infinity
-
-{
-    // If it's not infinite, ...
-    if (!mpf_inf_p (rop))
-        // Free the value as we'll use a special format
-        mpf_clear (rop);
-
-    mpf_set_infsub (rop, sgn);
-} // mpf_set_inf
-
-
-//***************************************************************************
-//  $mpf_clr_inf
-//
-//  Initialize op if it's an infinity
-//***************************************************************************
-
-mpf_ptr mpf_clr_inf
-    (mpf_t op)                  // Source
-
-{
-    if (mpf_inf_p (op))
-        mpf_init (op);
-
-    return (op);
-} // End mpf_clr_inf
-
-
-//***************************************************************************
-//  $mpif_copy
+//  $mpifr_copy
 //
 //  Copy a MPF from a MPF
 //***************************************************************************
 
-void mpif_copy
-    (mpf_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpifr_copy
+    (mpfr_t rop,                // Destination
+     mpfr_t op)                 // Source
 
 {
-    if (mpf_inf_p (op))
-        mpf_set_inf (rop, mpf_sgn (op));
+    if (mpfr_inf_p (op))
+        mpfr_set_inf (rop, mpfr_sgn (op));
     else
-        mpf_copy (mpf_clr_inf (rop), op);
-} // End mpif_copy
+        mpfr_copy (mpfr_clr_inf (rop), op);
+} // End mpifr_copy
 
 
 //***************************************************************************
-//  $mpif_set_d
+//  $mpifr_set_d
 //
 //  Set a MPF from a double
 //***************************************************************************
 
-void mpif_set_d
-    (mpf_t  rop,                // Destination
-     double op)                 // Source
+void mpifr_set_d
+    (mpfr_t     rop,            // Destination
+     double     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     if (IsInfinity (op))
-        mpf_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
+        mpfr_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
     else
-        mpf_set_d (mpf_clr_inf (rop), op);
-} // End mpif_set_d
+        mpfr_set_d (mpfr_clr_inf (rop), op, rnd);
+} // End mpifr_set_d
 
 
 //***************************************************************************
-//  $mpif_set_z
+//  $mpifr_set_z
 //
 //  Set a MPF from a API
 //***************************************************************************
 
-void mpif_set_z
-    (mpf_t rop,                 // Destination
-     mpz_t op)                  // Source
+void mpifr_set_z
+    (mpfr_t     rop,            // Destination
+     mpz_t      op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     if (mpz_inf_p (op))
-        mpf_set_inf (rop, mpz_sgn (op));
+        mpfr_set_inf (rop, mpz_sgn (op));
     else
-        mpf_set_z (mpf_clr_inf (rop), op);
-} // End mpif_set_qz
+        mpfr_set_z (mpfr_clr_inf (rop), op, rnd);
+} // End mpifr_set_qz
 
 
 //***************************************************************************
-//  $mpif_set_q
+//  $mpifr_set_q
 //
 //  Set a MPF from a rational
 //***************************************************************************
 
-void mpif_set_q
-    (mpf_t rop,                 // Destination
-     mpq_t op)                  // Source
+void mpifr_set_q
+    (mpfr_t     rop,            // Destination
+     mpq_t      op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     if (mpq_inf_p (op))
-        mpf_set_inf (rop, mpq_sgn (op));
+        mpfr_set_inf (rop, mpq_sgn (op));
     else
-        mpf_set_q (mpf_clr_inf (rop), op);
-} // End mpif_set_q
+        mpfr_set_q (mpfr_clr_inf (rop), op, rnd);
+} // End mpifr_set_q
 
 
 //***************************************************************************
-//  $mpif_set_str
+//  $mpifr_set_str
 //
 //  Set rop from a string in a given base
 //***************************************************************************
 
-int mpif_set_str
-    (mpf_t rop,                 // Destination
-     char *str,                 // Source
-     int   base)                // Base
+int mpifr_set_str
+    (mpfr_t     rop,            // Destination
+     char      *str,            // Source
+     int        base,           // Base
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     char *p;
@@ -3510,167 +3455,174 @@ int mpif_set_str
      || strcmp (p, DEF_NEGINFINITY_STR) EQ 0)
     {
         // Set to the appropriate signed infinity
-        mpf_set_inf (rop, p[0] EQ '-');
+        mpfr_set_inf (rop, p[0] EQ '-');
 
         return 0;
     } else
-        return mpf_set_str (mpf_clr_inf (rop), str, base);
-} // End mpif_set_str
+        return mpfr_set_str (mpfr_clr_inf (rop), str, base, rnd);
+} // End mpifr_set_str
 
 
 //***************************************************************************
-//  $mpif_init_copy
+//  $mpifr_init_copy
 //
 //  Set a MPF from a MPF
 //***************************************************************************
 
-void mpif_init_copy
-    (mpf_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpifr_init_copy
+    (mpfr_t rop,                // Destination
+     mpfr_t op)                 // Source
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
     {
-        mpf_init (rop);
-        mpf_set_inf (rop, mpf_sgn (op));
+        mpfr_init0 (rop);
+        mpfr_set_inf (rop, mpfr_sgn (op));
     } else
-        mpf_init_copy (rop, op);
-} // End mpif_init_copy
+        mpfr_init_copy (rop, op);
+} // End mpifr_init_copy
 
 
 //***************************************************************************
-//  $mpif_init_set_d
+//  $mpifr_init_set_d
 //
 //  Set a MPF from a double
 //***************************************************************************
 
-void mpif_init_set_d
-    (mpf_t  rop,                // Destination
-     double op)                 // Source
+void mpifr_init_set_d
+    (mpfr_t     rop,            // Destination
+     double     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     if (IsInfinity (op))
     {
-        mpf_init (rop);
-        mpf_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
+        mpfr_init0 (rop);
+        mpfr_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
     } else
-        mpf_init_set_d (rop, op);
-} // End mpif_init_set_d
+        mpfr_init_set_d (rop, op, rnd);
+} // End mpifr_init_set_d
 
 
 //***************************************************************************
-//  $mpif_init_set_str
+//  $mpifr_init_set_str
 //
 //  Set rop from a string in a given base
 //***************************************************************************
 
-int mpif_init_set_str
-    (mpf_t rop,                 // Destination
-     char *str,                 // Source
-     int   base)                // Base
+int mpifr_init_set_str
+    (mpfr_t     rop,            // Destination
+     char      *str,            // Source
+     int        base,           // Base
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    mpf_init (rop);
-    return mpf_set_str (rop, str, base);
-} // End mpif_init_set_str
+    mpfr_init0 (rop);
+    return mpfr_set_str (rop, str, base, rnd);
+} // End mpifr_init_set_str
 
 
 //***************************************************************************
-//  $mpif_get_d
+//  $mpifr_get_d
 //
 //  Convert op to a double
 //***************************************************************************
 
-double mpif_get_d
-    (mpf_t op)
+double mpifr_get_d
+    (mpfr_t     op,
+     mpfr_rnd_t rnd)
 
 {
-    if (mpf_inf_p (op))
-        return ((mpf_sgn (op) > 0) ? PosInfinity : NegInfinity);
+    if (mpfr_inf_p (op))
+        return ((mpfr_sgn (op) > 0) ? PosInfinity : NegInfinity);
     else
-        return mpf_get_d (op);
-} // End mpif_get_d
+        return mpfr_get_d (op, rnd);
+} // End mpifr_get_d
 
 
 //***************************************************************************
-//  $mpif_get_d_2exp
+//  $mpifr_get_d_2exp
 //
 //  Convert op to a double
 //***************************************************************************
 
-double mpif_get_d_2exp
+double mpifr_get_d_2exp
     (signed long int *exp,
-     mpf_t            op)
+     mpfr_t           op,
+     mpfr_rnd_t       rnd)
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
     {
         *exp = 0;
-        return ((mpf_sgn (op) > 0) ? PosInfinity : NegInfinity);
+        return ((mpfr_sgn (op) > 0) ? PosInfinity : NegInfinity);
     } else
-        return mpf_get_d_2exp (exp, op);
-} // End mpif_get_d_2exp
+        return mpfr_get_d_2exp (exp, op, rnd);
+} // End mpifr_get_d_2exp
 
 
 //***************************************************************************
-//  $mpif_get_ui
+//  $mpifr_get_ui
 //
 //  Return the arg as an unsigned integer
 //***************************************************************************
 
-unsigned long int mpif_get_ui
-    (mpf_t op)                  // Source
+unsigned long int mpifr_get_ui
+    (mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return (unsigned long int) 0xFFFFFFFF;
     else
-        return mpf_get_ui (op);
-} // End mpif_get_ui
+        return mpfr_get_ui (op, rnd);
+} // End mpifr_get_ui
 
 
 //***************************************************************************
-//  $mpif_get_si
+//  $mpifr_get_si
 //
 //  Return the arg as an signed integer
 //***************************************************************************
 
-signed long int mpif_get_si
-    (mpf_t op)                  // Source
+signed long int mpifr_get_si
+    (mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return (signed long int) 0xFFFFFFFF;
     else
-        return mpf_get_si (op);
-} // End mpif_get_si
+        return mpfr_get_si (op, rnd);
+} // End mpifr_get_si
 
 
 //***************************************************************************
-//  $mpif_get_str
+//  $mpifr_get_str
 //
 //  Convert op to a string of digits in a given base
 //***************************************************************************
 
-char *mpif_get_str
-    (char     *str,
-     mp_exp_t *expptr,
-     int       base,
-     size_t    n_digits,
-     mpf_t     op)
+char *mpifr_get_str
+    (char      *str,
+     mp_exp_t  *expptr,
+     int        base,
+     size_t     n_digits,
+     mpfr_t     op,
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
     {
-        __mpf_struct tmp = {0};
+        __mpfr_struct tmp = {0};
         char *p;
 
         // Initialize and set a temp to "1" or "-1"
         //   which is of sufficient size to store "!" or "-!"
-        mpf_init_set_si (&tmp, mpf_sgn (op));
+        mpfr_init_set_si (&tmp, mpfr_sgn (op), rnd);
 
         // Convert to "1" or "-1" using the caller's <str>
-        p = mpf_get_str (str, expptr, base, n_digits, &tmp);
+        p = mpfr_get_str (str, expptr, base, n_digits, &tmp, rnd);
 
         // Change the "1" to the inifnity char
         p[p[0] EQ '-'] = DEF_POSINFINITY_CHAR;
@@ -3680,402 +3632,417 @@ char *mpif_get_str
 
         return p;
     } else
-        return mpf_get_str (str, expptr, base, n_digits, op);
-} // End mpif_get_str
+        return mpfr_get_str (str, expptr, base, n_digits, op, rnd);
+} // End mpifr_get_str
 
 
 //***************************************************************************
-//  $mpif_add
+//  $mpifr_add
 //
 //  Add two MPFs
 //***************************************************************************
 
-void mpif_add
-    (mpf_t rop,                 // Destination
-     mpf_t op1,                 // Left arg
-     mpf_t op2)                 // Right arg
+void mpifr_add
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op1,            // Left arg
+     mpfr_t     op2,            // Right arg
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpf_inf_p (op1) + mpf_inf_p (op2))
+    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
             // Call the original function
-            mpf_add (mpf_clr_inf (rop), op1, op2);
+            mpfr_add (mpfr_clr_inf (rop), op1, op2, rnd);
 
             break;
 
         case 2 * 0 + 1:     // Op2 only is an infinity
             // The result is the infinite argument (op2)
-            mpf_set_inf (rop, mpf_sgn (op2));
+            mpfr_set_inf (rop, mpfr_sgn (op2));
 
             break;
 
         case 2 * 1 + 0:     // Op1 only is an infinity
             // The result is the infinite argument (op1)
-            mpf_set_inf (rop, mpf_sgn (op1));
+            mpfr_set_inf (rop, mpfr_sgn (op1));
 
             break;
 
         case 2 * 1 + 1:     // Op1 and Op2 are infinities
             // If they are the same sign, ...
-            if (mpf_sgn (op1) EQ mpf_sgn (op2))
+            if (mpfr_sgn (op1) EQ mpfr_sgn (op2))
                 // The result is the infinite argument (op1 or op2)
-                mpf_set_inf (rop, mpf_sgn (op1));
+                mpfr_set_inf (rop, mpfr_sgn (op1));
             else
-                (*gmpf_invalid) (MP_ADD, rop, op1, op2, NULL, 0);
+                (*gmpfr_invalid) (MP_ADD, rop, op1, op2, NULL, 0);
             break;
     } // End SWITCH
-} // End mpif_add
+} // End mpifr_add
 
 
 //***************************************************************************
-//  $mpif_add_ui
+//  $mpifr_add_ui
 //
 //  Add an MPF and an unsigned long int
 //***************************************************************************
 
-void mpif_add_ui
-    (mpf_t             rop,     // Destination
-     mpf_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+void mpifr_add_ui
+    (mpfr_t            rop,     // Destination
+     mpfr_t            op1,     // Left arg
+     unsigned long int op2,     // Right arg
+     mpfr_rnd_t        rnd)     // Rounding mode
 
 {
-    if (mpf_inf_p (op1))
-        mpf_set_inf (rop, mpf_sgn (op1));
+    if (mpfr_inf_p (op1))
+        mpfr_set_inf (rop, mpfr_sgn (op1));
     else
-        mpf_add_ui (mpf_clr_inf (rop), op1, op2);
-} // End mpif_add_ui
+        mpfr_add_ui (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_add_ui
 
 
 //***************************************************************************
-//  $mpif_sub
+//  $mpifr_sub
 //
 //  Subtract two MPFs
 //***************************************************************************
 
-void mpif_sub
-    (mpf_t rop,                 // Destination
-     mpf_t op1,                 // Left arg
-     mpf_t op2)                 // Right arg
+void mpifr_sub
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op1,            // Left arg
+     mpfr_t     op2,            // Right arg
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpf_inf_p (op1) + mpf_inf_p (op2))
+    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
             // Call the original function
-            mpf_sub (mpf_clr_inf (rop), op1, op2);
+            mpfr_sub (mpfr_clr_inf (rop), op1, op2, rnd);
 
             break;
 
         case 2 * 0 + 1:     // Op2 only is an infinity
             // The result is the infinite argument (op2)
-            mpf_set_inf (rop, mpf_sgn (op2));
+            mpfr_set_inf (rop, mpfr_sgn (op2));
 
             break;
 
         case 2 * 1 + 0:     // Op1 only is an infinity
             // The result is the infinite argument (op1)
-            mpf_set_inf (rop, mpf_sgn (op1));
+            mpfr_set_inf (rop, mpfr_sgn (op1));
 
             break;
 
         case 2 * 1 + 1:     // Op1 and Op2 are infinities
             // If they are the opposite sign, ...
-            if (mpf_sgn (op1) NE mpf_sgn (op2))
+            if (mpfr_sgn (op1) NE mpfr_sgn (op2))
                 // The result is the infinite argument (op1 or op2)
-                mpf_set_inf (rop, mpf_sgn (op1));
+                mpfr_set_inf (rop, mpfr_sgn (op1));
             else
-                (*gmpf_invalid) (MP_SUB, rop, op1, op2, NULL, 0);
+                (*gmpfr_invalid) (MP_SUB, rop, op1, op2, NULL, 0);
             break;
     } // End SWITCH
-} // End mpif_sub
+} // End mpifr_sub
 
 
 //***************************************************************************
-//  $mpif_ui_sub
+//  $mpifr_ui_sub
 //
 //  Subtract an unsigned long int and a MPF
 //***************************************************************************
 
-void mpif_ui_sub
-    (mpf_t             rop,     // Destination
+void mpifr_ui_sub
+    (mpfr_t            rop,     // Destination
      unsigned long int op1,     // Left arg
-     mpf_t             op2)     // Right arg
+     mpfr_t            op2,     // Right arg
+     mpfr_rnd_t        rnd)     // Rounding mode
 
 {
-    if (mpf_inf_p (op2))
-        mpf_set_inf (rop, -mpf_sgn (op2));
+    if (mpfr_inf_p (op2))
+        mpfr_set_inf (rop, -mpfr_sgn (op2));
     else
-        mpf_ui_sub (mpf_clr_inf (rop), op1, op2);
-} // End mpif_ui_sub
+        mpfr_ui_sub (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_ui_sub
 
 
 //***************************************************************************
-//  $mpif_sub_ui
+//  $mpifr_sub_ui
 //
 //  Subtract a MPF and an unsigned long int
 //***************************************************************************
 
-void mpif_sub_ui
-    (mpf_t             rop,     // Destination
-     mpf_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+void mpifr_sub_ui
+    (mpfr_t            rop,     // Destination
+     mpfr_t            op1,     // Left arg
+     unsigned long int op2,     // Right arg
+     mpfr_rnd_t        rnd)     // Rounding mode
 
 {
-    if (mpf_inf_p (op1))
-        mpf_set_inf (rop, mpf_sgn (op1));
+    if (mpfr_inf_p (op1))
+        mpfr_set_inf (rop, mpfr_sgn (op1));
     else
-        mpf_sub_ui (mpf_clr_inf (rop), op1, op2);
-} // End mpif_sub_ui
+        mpfr_sub_ui (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_sub_ui
 
 
 //***************************************************************************
-//  $mpif_mul
+//  $mpifr_mul
 //
 //  Multiply two MPFs
 //***************************************************************************
 
-void mpif_mul
-    (mpf_t rop,                 // Destination
-     mpf_t op1,                 // Left arg
-     mpf_t op2)                 // Right arg
+void mpifr_mul
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op1,            // Left arg
+     mpfr_t     op2,            // Right arg
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpf_inf_p (op1) + mpf_inf_p (op2))
+    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
             // Call the original function
-            mpf_mul (mpf_clr_inf (rop), op1, op2);
+            mpfr_mul (mpfr_clr_inf (rop), op1, op2, rnd);
 
             break;
 
         case 2 * 0 + 1:     // Op2 only is an infinity
             // The result is the infinite argument (op2)
-            mpf_set_inf (rop, mpf_sgn (op2));
+            mpfr_set_inf (rop, mpfr_sgn (op2));
 
             break;
 
         case 2 * 1 + 0:     // Op1 only is an infinity
             // The result is the infinite argument (op1)
-            mpf_set_inf (rop, mpf_sgn (op1));
+            mpfr_set_inf (rop, mpfr_sgn (op1));
 
             break;
 
         case 2 * 1 + 1:     // Op1 and Op2 are infinities
             // The result is the infinite argument with the product of the signs
-            mpf_set_inf (rop, mpf_sgn (op1) * mpf_sgn (op2));
+            mpfr_set_inf (rop, mpfr_sgn (op1) * mpfr_sgn (op2));
 
             break;
     } // End SWITCH
-} // End mpif_mul
+} // End mpifr_mul
 
 
 //***************************************************************************
-//  $mpif_mul_ui
+//  $mpifr_mul_ui
 //
 //  Multiply a MPF and an unsigned long int
 //***************************************************************************
 
-void mpif_mul_ui
-    (mpf_t           rop,       // Destination
-     mpf_t           op1,       // Left arg
-     signed long int op2)       // Right arg
+void mpifr_mul_ui
+    (mpfr_t          rop,       // Destination
+     mpfr_t          op1,       // Left arg
+     signed long int op2,       // Right arg
+     mpfr_rnd_t      rnd)       // Rounding mode
 
 {
-    if (mpf_inf_p (op1))
-        mpf_set_inf (rop, mpf_sgn (op1));
+    if (mpfr_inf_p (op1))
+        mpfr_set_inf (rop, mpfr_sgn (op1));
     else
         // Call the original function
-        mpf_mul_ui (mpf_clr_inf (rop), op1, op2);
-} // End mpif_mul_ui
+        mpfr_mul_ui (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_mul_ui
 
 
 //***************************************************************************
-//  $mpif_div
+//  $mpifr_div
 //
 //  Divide two MPFs
 //***************************************************************************
 
-void mpif_div
-    (mpf_t rop,                 // Destination
-     mpf_t op1,                 // Left arg
-     mpf_t op2)                 // Right arg
+void mpifr_div
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op1,            // Left arg
+     mpfr_t     op2,            // Right arg
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     // Check for special cases
-    if (!mpf_inf_p (op2)
-     && mpf_cmp_ui (op2, 0) EQ 0)
+    if (!mpfr_inf_p (op2)
+     && mpfr_cmp_ui (op2, 0) EQ 0)
         // Divide by zero returns infinity with op1's sign
-        mpf_set_inf (rop, mpf_sgn (op1));
+        mpfr_set_inf (rop, mpfr_sgn (op1));
     else
-    if (mpf_inf_p (op1)
-     && !mpf_inf_p (op2))
+    if (mpfr_inf_p (op1)
+     && !mpfr_inf_p (op2))
         // Divide into infinity returns infinity with op1xop2's sign
-        mpf_set_inf (rop, mpf_sgn (op1) * mpf_sgn (op2));
+        mpfr_set_inf (rop, mpfr_sgn (op1) * mpfr_sgn (op2));
     else
-    if (!mpf_inf_p (op1)
-     && mpf_inf_p (op2))
+    if (!mpfr_inf_p (op1)
+     && mpfr_inf_p (op2))
         // N / _ is 0
-        mpf_set_ui (rop, 0);
+        mpfr_set_ui (rop, 0, rnd);
     else
-    if (mpf_inf_p (op1)
-     && mpf_inf_p (op2))
+    if (mpfr_inf_p (op1)
+     && mpfr_inf_p (op2))
         // Infinity / infinity is undefined
-        (*gmpf_invalid) (MP_DIV, rop, op1, op2, NULL, 0);
+        (*gmpfr_invalid) (MP_DIV, rop, op1, op2, NULL, 0);
     else
         // Call the original function
-        mpf_div (mpf_clr_inf (rop), op1, op2);
-} // End mpif_div
+        mpfr_div (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_div
 
 
 //***************************************************************************
-//  $mpif_ui_div
+//  $mpifr_ui_div
 //
 //  Divide an unsigned long int and a MPF
 //***************************************************************************
 
-void mpif_ui_div
-    (mpf_t             rop,     // Destination
+void mpifr_ui_div
+    (mpfr_t            rop,     // Destination
      unsigned long int op1,     // Left arg
-     mpf_t             op2)     // Right arg
+     mpfr_t            op2,     // Right arg
+     mpfr_rnd_t        rnd)     // Rounding mode
 
 {
     // Check for special cases
-    if (mpf_inf_p (op2))
+    if (mpfr_inf_p (op2))
         // Divide infinity into finite returns zero
-        mpf_set_ui (mpf_clr_inf (rop), 0);
+        mpfr_set_ui (mpfr_clr_inf (rop), 0, rnd);
     else
         // Call the original function
-        mpf_ui_div (mpf_clr_inf (rop), op1, op2);
-} // End mpif_ui_div
+        mpfr_ui_div (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_ui_div
 
 
 //***************************************************************************
-//  $mpif_div_ui
+//  $mpifr_div_ui
 //
 //  Divide a MPF and an unsigned long int
 //***************************************************************************
 
-void mpif_div_ui
-    (mpf_t             rop,     // Destination
-     mpf_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+void mpifr_div_ui
+    (mpfr_t            rop,     // Destination
+     mpfr_t            op1,     // Left arg
+     unsigned long int op2,     // Right arg
+     mpfr_rnd_t        rnd)     // Rounding mode
 
 {
     // Check for special cases
     if (op2 EQ 0)
         // Divide by zero returns infinity with op1's sign
-        mpf_set_inf (rop, mpf_sgn (op1));
+        mpfr_set_inf (rop, mpfr_sgn (op1));
     else
-    if (mpf_inf_p (op1))
+    if (mpfr_inf_p (op1))
         // Divide into infinity returns infinity with op1xop2's sign
-        mpf_set_inf (rop, mpz_sgn (op1) * signumint (op2));
+        mpfr_set_inf (rop, mpfr_sgn (op1) * signumint (op2));
     else
-        mpf_div_ui (mpf_clr_inf (rop), op1, op2);
-} // End mpif_div_ui
+        mpfr_div_ui (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_div_ui
 
 
 //***************************************************************************
-//  $mpif_sqrt
+//  $mpifr_sqrt
 //
 //  Set rop to the square root of op
 //***************************************************************************
 
-void mpif_sqrt
-    (mpf_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpifr_sqrt
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
     {
-        if (mpf_sgn (op) > 0)
-            mpf_set_inf (rop, -mpf_sgn (op));
+        if (mpfr_sgn (op) > 0)
+            mpfr_set_inf (rop, -mpfr_sgn (op));
         else
-            (*gmpf_invalid) (MP_SQRT, rop, op, NULL, NULL, 0);
+            (*gmpfr_invalid) (MP_SQRT, rop, op, NULL, NULL, 0);
      }else
-        mpf_sqrt (mpf_clr_inf (rop), op);
-} // End mpif_sqrt
+        mpfr_sqrt (mpfr_clr_inf (rop), op, rnd);
+} // End mpifr_sqrt
 
 
 //***************************************************************************
-//  $mpif_neg
+//  $mpifr_neg
 //
 //  Set rop to the negative of op
 //***************************************************************************
 
-void mpif_neg
-    (mpf_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpifr_neg
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
-        mpf_set_inf (rop, -mpf_sgn (op));
+    if (mpfr_inf_p (op))
+        mpfr_set_inf (rop, -mpfr_sgn (op));
     else
-        mpf_neg (mpf_clr_inf (rop), op);
-} // End mpif_neg
+        mpfr_neg (mpfr_clr_inf (rop), op, rnd);
+} // End mpifr_neg
 
 
 //***************************************************************************
-//  $mpif_abs
+//  $mpifr_abs
 //
 //  Set rop to the absolute value of op
 //***************************************************************************
 
-void mpif_abs
-    (mpf_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpifr_abs
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
-        mpf_set_inf (rop, 1);
+    if (mpfr_inf_p (op))
+        mpfr_set_inf (rop, 1);
     else
-        mpf_abs (mpf_clr_inf (rop), op);
-} // End mpif_abs
+        mpfr_abs (mpfr_clr_inf (rop), op, rnd);
+} // End mpifr_abs
 
 
 //***************************************************************************
-//  $mpif_mul_2exp
+//  $mpifr_mul_2exp
 //
 //  Multiply a MPF and 2^unsigned long int
 //***************************************************************************
 
-void mpif_mul_2exp
-    (mpf_t       rop,           // Destination
-     mpf_t       op1,           // Left arg
-     mp_bitcnt_t op2)           // Right arg
+void mpifr_mul_2exp
+    (mpfr_t      rop,           // Destination
+     mpfr_t      op1,           // Left arg
+     mp_bitcnt_t op2,           // Right arg
+     mpfr_rnd_t  rnd)           // Rounding mode
 
 {
-    if (mpf_inf_p (op1))
-        mpf_set_inf (rop, mpf_sgn (op1));
+    if (mpfr_inf_p (op1))
+        mpfr_set_inf (rop, mpfr_sgn (op1));
     else
-        mpf_mul_2exp (mpf_clr_inf (rop), op1, op2);
-} // End mpif_mul_2exp
+        mpfr_mul_2exp (mpfr_clr_inf (rop), op1, (unsigned long) op2, rnd);
+} // End mpifr_mul_2exp
 
 
 //***************************************************************************
-//  $mpif_div_2exp
+//  $mpifr_div_2exp
 //
 //  Divide a MPF and 2^unsigned long int
 //***************************************************************************
 
-void mpif_div_2exp
-    (mpf_t       rop,           // Destination
-     mpf_t       op1,           // Left arg
-     mp_bitcnt_t op2)           // Right arg
+void mpifr_div_2exp
+    (mpfr_t      rop,           // Destination
+     mpfr_t      op1,           // Left arg
+     mp_bitcnt_t op2,           // Right arg
+     mpfr_rnd_t  rnd)           // Rounding mode
 
 {
-    if (mpf_inf_p (op1))
-        mpf_set_inf (rop, mpf_sgn (op1));
+    if (mpfr_inf_p (op1))
+        mpfr_set_inf (rop, mpfr_sgn (op1));
     else
-        mpf_div_2exp (mpf_clr_inf (rop), op1, op2);
-} // End mpif_div_2exp
+        mpfr_div_2exp (mpfr_clr_inf (rop), op1, (unsigned long) op2, rnd);
+} // End mpifr_div_2exp
 
 
 //***************************************************************************
-//  $mpif_cmp
+//  $mpifr_cmp
 //
 //  Compare op1 and op1, returning
 //    positive if op1 >  op2,
@@ -4083,38 +4050,38 @@ void mpif_div_2exp
 //    negative if op1 <  op2
 //***************************************************************************
 
-int mpif_cmp
-    (mpf_t op1,                 // Left arg
-     mpf_t op2)                 // Right arg
+int mpifr_cmp
+    (mpfr_t op1,                // Left arg
+     mpfr_t op2)                // Right arg
 
 {
     // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpf_inf_p (op1) + mpf_inf_p (op2))
+    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
             // Call the original function
-            return mpf_cmp (op1, op2);
+            return mpfr_cmp (op1, op2);
 
         case 2 * 0 + 1:     // Op2 only is an infinity
             // The result is the opposite sign of the infinite argument (op2)
-            return -mpf_sgn (op2);
+            return -mpfr_sgn (op2);
 
         case 2 * 1 + 0:     // Op1 only is an infinity
             // The result is the same sign as the infinite argument (op1)
-            return  mpf_sgn (op1);
+            return  mpfr_sgn (op1);
 
         case 2 * 1 + 1:     // Op1 and Op2 are infinities
             // The result is the difference between the argument's signs
-            return signumint (mpf_sgn (op1) - mpf_sgn (op2));
+            return signumint (mpfr_sgn (op1) - mpfr_sgn (op2));
 
         default:
             return 0;       // To keep the compiler happy
     } // End SWITCH
-} // End mpif_cmp
+} // End mpifr_cmp
 
 
 //***************************************************************************
-//  $mpif_cmp_ui
+//  $mpifr_cmp_ui
 //
 //  Compare op1 and op1, returning
 //    positive if op1 >  op2,
@@ -4122,20 +4089,20 @@ int mpif_cmp
 //    negative if op1 <  op2
 //***************************************************************************
 
-int mpif_cmp_ui
-    (mpf_t             op1,     // Left arg
+int mpifr_cmp_ui
+    (mpfr_t            op1,     // Left arg
      unsigned long int op2)     // Right arg
 
 {
-    if (mpf_inf_p (op1))
-        return mpf_sgn (op1);
+    if (mpfr_inf_p (op1))
+        return mpfr_sgn (op1);
     else
-        return mpf_cmp_ui (op1, op2);
-} // End mpif_cmp_ui
+        return mpfr_cmp_ui (op1, op2);
+} // End mpifr_cmp_ui
 
 
 //***************************************************************************
-//  $mpif_cmp_si
+//  $mpifr_cmp_si
 //
 //  Compare op1 and op1, returning
 //    positive if op1 >  op2,
@@ -4143,37 +4110,37 @@ int mpif_cmp_ui
 //    negative if op1 <  op2
 //***************************************************************************
 
-int mpif_cmp_si
-    (mpf_t           op1,       // Left arg
+int mpifr_cmp_si
+    (mpfr_t          op1,       // Left arg
      signed long int op2)       // Right arg
 
 {
-    if (mpf_inf_p (op1))
-        return mpf_sgn (op1);
+    if (mpfr_inf_p (op1))
+        return mpfr_sgn (op1);
     else
-        return mpf_cmp_si (op1, op2);
-} // End mpif_cmp_si
+        return mpfr_cmp_si (op1, op2);
+} // End mpifr_cmp_si
 
 
 //***************************************************************************
-//  $mpif_eq
+//  $mpifr_eq
 //
 //  Return non-zero if the first op3 bits of op1 and op2 are equal,
 //    zero otherwise.
 //***************************************************************************
 
-int mpif_eq
-    (mpf_t             op1,     // Left arg
-     mpf_t             op2,     // Right arg
+int mpifr_eq
+    (mpfr_t            op1,     // Left arg
+     mpfr_t            op2,     // Right arg
      unsigned long int op3)     // Bit count
 
 {
     // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpf_inf_p (op1) + mpf_inf_p (op2))
+    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
             // Call the original function
-            return mpf_eq (op1, op2, op3);
+            return mpfr_eq (op1, op2, op3);
 
         case 2 * 0 + 1:     // Op2 only is an infinity
         case 2 * 1 + 0:     // Op1 only is an infinity
@@ -4181,240 +4148,248 @@ int mpif_eq
 
         case 2 * 1 + 1:     // Op1 and Op2 are infinities
             // If they are the same sign, ...
-            return (mpf_sgn (op1) EQ mpf_sgn (op2));
+            return (mpfr_sgn (op1) EQ mpfr_sgn (op2));
 
         default:
             return 0;       // To keep the compiler happy
     } // End SWITCH
-} // End mpif_eq
+} // End mpifr_eq
 
 
 //***************************************************************************
-//  $mpif_reldiff
+//  $mpifr_reldiff
 //
 //  Return (abs (op1 - op2)) / op1
 //***************************************************************************
 
-void mpif_reldiff
-    (mpf_t rop,                 // Destination
-     mpf_t op1,                 // Left arg
-     mpf_t op2)                 // Right arg
+void mpifr_reldiff
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op1,            // Left arg
+     mpfr_t     op2,            // Right arg
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
     // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpf_inf_p (op1) + mpf_inf_p (op2))
+    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
             // Call the original function
-            mpf_reldiff (mpf_clr_inf (rop), op1, op2);
+            mpfr_reldiff (mpfr_clr_inf (rop), op1, op2, rnd);
 
             break;
 
         case 2 * 0 + 1:     // Op2 only is an infinity
             // The result is an infinity with the sign of finite argument (op1)
-            mpf_set_inf (rop, mpf_sgn (op1));
+            mpfr_set_inf (rop, mpfr_sgn (op1));
 
             break;
 
         case 2 * 1 + 0:     // Op1 only is an infinity
         case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            (*gmpf_invalid) (MP_RELDIFF, rop, op1, op2, NULL, 0);
+            (*gmpfr_invalid) (MP_RELDIFF, rop, op1, op2, NULL, 0);
 
             break;
     } // End SWITCH
-} // End mpif_reldiff
+} // End mpifr_reldiff
 
 
 //***************************************************************************
-//  $mpif_ceil
+//  $mpifr_ceil
 //
 //  Calculate the ceiling of op
 //***************************************************************************
 
-void mpif_ceil
-    (mpf_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpifr_ceil
+    (mpfr_t rop,                // Destination
+     mpfr_t op)                 // Source
 
 {
-    if (mpf_inf_p (op))
-        mpf_set_inf (rop, mpf_sgn (op));
+    if (mpfr_inf_p (op))
+        mpfr_set_inf (rop, mpfr_sgn (op));
     else
-        mpf_ceil (mpf_clr_inf (rop), op);
-} // End mpif_ceil
+        mpfr_ceil (mpfr_clr_inf (rop), op);
+} // End mpifr_ceil
 
 
 //***************************************************************************
-//  $mpif_floor
+//  $mpifr_floor
 //
 //  Calculate the floor of op
 //***************************************************************************
 
-void mpif_floor
-    (mpf_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpifr_floor
+    (mpfr_t rop,                // Destination
+     mpfr_t op)                 // Source
 
 {
-    if (mpf_inf_p (op))
-        mpf_set_inf (rop, mpf_sgn (op));
+    if (mpfr_inf_p (op))
+        mpfr_set_inf (rop, mpfr_sgn (op));
     else
-        mpf_floor (mpf_clr_inf (rop), op);
-} // End mpif_floor
+        mpfr_floor (mpfr_clr_inf (rop), op);
+} // End mpifr_floor
 
 
 //***************************************************************************
-//  $mpif_trunc
+//  $mpifr_trunc
 //
 //  Calculate the truncation of op
 //***************************************************************************
 
-void mpif_trunc
-    (mpf_t rop,                 // Destination
-     mpf_t op)                  // Source
+void mpifr_trunc
+    (mpfr_t rop,                // Destination
+     mpfr_t op)                 // Source
 
 {
-    if (mpf_inf_p (op))
-        mpf_set_inf (rop, mpf_sgn (op));
+    if (mpfr_inf_p (op))
+        mpfr_set_inf (rop, mpfr_sgn (op));
     else
-        mpf_trunc (mpf_clr_inf (rop), op);
-} // End mpif_trunc
+        mpfr_trunc (mpfr_clr_inf (rop), op);
+} // End mpifr_trunc
 
 
 //***************************************************************************
-//  $mpif_integer_p
+//  $mpifr_integer_p
 //
 //  Return non-zero if op is an integer
 //***************************************************************************
 
-int mpif_integer_p
-    (mpf_t op)                  // Source
+int mpifr_integer_p
+    (mpfr_t op)                 // Source
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return 1;
     else
-        return mpf_integer_p (op);
-} // End mpif_integer_p
+        return mpfr_integer_p (op);
+} // End mpifr_integer_p
 
 
 //***************************************************************************
-//  $mpif_fits_ulong_p
+//  $mpifr_fits_ulong_p
 //
 //  Return non-zero if op fits in an unsigned long int
 //***************************************************************************
 
-int mpif_fits_ulong_p
-    (mpf_t op)                  // Source
+int mpifr_fits_ulong_p
+    (mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return 0;
     else
-        return mpf_fits_ulong_p (op);
-} // End mpif_fits_ulong_p
+        return mpfr_fits_ulong_p (op, rnd);
+} // End mpifr_fits_ulong_p
 
 
 //***************************************************************************
-//  $mpif_fits_slong_p
+//  $mpifr_fits_slong_p
 //
 //  Return non-zero if op fits in a signed long int
 //***************************************************************************
 
-int mpif_fits_slong_p
-    (mpf_t op)                  // Source
+int mpifr_fits_slong_p
+    (mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return 0;
     else
-        return mpf_fits_slong_p (op);
-} // End mpif_fits_slong_p
+        return mpfr_fits_slong_p (op, rnd);
+} // End mpifr_fits_slong_p
 
 
 //***************************************************************************
-//  $mpif_fits_uint_p
+//  $mpifr_fits_uint_p
 //
 //  Return non-zero if op fits in an unsigned int
 //***************************************************************************
 
-int mpif_fits_uint_p
-    (mpf_t op)                  // Source
+int mpifr_fits_uint_p
+    (mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return 0;
     else
-        return mpf_fits_uint_p (op);
-} // End mpif_fits_uint_p
+        return mpfr_fits_uint_p (op, rnd);
+} // End mpifr_fits_uint_p
 
 
 //***************************************************************************
-//  $mpif_fits_sint_p
+//  $mpifr_fits_sint_p
 //
 //  Return non-zero if op fits in a signed int
 //***************************************************************************
 
-int mpif_fits_sint_p
-    (mpf_t op)                  // Source
+int mpifr_fits_sint_p
+    (mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return 0;
     else
-        return mpf_fits_sint_p (op);
-} // End mpif_fits_sint_p
+        return mpfr_fits_sint_p (op, rnd);
+} // End mpifr_fits_sint_p
 
 
 //***************************************************************************
-//  $mpif_fits_ushort_p
+//  $mpifr_fits_ushort_p
 //
 //  Return non-zero if op fits in an unsigned short
 //***************************************************************************
 
-int mpif_fits_ushort_p
-    (mpf_t op)                  // Source
+int mpifr_fits_ushort_p
+    (mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return 0;
     else
-        return mpf_fits_ushort_p (op);
-} // End mpif_fits_ushort_p
+        return mpfr_fits_ushort_p (op, rnd);
+} // End mpifr_fits_ushort_p
 
 
 //***************************************************************************
-//  $mpif_fits_sshort_p
+//  $mpifr_fits_sshort_p
 //
 //  Return non-zero if op fits in a signed short
 //***************************************************************************
 
-int mpif_fits_sshort_p
-    (mpf_t op)                  // Source
+int mpifr_fits_sshort_p
+    (mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpf_inf_p (op))
+    if (mpfr_inf_p (op))
         return 0;
     else
-        return mpf_fits_sshort_p (op);
-} // End mpif_fits_sshort_p
+        return mpfr_fits_sshort_p (op, rnd);
+} // End mpifr_fits_sshort_p
 
 
 //***************************************************************************
-//  $mpif_pow_ui
+//  $mpifr_pow_ui
 //
 //  Set rop to op1^op2
 //***************************************************************************
 
-void mpif_pow_ui
-    (mpf_t             rop,     // Destination
-     mpf_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+void mpifr_pow_ui
+    (mpfr_t            rop,     // Destination
+     mpfr_t            op1,     // Left arg
+     unsigned long int op2,     // Right arg
+     mpfr_rnd_t        rnd)     // Rounding mode
 
 {
-    if (mpf_inf_p (op1))
-        mpf_set_inf (rop, (op2 & 1) ? mpf_sgn (op1) : 1);
+    if (mpfr_inf_p (op1))
+        mpfr_set_inf (rop, (op2 & 1) ? mpfr_sgn (op1) : 1);
     else
-        mpf_pow_ui (mpf_clr_inf (rop), op1, op2);
-} // End mpif_pow_ui
+        mpfr_pow_ui (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_pow_ui
 
 
 //***************************************************************************

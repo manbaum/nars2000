@@ -290,6 +290,12 @@
 
 #define LIBCMD_SWITCH   L'?'
 
+#ifdef _WIN64
+#define WS_BITSIZE      L".64"
+#else
+#define WS_BITSIZE      L".32"
+#endif
+
 
 //***************************************************************************
 //  Debugging

@@ -42,7 +42,6 @@
 #undef  DEFINE_VALUES
 #undef  DEFINE_VARS
 
-////#include "vld.h"
 
 CRITICAL_SECTION CSOPthread;            // Critical Section Object for pthread
 
@@ -96,7 +95,7 @@ HICON hIconDB_Large, hIconDB_Small;
 HICON hIconPM_Large, hIconPM_Small;
 #endif
 
-WCHAR wszMFTitle[]          = WS_APPNAME WS_APPEND_DEBUG,                           // Master frame window title
+WCHAR wszMFTitle[]          = WS_APPNAME WS_BITSIZE WS_APPEND_DEBUG,                // Master frame window title
       wszCCTitle[]          = WS_APPNAME L" Crash Control Window" WS_APPEND_DEBUG,  // Crash Control window title
       wszTCTitle[]          = WS_APPNAME L" Tab Control Window" WS_APPEND_DEBUG;    // Tab Control ... (for debugging purposes only)
 

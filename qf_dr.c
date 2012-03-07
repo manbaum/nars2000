@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include "qf_dr.h"
 
 
 //***************************************************************************
@@ -98,31 +99,6 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 ////lpYYRes->tkToken.tkData.tkInteger  =   (filled in below)
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-#define DR_SHOW             0   // Return a character vector representation
-#define DR_FLOAT2CHAR       1   // Convert between float   and its 16-digit hexadecimal character representation
-#define DR_INT2CHAR         2   // Convert between integer and its 16-digit hexadecimal character representation
-#define DR_BOOL           110   //   1 bit  per value
-#define DR_CHAR8          811   //   8 bits ...
-#define DR_CHAR16        1611   //  16 ...
-#define DR_CHAR32        3211   //  32 ...
-#define DR_INT8           812   //   8 ...
-#define DR_INT16         1612   //  16 ...
-#define DR_INT32         3212   //  32 ...
-#define DR_INT64         6412   //  64 ...
-#define DR_FLOAT         6413   //  64 ...
-#define DR_APA           6414   //  64 ... offset & multiplier
-#define DR_COMPLEX      12815   // 128 ... real & imaginary
-#define DR_QUATERNIONS  25616   // 256 ... ...              & ...
-#define DR_OCTONIONS    51217   // 512 ... ...                ... & ...
-#define DR_HETERO32      3218   //  32 ... per item
-#define DR_HETERO64      6418   //  64 ... ...
-#define DR_NESTED32      3219   //  32 ... ...
-#define DR_NESTED64      6419   //  64 ... ...
-#define DR_RATIONAL32    3220   //  24 bytes per item plus size of limbs
-#define DR_RATIONAL64    6420   //  32 ...
-#define DR_VFP32         3221   //  16 bytes per item plus size of limbs
-#define DR_VFP64         6421   //  20 ...
-
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, NULL, NULL);
@@ -157,43 +133,23 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
             break;
 
         case ARRAY_HETERO:
-#ifdef _WIN64
-            lpYYRes->tkToken.tkData.tkInteger = DR_HETERO64;
-#elif defined (_WIN32)
-            lpYYRes->tkToken.tkData.tkInteger = DR_HETERO32;
-#else
-  #error Need code for this architecture.
-#endif
+            lpYYRes->tkToken.tkData.tkInteger = DR_HETERO;
+
             break;
 
         case ARRAY_NESTED:
-#ifdef _WIN64
-            lpYYRes->tkToken.tkData.tkInteger = DR_NESTED64;
-#elif defined (_WIN32)
-            lpYYRes->tkToken.tkData.tkInteger = DR_NESTED32;
-#else
-  #error Need code for this architecture.
-#endif
+            lpYYRes->tkToken.tkData.tkInteger = DR_NESTED;
+
             break;
 
         case ARRAY_RAT:
-#ifdef _WIN64
-            lpYYRes->tkToken.tkData.tkInteger = DR_RATIONAL64;
-#elif defined (_WIN32)
-            lpYYRes->tkToken.tkData.tkInteger = DR_RATIONAL32;
-#else
-  #error Need code for this architecture.
-#endif
+            lpYYRes->tkToken.tkData.tkInteger = DR_RAT;
+
             break;
 
         case ARRAY_VFP:
-#ifdef _WIN64
-            lpYYRes->tkToken.tkData.tkInteger = DR_VFP64;
-#elif defined (_WIN32)
-            lpYYRes->tkToken.tkData.tkInteger = DR_VFP32;
-#else
-  #error Need code for this architecture.
-#endif
+            lpYYRes->tkToken.tkData.tkInteger = DR_VFP;
+
             break;
 
         defstop
@@ -298,17 +254,8 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_APA:
             return SysFnDR_Convert_EM_YY (ARRAY_APA,   lptkRhtArg, lptkFunc);
 
-        case DR_HETERO32:
-        case DR_HETERO64:
-        case DR_NESTED32:
-        case DR_NESTED64:
-#ifdef _WIN64
-        case DR_RATIONAL32:
-        case DR_VFP32:
-#else
-        case DR_RATIONAL64:
-        case DR_VFP64:
-#endif
+        case DR_HETERO:
+        case DR_NESTED:
         default:
             return PrimFnDomainError_EM (lptkFunc APPEND_NAME_ARG);
 
@@ -317,16 +264,20 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_INT8:
         case DR_INT16:
         case DR_INT32:
-        case DR_COMPLEX:
-        case DR_QUATERNIONS:
-        case DR_OCTONIONS:
-#ifdef _WIN64
-        case DR_RATIONAL64:
-        case DR_VFP64:
-#else
-        case DR_RATIONAL32:
-        case DR_VFP32:
-#endif
+        case DR_COMPLEX_I:
+        case DR_QUATERNIONS_I:
+        case DR_OCTONIONS_I:
+        case DR_COMPLEX_F:
+        case DR_QUATERNIONS_F:
+        case DR_OCTONIONS_F:
+        case DR_COMPLEX_Q:
+        case DR_QUATERNIONS_Q:
+        case DR_OCTONIONS_Q:
+        case DR_COMPLEX_V:
+        case DR_QUATERNIONS_V:
+        case DR_OCTONIONS_V:
+        case DR_RAT:
+        case DR_VFP:
             return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
     } // End SWITCH
 
@@ -802,58 +753,26 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
         case ARRAY_NESTED:
             wsprintfW (wszTemp,
-#ifdef _WIN64
-                      L"Nested Array (%d):  64 bits per element",
-                      DR_NESTED64
-#elif defined (_WIN32)
-                      L"Nested Array (%d):  32 bits per element",
-                      DR_NESTED32
-#else
-  #error Need code for this architecture.
-#endif
-                      );
+                      L"Nested Array (%d):  PTR bits per element",
+                      DR_NESTED);
             break;
 
         case ARRAY_HETERO:
             wsprintfW (wszTemp,
-#ifdef _WIN64
-                      L"Heterogeneous Array (%d):  64 bits per element",
-                      DR_HETERO64
-#elif defined (_WIN32)
-                      L"Heterogeneous Array (%d):  32 bits per element",
-                      DR_HETERO32
-#else
-  #error Need code for this architecture.
-#endif
-                      );
+                      L"Heterogeneous Array (%d):  PTR bits per element",
+                      DR_HETERO);
             break;
 
         case ARRAY_RAT:
             wsprintfW (wszTemp,
-#ifdef _WIN64
                       L"Rational (%d):  arbitrary precision numerator and denominator",
-                      DR_RATIONAL64
-#elif defined (_WIN32)
-                      L"Rational (%d):  arbitrary precision numerator and denominator",
-                      DR_RATIONAL32
-#else
-  #error Need code for this architecture.
-#endif
-                      );
+                      DR_RAT);
             break;
 
         case ARRAY_VFP:
             wsprintfW (wszTemp,
-#ifdef _WIN64
                       L"Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
-                      DR_VFP64
-#elif defined (_WIN32)
-                      L"Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
-                      DR_VFP32
-#else
-  #error Need code for this architecture.
-#endif
-                      );
+                      DR_VFP);
             break;
 
         defstop

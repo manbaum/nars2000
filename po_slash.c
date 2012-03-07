@@ -238,13 +238,18 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     } else
     {
         // No axis specified:
-        // if Slash, use last dimension
+        //   if Slash, use last dimension
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
-            aplAxis = aplRankRht - 1;
+            aplAxis = max (aplRankRht, 1) - 1;
         else
+        {
+            Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR
+                 || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
+
             // Otherwise, it's SlashBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Get right arg's global ptr
@@ -1768,13 +1773,18 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     } else
     {
         // No axis specified:
-        // if Slash, use last dimension
+        //   if Slash, use last dimension
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = max (aplRankRht, 1) - 1;
         else
+        {
+            Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR
+                 || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
+
             // Otherwise, it's SlashBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     //***************************************************************
@@ -2139,39 +2149,6 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         lpYYRes = PrimOpMonSlashCommon_EM_YY (lpYYFcnStrOpr,    // Ptr to operator function strand
                                               lptkRhtArg,       // Ptr to right arg
                                               bPrototyping);    // TRUE iff prototyping
-        // Insert a unit dimension into the result
-        if (!PrimOpDydSlashInsertDim_EM (lpYYRes,       // Ptr to the result
-                                         aplAxis,       // The (one and only) axis value
-                                         uDimAxRes,     // Result axis dimension length
-                                        &hGlbRes,       // Ptr to the result global memory handle
-                                         lpYYFcnStrOpr))// Ptr to operator function strand
-            goto ERROR_EXIT;
-        else
-            goto NORMAL_EXIT;
-    } else
-    // If the left arg is -uDimAxRht, the result is
-    //   ({rho} Result) {rho} LeftOperand /[X] {reverse}[X] RightArg
-    //   where ({rho} Result) is ({rho} RightArg) with
-    //   ({rho} RightArg})[X] set to one
-    if (aplIntegerLft EQ -(APLINT) uDimAxRht)
-    {
-        LPPL_YYSTYPE lpYYRes2;
-
-        // Reverse the right arg along the specified axis
-        lpYYRes2 = PrimFnMonCircleStile_EM_YY (&lpYYFcnStrOpr->tkToken, // Ptr to function token
-                                                lptkRhtArg,             // Ptr to right arg token
-                                                lptkAxisOpr);           // Ptr to operator axis token (may be NULL)
-        // If it failed, ...
-        if (!lpYYRes2)
-            goto ERROR_EXIT;
-
-        // Reduce the reversed right arg along the specified axis
-        lpYYRes = PrimOpMonSlashCommon_EM_YY (lpYYFcnStrOpr,        // Ptr to operator function strand
-                                             &lpYYRes2->tkToken,    // Ptr to right arg
-                                              bPrototyping);        // TRUE iff prototyping
-        // Free the result of the function execution
-        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
-
         // Insert a unit dimension into the result
         if (!PrimOpDydSlashInsertDim_EM (lpYYRes,       // Ptr to the result
                                          aplAxis,       // The (one and only) axis value

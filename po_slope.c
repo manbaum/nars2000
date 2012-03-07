@@ -225,13 +225,18 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     } else
     {
         // No axis specified:
-        // if Slope, use last dimension
+        //   if Slope, use last dimension
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE)
             aplAxis = aplRankRht - 1;
         else
+        {
+            Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR
+                 || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR);
+
             // Otherwise, it's SlopeBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Get right arg's global ptr

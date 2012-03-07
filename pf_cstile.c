@@ -141,12 +141,17 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
             goto ERROR_EXIT;
     } else
     {
-        // If CircleStile, use last dimension
+        // No axis specified:
+        //   if CircleStile, use last dimension
         if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
             aplAxis = aplRankRht - 1;
         else
+        {
+            Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLEBAR);
+
             // Otherwise, it's CircleBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // The (left) identity element for dyadic CircleStile
@@ -346,12 +351,17 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             return NULL;
     } else
     {
-        // If CircleStile, use last dimension
+        // No axis specified:
+        //   if CircleStile, use last dimension
         if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
             aplAxis = aplRankRht - 1;
         else
+        {
+            Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLEBAR);
+
             // Otherwise, it's CircleBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Check for singleton
@@ -764,12 +774,17 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             return NULL;
     } else
     {
-        // If CircleStile, use last dimension
+        // No axis specified:
+        //   if CircleStile, use last dimension
         if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
             aplAxis = aplRankRht - 1;
         else
+        {
+            Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLEBAR);
+
             // Otherwise, it's CircleBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Get left and right arg's global ptrs

@@ -228,8 +228,12 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         if (lptkFunc->tkData.tkChar EQ UTF16_SLOPE)
             aplAxis = aplRankRes - 1;
         else
+        {
+            Assert (lptkFunc->tkData.tkChar EQ UTF16_SLOPEBAR);
+
             // Otherwise, it's SlopeBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Get left and right arg's global ptrs

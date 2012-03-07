@@ -230,8 +230,12 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         if (lptkFunc->tkData.tkChar EQ UTF16_SLASH)
             aplAxis = aplRankRes - 1;
         else
+        {
+            Assert (lptkFunc->tkData.tkChar EQ UTF16_SLASHBAR);
+
             // Otherwise, it's SlashBar on the first dimension
             aplAxis = 0;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Check for LEFT RANK ERROR

@@ -49,8 +49,6 @@ typedef enum tagNUMTHEORY
 #define INIT_FACTOR_CNT     100
 #define INIT_FACTOR_INC     100
 
-#define PROBABILITY_IS_PRIME 200    // Error is 1 in 2^prob
-
 
 //***************************************************************************
 //  $PrimFnPi_EM_YY
@@ -1390,7 +1388,7 @@ APLMPI PrimeFactor
         } // End IF
     } // End IF
 
-    if (mpz_probable_prime_p (&mpzRes, GetMemPTD ()->randState, PROBABILITY_IS_PRIME, PRECOMPUTED_PRIME_MAX))
+    if (mpz_likely_prime_p (&mpzRes, GetMemPTD ()->randState, PRECOMPUTED_PRIME_MAX))
     {
         dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));
 
@@ -1436,7 +1434,7 @@ APLMPI PrimeFactor
         goto NORMAL_EXIT;                                                                                       \
     } /* End IF */                                                                                              \
                                                                                                                 \
-    if (mpz_probable_prime_p (&mpzRes, GetMemPTD ()->randState, PROBABILITY_IS_PRIME, PRECOMPUTED_PRIME_MAX))   \
+    if (mpz_likely_prime_p (&mpzRes, GetMemPTD ()->randState, PRECOMPUTED_PRIME_MAX))   \
     {                                                                                                           \
         dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));                                        \
                                                                                                                 \
@@ -1601,7 +1599,7 @@ APLMPI PrimFnPiIsPrime
     mpz_init (&mpzRes);
 
     if (mpz_cmp_ui (&aplMPIArg, 1) > 0)
-        mpz_set_ui (&mpzRes, mpz_probable_prime_p (&aplMPIArg, lpMemPTD->randState, PROBABILITY_IS_PRIME, 0));
+        mpz_set_ui (&mpzRes, mpz_likely_prime_p (&aplMPIArg, lpMemPTD->randState, 0));
 
     return mpzRes;
 } // End PrimFnPiIsPrime

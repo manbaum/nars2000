@@ -557,33 +557,21 @@ UBOOL CheckResizeNum_EM
         // Get desired size
         iNumLim = lptkLocalVars->iNumLim + DEF_NUM_INCRNELM;
 
-        // If it's out of range, ...
-        if (iNumLim > DEF_NUM_MAXNELM)
-            goto LIMIT_EXIT;
-        else
-        {
-            // Attempt to realloc to that size
-            hGlbNum =
-              MyGlobalReAlloc (lptkLocalVars->hGlbNum, iNumLim * sizeof (char), GMEM_MOVEABLE);
-            if (!hGlbNum)
-                goto WSFULL_EXIT;
+        // Attempt to realloc to that size
+        hGlbNum =
+          MyGlobalReAlloc (lptkLocalVars->hGlbNum, iNumLim * sizeof (char), GMEM_MOVEABLE);
+        if (!hGlbNum)
+            goto WSFULL_EXIT;
 
-            // Save back in PTD var
-            lptkLocalVars->iNumLim = iNumLim;
-            lptkLocalVars->hGlbNum = hGlbNum;
-        } // End IF
+        // Save back in PTD var
+        lptkLocalVars->iNumLim = iNumLim;
+        lptkLocalVars->hGlbNum = hGlbNum;
     } // End IF
 
     // Mark as successful
     bRet = TRUE;
 
     goto NORMAL_EXIT;
-
-LIMIT_EXIT:
-    // Save the error message
-    ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
-
-    goto ERROR_EXIT;
 
 WSFULL_EXIT:
     // Save the error message
@@ -592,6 +580,8 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    //  Initialize the accumulation variables for the next constant
+    InitAccumVars (lptkLocalVars);
 NORMAL_EXIT:
     return bRet;
 } // End CheckResizeNum_EM
@@ -625,33 +615,21 @@ UBOOL CheckResizeStr_EM
         // Get desired size
         iStrLim = lptkLocalVars->iStrLim + DEF_STR_INCRNELM;
 
-        // If it's out of range, ...
-        if (iStrLim > DEF_STR_MAXNELM)
-            goto LIMIT_EXIT;
-        else
-        {
-            // Attempt to realloc to that size
-            hGlbStr =
-              MyGlobalReAlloc (lptkLocalVars->hGlbStr, iStrLim * sizeof (APLCHAR), GMEM_MOVEABLE);
-            if (!hGlbStr)
-                goto WSFULL_EXIT;
+        // Attempt to realloc to that size
+        hGlbStr =
+          MyGlobalReAlloc (lptkLocalVars->hGlbStr, iStrLim * sizeof (APLCHAR), GMEM_MOVEABLE);
+        if (!hGlbStr)
+            goto WSFULL_EXIT;
 
-            // Save back in PTD var
-            lptkLocalVars->iStrLim = iStrLim;
-            lptkLocalVars->hGlbStr = hGlbStr;
-        } // End IF
+        // Save back in PTD var
+        lptkLocalVars->iStrLim = iStrLim;
+        lptkLocalVars->hGlbStr = hGlbStr;
     } // End IF
 
     // Mark as successful
     bRet = TRUE;
 
     goto NORMAL_EXIT;
-
-LIMIT_EXIT:
-    // Save the error message
-    ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
-
-    goto ERROR_EXIT;
 
 WSFULL_EXIT:
     // Save the error message
@@ -956,14 +934,8 @@ UBOOL fnAlpha
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
 
-    // Check for overflow -- LIMIT ERROR
-    bRet = (lptkLocalVars->iStrLen < DEF_STR_MAXNELM);
-    if (bRet)
-        // Save the char
-        lpwszStr[lptkLocalVars->iStrLen++] = *lptkLocalVars->lpwszCur;
-    else
-        // Save the error message
-        ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
+    // Save the current char
+    lpwszStr[lptkLocalVars->iStrLen++] = *lptkLocalVars->lpwszCur;
 
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
@@ -1297,7 +1269,7 @@ UBOOL fnDirIdent
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
 
-    // Save the character in the string
+    // Save the current character in the string
     lpwszStr[0] = lptkLocalVars->lpwszCur[0];
 
     // Save the string length
@@ -1848,18 +1820,10 @@ UBOOL fnPointSub
 
     // Check for need to resize hGlbNum
     bRet = CheckResizeNum_EM (lptkLocalVars);
-    if (!bRet)
-        goto ERROR_EXIT;
-
-    // Check for overflow -- LIMIT ERROR
-    bRet = (lptkLocalVars->iNumLen < DEF_NUM_MAXNELM);
     if (bRet)
         // Save the current char
         lpszNum[lptkLocalVars->iNumLen++] = (char) wchCur;
-    else
-        // Save the error message
-        ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
-ERROR_EXIT:
+
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbNum); lpszNum = NULL;
 
@@ -2523,23 +2487,18 @@ UBOOL fnQuoAccumSub
 
     // Check for need to resize hGlbStr
     bRet = CheckResizeStr_EM (lptkLocalVars);
-    if (!bRet)
-        goto ERROR_EXIT;
-
-    // Lock the memory to get a ptr to it
-    lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
-
-    // Check for overflow -- LIMIT ERROR
-    bRet = (lptkLocalVars->iStrLen < DEF_STR_MAXNELM);
     if (bRet)
-        lpwszStr[lptkLocalVars->iStrLen++] = *lptkLocalVars->lpwszCur;
-    else
-        // Save the error message
-        ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
+    {
+        // Lock the memory to get a ptr to it
+        lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
-ERROR_EXIT:
+        // Save the current char
+        lpwszStr[lptkLocalVars->iStrLen++] = *lptkLocalVars->lpwszCur;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
+    } // End IF
+
     return bRet;
 } // End fnQuoAccumSub
 #undef  APPEND_NAME

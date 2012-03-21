@@ -29,6 +29,7 @@
 // Disable stack checking
 #pragma check_stack(off)
 
+#include <float.h>
 #include <setjmp.h>
 #include <stdint.h>
 #include <mpir.h>

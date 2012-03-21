@@ -22,9 +22,8 @@
 
 #define STRICT
 #include <windows.h>
-#include "headers.h"
 #include <math.h>
-#include <float.h>
+#include "headers.h"
 
 
 #ifndef PROTO

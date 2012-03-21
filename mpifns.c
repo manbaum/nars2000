@@ -24,7 +24,6 @@
 #define MPIFNS
 #include <windows.h>
 #include <math.h>               // For fabs
-#include <float.h>              // For _finite, etc.
 #include "headers.h"
 
 #define POS_INFINITY            (0x7FF0000000000000)

@@ -23,7 +23,6 @@
 #define STRICT
 #include <windows.h>
 #include <math.h>
-#include <float.h>
 #include "headers.h"
 
 

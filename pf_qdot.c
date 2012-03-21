@@ -22,7 +22,6 @@
 
 #define STRICT
 #include <windows.h>
-#include <float.h>
 #include <math.h>
 
 #define __GSL_MATRIX_COMPLEX_LONG_DOUBLE_H__

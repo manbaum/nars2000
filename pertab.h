@@ -136,6 +136,7 @@ typedef struct tagPERTABDATA
     gmp_randstate_t randState;              // MPIR random number state for Query
     APLVFP       mpfrPi,                    // MPFR value for Pi
                  mpfrE;                     // MPFR value for e
+    HGLOBAL      hGlbNfns;                  // Global memory handle for []Nfns data
 } PERTABDATA, *LPPERTABDATA;
 
 

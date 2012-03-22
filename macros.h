@@ -403,6 +403,25 @@
 
 #define GetImmTypeFcn(a)            IMMTYPE_PRIMFCN
 
+typedef UINT8  *LPUINT8 ;
+typedef UINT16 *LPUINT16;
+typedef UINT32 *LPUINT32;
+typedef UINT64 *LPUINT64;
+
+typedef  INT8  *LPINT8 ;
+typedef  INT16 *LPINT16;
+typedef  INT32 *LPINT32;
+typedef  INT64 *LPINT64;
+
+#define GetNextChar8(a,t,c)         ((LPUINT8   ) a)[c]
+#define GetNextChar16(a,t,c)        ((LPUINT16  ) a)[c]
+#define GetNextChar32(a,t,c)        ((LPUINT32  ) a)[c]
+#define GetNextInt8(a,t,c)          ((LPINT8    ) a)[c]
+#define GetNextInt16(a,t,c)         ((LPINT16   ) a)[c]
+#define GetNextInt32(a,t,c)         ((LPINT32   ) a)[c]
+#define GetNextInt64(a,t,c)         ((LPINT64   ) a)[c]
+#define GetNextFlt64(a,t,c)         ((LPAPLFLOAT) a)[c]
+
 
 // Macros to get countof for arrays and constant strings
 #define countof(a)                  (sizeof (a) / sizeof ((a)[0]))

@@ -71,7 +71,12 @@ function renderAPLcom ($input, $argv, $parser, $bLargeSize, $bBoldWeight)
     if ($bBoldWeight)
         $style .= 'font-weight: bold; ';
 
-    return '<span style="' . $style . '">' . $input . '</span>';
+    if ($argv['class'])
+        $class = 'class="' . $argv['class'] . '" ';
+    else
+        $class = '';
+
+    return '<span ' . $class . ' style="' . $style . '">' . $input . '</span>';
 } // End renderAPLcom
 
 ?>

@@ -2845,6 +2845,65 @@ APLINT _imul64
 
 
 //***************************************************************************
+//  $CalcDataSize
+//
+//  Calculate the size in bytes of the data portion of an array
+//***************************************************************************
+
+APLUINT CalcDataSize
+    (ARRAY_TYPES aplType,       // Result storage type
+     APLNELM     aplNELM,       // ...    NELM
+     LPUBOOL     lpbRet)        // Ptr to TRUE iff the result is valid
+
+{
+    APLUINT ByteRes;            // # bytes in the result
+
+    // Split cases based upon the result storage type
+    switch (aplType)
+    {
+        case ARRAY_BOOL:
+            return _imul64 (sizeof (APLBOOL)   , RoundUpBitsInArray (aplNELM), lpbRet);
+
+        case ARRAY_INT:
+            return _imul64 (sizeof (APLINT)    , aplNELM                     , lpbRet);
+
+        case ARRAY_FLOAT:
+            return _imul64 (sizeof (APLFLOAT)  , aplNELM                     , lpbRet);
+
+        case ARRAY_CHAR:
+            // Add in one element so we always have
+            //   a zero-terminated string
+            return _imul64 (sizeof (APLCHAR)   , aplNELM + 1                 , lpbRet);
+
+        case ARRAY_APA:
+            return _imul64 (sizeof (APLAPA)    , 1                           , lpbRet);
+
+        case ARRAY_HETERO:
+            return _imul64 (sizeof (APLHETERO) , aplNELM                     , lpbRet);
+
+        case ARRAY_LIST:
+            ByteRes = _imul64 (sizeof (APLLIST)   , aplNELM                  , lpbRet);
+            if (*lpbRet)
+                ByteRes = _iadd64 (ByteRes, sizeof (LSTARRAY_HEADER)         , lpbRet);
+            return ByteRes;
+
+        case ARRAY_NESTED:
+            // Make room for the prototype
+            return _imul64 (sizeof (APLNESTED) , max (aplNELM, 1)            , lpbRet);
+
+        case ARRAY_RAT:
+            return _imul64 (sizeof (APLRAT)    , aplNELM                     , lpbRet);
+
+        case ARRAY_VFP:
+            return _imul64 (sizeof (APLVFP)    , aplNELM                     , lpbRet);
+
+        defstop
+            return MAX_APLINT;
+    } // End SWITCH
+} // End CalcDataSize
+
+
+//***************************************************************************
 //  $CalcArraySize
 //
 //  Calculate the size in bytes of an array
@@ -2859,74 +2918,13 @@ APLUINT CalcArraySize
     APLUINT ByteRes;            // # bytes in the result
     UBOOL   bRet = FALSE;       // TRUE iff the result is valid
 
-    // Split cases based upon the result storage type
-    switch (aplType)
-    {
-        case ARRAY_BOOL:
-            ByteRes = _imul64 (sizeof (APLBOOL)   , RoundUpBitsInArray (aplNELM), &bRet);
+    // Calculate the size of the data portion (excluding the header)
+    ByteRes = CalcDataSize (aplType, aplNELM, &bRet);
 
-            break;
-
-        case ARRAY_INT:
-            ByteRes = _imul64 (sizeof (APLINT)    , aplNELM                     , &bRet);
-
-            break;
-
-        case ARRAY_FLOAT:
-            ByteRes = _imul64 (sizeof (APLFLOAT)  , aplNELM                     , &bRet);
-
-            break;
-
-        case ARRAY_CHAR:
-            // Add in one element so we always have
-            //   a zero-terminated string
-            ByteRes = _imul64 (sizeof (APLCHAR)   , aplNELM + 1                 , &bRet);
-
-            break;
-
-        case ARRAY_APA:
-            ByteRes = sizeof (APLAPA);
-
-            // Mark the result as valid
-            bRet = TRUE;
-
-            break;
-
-        case ARRAY_HETERO:
-            ByteRes = _imul64 (sizeof (APLHETERO) , aplNELM                     , &bRet);
-
-            break;
-
-        case ARRAY_LIST:
-            ByteRes = _imul64 (sizeof (APLLIST)   , aplNELM                     , &bRet);
-            if (bRet)
-                ByteRes = _iadd64 (ByteRes, sizeof (LSTARRAY_HEADER)            , &bRet);
-            goto NORMAL_EXIT;
-
-        case ARRAY_NESTED:
-            // Make room for the prototype
-            ByteRes = _imul64 (sizeof (APLNESTED) , max (aplNELM, 1)            , &bRet);
-
-            break;
-
-        case ARRAY_RAT:
-            ByteRes = _imul64 (sizeof (APLRAT)    , aplNELM                     , &bRet);
-
-            break;
-
-        case ARRAY_VFP:
-            ByteRes = _imul64 (sizeof (APLVFP)    , aplNELM                     , &bRet);
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    if (bRet)
+    if (bRet && aplType NE ARRAY_LIST)
         // Add in the size of the header and dimension
         ByteRes = _iadd64 (ByteRes, CalcHeaderSize (aplRank), &bRet);
-NORMAL_EXIT:
+
     return bRet ? ByteRes : MAX_APLINT;
 } // End CalcArraySize
 

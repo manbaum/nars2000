@@ -873,6 +873,36 @@ void FreeGlobalStorage
     LPSYMENTRY  lpSymEntry;             // ...
     LPHSHENTRY  lpHshEntry;             // ...
 
+    // Free global storage for Native File functions
+    if (lpMemPTD->hGlbNfns)
+    {
+        LPNFNSHDR    lpNfnsHdr;         // Ptr to NFNSHDR global memory
+        LPNFNSDATA   lpNfnsMem;         // Ptr to aNfnsData
+        UINT         uCnt;              // Loop counter
+
+        // Lock the memory to get a ptr to it
+        lpNfnsHdr = MyGlobalLock (lpMemPTD->hGlbNfns);
+
+        // Point to the first entry in use
+        lpNfnsMem = &lpNfnsHdr->aNfnsData[lpNfnsHdr->offFirstInuse];
+
+        // Loop through the in use tie numbers
+        for (uCnt = 0; uCnt < lpNfnsHdr->nTieNums; uCnt++)
+        {
+            // Release these resources
+            NfnsReleaseOneResource (lpNfnsMem);
+
+            // Point to the next tie number in use
+            lpNfnsMem = &lpNfnsHdr->aNfnsData[lpNfnsMem->offNextInuse];
+        } // End FOR
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpMemPTD->hGlbNfns); lpNfnsHdr = NULL;
+
+        // We no longer need this storage
+        MyGlobalFree (lpMemPTD->hGlbNfns); lpMemPTD->hGlbNfns = NULL;
+    } // End IF
+
     // Free global storage if the SymTab is valid
     if (lpMemPTD->htsPTD.lpSymTab)
     {

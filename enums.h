@@ -215,6 +215,14 @@ typedef enum tagTABSTATE        // Table State for Nth and Number of Primes
 } TABSTATE, *LPTABSTATE;
 
 
+typedef enum tagNFNS_NERR       // Common code for []NERASE, []NRENAME, and []NRESIZE
+{
+    COM_NERASE = 0,             // 0:  []NERASE
+    COM_NRENAME,                // 1:  []NRENAME
+    COM_NRESIZE                 // 2:  []NRESIZE
+} NFNS_NERR;
+
+
 //***************************************************************************
 //  End of File: enums.h
 //***************************************************************************

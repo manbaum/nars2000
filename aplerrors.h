@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,6 +57,8 @@
 
 #define ERRMSG_FILE_EXISTS                      L"FILE EXISTS"
 #define ERRMSG_FILE_NOT_FOUND                   L"FILE NOT FOUND"
+#define ERRMSG_FILE_ACCESS_ERROR                L"FILE ACCESS_ERROR"
+#define ERRMSG_FILE_SHARE_ERROR                 L"FILE SHARE_ERROR"
 #define ERRMSG_PATH_NOT_FOUND                   L"PATH NOT FOUND"
 
 #define ERRMSG_NOT_ERASED                       L"NOT ERASED:"

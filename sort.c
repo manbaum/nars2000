@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,6 +70,52 @@ void ShellSort
         inc = (UINT) round (inc / 2.2);
     } // End WHILE
 } // End ShellSort
+
+
+//***************************************************************************
+//  $ShellSortInt64
+//
+//  A simple Shell sort of int64s
+//
+//  This particular algorithm was taken from the pseudo-code in Wikipedia
+//     http://en.wikipedia.org/wiki/Shell_sort
+//***************************************************************************
+
+void ShellSortInt64
+    (LPAPLINT lpObj,                    // Ptr to APLINTs to sort
+     UINT     uSize,                    // # APLINTs to sort
+     int    (*ObjCmp) (APLINT, APLINT)) // Ptr to comparison routine
+
+{
+    UINT    i,                          // Loop counter
+            j,                          // ...
+            inc;                        // Increment used for successive Insertion Sorts
+    APLINT  temp;                       // Temporary APLINT for swap
+
+    // Initialize the increment
+    inc = (UINT) round (uSize / 2.0);
+
+    while (inc > 0)
+    {
+        for (i = inc; i < uSize; i++)
+        {
+            temp = lpObj[i];
+            j = i;
+
+            while ((j >= inc)
+                && (ObjCmp (lpObj[j - inc], temp) > 0))
+            {
+                lpObj[j] = lpObj[j - inc];
+                j -= inc;
+            } // End WHILE
+
+            lpObj[j] = temp;
+        } // End FOR
+
+        // Calculate the next increment
+        inc = (UINT) round (inc / 2.2);
+    } // End WHILE
+} // End ShellSortInt64
 
 
 //***************************************************************************

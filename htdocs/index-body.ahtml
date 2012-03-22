@@ -150,10 +150,6 @@ Welcome to NARS2000</h1>
           <span class="APL">A[{iota}-{rho}A]</span>, and even
           <span class="APL">A[{iota}{neg}1 1[?({rho}{rho}A){rho}2]{times}{rho}A]</span>
           are all identical for any array <span class="APL">A</span> in either origin</li>
-        <li>± Infinity (e.g., <span class="APL">{infinity}</span> for infinity
-          and <span class="APL">{overbar}{infinity}</span> for negative infinity)
-          &mdash; considerable development work needs to be done to this
-          feature to handle the many special cases</li>
         <li>Monadic and dyadic domino (<span class="APL">{domino}R</span> and <span class="APL">L{domino}R</span>)
           &mdash; matrix inverse/divide extended to use Moore-Penrose pseudo-inverse algorithm via Singular Value
           Decomposition</li>
@@ -213,6 +209,18 @@ Welcome to NARS2000</h1>
             <li><span class="APL">L {quad}FMT R</span></li>
             <li><span class="APL">{quad}MF R</span></li>
             <li><span class="APL">L {quad}MF R</span></li>
+            <li><span class="APL">L {quad}NAPPEND R</span></li>
+            <li><span class="APL">L {quad}NCREATE R</span></li>
+            <li><span class="APL">L {quad}NERASE R</span></li>
+            <li><span class="APL">{quad}NNAMES</span></li>
+            <li><span class="APL">{quad}NNUMS</span></li>
+            <li><span class="APL">{quad}NREAD R</span></li>
+            <li><span class="APL">L {quad}NRENAME R</span></li>
+            <li><span class="APL">L {quad}NREPLACE R</span></li>
+            <li><span class="APL">L {quad}NRESIZE R</span></li>
+            <li><span class="APL">{quad}NSIZE R</span></li>
+            <li><span class="APL">L {quad}NTIE R</span></li>
+            <li><span class="APL">{quad}NUNTIE R</span></li>
             <li><span class="APL">{quad}SYSID</span></li>
             <li><span class="APL">{quad}SYSVER</span></li>
             <li><span class="APL">{quad}TC</span> and other related <span class="APL">{quad}TC</span>xxx</li>
@@ -267,8 +275,6 @@ Welcome to NARS2000</h1>
   <ul>
     <li>User-defined function/operator inverse entry point
       (<span class="APL">{quad}INV:</span>)</li>
-    <li>User-defined function/operator singleton entry point
-      (<span class="APL">{quad}SGL:</span>)</li>
     <li>Dynamic functions (e.g.,
       <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
     <li>Primitive functions and operators user extensible via user-defined APL functions</li>

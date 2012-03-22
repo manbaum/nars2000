@@ -85,6 +85,12 @@ GSL_INC=$(GSL_DIR)include\      # Directory of GSL includes
 QDEBUG=$(NARSROOT)qdebug\       # Directory for QDEBUG files/libraries
 L98=$(L98);$(QDEBUG)
 
+!if "$(LST)" == "1"
+LIST=/Fa$(O)$(@B).lst /FAsc
+!else
+LIST=
+!endif
+
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
 ###CFLAGS_DEBUG=/Zi /D "DEBUG"
@@ -246,9 +252,9 @@ INITIAL_EXE:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
 !if "$(WIN)" == "64"
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32 /D WIN64 /D __x86_64__ /D "UNICODE" %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32 /D WIN64 /D __x86_64__ /D "UNICODE" $(LIST) %s
 !else
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32                        /D "UNICODE" %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D WIN32                        /D "UNICODE" $(LIST) %s
 !endif
 
 {}.y{$(O)}.c:
@@ -258,25 +264,25 @@ INITIAL_EXE:
 {}.c{$(O)}.obj:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ $(LIST) %s
 
 {}.c{$(OC)}.obj:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ $(LIST) %s
 
 {$(O)}.c{$(O)}.obj:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ $(LIST) %s
 
 {$(WS)}.c{$(O)}.obj:
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.;$(O);$(SDK)INCLUDE
         @if exist $@ del $@
 !if "$(WIN)" == "64"
-        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D __x86_64__ /D "UNICODE" %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ /D __x86_64__ /D "UNICODE" $(LIST) %s
 !else
-        @$(CC) $(CFLAGS_WEXE) /Fo$@               /D "UNICODE" %s
+        @$(CC) $(CFLAGS_WEXE) /Fo$@               /D "UNICODE" $(LIST) %s
 !endif
 
 ####################### DEPENDENCY GENERATION #################
@@ -534,6 +540,7 @@ $(O)qf_fx.obj:          $(@B).c         $(QF_FX_DEP)
 $(O)qf_lc.obj:          $(@B).c         $(QF_LC_DEP)
 $(O)qf_mf.obj:          $(@B).c         $(QF_MF_DEP)
 $(O)qf_nc.obj:          $(@B).c         $(QF_NC_DEP)
+$(O)qf_nfns.obj:        $(@B).c         $(QF_NFNS_DEP)
 $(O)qf_nl.obj:          $(@B).c         $(QF_NL_DEP)
 $(O)qf_sysid.obj:       $(@B).c         $(QF_SYSID_DEP)
 $(O)qf_sysver.obj:      $(@B).c         $(QF_SYSVER_DEP)

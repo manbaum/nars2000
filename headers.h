@@ -31,6 +31,7 @@
 
 #include <float.h>
 #include <setjmp.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <mpir.h>
 #include <mpfr.h>
@@ -74,6 +75,7 @@
 #include "fmtspec.h"
 #include "mpifns.h"
 #include "malloc.h"
+#include "qf_dr.h"
 
 #pragma pack(pop)
 

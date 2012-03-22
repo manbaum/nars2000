@@ -39,3 +39,9 @@
   border-right: solid 3px dimgray;
   border-bottom: solid 3px dimgray;
 }
+
+.Section
+{
+  color: navy;
+  background-color: gainsboro;
+}

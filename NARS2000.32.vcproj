@@ -893,6 +893,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\qf_nfns.c"
+				>
+			</File>
+			<File
 				RelativePath=".\qf_nl.c"
 				>
 			</File>

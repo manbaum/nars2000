@@ -154,6 +154,7 @@
   #include "qf_lc.pro"
   #include "qf_mf.pro"
   #include "qf_nc.pro"
+  #include "qf_nfns.pro"
   #include "qf_nl.pro"
   #include "qf_sysid.pro"
   #include "qf_sysver.pro"

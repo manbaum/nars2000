@@ -1,4 +1,6 @@
 @echo off
+@php wincver.php version.rc
+
 Set NMAKE=NMAKE
 if "%windir%" == "" Set NMAKE=NMAKER
 call w32

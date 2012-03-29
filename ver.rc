@@ -31,10 +31,10 @@
 
 #define VER_MAJOR                   0   // 0.x.x.x
 #define VER_MAJOR_STR               "0"
-#define VER_MINOR                   0   // x.0.x.x
-#define VER_MINOR_STR               "0"
-#define VER_BETA                    3   // x.x.1.x
-#define VER_BETA_STR                "3"
+#define VER_MINOR                   3   // x.0.x.x
+#define VER_MINOR_STR               "3"
+#define VER_BETA                    6   // x.x.1.x
+#define VER_BETA_STR                "6"
 
 #define VERSION_BETA                VER_BETA_STR "." VER_MODULE_STR
 //#if BUILD_BETA
@@ -51,7 +51,7 @@
 #define VER_PRODUCTVERSION_STR      VERSION
 
 #define VER_PRODUCTNAME_STR         APPNAME
-////ine VER_LEGALCOPYRIGHT_YEARS    "2006-11"
+////ine VER_LEGALCOPYRIGHT_YEARS    "2006-12"
 ////ine VER_COMPANYNAME_STR         "Sudley Place Software"
 ////ine VER_COPYRIGHT1_STR          "Copyright \251 " VER_LEGALCOPYRIGHT_YEARS " " VER_COMPANYNAME_STR
 

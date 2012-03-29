@@ -660,32 +660,16 @@ UBOOL IsLocalName
                                         // (may be NULL if position not desired)
 
 {
-    LPWCHAR  lpwszName,                 // Ptr to name
-             wp,                        // Ptr to temp char
-             lpwBrkLead = L"({[ ]});" WS_UTF16_LEFTARROW,
-             lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_UTF16_LAMP;
-    WCHAR    sysName[32];               // Temp storage for sysnames in lowercase
-    APLU3264 uLineLen;                  // Line length
+    static LPWCHAR  lpwBrkLead = L"({[ ]});" WS_UTF16_LEFTARROW,
+                    lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_UTF16_LAMP;
+    LPWCHAR         wp;                         // Ptr to temp char
+    APLU3264        uLineLen;                   // Line length
+    int (*lpStrncmpW) (const WCHAR *, const WCHAR *, size_t);
 
     // If the Edit Ctrl window handle is not from a Function Editor window, ...
     if (!IzitFE (GetParent (hWndEC)))
         // The given name can't be local
         return FALSE;
-
-    // If this is a sysname, ...
-    if (IsSysName (lpwszStr))
-    {
-        Assert (iStrLen < countof (sysName));       // ***FIXME*** -- may overflow
-
-        // Copy the sysname to local storage
-        CopyMemoryW (sysName, lpwszStr, iStrLen);
-
-        // Convert it to lowercase
-        CharLowerBuffW (sysName, iStrLen);
-
-        lpwszName = sysName;
-    } else
-        lpwszName = lpwszStr;
 
     // Tell EM_GETLINE maximum # chars in the buffer
     lpwszTemp[0] = (WORD) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
@@ -702,6 +686,14 @@ UBOOL IsLocalName
     // Copy the base of the line
     wp = lpwszTemp;
 
+    // If it's a System Name, ...
+    if (IsSysName (lpwszStr))
+        // Compare case insensitive
+        lpStrncmpW = strncmpiW;
+    else
+        // Compare case sensitive
+        lpStrncmpW = strncmpW;
+
     while (TRUE)
     {
         // Skip over leading ignorable chars
@@ -713,7 +705,7 @@ UBOOL IsLocalName
             break;
 
         // Compare the incoming name with the header text
-        if (strncmpW (lpwszName, wp, iStrLen) EQ 0
+        if ((*lpStrncmpW) (lpwszStr, wp, iStrLen) EQ 0
          && (wp[iStrLen] EQ WC_EOS
           || strchrW (lpwBrkTerm, wp[iStrLen]) NE NULL))
         {
@@ -4459,9 +4451,9 @@ UBOOL AppendNewToken_EM
         lptkLocalVars->lptkNext  = NULL;
 
         // Increase the size by DEF_TOKEN_RESIZE
-        hGlbToken = MyGlobalReAlloc (lptkLocalVars->hGlbToken,
+            hGlbToken = MyGlobalReAlloc (lptkLocalVars->hGlbToken,
                                      MyGlobalSize (lptkLocalVars->hGlbToken) + DEF_TOKEN_RESIZE,
-                                     GMEM_ZEROINIT);
+                                         GMEM_ZEROINIT);
         if (hGlbToken EQ NULL)
         {
             // We ran into TOKEN TABLE FULL and couldn't resize

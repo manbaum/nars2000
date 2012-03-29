@@ -2474,6 +2474,7 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
                  aplFileOut;        // # bytes written to disk
     DR_VAL       DiskConv;          // Disk format
     UINT         uTie;              // Offset of matching tie number entry
+    UBOOL        bFileOffset;       // TRUE iff the file offset is specified
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPNFNSHDR    lpNfnsHdr = NULL;  // Ptr to NFNSHDR global memory
     LPNFNSDATA   lpNfnsMem;         // Ptr to aNfnsData
@@ -2492,6 +2493,9 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
     if (1 > aplNELMRht
      ||     aplNELMRht > 3)
         goto RIGHT_LENGTH_EXIT;
+
+    // Is the file offset specified?
+    bFileOffset = (aplNELMRht > 2);
 
     // Check for LEFT DOMAIN ERROR
     if (!IsSimpleNH (aplTypeLft))
@@ -2552,18 +2556,34 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
     if (!NfnsArgConv   (aplTypeRht, lpMemRht, aplNELMRht, 1, TRUE, &DiskConv, lpNfnsMem->DiskConv, NULL, 0, NULL))
         goto RIGHT_DOMAIN_EXIT;
 
-    // Parse FileOffset from lpMemRht
-    aplFileOff =  0;                    // Set default value
-    if (!NfnsArgAplint (aplTypeRht,     // Arg storage type
-                        lpMemRht,       // Ptr to global memory data
-                        aplNELMRht,     // NELM of arg
-                        2,              // Index # into lpMem
-                       &aplFileOff))    // Ptr to result APLINT
-        goto RIGHT_DOMAIN_EXIT;
+    // If there's a file offset, ...
+    if (bFileOffset)
+    {
+        // Parse FileOffset from lpMemRht
+        if (!NfnsArgAplint (aplTypeRht,     // Arg storage type
+                            lpMemRht,       // Ptr to global memory data
+                            aplNELMRht,     // NELM of arg
+                            2,              // Index # into lpMem
+                           &aplFileOff))    // Ptr to result APLINT
+            goto RIGHT_DOMAIN_EXIT;
+        // Set the file pointer to the value just parsed
+        LOAPLINT (aplFileOff) =
+          SetFilePointer (lpNfnsMem->hFile,
+                          LOAPLINT (aplFileOff),
+                         &HIAPLINT (aplFileOff),
+                          FILE_BEGIN);
+    } else
+    {
+        // Initialize the file offset
+        aplFileOff = 0;
 
-    // Set the file pointer to the specified file offset
-    LOAPLINT (aplFileOff) =
-      SetFilePointer (lpNfnsMem->hFile, LOAPLINT (aplFileOff), &HIAPLINT (aplFileOff), FILE_BEGIN);
+        // Set the file pointer to the current file offset
+        LOAPLINT (aplFileOff) =
+          SetFilePointer (lpNfnsMem->hFile,
+                          LOAPLINT (aplFileOff),
+                         &HIAPLINT (aplFileOff),
+                          FILE_CURRENT);
+    } // End IF/ELSE
 
     // Translate the data to DiskConv format and write it out
     if (!NfnsWriteData_EM (lpNfnsMem->hFile,        // File handle
@@ -2584,7 +2604,7 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
     lpYYRes->tkToken.tkData.tkInteger  = aplFileOff;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

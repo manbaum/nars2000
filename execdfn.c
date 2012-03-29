@@ -1427,6 +1427,25 @@ void UnlocalizeSTEs
 
         dprintfWL9 (L"~~Unlocalize:  %p to %p", lpSISCur, lpSISCur->lpSISPrv);
 
+        // Loop through the entries on the FOR/FORLCL stmt stack
+        for (lpForStmtNext = lpSISCur->lpForStmtBase;
+             lpForStmtNext && lpForStmtNext < lpSISCur->lpForStmtNext;
+             lpForStmtNext++)
+        {
+            // We're done -- free the global in the token (if any)
+            FreeResultTkn (&lpForStmtNext->tkForArr);
+
+            // If this is :FORLCL, ...
+            if (lpForStmtNext->symForI.stFlags.Inuse)
+            {
+                // Free the value of the :IN var
+                FreeResultTkn (&lpForStmtNext->tkForI);
+
+                // Restore the original :IN var
+                *lpForStmtNext->tkForI.tkData.tkSym = lpForStmtNext->symForI;
+            } // End IF
+        } // End FOR
+
         // Save the reset flag
         resetFlag = lpSISCur->ResetFlag;
 
@@ -1511,25 +1530,6 @@ void UnlocalizeSTEs
                 InitPTDVars (lpMemPTD);
             } // End IF
         } // End FOR/IF
-
-        // Loop through the entries on the FOR/FORLCL stmt stack
-        for (lpForStmtNext = lpSISCur->lpForStmtBase;
-             lpForStmtNext && lpForStmtNext < lpSISCur->lpForStmtNext;
-             lpForStmtNext++)
-        {
-            // We're done -- free the global in the token (if any)
-            FreeResultTkn (&lpForStmtNext->tkForArr);
-
-            // If this is :FORLCL, ...
-            if (lpForStmtNext->symForI.stFlags.Inuse)
-            {
-                // Free the value of the :IN var
-                FreeResultTkn (&lpForStmtNext->tkForI);
-
-                // Restore the original :IN var
-                *lpForStmtNext->tkForI.tkData.tkSym = lpForStmtNext->symForI;
-            } // End IF
-        } // End FOR
 
         // Strip the level from the stack
         lpMemPTD->lpSISNxt = lpMemPTD->lpSISCur;

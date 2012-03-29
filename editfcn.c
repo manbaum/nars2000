@@ -2701,6 +2701,8 @@ LRESULT WINAPI LclEditCtrlWndProc
 ////////////ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
 
 #ifdef DEBUG_WM_CHAR
+            ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
+            ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
             dprintfWL0 (L"WM_CHAR:      CharCode = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
                          wchCharCode,
                          wchCharCode,

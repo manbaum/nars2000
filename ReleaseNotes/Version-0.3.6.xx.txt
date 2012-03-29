@@ -1,6 +1,21 @@
 Version 0.3.6.xx consists of the following Builds:
 
 
+Build #964 -- Version 0.3.6.xx
+------------------------------
+
+* Fix Bug In :FORLCL
+
+Directory trunk:
+
+EDITFCN.C:
+  When DEBUG_WM_CHAR is defined, two vars are mistakenly uninitialized.
+
+EXECDFN.C:
+  In <UnlocalizeSTEs>, fix bug in :FORLCL where the FORLCL STE is
+    mistakenly handled after stripping the function STEs instead of before.
+
+
 Build #963 -- Version 0.3.6.xx
 ------------------------------
 

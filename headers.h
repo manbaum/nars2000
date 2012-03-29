@@ -86,7 +86,6 @@
 #undef  mpfr_init_set_d     //   so we must implement then ourselves as fns.
 #undef  mpfr_init_set_z
 #undef  mpfr_init_set_q
-#undef  mpfr_init_set_f
 #define mpfr_init0(a)   mpfr_init_set_ui (a, 0, MPFR_RNDN)
 
 #ifndef __ATTR_SAL

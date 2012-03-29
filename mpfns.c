@@ -1199,23 +1199,6 @@ void mpfr_init_set_q
 
 
 //***************************************************************************
-//  $mpfr_init_set_f
-//
-//  Save a MPF value as a Variable FP
-//***************************************************************************
-
-void mpfr_init_set_f
-    (mpfr_ptr   dest,
-     mpf_ptr    val,
-     mpfr_rnd_t rnd)
-
-{
-    mpfr_init (dest);       // OK not to be mpfr_init0
-    mpfr_set_f (dest, val, rnd);
-} // End mpfr_init_set_f
-
-
-//***************************************************************************
 //  $mpfr_set_sx
 //
 //  Save an APLINT value as a Variable FP

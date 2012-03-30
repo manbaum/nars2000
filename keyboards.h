@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,8 +101,10 @@ typedef struct tagCHARCODE
 ////      sca ;     // 111:  Shift- Ctrl- Alt-keys pressed
 } CHARCODE, *LPCHARCODE;
 
+#define NUM_KEYS    (0x56 + 1)
+
 EXTERN
-CHARCODE aCharCodesNARS_US_EN_ALT[0x4E + 1]
+CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
 #ifdef DEFINE_VALUES
 =                                                                                 // ScanCode
 {{  0 },                                                                          // 00:  DO NOT USE
@@ -189,9 +191,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[0x4E + 1]
  {  0 },                                                                          // 4C:  Center ???
  {  0 },                                                                          // 4D:  Right
  {L'+', UTF16_DOMINO            , 0, 0, L'+', UTF16_DOMINO            , 0, 0},    // 4E:  PadPlus
-
 //  U    A                        C  AC   S   SA                       SC  SCA
-/***************** Control And Other Non-character Keys ***********
  {  0 },                                                                          // 4F:  End
  {  0 },                                                                          // 50:  Down
  {  0 },                                                                          // 51:  PageDown
@@ -199,7 +199,8 @@ CHARCODE aCharCodesNARS_US_EN_ALT[0x4E + 1]
  {  0 },                                                                          // 53:  Delete
  {  0 },                                                                          // 54:  SysReq
  {  0 },                                                                          // 55:
- {  0 },                                                                          // 56:
+ {  0 },                                                                          // 56:  Extra key for 102-keyboard between Lshift and Z
+/***************** Control And Other Non-character Keys ***********
  {  0 },                                                                          // 57:  F11
  {  0 },                                                                          // 58:  F12
  {  0 },                                                                          // 59:
@@ -217,7 +218,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[0x4E + 1]
 }
 #endif
 ,
-         aCharCodesNARS_US_EN_CTL[0x4E + 1]
+         aCharCodesNARS_US_EN_CTL[NUM_KEYS]
 #ifdef DEFINE_VALUES
 =                                                                                 // ScanCode
 {{  0 },                                                                          // 00:  DO NOT USE
@@ -303,9 +304,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[0x4E + 1]
  {  0 },                                                                          // 4C:  Center ???
  {  0 },                                                                          // 4D:  Right
  {L'+', 0, UTF16_DOMINO            , 0, L'+', 0, UTF16_DOMINO            , 0},    // 4E:  PadPlus
-
 //  U   A  C                        AC    S  SA  SC                       SCA
-/***************** Control And Other Non-character Keys ***********
  {  0 },                                                                          // 4F:  End
  {  0 },                                                                          // 50:  Down
  {  0 },                                                                          // 51:  PageDown
@@ -313,7 +312,117 @@ CHARCODE aCharCodesNARS_US_EN_ALT[0x4E + 1]
  {  0 },                                                                          // 53:  Delete
  {  0 },                                                                          // 54:  SysReq
  {  0 },                                                                          // 55:
- {  0 },                                                                          // 56:
+ {  0 },                                                                          // 56:  Extra key for 102-keyboard between Lshift and Z
+/***************** Control And Other Non-character Keys ***********
+ {  0 },                                                                          // 57:  F11
+ {  0 },                                                                          // 58:  F12
+ {  0 },                                                                          // 59:
+ {  0 },                                                                          // 5A:
+ {  0 },                                                                          // 5B:  Left Windows Logo
+ {  0 },                                                                          // 5C:  Right Windows Logo
+ {  0 },                                                                          // 5D:  Application
+ {  0 },                                                                          // 5E:  Power Event
+ {  0 },                                                                          // 5F:  Sleep Event
+ {  0 },                                                                          // 60:  DO NOT USE
+ {  0 },                                                                          // 61:  DO NOT USE
+ {  0 },                                                                          // 62:
+ {  0 },                                                                          // 63:  Wake Event
+*******************************************************************/
+}
+#endif
+,
+         aCharCodesNARS_DK_CTL[NUM_KEYS]
+#ifdef DEFINE_VALUES
+=                                                                                 // ScanCode
+//  U       A       C       AC      S       SA      SC      SCA
+{{  0 },                                                                          // 00:  DO NOT USE
+ {  0 },                                                                          // 01:  ESC
+ { 0x0031, 0     , 0x00A8, 0     , 0x0021, 0     , 0x2261, 0      },              // 02:  '1'
+ { 0x0032, 0     , 0x00AF, 0     , 0x0022, 0x0040, 0x236B, 0      },              // 03:  '2'
+ { 0x0033, 0     , 0x003C, 0     , 0x0023, 0x00A3, 0x2352, 0      },              // 04:  '3'
+ { 0x0034, 0     , 0x2264, 0     , 0x00A4, 0x0024, 0x234B, 0      },              // 05:  '4'
+ { 0x0035, 0     , 0x003D, 0     , 0x0025, 0     , 0x233D, 0      },              // 06:  '5'
+ { 0x0036, 0     , 0x2265, 0     , 0x0026, 0     , 0x2349, 0      },              // 07:  '6'
+ { 0x0037, 0     , 0x003E, 0     , 0x002F, 0x007B, 0x2296, 0      },              // 08:  '7'
+ { 0x0038, 0     , 0x2260, 0     , 0x0028, 0x005B, 0x235F, 0      },              // 09:  '8'
+ { 0x0039, 0     , 0x2228, 0     , 0x0029, 0x005D, 0x2371, 0      },              // 0A:  '9'
+ { 0x0030, 0     , 0x2227, 0     , 0x003D, 0x007D, 0x2372, 0      },              // 0B:  '0'
+ { 0x002B, 0     , 0x00D7, 0     , 0x003F, 0     , 0x0021, 0      },              // 0C:  '-'
+ { 0x00B4, 0     , 0x00F7, 0     , 0x0060, 0x007C, 0x2339, 0      },              // 0D:  '='
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 0E:  BS
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 0F:  HT
+ { 0x0071, 0     , 0x003F, 0     , 0x0051, 0     , 0     , 0      },              // 10:  'q'
+ { 0x0077, 0     , 0x2375, 0     , 0x0057, 0     , 0     , 0      },              // 11:  'w'
+ { 0x0065, 0     , 0x220A, 0     , 0x0045, 0x20AC, 0x2377, 0      },              // 12:  'e'
+ { 0x0072, 0     , 0x2374, 0     , 0x0052, 0     , 0x221A, 0      },              // 13:  'r'
+ { 0x0074, 0     , 0x223C, 0     , 0x0054, 0     , 0x2368, 0      },              // 14:  't'
+ { 0x0079, 0     , 0x2191, 0     , 0x0059, 0     , 0     , 0      },              // 15:  'y'
+ { 0x0075, 0     , 0x2193, 0     , 0x0055, 0     , 0     , 0      },              // 16:  'u'
+ { 0x0069, 0     , 0x2373, 0     , 0x0049, 0     , 0x2378, 0      },              // 17:  'i'
+ { 0x006F, 0     , 0x25CB, 0     , 0x004F, 0     , 0x2365, 0      },              // 18:  'o'
+ { 0x0070, 0     , 0x002A, 0     , 0x0050, 0     , 0x2363, 0      },              // 19:  'p'
+ { 0x00E5, 0     , 0x2190, 0     , 0x00C5, 0     , 0x235E, 0      },              // 1A:  '['
+ { 0x00A8, 0     , 0x2192, 0     , 0x005E, 0x007E, 0x236C, 0      },              // 1B:  ']'
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 1C:  CR
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 1D:  LCTL & RCTL
+ { 0x0061, 0     , 0x237A, 0     , 0x0041, 0     , 0     , 0      },              // 1E:  'a'
+ { 0x0073, 0     , 0x2308, 0     , 0x0053, 0     , 0x00A7, 0      },              // 1F:  's'
+ { 0x0064, 0     , 0x230A, 0     , 0x0044, 0     , 0     , 0      },              // 20:  'd'
+ { 0x0066, 0     , 0x005F, 0     , 0x0046, 0     , 0     , 0      },              // 21:  'f'
+ { 0x0067, 0     , 0x2207, 0     , 0x0047, 0     , 0x2362, 0      },              // 22:  'g'
+ { 0x0068, 0     , 0x2206, 0     , 0x0048, 0     , 0x2359, 0      },              // 23:  'h'
+ { 0x006A, 0     , 0x2218, 0     , 0x004A, 0     , 0x2364, 0      },              // 24:  'j'
+ { 0x006B, 0     , 0x0027, 0     , 0x004B, 0     , 0     , 0      },              // 25:  'k'
+ { 0x006C, 0     , 0x2395, 0     , 0x004C, 0     , 0x2337, 0      },              // 26:  'l'
+ { 0x00E6, 0     , 0x234E, 0     , 0x00C6, 0     , 0     , 0      },              // 27:  ';'
+ { 0x00F8, 0     , 0x2355, 0     , 0x00D8, 0     , 0x2262, 0      },              // 28:  '''
+ { 0x00A7, 0     , 0x22C4, 0     , 0x00BD, 0     , 0x236A, 0      },              // 29:  '`'
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 2A:  LSHIFT
+ { 0x0027, 0     , 0x22A2, 0     , 0x002A, 0     , 0x22A3, 0      },              // 2B:  '\'
+ { 0x007A, 0     , 0x2282, 0     , 0x005A, 0     , 0x2286, 0      },              // 2C:  'z'
+ { 0x0078, 0     , 0x2283, 0     , 0x0058, 0     , 0x2287, 0      },              // 2D:  'x'
+ { 0x0063, 0     , 0x2229, 0     , 0x0043, 0     , 0     , 0      },              // 2E:  'c'
+ { 0x0076, 0     , 0x222A, 0     , 0x0056, 0     , 0     , 0      },              // 2F:  'v'
+ { 0x0062, 0     , 0x22A5, 0     , 0x0042, 0     , 0     , 0      },              // 30:  'b'
+ { 0x006E, 0     , 0x22A4, 0     , 0x004E, 0     , 0x2361, 0      },              // 31:  'n'
+ { 0x006D, 0     , 0x2223, 0     , 0x004D, 0x00B5, 0x236D, 0      },              // 32:  'm'
+ { 0x002C, 0     , 0x235D, 0     , 0x003B, 0     , 0x2377, 0      },              // 33:  ','
+ { 0x002E, 0     , 0x2340, 0     , 0x003A, 0     , 0x2359, 0      },              // 34:  '.'
+ { 0x002D, 0     , 0x00AF, 0     , 0x005F, 0     , 0x2368, 0      },              // 35:  '/' & PadSlash
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 36:  RSHIFT
+ { 0x002A, 0     , 0x235F, 0     , 0x002A, 0     , 0x235F, 0      },              // 37:  PadStar & PrintScreen
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 38:  LALT & RALT
+ { 0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020 },              // 39:  Space
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 3A:  CapsLock
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 3B:  F1
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 3C:  F2
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 3D:  F3
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 3E:  F4
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 3F:  F5
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 40:  F6
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 41:  F7
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 42:  F8
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 43:  F9
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 44:  F10
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 45:  NumLock & Pause
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 46:  ScrollLock
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 47:  Home
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 48:  Up
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 49:  PageUp
+ { 0x002D, 0     , 0x00D7, 0     , 0x002D, 0     , 0x00D7, 0      },              // 4A:  PadMinus
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 4B:  Left
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 4C:  Center ???
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 4D:  Right
+ { 0x002B, 0     , 0x2339, 0     , 0x002B, 0     , 0x2339, 0      },              // 4E:  PadPlus
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 4F:  End
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 50:  Down
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 51:  PageDown
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 52:  Insert
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 53:  Delete
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 54:  SysReq
+ { 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0      },              // 55:
+ { 0x003C, 0     , 0x233F, 0     , 0x003E, 0x005C, 0x2340, 0      },              // 56:  Extra key for 102-keyboard between Lshift and Z
+/***************** Control And Other Non-character Keys ***********
  {  0 },                                                                          // 57:  F11
  {  0 },                                                                          // 58:  F12
  {  0 },                                                                          // 59:
@@ -366,12 +475,14 @@ typedef struct tagKEYBLAYOUTS_BI
 #define KEYBLAYOUT_PRE_UK       L"NARS2000-UK Extended"
 #define KEYBLAYOUT_PRE_US       L"NARS2000-US English"
 #define KEYBLAYOUT_PRE_INTL     L"NARS2000-US International"
+#define KEYBLAYOUT_PRE_DK       L"NARS2000-DK 101 Extended"
 #define KEYBLAYOUT_UK_ALT       KEYBLAYOUT_PRE_UK   L" (Alt)"
 #define KEYBLAYOUT_US_ALT       KEYBLAYOUT_PRE_US   L" (Alt)"
 #define KEYBLAYOUT_INTL_ALT     KEYBLAYOUT_PRE_INTL L" (Alt)"
 #define KEYBLAYOUT_UK_CTL       KEYBLAYOUT_PRE_UK   L" (Ctl)"
 #define KEYBLAYOUT_US_CTL       KEYBLAYOUT_PRE_US   L" (Ctl)"
 #define KEYBLAYOUT_INTL_CTL     KEYBLAYOUT_PRE_INTL L" (Ctl)"
+#define KEYBLAYOUT_DK_CTL       KEYBLAYOUT_PRE_DK   L" (Ctl)"
 
 EXTERN
 KEYBLAYOUTS_BI aKeybLayoutsBI[]
@@ -384,6 +495,7 @@ KEYBLAYOUTS_BI aKeybLayoutsBI[]
     {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_UK_CTL   , 2, TRUE , FALSE, FALSE, FALSE},
     {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_US_CTL   , 1, FALSE, FALSE, FALSE, FALSE},
     {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_INTL_CTL , 2, FALSE, FALSE, FALSE, FALSE},
+    {aCharCodesNARS_DK_CTL   , countof (aCharCodesNARS_DK_CTL),    KEYBLAYOUT_DK_CTL   , 2, TRUE , FALSE, FALSE, FALSE},
 }
 #endif
 ;

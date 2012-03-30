@@ -39,6 +39,7 @@
 //   to <aSymbolNames> in <symbolnames.h>.
 
 // No keystroke equivalents for these as yet
+#define UTF16_EURO               0x20AC         // Euro
 #define UTF16_DIERESISDOT        0x2235         //
 #define UTF16_IBEAM              0x2336         //
 #define UTF16_QUADJOT            0x233B         //
@@ -195,7 +196,7 @@
 // Non-Alt key equivalents
 #define UTF16_JOTDOT             0x0001         // Pseudo-symbol for {jot}{dot} digraph
 #define UTF16_DOUBLEQUOTE        0x0022         // Double quote
-#define UTF16_POUND              0x0023         // Pound
+#define UTF16_NUMBER             0x0023         // Number
 #define UTF16_DOLLAR             0x0024         // Dollar
 #define UTF16_PERCENT            0x0025         // Percent
 #define UTF16_AMPERSAND          0x0026         // Ampersand
@@ -221,7 +222,20 @@
 #define UTF16_STILE2             0x007C         // Stile (a.k.a. 0x2223)
 #define UTF16_RIGHTBRACE         0x007D         // Right brace
 #define UTF16_TILDE2             0x007E         // Tilde (a.k.a. 0x223C)
+#define UTF16_POUND              0x00A3         // Pound
+#define UTF16_CURRENCY           0x00A4         // Currency
 #define UTF16_COPYRIGHT          0x00A9         // Copyright
+#define UTF16_ACUTE              0x00B4         // Acute accent
+#define UTF16_MICRO              0x00B5         // Micro
+#define UTF16_ONE_FOURTH         0x00BC         // One fourth
+#define UTF16_ONE_HALF           0x00BD         // One half
+#define UTF16_THREE_FOURTH       0x00BE         // Three fourth
+#define UTF16_CAP_A_RING         0x00C5         // Capital A w/ring
+#define UTF16_CAP_AE             0x00C6         // Capital AE
+#define UTF16_CAP_O_STROKE       0x00D8         // Capital O w/stroke
+#define UTF16_LOW_A_RING         0x00E5         // Lower   a w/ring
+#define UTF16_LOW_AE             0x00E6         // Lower   ae
+#define UTF16_LOW_O_STROKE       0x00F8         // Lower   o w/stroke
 #define UTF16_STILE              0x2223         // Stile
 
 #define UTF16_A_                 0xE036         // A underbar
@@ -255,6 +269,7 @@
 // The corresponding wide string constants
 
 // No keystroke equivalents for these as yet
+#define WS_UTF16_EURO               L"\x20AC"   // Euro
 #define WS_UTF16_DIERESISDOT        L"\x2235"   //
 #define WS_UTF16_IBEAM              L"\x2336"   //
 #define WS_UTF16_QUADJOT            L"\x233B"   //
@@ -409,7 +424,7 @@
 // Non-Alt key equivalents
 #define WS_UTF16_JOTDOT             L"\x0001"   // Pseudo-symbol for {jot}{dot} digraph
 #define WS_UTF16_DOUBLEQUOTE        L"\x0022"   // Double quote
-#define WS_UTF16_POUND              L"\x0023"   // Pound
+#define WS_UTF16_NUMBER             L"\x0023"   // Number
 #define WS_UTF16_DOLLAR             L"\x0024"   // Dollar
 #define WS_UTF16_PERCENT            L"\x0025"   // Percent
 #define WS_UTF16_AMPERSAND          L"\x0026"   // Ampersand
@@ -435,7 +450,20 @@
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. \x2223)
 #define WS_UTF16_RIGHTBRACE         L"\x007D"   // Right brace
 #define WS_UTF16_TILDE2             L"\x007E"   // Tilde (a.k.a. \x223C)
+#define WS_UTF16_POUND              L"\x00A3"   // Pound
+#define WS_UTF16_CURRENCY           L"\x00A4"   // Currency
 #define WS_UTF16_COPYRIGHT          L"\x00A9"   // Copyright
+#define WS_UTF16_ACUTE              L"\x00B4"   // Acute accent
+#define WS_UTF16_MICRO              L"\x00B5"   // Micro
+#define WS_UTF16_ONE_FOURTH         L"\x00BC"   // One fourth
+#define WS_UTF16_ONE_HALF           L"\x00BD"   // One half
+#define WS_UTF16_THREE_FOURTH       L"\x00BE"   // Three fourth
+#define WS_UTF16_CAP_A_RING         L"\x00C5"   // Capital A w/ring
+#define WS_UTF16_CAP_AE             L"\x00C6"   // Capital AE
+#define WS_UTF16_CAP_O_STROKE       L"\x00D8"   // Capital O w/stroke
+#define WS_UTF16_LOW_A_RING         L"\x00E5"   // Lower   A w/ring
+#define WS_UTF16_LOW_AE             L"\x00E6"   // Lower   ae
+#define WS_UTF16_LOW_O_STROKE       L"\x00F8"   // Lower   o w/stroke
 #define WS_UTF16_STILE              L"\x2223"   // Stile
 
 #define WS_UTF16_A_                 L"\xE036"   // A underbar

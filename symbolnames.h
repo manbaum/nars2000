@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -281,7 +281,7 @@ SYMBOLNAMES aSymbolNames[]
 
 // Non-Alt key equivalents (these are the only ones we need for SaveWS)
   {UTF16_DOUBLEQUOTE          , L"{doublequote}"        },  // 0022:  Double quote
-  {UTF16_POUND                , L"{pound}"              },  // 0023:  Pound
+  {UTF16_NUMBER               , L"{number}"             },  // 0023:  Number
   {UTF16_STAR                 , L"{star}"               },  // 002A:  Star
   {UTF16_STAR                 , L"{power}"              },  // ...
   {UTF16_COMMA                , L"{comma}"              },  // 002C:  Comma

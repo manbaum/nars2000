@@ -112,7 +112,7 @@ typedef enum tagMFO
 #define $GRADEUP        WS_UTF16_DELTASTILE
 #define $GDN            WS_UTF16_DELSTILE
 #define $GUP            WS_UTF16_DELTASTILE
-#define $HASH           WS_UTF16_POUND
+#define $HASH           WS_UTF16_NUMBER
 #define $IOTA           WS_UTF16_IOTA
 #define $IOTAUND        WS_UTF16_IOTAUNDERBAR
 #define $IS             WS_UTF16_LEFTARROW
@@ -136,8 +136,8 @@ typedef enum tagMFO
 #define $NEG            WS_UTF16_OVERBAR
 #define $NOTEQUAL       WS_UTF16_NOTEQUAL
 #define $OR             WS_UTF16_DOWNCARET
-#define $PARENT         WS_UTF16_POUND WS_UTF16_POUND
-#define $POUND          WS_UTF16_POUND
+#define $PARENT         WS_UTF16_NUMBER WS_UTF16_NUMBER
+#define $NUMBER         WS_UTF16_NUMBER
 #define $PSUBSET        WS_UTF16_LEFTSHOE
 #define $PSUPERSET      WS_UTF16_RIGHTSHOE
 #define $QUAD           WS_UTF16_QUAD

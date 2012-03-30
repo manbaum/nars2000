@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -136,7 +136,7 @@ UINT aKKC_IDC_END[]
 UINT aKKC_SC_R0[] = {0x29, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D};
 UINT aKKC_SC_R1[] = {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x2B};
 UINT aKKC_SC_R2[] = {0x1E, 0x1F, 0x20 ,0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2B};
-UINT aKKC_SC_R3[] = {0x38, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35};
+UINT aKKC_SC_R3[] = {0x56, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35};
 
 typedef struct tagKKC_SC
 {
@@ -147,10 +147,10 @@ typedef struct tagKKC_SC
 // Array of Keyboard Keycap scancodes one for each row
 //   along with their length
 KKC_SC aKKC_SC[]
- = {{aKKC_SC_R0, 13},
-    {aKKC_SC_R1, 13},
-    {aKKC_SC_R2, 12},
-    {aKKC_SC_R3, 11},
+ = {{aKKC_SC_R0, countof (aKKC_SC_R0)},
+    {aKKC_SC_R1, countof (aKKC_SC_R1)},
+    {aKKC_SC_R2, countof (aKKC_SC_R2)},
+    {aKKC_SC_R3, countof (aKKC_SC_R3)},
    };
 
 // Array of beginning IDs for each TabCtrl row
@@ -1332,7 +1332,19 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                         // Register a tooltip for the Keyboard Layout Combobox
                         SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
+#ifdef DEBUG
+                        // Add a tooltip for each of the keycaps
+                        for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+                        for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
+                        {
+                            tti.uId    = (INT_PTR) (GetDlgItem (hWndProp, uCol));
+                            tti.lParam = uCol;
+                            SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
+                        } // End FOR/FOR
 
+                        // Mark as not using tti.lParam
+                        tti.lParam = 0;
+#else
                         // Add a Tooltip for the special Keycaps
                         tti.uId      = (INT_PTR) (hWndKeycapC = GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'c', KS_NONE))));
                         SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
@@ -1352,7 +1364,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
                         tti.uId      = (INT_PTR) (hWndKeycapQ = GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'q', KS_NONE))));
                         SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
-
+#endif
                         break;
                     } // End IDD_PROPPAGE_KEYBS
 
@@ -2201,6 +2213,7 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Return the a ptr to the text to the caller
                         lpttt->lpszText = L"A checkmark indicates the Active layout\nA diamond indicates a built-in (Read-only) layout";
                     else
+#ifndef DEBUG
                     // Check to see if this is our Keycap letter C
                     if (idCtl EQ (INT_PTR) hWndKeycapC)
                     {
@@ -2273,7 +2286,24 @@ APLU3264 CALLBACK CustomizeDlgProc
                          && lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseSEQ)
                             lpttt->lpszText = L"Reserved for system use; click on \"No keyboard shortcuts for Function Editing commands\" to change";
                     } else
+#endif
                     {
+#ifdef DEBUG
+                        // Check to see if this is one of our Keycaps
+                        if (lpttt->lParam)
+                        {
+                            // Find the row and col of the ID in lpttt->lParam
+                            for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+                            for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
+                            if (lpttt->lParam EQ uCol)
+                            {
+                                wsprintfW (TooltipText, L"Scan code 0x%02X", aKKC_SC[uCnt].aSC[uCol - aKKC_IDC_BEG[uCnt]]);
+                                lpttt->lpszText = TooltipText;
+
+                                return FALSE;
+                            } // End FOR/FOR/IF
+                        } // End IF
+#endif
                         // In case we used TTF_IDISHWND when adding the Tooltip, get the Ctrl ID
                         idCtl = GetDlgCtrlID ((HWND) idCtl);
 

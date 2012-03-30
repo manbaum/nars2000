@@ -5061,7 +5061,7 @@ TKCOLINDICES CharTransTK
         case UTF16_RIGHTBRACE:          //     '}' - right brace
             return TKCOL_RIGHTBRACE;
 
-        case UTF16_POUND:               //     '#' - system namespace
+        case UTF16_NUMBER:              //     '#' - system namespace
             // Get ptr to next symbol
             lpwNxt = &lptkLocalVars->lpwszCur[1];
 

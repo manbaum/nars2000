@@ -51,8 +51,10 @@ Downloads</h1>
   <h2 id="Latest_File_Releases">Latest File Releases</h2>
 
   <p>There are several types of files available for downloading:
-    <b>NARS2000.zip</b>, <b>NARS2000.map</b>, <b>Release Notes</b>, and
-    <b>Special Files</b>.  The <b>.zip</b> files contain everything you
+    <b>NARS2000-<i>version</i>.exe</b> (or the earlier format files
+    <b>NARS2000-<i>version</i>.zip</b>), <b>NARS2000-<i>version</i>.map</b>,
+    <b>Release Notes</b>, and <b>Special Files</b>.  The <b>.exe</b> (or earlier
+    format <b>.zip</b>) files contain everything you
     need to run the program and are the recommended downloads for end
     users.  The <b>.map</b> files contain debugging information and are used
     by developers.  The <b>Release Notes</b> contain information about the
@@ -64,12 +66,19 @@ Downloads</h1>
     <li><p>Download the latest version (marked <b>Recommended</b>) and save it
       in your choice of directory (preferably its own).</p></li>
 
-    <li><p>Unzip the contents of the file into the same (or a different) directory.
-      This step unzips several files, including a <b>.exe</b> (the executable)
-      and a <b>.ttf</b> (the APL font).</p></li>
+    <li><p>This file consists of a small setup program which contains the program file
+      (<b>NARS2000.exe</b>), an APL font file (<b>SImPL-Medium.ttf</b>), and a license
+      agreement (<b>LICENSE</b>).</p></li>
 
-    <li><p>If you are running under Vista or Win7 (but not WinXP), either run the executable
-      (NARS2000.exe) the first time (and only the first time) as Administrator
+    <li><p>Run the setup program (<b>NARS2000-<i>version</i>.exe</b>) and enter a directory where you'd
+      like to save the contents, or unzip the earlier format file (<b>NARS2000-<i>version</i>.zip</b>)
+      into a directory of your choice.</p></li>
+
+    <li><p>The program executable (<b>NARS2000.exe</b>) and the font file must be in the
+      same directory for the first (and only the first) time you run the program executable.</p></li>
+
+    <li><p>If you are running under Vista or Win7 (but not WinXP), either run the program executable
+      the first time (and only the first time) as Administrator
       so as to have the proper privileges to install a font under program
       control, or install the font manually.  More specifically,</p>
 
@@ -104,7 +113,7 @@ Downloads</h1>
           privacy issues, etc., I'd prefer that if you are interested in being
           notified when a new version is released that you sign up with a (free)
           service that does this such as the one linked to on the right of this
-          section (for new releases) and/or the main page (for new features).</p>
+          section (for new <b>releases</b>) and/or the main page (for new <b>features</b>).</p>
       </td>
 
       <td valign="top">
@@ -196,8 +205,16 @@ Downloads</h1>
                 if (strncmp ($File, "Version-", 8) == 0)
                 {
                     $Pos  = strpos ($File, '-');
-                    $Files[] = "NARS2000" . substr ($File, $Pos, -3) . "zip";
-                    $Files[] = "NARS2000" . substr ($File, $Pos, -3) . "map";
+                    $FileName = "NARS2000" . substr ($File, $Pos, -3);
+
+                    // Append the appropriate file (.exe or .zip) to the list
+                    if (file_exists ($DirName . "w32/" . $FileName . "exe")
+                     || file_exists ($DirName . "w64/" . $FileName . "exe"))
+                        $Files[] = $FileName . "exe";
+                    else
+////////////////////if (file_exists ($DirName . "w32/" . $FileName . "zip"))
+                        $Files[] = $FileName . "zip";
+                    $Files[] = $FileName . "map";
                 } else
                     $Files[] = $File;
             } // End IF
@@ -253,7 +270,7 @@ Downloads</h1>
                .   "        <td>$Rel</td>\n"
                .   "        <td>$Date</td>\n"
                .   "        <td>$Ext</td>\n"
-               . (($Class == 'zip')
+               . (($Class == 'exe' || $Class == 'zip')
                ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$Rel</a></td>\n"
                :   "        <td class=\"notes\"></td>\n")
                . (($Is32 || $IsSpec)
@@ -332,7 +349,7 @@ var gIE = (navigator.appName == "Microsoft Internet Explorer");
         //   it for non-IE browsers.  On IE, the inner
         //   lines will be a little thicker than necessary,
         //   but if we allow border-collapse on IE then the
-        //   bottom line for zip-only display is missing.
+        //   bottom line for .exe- or .zip-only display is missing.
     var el = document.getElementById ('reltable');
         el.style.borderCollapse = 'collapse';
     } // End IF
@@ -341,7 +358,7 @@ var gIE = (navigator.appName == "Microsoft Internet Explorer");
 var gTableRow  = gIE ? 'block' : 'table-row';
 var gTableCell = gIE ? 'block' : 'table-cell';
 
-    // Start with just zip files displayed
+    // Start with just .exe and .zip files displayed
 var gAllFiles = false;
     document.getElementById ("IDtoggle").click ();
   -->

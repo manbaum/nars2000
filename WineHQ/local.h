@@ -52,9 +52,8 @@ extern int __cdecl dprintfWL9 (unsigned short *lpwszFmt,...);
 extern int gDbgLvl;
 #endif
 
-#define MP_RAT       int    // For APLRAT in "types.h"
-#define __mpf_struct int    // For APLVFP in "types.h"
-#define __mpfr_struct int   // For APLMPFR in "types.h"
+#define MP_RAT          int // For APLRAT in "types.h"
+#define __mpfr_struct   int // For APLVFP in "types.h"
 #include "enums.h"
 #include "defines.h"
 #define MP_INT          int

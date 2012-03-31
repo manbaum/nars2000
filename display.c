@@ -1814,7 +1814,7 @@ LPAPLCHAR FormatAplVfpFC
     // Check for negative
     bNeg = (lpRawFmt[0] EQ '-');
 
-    // Delete trailing zeros as <mpf_get_str> does
+    // Delete trailing zeros as <mpfr_get_str> does
     for (iRes = iLen - 1; iRes >= max (expptr + bNeg, 0); iRes--)
     if (lpRawFmt[iRes] EQ '0')
     {

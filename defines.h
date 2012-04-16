@@ -237,6 +237,8 @@
 #define LECWNDCLASS    L"ECClass"       // ...
 #define  CCWNDCLASS     "CCClass"       // Crash Control ...
 #define LCCWNDCLASS    L"CCClass"       // ...
+#define  PBWNDCLASS     "PBClass"       // Progress Bar Window class
+#define LPBWNDCLASS    L"PBClass"       // ...
 #define  FW_RBWNDCLASS  "FW_RBClass"    // Font Window in Rebar Ctrl ...
 #define LFW_RBWNDCLASS L"FW_RBClass"    // ...
 #define  LW_RBWNDCLASS  "LW_RBClass"    // Language Window in Rebar Ctrl ...
@@ -368,6 +370,10 @@ default:        \
 // Define offsets in PMWNDCLASS window extra bytes
 #define GWLPM_HWNDLB    0                                           // Window handle of Listbox
 #define GWLPM_EXTRA     GWLPM_HWNDLB   + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
+
+// Define offsets in PBWNDCLASS window extra bytes
+#define GWLPB_HGLB      0                                           // Window data global memory handle
+#define GWLPB_EXTRA     GWLPB_HGLB     + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
 // Define offsets in FW_RBWNDCLASS window extra bytes
 #define GWLFW_RB_EXTRA  0                                           // Total # extra bytes
@@ -598,6 +604,23 @@ default:        \
 // Define the following symbol iff comparison of two RATs is meant to be exact
 //   as opposed to sensitive to []CT.
 #define RAT_EXACT
+
+//***************************************************************************
+//  Progress Bar
+//***************************************************************************
+
+#if _WIN32_WINNT < 0x0600
+
+#define PBM_GETSTEP             (WM_USER+13)
+#define PBM_GETBKCOLOR          (WM_USER+14)
+#define PBM_GETBARCOLOR         (WM_USER+15)
+#define PBM_SETSTATE            (WM_USER+16) // wParam = PBST_[State] (NORMAL, ERROR, PAUSED)
+#define PBM_GETSTATE            (WM_USER+17)
+
+#define PBST_NORMAL             0x0001
+#define PBST_ERROR              0x0002
+#define PBST_PAUSED             0x0003
+#endif      // _WIN32_WINNT < 0x0600
 
 
 //***************************************************************************

@@ -106,6 +106,7 @@ char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.
      pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.",
      pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS ">.",
      pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS ">.",
+     pszNoRegPBWndClass[]   = "Unable to register window class <" PBWNDCLASS ">.",
      pszNoRegFW_RBWndClass[]= "Unable to register window class <" FW_RBWNDCLASS ">.",
      pszNoRegLW_RBWndClass[]= "Unable to register window class <" LW_RBWNDCLASS ">.";
 #ifdef DEBUG
@@ -2211,21 +2212,21 @@ LRESULT APIENTRY MFWndProc
             if (lpdis->CtlType NE ODT_TAB)
                 break;
 
-            // Split cases based upon the item action
-            switch (lpdis->itemAction)
-            {
-                case ODA_DRAWENTIRE:
-                    // Draw the tab
-                    DrawTab (lpdis->hDC,
-                             lpdis->itemID,
-                            &lpdis->rcItem);
-                    return TRUE;    // We processed this msg
+                // Split cases based upon the item action
+                switch (lpdis->itemAction)
+                {
+                    case ODA_DRAWENTIRE:
+                        // Draw the tab
+                        DrawTab (lpdis->hDC,
+                                 lpdis->itemID,
+                                &lpdis->rcItem);
+                        return TRUE;    // We processed this msg
 
 ////////////////case ODA_FOCUS:     // These actions don't appear to occur with
 ////////////////                    //   an owner-drawn Tab Ctrl
 ////////////////case ODA_SELECT:    // ...
 ////////////////    break;
-            } // End SWITCH
+                } // End SWITCH
 
             break;
         } // End WM_DRAWITEM
@@ -3806,6 +3807,27 @@ UBOOL InitApplication
     if (!RegisterClassExW (&wcw))
     {
         MB (pszNoRegLW_RBWndClass);
+        return FALSE;
+    } // End IF
+
+    // Fill in Progress Bar window class structure
+    wcw.style           = CS_DBLCLKS;
+    wcw.lpfnWndProc     = (WNDPROC) PBWndProc;
+    wcw.cbClsExtra      = 0;
+    wcw.cbWndExtra      = GWLPB_EXTRA;
+    wcw.hInstance       = _hInstance;
+    wcw.hIcon           =
+    wcw.hIconSm         = NULL;
+    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+    wcw.hbrBackground   = (HBRUSH) (COLOR_BTNFACE + 1);
+////wcw.lpszMenuName    =
+    wcw.lpszMenuName    = NULL;
+    wcw.lpszClassName   = LPBWNDCLASS;
+
+    // Register the Progress Bar Window window class
+    if (!RegisterClassExW (&wcw))
+    {
+        MB (pszNoRegPBWndClass);
         return FALSE;
     } // End IF
 

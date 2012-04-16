@@ -813,6 +813,10 @@
                 >
             </File>
             <File
+                RelativePath=".\progbar.c"
+                >
+            </File>
+            <File
                 RelativePath=".\qf_a.c"
                 >
             </File>

@@ -1078,38 +1078,42 @@ void SetTabTextState
 void FillTabBackground
     (HDC      hDC,
      LPRECT   lpRect,
-     COLORREF crbk)
+     COLORREF crTop,
+     COLORREF crBot)
 
 {
     HBRUSH   hBrush;
     int      i, nBands;
     RECT     rcBand;
     COLORREF crBand;
-    COLORREF rgbStart = DEF_SCN_WHITE;          // White at the Bottom
     float    fRStep, fGStep, fBStep;
 
     // Calculate the # bands
     nBands = lpRect->bottom - lpRect->top;
 
-    fRStep = ((float) (GetRValue (rgbStart) - GetRValue (crbk))) / (float) nBands;
-    fGStep = ((float) (GetGValue (rgbStart) - GetGValue (crbk))) / (float) nBands;
-    fBStep = ((float) (GetBValue (rgbStart) - GetBValue (crbk))) / (float) nBands;
+    fRStep = ((float) (GetRValue (crBot) - GetRValue (crTop))) / (float) nBands;
+    fGStep = ((float) (GetGValue (crBot) - GetGValue (crTop))) / (float) nBands;
+    fBStep = ((float) (GetBValue (crBot) - GetBValue (crTop))) / (float) nBands;
 
+    // Fill the rectangle with one band
+    SetRect (&rcBand,
+              lpRect->left,
+              nBands + lpRect->top - 1,
+              lpRect->right + 1,
+              nBands + lpRect->top);
     // Loop through all bands
     for (i = 0; i < nBands; i++)
     {
-        // Fill the rectangle with one band
-        SetRect (&rcBand,
-                  lpRect->left,
-                  (nBands - i) + lpRect->top,
-                  lpRect->right + 1,
-                  (nBands - i) + lpRect->top + 1);
-        crBand = RGB ((int) (((float) GetRValue (rgbStart)) - fRStep * i),
-                      (int) (((float) GetGValue (rgbStart)) - fGStep * i),
-                      (int) (((float) GetBValue (rgbStart)) - fBStep * i));
+        crBand = RGB ((int) (((float) GetRValue (crBot)) - fRStep * i),
+                      (int) (((float) GetGValue (crBot)) - fGStep * i),
+                      (int) (((float) GetBValue (crBot)) - fBStep * i));
         hBrush = MyCreateSolidBrush (crBand);
         FillRect (hDC, &rcBand, hBrush);
         MyDeleteObject (hBrush); hBrush = NULL;
+
+        // Back off by one band
+        rcBand.top--;
+        rcBand.bottom--;
     } // End FOR
 } // End FillTabBackground
 
@@ -1265,7 +1269,7 @@ void DrawTab
     AdjustTabRect (lpRect, iCurTab, FALSE);
 
     // Fill the background of the tab
-    FillTabBackground (hDCMem, lpRect, crbk);
+    FillTabBackground (hDCMem, lpRect, crbk, DEF_SCN_WHITE);
 
     // Draw transparently so the background shows through
     SetBkMode (hDCMem, TRANSPARENT);

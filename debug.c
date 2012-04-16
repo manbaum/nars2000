@@ -1026,19 +1026,21 @@ void DbgClr
 
 #ifdef DEBUG
 //***************************************************************************
-//  $dprintf
+//  $oprintfW
 //
-//  Display a debug message a la printf
+//  Display a message a la printfW to ODS
 //***************************************************************************
 
-int dprintf
-    (LPCHAR lpszFmt,
+int oprintfW
+    (LPWCHAR lpwszFmt,
      ...)
 
 {
     va_list vl;
     int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
-    char    szTemp[1024];
+    char     szTemp[1024];
+    WCHAR   wszTemp[1024];
+
 
     // We hope that no one calls us with more than
     //   eight arguments.
@@ -1046,7 +1048,7 @@ int dprintf
     //   as using va_arg in the argument list to
     //   wsprintf pushes the arguments in reverse
     //   order.
-    va_start (vl, lpszFmt);
+    va_start (vl, lpwszFmt);
 
     i1 = va_arg (vl, int);
     i2 = va_arg (vl, int);
@@ -1059,13 +1061,14 @@ int dprintf
 
     va_end (vl);
 
-    iRet = sprintf (szTemp,
-                    lpszFmt,
-                    i1, i2, i3, i4, i5, i6, i7, i8);
-    DbgMsg (szTemp);
+    iRet = wsprintfW (wszTemp,
+                      lpwszFmt,
+                      i1, i2, i3, i4, i5, i6, i7, i8);
+    W2A (szTemp, wszTemp, sizeof (szTemp) - 1);
+    ODS (szTemp);
 
     return iRet;
-} // End dprintf
+} // End oprintfW
 #endif
 
 

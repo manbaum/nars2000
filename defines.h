@@ -333,6 +333,7 @@ default:        \
   #define DBGLEAVE
 
   #define APPEND_NAME_ARG
+  #define oprintfW
 #endif
 
 

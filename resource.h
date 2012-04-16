@@ -165,6 +165,7 @@
 #define IDC_VERACTION                            803
 #define IDC_FILEVER                              804
 #define IDC_LOADEDFROM                           805
+#define IDC_VERSION2                             806
 
 #define IDC_APPLY                                810
 #define IDC_CUST_LB                              811

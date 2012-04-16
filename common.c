@@ -364,8 +364,7 @@ void GetModuleFileNames
     WCHAR wszDir  [_MAX_DIR],
           wszDrive[_MAX_DRIVE],
           wszFname[_MAX_FNAME],
-          wszExt  [_MAX_EXT],
-          wszComctl32FileVer[64];           // Comctl32.dll file version string
+          wszExt  [_MAX_EXT];
 
     if (GetModuleFileNameW (hInstance, wszAppDPFE, sizeof (wszAppDPFE)))
     {

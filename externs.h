@@ -358,6 +358,7 @@ WCHAR wszAppDPFE [_MAX_PATH],           // .EXE drive, path, filename.ext
       wszHlpDPFE [_MAX_PATH],           // .HLP ...
       wszFntDPFE [_MAX_PATH],           // APL font file ...
       wszLoadFile[_MAX_PATH],           // Save area for initial workspace to load
+      wszComctl32FileVer[64],           // Comctl32.dll file version string
       wszFileVer[64];                   // File version string
 
 EXTERN

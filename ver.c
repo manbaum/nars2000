@@ -29,7 +29,7 @@
 
 
 WCHAR wszVarFileInfo[] = WS_SLOPE L"VarFileInfo" WS_SLOPE L"Translation",
-      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L")" WS_LF L"Version %s";
+      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L") # %s";
 
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
@@ -153,6 +153,33 @@ APLU3264 CALLBACK AboutDlgProc
             // Write out the version string
             SetDlgItemTextW (hDlg, IDC_VERSION, wszTemp);
 
+            // Copy the MPIR prefix to the text
+            lstrcpyW (wszTemp, L"MPIR #");
+
+            // Append the MPIR version #
+            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", mpir_version);
+
+            // Copy the GMP prefix to the text
+            lstrcatW (wszTemp, L"GMP #");
+
+            // Append the GMP version #
+            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", gmp_version);
+
+            // Copy the MPFR prefix to the text
+            lstrcatW (wszTemp, L"MPFR #");
+
+            // Append the MPFR version #
+            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", mpfr_get_version ());
+
+            // Copy the COMCTL32.DLL prefix to the text
+            lstrcatW (wszTemp, L"COMCTL32.DLL #");
+
+            // Append the COMCTL32.DLL version #
+            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", wszComctl32FileVer);
+
+            // Write out the secondary version string
+            SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);
+
             CenterWindow (hDlg);    // Reposition the window to the center of the screen
 
             // Get the IDC_LINK window handle
@@ -173,24 +200,6 @@ APLU3264 CALLBACK AboutDlgProc
 
                 // Append the source DPFE
                 lstrcatW (wszLclAppDPFE, wszAppDPFE);
-
-                // Copy the MPIR prefix to the text
-                lstrcatW (wszLclAppDPFE, L" -- MPIR #");
-
-                // Append the MPIR version #
-                wsprintfW (&wszLclAppDPFE[lstrlenW (wszLclAppDPFE)], L"%S", mpir_version);
-
-                // Copy the GMP prefix to the text
-                lstrcatW (wszLclAppDPFE, L" -- GMP #");
-
-                // Append the GMP version #
-                wsprintfW (&wszLclAppDPFE[lstrlenW (wszLclAppDPFE)], L"%S", gmp_version);
-
-                // Copy the MPFR prefix to the text
-                lstrcatW (wszLclAppDPFE, L" -- MPFR #");
-
-                // Append the MPFR version #
-                wsprintfW (&wszLclAppDPFE[lstrlenW (wszLclAppDPFE)], L"%S", mpfr_get_version ());
 #undef  TT_PREFIX
             } // End IF
 
@@ -211,7 +220,7 @@ APLU3264 CALLBACK AboutDlgProc
                           TTM_ADDTOOLW,
                           0,
                           (LPARAM) (LPTOOLINFOW) &tti);
-            return DLG_MSGDEFFOCUS; // Use the focus in wParam
+            return DLG_MSGDEFFOCUS; // Use the focus in wParam, DWLP_MSGRESULT is ignored
         } // End WM_INITDIALOG
 
         case WM_CTLCOLORSTATIC:     // hdc = (HDC) wParam;   // Handle of display context
@@ -246,7 +255,7 @@ APLU3264 CALLBACK AboutDlgProc
                 SelectObject (hDC, hFont);
 
                 // Return handle of brush for background, DWLP_MSGRESULT is ignored
-                return (APLU3264) (HANDLE_PTR) CreateSolidBrush (GetSysColor (COLOR_BTNFACE));
+                return (APLU3264) (HANDLE_PTR) GetSysColorBrush (COLOR_BTNFACE);
             } else
                 break;
 #undef  hWnd

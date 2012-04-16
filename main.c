@@ -1686,6 +1686,10 @@ LRESULT APIENTRY MFWndProc
                 // Skip over the Rebar Ctrl
                 rc.top += uHeightRB;
 
+                // Adjust the rectangle top to overcome a bug in Wine's handling of Tab Ctrls
+                rc.top--;
+                rc.top--;
+
                 // Size the tab control
                 DeferWindowPos (hdwp,           // Handle to internal structure
                                 hWndTC,         // Handle of window to position
@@ -2207,11 +2211,9 @@ LRESULT APIENTRY MFWndProc
 #define lpdis   (*(LPDRAWITEMSTRUCT *) &lParam)
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // control identifier
                                     // lpdis = (LPDRAWITEMSTRUCT) lParam; // item-drawing information
-        {
             // Ensure this message is for our tab control
-            if (lpdis->CtlType NE ODT_TAB)
-                break;
-
+            if (lpdis->CtlType EQ ODT_TAB)
+            {
                 // Split cases based upon the item action
                 switch (lpdis->itemAction)
                 {
@@ -2222,14 +2224,14 @@ LRESULT APIENTRY MFWndProc
                                 &lpdis->rcItem);
                         return TRUE;    // We processed this msg
 
-////////////////case ODA_FOCUS:     // These actions don't appear to occur with
-////////////////                    //   an owner-drawn Tab Ctrl
-////////////////case ODA_SELECT:    // ...
-////////////////    break;
+////////////////////case ODA_FOCUS:     // These actions don't appear to occur with
+////////////////////                    //   an owner-drawn Tab Ctrl
+////////////////////case ODA_SELECT:    // ...
+////////////////////    break;
                 } // End SWITCH
+            } // End IF
 
             break;
-        } // End WM_DRAWITEM
 #undef  lpdis
 
 ////////case WM_HELP:
@@ -2477,6 +2479,23 @@ LRESULT APIENTRY MFWndProc
                     WinHelpW (hWnd, wszHlpDPFE, HELP_INDEX, 0);
 
                     return FALSE;       // We handled the msg
+
+                case IDM_TUTORIALS:
+                    // Fill in the URL
+#define wszTemp     L"http://aplwiki.com/PrimersAndTutorials"
+
+                    // In case we need COM, ...
+                    CoInitializeEx (NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+                    // Ask the system to load the web page
+                    ShellExecuteW (hWnd,            // Parent window handle
+                                   NULL,            // Operation (NULL = use default verb)
+                                   wszTemp,         // The file to "open"
+                                   NULL,            // Parameters
+                                   NULL,            // Ptr to directory
+                                   SW_SHOWNORMAL);  // Show command
+                    return FALSE;       // We handled the msg
+#undef  wszTemp
 
                 case IDM_ABOUT:
                     DialogBoxW (_hInstance,

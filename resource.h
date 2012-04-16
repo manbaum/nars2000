@@ -93,8 +93,9 @@
 #define IDM_CHILDWINDOW                          304
 
 #define IDM_HELP_CONTENTS                        400
-#define IDM_ABOUT                                401
-#define IDM_UPDATES                              402
+#define IDM_UPDATES                              401
+#define IDM_TUTORIALS                            402
+#define IDM_ABOUT                                403
 
 #define IDM_NEW_WS                               500
 #define IDM_DUP_WS                               501

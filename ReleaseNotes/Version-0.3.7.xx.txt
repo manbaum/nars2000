@@ -1,6 +1,17 @@
 Version 0.3.7.xx consists of the following Builds:
 
 
+Build #972 -- Version 0.3.7.xx
+------------------------------
+
+* Eliminate Duplicate Tooltips
+
+Directory trunk:
+
+REBAR.C:
+  Eliminate duplicate tooltips.
+
+
 Build #971 -- Version 0.3.7.xx
 ------------------------------
 

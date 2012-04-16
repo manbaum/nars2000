@@ -441,7 +441,6 @@ HWND MakeWorkspaceWindow
                      | CCS_NOPARENTALIGN    // ...
 
                      | TBSTYLE_ALTDRAG
-                     | TBSTYLE_TOOLTIPS
                      | TBSTYLE_WRAPABLE
                        ,
                        0, 0,                // X- and Y-coord
@@ -631,7 +630,6 @@ HWND MakeEditWindow
                      | CCS_NOPARENTALIGN    // ...
 
                      | TBSTYLE_ALTDRAG
-                     | TBSTYLE_TOOLTIPS
                      | TBSTYLE_WRAPABLE
                        ,
                        0, 0,                // X- and Y-coord
@@ -821,7 +819,6 @@ HWND MakeObjectsWindow
                      | CCS_NOPARENTALIGN    // ...
 
                      | TBSTYLE_ALTDRAG
-                     | TBSTYLE_TOOLTIPS
                      | TBSTYLE_WRAPABLE
                        ,
                        0, 0,                // X- and Y-coord

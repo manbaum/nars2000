@@ -242,8 +242,6 @@ void CalcClientRectMC
      UBOOL  bGetRect)           // TRUE iff we should fill in lprc
 
 {
-    int rcLeft, rcRight, rcBottom;
-
     // If we should fill in the rectangle, ...
     if (bGetRect)
         // Get the size and position of the parent window.
@@ -251,16 +249,7 @@ void CalcClientRectMC
 
     // Calculate the display rectangle, assuming the
     //   tab control is the size of the client area.
-    // Because I don't like the look of the tab control border,
-    //   the following code saves and restores all but the
-    //   top border (where the tabs are).
-    rcLeft       = lprc->left;
-    rcRight      = lprc->right;
-    rcBottom     = lprc->bottom;
     TabCtrl_AdjustRect (hWndTC, FALSE, lprc);
-    lprc->left   = rcLeft;
-    lprc->right  = rcRight;
-    lprc->bottom = rcBottom;
 } // End CalcClientRectMC
 
 

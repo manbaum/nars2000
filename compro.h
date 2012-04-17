@@ -193,6 +193,7 @@
   #include "tokenize.pro"
   #include "translate.pro"
   #include "typemote.pro"
+  #include "updates.pro"
   #include "ver.pro"
   #include "webcolors.pro"
   #include "yyfns.pro"

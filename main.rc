@@ -226,14 +226,27 @@ BEGIN
                               , IDC_LINK      , 10,115,170,  9, SS_NOTIFY
 END
 
-IDD_UPDATES DIALOGEX DISCARDABLE  0, 0, 236, 154
+IDD_UPDATES DIALOGEX DISCARDABLE  0, 0, 240, 110
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Check for Updates"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,121,131,50,14
-    LTEXT           "",IDC_VERACTION,3,39,225,27,SS_NOPREFIX
-    LTEXT           "As you can see, this is highly preliminary.",IDC_STATIC,3,72,225,8,SS_NOPREFIX
+    LTEXT           ""        , IDC_VERACTION  ,  5,  5,230, 27, SS_NOPREFIX
+    PUSHBUTTON      "Download and Run"
+                              , IDC_DNLRUN_BN  ,  5, 35, 70, 14, BS_PUSHBUTTON
+                                                               | BS_CENTER
+                                                               | BS_VCENTER
+                                                               | BS_TEXT
+                                                               | WS_DISABLED
+    LTEXT           ""        , IDC_DNL_LT     , 85, 37,150, 14
+    CHECKBOX        "Delete file after download and run?"
+                              , IDC_DNL_XB     ,  5, 55,230, 10
+    CONTROL         ""        , IDC_DNL_PB     , PBWNDCLASS    , WS_BORDER
+                                               ,  5, 70,210, 10
+    RTEXT           ""        , IDC_DNLPCT_LT  ,218, 71, 20,  8
+    DEFPUSHBUTTON   "Exit"    , IDOK           , 40, 90, 50, 14
+    PUSHBUTTON      "Pause"   , IDC_DNLPAUSE_BN, 95, 90, 50, 14, WS_DISABLED
+    PUSHBUTTON      "Cancel"  , IDCANCEL       ,150, 90, 50, 14, WS_DISABLED
 END
 
 #define CD_CX       394
@@ -868,12 +881,16 @@ BEGIN
                     IDC_USER_PREFS_XB_REVDBLCLK          , 10,156,200, 10
     AUTOCHECKBOX    "Default is to display function line numbers",
                     IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , 10,169,200, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,182, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,182, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
                     IDC_STATIC                           ,100,182,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,198, 80,100,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,198, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
                     IDC_STATIC                           ,100,198,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,214, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Frequency of check for new updates",
+                    IDC_STATIC                           ,100,214,160, 10
 END
 
 

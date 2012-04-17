@@ -1952,6 +1952,85 @@ typedef WCHAR (*LPWSZLIBDIRS)[_MAX_PATH];   // Ptr to LibDirs
 
 
 //***************************************************************************
+//  Update Check & Frequency
+//***************************************************************************
+
+// Define prototype for structs in .pro files
+typedef struct tagDNLDLGSTR *LPDNLDLGSTR;   // Dummy entry for .pro files only
+typedef struct tagDNLTHRSTR *LPDNLTHRSTR;   // ...
+
+EXTERN
+HWND ghDlgUpdates               // Window handle for Updates dialog (NULL = not active)
+#ifdef DEFINE_VALUES
+ = NULL
+#endif
+;
+
+#define TIMER_UPDCHK        1
+
+#define UPDFRQ_NEVER        L"Never"
+#define UPDFRQ_DAILY        L"Daily"
+#define UPDFRQ_WEEKLY       L"Weekly"
+#define UPDFRQ_MONTHLY      L"Monthly"
+#define UPDFRQ_QUARTERLY    L"Quarterly"
+
+typedef enum tagENUM_UPDFRQ
+{
+    ENUM_UPDFRQ_NEVER = 0,      // 00:  Never check
+    ENUM_UPDFRQ_DAILY    ,      // 01:  Daily ...
+    ENUM_UPDFRQ_WEEKLY   ,      // 02:  Weekly ...
+    ENUM_UPDFRQ_MONTHLY  ,      // 03:  Monthly ...
+    ENUM_UPDFRQ_QUARTERLY,      // 04:  Quarterly ...
+} ENUM_UPDFRQ, *LPENUM_UPDFRQ;
+
+typedef struct tagUPDFRQ
+{
+    LPWCHAR lpwsz;              // Ptr to text string
+    APLUINT aplElap;            // Corresponding elapsed time in 100ns
+} UPDFRQ, *LPUPDFRQ;
+
+EXTERN
+UPDFRQ updFrq[5]
+#ifdef DEFINE_VALUES
+//                     Mo  Day  Hrs  Min  Sec  milli  micro 100nano
+ = {{UPDFRQ_NEVER    ,                                        0LL},
+    {UPDFRQ_DAILY    ,          24LL*60LL*60LL*1000LL*1000LL*10LL},
+    {UPDFRQ_WEEKLY   ,      7LL*24LL*60LL*60LL*1000LL*1000LL*10LL},
+    {UPDFRQ_MONTHLY  ,     30LL*24LL*60LL*60LL*1000LL*1000LL*10LL},
+    {UPDFRQ_QUARTERLY, 3LL*30LL*24LL*60LL*60LL*1000LL*1000LL*10LL},
+   }
+#endif
+;
+
+#define DEF_UPDFRQ_STR  UPDFRQ_MONTHLY
+#define DEF_UPDFRQ_NDX  ENUM_UPDFRQ_MONTHLY
+
+EXTERN
+WCHAR gszUpdFrq[16]
+#ifdef DEFINE_VALUES
+= {DEF_UPDFRQ_STR}
+#endif
+;
+
+EXTERN
+UINT guUpdFrq
+#ifdef DEFINE_VALUES
+= DEF_UPDFRQ_NDX
+#endif
+;
+
+#define DEF_UPDCHK      L"0/0/0"
+#define FMTSTR_UPDCHK   L"%u/%u/%u"
+
+EXTERN
+SYSTEMTIME gstUpdChk
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
+
+
+//***************************************************************************
 //  Native File Function data structs
 //***************************************************************************
 

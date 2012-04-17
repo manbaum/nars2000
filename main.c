@@ -26,10 +26,6 @@
 #define OEMRESOURCE         // To get OBM_CHECK define
 #include <windows.h>
 #include <windowsx.h>
-//#include <multimon.h>   // Multiple monitor support
-#include <wininet.h>
-#include <stdio.h>
-#include <math.h>
 
 #define DEFINE_VARS
 #define DEFINE_VALUES
@@ -64,12 +60,6 @@ typedef struct tagENUMPASSMSG
     WPARAM wParam;
     LPARAM lParam;
 } ENUMPASSMSG, *LPENUMPASSMSG;
-
-typedef struct tagUPDATESDLGSTR
-{
-    LPWCHAR lpFileVer,          // Ptr to file version string
-            lpWebVer;           // Ptr to web  ...
-} UPDATESDLGSTR, *LPUPDATESDLGSTR;
 
 int  nMinState,                         // Minimized state as per WinMain
      iScrollSize;                       // Width of a vertical scrollbar
@@ -1593,7 +1583,51 @@ LRESULT APIENTRY MFWndProc
             CreateNewFontVE (TRUE);
             CreateNewFontME (TRUE);
 
+            // If we're to check for updates, ...
+            if (guUpdFrq NE ENUM_UPDFRQ_NEVER)
+            {
+                SYSTEMTIME stCur;
+                FILETIME   ftCur,
+                           ftUpdChk;
+                APLUINT    aplCur,
+                           aplUpdChk;
+                USPLIT     uSplit;
+
+                // Get the current system date
+                GetSystemDate (&stCur);
+
+                // Convert the SYSTEMTIMEs to FILETIMEs
+                SystemTimeToFileTime (&stCur,     &ftCur);
+                SystemTimeToFileTime (&gstUpdChk, &ftUpdChk);
+
+                // Convert the FILETIMEs to 64-bit integers
+                uSplit.lo = ftCur.dwLowDateTime;
+                uSplit.hi = ftCur.dwHighDateTime;
+                aplCur    = uSplit.aplInt;
+
+                uSplit.lo = ftUpdChk.dwLowDateTime;
+                uSplit.hi = ftUpdChk.dwHighDateTime;
+                aplUpdChk = uSplit.aplInt;
+
+                // Izit time to check for updates?
+                if (gstUpdChk.wYear EQ 0
+                 || aplCur >= (aplUpdChk + updFrq[guUpdFrq].aplElap))
+                    // Post a message to do the check
+                    PostMessageW (hWnd, WM_TIMER, TIMER_UPDCHK, 0);
+                else
+                    // Start the timer
+                    SetUpdChkTimer ();
+            } // End IF
+
             break;                  // Continue with next handler
+
+        case WM_TIMER:                      // wTimerID = wParam            // Timer identifier
+                                            // tmpc = (TIMERPROC *) lParam  // Ptr to timer callback
+            if (wParam EQ TIMER_UPDCHK)
+                // Check for updates, but don't display the dialog unless there's a new version
+                CheckForUpdates (FALSE, FALSE);
+
+            return FALSE;           // We handled the msg
 
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
@@ -2506,7 +2540,8 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_UPDATES:
                     // See if we have the latest version
-                    CheckForUpdates ();
+                    CheckForUpdates (TRUE,
+                                     GetKeyState (VK_CONTROL) & BIT15);
 
                     return FALSE;       // We handled the msg
 
@@ -2960,6 +2995,17 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;
             } // End IF
 
+            // If the Updates dialog box is still active, ...
+            if (ghDlgUpdates)
+            {
+                // Ask 'em to close
+                SendMessageW (ghDlgUpdates, WM_CLOSE, 0, 0);
+
+                // If the Updates dialog box is still active, ...
+                if (ghDlgUpdates)
+                    return FALSE;
+            } // End IF
+
             // Save .ini file variables
             SaveIniFile ();
 
@@ -2988,6 +3034,10 @@ LRESULT APIENTRY MFWndProc
             if (ghDlgCustomize)
                 // Destroy it
                 DestroyWindow (ghDlgCustomize);
+            // If the Updates dialog box is still active, ...
+            if (ghDlgUpdates)
+                // Destroy it
+                DestroyWindow (ghDlgUpdates);
             // If the Keyboard Layout global memory is present, ...
             if (hGlbKeybLayouts)
             {
@@ -3335,257 +3385,6 @@ UBOOL IzitDB
     return (lstrcmpW (wszClassName, LDBWNDCLASS) EQ 0);
 } // End IzitDB
 #endif
-
-
-//***************************************************************************
-//  $CheckForUpdates
-//
-//  See if we have the latest version
-//***************************************************************************
-
-void CheckForUpdates
-    (void)
-
-{
-    HINTERNET hNetOpen    = NULL,
-              hNetConnect = NULL,
-              hNetRequest = NULL;
-    char      szTemp[64];
-    WCHAR     wszTemp[64];
-    UINT      uNumBytes;
-
-    // Get the file "nars2000.ver" from http://www.NARS2000.ORG/download/binaries/
-
-    // Make the connection
-    hNetOpen =
-      InternetOpenW (L"NARS2000",                           // Ptr to User Agent
-                     PRE_CONFIG_INTERNET_ACCESS,            // Access type
-                     NULL,                                  // Ptr to proxy name (may be NULL)
-                     NULL,                                  // Ptr to proxy bypass (may be NULL)
-                     0);                                    // Flags
-    if (!hNetOpen)
-        goto ERROR_EXIT;
-
-    // Connect to the server
-    hNetConnect =
-      InternetConnectW (hNetOpen,                           // Open handle
-                        L"www.nars2000.org",                // Ptr to server name
-                        INTERNET_DEFAULT_HTTP_PORT,         // Server port
-                        L"guest",                           // Ptr to username
-                        L"guest",                           // Ptr to password
-                        INTERNET_SERVICE_HTTP,              // Type of service access
-                        0,                                  // Optional flags
-                        0);                                 // Context value
-    if (!hNetConnect)       // ***FIXME** -- Display error message
-    {
-        wsprintfW (lpwszGlbTemp,
-                   L"InternetConnect failed with error code %d (%08X)",
-                   GetLastError (),
-                   GetLastError ());
-        MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
-
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Make a request
-    hNetRequest =
-      HttpOpenRequestW (hNetConnect,
-                        NULL,                               // "GET"
-                        L"/download/binaries/nars2000.ver", // Ptr to /path/filename
-                        NULL,                               // HTTP 1.1
-                        NULL,                               // No referrer
-                        NULL,                               // No ACCEPT types
-                        0
-                      | INTERNET_FLAG_NO_CACHE_WRITE        // Does not add the returned entity to the cache
-                      | INTERNET_FLAG_PRAGMA_NOCACHE        // Forces the request to be resolved by the origin server,
-                                                            //   even if a cached copy exists on the proxy.
-                      | INTERNET_FLAG_RELOAD,               // Forces a download of the requested file, object, or directory
-                                                            //   listing from the origin server, not from the cache.
-                        0);                                 // Context value
-    if (!hNetRequest)
-    {
-        wsprintfW (lpwszGlbTemp,
-                   L"HttpOpenRequest failed with error code %d (%08X)",
-                   GetLastError (),
-                   GetLastError ());
-        MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
-
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Send the request
-    if (HttpSendRequestW (hNetRequest,                      // Request handle
-                          NULL,                             // Ptr to additional headers (may be NULL)
-                          0,                                // Size of additional headers
-                          NULL,                             // Ptr to optional data (may be NULL)
-                          0))                               // Size of optional data
-    {
-        // Read the file
-        if (InternetReadFile (hNetRequest,
-                              szTemp,
-                              sizeof (szTemp),
-                             &uNumBytes))
-        {
-            UPDATESDLGSTR updatesDlgStr;
-
-            // Ensure properly terminated
-            szTemp[uNumBytes] = WC_EOS;
-
-            // Convert the file contents to wide so we can compare it against the file version
-            A2W (wszTemp, szTemp, sizeof (szTemp) - uNumBytes);
-
-            // Save data in struc to pass to the dialog box
-            updatesDlgStr.lpFileVer = wszFileVer;
-            updatesDlgStr.lpWebVer  = wszTemp;
-
-            // Show the result in a dialog
-            DialogBoxParamW (_hInstance,
-                             MAKEINTRESOURCEW (IDD_UPDATES),
-                             hWndMF,
-                  (DLGPROC) &UpdatesDlgProc,
-                   (LPARAM) &updatesDlgStr);
-            goto NORMAL_EXIT;
-        } else
-        {
-            wsprintfW (lpwszGlbTemp,
-                       L"InternetReadFile failed with error code %d (%08X)",
-                       GetLastError (),
-                       GetLastError ());
-            MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
-
-            goto ERROR_EXIT;
-        } // End IF/ELSE
-    } else
-    {
-        wsprintfW (lpwszGlbTemp,
-                   L"HttpSendRequest failed with error code %d (%08X)",
-                   GetLastError (),
-                   GetLastError ());
-        MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
-
-        goto ERROR_EXIT;
-    } // End IF/ELSE
-ERROR_EXIT:
-NORMAL_EXIT:
-    if (hNetRequest)
-    {
-        InternetCloseHandle (hNetRequest); hNetRequest = NULL;
-    } // End IF
-
-    if (hNetConnect)
-    {
-        InternetCloseHandle (hNetConnect); hNetConnect = NULL;
-    } // End IF
-
-    if (hNetOpen)
-    {
-        InternetCloseHandle (hNetOpen); hNetOpen = NULL;
-    } // End IF
-} // End CheckForUpdates
-
-
-//***************************************************************************
-//  $UpdatesDlgProc
-//
-//  Dialog box to handle "Check For Updates"
-//***************************************************************************
-
-UBOOL CALLBACK UpdatesDlgProc
-    (HWND   hDlg,       // Window handle
-     UINT   message,    // Type of message
-     WPARAM wParam,     // Additional information
-     LPARAM lParam)     // ...
-
-{
-    static HFONT hFont = NULL;
-
-    // Split cases
-    switch (message)
-    {
-        case WM_INITDIALOG:
-        {
-            WCHAR     wszTemp[512],
-                     *lpwStr;
-            UINT      uWebVer[4],
-                      uFilVer[4];
-            ULONGLONG ulWebVer,
-                      ulFilVer;
-
-#define lpUpdatesDlgStr     ((LPUPDATESDLGSTR) lParam)
-            // Split apart the Web version information
-            sscanfW (lpUpdatesDlgStr->lpWebVer,
-                     L"%u.%u.%u.%u",
-                    &uWebVer[0],
-                    &uWebVer[1],
-                    &uWebVer[2],
-                    &uWebVer[3]);
-            // Split apart the File version information
-            sscanfW (lpUpdatesDlgStr->lpFileVer,
-                     L"%u.%u.%u.%u",
-                    &uFilVer[0],
-                    &uFilVer[1],
-                    &uFilVer[2],
-                    &uFilVer[3]);
-            // Combine the version info into a single number (note this limits us to three digits per field)
-            ulWebVer = (uWebVer[3] + 1000 * (uWebVer[2] + 1000 * (uWebVer[1] + 1000 * uWebVer[0])));
-            ulFilVer = (uFilVer[3] + 1000 * (uFilVer[2] + 1000 * (uFilVer[1] + 1000 * uFilVer[0])));
-
-            // Compare the two versions
-            if (ulFilVer < ulWebVer)    // New version is available for download
-                lpwStr = L"The version you are running (%s) is the older than the most current version (%s) on the website -- please download the latest version from ...";
-            else
-            if (ulFilVer EQ ulWebVer)   // Same version (nothing to do)
-                lpwStr = L"The version you are running (%s) is the same as the most current version (%s) on the website and there is no need to update your version.";
-            else                        // Actual version is later (must be running an unreleased version)
-                lpwStr = L"The version you are running (%s) is newer than the most current version (%s) on the website and there is no need to update your version.";
-
-            // Format the text
-            wsprintfW (wszTemp,
-                       lpwStr,
-                       lpUpdatesDlgStr->lpFileVer,
-                       lpUpdatesDlgStr->lpWebVer);
-#undef  lpUpdatesDlgStr
-
-            // Write out the file & web version strings
-            SetDlgItemTextW (hDlg, IDC_VERACTION, wszTemp);
-
-            CenterWindow (hDlg);    // Reposition the window to the center of the screen
-
-            return DLG_MSGDEFFOCUS; // Use the focus in wParam
-        } // End WM_INITDIALOG
-
-        case WM_CLOSE:
-            // If it's still around, delete the font we created
-            if (hFont)
-            {
-                MyDeleteObject (hFont); hFont = NULL;
-            } // End IF
-
-            EndDialog (hDlg, TRUE); // Quit this dialog
-
-            DlgMsgDone (hDlg);      // We handled the msg
-
-#define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
-#define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
-#define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
-        case WM_COMMAND:
-            // If the user pressed one of our buttons, ...
-            switch (idCtl)
-            {
-                case IDOK:
-                    PostMessageW (hDlg, WM_CLOSE, 0, 0);
-
-                    DlgMsgDone (hDlg);  // We handled the msg
-            } // End switch (wParam)
-
-            break;
-#undef  hwndCtl
-#undef  cmdCtl
-#undef  idCtl
-    } // End SWITCH
-
-    return FALSE;           // We didn't handle the msg
-} // End UpdatesDlgProc
 
 
 //***************************************************************************
@@ -4428,7 +4227,8 @@ int PASCAL WinMain
                  && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
                 {
                     // Check for DialogBox messages
-                    if (ghDlgCustomize EQ NULL || !IsDialogMessage (ghDlgCustomize, &Msg))
+                    if ((ghDlgCustomize EQ NULL || !IsDialogMessage (ghDlgCustomize, &Msg))
+                     && (ghDlgUpdates   EQ NULL || !IsDialogMessage (ghDlgUpdates  , &Msg)))
                     {
                         TranslateMessage (&Msg);
                         DispatchMessageW (&Msg);

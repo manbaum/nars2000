@@ -1065,6 +1065,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\updates.c"
+				>
+			</File>
+			<File
 				RelativePath=".\ver.c"
 				>
 			</File>

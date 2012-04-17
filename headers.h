@@ -29,6 +29,7 @@
 // Disable stack checking
 #pragma check_stack(off)
 
+#include <wininet.h>
 #include <float.h>
 #include <setjmp.h>
 #include <stdio.h>

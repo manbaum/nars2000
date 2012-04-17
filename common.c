@@ -678,5 +678,26 @@ int signumf
 
 
 //***************************************************************************
+//  $GetSystemDate
+//
+//  Fill in teh system date with the time set to zero
+//***************************************************************************
+
+void GetSystemDate
+    (LPSYSTEMTIME lpst)
+
+{
+    // Fill in the date & time
+    GetSystemTime (lpst);
+
+    // Zero the time
+    lpst->wHour         =
+    lpst->wMinute       =
+    lpst->wSecond       =
+    lpst->wMilliseconds = 0;
+} // End GetSystemDate
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

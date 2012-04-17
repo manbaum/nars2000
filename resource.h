@@ -317,6 +317,7 @@
 #define IDC_USER_PREFS_XB_INSSTATE              1111
 #define IDC_USER_PREFS_XB_REVDBLCLK             1112
 #define IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS    1113
+#define IDC_USER_PREFS_CB_UPDFRQ                1114
 
 #define IDC_SYNTCLR_LT1                         1400    // 00:  Global Name
 #define IDC_SYNTCLR_LT2                         1401    // 01:  Local  ...
@@ -967,6 +968,13 @@
 #define IDC_DIRS_BN_DEL                         5103
 #define IDC_DIRS_LT1                            5104
 #define IDC_DIRS_LT2                            5105
+
+#define IDC_DNLPCT_LT                           6000
+#define IDC_DNLRUN_BN                           6001
+#define IDC_DNLPAUSE_BN                         6002
+#define IDC_DNL_LT                              6003
+#define IDC_DNL_XB                              6004
+#define IDC_DNL_PB                              6005
 
 #define IDC_STATIC                                -1
 

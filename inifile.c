@@ -141,6 +141,8 @@
 #define KEYNAME_TOOLBAR_FW              L"SMFont"
 #define KEYNAME_TOOLBAR_LW              L"Language"
 
+#define KEYNAME_UPDFRQ                  L"UpdateFrequency"
+#define KEYNAME_UPDCHK                  L"UpdateCheck"
 
 // Format string for Keyboard Layout SCA Chars for each ScanCode
 #define FMTSTR_KEYBCHARS        L"%04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X"
@@ -1695,6 +1697,7 @@ void ReadIniFileWnd
 {
     RECT  rcDtop;           // Rectangle for desktop
     POINT PosCtr;           // x- and y- positions
+    WCHAR wszTemp[128];     // Temporary buffer
 
     // Read in the values from the [General] section
 
@@ -1736,11 +1739,44 @@ void ReadIniFileWnd
                              KEYNAME_SIZESTATE,     // Ptr to the key name
                              MFSizeState,           // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    // Read in the initial customize category
     gInitCustomizeCategory =
       GetPrivateProfileIntW (SECTNAME_GENERAL,      // Ptr to the section name
                              KEYNAME_INITIALCAT,    // Ptr to the key name
                              DEF_INIT_CATEGORY,     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    // Read in the update frequency
+    GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
+                              KEYNAME_UPDFRQ,       // Ptr to the key name
+                              DEF_UPDFRQ_STR,       // Ptr to the default value
+                              gszUpdFrq,            // Ptr to the output buffer
+                              countof (gszUpdFrq),  // Count of the output buffer
+                              lpwszIniFile);        // Ptr to the file name
+    // Save the corresponding index
+    for (guUpdFrq = 0; guUpdFrq < countof (updFrq); guUpdFrq++)
+    if (lstrcmpW (gszUpdFrq, updFrq[guUpdFrq].lpwsz) EQ 0)
+        break;
+    // Check for error
+    if (guUpdFrq EQ countof (updFrq))
+    {
+        // Use the defaults
+        lstrcpyW (gszUpdFrq, DEF_UPDFRQ_STR);
+        guUpdFrq = DEF_UPDFRQ_NDX;
+    } // End IF
+
+    // Read in the update check date
+    GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
+                              KEYNAME_UPDCHK,       // Ptr to the key name
+                              DEF_UPDCHK,           // Ptr to the default value
+                              wszTemp,              // Ptr to the output buffer
+                              countof (wszTemp),    // Count of the output buffer
+                              lpwszIniFile);        // Ptr to the file name
+    // Convert the date to SYSTEMTIME format
+    sscanfW (wszTemp,
+             FMTSTR_UPDCHK,
+            &gstUpdChk.wYear,
+            &gstUpdChk.wMonth,
+            &gstUpdChk.wDay);
 } // End ReadIniFileWnd
 
 
@@ -1861,6 +1897,22 @@ void SaveIniFile
     // Write out the initial category
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_INITIALCAT,         // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Write out the update frequency
+    WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
+                                KEYNAME_UPDFRQ,             // Ptr to the key name
+                                gszUpdFrq,                  // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Format the update check date
+    wsprintfW (wszTemp,
+               FMTSTR_UPDCHK,
+               gstUpdChk.wYear,
+               gstUpdChk.wMonth,
+               gstUpdChk.wDay);
+    // Write out the update check date
+    WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
+                                KEYNAME_UPDCHK,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
 

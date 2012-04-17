@@ -337,10 +337,10 @@ UBOOL ThemeLibLoaded = FALSE,       // TRUE iff the theme library successfully l
 //***************************************************************************
 //  $CustomizeDlgProc
 //
-//  Allow the user to customize the program
+//  Modeless dialog box to allow the user to customize the program
 //***************************************************************************
 
-APLU3264 CALLBACK CustomizeDlgProc
+INT_PTR CALLBACK CustomizeDlgProc
     (HWND   hWnd,       // Window handle
      UINT   message,    // Type of message
      WPARAM wParam,     // Additional information
@@ -1534,6 +1534,16 @@ APLU3264 CALLBACK CustomizeDlgProc
                         SendMessageW (hWndProp1, CB_SETCURSEL, unitransStr[OptionFlags.uDefaultPaste].IncTransPaste, 0);
                         SendMessageW (hWndProp2, CB_SETCURSEL, unitransStr[OptionFlags.uDefaultCopy ].IncTransCopy , 0);
 
+                        // Get the window handle for the Update Frequency combo box
+                        hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_UPDFRQ);
+
+                        // Populate the Update Frequency ComboBox
+                        for (uCnt = 0; uCnt < countof (updFrq); uCnt++)
+                            SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) updFrq[uCnt].lpwsz);
+
+                        // Set the current selection to the user preference value
+                        SendMessageW (hWndProp1, CB_SELECTSTRING, -1, (LPARAM) gszUpdFrq);
+
                         break;
 
                     defstop
@@ -1684,7 +1694,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 ////////////    // Nothing to do
             } // End IF/ELSE
 
-            return FALSE;           // We didn't handle the msg
+            break;                  // We didn't handle the msg
 #ifndef DEBUG
   #undef  lpmis
   #undef  idCtl
@@ -2178,7 +2188,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                 ThemedKeybs = (hThemeKeybs NE NULL);
             } // End IF
 
-            break;
+            // Return dialog result
+            DlgMsgDone (hDlg);              // We handled the msg
 
         case WM_NOTIFY:             // idCtl = (int) wParam;
         {                           // pnmh = (LPNMHDR) lParam;
@@ -2300,7 +2311,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                                 wsprintfW (TooltipText, L"Scan code 0x%02X", aKKC_SC[uCnt].aSC[uCol - aKKC_IDC_BEG[uCnt]]);
                                 lpttt->lpszText = TooltipText;
 
-                                return FALSE;
+                                // Return dialog result
+                                DlgMsgDone (hDlg);              // We handled the msg
                             } // End FOR/FOR/IF
                         } // End IF
 #endif
@@ -2416,7 +2428,8 @@ APLU3264 CALLBACK CustomizeDlgProc
 #ifndef DEBUG
   #undef  lpttt
 #endif
-                    return FALSE;
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
                 } // End TTN_GETDISPINFOW
 
                 //***************************************************************
@@ -2466,7 +2479,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // Highlight the current button
                     KeybHighlight (hWndProp, aKTC[uKeybTCNum].idLastHighlight);
 
-                    return FALSE;           // Allow the selection to change
+                    // Return dialog result
+                    DlgReturn (hDlg, FALSE);    // Allow the selection to change
                 } // End TCN_SELCHANGE
 
                 default:
@@ -2503,7 +2517,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // We're done here
                     DestroyWindow (hDlg);
 
-                    return FALSE;   // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);          // We handled the msg
 
                 case IDCANCEL:
                     // Complain if abandoning changes
@@ -2535,7 +2550,8 @@ APLU3264 CALLBACK CustomizeDlgProc
                     // We're done here
                     DestroyWindow (hDlg);
 
-                    return FALSE;   // We handled the msg
+                    // Return dialog result
+                    DlgMsgDone (hDlg);          // We handled the msg
 
                 case IDC_APPLY:
                 {
@@ -2986,6 +3002,15 @@ APLU3264 CALLBACK CustomizeDlgProc
                         // Get the current selection of the user preference value
                         OptionFlags.uDefaultPaste = unitransStr[SendMessageW (hWndProp1, CB_GETCURSEL, 0, 0)].OutTransPaste;
                         OptionFlags.uDefaultCopy  = unitransStr[SendMessageW (hWndProp2, CB_GETCURSEL, 0, 0)].OutTransCopy ;
+
+                        // Get the window handle for the Update Frequency combo box
+                        hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_UPDFRQ);
+
+                        // Get the current selection of the user preference value
+                        guUpdFrq = (UINT) SendMessageW (hWndProp1, CB_GETCURSEL, 0, 0);
+
+                        // Save the update frequency text string
+                        lstrcpyW (gszUpdFrq, updFrq[guUpdFrq].lpwsz);
                     } // End IF
 
                     // Disable the Apply button
@@ -4551,6 +4576,7 @@ APLU3264 CALLBACK CustomizeDlgProc
 
                 case IDC_USER_PREFS_CB_DEFAULTPASTE:
                 case IDC_USER_PREFS_CB_DEFAULTCOPY:
+                case IDC_USER_PREFS_CB_UPDFRQ:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)
                         // Enable the Apply button
@@ -4590,7 +4616,8 @@ APLU3264 CALLBACK CustomizeDlgProc
             // Enable the Apply button
             EnableWindow (hWndApply, TRUE);
 
-            break;
+            // Return dialog result
+            DlgMsgDone (hDlg);              // We handled the msg
 #undef  clrRef
 #undef  bFore
 #undef  uIndex
@@ -4710,10 +4737,12 @@ APLU3264 CALLBACK CustomizeDlgProc
             // Mark as no longer active
             ghDlgCustomize = NULL;
 
-            break;
+            // Return dialog result
+            DlgMsgDone (hDlg);          // We handled the msg
     } // End SWITCH
 
-    return FALSE;           // We didn't handle the msg
+    // Return dialog result
+    DlgMsgPass (hDlg);      // We didn't handle the msg
 } // End CustomizeDlgProc
 
 

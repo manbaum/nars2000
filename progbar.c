@@ -34,6 +34,7 @@ typedef struct tagPBWD
          uMinVal,       // Minimum value of the range
          uMaxVal,       // Maximum ...
          uStep;         // Step value
+    HWND hBuddy;        // Buddy window handle
 } PBWD, *LPPBWD;
 
 typedef struct tagCOLORBLEND
@@ -132,6 +133,7 @@ LRESULT APIENTRY PBWndProc
     UINT    uCurPos,    // Current position
             uState,     // ...     state
             uStep;      // ...     step
+    HWND    hBuddy;     // Buddy window handle
     DWORD   dwRange;    // Current range
 
 ////LCLODSAPI ("PB: ", hWnd, message, wParam, lParam);
@@ -155,6 +157,7 @@ LRESULT APIENTRY PBWndProc
             lpMemWD->uMinVal = 0;
             lpMemWD->uMaxVal = 100;
             lpMemWD->uStep   = 10;
+            lpMemWD->hBuddy  = NULL;
 
             // We no longer need this resource
             GlobalUnlock (hGlbWD); lpMemWD = NULL;
@@ -171,7 +174,7 @@ LRESULT APIENTRY PBWndProc
             // Lock the memory to get a ptr to it
             lpMemWD = GlobalLock (hGlbWD);
 
-            // Get the current step
+            // Return the current step
             uStep = lpMemWD->uState;
 
             // We no longer need this resource
@@ -186,10 +189,10 @@ LRESULT APIENTRY PBWndProc
             // Lock the memory to get a ptr to it
             lpMemWD = GlobalLock (hGlbWD);
 
-            // Save the old current step
+            // Return the old current step
             uStep = lpMemWD->uCurPos;
 
-            // Save the current step
+            // Save as the current step
             lpMemWD->uStep = (UINT) wParam;
 
             // We no longer need this resource
@@ -198,7 +201,7 @@ LRESULT APIENTRY PBWndProc
             // Redraw the window
             InvalidateRect (hWnd, NULL, FALSE);
 
-            return uStep;           // Return the previous current step
+            return uStep;           // Return the previous step
 
         case PBM_GETPOS:
             // Get the per-window data global memory handle
@@ -207,7 +210,7 @@ LRESULT APIENTRY PBWndProc
             // Lock the memory to get a ptr to it
             lpMemWD = GlobalLock (hGlbWD);
 
-            // Get the current position
+            // Return the current position
             uCurPos = lpMemWD->uCurPos;
 
             // We no longer need this resource
@@ -222,10 +225,10 @@ LRESULT APIENTRY PBWndProc
             // Lock the memory to get a ptr to it
             lpMemWD = GlobalLock (hGlbWD);
 
-            // Save the old current position
+            // Return the old current position
             uCurPos = lpMemWD->uCurPos;
 
-            // Save the current position
+            // Save as the current position
             lpMemWD->uCurPos = (UINT) wParam;
 
             // We no longer need this resource
@@ -234,7 +237,7 @@ LRESULT APIENTRY PBWndProc
             // Redraw the window
             InvalidateRect (hWnd, NULL, FALSE);
 
-            return uCurPos;         // Return the previous current position
+            return uCurPos;         // Return the previous position
 
         case PBM_GETSTATE:
             // Get the per-window data global memory handle
@@ -243,7 +246,7 @@ LRESULT APIENTRY PBWndProc
             // Lock the memory to get a ptr to it
             lpMemWD = GlobalLock (hGlbWD);
 
-            // Get the current state
+            // Return the current state
             uState = lpMemWD->uState;
 
             // We no longer need this resource
@@ -258,10 +261,10 @@ LRESULT APIENTRY PBWndProc
             // Lock the memory to get a ptr to it
             lpMemWD = GlobalLock (hGlbWD);
 
-            // Save the old current state
+            // Return the old current state
             uState = lpMemWD->uState;
 
-            // Save the current state
+            // Save as the current state
             lpMemWD->uState = (UINT) wParam;
 
             // We no longer need this resource
@@ -270,7 +273,40 @@ LRESULT APIENTRY PBWndProc
             // Redraw the window
             InvalidateRect (hWnd, NULL, FALSE);
 
-            return uState;          // Return the previous current state
+            return uState;          // Return the previous state
+
+        case PBM_GETBUDDY:
+            // Get the per-window data global memory handle
+            (HANDLE_PTR) hGlbWD = GetWindowLongPtrW (hWnd, GWLPB_HGLB);
+
+            // Lock the memory to get a ptr to it
+            lpMemWD = GlobalLock (hGlbWD);
+
+            // Return the current handle
+            hBuddy = lpMemWD->hBuddy;
+
+            // We no longer need this resource
+            GlobalUnlock (hGlbWD); lpMemWD = NULL;
+
+            return (LRESULT) hBuddy;    // Return the current buddy window handle
+
+        case PBM_SETBUDDY:          // hWnd = (HWND) wParam
+            // Get the per-window data global memory handle
+            (HANDLE_PTR) hGlbWD = GetWindowLongPtrW (hWnd, GWLPB_HGLB);
+
+            // Lock the memory to get a ptr to it
+            lpMemWD = GlobalLock (hGlbWD);
+
+            // Return the old current handle
+            hBuddy = lpMemWD->hBuddy;
+
+            // Save as the current buddy window handle
+            lpMemWD->hBuddy = (HWND) wParam;
+
+            // We no longer need this resource
+            GlobalUnlock (hGlbWD); lpMemWD = NULL;
+
+            return (LRESULT) hBuddy;    // Return the previous buddy window handle
 
         case PBM_SETRANGE32:        // uMinVal = (UINT) wParam;
                                     // uMaxVal = (UINT) lParam;
@@ -280,7 +316,7 @@ LRESULT APIENTRY PBWndProc
             // Lock the memory to get a ptr to it
             lpMemWD = GlobalLock (hGlbWD);
 
-            // Save the old current range
+            // Return the old current range
             dwRange = (DWORD) MAKELONG (lpMemWD->uMinVal, lpMemWD->uMaxVal);
 
             // Save the new range
@@ -372,6 +408,21 @@ LRESULT APIENTRY PBWndProc
                 // Fill in the right half of the PB
                 //   with a background brush
                 FillRect (ps.hdc, &rcUpdate, GetSysColorBrush (COLOR_BTNFACE));
+            } // End IF
+
+            // If there's a buddy window handle, ...
+            if (lpMemWD->hBuddy)
+            {
+                WCHAR wszTemp[8];
+
+                uCurPos = lpMemWD->uCurPos - lpMemWD->uMinVal;
+                uCurPos = (100 * uCurPos + 50) / lpMemWD->uMaxVal;
+
+                // Format the precentage
+                wsprintfW (wszTemp, L"%u%%", uCurPos);
+
+                // Send the new percentage to the buddy window
+                SetWindowTextW (lpMemWD->hBuddy, wszTemp);
             } // End IF
 
             // We no longer need this resource

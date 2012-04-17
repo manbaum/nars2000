@@ -625,6 +625,9 @@ typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files on
 #define PBST_PAUSED             0x0003
 #endif      // _WIN32_WINNT < 0x0600
 
+#define PBM_GETBUDDY            (WM_USER+18)
+#define PBM_SETBUDDY            (WM_USER+19)
+
 
 //***************************************************************************
 //  End of File: defines.h

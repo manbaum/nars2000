@@ -610,6 +610,8 @@ default:        \
 //  Progress Bar
 //***************************************************************************
 
+typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files only
+
 #if _WIN32_WINNT < 0x0600
 
 #define PBM_GETSTEP             (WM_USER+13)

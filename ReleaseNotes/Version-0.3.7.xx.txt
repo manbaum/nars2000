@@ -1,6 +1,20 @@
 Version 0.3.7.xx consists of the following Builds:
 
 
+Build #974 -- Version 0.3.7.xx
+------------------------------
+
+* Use Color Blending In Progress Bar
+
+Directory trunk:
+
+DEFINES.H:
+  Define struct prototype for use in .pro files.
+
+PROGBAR.C:
+  Use color blending in progress bar.
+
+
 Build #973 -- Version 0.3.7.xx
 ------------------------------
 

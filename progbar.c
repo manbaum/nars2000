@@ -36,6 +36,57 @@ typedef struct tagPBWD
          uStep;         // Step value
 } PBWD, *LPPBWD;
 
+typedef struct tagCOLORBLEND
+{
+    COLORREF topBlend[6],
+             topLine,
+             midBands[4],
+             botLine;
+} COLORBLEND, *LPCOLORBLEND;
+
+COLORBLEND pbGreen
+= {{RGB (214,248,211),      // topBlend[0]
+    RGB (198,255,199),      // ...     [1]
+    RGB (188,255,195),      // ...     [2]
+    RGB (182,238,191),      // ...     [3]
+    RGB (171,233,184),      // ...     [4]
+    RGB (139,249,160)},     // ...     [5]
+    RGB ( 17,199, 52),      // topLine
+   {RGB (  0,215, 32),      // midBands[0]
+    RGB (  0,216, 34),      // ...     [1]
+    RGB (  6,207, 43),      // ...     [2]
+    RGB (  5,207, 43)},     // ...     [3]
+    RGB ( 53,209, 73)       // botLine
+  },
+           pbRed
+= {{RGB (244,210,211),      // topBlend[0]
+    RGB (255,201,202),      // ...     [1]
+    RGB (255,188,185),      // ...     [2]
+    RGB (245,165,164),      // ...     [3]
+    RGB (244,166,162),      // ...     [4]
+    RGB (244,150,148)},     // ...     [5]
+    RGB (196,  6,  6),      // topLine
+   {RGB (219,  0,  0),      // midBands[0]
+    RGB (216,  0,  0),      // ...     [1]
+    RGB (206,  2,  3),      // ...     [2]
+    RGB (207,  1,  3)},     // ...     [3]
+    RGB (211, 19, 18)       // botLine
+  },
+           pbYellow
+= {{RGB (254,250,221),      // topBlend[0]
+    RGB (254,253,205),      // ...     [1]
+    RGB (254,253,189),      // ...     [2]
+    RGB (253,251,164),      // ...     [3]
+    RGB (255,252,139),      // ...     [4]
+    RGB (255,254,111)},     // ...     [5]
+    RGB (205,199, 27),      // topLine
+   {RGB (225,219,  7),      // midBands[0]
+    RGB (225,219,  8),      // ...     [1]
+    RGB (229,220, 12),      // ...     [2]
+    RGB (229,220, 16)},     // ...     [3]
+    RGB (243,235, 75)       // botLine
+  };
+
 
 //***************************************************************************
 //  $PB_Create
@@ -254,7 +305,7 @@ LRESULT APIENTRY PBWndProc
             RECT        rcUpdate,   // Update rectangle
                         rcClient;   // Client ...
             PAINTSTRUCT ps;         // Paint struct
-            COLORREF    crTop;      // Background color at the top
+            COLORBLEND  cbType;     // Background color blend
 
             // Get the update rectangle
             if (!GetUpdateRect (hWnd, &rcUpdate, FALSE))
@@ -283,20 +334,20 @@ LRESULT APIENTRY PBWndProc
                 {
                     case PBST_ERROR:
                         // Set the color
-                        crTop = DEF_SCN_RED;
+                        cbType = pbRed;
 
                         break;
 
                     case PBST_PAUSED:
                         // Set the color
-                        crTop = DEF_SCN_DARKGOLDENROD;
+                        cbType = pbYellow;
 
                         break;
 
                     case PBST_NORMAL:
                     default:
                         // Set the color
-                        crTop = DEF_SCN_GREEN;
+                        cbType = pbGreen;
 
                         break;
                 } // End SWITCH
@@ -310,17 +361,11 @@ LRESULT APIENTRY PBWndProc
                                + ((rcClient.right - rcClient.left)
                                 * (lpMemWD->uCurPos - lpMemWD->uMinVal))
                                  / (lpMemWD->uMaxVal - lpMemWD->uMinVal);
-                // Fill in the top left half of the PB
-                rcUpdate.bottom = (rcUpdate.bottom + rcUpdate.top) / 2;
-                FillTabBackground (ps.hdc, &rcUpdate, crTop        , DEF_SCN_WHITE);
-
-                // Fill in the bottom left half of the PB
-                rcUpdate.top    = rcUpdate.bottom;
-                rcUpdate.bottom = rcClient.bottom;
-                FillTabBackground (ps.hdc, &rcUpdate, DEF_SCN_WHITE, crTop        );
+                // Fill in the left half of the PB
+                //   with a color blend
+                FillProgressBarBackground (ps.hdc, &rcUpdate, &cbType);
 
                 // Make rectangle for right half of PB
-                rcUpdate.top   = rcClient.top;
                 rcUpdate.left  = rcUpdate.right;
                 rcUpdate.right = rcClient.right;
 
@@ -358,6 +403,79 @@ LRESULT APIENTRY PBWndProc
 ////LCLODSAPI ("PBZ:", hWnd, message, wParam, lParam);
     return DefWindowProcW (hWnd, message, wParam, lParam);
 } // End PBWndProc
+
+
+//***************************************************************************
+//  $FillProgressBarBackground
+//
+//  Fill in the Progress Bar background
+//***************************************************************************
+
+void FillProgressBarBackground
+    (HDC          hDC,      // DC handle
+     LPRECT       lpRect,   // Ptr to fill rectangle
+     LPCOLORBLEND lpcbType) // Ptr to color blend
+
+{
+    HBRUSH hBrush;          // Brush handle
+    int    i,               // Loop counter
+           nBands;          // # middle bands
+    RECT   rcBand;          // Band rectangle
+
+    // Fill the rectangle with one band
+    SetRect (&rcBand,
+              lpRect->left,
+              lpRect->top,
+              lpRect->right + 1,
+              lpRect->top + 1);
+    // Loop through the top blend bands
+    for (i = 0; i < countof (lpcbType->topBlend); i++)
+    {
+        hBrush = MyCreateSolidBrush (lpcbType->topBlend[i]);
+        FillRect (hDC, &rcBand, hBrush);
+        MyDeleteObject (hBrush); hBrush = NULL;
+
+        // Increment by one band
+        rcBand.top++;
+        rcBand.bottom++;
+    } // End FOR
+
+    // Fill in the top line
+    hBrush = MyCreateSolidBrush (lpcbType->topLine);
+    FillRect (hDC, &rcBand, hBrush);
+    MyDeleteObject (hBrush); hBrush = NULL;
+
+    // Increment by one band
+    rcBand.top++;
+    rcBand.bottom++;
+
+    // Calculate the # middle Light & Dark bands
+    nBands = (lpRect->bottom - lpRect->top)
+           - (countof (lpcbType->topBlend)
+            + 1                             // countof (lpcbType->topLine)
+            + 1);                           // countof (lpcbType->botLine)
+
+    // Loop through the middle Light & Dark bands
+    for (i = 0; i < nBands; i++)
+    {
+        hBrush = MyCreateSolidBrush (lpcbType->midBands[i % countof (lpcbType->midBands)]);
+        FillRect (hDC, &rcBand, hBrush);
+        MyDeleteObject (hBrush); hBrush = NULL;
+
+        // Increment by one band
+        rcBand.top++;
+        rcBand.bottom++;
+    } // End FOR
+
+    // Fill in the bottom line
+    hBrush = MyCreateSolidBrush (lpcbType->botLine);
+    FillRect (hDC, &rcBand, hBrush);
+    MyDeleteObject (hBrush); hBrush = NULL;
+
+////// Increment by one band
+////rcBand.top++;
+////rcBand.bottom++;
+} // End FillProgressBarBackground
 
 
 //***************************************************************************

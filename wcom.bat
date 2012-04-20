@@ -21,7 +21,7 @@ Set MAKEPRO=%NARSROOT%makepro.php
 REM Directory of SDK ("%ProgramFiles%\Microsoft SDKs\Windows\v7.1")
 Set SDK=U:^\
 
-REM MSVC compiler ("%ProgramFiles%\Microsoft Visual Studio 10.0")
+REM MSVC compiler ("%ProgramFiles%\Microsoft Visual Studio 9.0")
 Set MSVC=V:\VC^\
 
 Set VSINSTALLDIR=V:^\

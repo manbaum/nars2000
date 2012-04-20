@@ -1860,6 +1860,7 @@ void QFMT_CommonEFIR
     APLU3264     fsDig;                     // Precision for F-format, significant digits for E-format
     UBOOL        bContinue,                 // TRUE iff we're to continue with Symbol Substitution
                  bZeroFill,                 // TRUE iff we're still doing Zero Fill
+                 bInfinity = FALSE,         // TRUE iff the value is an infinity
                  bRet = TRUE;               // TRUE iff the result is valid
     LPWCHAR      lpwSrc,                    // Ptr to source text
                  lpwEnd,                    // Ptr to end of ...
@@ -2099,6 +2100,9 @@ void QFMT_CommonEFIR
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
+                    // Izit an infinity?
+                    bInfinity = IsInfinity (aplFltItm);
+
                     lpwEnd =
                       FormatFloatFC (lpwszFormat,           // Ptr to output save area
                                      aplFltItm,             // The value to format
@@ -2110,6 +2114,9 @@ void QFMT_CommonEFIR
                     break;
 
                 case IMMTYPE_RAT:
+                    // Izit an infinity?
+                    bInfinity = IsMpqInfinity (&aplRatItm);
+
                     // Convert the RAT to a VFP
                     mpfr_init_set_q (&aplVfpItm, &aplRatItm, MPFR_RNDN);
 
@@ -2128,6 +2135,9 @@ void QFMT_CommonEFIR
                     break;
 
                 case IMMTYPE_VFP:
+                    // Izit an infinity?
+                    bInfinity = IsMpfInfinity (&aplVfpItm);
+
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpItm,            // The value to format
@@ -2163,6 +2173,9 @@ void QFMT_CommonEFIR
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
+                    // Izit an infinity?
+                    bInfinity = IsInfinity (aplFltItm);
+
                     lpwEnd =
                       FormatFloatFC (lpwszFormat,           // Ptr to output save area
                                      aplFltItm,             // The value to format
@@ -2174,6 +2187,9 @@ void QFMT_CommonEFIR
                     break;
 
                 case IMMTYPE_RAT:
+                    // Izit an infinity?
+                    bInfinity = IsMpqInfinity (&aplRatItm);
+
                     // Convert the RAT to a VFP
                     mpfr_init_set_q (&aplVfpItm, &aplRatItm, MPFR_RNDN);
 
@@ -2192,6 +2208,9 @@ void QFMT_CommonEFIR
                     break;
 
                 case IMMTYPE_VFP:
+                    // Izit an infinity?
+                    bInfinity = IsMpfInfinity (&aplVfpItm);
+
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                       aplVfpItm,            // The value to format
@@ -2211,38 +2230,42 @@ void QFMT_CommonEFIR
             // Ensure properly terminated
             *--lpwEnd = WC_EOS;
 
-            // Get ptr to decimal point
-            lpwSrc = strchrW (lpwszFormat, UTF16_DOT);
-
-            // If there's no decimal point, ...
-            if (lpwSrc EQ NULL)
+            // If the value is not an infinity, ...
+            if (!bInfinity)
             {
-                // Point to the end of the formatted number
-                lpwSrc = lpwEnd;
+                // Get ptr to decimal point
+                lpwSrc = strchrW (lpwszFormat, UTF16_DOT);
 
-                // Append a decimal point
-                *lpwEnd++ = UTF16_DOT;
+                // If there's no decimal point, ...
+                if (lpwSrc EQ NULL)
+                {
+                    // Point to the end of the formatted number
+                    lpwSrc = lpwEnd;
 
-                // Ensure properly terminated
-                *lpwEnd = WC_EOS;
-            } // End IF
+                    // Append a decimal point
+                    *lpwEnd++ = UTF16_DOT;
 
-            // Skip over the decimal point
-            lpwSrc++;
+                    // Ensure properly terminated
+                    *lpwEnd = WC_EOS;
+                } // End IF
 
-            // If within bounds (otherwise Overflow), ...
-            if (fsDig >= (APLU3264) (lpwEnd - lpwSrc))
-            {
-                // Reduce the desired # significant digits by the actual amount
-                fsDig -= (lpwEnd - lpwSrc);
+                // Skip over the decimal point
+                lpwSrc++;
 
-                // Fill the tail of the result with enough zeros
-                //   to pad out to fsDig digits
-                while (fsDig--)
-                    *lpwEnd++ = L'0';
+                // If within bounds (otherwise Overflow), ...
+                if (fsDig >= (APLU3264) (lpwEnd - lpwSrc))
+                {
+                    // Reduce the desired # significant digits by the actual amount
+                    fsDig -= (lpwEnd - lpwSrc);
 
-                // Ensure properly terminated
-                *lpwEnd = WC_EOS;
+                    // Fill the tail of the result with enough zeros
+                    //   to pad out to fsDig digits
+                    while (fsDig--)
+                        *lpwEnd++ = L'0';
+
+                    // Ensure properly terminated
+                    *lpwEnd = WC_EOS;
+                } // End IF
             } // End IF
 
             break;

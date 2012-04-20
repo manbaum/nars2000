@@ -1778,232 +1778,242 @@ LPAPLCHAR FormatAplVfpFC
         lpaplChar[-1] = L')';
     } // End IF
 
-    lpRawFmt = (LPCHAR) lpaplChar;
-
-    // If we're not displaying in E-format, ...
-    if (nDigits >= 0)
+    // Izit an infinity?
+    if (IsMpfInfinity (&aplVfp))
     {
-        // Format the VFP at maximum # digits
-        mpfr_get_str (lpRawFmt,             // Ptr to output save area
-                     &expptr,               // Ptr to exponent save area
-                      10,                   // Base of number system
-                      0,                    // # significant digits (0 = all)
-                     &aplVfp,               // Ptr to VFP number
-                      MPFR_RNDN);           // Rounding mode
+        // Izit negative?
+        if (mpfr_sgn (&aplVfp) < 0)
+            *lpaplChar++ = aplCharOverbar;
+        *lpaplChar++ = UTF16_INFINITY;
+    } else
+    {
+        lpRawFmt = (LPCHAR) lpaplChar;
+
+        // If we're not displaying in E-format, ...
+        if (nDigits >= 0)
+        {
+            // Format the VFP at maximum # digits
+            mpfr_get_str (lpRawFmt,             // Ptr to output save area
+                         &expptr,               // Ptr to exponent save area
+                          10,                   // Base of number system
+                          0,                    // # significant digits (0 = all)
+                         &aplVfp,               // Ptr to VFP number
+                          MPFR_RNDN);           // Rounding mode
+            // Get the char length
+            iDiff = lstrlen (lpRawFmt);
+        } else
+        {
+            Assert (!bFractDigs);
+
+            expptr = 0;
+        } // End IF/ELSE
+
+        // Format the VFP
+        mpfr_get_str (lpRawFmt,                     // Ptr to output save area
+                     &expptr,                       // Ptr to exponent save area
+                      10,                           // Base of number system
+                      abs ((UINT) nDigits)          // # significant digits (0 = all)
+                    + (bFractDigs ? expptr : 0),    // If nDigits is # fractional, add in expptr
+                                                    //   to get # significant digits
+                     &aplVfp,                       // Ptr to VFP number
+                      MPFR_RNDN);                   // Rounding mode
         // Get the char length
-        iDiff = lstrlen (lpRawFmt);
-    } else
-    {
-        Assert (!bFractDigs);
+        iLen = lstrlen (lpRawFmt);
 
-        expptr = 0;
-    } // End IF/ELSE
+        // Check for negative
+        bNeg = (lpRawFmt[0] EQ '-');
 
-    // Format the VFP
-    mpfr_get_str (lpRawFmt,                     // Ptr to output save area
-                 &expptr,                       // Ptr to exponent save area
-                  10,                           // Base of number system
-                  abs ((UINT) nDigits)          // # significant digits (0 = all)
-                + (bFractDigs ? expptr : 0),    // If nDigits is # fractional, add in expptr
-                                                //   to get # significant digits
-                 &aplVfp,                       // Ptr to VFP number
-                  MPFR_RNDN);                   // Rounding mode
-    // Get the char length
-    iLen = lstrlen (lpRawFmt);
+        // Delete trailing zeros as <mpfr_get_str> does
+        for (iRes = iLen - 1; iRes >= max (expptr + bNeg, 0); iRes--)
+        if (lpRawFmt[iRes] EQ '0')
+        {
+            lpRawFmt[iRes] = AC_EOS;
+            iLen--;
+        } else
+            break;
 
-    // Check for negative
-    bNeg = (lpRawFmt[0] EQ '-');
+        // If we're not displaying in E-format, ...
+        if (nDigits >= 0)
+            // Get the difference in char lengths
+            iDiff -= iLen;
 
-    // Delete trailing zeros as <mpfr_get_str> does
-    for (iRes = iLen - 1; iRes >= max (expptr + bNeg, 0); iRes--)
-    if (lpRawFmt[iRes] EQ '0')
-    {
-        lpRawFmt[iRes] = AC_EOS;
-        iLen--;
-    } else
-        break;
+        // If displaying fractional digits, ...
+        if (bFractDigs)
+        {
+            UINT uDig;                  // # significant digits based on the precision
 
-    // If we're not displaying in E-format, ...
-    if (nDigits >= 0)
-        // Get the difference in char lengths
-        iDiff -= iLen;
+            // Convert the precision to the # digits it represents
+            //   via the formula  1 + floor (log10 (2^P))
+            //                  = 1 + floor (P x log10 (2))
+            //   where log10 (2) = (ln (2)) / (ln (10))
+            //                   = M_LN2 / M_LN10
+            uDig = 1 + (UINT) floor (mpfr_get_prec (&aplVfp) * M_LN2 / M_LN10);
 
-    // If displaying fractional digits, ...
-    if (bFractDigs)
-    {
-        UINT uDig;                  // # significant digits based on the precision
+            // Calculate the # trailing underflow digits
+            iUnderflow = abs64 (nDigits) - max (uDig, (APLUINT) iLen);
+            iUnderflow = max (iUnderflow, 0);
+        } else
+            iUnderflow = 0;
 
-        // Convert the precision to the # digits it represents
-        //   via the formula  1 + floor (log10 (2^P))
-        //                  = 1 + floor (P x log10 (2))
-        //   where log10 (2) = (ln (2)) / (ln (10))
-        //                   = M_LN2 / M_LN10
-        uDig = 1 + (UINT) floor (mpfr_get_prec (&aplVfp) * M_LN2 / M_LN10);
+        // If the number is zero, ...
+        if (iLen EQ 0)
+        {
+            // "Format" the number
+            *lpaplChar++ = L'0';
 
-        // Calculate the # trailing underflow digits
-        iUnderflow = abs64 (nDigits) - max (uDig, (APLUINT) iLen);
-        iUnderflow = max (iUnderflow, 0);
-    } else
-        iUnderflow = 0;
+            // If we're formatting in E-format, ...
+            if (nDigits < 0)
+            {
+                *lpaplChar++ = aplCharDecimal;
 
-    // If the number is zero, ...
-    if (iLen EQ 0)
-    {
-        // "Format" the number
-        *lpaplChar++ = L'0';
+                FillMemoryW (lpaplChar, (APLU3264) ((-nDigits) - 1), L'0');
+                lpaplChar += (-nDigits) - 1;
 
+                *lpaplChar++ = L'E';
+                *lpaplChar++ = L'0';
+            } else
+            // If displaying fractional digits, ...
+            if (bFractDigs)
+            {
+                *lpaplChar++ = aplCharDecimal;
+
+                FillMemoryW (lpaplChar, (APLU3264)    nDigits      , L'0');
+                lpaplChar += nDigits;
+            } // End IF
+        } else
         // If we're formatting in E-format, ...
         if (nDigits < 0)
         {
-            *lpaplChar++ = aplCharDecimal;
+            // Copy the raw # to a point to the right of itself so we can format it in place
+            CopyMemory (&lpRawFmt[6 + 2 * (iLen + 1)], lpRawFmt, (APLU3264) (iLen + 1));
+            lpRawFmt += 6 + 2 * (iLen + 1);
 
-            FillMemoryW (lpaplChar, (APLU3264) ((-nDigits) - 1), L'0');
-            lpaplChar += (-nDigits) - 1;
-
-            *lpaplChar++ = L'E';
-            *lpaplChar++ = L'0';
+            // Format the number with exactly nDigits significant digits
+            lpaplChar =
+              FormatExpFmt (lpaplChar,          // Ptr to output save area
+                      (int) nDigits,            // # significant digits
+                            lpRawFmt,           // Ptr to raw formatted number
+                            expptr,             // Exponent
+                            DEF_MAX_QUADPPVFP,  // Maximum # significant digits
+                            aplCharDecimal,     // Char to use as decimal separator
+                            aplCharOverbar);    // Char to use as overbar
         } else
-        // If displaying fractional digits, ...
-        if (bFractDigs)
         {
-            *lpaplChar++ = aplCharDecimal;
+            // Convert the char to WCHAR
+            for (iRes = iLen - 1; iRes >= 0; iRes--)
+                lpaplChar[iRes] = ((LPCHAR) lpaplChar)[iRes];
 
-            FillMemoryW (lpaplChar, (APLU3264)    nDigits      , L'0');
-            lpaplChar += nDigits;
-        } // End IF
-    } else
-    // If we're formatting in E-format, ...
-    if (nDigits < 0)
-    {
-        // Copy the raw # to a point to the right of itself so we can format it in place
-        CopyMemory (&lpRawFmt[6 + 2 * (iLen + 1)], lpRawFmt, (APLU3264) (iLen + 1));
-        lpRawFmt += 6 + 2 * (iLen + 1);
-
-        // Format the number with exactly nDigits significant digits
-        lpaplChar =
-          FormatExpFmt (lpaplChar,          // Ptr to output save area
-                  (int) nDigits,            // # significant digits
-                        lpRawFmt,           // Ptr to raw formatted number
-                        expptr,             // Exponent
-                        DEF_MAX_QUADPPVFP,  // Maximum # significant digits
-                        aplCharDecimal,     // Char to use as decimal separator
-                        aplCharOverbar);    // Char to use as overbar
-    } else
-    {
-        // Convert the char to WCHAR
-        for (iRes = iLen - 1; iRes >= 0; iRes--)
-            lpaplChar[iRes] = ((LPCHAR) lpaplChar)[iRes];
-
-        // Check for Infinity
-        if (lpaplChar[bNeg] EQ DEF_POSINFINITY_CHAR)
-        {
-            if (bSubstInf)
+            // Check for Infinity
+            if (lpaplChar[bNeg] EQ DEF_POSINFINITY_CHAR)
             {
-                lstrcpyW (&lpaplChar[bNeg], LTEXT_INFINITY);
-                iLen = lstrlenW (lpaplChar);
+                if (bSubstInf)
+                {
+                    lstrcpyW (&lpaplChar[bNeg], LTEXT_INFINITY);
+                    iLen = lstrlenW (lpaplChar);
+                } else
+                    lpaplChar[bNeg] = UTF16_INFINITY;
             } else
-                lpaplChar[bNeg] = UTF16_INFINITY;
-        } else
-        // If the exponent is zero or negative, ...
-        if (expptr <= 0)
-        {
-            // Get the absolute value of the exponent
-            expptr = -expptr;
-
-            // If displaying fractional digits, ...
-            if (bFractDigs)
-                iDelDigits = expptr;
-            else
-                iDelDigits = 0;
-
-            // Make room for "0." and leading zeros
-            // If bFractDigs, nDigits is the # fractional digits to display
-            //   so we must delete trailing expptr chars as
-            //   the format string above produces nDigits
-            //   significant digits
-            MoveMemory (&lpaplChar[bNeg + 2 + expptr], &lpaplChar[bNeg], (APLU3264) (iLen - bNeg) * sizeof (WCHAR));
-
-            // Fill in the leading "0."
-            lpaplChar[bNeg + 0] = L'0';
-            lpaplChar[iDecPt = bNeg + 1] = aplCharDecimal;
-
-            // Fill in the leading zeros
-            FillMemoryW (&lpaplChar[bNeg + 2], expptr, L'0');
-
-            // If displaying fractional digits, ...
-            if (bFractDigs)
+            // If the exponent is zero or negative, ...
+            if (expptr <= 0)
             {
-                if (nDigits > ((iLen - bNeg) - expptr))
-                    // Fill in the trailing zeros
-                    FillMemoryW (&lpaplChar[iLen + 2], (APLU3264) (nDigits - ((iLen - bNeg) - expptr)), L'0');
+                // Get the absolute value of the exponent
+                expptr = -expptr;
 
-                //       Neg  "0."  Digits
-                iLen  = bNeg + 2 + nDigits;
+                // If displaying fractional digits, ...
+                if (bFractDigs)
+                    iDelDigits = expptr;
+                else
+                    iDelDigits = 0;
+
+                // Make room for "0." and leading zeros
+                // If bFractDigs, nDigits is the # fractional digits to display
+                //   so we must delete trailing expptr chars as
+                //   the format string above produces nDigits
+                //   significant digits
+                MoveMemory (&lpaplChar[bNeg + 2 + expptr], &lpaplChar[bNeg], (APLU3264) (iLen - bNeg) * sizeof (WCHAR));
+
+                // Fill in the leading "0."
+                lpaplChar[bNeg + 0] = L'0';
+                lpaplChar[iDecPt = bNeg + 1] = aplCharDecimal;
+
+                // Fill in the leading zeros
+                FillMemoryW (&lpaplChar[bNeg + 2], expptr, L'0');
+
+                // If displaying fractional digits, ...
+                if (bFractDigs)
+                {
+                    if (nDigits > ((iLen - bNeg) - expptr))
+                        // Fill in the trailing zeros
+                        FillMemoryW (&lpaplChar[iLen + 2], (APLU3264) (nDigits - ((iLen - bNeg) - expptr)), L'0');
+
+                    //       Neg  "0."  Digits
+                    iLen  = bNeg + 2 + nDigits;
+                } else
+                    //            "0." Leading
+                    iLen +=        2 + expptr;
             } else
-                //            "0." Leading
-                iLen +=        2 + expptr;
-        } else
-        // If the # significant digits is smaller than the exponent, ...
-        if (iLen < (bNeg + expptr))
-        {
-            // If there are enough digits displayed, ...
-            if (iDiff EQ 0)
+            // If the # significant digits is smaller than the exponent, ...
+            if (iLen < (bNeg + expptr))
             {
-                // Fill in trailing zeros sufficient for the decimal point
-                FillMemoryW (&lpaplChar[iLen], (APLU3264) (bNeg + expptr - iLen), L'0');
-                iLen = bNeg + expptr;
+                // If there are enough digits displayed, ...
+                if (iDiff EQ 0)
+                {
+                    // Fill in trailing zeros sufficient for the decimal point
+                    FillMemoryW (&lpaplChar[iLen], (APLU3264) (bNeg + expptr - iLen), L'0');
+                    iLen = bNeg + expptr;
+                } else
+                {
+                    // Otherwise, use E-notation to indicate that []PP is too small
+                    lpaplChar[iLen] = L'E';
+                    iLen =
+                      FormatAplintFC (&lpaplChar[iLen + 1],     // Ptr to output save area
+                                       bNeg + expptr - iLen,    // The value to format
+                                       aplCharOverbar)          // Char to use as overbar
+                      - lpaplChar;
+                    // Delete the trailing blank from the length
+                    iLen--;
+                } // End IF/ELSE
             } else
+            // If the # significant digits is larger than the exponent, ...
+            if (iLen > (bNeg + expptr))
             {
-                // Otherwise, use E-notation to indicate that []PP is too small
-                lpaplChar[iLen] = L'E';
-                iLen =
-                  FormatAplintFC (&lpaplChar[iLen + 1],     // Ptr to output save area
-                                   bNeg + expptr - iLen,    // The value to format
-                                   aplCharOverbar)          // Char to use as overbar
-                  - lpaplChar;
-                // Delete the trailing blank from the length
-                iLen--;
+                // Make room for the decimal point
+                MoveMemory (&lpaplChar[bNeg + 1 + expptr], &lpaplChar[bNeg + expptr], (APLU3264) (iLen - (bNeg + expptr)) * sizeof (WCHAR));
+
+                // Insert the decimal point
+                lpaplChar[iDecPt = bNeg + expptr] = aplCharDecimal;
+                iLen++;
             } // End IF/ELSE
-        } else
-        // If the # significant digits is larger than the exponent, ...
-        if (iLen > (bNeg + expptr))
-        {
-            // Make room for the decimal point
-            MoveMemory (&lpaplChar[bNeg + 1 + expptr], &lpaplChar[bNeg + expptr], (APLU3264) (iLen - (bNeg + expptr)) * sizeof (WCHAR));
 
-            // Insert the decimal point
-            lpaplChar[iDecPt = bNeg + expptr] = aplCharDecimal;
-            iLen++;
-        } // End IF/ELSE
-
-        // If displaying fractional digits, ...
-        if (bFractDigs)
-        {
-            // If the # digits after the decimal point is less than nDigits, ...
-            if (nDigits > (iLen - iDecPt))
+            // If displaying fractional digits, ...
+            if (bFractDigs)
             {
-                if (iDecPt EQ 0)
-                    lpaplChar[iDecPt = iLen++] = aplCharDecimal;
+                // If the # digits after the decimal point is less than nDigits, ...
+                if (nDigits > (iLen - iDecPt))
+                {
+                    if (iDecPt EQ 0)
+                        lpaplChar[iDecPt = iLen++] = aplCharDecimal;
 
-                // Fill with trailing zeros
-                FillMemoryW (&lpaplChar[iLen], (APLU3264) (nDigits - (iLen - (iDecPt + 1))), L'0');
+                    // Fill with trailing zeros
+                    FillMemoryW (&lpaplChar[iLen], (APLU3264) (nDigits - (iLen - (iDecPt + 1))), L'0');
 
-                //           Decpt    Digits
-                iLen =  1 + iDecPt + nDigits;
+                    //           Decpt    Digits
+                    iLen =  1 + iDecPt + nDigits;
+                } // End IF
+
+                // Fill in the trailing underflow digits
+                if (iUnderflow)
+                    FillMemoryW (&lpaplChar[iLen - iUnderflow], (APLU3264) iUnderflow, L'_');
             } // End IF
 
-            // Fill in the trailing underflow digits
-            if (iUnderflow)
-                FillMemoryW (&lpaplChar[iLen - iUnderflow], (APLU3264) iUnderflow, L'_');
-        } // End IF
+            // If the number is negative, ...
+            if (bNeg)
+                lpaplChar[0] = aplCharOverbar;
 
-        // If the number is negative, ...
-        if (bNeg)
-            lpaplChar[0] = aplCharOverbar;
-
-        // Skip over the formatted number
-        lpaplChar += iLen;
-    } // End IF/ELSE/...
+            // Skip over the formatted number
+            lpaplChar += iLen;
+        } // End IF/ELSE/...
+    } // End IF/ELSE
 
     // Include a separator
     *lpaplChar++ = L' ';

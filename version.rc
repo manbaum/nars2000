@@ -1,2 +1,2 @@
-#define VER_MODULE 389
-#define VER_MODULE_STR "389"
+#define VER_MODULE 393
+#define VER_MODULE_STR "393"

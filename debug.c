@@ -1038,7 +1038,6 @@ int oprintfW
 {
     va_list vl;
     int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
-    char     szTemp[1024];
     WCHAR   wszTemp[1024];
 
 
@@ -1064,8 +1063,7 @@ int oprintfW
     iRet = wsprintfW (wszTemp,
                       lpwszFmt,
                       i1, i2, i3, i4, i5, i6, i7, i8);
-    W2A (szTemp, wszTemp, sizeof (szTemp) - 1);
-    ODS (szTemp);
+    OutputDebugStringW (wszTemp);
 
     return iRet;
 } // End oprintfW

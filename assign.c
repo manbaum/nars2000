@@ -809,7 +809,7 @@ UBOOL AssignNamedVars_EM
             {
                 LPVOID lpVal;
 
-                // Get the LPSYMENTRTY or HGLOBAL
+                // Get the LPSYMENTRY or HGLOBAL
                 lpVal = ((LPAPLNESTED) lpMemVal)[aplName % aplNELMVal];
 
                 // Split cases based the ptr type of the value
@@ -866,6 +866,54 @@ UBOOL AssignNamedVars_EM
 
                 // Assign this token to this name
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+            } // End FOR
+
+            break;
+
+        case ARRAY_RAT:
+            // Loop through the names/values
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
+            {
+                LPAPLRAT lpVal;
+
+                // Get the HGLOBAL
+                lpVal = &((LPAPLRAT) lpMemVal)[aplName % aplNELMVal];
+
+                // Fill in the value token
+                tkToken.tkFlags.TknType  = TKT_VARARRAY;
+                tkToken.tkFlags.ImmType  = IMMTYPE_RAT;
+                tkToken.tkData.tkGlbData =
+                  MakeGlbEntry_EM (aplTypeVal,              // Entry type
+                                   lpVal,                   // Ptr to the value
+                                   TRUE,                    // TRUE iff we should initialize the target first
+                                   lptkVal);                // Ptr to function token
+                // Assign this token to this name
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                DbgDecrRefCntTkn (&tkToken);
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            // Loop through the names/values
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
+            {
+                LPAPLVFP lpVal;
+
+                // Get the HGLOBAL
+                lpVal = &((LPAPLVFP) lpMemVal)[aplName % aplNELMVal];
+
+                // Fill in the value token
+                tkToken.tkFlags.TknType  = TKT_VARARRAY;
+                tkToken.tkFlags.ImmType  = IMMTYPE_VFP;
+                tkToken.tkData.tkGlbData =
+                  MakeGlbEntry_EM (aplTypeVal,              // Entry type
+                                   lpVal,                   // Ptr to the value
+                                   TRUE,                    // TRUE iff we should initialize the target first
+                                   lptkVal);                // Ptr to function token
+                // Assign this token to this name
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                DbgDecrRefCntTkn (&tkToken);
             } // End FOR
 
             break;

@@ -148,7 +148,7 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&Contents..."               , IDM_HELP_CONTENTS   , INACTIVE GRAYED   // ***FIXME***
-        MENUITEM "Check for &Updates"         , IDM_UPDATES
+        MENUITEM "Check for &Updates..."      , IDM_UPDATES
         MENUITEM "&Tutorials"                 , IDM_TUTORIALS
         MENUITEM "&About"                     , IDM_ABOUT
     END

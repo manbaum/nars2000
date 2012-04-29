@@ -58,6 +58,6 @@ Set MSPDB=%MSVC%bin^\
 
 :START
 Set INCLUDE=%MSVC%include;%SDK%include;%NARSROOT%gsl\include
-Set PATH=M:\;N:\;%MSPDB%;%ORIGPATH%
+Set PATH=M:\;N:\;%MSPDB%;%NARSROOT%qdebug;%ORIGPATH%
 
 if /i "%2" == "start" start V:\Common7\IDE\VCExpress.exe NARS2000.%1.sln /useenv

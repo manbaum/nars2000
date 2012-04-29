@@ -1165,8 +1165,8 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                         // Tell the Tooltip Ctrl to stop tracking
                         SendMessageW (hWndTT, TTM_TRACKACTIVATE, FALSE, (LPARAM) &tti);
 
-                        // Clear tracking and capture
-                        PostMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+                        // Clear tracking
+                        PostMessageW (hWnd, MYWM_MOUSELEAVE, wParam, lParam);
 
                         // Mark as no longer tracking
                         bTrackMouse = FALSE;
@@ -1196,9 +1196,6 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
                 // If not already tracking, ...
                 if (!bTrackMouse)
                 {
-                    // Capture the mouse
-                    SetCapture (hWnd);
-
                     // Tell the Tooltip Ctrl to track
                     SendMessageW (hWndTT, TTM_TRACKACTIVATE, TRUE, (LPARAM) &tti);
 
@@ -1208,14 +1205,14 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
             } else
             {
                 // The mouse is outside our window
-                // Clear tracking and capture
-                PostMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+                // Clear tracking
+                PostMessageW (hWnd, MYWM_MOUSELEAVE, wParam, lParam);
 
                 // Mark as no longer tracking
                 bTrackMouse = FALSE;
             } // End IF
 
-            return FALSE;               // We handled the msg
+            break;                  // Pass on to the next handler
 
         case WM_LBUTTONUP:          // fwKeys = wParam;        // key flags
                                     // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
@@ -1225,17 +1222,21 @@ LRESULT WINAPI LclWS_ED_OWToolbarWndProc
 
             // If we're tracking the mouse, ...
             if (bTrackMouse)
-                // Clear tracking and capture
-                PostMessageW (hWnd, WM_MOUSELEAVE, 0, 0);
+                // Clear tracking
+                PostMessageW (hWnd, MYWM_MOUSELEAVE, wParam, lParam);
             break;
 
         case WM_MOUSELEAVE:         // fwKeys = wParam;        // key flags
                                     // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
                                     // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
-            // The mouse is outside our window and
-            //   we no longer need this resource
-            ReleaseCapture ();
+            // Call common code to clear tracking
+            SendMessageW (hWnd, MYWM_MOUSELEAVE, wParam, lParam);
 
+            break;                  // Pass on to the next handler
+
+        case MYWM_MOUSELEAVE:       // fwKeys = wParam;        // key flags
+                                    // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
+                                    // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
             // Fill in the TOOLINFOW size based upon the matching COMCTL32.DLL version #
             ZeroMemory (&tti, sizeof (tti));
             if (fComctl32FileVer >= 6)

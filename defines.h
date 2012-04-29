@@ -421,6 +421,7 @@ default:        \
 #define MYWM_PROMPT         (WM_APP +21)    // MF (Display the prompt)
 #define MYWM_INIT_EC        (WM_APP +22)    // EC (Initialize local Edit Ctrl)
 #define MYWM_DNL_SUCCESS    (WM_APP +23)    // DL (TRUE iff the download succeeded)
+#define MYWM_MOUSELEAVE     (WM_APP+ 24)    // RB (Local version of WM_MOSUELEAVE)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB

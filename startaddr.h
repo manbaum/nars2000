@@ -99,6 +99,28 @@ typedef struct tagSTART_ADDRESSES
     "CS_GetEOSTokenLen_NEXT"    , (LPUCHAR) &CS_GetEOSTokenLen_NEXT     ,
 
     // customize.c
+    "CustomizeDlgProc"          , (LPUCHAR) &CustomizeDlgProc           ,
+    "LclKeybEditCtrlWndProc"    , (LPUCHAR) &LclKeybEditCtrlWndProc     ,
+    "LclFontsStaticTextWndProc" , (LPUCHAR) &LclFontsStaticTextWndProc  ,
+    "DrawButton"                , (LPUCHAR) &DrawButton                 ,
+    "DisplayKeybTCValue"        , (LPUCHAR) &DisplayKeybTCValue         ,
+    "KeybHighlight"             , (LPUCHAR) &KeybHighlight              ,
+    "DispKeybLayout"            , (LPUCHAR) &DispKeybLayout             ,
+    "DispKeybCtrlKeycaps"       , (LPUCHAR) &DispKeybCtrlKeycaps        ,
+    "KeybScanCodeToID"          , (LPUCHAR) &KeybScanCodeToID           ,
+    "KeybCharToScanCode"        , (LPUCHAR) &KeybCharToScanCode         ,
+    "SetKeybFont"               , (LPUCHAR) &SetKeybFont                ,
+    "NewKeybDlgProc"            , (LPUCHAR) &NewKeybDlgProc             ,
+    "EnumCallbackResizeMC"      , (LPUCHAR) &EnumCallbackResizeMC       ,
+    "EnumCallbackRepaint"       , (LPUCHAR) &EnumCallbackRepaint        ,
+    "FillSyntaxColor"           , (LPUCHAR) &FillSyntaxColor            ,
+    "GetClearWsChrValue"        , (LPUCHAR) &GetClearWsChrValue         ,
+    "GetClearWsComValue"        , (LPUCHAR) &GetClearWsComValue         ,
+    "InitThemes"                , (LPUCHAR) &InitThemes                 ,
+    "FinThemes"                 , (LPUCHAR) &FinThemes                  ,
+    "GetFontWeightW"            , (LPUCHAR) &GetFontWeightW             ,
+    "GetLogPixelsY"             , (LPUCHAR) &GetLogPixelsY              ,
+    "DirsBrowseCallbackProc"    , (LPUCHAR) &DirsBrowseCallbackProc     ,
 
     // debug.c
   #ifdef DEBUG

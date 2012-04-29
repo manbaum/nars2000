@@ -602,7 +602,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                 SendMessageW (hWndListBox, LB_SETCURSEL, gInitCustomizeCategory, 0);
 
                 // Tell the dialog the selection changed
-                PostMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_CUST_LB, NULL, LBN_SELCHANGE));
+                SendMessageW (hDlg, WM_COMMAND, GET_WM_COMMAND_MPS (IDC_CUST_LB, NULL, LBN_SELCHANGE));
             } // End IF
 
             return DLG_MSGDEFFOCUS;     // Use the focus in wParam, DWLP_MSGRESULT is ignored
@@ -3049,7 +3049,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                                 SendMessageW (hWndListBox, LB_SETITEMDATA, uSel, (LPARAM) hWndProp);
 
                                 // Tell the dialog to initialize the new page
-                                PostMessageW (hDlg, MYWM_INITDIALOG, uSel, 0);
+                                SendMessageW (hDlg, MYWM_INITDIALOG, uSel, 0);
                             } else
                             {
                                 // Get the Property Page window handle

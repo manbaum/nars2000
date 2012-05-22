@@ -273,6 +273,7 @@ INT_PTR CALLBACK UpdatesDlgProc
             // Clear and initialize DNLTHRSTR
             ZeroMemory (&dnlThrStr, sizeof (dnlThrStr));
             dnlThrStr.lpDnlDlgStr = &dnlDlgStr;
+            dnlThrStr.bThreadDone = TRUE;
 
             // Save the web version ptr for later use
             lstrcpyW (wszWebVer, lpUpdatesDlgStr->lpWebVer);

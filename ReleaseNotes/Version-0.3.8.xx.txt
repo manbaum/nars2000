@@ -1,6 +1,17 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #982 -- Version 0.3.8.xx
+------------------------------
+
+* Fix Bug In Update Dialog
+
+Directory trunk:
+
+UPDATES.C:
+  Fix bug when displaying the Update Dialog and immediately exiting.
+
+
 Build #981 -- Version 0.3.8.xx
 ------------------------------
 

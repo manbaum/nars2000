@@ -655,6 +655,7 @@ LPDICTIONARY iniparser_load
 {
     WCHAR        tmp[ASCIILINESZ + 1],
                  *lpwLine,
+                 *lpwLineIni,           // Start of (multi-)line
                  *lpwSection,
                  *lpwKey,
                  *lpwVal;
@@ -662,7 +663,8 @@ LPDICTIONARY iniparser_load
                  line_len,
                  file_len,
                  errs = 0;
-    LPDICTIONARY lpDict;        // Ptr to workspace dictionary
+    LPDICTIONARY lpDict;                // Ptr to workspace dictionary
+    UBOOL        bMultiLine = FALSE;    // TRUE iff this is a multiline
 
     // Allocate a new dictionary
     lpDict = dictionary_new (0);
@@ -687,6 +689,11 @@ LPDICTIONARY iniparser_load
 
     while (lpwLine = &lpwLine[last], fgetsW (lpwLine, file_len - last, in) NE NULL)
     {
+        // If not a multiline, ...
+        if (!bMultiLine)
+            // Initialize start of line
+            lpwLineIni = lpwLine;
+
         (*lpLineNo)++;
         line_len = lstrlenW (lpwLine);
         last = line_len - 1;
@@ -709,13 +716,19 @@ LPDICTIONARY iniparser_load
 
         /* Detect multi-line */
         if (lpwLine[last] EQ L'\\')
+        {
             /* Multi-line value */
+            bMultiLine = TRUE;
             continue;
-        else
-            // Set offset to next position after L'\n'
-            last = line_len;
+        } // End IF
 
-        switch (iniparser_line (lpwLine, &lpwSection, &lpwKey, &lpwVal))
+        // Reset multi-line flag
+        bMultiLine = FALSE;
+
+        // Set offset to next position after L'\n'
+        last = line_len;
+
+        switch (iniparser_line (lpwLineIni, &lpwSection, &lpwKey, &lpwVal))
         {
             case LINE_EMPTY:
             case LINE_COMMENT:

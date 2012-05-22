@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -302,10 +302,11 @@ APLU3264 ConvertWideToNameLength
         wc = *lpwszInp++;
 
         if (32 < wc && wc <= 0x7E
-         && wc NE WC_SQ
+         && wc NE WC_SQ         // Used to surround 'a'
          && wc NE L'#'
-         && wc NE L'{'
-         && wc NE L'}')
+         && wc NE L'{'          // Used to surround {symbols}
+         && wc NE L'}'          // ...
+         && wc NE WC_SLOPE)     // Used in <iniparser_load> for multiline support
             *lpwsz++ = wc;
         else
         // Check for name in hash table

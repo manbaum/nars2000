@@ -2307,7 +2307,7 @@ void QFMT_CommonEFIR
               FormatAplRatFC (lpwszFormat,          // Ptr to output save area
                               aplRatTmp,            // The value to format
                               UTF16_OVERBAR,        // Char to use as overbar
-                              L'r',                 // Char to use as rational separator
+                              DEF_RATSEP,           // Char to use as rational separator
                               FALSE);               // TRUE iff we're to substitute text for infinity
 
             // We no longer need this storage
@@ -2317,7 +2317,7 @@ void QFMT_CommonEFIR
             *--lpwEnd = WC_EOS;
 
             // Get ptr to rational point
-            lpwSrc = strchrW (lpwszFormat, L'r');
+            lpwSrc = strchrW (lpwszFormat, DEF_RATSEP);
 
             // If there's no decimal point, ...
             if (lpwSrc EQ NULL)
@@ -2389,7 +2389,7 @@ void QFMT_CommonEFIR
                       FormatAplRatFC (lpwszFormat,          // Ptr to output save area
                                       aplRatTmp,            // The value to format
                                       UTF16_OVERBAR,        // Char to use as overbar
-                                      L'r',                 // Char to use as rational separator
+                                      DEF_RATSEP,           // Char to use as rational separator
                                       FALSE);               // TRUE iff we're to substitute text for infinity
                     // We no longer need this storage
                     Myq_clear (&aplRatTmp);
@@ -2505,7 +2505,7 @@ void QFMT_CommonEFIR
 
     // Substitute symbols
     // At this point, no substitution has occurred so we can assume that
-    //   the Decimal Point is UTF16_DOT or L'r'
+    //   the Decimal Point is UTF16_DOT or DEF_RATSEP
     //   the Thousands Separator is UTF16_COMMA
     //   the Exponent Separator is L'E', and
     //   the Zero Fill value is L'0'.
@@ -2552,7 +2552,7 @@ void QFMT_CommonEFIR
 
             break;
 
-        case L'r':
+        case DEF_RATSEP:
             *lpwSymChar++ = lpwSub[SYMSUB_RATIONAL_SEP];
             bZeroFill = FALSE;
 

@@ -103,6 +103,9 @@ UpperAlphabet:
     | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
     ;
 
+DEF_RATSEP:     'r'
+DEF_VFPSEP:     'v'
+
 Alphabet:
       LowerAlphabet
     | UpperAlphabet
@@ -252,13 +255,13 @@ DecPoint:
     ;
 
 VfpDecimal:
-      Integer 'v'                   {DbgMsgWP (L"%%VfpDecimal:  Integer 'v'");
+      Integer DEF_VFPSEP            {DbgMsgWP (L"%%VfpDecimal:  Integer 'v'");
                                      // Accumulate the decimal point
                                      PN_NumAcc (lppnLocalVars, '.');
 
                                      $$ = $1;
                                     }
-    |         'v'                   {DbgMsgWP (L"%%VfpDecimal:  'v' Digit");
+    |         DEF_VFPSEP            {DbgMsgWP (L"%%VfpDecimal:  'v' Digit");
                                      // Mark starting offset
                                      $1.uNumOff = lppnLocalVars->uNumAcc;
 
@@ -267,7 +270,7 @@ VfpDecimal:
 
                                      $$ = $1;
                                     }
-    | OVR     'v'                   {DbgMsgWP (L"%%VfpDecimal:  '" WS_UTF16_OVERBAR L"' 'v' Digit");
+    | OVR     DEF_VFPSEP            {DbgMsgWP (L"%%VfpDecimal:  '" WS_UTF16_OVERBAR L"' 'v' Digit");
                                      // Mark starting offset
                                      $1.uNumOff = lppnLocalVars->uNumAcc;
 
@@ -301,7 +304,7 @@ VfpDecPoint:
     ;
 
 VfpConstants:
-          INF 'v'                   {DbgMsgWP (L"%%VfpConstants:  INF 'v'");
+          INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  INF 'v'");
                                      // Mark as positive infinity
                                      mpfr_set_inf (&$1.at.aplVfp, 1);
 
@@ -310,7 +313,7 @@ VfpConstants:
 
                                      $$ = $1;
                                     }
-    | OVR INF 'v'                   {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
+    | OVR INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
                                      // Mark as negative infinity
                                      mpfr_set_inf (&$1.at.aplVfp, -1);
 
@@ -319,7 +322,7 @@ VfpConstants:
 
                                      $$ = $1;
                                     }
-    |     INF 'v' Integer           {DbgMsgWP (L"%%VfpConstants:  INF 'v'" Integer);
+    |     INF DEF_VFPSEP Integer    {DbgMsgWP (L"%%VfpConstants:  INF 'v'" Integer);
                                      // Mark as positive infinity
                                      mpfr_set_inf (&$1.at.aplVfp, 1);
 
@@ -328,7 +331,7 @@ VfpConstants:
 
                                      $$ = $1;
                                     }
-    | OVR INF 'v' Integer           {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v' Integer");
+    | OVR INF DEF_VFPSEP Integer    {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v' Integer");
                                      // Mark as negative infinity
                                      mpfr_set_inf (&$1.at.aplVfp, -1);
 
@@ -402,7 +405,8 @@ Hc2Point:
 
                                      $$ = $1;
                                     }
-    | DecPoint 'a' 'r' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'r' DecPoint");
+    | DecPoint 'a' DEF_RATSEP DecPoint
+                                    {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'r' DecPoint");
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
@@ -543,7 +547,7 @@ Hc8Point:
     ;
 
 Rational:
-      Integer  'r'     Digit        {DbgMsgWP (L"%%Rational:  Integer 'r' Digit");
+      Integer  DEF_RATSEP Digit     {DbgMsgWP (L"%%Rational:  Integer 'r' Digit");
                                      // Terminate the argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
@@ -561,7 +565,7 @@ Rational:
 
                                      $$ = $1;
                                     }
-    | Integer  'r' OVR Digit        {DbgMsgWP (L"%%Rational:  Integer 'r' '" WS_UTF16_OVERBAR L"' Digit");
+    | Integer  DEF_RATSEP OVR Digit {DbgMsgWP (L"%%Rational:  Integer 'r' '" WS_UTF16_OVERBAR L"' Digit");
                                      // Terminate the argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
@@ -613,7 +617,7 @@ RatConstants:
 
                                      $$ = $1;
                                     }
-    |     INF 'r' Integer           {DbgMsgWP (L"%%RatConstants:  INF 'r' Integer");
+    |     INF DEF_RATSEP Integer    {DbgMsgWP (L"%%RatConstants:  INF 'r' Integer");
                                      // Mark as positive infinity
                                      mpq_set_infsub (&$1.at.aplRat, 1);
 
@@ -631,7 +635,7 @@ RatConstants:
 
                                      $$ = $1;
                                     }
-    | OVR INF 'r' Integer           {DbgMsgWP (L"%%RatConstants:  OVR INF 'r' Integer");
+    | OVR INF DEF_RATSEP Integer    {DbgMsgWP (L"%%RatConstants:  OVR INF 'r' Integer");
                                      // Mark as negative infinity
                                      mpq_set_infsub (&$1.at.aplRat, -1);
 
@@ -640,7 +644,7 @@ RatConstants:
 
                                      $$ = $1;
                                     }
-    | Integer 'r' INF               {DbgMsgWP (L"%%RatConstants:  Integer 'r' INF");
+    | Integer DEF_RATSEP INF        {DbgMsgWP (L"%%RatConstants:  Integer 'r' INF");
                                      // Initialize to 0
                                      mpq_init (&$1.at.aplRat);
 
@@ -649,7 +653,7 @@ RatConstants:
 
                                      $$ = $1;
                                     }
-    | Integer 'r' OVR INF           {DbgMsgWP (L"%%RatConstants:  Integer 'r' OVR INF");
+    | Integer DEF_RATSEP OVR INF    {DbgMsgWP (L"%%RatConstants:  Integer 'r' OVR INF");
                                      // Initialize to 0
                                      mpq_init (&$1.at.aplRat);
 

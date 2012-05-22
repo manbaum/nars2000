@@ -2900,11 +2900,11 @@ typedef struct tagLANGCHARS
                                          L"This notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
                                          L"as in 0.5p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"3."
                                          },
-        {L'r'                     , {0}, L"Rational Point Notation",
+        {DEF_RATSEP               , {0}, L"Rational Point Notation",
                                          L"This notation allows you to enter Rational numbers as in 1r3, or, if the denominator is 1, using the suffix x as in 123x.  "
                                          L"Such constants are of infinite precision."
                                          },
-        {L'v'                     , {0}, L"Variable-precision Floating Point notation",
+        {DEF_VFPSEP               , {0}, L"Variable-precision Floating Point notation",
                                          L"This notation allows you to enter VFP numbers as in 1v3.  "
                                          L"The precision of such a constant is controlled by the current value of " WS_UTF16_QUAD L"FPC."
                                          },

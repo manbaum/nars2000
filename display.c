@@ -1043,7 +1043,7 @@ LPAPLCHAR FormatAplRat
     return FormatAplRatFC (lpaplChar,       // Ptr to output save area
                            aplRat,          // The value to format
                            UTF16_OVERBAR,   // Char to use as overbar
-                           L'r',            // Char to use as rational separator
+                           DEF_RATSEP,      // Char to use as rational separator
                            FALSE);          // TRUE iff we're to substitute text for infinity
 } // End FormatAplRat
 

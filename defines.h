@@ -73,6 +73,8 @@
 #define DEF_INDENT          6           // Prompt indent
 #define DEF_TABS            4           // Tab insertion
 #define DEF_RECENTFILES    15           // # entries in Recent Files
+#define DEF_RATSEP         'r'          // Default rational # separator
+#define DEF_VFPSEP         'v'          // Default VFP      ...
 
 // Size of storage areas
 #define DEF_NUM_INITNELM        (     1024)                 // Initial NELM for lpszNum

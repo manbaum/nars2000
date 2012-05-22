@@ -600,7 +600,7 @@ UINT SaveText
 ////////wSymSub[SYMSUB_Z_CHAR]         = L'Z';      // Already set by = STDSYMSUB
 ////////wSymSub[SYMSUB_9_CHAR]         = L'9';      // Already set by = STDSYMSUB
 ////////wSymSub[SYMSUB_EXPONENT_CHAR]  = L'E';      // Already set by = STDSYMSUB
-////////wSymSub[SYMSUB_RATIONAL_CHAR]  = L'r';      // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_RATIONAL_CHAR]  = DEF_RATSEP;// Already set by = STDSYMSUB
 
         // Loop through the symbol substitutions
         for (uCnt = 0; uCnt < uScanTxtLenChars; uCnt += 2)

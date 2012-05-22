@@ -1681,7 +1681,6 @@ LRESULT WINAPI LclEditCtrlWndProc
      LPARAM lParam)                 // ...
 
 {
-#define TABSTOP     8                       // Length of each tab
 
     VKSTATE      vkState;                   // Virtual key state (Shift, Alt, Ctrl)
     HWND         hWndParent;                // Handle of parent (SM/FE) window
@@ -1697,7 +1696,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                  uSpaces,                   // # spaces to insert
                  uTmp,                      // Temporary var
                  uGroupIndex;               // Group index
-    WCHAR        wChar[TABSTOP + 1],        // Array of blanks for converting tabs to spaces
+    WCHAR        wChar[DEF_TABS + 1],       // Array of blanks for converting tabs to spaces
                  uChar;                     // Loop counter
     WCHAR        wchCode[2] = {L'\0'};      // Character code
     UINT         uState;                    // Keyboard state (Shift- Ctrl- Alt-keys)
@@ -2364,7 +2363,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     // Get the # spaces to insert
                     uCharPos = uCharPosBeg - uLinePos;
-                    uSpaces = (((uCharPos + 1) / TABSTOP) * TABSTOP + TABSTOP) - uCharPos;
+                    uSpaces = (((uCharPos + 1) / DEF_TABS) * DEF_TABS + DEF_TABS) - uCharPos;
 
                     for (uChar = 0; uChar < uSpaces; uChar++)
                         wChar[uChar] = L' ';

@@ -1,6 +1,34 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #984 -- Version 0.3.8.xx
+------------------------------
+
+* Change Tab Stops On Entry From 8 To 4 To Match The Value Used On Display
+
+Directory trunk:
+
+EDITFCN.C:
+  Change tab stops on entry from 8 to 4 to match the value used on display.
+
+
+Build #983 -- Version 0.3.8.xx
+------------------------------
+
+* Use Equate For Rational And VFP Display And Entry Separators
+
+Directory trunk:
+
+DEFINES.H:
+DISPLAY.C:
+FMTSPEC.C:
+PF_DTACKJOT.C:
+PN_PARSE.Y:
+QF_FMT.C:
+REBAR.C:
+  Use equate for Rational and VFP display and entry separators.
+
+
 Build #982 -- Version 0.3.8.xx
 ------------------------------
 

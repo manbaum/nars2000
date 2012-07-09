@@ -3892,8 +3892,8 @@ UBOOL NfnsArgConv
                                 break;
 
                             case ARRAY_CHAR:
-                                // Attempt to convert the item to an integer
-                                *lpDiskConv = NestedCharVec (lpSymGlb);
+                                // Attempt to convert the item to a DR_xxx enum
+                                *lpDiskConv = NestedCharVec (lpSymGlb, *lpDiskConv);
 
                                 break;
 
@@ -3905,14 +3905,14 @@ UBOOL NfnsArgConv
                                         if (bOnly1)
                                             bRet = FALSE;
                                         else
-                                            // Attempt to convert the item to an integer
-                                            *lpWsConv = NestedCharVec (((HGLOBAL *) VarArrayDataFmBase (lpMemHdr))[1]);
+                                            // Attempt to convert the item to a DR_xxx enum
+                                            *lpWsConv = NestedCharVec (((HGLOBAL *) VarArrayDataFmBase (lpMemHdr))[1], *lpDiskConv);
 
                                         // Fall through to singleton case
 
                                     case 1:
-                                        // Attempt to convert the item to an integer
-                                        *lpDiskConv = NestedCharVec (((HGLOBAL *) VarArrayDataFmBase (lpMemHdr))[0]);
+                                        // Attempt to convert the item to a DR_xxx enum
+                                        *lpDiskConv = NestedCharVec (((HGLOBAL *) VarArrayDataFmBase (lpMemHdr))[0], *lpDiskConv);
 
                                         break;
 
@@ -4006,11 +4006,12 @@ UBOOL NfnsArgConv
 //***************************************************************************
 //  $NestedCharVec
 //
-//  Attempt to convert a char vector to a Conversion code
+//  Attempt to convert a char vector to a DR_xxx Conversion code
 //***************************************************************************
 
 DR_VAL NestedCharVec
-    (HGLOBAL hGlb)
+    (HGLOBAL hGlb,                      // Global memory handle
+     DR_VAL  drDef)                     // Default conversion value
 
 {
     DR_VAL            drRet = 0;        // Return value
@@ -4042,11 +4043,30 @@ typedef struct tagCONV_CODES
 
     // Check the rank
     if (!IsVector (lpMemHdr->Rank))
-        return 0;
+    {
+        // Set the return value
+        drRet = 0;
+
+        goto NORMAL_EXIT;
+    } // End IF
 
     // Check the storage type
     if (!IsSimpleChar (lpMemHdr->ArrType))
-        return 0;
+    {
+        // Set the return value
+        drRet = 0;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
+    // Check the NELM
+    if (IsEmpty (lpMemHdr->NELM))
+    {
+        // Set the return value
+        drRet = drDef;
+
+        goto NORMAL_EXIT;
+    } // End IF
 
     // Skip over the header and dimensions
     lpMemChar = VarArrayDataFmBase (lpMemHdr);
@@ -4059,7 +4079,7 @@ typedef struct tagCONV_CODES
 
         break;
     } // End FOR/IF
-
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlb); lpMemHdr = NULL;
 

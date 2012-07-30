@@ -1369,7 +1369,7 @@ LPAPLCHAR CompileArrHetero
         lpFmtHeader->lpFmtRowLst = lpFmtRowLcl;
 
         // Skip over the FMTROWSTR to the next available position
-        lpaplChar  = (LPAPLCHAR) &lpFmtRowLcl[1];
+        lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
 
         // Note that it doesn't matter what we start off the row
         //   with as the last immediate type (immTypeLst) because
@@ -1435,7 +1435,7 @@ LPAPLCHAR CompileArrHetero
 
                 // Append leading empty cells for each leading col
                 for (uCol = 0; uCol <= aplDimCol; uCol++)
-            {
+                {
                     *lpaplChar++ = WC_EOS;
 
                     // Count in another item
@@ -1463,56 +1463,56 @@ LPAPLCHAR CompileArrHetero
 
 #undef  lpSymEntry
 
-            // Zap the trailing blank
-            lpaplChar[-1] = WC_EOS;
+                // Zap the trailing blank
+                lpaplChar[-1] = WC_EOS;
 
-            // Count in another item
-            lpFmtRowLcl->uItemCount++;
+                // Count in another item
+                lpFmtRowLcl->uItemCount++;
 
-            // Include a leading blank if (first col and (nested or rank > 1))
-            //                          or (not first col) and either last or current is not a char
-            uLen = ((IsZeroDim (aplDimCol) && IsMultiRank (aplRank))
+                // Include a leading blank if (first col and (nested or rank > 1))
+                //                          or (not first col) and either last or current is not a char
+                uLen = ((IsZeroDim (aplDimCol) && IsMultiRank (aplRank))
                      || ((aplDimCol NE 0) && (immTypeLst NE IMMTYPE_CHAR || immTypeCur NE IMMTYPE_CHAR)));
-            // Max the current leading blanks with this
-            lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
+                // Max the current leading blanks with this
+                lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
 
                 // Check for decimal point, unless char
                 if (immTypeCur NE IMMTYPE_CHAR
                  && (lpwsz = strchrW (lpwszOut, L'.')))
-            {
-                // Calculate the length of the integer part
-                uLen = (UINT) (lpwsz - lpwszOut);
+                {
+                    // Calculate the length of the integer part
+                    uLen = (UINT) (lpwsz - lpwszOut);
 
-                // Max the current integer width with this
-                lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
+                    // Max the current integer width with this
+                    lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
 
-                // Calculate the length of the fractional part
-                uLen = (UINT) (lpaplChar - lpwsz) - 1;
+                    // Calculate the length of the fractional part
+                    uLen = (UINT) (lpaplChar - lpwsz) - 1;
 
-                // Max the current fractional width with this
-                lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
-            } else  // No decimal point
-            {
-                // Calculate the length of the integer part
+                    // Max the current fractional width with this
+                    lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
+                } else  // No decimal point
+                {
+                    // Calculate the length of the integer part
                     // We use the following odd construction because
                     //   if the previous SymEntry was a []TCLF,
                     //   lpaplChar EQ lpwszOut
-                uLen = (UINT) (lpaplChar - lpwszOut);
+                    uLen = (UINT) (lpaplChar - lpwszOut);
                     uLen = max (uLen, 1) - 1;
 
                     if (IsImmChr (immTypeCur))
                         // Max the current integer width with this
                         lpFmtColStr[aplDimCol].uChrs = max (lpFmtColStr[aplDimCol].uChrs, uLen);
                     else
-                // Max the current integer width with this
-                lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
+                        // Max the current integer width with this
+                        lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
 
 ////////////////// Calculate the length of the fractional part
 ////////////////uLen = 0;
 ////////////////
 ////////////////// Max the current fractional width with this
 ////////////////lpFmtColStr[aplDimCol].uFrcs = max (lpFmtColStr[aplDimCol].uFrcs, uLen);
-            } // End IF/ELSE
+                } // End IF/ELSE
             } // End IF
 
 ////////////// Include a trailing blank if (last col and nested)
@@ -1537,11 +1537,11 @@ LPAPLCHAR CompileArrHetero
         //   as blank rows in the row count
         if ((!bTopLevel)                        // Not top level
          && aplDimRow NE (aplDimNRows - 1))     // Not last row
-            lpaplChar  = CompileBlankRows (lpaplChar,       // Ptr to output buffer
-                                           lpMemDim,        // Ptr to item dimensions
-                                           aplRank,         // Item rank
-                                           aplDimRow,       // Item row #
-                                           lpFmtColStr);    // Ptr to item FMTCOLSTR
+            lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
+                                          lpMemDim,         // Ptr to item dimensions
+                                          aplRank,          // Item rank
+                                          aplDimRow,        // Item row #
+                                          lpFmtColStr);     // Ptr to item FMTCOLSTR
     } // End FOR
 
     // Mark as last row struc
@@ -2472,10 +2472,13 @@ void PropagateRowColCount
            lpFmtColLcl = lpFmtHeader->lpFmtCol1st;
          uCol < lpFmtHeader->uActCols;
          uCol++, lpFmtColLcl++)
+    {
         uInts += lpFmtColLcl->uLdBl
-               + max (lpFmtColLcl->uInts, lpFmtColLcl->uChrs)
-               + lpFmtColLcl->uFrcs
+               + max (lpFmtColLcl->uInts, lpFmtColLcl->uChrs);
+        uFrcs += lpFmtColLcl->uFrcs
                + lpFmtColLcl->uTrBl;
+    } // End FOR
+
     // Handle leading and trailing blanks
     if (lpFmtHeader->uActCols)
     {
@@ -2485,7 +2488,7 @@ void PropagateRowColCount
         else
             uLdBl = 0;
         uTrBl = lpFmtHeader->lpFmtCol1st[lpFmtHeader->uActCols - 1].uTrBl;
-        if (uFrcs >= uTrBl)     // Avoid goinig negative
+        if (uFrcs >= uTrBl)     // Avoid going negative
             uFrcs -= uTrBl;
         else
             uTrBl = 0;

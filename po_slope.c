@@ -748,7 +748,7 @@ RESTART_EXCEPTION:
 
                             case ARRAY_NESTED:
                                 // Save in the result as an HGLOBAL
-                                ((LPAPLNESTED) lpMemRes)[uRht] = tkLftArg.tkData.tkGlbData;
+                                ((LPAPLNESTED) lpMemRes)[uRht] = CopySymGlbDir_PTB (tkLftArg.tkData.tkGlbData);
 
                                 break;
 

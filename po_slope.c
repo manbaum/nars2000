@@ -175,6 +175,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLLONGEST        aplLongestRht;        // Right arg immediate type
+    APLCHAR           alterChar;            // Original function in case alternating
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -596,6 +597,10 @@ RESTART_EXCEPTION:
         //   to substitute into when we're doing alternating scans
         YYFcnStrLft = *lpYYFcnStrLft;
 
+        // In case we're executing an alternating function,
+        //   save the original function
+        alterChar = YYFcnStrLft.tkToken.tkData.tkChar;
+
         // Loop through the right arg calling the
         //   function strand between data, storing in the
         //   result
@@ -616,6 +621,9 @@ RESTART_EXCEPTION:
              || (lpPrimFlagsLft->AssocNumb && IsSimpleGlbNum (aplTypeRht))
              ||  lpPrimFlagsLft->Alter)
             {
+                // Restore the original function in case it's alternating
+                YYFcnStrLft.tkToken.tkData.tkChar = alterChar;
+
                 // Calculate the first index in this vector
                 uRht = uDimRht + 0 * uDimHi;
 

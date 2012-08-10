@@ -2778,6 +2778,7 @@ LPAPLCHAR FormatArrSimple
                     UBOOL   bLineCont = FALSE;  // TRUE iff this line is a continuation
                     WCHAR   wch;                // The replaced WCHAR
                     APLUINT uOutLen;            // Output length for this line
+                    UBOOL   bCharsAvl;          // TRUE iff chars available on the line
 
                     // Ensure properly terminated
                     *lpwszOut = WC_EOS;
@@ -2786,46 +2787,61 @@ LPAPLCHAR FormatArrSimple
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         return NULL;
 
+                    // Are there chars available on the line?
+                    bCharsAvl = uQuadPW > (uLeadBefore + uCol);
+
                     // If there's something on the line, ...
                     if (uCol)
                         // Output the line
-                        AppendLine (lpwszOutStart, FALSE, uQuadPW <= (uLeadBefore + uCol));
+                        AppendLine (lpwszOutStart, FALSE, !bCharsAvl);
 
-                    if (uQuadPW <= (uLeadBefore + uCol))
+                    // If there are no chars available on the line, ...
+                    if (!bCharsAvl)
                         uCol = DEF_INDENT - uLeadBefore;
                     else
-                    // Output the leading blanks
-                    if (uLeadBefore)
                     {
-                        FillMemoryW (lpwszOut, (APLU3264) uLeadBefore, L' ');
-                        lpwszOut[uLeadBefore] = WC_EOS;
-                        AppendLine (lpwszOut, FALSE, FALSE);
+                        // Output the leading blanks
+                        if (uLeadBefore)
+                        {
+                            FillMemoryW (lpwszOut, (APLU3264) uLeadBefore, L' ');
+                            lpwszOut[uLeadBefore] = WC_EOS;
+                            AppendLine (lpwszOut, FALSE, FALSE);
+                        } // End IF
+
+                        // If we're forced to split a line at the width
+                        //   because the single item is too long for the width,
+                        //   (in other words, we're still at the line start), ...
+                        if (uCol EQ 0)
+                        {
+                            // # chars available on line
+                            uOutLen = uQuadPW - (uCol + uLeadBefore);
+
+                            while (uOutLen < uActLen)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    return NULL;
+
+                                // Because AppendLine works on single zero-terminated lines,
+                                //   we need to create one
+                                wch = lpaplChar[uOutLen];                   // Save the ending char
+                                lpaplChar[uOutLen] = WC_EOS;                // Terminate the line
+                                AppendLine (lpaplChar, bLineCont, TRUE);    // Display the line
+                                lpaplChar[uOutLen] = wch;                   // Restore the ending char
+
+                                lpaplChar += uOutLen;                       // Skip over what we just output
+                                uActLen   -= uOutLen;                       // Less how much we output
+                                uCmpWid   -= uOutLen;                       // ...
+                                uOutLen = uQuadPW - DEF_INDENT;             // Take into account the indent
+                                bLineCont = TRUE;                           // Lines from here on are continuations
+
+                                if (uOutLen < uActLen)
+                                    AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
+                            } // End WHILE
+                        } else
+                            // End the line
+                            AppendLine (L"", FALSE, TRUE);
                     } // End IF
-
-                    uOutLen = uQuadPW - (uCol + uLeadBefore);   // # chars available on line
-
-                    while (uOutLen < uActLen)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            return NULL;
-
-                        // Because AppendLine works on single zero-terminated lines,
-                        //   we need to create one
-                        wch = lpaplChar[uOutLen];                   // Save the ending char
-                        lpaplChar[uOutLen] = WC_EOS;                // Terminate the line
-                        AppendLine (lpaplChar, bLineCont, TRUE);    // Display the line
-                        lpaplChar[uOutLen] = wch;                   // Restore the ending char
-
-                        lpaplChar += uOutLen;                       // Skip over what we just output
-                        uActLen   -= uOutLen;                       // Less how much we output
-                        uCmpWid   -= uOutLen;                       // ...
-                        uOutLen = uQuadPW - DEF_INDENT;             // Take into account the indent
-                        bLineCont = TRUE;                           // Lines from here on are continuations
-
-                        if (uOutLen < uActLen)
-                            AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
-                    } // End WHILE
 
                     // Reset the line start
                     lpwszOut = lpw = *lplpwszOut;
@@ -2888,8 +2904,13 @@ LPAPLCHAR FormatArrSimple
         if (lpFmtRowStr->bBlank
          || (aplDimRow NE (aplDimNRows - 1))
          || (bNextRow && aplDimRow EQ (aplDimNRows - 1)))
+        {
+            // Ensure properly terminated
+            *lpwszOut = WC_EOS;
+
             // Skip to the start of the next row
             lpwszOut = lpwszOutStart + aplLastDim;
+        } // End IF
 
         // If this is raw output, output it
         if (bRawOutput)

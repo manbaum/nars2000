@@ -293,8 +293,14 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
         // Calc result Type
         aplTypeRes = ARRAY_BOOL;
     else
+    {
         // Calc result Type
         aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
+
+        // Promote Boolean to integer
+        if (IsSimpleBool (aplTypeRes))
+            aplTypeRes = ARRAY_INT;
+    } // End IF/ELSE
 
     // If the result is global numeric, ...
     if (IsGlbNum (aplTypeRes))

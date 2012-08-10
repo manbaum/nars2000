@@ -1,6 +1,18 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #990 -- Version 0.3.8.xx
+------------------------------
+
+* Fix Bug In Decode Of Bool v. Bool
+
+Directory trunk:
+
+PF_UTACK.C:
+  Fix bug in decode of Bool v. Bool where the result is calculated as Bool
+    rather than integer.
+
+
 Build #989 -- Version 0.3.8.xx
 ------------------------------
 

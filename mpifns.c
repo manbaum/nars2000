@@ -240,7 +240,7 @@ int IsMpzNULL
 
 void mpz_set_inf
     (mpz_t rop,                 // Destination
-     int   sgn)                 // Sign:  > 0 for +Infinity, < 0 for -Infinity
+     int   sgn)                 // Sign:  >= 0 for +Infinity, < 0 for -Infinity
 
 {
     // If it's not infinite, ...
@@ -249,8 +249,8 @@ void mpz_set_inf
         mpz_clear (rop);
 
     // Set the numerator to a special format, properly signed
-    rop->_mp_size  = (sgn > 0) ? (mp_size_t) 0x7FFFFFFF
-                               : (mp_size_t) 0x80000000;
+    rop->_mp_size  = (sgn >= 0) ? (mp_size_t) 0x7FFFFFFF
+                                : (mp_size_t) 0x80000000;
     rop->_mp_alloc = 0;
     rop->_mp_d     = NULL;
 } // mpz_set_inf
@@ -2611,12 +2611,12 @@ int IsMpqNULL
 
 void mpq_set_infsub
     (mpq_t rop,                 // Destination
-     int   sgn)                 // Sign:  > 0 for +Infinity, < 0 for -Infinity
+     int   sgn)                 // Sign:  >= 0 for +Infinity, < 0 for -Infinity
 
 {
     // Set the numerator to a special format, properly signed
-    rop->_mp_num._mp_size  = (sgn > 0) ? (mp_size_t) 0x7FFFFFFF
-                                       : (mp_size_t) 0x80000000;
+    rop->_mp_num._mp_size  = (sgn >= 0) ? (mp_size_t) 0x7FFFFFFF
+                                        : (mp_size_t) 0x80000000;
     rop->_mp_num._mp_alloc = 0;
     rop->_mp_num._mp_d     = NULL;
 
@@ -2635,7 +2635,7 @@ void mpq_set_infsub
 
 void mpq_set_inf
     (mpq_t rop,                 // Destination
-     int   sgn)                 // Sign:  > 0 for +Infinity, < 0 for -Infinity
+     int   sgn)                 // Sign:  >= 0 for +Infinity, < 0 for -Infinity
 
 {
     // If it's not infinite, ...

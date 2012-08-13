@@ -796,10 +796,10 @@ void DemoteData
      LPVOID   lpMemRht)             // Ptr to right arg global memory
 
 {
-    APLUINT uRht;                   // Loop counter
-    UINT    uBitIndex;              // Bit index for looping through Booleans
-    HGLOBAL hGlbSub;                // Temp global memory handle
-    LPVOID  lpMemSub;               // Ptr to temp global memory
+    APLUINT    uRht;                // Loop counter
+    UINT       uBitIndex;           // Bit index for looping through Booleans
+    LPSYMENTRY lpSymGlbSub;         // Ptr to temp SYMENTRY/HGLOBAL
+    LPVOID     lpMemSub;            // Ptr to temp global memory
 
     // Split cases based upon the result's storage type
     // Note that the result is always of lower type than
@@ -1025,21 +1025,59 @@ void DemoteData
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         // Get the global memory handle
-                        hGlbSub = *((LPAPLNESTED) lpMemRht)++;
+                        lpSymGlbSub = *((LPAPLNESTED) lpMemRht)++;
 
-                        // Lock the memory to get a ptr to it
-                        lpMemSub = MyGlobalLock (hGlbSub);
+                        // Split cases based upon the ptr type bits
+                        switch (GetPtrTypeDir (lpSymGlbSub))
+                        {
+                            case PTRTYPE_STCONST:
+                                // Split cases based upon the immediate storage type
+                                switch (lpSymGlbSub->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:
+                                        // Convert the data to RAT
+                                        mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, BIT0 & lpSymGlbSub->stData.stInteger, 1);
 
-                        Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
+                                        break;
 
-                        // Skip over the header and dimensions to the data
-                        lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                                    case IMMTYPE_INT:
+                                        // Convert the data to RAT
+                                        mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, lpSymGlbSub->stData.stInteger, 1);
 
-                        // Copy the data
-                        mpq_init_set (((LPAPLRAT) lpMemRes)++, ((LPAPLRAT) lpMemSub)++);
+                                        break;
 
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                                    case IMMTYPE_FLOAT:
+                                        // Convert the data to RAT
+                                        mpq_init_set_d  (((LPAPLRAT) lpMemRes)++, lpSymGlbSub->stData.stFloat);
+
+                                        break;
+
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                break;
+
+                            case PTRTYPE_HGLOBAL:
+                                // Lock the memory to get a ptr to it
+                                lpMemSub = MyGlobalLock (lpSymGlbSub);
+
+                                Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
+
+                                // Skip over the header and dimensions to the data
+                                lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+
+                                // Copy the data
+                                mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) lpMemSub);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
                     } // End FOR
 
                     break;
@@ -1060,21 +1098,59 @@ void DemoteData
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         // Get the global memory handle
-                        hGlbSub = *((LPAPLNESTED) lpMemRht)++;
+                        lpSymGlbSub = *((LPAPLNESTED) lpMemRht)++;
 
-                        // Lock the memory to get a ptr to it
-                        lpMemSub = MyGlobalLock (hGlbSub);
+                        // Split cases based upon the ptr type bits
+                        switch (GetPtrTypeDir (lpSymGlbSub))
+                        {
+                            case PTRTYPE_STCONST:
+                                // Split cases based upon the immediate storage type
+                                switch (lpSymGlbSub->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:
+                                        // Convert the data to VFP
+                                        mpfr_init_set_sx (((LPAPLVFP) lpMemRes)++, BIT0 & lpSymGlbSub->stData.stInteger, MPFR_RNDN);
 
-                        Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
+                                        break;
 
-                        // Skip over the header and dimensions to the data
-                        lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                                    case IMMTYPE_INT:
+                                        // Convert the data to VFP
+                                        mpfr_init_set_sx (((LPAPLVFP) lpMemRes)++, lpSymGlbSub->stData.stInteger, MPFR_RNDN);
 
-                        // Copy the data
-                        mpfr_init_copy (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemSub)++);
+                                        break;
 
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                                    case IMMTYPE_FLOAT:
+                                        // Convert the data to VFP
+                                        mpfr_init_set_d  (((LPAPLVFP) lpMemRes)++, lpSymGlbSub->stData.stFloat, MPFR_RNDN);
+
+                                        break;
+
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                break;
+
+                            case PTRTYPE_HGLOBAL:
+                                // Lock the memory to get a ptr to it
+                                lpMemSub = MyGlobalLock (lpSymGlbSub);
+
+                                Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
+
+                                // Skip over the header and dimensions to the data
+                                lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+
+                                // Copy the data
+                                mpfr_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpMemSub);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
                     } // End FOR
 
                     break;

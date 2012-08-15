@@ -2749,6 +2749,10 @@ void QFMT_ThousandsSep
     // Ensure properly terminated
     lpwszFormat[bNeg + uLen1 + uSep1] = WC_EOS;
 
+    // Move up the fractional part
+    MoveMemoryW (&lpwszFormat[bNeg + (uLen1 - uDec) + uSep1],
+                 &lpwszFormat[bNeg + (uLen1 - uDec)],
+                  uDec);
     // Loop through the separators
     for (; uSep1; uLen1 -= 3, uSep1--)
     {
@@ -2758,7 +2762,7 @@ void QFMT_ThousandsSep
         // Move up the formatted integer to make room for one separator
         MoveMemoryW (lpwCur,
                     &lpwszFormat[bNeg + (uLen1 - uDec) - 3],
-                     uDec + min (uLen1, 3));
+                     min (uLen1, 3));
         // Insert a thousands separator
         lpwCur[-1] = UTF16_COMMA;
     } // End FOR

@@ -1081,7 +1081,7 @@ LPWCHAR ParseSavedWsVar_EM
                     // Save in the result and skip over it
                     *((LPAPLHETERO) *lplpMemObj)++ =
                     lpSymTmp =
-                      SymTabAppendInteger_EM (aplInteger);
+                      SymTabAppendInteger_EM (aplInteger, TRUE);
                     if (!lpSymTmp)
                         goto ERROR_EXIT;
                 } else
@@ -1120,7 +1120,7 @@ LPWCHAR ParseSavedWsVar_EM
                     // Save in the result and skip over it
                     *((LPAPLHETERO) *lplpMemObj)++ =
                     lpSymTmp =
-                      SymTabAppendChar_EM (wcTmp);
+                      SymTabAppendChar_EM (wcTmp, TRUE);
                     if (!lpSymTmp)
                         goto ERROR_EXIT;
                 } else

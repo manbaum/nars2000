@@ -1535,7 +1535,7 @@ UBOOL TypePromoteGlb_EM
                     {
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
-                          SymTabAppendInteger_EM (*((LPAPLINT) lpMemArg)++);
+                          SymTabAppendInteger_EM (*((LPAPLINT) lpMemArg)++, TRUE);
                         if (!lpSymTmp)
                             goto ERROR_EXIT;
                     } // End FOR
@@ -1561,7 +1561,7 @@ UBOOL TypePromoteGlb_EM
                     {
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
-                          SymTabAppendChar_EM (*((LPAPLCHAR) lpMemArg)++);
+                          SymTabAppendChar_EM (*((LPAPLCHAR) lpMemArg)++, TRUE);
                         if (!lpSymTmp)
                             goto ERROR_EXIT;
                     } // End FOR
@@ -1579,7 +1579,7 @@ UBOOL TypePromoteGlb_EM
                     {
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
-                          SymTabAppendInteger_EM (apaOff + apaMul * uRes);
+                          SymTabAppendInteger_EM (apaOff + apaMul * uRes, TRUE);
                         if (!lpSymTmp)
                             goto ERROR_EXIT;
                     } // End FOR

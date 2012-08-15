@@ -385,7 +385,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                             case IMMTYPE_BOOL:
                                 *((LPAPLHETERO) lpMemRes)++ =
                                 lpSymTmp =
-                                  SymTabAppendChar_EM    ((APLBOOL) aplLongestRht);
+                                  SymTabAppendChar_EM    ((APLBOOL) aplLongestRht, TRUE);
                                 if (!lpSymTmp)
                                     goto ERROR_EXIT;
                                 break;
@@ -410,7 +410,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                                 *((LPAPLHETERO) lpMemRes)++ =
                                 lpSymTmp =
-                                  SymTabAppendChar_EM    ((APLCHAR) aplLongestRht);
+                                  SymTabAppendChar_EM    ((APLCHAR) aplLongestRht, TRUE);
                                 if (!lpSymTmp)
                                     goto ERROR_EXIT;
                                 break;
@@ -418,7 +418,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                             case IMMTYPE_CHAR:
                                 *((LPAPLHETERO) lpMemRes)++ =
                                 lpSymTmp =
-                                  SymTabAppendInteger_EM ((APLCHAR) aplLongestRht);
+                                  SymTabAppendInteger_EM ((APLCHAR) aplLongestRht, TRUE);
                                 if (!lpSymTmp)
                                     goto ERROR_EXIT;
                                 break;
@@ -470,7 +470,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
-                          SymTabAppendChar_EM    ((APLCHAR) aplLongestRht);
+                          SymTabAppendChar_EM    ((APLCHAR) aplLongestRht, TRUE);
                         if (!lpSymTmp)
                             goto ERROR_EXIT;
 

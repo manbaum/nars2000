@@ -1868,17 +1868,17 @@ LPSYMENTRY MakeSymEntry_EM
     switch (immType)
     {
         case IMMTYPE_BOOL:
-            lpSymDst = SymTabAppendInteger_EM (*(LPAPLBOOL)  lpVal);
+            lpSymDst = SymTabAppendInteger_EM (*(LPAPLBOOL)  lpVal, TRUE);
 
             break;
 
         case IMMTYPE_INT:
-            lpSymDst = SymTabAppendInteger_EM (*(LPAPLINT)   lpVal);
+            lpSymDst = SymTabAppendInteger_EM (*(LPAPLINT)   lpVal, TRUE);
 
             break;
 
         case IMMTYPE_CHAR:
-            lpSymDst = SymTabAppendChar_EM    (*(LPAPLCHAR)  lpVal);
+            lpSymDst = SymTabAppendChar_EM    (*(LPAPLCHAR)  lpVal, TRUE);
 
             break;
 
@@ -1926,17 +1926,17 @@ LPSYMENTRY CopyImmSymEntry_EM
     switch (immType)
     {
         case IMMTYPE_BOOL:
-            lpSymDst = SymTabAppendInteger_EM (lpSymSrc->stData.stBoolean);
+            lpSymDst = SymTabAppendInteger_EM (lpSymSrc->stData.stBoolean, FALSE);
 
             break;
 
         case IMMTYPE_INT:
-            lpSymDst = SymTabAppendInteger_EM (lpSymSrc->stData.stInteger);
+            lpSymDst = SymTabAppendInteger_EM (lpSymSrc->stData.stInteger, FALSE);
 
             break;
 
         case IMMTYPE_CHAR:
-            lpSymDst = SymTabAppendChar_EM    (lpSymSrc->stData.stChar);
+            lpSymDst = SymTabAppendChar_EM    (lpSymSrc->stData.stChar, FALSE);
 
             break;
 
@@ -1964,7 +1964,8 @@ LPSYMENTRY CopyImmSymEntry_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendInteger_EM
-    (APLINT aplInteger)             // The integer to append
+    (APLINT aplInteger,             // The integer to append
+     UBOOL  bUseCommon)             // TRUE iff we may use common cases
 
 {
     LPSYMENTRY   lpSymEntryDest;    // Ptr to destin STE
@@ -1980,19 +1981,23 @@ LPSYMENTRY SymTabAppendInteger_EM
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
 
-    // Split off common Boolean cases
-    if (aplInteger EQ 0 && lpMemPTD->steZero)
+    // Use common cases?
+    if (bUseCommon)
     {
-        lpSymEntryDest = lpMemPTD->steZero;
+        // Split off common Boolean cases
+        if (aplInteger EQ 0 && lpMemPTD->steZero)
+        {
+            lpSymEntryDest = lpMemPTD->steZero;
 
-        goto NORMAL_EXIT;
-    } // End IF
+            goto NORMAL_EXIT;
+        } // End IF
 
-    if (aplInteger EQ 1 && lpMemPTD->steOne)
-    {
-        lpSymEntryDest = lpMemPTD->steOne;
+        if (aplInteger EQ 1 && lpMemPTD->steOne)
+        {
+            lpSymEntryDest = lpMemPTD->steOne;
 
-        goto NORMAL_EXIT;
+            goto NORMAL_EXIT;
+        } // End IF
     } // End IF
 
     // Hash the integer
@@ -2010,8 +2015,14 @@ LPSYMENTRY SymTabAppendInteger_EM
     else
         stNeedFlags.ImmType = IMMTYPE_INT;
 
-    // Lookup the number in the symbol table
-    lpSymEntryDest = SymTabLookupNumber (uHash, aplInteger, &stNeedFlags);
+    // Use common cases?
+    if (bUseCommon)
+        // Lookup the number in the symbol table
+        lpSymEntryDest = SymTabLookupNumber (uHash, aplInteger, &stNeedFlags);
+    else
+        lpSymEntryDest = NULL;
+
+    // If it's not found, ...
     if (!lpSymEntryDest)
     {
         LPHSHENTRY lpHshEntryHash;
@@ -2180,7 +2191,8 @@ ERROR_EXIT:
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendChar_EM
-    (APLCHAR aplChar)               // The char to append
+    (APLCHAR aplChar,               // The char to append
+     UBOOL   bUseCommon)            // TRUE iff we may use common cases
 
 {
     LPSYMENTRY   lpSymEntryDest;    // Ptr to destin STE
@@ -2196,6 +2208,18 @@ LPSYMENTRY SymTabAppendChar_EM
     // Get a ptr to the HshTab & SymTab strucs
     lpHTS = &lpMemPTD->htsPTD;
 
+    // Use common cases?
+    if (bUseCommon)
+    {
+        // Split off common blank case
+        if (aplChar EQ L' ' && lpMemPTD->steBlank)
+        {
+            lpSymEntryDest = lpMemPTD->steBlank;
+
+            goto NORMAL_EXIT;
+        } // End IF
+    } // End IF
+
     // Hash the char
     uHash = hashlittle
            ((const uint32_t *) &aplChar,    // A ptr to the char to hash
@@ -2207,8 +2231,14 @@ LPSYMENTRY SymTabAppendChar_EM
     stNeedFlags.Inuse   = TRUE;
     stNeedFlags.ImmType = IMMTYPE_CHAR;
 
-    // Lookup the char in the symbol table
-    lpSymEntryDest = SymTabLookupChar (uHash, aplChar, &stNeedFlags);
+    // Use common cases?
+    if (bUseCommon)
+        // Lookup the char in the symbol table
+        lpSymEntryDest = SymTabLookupChar (uHash, aplChar, &stNeedFlags);
+    else
+        lpSymEntryDest = NULL;
+
+    // If it's not found, ...
     if (!lpSymEntryDest)
     {
         LPHSHENTRY lpHshEntryHash;
@@ -2265,6 +2295,7 @@ LPSYMENTRY SymTabAppendChar_EM
         lpSymEntryDest->stSILevel  = 0;
     } // End IF
 ERROR_EXIT:
+NORMAL_EXIT:
     Assert (HshTabFrisk (lpHTS));
 
     return lpSymEntryDest;
@@ -2604,9 +2635,9 @@ UBOOL AllocSymTab
     if (bInitSTEs)
     {
         // Initialize the Symbol Table Entry for the constants zero, one, blank, and No Value
-        lpMemPTD->steZero    = SymTabAppendInteger_EM (0);
-        lpMemPTD->steOne     = SymTabAppendInteger_EM (1);
-        lpMemPTD->steBlank   = SymTabAppendChar_EM    (L' ');
+        lpMemPTD->steZero    = SymTabAppendInteger_EM (0, FALSE);
+        lpMemPTD->steOne     = SymTabAppendInteger_EM (1, FALSE);
+        lpMemPTD->steBlank   = SymTabAppendChar_EM    (L' ', FALSE);
         lpMemPTD->steNoValue = lpHTS->lpSymTabNext++;
 
         if (lpMemPTD->steZero    EQ NULL

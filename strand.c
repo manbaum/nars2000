@@ -3048,7 +3048,7 @@ LPSYMENTRY CopyImmToken_EM
     {
         case IMMTYPE_BOOL:
         case IMMTYPE_INT:
-            lpSymEntry = SymTabAppendInteger_EM (lpToken->tkData.tkInteger);
+            lpSymEntry = SymTabAppendInteger_EM (lpToken->tkData.tkInteger, TRUE);
 
             break;
 
@@ -3058,7 +3058,7 @@ LPSYMENTRY CopyImmToken_EM
             break;
 
         case IMMTYPE_CHAR:
-            lpSymEntry = SymTabAppendChar_EM    (lpToken->tkData.tkChar);
+            lpSymEntry = SymTabAppendChar_EM    (lpToken->tkData.tkChar, TRUE);
 
             break;
 

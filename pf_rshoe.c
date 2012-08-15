@@ -1291,7 +1291,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                                 lpSymTmp =
-                                  SymTabAppendInteger_EM (*((LPAPLINT) lpMemSub)++);
+                                  SymTabAppendInteger_EM (*((LPAPLINT) lpMemSub)++, TRUE);
                                 if (!lpSymTmp)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
@@ -1344,7 +1344,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                                 lpSymTmp =
-                                  SymTabAppendInteger_EM (apaOffSub + apaMulSub * (uSubLast + (uSubRest * aplNELMSubLast)));
+                                  SymTabAppendInteger_EM (apaOffSub + apaMulSub * (uSubLast + (uSubRest * aplNELMSubLast)), TRUE);
                                 if (!lpSymTmp)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
@@ -1440,7 +1440,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                                 lpSymTmp =
-                                  SymTabAppendChar_EM (*((LPAPLCHAR) lpMemSub)++);
+                                  SymTabAppendChar_EM (*((LPAPLCHAR) lpMemSub)++, TRUE);
                                 if (!lpSymTmp)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR

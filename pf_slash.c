@@ -189,7 +189,8 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                   uBitIndex;
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
-    LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
+    LPVARARRAY_HEADER lpMemHdrRht,  // Ptr to right arg header
+                  lpMemHdrRes;      // ...    result    ...
     HGLOBAL       lpSymGlbLft;      // Ptr to left arg as global numeric
     APLRAT        aplRatRht = {0};  // Right arg value as RAT
     APLVFP        aplVfpRht = {0};  // ...                VFP
@@ -525,7 +526,8 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes =
+    lpMemRes    = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header values
@@ -554,12 +556,85 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // Handle empty nested array results (prototypes)
-    if (IsEmpty (aplNELMRes) && IsNested (aplTypeRht))
+    if (IsEmpty (aplNELMRes))
     {
-        *((LPAPLNESTED) lpMemRes) =
-          MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht, // Proto arg handle
-                                   lptkFunc,                // Ptr to function token
-                                   MP_CHARS);               // CHARs allowed
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_APA:
+                lpMemHdrRes->ArrType = ARRAY_BOOL;
+
+                break;
+
+            case ARRAY_CHAR:
+                lpMemHdrRes->ArrType = ARRAY_CHAR;
+
+                break;
+
+            case ARRAY_NESTED:
+                *((LPAPLNESTED) lpMemRes) =
+                  MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemRht, // Proto arg handle
+                                           lptkFunc,                // Ptr to function token
+                                           MP_CHARS);               // CHARs allowed
+                break;
+
+            case ARRAY_HETERO:
+            {
+                LPSYMENTRY lpSym = *(LPAPLHETERO) lpMemRht;
+
+                // Split cases based upon the ptr type bits
+                switch (GetPtrTypeDir (lpSym))
+                {
+                    case PTRTYPE_STCONST:
+                        // Set the result storage type to either Boolean or char
+
+                        // Split cases based upon the STE immediate type
+                        switch (lpSym->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:
+                            case IMMTYPE_INT:
+                            case IMMTYPE_FLOAT:
+                                lpMemHdrRes->ArrType = ARRAY_BOOL;
+
+                                break;
+
+                            case IMMTYPE_CHAR:
+                                lpMemHdrRes->ArrType = ARRAY_CHAR;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        // The item is a global numeric
+                        lpMemHdrRes->ArrType = ARRAY_BOOL;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                break;
+            } // End ARRAY_HETERO
+
+            case ARRAY_RAT:
+            case ARRAY_VFP:
+                lpMemHdrRes->ArrType = ARRAY_BOOL;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
         goto PROTO_EXIT;
     } // End IF
 

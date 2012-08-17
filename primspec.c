@@ -3936,8 +3936,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
     aplRankLft = lpHeader->Rank;
 #undef  lpHeader
 
-    // The NELM of the result is the larger of the two arg's NELMs
-    aplNELMRes = max (aplNELMLft, aplNELMRht);
+    // The NELM of the result is NELM of the non-scalar
+    aplNELMRes = aplNELMLft;
 
     // Calculate the storage type of the result
     aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMLft,
@@ -9656,8 +9656,8 @@ HGLOBAL PrimFnDydSiScNest_EM
     aplRankRht = lpHeader->Rank;
 #undef  lpHeader
 
-    // The NELM of the result is the larger of the two arg's NELMs
-    aplNELMRes = max (aplNELMLft, aplNELMRht);
+    // The NELM of the result is NELM of the non-scalar
+    aplNELMRes = aplNELMRht;
 
     // Calculate the storage type of the result
     aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMLft,

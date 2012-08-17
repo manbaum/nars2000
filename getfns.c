@@ -1042,10 +1042,18 @@ void GetFirstValueGlb
                 *lpaplChar    = WC_EOS;
             if (lpaplLongest)
                 *lpaplLongest = 0;
-            if (lpSymGlb)
-                *lpSymGlb     = lpMem;
-            if (lpImmType)
-                *lpImmType    = TranslateArrayTypeToImmType (aplType);
+            // If the array is empty, ...
+            if (IsEmpty (aplNELM))
+            {
+                if (lpSymGlb)
+                    *lpSymGlb  = NULL;
+                if (lpImmType)
+                    *lpImmType = IMMTYPE_BOOL;
+                if (lpArrType)
+                    *lpArrType = ARRAY_BOOL;
+            } else
+                if (lpSymGlb)
+                    *lpSymGlb  = lpMem;
             break;
 
         defstop

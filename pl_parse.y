@@ -794,7 +794,7 @@ StmtSing:
                                                     && (lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_EXEC
                                                      || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD))))
                                                      // Handle ArrExpr if caller is Execute or quad
-                                                     ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1);
+                                                     ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1, FALSE);
                                                  else
                                                      lpplLocalVars->bRet =
                                                        ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
@@ -988,7 +988,7 @@ StmtSing:
                                                  || lpSISCur->lpSISPrv->DfnType EQ DFNTYPE_QUAD))))
                                              {
                                                  // Handle ArrExpr if caller is Execute or quad
-                                                 ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1);
+                                                 ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1, TRUE);
 
                                                  // Mark as already displayed
                                                  $1.tkToken.tkFlags.NoDisplay = TRUE;
@@ -9820,7 +9820,8 @@ void AmbOpToOp1
 void ArrExprCheckCaller
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to local vars
      LPSIS_HEADER  lpSISCur,            // Ptr to current SIS header
-     LPPL_YYSTYPE  lpYYArg)             // Ptr to ArrExpr
+     LPPL_YYSTYPE  lpYYArg,             // Ptr to ArrExpr
+     UBOOL         bNoDisplay)          // TRUE iff value is not to be displayed
 
 {
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
@@ -9838,6 +9839,9 @@ void ArrExprCheckCaller
     else
         // Copy the result
         lpplLocalVars->lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
+
+    // Set/clear the NoDisplay flag
+    lpplLocalVars->lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
 
     // If the Execute/Quad result is present, display it
     if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)

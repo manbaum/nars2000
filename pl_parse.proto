@@ -13,7 +13,7 @@ LPPL_YYSTYPE WaitForInput (HWND hWndSM, UBOOL bQuoteQuad, LPTOKEN lptkFunc);
 UBOOL AmbOpSwap_EM (LPPL_YYSTYPE lpYYFcn);
 void AmbOpToFcn (LPPL_YYSTYPE lpYYFcn);
 void AmbOpToOp1 (LPPL_YYSTYPE lpYYFcn);
-void ArrExprCheckCaller (LPPLLOCALVARS lpplLocalVars, LPSIS_HEADER lpSISCur, LPPL_YYSTYPE lpYYArg);
+void ArrExprCheckCaller (LPPLLOCALVARS lpplLocalVars, LPSIS_HEADER lpSISCur, LPPL_YYSTYPE lpYYArg, UBOOL bNoDisplay);
 UBOOL CheckSelSpec_EM (LPPLLOCALVARS lpplLocalVars, LPTOKEN lptkNameVars);
 UBOOL IsSelectSpec (LPTOKEN lptkArg);
 PL_YYSTYPE MakeTempCopy (LPPL_YYSTYPE lpYYTmp);

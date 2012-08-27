@@ -175,6 +175,10 @@ void AppendLine
 ////#ifdef PERFMONON
 ////    UpdateWindow (hWndEC);
 ////#endif
+#ifdef DEBUG
+    // To aid in debugging, output the text immediately
+    UpdateWindow (hWndEC);
+#endif
     PERFMON
     PERFMONSHOW
 } // End AppendLine

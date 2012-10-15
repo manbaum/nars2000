@@ -2652,7 +2652,6 @@ LPAPLCHAR FormatArrSimple
                 aplRealRow;         // Loop counter
     APLUINT     uActLen,            // Actual length
                 uLead,              // # leading blanks
-                uLeadBefore,        // # leading blanks before test for []PW
                 uCol,               // Column #
                 uCmpWid,            // Compiled width
                 uColOff;            // Current row's col offset
@@ -2766,14 +2765,13 @@ LPAPLCHAR FormatArrSimple
                 } // End IF/ELSE
 
                 // Plus leading blanks
-                uLeadBefore = lpFmtColStr[aplDimCol].uLdBl;
-                uLead += uLeadBefore;
+                uLead += lpFmtColStr[aplDimCol].uLdBl;
 
                 // If this is raw output,
                 // break the line if it would exceed []PW
                 uCol = (UINT) (lpwszOut - lpwszOutStart);
                 if (bRawOutput
-                 && uQuadPW < (uLeadBefore + uCmpWid + uCol))
+                 && uQuadPW < (uLead + uCmpWid + uCol))
                 {
                     UBOOL   bLineCont = FALSE;  // TRUE iff this line is a continuation
                     WCHAR   wch;                // The replaced WCHAR
@@ -2788,23 +2786,21 @@ LPAPLCHAR FormatArrSimple
                         return NULL;
 
                     // Are there chars available on the line?
-                    bCharsAvl = uQuadPW > (uLeadBefore + uCol);
+                    bCharsAvl = uQuadPW > (uLead + uCol);
 
                     // If there's something on the line, ...
                     if (uCol)
                         // Output the line
                         AppendLine (lpwszOutStart, FALSE, !bCharsAvl);
 
-                    // If there are no chars available on the line, ...
-                    if (!bCharsAvl)
-                        uCol = DEF_INDENT - uLeadBefore;
-                    else
+                    // If there are chars available on the line, ...
+                    if (bCharsAvl)
                     {
                         // Output the leading blanks
-                        if (uLeadBefore)
+                        if (uLead)
                         {
-                            FillMemoryW (lpwszOut, (APLU3264) uLeadBefore, L' ');
-                            lpwszOut[uLeadBefore] = WC_EOS;
+                            FillMemoryW (lpwszOut, (APLU3264) uLead, L' ');
+                            lpwszOut[uLead] = WC_EOS;
                             AppendLine (lpwszOut, FALSE, FALSE);
                         } // End IF
 
@@ -2814,7 +2810,7 @@ LPAPLCHAR FormatArrSimple
                         if (uCol EQ 0)
                         {
                             // # chars available on line
-                            uOutLen = uQuadPW - (uCol + uLeadBefore);
+                            uOutLen = uQuadPW - (uCol + uLead);
 
                             while (uOutLen < uActLen)
                             {
@@ -2851,24 +2847,20 @@ LPAPLCHAR FormatArrSimple
                     FillMemoryW (lpw, (APLU3264) uCol, L' ');
 
                     // Skip over leading indent
-                    lpwszOut += DEF_INDENT;
-
-                    // Shorten the width to act like this is the first col
-                    //   (which doesn't have a leading blank)
-                    uCmpWid = max (uCmpWid, uActLen + 1) - 1;
-                    uCol = uLeadBefore;
+                    lpwszOut += DEF_INDENT + uLead;
+                    uCol      = uLead;
                 } else
                 {
+                    // Fill with leading blanks
+                    FillMemoryW (lpwszOut, (APLU3264) uLead, L' ');
+
                     // Include this row's col offset
                     uLead += uColOff;
-#ifdef PREFILL
+
                     // Skip over leading blanks
                     lpwszOut += uLead;
-                    uCol = uLead;
-#else
-                    // Fill with leading blanks
-                    lpwszOut = FillMemoryW (lpwszOut, uLead, L' ');
-#endif
+                    uCol      = uLead;
+
                     // Subtract out as the col offset isn't in the compiled width
                     uCol -= uColOff;
                 } // End IF/ELSE

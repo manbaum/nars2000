@@ -2853,7 +2853,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         &hGlbSubRht,            // Ptr to result as HGLOBAL (may be NULL if singleton)
                         &aplLongestSubRht,      // Ptr to result as singleton value
                         &immTypeSubRht);        // Ptr to result as singleton type
-        // If the right item arg is a global, ...
+        // If the right item arg is a global or ptr to a global numeric, ...
         if (hGlbSubRht)
         {
             // If we're assigning a new value
@@ -2865,35 +2865,63 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 // Replace the <aplLongestSubLft> element in hGlbRht
                 //   with <aplLongestSet> or <hGlbSet> depending upon <aplTypeSet>
 
-                // Get the attributes (Type, NELM, and Rank)
-                //   of the right arg global
-                AttrsOfGlb (hGlbRht, NULL, NULL, &aplRankRht, NULL);
-
                 // Lock the memory to get a ptr to it
                 lpMemRht = MyGlobalLock (hGlbRht);
 
                 // Skip over the header and dimensions to the data
-                lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+                lpMemRht = VarArrayDataFmBase (lpMemRht);
 
-                // If the set arg is simple non-heterogeneous, ...
-                if (IsSimpleNH (aplTypeSet))
+                // Split cases based upon the right arg storage type
+                switch (aplTypeRht)
                 {
-                    ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
-                    lpSymTmp =
-                      MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),    // Immediate type
-                                      &aplLongestSet,                               // Ptr to immediate value
-                                       lptkFunc);                                   // Ptr to function token
-                    if (!lpSymTmp)
-                        goto ERROR_EXIT;
-                } else
-                    ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
-                      CopySymGlbDir_PTB (hGlbSet);
+                    case ARRAY_NESTED:
+                    case ARRAY_HETERO:
+                        // If the set arg is simple non-heterogeneous, ...
+                        if (IsSimpleNH (aplTypeSet))
+                        {
+                            ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
+                            lpSymTmp =
+                              MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),    // Immediate type
+                                              &aplLongestSet,                               // Ptr to immediate value
+                                               lptkFunc);                                   // Ptr to function token
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                        } else
+                            ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
+                              CopySymGlbDir_PTB (hGlbSet);
+
+                        // Free the old value
+                        FreeResultGlobalVar (hGlbSubRht); hGlbSubRht = NULL;
+
+                        break;
+
+                    case ARRAY_RAT:
+                        Assert (IsSimpleNH (aplTypeSet));
+
+                        // Save the new value, freeing the old one
+                        mpq_set_sx (&((LPAPLRAT) lpMemRht)[aplLongestSubLft], aplLongestSet, 1);
+
+                        break;
+
+                    case ARRAY_VFP:
+                        Assert (IsSimpleNH (aplTypeSet));
+
+                        // Save the new value, freeing the old one
+                        mpfr_set_sx (&((LPAPLVFP) lpMemRht)[aplLongestSubLft], aplLongestSet, MPFR_RNDN);
+
+                        break;
+
+                    case ARRAY_BOOL:
+                    case ARRAY_INT:
+                    case ARRAY_FLOAT:
+                    case ARRAY_CHAR:
+                    case ARRAY_APA:
+                    defstop
+                        break;
+                } // End SWITCH
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-
-                // Free the old value
-                FreeResultGlobalVar (hGlbSubRht); hGlbSubRht = NULL;
 
                 // Return pseudo-value
                 lpYYRes = PTR_REUSED;

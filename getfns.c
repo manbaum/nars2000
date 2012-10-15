@@ -61,12 +61,16 @@ APLLONGEST ValidateFirstItemToken
             break;
 
         case ARRAY_RAT:
+            Assert (GetPtrTypeDir (hGlbSubRht) NE PTRTYPE_HGLOBAL);
+
             // Attempt to convert the RAT to an integer using System CT
             aplLongestRht = mpq_get_ctsa ((LPAPLRAT) hGlbSubRht, lpbRet);
 
             break;
 
         case ARRAY_VFP:
+            Assert (GetPtrTypeDir (hGlbSubRht) NE PTRTYPE_HGLOBAL);
+
             // Attempt to convert the VFP to an integer using System CT
             aplLongestRht = mpfr_get_ctsa ((LPAPLVFP) hGlbSubRht, lpbRet);
 
@@ -1701,7 +1705,15 @@ void GetNextValueMemSub
                     if (lpaplLongestRes)
                         *lpaplLongestRes = 0;
                     if (lpimmTypeRes)
-                        *lpimmTypeRes    = IMMTYPE_ERROR;
+                    {
+                        APLSTYPE aplTypeSub;
+
+                        // Get the global attrs
+                        AttrsOfGlb (lptkList->tkData.tkGlbData, &aplTypeSub, NULL, NULL, NULL);
+
+                        *lpimmTypeRes    = TranslateArrayTypeToImmType (aplTypeSub);;
+                    } // End IF
+
                     if (lphGlbRes)
                         *lphGlbRes       = lptkList->tkData.tkGlbData;
                     break;

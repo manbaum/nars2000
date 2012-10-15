@@ -514,14 +514,25 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                         if (lpYYItm)
                         {
                             LPPL_YYSTYPE lpYYItm2;
+                            APLSTYPE     aplTypeItm;
+                            APLRANK      aplRankItm;
 
-                            lpYYItm2 = PrimFnMonRightShoe_EM_YY (lptkFunc,
-                                                                &lpYYItm->tkToken,
-                                                                 NULL);
-                            if (lpYYItm2)
+                            // Get the attributes (Type, NELM, and Rank) of the item
+                            AttrsOfToken (&lpYYItm->tkToken, &aplTypeItm, NULL, &aplRankItm, NULL);
+
+                            // If the item is a scalar global numeric, don't disclose as that can increment the
+                            //   refcnt on a global numerc
+                            if (!IsScalar (aplRankItm)
+                             || !IsGlbNum (aplTypeItm))
                             {
-                                FreeResult (lpYYItm); YYFree (lpYYItm); lpYYItm = NULL;
-                                lpYYItm = lpYYItm2;
+                                lpYYItm2 = PrimFnMonRightShoe_EM_YY (lptkFunc,
+                                                                    &lpYYItm->tkToken,
+                                                                     NULL);
+                                if (lpYYItm2)
+                                {
+                                    FreeResult (lpYYItm); YYFree (lpYYItm); lpYYItm = NULL;
+                                    lpYYItm = lpYYItm2;
+                                } // End IF
                             } // End IF
                         } // End IF
                     } else
@@ -585,6 +596,36 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                 } else
                                     *((LPAPLNESTED) lpMemRes)++ =
                                       lpYYItm->tkToken.tkData.tkGlbData;
+                                break;
+
+                            case ARRAY_RAT:
+                                // Lock the memory to get a ptr to it
+                                lpSymTmp = MyGlobalLock (lpYYItm->tkToken.tkData.tkGlbData);
+
+                                // Save the value in the result
+                                *((LPAPLRAT) lpMemRes)++ = *(LPAPLRAT) VarArrayDataFmBase (lpSymTmp);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpYYItm->tkToken.tkData.tkGlbData); lpSymTmp = NULL;
+
+                                // We no longer need this storage
+                                MyGlobalFree (lpYYItm->tkToken.tkData.tkGlbData); lpYYItm->tkToken.tkData.tkGlbData = NULL;
+
+                                break;
+
+                            case ARRAY_VFP:
+                                // Lock the memory to get a ptr to it
+                                lpSymTmp = MyGlobalLock (lpYYItm->tkToken.tkData.tkGlbData);
+
+                                // Save the value in the result
+                                *((LPAPLVFP) lpMemRes)++ = *(LPAPLVFP) VarArrayDataFmBase (lpSymTmp);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpYYItm->tkToken.tkData.tkGlbData); lpSymTmp = NULL;
+
+                                // We no longer need this storage
+                                MyGlobalFree (lpYYItm->tkToken.tkData.tkGlbData); lpYYItm->tkToken.tkData.tkGlbData = NULL;
+
                                 break;
 
                             case ARRAY_APA:

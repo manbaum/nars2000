@@ -889,7 +889,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                                 // The above ptr is needed (but unused) to force
                                                 //   GetNextValueMem to return hGlbSub as an HGLOBAL only
                 // If the left arg item is a global but not a global numeric, ...
-                if (hGlbSub && !IsImmGlbNum (immTypeSub))
+                if (hGlbSub && !IsGlbNum (aplTypeLft))
                 {
                     APLNELM  aplNELMSub;
                     APLRANK  aplRankSub;
@@ -951,7 +951,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     // Fill in the left arg item limit
                     *lpMemLimLft++ = aplNELMSub;
                 } else
-                // The left arg item is immediate
+                // The left arg item is immediate or a ptr to a global numeric
                     // Fill in the left arg item limit
                     *lpMemLimLft++ = 1;
             } else
@@ -1126,7 +1126,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                     &aplLongestSub,     // Ptr to left arg immediate value
                                     &immTypeSub);       // Ptr to left arg immediate type
                     // If the left arg item is a global but not a global numeric, ...
-                    if (hGlbSub && !IsImmGlbNum (immTypeSub))
+                    if (hGlbSub && !IsGlbNum (aplTypeLft))
                     {
                         // The index value is the <lpMemOdo[iAxisNxt]> value in <hGlbSub>
                         GetNextValueGlb (hGlbSub,               // The global memory handle
@@ -1134,16 +1134,52 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                          NULL,                  // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNxt,         // Ptr to result immediate value (may be NULL)
                                         &immTypeNxt);           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        // If the index value is float, attempt to convert it to int
-                        if (IsImmFlt (immTypeNxt))
+                        // Split cases based upon the immediate storage type
+                        switch (immTypeNxt)
                         {
-                            // Attempt to convert the float to an integer using System CT
-                            aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestNxt, &bRet);
-                            if (!bRet)
-                                goto DOMAIN_EXIT;
-                        } // End IF
+                            LPVOID lpMemSub;
+
+                            case IMMTYPE_BOOL:
+                            case IMMTYPE_INT:           // Use aplLongestNxt
+                                break;
+
+                            case IMMTYPE_FLOAT:
+                                // Attempt to convert the float to an integer using System CT
+                                aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestNxt, &bRet);
+                                if (!bRet)
+                                    goto DOMAIN_EXIT;
+                                break;
+
+                            case IMMTYPE_RAT:
+                                // Lock the memory to get a ptr to it
+                                lpMemSub = MyGlobalLock (hGlbSub);
+
+                                // Attempt to convert the RAT to an integer using System CT
+                                aplLongestNxt = mpq_get_ctsa (&((LPAPLRAT) VarArrayDataFmBase (lpMemSub))[lpMemOdo[iAxisNxt]], &bRet);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                                break;
+
+                            case IMMTYPE_VFP:
+                                // Lock the memory to get a ptr to it
+                                lpMemSub = MyGlobalLock (hGlbSub);
+
+                                // Attempt to convert the VFP to an integer using System CT
+                                aplLongestNxt = mpfr_get_ctsa (&((LPAPLVFP) VarArrayDataFmBase (lpMemSub))[lpMemOdo[iAxisNxt]], &bRet);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                                break;
+
+                            case IMMTYPE_CHAR:
+                            defstop
+                                break;
+                        } // End SWITCH
                     } else
-                    // The left arg item value is immediate
+                    // The left arg item value is immediate or a ptr to a global numeric
                     //   (in <aplLongestSub> and of immediate type <immTypeSub>)
                     {
                         Assert (lpMemOdo[iAxisNxt] EQ 0);
@@ -1165,14 +1201,18 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                 break;
 
                             case IMMTYPE_RAT:
+                                Assert (GetPtrTypeDir (hGlbSub) NE PTRTYPE_HGLOBAL);
+
                                 // Attempt to convert the RAT to an integer using System CT
-                                aplLongestNxt = mpq_get_ctsa ((LPAPLRAT) ClrPtrTypeDir (hGlbSub), &bRet);
+                                aplLongestNxt = mpq_get_ctsa ((LPAPLRAT) hGlbSub, &bRet);
 
                                 break;
 
                             case IMMTYPE_VFP:
+                                Assert (GetPtrTypeDir (hGlbSub) NE PTRTYPE_HGLOBAL);
+
                                 // Attempt to convert the VFP to an integer using System CT
-                                aplLongestNxt = mpfr_get_ctsa ((LPAPLVFP) ClrPtrTypeDir (hGlbSub), &bRet);
+                                aplLongestNxt = mpfr_get_ctsa ((LPAPLVFP) hGlbSub, &bRet);
 
                                 break;
 

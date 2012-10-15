@@ -1975,6 +1975,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             HGLOBAL    hGlbIdn;             // Identity element global memory handle
             LPVOID     hSymGlbIdn;          // ...               LPSYMENTRY or HGLOBAL
             APLSTYPE   aplTypeIdn;          // ...               storage type
+            TOKEN      tkFcn = {0};         // The function token
 
             // The result common element is {first} f/[X] 0/[X] R
 
@@ -1985,10 +1986,18 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 ////////////tkLftArg.tkData.tkBoolean  = 0;         // Already zero from {0}
             tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
+            // Setup the function token
+            tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+            tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+            tkFcn.tkData.tkChar     = (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR) ? UTF16_SLASHBAR
+                                                                                                 : UTF16_SLASH;
+            tkFcn.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
             // Compress the right arg
             lpYYRes =
               PrimFnDydSlash_EM_YY(&tkLftArg,
-                                   &lpYYFcnStrOpr->tkToken,
+                                   &tkFcn,
                                     lptkRhtArg,
                                     lptkAxisOpr);
             if (lpYYRes EQ NULL)
@@ -2121,6 +2130,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     //   1/R
     if (aplIntegerLftAbs EQ 1 && hGlbRht)
     {
+        TOKEN tkFcn = {0};          // The function token
+
         // Fill in the left arg token
         tkLftArg.tkFlags.TknType   = TKT_VARIMMED;
         tkLftArg.tkFlags.ImmType   = IMMTYPE_BOOL;
@@ -2128,10 +2139,18 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         tkLftArg.tkData.tkBoolean  = 1;
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
+        // Setup the function token
+        tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+        tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+        tkFcn.tkData.tkChar     = (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR) ? UTF16_SLASHBAR
+                                                                                             : UTF16_SLASH;
+        tkFcn.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
         // Compress the right arg
         lpYYRes =
           PrimFnDydSlash_EM_YY(&tkLftArg,
-                               &lpYYFcnStrOpr->tkToken,
+                               &tkFcn,
                                 lptkRhtArg,
                                 NULL);
         if (lpYYRes EQ NULL)

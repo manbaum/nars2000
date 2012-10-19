@@ -68,7 +68,6 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM_YY       , 0              },    // Terminal Control Characters
     {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, SysFnTCBEL_EM_YY    , 0              },    // Terminal Control Character, Bell
     {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, SysFnTCBS_EM_YY     , 0              },    // Terminal Control Character, Backspace
-    {WS_UTF16_QUAD L"tcdel"    ,      0,      FALSE, SysFnTCDEL_EM_YY    , 0              },    // Terminal Control Character, Delete
     {WS_UTF16_QUAD L"tcesc"    ,      0,      FALSE, SysFnTCESC_EM_YY    , 0              },    // Terminal Control Character, Escape
     {WS_UTF16_QUAD L"tcff"     ,      0,      FALSE, SysFnTCFF_EM_YY     , 0              },    // Terminal Control Character, Form Feed
     {WS_UTF16_QUAD L"tcht"     ,      0,      FALSE, SysFnTCHT_EM_YY     , 0              },    // Terminal Control Character, Horizontal Tab

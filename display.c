@@ -762,7 +762,6 @@ LPAPLCHAR FormatImmed
 
                     // Fall through to common code
 
-                case TCDEL:     // Del
                 case TCESC:     // Esc
                 case TCFF:      // FF
                 case TCNUL:     // NUL
@@ -894,7 +893,6 @@ LPAPLCHAR FormatImmedFC
 
                     // Fall through to common code
 
-                case TCDEL:     // Del
                 case TCESC:     // Esc
                 case TCFF:      // FF
                 case TCNUL:     // NUL

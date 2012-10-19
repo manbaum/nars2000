@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 #define TCBEL       7       // Bel
 #define TCBS        8       // Backspace
-#define TCDEL     127       // Del
 #define TCESC      27       // Escape
 #define TCFF       12       // Form feed
 #define TCHT        9       // Horizontal tab

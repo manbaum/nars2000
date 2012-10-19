@@ -1070,7 +1070,6 @@ LPAPLCHAR CompileArrChar
         // Split cases based upon the char
         switch (lpMem[aplDimCol])
         {
-            case TCDEL:         // []TCDEL -- Ignore this
             case TCESC:         // []TCESC -- Ignore this
             case TCFF:          // []TCFF  -- Ignore this
             case TCNUL:         // []TCNUL -- Ignore this

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -210,26 +210,6 @@ LPPL_YYSTYPE SysFnTCBS_EM_YY
 
     return SysFnTCCom_EM_YY (TCBS, lptkFunc, lptkAxis);
 } // End SysFnTCBS_EM_YY
-
-
-//***************************************************************************
-//  $SysFnTCDEL_EM_YY
-//
-//  System function:  []TCDEL -- Terminal Control, Del
-//***************************************************************************
-
-LPPL_YYSTYPE SysFnTCDEL_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
-
-{
-    // This function is niladic
-    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
-
-    return SysFnTCCom_EM_YY (TCDEL, lptkFunc, lptkAxis);
-} // End SysFnTCDEL_EM_YY
 
 
 //***************************************************************************

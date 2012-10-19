@@ -85,6 +85,20 @@ UBOOL CmdIn_EM
     if (lpwszTail[0] EQ WC_EOS)
         goto INCORRECT_COMMAND_EXIT;
 
+    // Get the command tail length
+    uLen = lstrlenW (lpwszTail);
+
+    // Check for leading and trailing double quotes
+    if (lpwszTail[0       ] EQ WC_DQ
+     && lpwszTail[uLen - 1] EQ WC_DQ)
+    {
+        // Zap the trailing DQ
+        lpwszTail[--uLen] = WC_EOS;
+
+        // Move the string down over the leading DQ
+        CopyMemoryW (lpwszTail, &lpwszTail[1], uLen);
+    } // End IF
+
     // Split out the drive and path from the module filename
     _wsplitpath (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
 

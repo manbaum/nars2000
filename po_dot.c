@@ -817,6 +817,16 @@ RESTART_INNERPROD_RES:
 
                         break;
 
+                    case ARRAY_RAT:
+                    case ARRAY_VFP:
+                        // Fill in the left arg item token
+                        tkItmLft.tkFlags.TknType   = TKT_VARARRAY;
+                        tkItmLft.tkFlags.ImmType   = IMMTYPE_ERROR;
+////////////////////////tkItmLft.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+                        tkItmLft.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbLft);
+
+                        break;
+
                     case ARRAY_HETERO:          // Can't occur:  there are no empty HETEROs
                     defstop
                         break;
@@ -900,6 +910,16 @@ RESTART_INNERPROD_RES:
 ////////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
                             tkItmRht.tkData.tkLongest  = aplLongestRht;
                         } // End IF/ELSE
+
+                        break;
+
+                    case ARRAY_RAT:
+                    case ARRAY_VFP:
+                        // Fill in the left arg item token
+                        tkItmRht.tkFlags.TknType   = TKT_VARARRAY;
+                        tkItmRht.tkFlags.ImmType   = IMMTYPE_ERROR;
+////////////////////////tkItmRht.tkFlags.NoDisplay = FALSE;     // Already zero from = {0}
+                        tkItmRht.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbRht);
 
                         break;
 

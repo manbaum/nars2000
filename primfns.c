@@ -1171,7 +1171,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
     if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
-    Assert (IsSimpleNum (aplTypeRes)
+    Assert (IsSimpleGlbNum (aplTypeRes)
          || IsNested (aplTypeRes));
 
     // Lock the memory to get a ptr to it

@@ -755,13 +755,18 @@ APLINT mpq_get_ctsa
     {
         mpfr_floor (&mpfTmp1, &mpfSrc);
         aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
+        *lpbRet = TRUE;
     } else
     if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
     {
         mpfr_ceil  (&mpfTmp2, &mpfSrc);
         aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
+        *lpbRet = TRUE;
     } else
+    {
         aplInt = mpfr_get_sx (&mpfSrc , lpbRet);
+        *lpbRet = FALSE;
+    } // End IF/ELSE/...
 
     // We no longer need this storage
     Myf_clear (&mpfTmp2);
@@ -1293,13 +1298,18 @@ APLINT mpfr_get_ctsa
     {
         mpfr_floor (&mpfTmp1, src);
         aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
+        *lpbRet = TRUE;
     } else
     if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
     {
         mpfr_ceil  (&mpfTmp2, src);
         aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
+        *lpbRet = TRUE;
     } else
+    {
         aplInt = mpfr_get_sx (src     , lpbRet);
+        *lpbRet = FALSE;
+    } // End IF/ELSE/...
 
     // We no longer need this storage
     Myf_clear (&mpfTmp2);

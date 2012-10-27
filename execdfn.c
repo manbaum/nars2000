@@ -2131,6 +2131,12 @@ WSFULL_EXIT:
 //  Localize LPSYMENTRYs
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- LocalizeSymEntries"
+#else
+#define APPEND_NAME
+#endif
+
 LPSYMENTRY LocalizeSymEntries
     (LPSYMENTRY   lpSymEntryNxt,        // Ptr to next SYMENTRY save area
      UINT         numSymEntries,        // # SYMENTRYs to localize
@@ -2172,6 +2178,7 @@ LPSYMENTRY LocalizeSymEntries
 
     return lpSymEntryNxt;
 } // End LocalizeSymEntries
+#undef  APPEND_NAME
 
 
 //***************************************************************************

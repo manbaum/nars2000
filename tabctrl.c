@@ -854,6 +854,12 @@ LRESULT WINAPI LclTabCtrlWndProc
 //  Free the global storage in the symbol table for a given PerTabData struc
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FreeGlobalStorage"
+#else
+#define APPEND_NAME
+#endif
+
 void FreeGlobalStorage
     (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
@@ -976,6 +982,7 @@ void FreeGlobalStorage
         lpMemPTD->htsPTD.lpSymTab = NULL;
     } // End IF
 } // End FreeGlobalStorage
+#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -1908,8 +1908,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                         break;
 
                     case PTRTYPE_HGLOBAL:
-                        Assert (IsNested    (lpHeader->ArrType)
-                             || IsSimpleHet (lpHeader->ArrType));
+                        Assert (IsPtrArray (lpHeader->ArrType));
 
                         // Data is an valid HGLOBAL array
                         Assert (IsGlbTypeVarInd_PTB (lpMemRhtNext));

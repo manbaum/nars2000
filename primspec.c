@@ -626,7 +626,7 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     } else
     {
         // The result is nested
-        Assert (aplTypeRes EQ ARRAY_NESTED);
+        Assert (IsNested (aplTypeRes));
 
         // Handle nested prototypes
         aplNELMRht = max (aplNELMRht, 1);
@@ -911,7 +911,7 @@ UBOOL PrimIdentFnScalarCommon_EM
                 } else
                 {
                     // The result is nested
-                    Assert (aplTypeRes2 EQ ARRAY_NESTED);
+                    Assert (IsNested (aplTypeRes2));
 
                     // Handle nested prototypes
                     aplNELMItm = max (aplNELMItm, 1);

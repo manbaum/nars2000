@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -675,6 +675,12 @@ LPPL_YYSTYPE YYCopyFcn
 //  Copy an HGLOBAL to a memory object
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- YYCopyGlbFcn_PTB"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE YYCopyGlbFcn_PTB
     (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
      LPTOKEN       lpToken,             // Ptr to function token
@@ -871,6 +877,7 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
 
     return lpYYMem;
 } // End YYCopyGlbFcn_PTB
+#undef  APPEND_NAME
 
 
 //***************************************************************************

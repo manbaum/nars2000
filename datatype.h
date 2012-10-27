@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -347,13 +347,17 @@ typedef enum tagPTR_TYPES
                                         // No available entries (1 bit)
 } PTR_TYPES;
 
-#define PTRTYPE_MASK    1               // This masks the one low-order bit
+#define PTRTYPE_MASK    BIT0            // This masks the one low-order bit
+#define PTRREUSE_MASK   0x0FFFFFFF      // This masks the PTR_REUSEx bits
 
 // For LPSYMENTRY and HGLOBAL values in a temporary array, sometimes
 //   those values can be re-used in another array without having
 //   to make a copy.  In that case, the original value is replaced
 //   by this which is checked for before trying to free it.
-#define PTR_REUSED  ((LPVOID) (HANDLE_PTR) 0xFFFFFFFF)
+#define PTR_REUSED  ((LPVOID) (HANDLE_PTR) 0x0FFFFFFF)
+#define PTR_REUSE1  ((LPVOID) (HANDLE_PTR) 0x1FFFFFFF)
+#define PTR_REUSE2  ((LPVOID) (HANDLE_PTR) 0x2FFFFFFF)
+#define PTR_REUSE3  ((LPVOID) (HANDLE_PTR) 0x3FFFFFFF)
 
 
 //***************************************************************************

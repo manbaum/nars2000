@@ -1868,6 +1868,12 @@ MAGIC_FCNOPR MFO_DydDomino =
 //   or between left and right matrices.
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- GaussJordan"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL GaussJordan
     (LPAPLRAT lpMemRes,             // Ptr to right arg/result as APLRAT matrix
      APLDIM   uNumRows,             // # rows in the left/right arg/result
@@ -2055,6 +2061,7 @@ NORMAL_EXIT:
 
     return bRet;
 } // End GaussJordan
+#undef  APPEND_NAME
 
 
 //***************************************************************************

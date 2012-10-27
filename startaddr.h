@@ -660,8 +660,48 @@ typedef struct tagSTART_ADDRESSES
     "MakeNoValue_YY"            , (LPUCHAR) &MakeNoValue_YY             ,
     "GetSISLayer"               , (LPUCHAR) &GetSISLayer                ,
     "FillSISNxt"                , (LPUCHAR) &FillSISNxt                 ,
+    "PassSigaphore"             , (LPUCHAR) &PassSigaphore              ,
+    "IsTknTypeNamed"            , (LPUCHAR) &IsTknTypeNamed             ,
+    "IsTknTypeNamedFcnOpr"      , (LPUCHAR) &IsTknTypeNamedFcnOpr       ,
+    "IsTknTypeFcnOpr"           , (LPUCHAR) &IsTknTypeFcnOpr            ,
+    "IsTknTypeVar"              , (LPUCHAR) &IsTknTypeVar               ,
+    "IsTknTypeNamedVar"         , (LPUCHAR) &IsTknTypeNamedVar          ,
+    "IsTknUsrDfn"               , (LPUCHAR) &IsTknUsrDfn                ,
+    "IsTknImmed"                , (LPUCHAR) &IsTknImmed                 ,
+    "SetVFOArraySRCIFlag"       , (LPUCHAR) &SetVFOArraySRCIFlag        ,
+  #ifdef DEBUG
+    "GetVFOArraySRCIFlag"       , (LPUCHAR) &GetVFOArraySRCIFlag        ,
+  #endif
+    "ClrVFOArraySRCIFlag"       , (LPUCHAR) &ClrVFOArraySRCIFlag        ,
+////"mod64"                     , (LPUCHAR) &mod64                      ,   // Static
 
     // primspec.c
+    "PrimFnSyntaxError_EM"      , (LPUCHAR) &PrimFnSyntaxError_EM       ,
+    "PrimFnValenceError_EM"     , (LPUCHAR) &PrimFnValenceError_EM      ,
+    "PrimFnNonceError_EM"       , (LPUCHAR) &PrimFnNonceError_EM        ,
+    "PrimFnDomainError_EM"      , (LPUCHAR) &PrimFnDomainError_EM       ,
+    "PrimFnValueError_EM"       , (LPUCHAR) &PrimFnValueError_EM        ,
+    "PrimFnMonValenceError_EM"  , (LPUCHAR) &PrimFnMonValenceError_EM   ,
+    "PrimProtoFnMixed_EM_YY"    , (LPUCHAR) &PrimProtoFnMixed_EM_YY     ,
+    "PrimProtoFnScalar_EM_YY"   , (LPUCHAR) &PrimProtoFnScalar_EM_YY    ,
+    "PrimIdentFnScalar_EM_YY"   , (LPUCHAR) &PrimIdentFnScalar_EM_YY    ,
+    "PrimIdentFnScalarCommon_EM", (LPUCHAR) &PrimIdentFnScalarCommon_EM ,
+    "PrimFnMon_EM_YY"           , (LPUCHAR) &PrimFnMon_EM_YY            ,
+    "PrimFnMonGlb_EM"           , (LPUCHAR) &PrimFnMonGlb_EM            ,
+    "PrimFnDyd_EM_YY"           , (LPUCHAR) &PrimFnDyd_EM_YY            ,
+    "PrimFnDydSimpNest_EM"      , (LPUCHAR) &PrimFnDydSimpNest_EM       ,
+    "PrimFnDydNestSimp_EM"      , (LPUCHAR) &PrimFnDydNestSimp_EM       ,
+    "PrimFnDydNestSiSc_EM"      , (LPUCHAR) &PrimFnDydNestSiSc_EM       ,
+    "FillToken_PTB"             , (LPUCHAR) &FillToken_PTB              ,
+    "PrimFnDydNestNest_EM"      , (LPUCHAR) &PrimFnDydNestNest_EM       ,
+    "PrimFnDydSingMult_EM"      , (LPUCHAR) &PrimFnDydSingMult_EM       ,
+    "PrimFnDydMultSing_EM"      , (LPUCHAR) &PrimFnDydMultSing_EM       ,
+    "PrimFnDydSiScNest_EM"      , (LPUCHAR) &PrimFnDydSiScNest_EM       ,
+    "PrimFnDydSiScSiSc_EM"      , (LPUCHAR) &PrimFnDydSiScSiSc_EM       ,
+    "PrimFnDydSiScSiScSub_EM"   , (LPUCHAR) &PrimFnDydSiScSiScSub_EM    ,
+    "PrimFnDydSimpSimp_EM"      , (LPUCHAR) &PrimFnDydSimpSimp_EM       ,
+    "CalcLftRhtArgIndices"      , (LPUCHAR) &CalcLftRhtArgIndices       ,
+    "IsTknBooleanAPA"           , (LPUCHAR) &IsTknBooleanAPA            ,
 
     // qf_*.c
 

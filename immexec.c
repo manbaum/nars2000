@@ -44,6 +44,12 @@ typedef struct tagWFSO          // Struct for WaitForSingleObject
 //  Wait callback for ImmExecStmt
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- WaitForImmExecStmt"
+#else
+#define APPEND_NAME
+#endif
+
 VOID CALLBACK WaitForImmExecStmt
     (LPVOID  lpParameter,           // Thread data
      BOOLEAN TimerOrWaitFired)      // Reason
@@ -101,6 +107,7 @@ VOID CALLBACK WaitForImmExecStmt
     DbgGlobalFree (hGlbWFSO); hGlbWFSO = NULL;
 #undef  hGlbWFSO
 } // End WaitForImmExecStmt
+#undef  APPEND_NAME
 
 
 //***************************************************************************

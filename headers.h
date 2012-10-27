@@ -36,10 +36,10 @@
 #include <stdint.h>
 #include <mpir.h>
 #include <mpfr.h>
-#include "macros.h"
-#include "enums.h"
 #include "defines.h"
+#include "enums.h"
 #include "types.h"
+#include "macros.h"
 #include "perfmon.h"
 #include "uniscribe.h"
 #include "aplerrors.h"

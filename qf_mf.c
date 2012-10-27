@@ -889,6 +889,12 @@ NORMAL_EXIT:
 //  Toggle (ON/OFF) the function line monitoring state of a function
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ToggleMonInfo"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL ToggleMonInfo
     (LPSYMENTRY lpSymEntry,             // Ptr to STE of the function
      UBOOL      bMonOn)                 // New MonInfo bit setting
@@ -962,6 +968,7 @@ ERROR_EXIT:
 
     return bRet;
 } // End ToggleMonInfo
+#undef  APPEND_NAME
 
 
 //***************************************************************************

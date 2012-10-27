@@ -468,6 +468,12 @@ NORMAL_EXIT:
 //  Return an HGLOBAL with {enclose}{zilde}
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakeEncloseZilde"
+#else
+#define APPEND_NAME
+#endif
+
 HGLOBAL MakeEncloseZilde
     (void)
 
@@ -515,6 +521,7 @@ HGLOBAL MakeEncloseZilde
 
     return hGlbRes;
 } // End MakeEncloseZilde
+#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -65,6 +65,8 @@
 
 #define CheckSymEntries()       _CheckSymEntries (FNLN)
 
+////#define DEBUG_ALLOCFREE
+
 #ifdef DEBUG
   #define YYAlloc()     _YYAlloc(FNLN)
 
@@ -73,8 +75,8 @@
     DbgGlobalAllocSub ((uFlags), (ByteRes), L"##GlobalAlloc in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
     #define DbgGlobalFree(hGlbToken) \
-    dprintfWL9 (L"**GlobalFree  in " APPEND_NAME L": %p (%S#%d)", (hGlbToken), FNLN); \
-    MyGlobalFree (hGlbToken)
+    {dprintfWL9 (L"**GlobalFree  in " APPEND_NAME L": %p (%S#%d)", (hGlbToken), FNLN); \
+     MyGlobalFree (hGlbToken);}
   #else
     #define DbgGlobalAlloc(uFlags,ByteRes) \
     MyGlobalAlloc ((uFlags), (ByteRes))
@@ -85,28 +87,22 @@
 
   #ifdef DEBUG_REFCNT
     #define DbgIncrRefCntDir_PTB(hGlbData) \
-    dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    IncrRefCntDir_PTB (hGlbData)
+    _DbgIncrRefCntDir_PTB (hGlbData, L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
     #define DbgIncrRefCntInd_PTB(hGlbData) \
-    dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    IncrRefCntInd_PTB (hGlbData)
+    _DbgIncrRefCntInd_PTB (hGlbData, L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
-    #define DbgIncrRefCntTkn(lptkVar) \
-    dprintfWL0 (L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", lptkVar, FNLN); \
-    IncrRefCntTkn (lptkVar)
+    #define DbgIncrRefCntTkn(lptkVar)      \
+    _DbgIncrRefCntTkn     (lptkVar,  L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
     #define DbgDecrRefCntDir_PTB(hGlbData) \
-    dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    DecrRefCntDir_PTB (hGlbData)
+    _DbgDecrRefCntDir_PTB (hGlbData, L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
     #define DbgDecrRefCntInd_PTB(hGlbData) \
-    dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    DecrRefCntInd_PTB (hGlbData)
+    _DbgDecrRefCntInd_PTB (hGlbData, L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
-    #define DbgDecrRefCntTkn(lptkVar) \
-    dprintfWL0 (L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", lptkVar, FNLN); \
-    DecrRefCntTkn (lptkVar)
+    #define DbgDecrRefCntTkn(lptkVar)      \
+    _DbgDecrRefCntTkn     (lptkVar,  L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", FNLN)
   #else
     #define DbgIncrRefCntDir_PTB(hGlbData) \
     IncrRefCntDir_PTB (hGlbData)
@@ -233,6 +229,9 @@
 // Define macro for detecting nested array type
 #define IsNested(ArrType)               ((ArrType) EQ ARRAY_NESTED)
 
+// Define macro for detecting nested or hetero (that is, ptr) arrays
+#define IsPtrArray(ArrType)             (IsSimpleHet (ArrType) || IsNested (ArrType))
+
 // Define macro for detecting list array type
 #define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
 
@@ -357,18 +356,14 @@
 // NOTE:  THIS MACRO CALLS ITS ARGUMENT *TWICE*, HENCE IT WILL WORK DIFFERENTLY
 //        IN THE DEBUG VERSION FROM THE NON-DEBUG VERSION IF THE ARGUMENT HAS
 //        ANY SIDE EFFECTS SUCH AS PRE- OR POST-INCREMENT/DECREMENT, OR THE LIKE.
-#ifdef DEBUG
-  #define GetPtrTypeDir(lpMem)      (BYTE) ( (lpMem EQ NULL)                                    ? PTRTYPE_LENGTH : (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem)))
-  #define GetPtrTypeInd(lpMem)      (BYTE) (((lpMem EQ NULL) || ((*(HANDLE_PTR *) lpMem) EQ 0)) ? PTRTYPE_LENGTH : (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem)))
-#else
-  #define GetPtrTypeDir(lpMem)      (BYTE)       (  PTRTYPE_MASK  &  (HANDLE_PTR  ) (lpMem))
-  #define GetPtrTypeInd(lpMem)      (BYTE)       (  PTRTYPE_MASK  & *(HANDLE_PTR *) (lpMem))
-#endif
+#define GetPtrTypeDir(lpMem)        (BYTE)       (Assert (!PtrNullDir (lpMem) && !PtrReusedDir (lpMem)), (PTRTYPE_MASK   &  (HANDLE_PTR  ) (lpMem)))
+#define GetPtrTypeInd(lpMem)        (BYTE)       (Assert (!PtrNullInd (lpMem) && !PtrReusedInd (lpMem)), (PTRTYPE_MASK   & *(HANDLE_PTR *) (lpMem)))
+
 // Macro to create a masked LPSYMENTRY
-#define MakePtrTypeSym(lpMem)       (LPSYMENTRY) (PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
+#define MakePtrTypeSym(lpMem)       (LPSYMENTRY) (Assert (!PtrNullDir (lpMem) && !PtrReusedDir (lpMem)), PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to create a masked HGLOBAL
-#define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
+#define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (Assert (!PtrNullDir (lpMem) && !PtrReusedDir (lpMem)), PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to copy direct and indirect ptrs, incrementing the reference count
 #define CopySymGlbDirAsGlb(hGlb)                        CopySymGlbDir_PTB (MakePtrTypeGlb (hGlb))
@@ -376,8 +371,12 @@
 #define CopySymGlbInd_PTB(lpSymGlb)                     CopySymGlbDir_PTB (*(LPAPLNESTED) lpSymGlb)
 
 // Macros to check on PTR_REUSED
-#define PtrReusedDir(lpMem)                     ((lpMem) EQ PTR_REUSED)
-#define PtrReusedInd(lpMem)         ((*(LPVOID *) lpMem) EQ PTR_REUSED)
+#define PtrReusedDir(lpMem)         (                      (PTRREUSE_MASK & (HANDLE_PTR)              (lpMem) ) EQ (HANDLE_PTR) PTR_REUSED)
+#define PtrReusedInd(lpMem)         (PtrNullDir (lpMem) || (PTRREUSE_MASK & (HANDLE_PTR) (*(LPVOID *) (lpMem))) EQ (HANDLE_PTR) PTR_REUSED)
+
+// Macros to check on ptr NULL
+#define PtrNullDir(lpMem)                                             ( (lpMem)  EQ NULL)
+#define PtrNullInd(lpMem)           (PtrNullDir (lpMem) || (*(LPVOID *) (lpMem)) EQ NULL)
 
 // Note that some of the following macros depend upon
 //   the ordering of the enum IMM_TYPES in <symtab.h>
@@ -402,16 +401,6 @@
 #define GetSignatureMem(a)          (((LPHEADER_SIGNATURE) (a))->nature)
 
 #define GetImmTypeFcn(a)            IMMTYPE_PRIMFCN
-
-typedef UINT8  *LPUINT8 ;
-typedef UINT16 *LPUINT16;
-typedef UINT32 *LPUINT32;
-typedef UINT64 *LPUINT64;
-
-typedef  INT8  *LPINT8 ;
-typedef  INT16 *LPINT16;
-typedef  INT32 *LPINT32;
-typedef  INT64 *LPINT64;
 
 #define GetNextChar8(a,t,c)         ((LPUINT8   ) a)[c]
 #define GetNextChar16(a,t,c)        ((LPUINT16  ) a)[c]

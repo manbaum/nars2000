@@ -26,6 +26,16 @@ typedef unsigned int   uint32_t;
 typedef unsigned short uint16_t;
 typedef unsigned char  uint8_t;
 
+typedef UINT8  *LPUINT8 ;
+typedef UINT16 *LPUINT16;
+typedef UINT32 *LPUINT32;
+typedef UINT64 *LPUINT64;
+
+typedef  INT8  *LPINT8 ;
+typedef  INT16 *LPINT16;
+typedef  INT32 *LPINT32;
+typedef  INT64 *LPINT64;
+
 typedef unsigned __int8  uint8;
 typedef unsigned __int16 uint16;
 typedef unsigned __int32 uint32;

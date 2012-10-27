@@ -1184,6 +1184,12 @@ NORMAL_EXIT:
 //  Local Edit Ctrl paint hook
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- LclECPaintHook"
+#else
+#define APPEND_NAME
+#endif
+
 int LclECPaintHook
     (HWND    hWndEC,                        // Window handle of Edit Ctrl
      HDC     hDC,                           // The Device Context
@@ -1401,6 +1407,7 @@ int LclECPaintHook
     // Calculate the result
     return MAKELONG (rcScr.right - rcScr.left, rcScr.bottom - rcScr.top);
 } // End LclECPaintHook
+#undef  APPEND_NAME
 
 
 #ifndef UNISCRIBE

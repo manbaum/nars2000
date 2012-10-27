@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -772,6 +772,12 @@ HGLOBAL SF_UndoBufferCom
 //    when called from function editor
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SF_UndoBufferFE"
+#else
+#define APPEND_NAME
+#endif
+
 HGLOBAL SF_UndoBufferFE
     (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPVOID      lpVoid)            // Ptr to common struc
@@ -825,6 +831,7 @@ HGLOBAL SF_UndoBufferFE
 
     return hGlbUndoBuff;
 } // End SF_UndoBufferFE
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -833,6 +840,12 @@ HGLOBAL SF_UndoBufferFE
 //  Return a ptr to the Undo buffer
 //    when called from LoadWorkspace
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SF_UndoBufferLW"
+#else
+#define APPEND_NAME
+#endif
 
 HGLOBAL SF_UndoBufferLW
     (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
@@ -1022,6 +1035,7 @@ HGLOBAL SF_UndoBufferLW
 
     return hGlbUndoBuff;
 } // End SF_UndoBufferLW
+#undef  APPEND_NAME
 
 
 //***************************************************************************

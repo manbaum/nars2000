@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -532,7 +532,7 @@ LRESULT APIENTRY DBWndProc
 
             // Format the string with a preceding line #
             wsprintfA (szTemp,
-                       "%4d:  %s",
+                       "%5d:  %s",
                        ++iLineNum,
                        *(LPCHAR *) &lParam);
             // Convert the string from A to W
@@ -556,7 +556,7 @@ LRESULT APIENTRY DBWndProc
 
             // Format the string with a preceding line #
             wsprintfW (wszTemp,
-                       L"%s%4d:  %s",
+                       L"%s%5d:  %s",
                        iIndex ? WS_UTF16_REFCNT_NE1 : L"",
                        ++iLineNum,
                        &(*(LPWCHAR *) &lParam)[iIndex]);
@@ -1173,7 +1173,7 @@ int dprintfWL9
 HGLOBAL DbgGlobalAllocSub
     (UINT     uFlags,
      APLU3264 ByteRes,
-     LPWCHAR  lpFmtStr,
+     LPWCHAR  lpwFmtStr,
      LPSTR    lpFileName,
      UINT     uLineNum)
 
@@ -1183,11 +1183,7 @@ HGLOBAL DbgGlobalAllocSub
     hGlbRes = MyGlobalAlloc (uFlags, ByteRes);
 
     if (hGlbRes)
-    {
-#ifdef DEBUG
-        dprintfWL9 (lpFmtStr, hGlbRes, lpFileName, uLineNum);
-#endif
-    } // End IF
+        dprintfWL9 (lpwFmtStr, hGlbRes, lpFileName, uLineNum);
 
     return hGlbRes;
 } // End DbgGlobalAllocSub

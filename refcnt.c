@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -100,7 +100,32 @@ int ChangeRefCntDir_PTB
 
                         break;
                     } // End IF
+#ifdef DEBUG
+                    // If the var is nested or hetero, ensure that no entry is NULL or PTR_REUSED
+                    if (IsPtrArray (lpHeader->ArrType))
+                    {
+                        APLNELM     aplNELM;        // Item NELM
+                        APLUINT     uTmp;           // Loop counter
+                        LPAPLNESTED lpNest;         // Ptr to nested/hetero element
 
+                        // Get the NELM
+                        aplNELM = lpHeader->NELM;
+
+                        // Handle empty nested arrays
+                        if (IsNested (lpHeader->ArrType)
+                         && IsEmpty (aplNELM))
+                            // Count in the prototype
+                            aplNELM = max (aplNELM, 1);
+
+                        // Skip over the header and dimensions to the data
+                        lpNest = VarArrayDataFmBase (lpSig);
+
+                        for (uTmp = 0; uTmp < aplNELM; uTmp++)
+                        if (PtrNullDir   (lpNest[uTmp])
+                         || PtrReusedDir (lpNest[uTmp]))
+                            DbgBrk ();
+                    } // End IF
+#endif
                     // Change the reference count
 #ifdef DEBUG_REFCNT
                     if (iIncr EQ 1
@@ -391,6 +416,130 @@ UINT GetRefCntGlb
 
     return uRefCnt;
 } // End GetRefCntGlb
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
+//  $_DbgIncrRefCntDir_PTB
+//
+//  Increment the reference count of a direct reference
+//    to an LPSYMENTRY or an HGLOBAL.
+//***************************************************************************
+
+int _DbgIncrRefCntDir_PTB
+    (HGLOBAL hGlbData,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (hGlbData), lpFileName, uLineNum);
+    return IncrRefCntDir_PTB (hGlbData);
+} // End _DbgIncrRefCntDir_PTB
+#endif
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
+//  $_DbgIncrRefCntInd_PTB
+//
+//  Increment the reference count of an indirect reference
+//    to an LPSYMENTRY or an HGLOBAL.
+//***************************************************************************
+
+int _DbgIncrRefCntInd_PTB
+    (HGLOBAL hGlbData,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeInd (hGlbData), lpFileName, uLineNum);
+    return IncrRefCntInd_PTB (hGlbData);
+} // End _DbgIncrRefCntInd_PTB
+#endif
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
+//  $_DbgIncrRefCntTkn
+//
+//  Increment the reference count of a token
+//***************************************************************************
+
+int _DbgIncrRefCntTkn
+    (LPTOKEN lptkVar,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (GetGlbHandle (lptkVar)), lpFileName, uLineNum);
+    return IncrRefCntTkn (lptkVar);
+} // End _DbgIncrRefCntTkn
+#endif
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
+//  $_DbgDecrRefCntDir_PTB
+//
+//  Decrement the reference count of a direct reference
+//    to an LPSYMENTRY or an HGLOBAL.
+//***************************************************************************
+
+int _DbgDecrRefCntDir_PTB
+    (HGLOBAL hGlbData,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (hGlbData), lpFileName, uLineNum);
+    return DecrRefCntDir_PTB (hGlbData);
+} // End _DbgDecrRefCntDir_PTB
+#endif
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
+//  $_DbgDecrRefCntInd_PTB
+//
+//  Decrement the reference count of an indirect reference
+//    to an LPSYMENTRY or an HGLOBAL.
+//***************************************************************************
+
+int _DbgDecrRefCntInd_PTB
+    (HGLOBAL hGlbData,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeInd (hGlbData), lpFileName, uLineNum);
+    return DecrRefCntInd_PTB (hGlbData);
+} // End _DbgDecrRefCntInd_PTB
+#endif
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
+//  $_DbgDecrRefCntTkn
+//
+//  Decrement the reference count of a token
+//***************************************************************************
+
+int _DbgDecrRefCntTkn
+    (LPTOKEN lptkVar,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (GetGlbHandle (lptkVar)), lpFileName, uLineNum);
+    return DecrRefCntTkn (lptkVar);
+} // End _DbgDecrRefCntTkn
+#endif
 
 
 //***************************************************************************

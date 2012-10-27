@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,6 +200,12 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
 //
 //  Initialize a single magic function/operator
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- InitMagicFunction"
+#else
+#define APPEND_NAME
+#endif
 
 HGLOBAL Init1MagicFunction
     (LPWCHAR          lpwszName,            // Ptr to the external name
@@ -697,6 +703,7 @@ NORMAL_EXIT:
 
     return hGlbDfnHdr;
 } // End Init1MagicFunction
+#undef  APPEND_NAME
 
 
 //***************************************************************************

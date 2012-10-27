@@ -1445,7 +1445,7 @@ LPAPLCHAR SavedWsFormGlbVar
 
     #define hGlbSub     (*(LPAPLNESTED *) lpMemObj)
 
-                        if (hGlbObj EQ PTR_REUSED)
+                        if (PtrReusedDir (hGlbObj))
                         {
                             // Append the HGLOBAL name
                             lpaplChar +=

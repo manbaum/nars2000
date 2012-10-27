@@ -595,8 +595,7 @@ RESTART_ALLOC:
         aplNELMNst = max (aplNELMRes, 1);
 
         // If the right arg is nested or simple hetero, ...
-        if (IsNested (aplTypeRht)
-         || IsSimpleHet (aplTypeRht))
+        if (IsPtrArray (aplTypeRht))
             // Loop through the right arg/result
             for (uRes = 0; uRes < aplNELMNst; uRes++)
                 // Copy the right arg's prototype

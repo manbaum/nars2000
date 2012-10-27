@@ -1950,6 +1950,12 @@ ERROR_EXIT:
 //  Make a function text line
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakeTxtLine"
+#else
+#define APPEND_NAME
+#endif
+
 void MakeTxtLine
     (LPFCNARRAY_HEADER lpHeader)    // Ptr to function array header
 
@@ -2002,6 +2008,7 @@ void MakeTxtLine
         MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
     } // End IF
 } // End MakeTxtLine
+#undef  APPEND_NAME
 
 
 //***************************************************************************

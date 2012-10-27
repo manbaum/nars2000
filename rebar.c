@@ -2807,6 +2807,7 @@ typedef struct tagLANGCHARS
         {UTF16_DOT                , {0}, L"Dot",
                                          L"Inner Product Operator:  L f.g R\n"
                                          L"Outer Product Operator:  L " WS_UTF16_JOT L".g R\n\n"
+                                         L"Sequence:  L .. R\n\n"
                                          L"Keyboard:  '.'\n\n"
                                          L"Unicode:  0x002E or 46"},
         {UTF16_JOT                , {0}, L"Jot",

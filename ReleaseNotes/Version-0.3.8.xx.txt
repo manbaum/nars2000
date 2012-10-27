@@ -1,6 +1,20 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #1007 -- Version 0.3.8.xx
+------------------------------
+
+* Define New Keyboard Layouts
+
+Directory trunk:
+
+INIFILE.C:
+  In <ReadIniFileGlb>, set default keyboard layout depending upon the current Windows default layout.
+
+KEYBOARDS.H:
+  Define new French keyboard layout.
+
+
 Build #1006 -- Version 0.3.8.xx
 ------------------------------
 

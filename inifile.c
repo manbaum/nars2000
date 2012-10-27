@@ -474,6 +474,8 @@ UBOOL ReadIniFileGlb
     WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
     LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
     LPWSZLIBDIRS  lpwszLibDirs;                     // Ptr to LibDirs
+    WORD          hkl;                              // Default keyboard layout
+    LPWCHAR       lpKeybLayout;                     // Ptr to default keyboard layout name
 
 #define TEMPBUFLEN      countof (wszTemp)
 
@@ -1123,10 +1125,58 @@ UBOOL ReadIniFileGlb
                              KEYNAME_KEYBSTATE,     // Ptr to the key name
                              0,                     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    // Get the default keyboard layout for the current thread
+    // LANG_DANISH  == 0x06  SUBLANG_DANISH_DENMARK == 0x01
+    // LANG_ENGLISH == 0x09  SUBLANG_ENGLISH_US     == 0x01
+    // LANG_ENGLISH == 0x09  SUBLANG_ENGLISH_UK     == 0x02
+    // LANG_FRENCH  == 0x0C  SUBLANG_FRENCH         -- 0x01
+    hkl = LOWORD (GetKeyboardLayout (0));
+
+    // Split cases based upon the primary language ID (LANG_xxx)
+    switch (PRIMARYLANGID (hkl))
+    {
+        case LANG_DANISH:
+            lpKeybLayout = KEYBLAYOUT_DK_CTL;
+
+            break;
+
+        case LANG_ENGLISH:
+            // Split cases based upon the sublanguage ID (SUBLANG_xxx)
+            switch (SUBLANGID (hkl))
+            {
+                case SUBLANG_ENGLISH_UK:
+                    lpKeybLayout = KEYBLAYOUT_UK_ALT;
+
+                    break;
+
+                case SUBLANG_ENGLISH_US:
+                    lpKeybLayout = KEYBLAYOUT_US_ALT;
+
+                    break;
+
+                default:
+                    lpKeybLayout = KEYBLAYOUT_US_ALT;
+
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case LANG_FRENCH:
+            lpKeybLayout = KEYBLAYOUT_FR_ALT;
+
+            break;
+
+        default:
+            lpKeybLayout = KEYBLAYOUT_US_ALT;
+
+            break;
+    } // End SWITCH
+
     // Get the active keyboard layout name
     GetPrivateProfileStringW (SECTNAME_KEYBOARDS,       // Ptr to the section name
                               KEYNAME_KEYBLAYOUTNAME,   // Ptr to the key name
-                              KEYBLAYOUT_US_ALT,        // Ptr to the default value
+                              lpKeybLayout,             // Ptr to the default value
                               wszGlbKeybLayoutAct,      // Ptr to the output buffer
                               countof (wszGlbKeybLayoutAct),// Count of the output buffer
                               lpwszIniFile);            // Ptr to the file name

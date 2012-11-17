@@ -100,32 +100,7 @@ int ChangeRefCntDir_PTB
 
                         break;
                     } // End IF
-#ifdef DEBUG
-                    // If the var is nested or hetero, ensure that no entry is NULL or PTR_REUSED
-                    if (IsPtrArray (lpHeader->ArrType))
-                    {
-                        APLNELM     aplNELM;        // Item NELM
-                        APLUINT     uTmp;           // Loop counter
-                        LPAPLNESTED lpNest;         // Ptr to nested/hetero element
 
-                        // Get the NELM
-                        aplNELM = lpHeader->NELM;
-
-                        // Handle empty nested arrays
-                        if (IsNested (lpHeader->ArrType)
-                         && IsEmpty (aplNELM))
-                            // Count in the prototype
-                            aplNELM = max (aplNELM, 1);
-
-                        // Skip over the header and dimensions to the data
-                        lpNest = VarArrayDataFmBase (lpSig);
-
-                        for (uTmp = 0; uTmp < aplNELM; uTmp++)
-                        if (PtrNullDir   (lpNest[uTmp])
-                         || PtrReusedDir (lpNest[uTmp]))
-                            DbgBrk ();
-                    } // End IF
-#endif
                     // Change the reference count
 #ifdef DEBUG_REFCNT
                     if (iIncr EQ 1

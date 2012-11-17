@@ -910,11 +910,7 @@ void DisplayException
 
 #undef  NewMsg
 
-#ifdef DEBUG
-    DbgBrk ();
-#else
     exit (exceptCode);
-#endif
 } // End DisplayException
 
 

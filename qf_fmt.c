@@ -124,10 +124,10 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
 //***************************************************************************
 
 static APLCHAR MonHeaderFMT[] =
-  L"Z" $IS MFON_MonFMT L" R;" $QUAD L"io;Type;Lft;Top;Proto;A";
+  L"Z" $IS MFON_MonFMT L" R;" $QUAD L"io;Type;Lft;Top;Proto;A;" $QUAD L"feature";
 
 static APLCHAR MonLineFMT1[] =
-  $QUAD L"io" $IS L"0";
+  $QUAD L"io" $IS L"0" $DIAMOND $QUAD L"feature[0]" $IS L"1";
 
 static APLCHAR MonLineFMT2[] =
   L":if 1<" $MATCH L"R";

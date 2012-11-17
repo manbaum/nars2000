@@ -1,6 +1,18 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #1011 -- Version 0.3.8.xx
+------------------------------
+
+* Fix Bug In Monadic []FMT
+
+Directory trunk:
+
+QF_FMT.C:
+  Fix bug in monadic []FMT by localizing []FEATURE and enabling
+    negative indexing on which this magic function depends.
+
+
 Build #1010 -- Version 0.3.8.xx
 ------------------------------
 

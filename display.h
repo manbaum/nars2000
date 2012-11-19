@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2012 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,40 +92,46 @@ typedef enum tagCOL_TYPES
 
 typedef struct tagFMTCOLSTR
 {
-    UINT        uLdBl,                  // 00:  # leading blanks
-                uInts,                  // 04:  # Integer digits in Boolean/Integer/APA/Float column,
+    UINT        uLdBl,                  // 00:  # Leading blanks
+                uTrBl,                  // 04:  # Trailing blanks
+                uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
                                         //      including sign
-                uChrs,                  // 08:  # CHARs
-                uFrcs,                  // 0C:  # Fractional digits in Float column
+                uChrs,                  // 0C:  # CHARs
+                uFrcs,                  // 10:  # Fractional digits in Float column
                                         //      including decimal point
-                uFrc2;                  // 10:  # Fractional digits in Float column
+                uFrc2;                  // 14:  # Fractional digits in Float column
                                         //      including decimal point, except this
                                         //      one is propagated up the line if there's
                                         //      only one column
-    UINT        uTrBl:30,               // 14:  3FFFFFFFF:  # trailing blanks
-                colType:2;              //      C00000000:  column type (see COL_TYPES)
-                                        // 18:  Length
+    COLTYPES    colType;                // 18   Column type (see COLTYPES)
+                                        // 1C:  Length
 #ifdef DEBUG
   #define FMTCOLSTR_SIGNATURE 'CCCC'    // 43434343
-      HEADER_SIGNATURE Sig;             // 18:  FMTCOLSTR signature
-                                        // 1C:  Length
+      HEADER_SIGNATURE Sig;             // 1C:  FMTCOLSTR signature
+                                        // 20:  Length
 #endif
 } FMTCOLSTR, *LPFMTCOLSTR;
 
 typedef struct tagFMTROWSTR
 {
-    UINT        uFmtRows:30,            // 00:  3FFFFFFF:  # formatted rows in this row
+
+    UINT        bRptCol:1,              // 00:  10000000:  TRUE iff we're to repeat a col in this row
+                bDone:1,                //      20000000:  TRUE iff this row is done with output
                 bRealRow:1,             //      40000000:  TRUE iff a real row (not from []TCLF)
                 bBlank:1;               //      80000000:  TRUE iff this row is blank
-    UINT        uColOff;                // 04:  Column offset of this row
-    UINT        uItemCount;             // 08:  # following items
-    struct tagFMTROWSTR *lpFmtRowNxt;   // 0C:  Ptr to next sibling FMTROWSTR
-                                        // 10:  Length
+    UINT        uFmtRows,               // 00:  # formatted rows in this row
+                uColOff,                // 04:  Column offset of this row
+                uItemCount,             // 08:  # following items
+                uAccWid;                // 0C:  Accumulated width for this row
+    struct tagFMTROWSTR *lpFmtRowNxt;   // 10:  Ptr to next sibling FMTROWSTR
+    LPAPLCHAR   lpNxtChar,              // 12:  Ptr to next entry for raw output
+                lpEndChar;              // 18:  ...    byte after last entry ...
+                                        // 1C:  Length
 #ifdef DEBUG
   #define FMTROWSTR_SIGNATURE 'RRRR'    // 52525252
-      HEADER_SIGNATURE Sig;             // 10:  FMTROWSTR signature
-      FMTCOLSTR   *lpFmtColUp;          // 14:  Ptr to parent FMTCOLSTR
-                                        // 18:  Length
+      HEADER_SIGNATURE Sig;             // 1C:  FMTROWSTR signature
+      FMTCOLSTR   *lpFmtColUp;          // 20:  Ptr to parent FMTCOLSTR
+                                        // 24:  Length
 #endif
 } FMTROWSTR, *LPFMTROWSTR;
 

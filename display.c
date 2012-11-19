@@ -457,9 +457,7 @@ UBOOL DisplayGlbArr_EM
                                      aplDimNCols,           // # cols
                                      aplRank,               // Right arg rank
                                      lpMemDim,              // Ptr to right arg dimensions
-                                     TRUE,                  // TRUE iff top level array
-                                     TRUE,                  // TRUE iff first (leftmost) col
-                                     TRUE);                 // TRUE iff last (rightmost) col
+                                     TRUE);                 // TRUE iff top level array
                 break;
 
             case ARRAY_RAT:
@@ -532,7 +530,7 @@ UBOOL DisplayGlbArr_EM
         //   output stream into lpaplChar
 
         // Calc when to use raw output
-        bRawOut = (!IsSimpleChar (aplType) && !IsNested (aplType));
+        bRawOut = !IsNested (aplType);
 
         // Split cases based upon the array's storage type
         switch (aplType)
@@ -552,7 +550,7 @@ UBOOL DisplayGlbArr_EM
                                   &lpaplChar,               // Ptr to output string
                                    lpFmtHeader->uActRows,   // # formatted rows in this array
                                    aplDimNCols,             // # formatted cols in this array
-                                   aplLastDim,              // Length of last dim in result (NULL for !bRawOutput)
+                                   aplLastDim,              // Length of last dim in result
                                    aplRank,                 // Rank of this array
                                    lpMemDim,                // Ptr to this array's dimensions
                                    aplType,                 // Storage type of this array
@@ -573,7 +571,7 @@ UBOOL DisplayGlbArr_EM
                                    aplDimNCols,             // # formatted cols ...
                                    aplRank,                 // Rank of this array
                                    lpMemDim,                // Ptr to this array's dimensions
-                                   aplLastDim,              // Length of last dim in result (NULL for !bRawOutput)
+                                   aplLastDim,              // Length of last dim in result
                                    bRawOut,                 // TRUE iff raw (not {thorn}) output
                                    bEndingCR,               // TRUE iff last line has CR
                                    lpbCtrlBreak);           // Ptr to Ctrl-Break flag
@@ -590,39 +588,53 @@ UBOOL DisplayGlbArr_EM
         // If we didn't use raw output in the
         //   FormatArrxxx routines, do it now
         // The following code handles wrapping at []PW
+        //   of groups of rows
         if (!bRawOut)
         {
-            UINT uFmtRow;               // Loop counter
+            APLUINT uColGrp,
+                    uColLim;
 
-            uOutLen = uQuadPW;          // Initial output length
+            // Calculate the # of cols per row group
+            uColLim = (aplLastDim + uQuadPW - 1) / uQuadPW;
 
-            // Loop through the formatted rows
-            for (lpwsz = lpwszFormat,
-                   uFmtRow = 0;
-                 uFmtRow < lpFmtHeader->uFmtRows;
-                 uFmtRow++,
-                   lpwsz += aplLastDim,
-                   bLineCont = FALSE)
+            // Loop through the groups of cols
+            for (uColGrp = 0; uColGrp < uColLim; uColGrp++, bLineCont = TRUE)
             {
-                WCHAR   wch;                // The replaced WCHAR
-                APLDIM  aplDimTmp;          // Remaining line length to output
-                APLUINT uOffset;            // Offset in line to start of display
+                UINT uFmtRow;               // Loop counter
 
-                // ***FIXME*** -- this routine may split a number in half
-                //                because it doesn't know the difference
-                //                between numbers and characters
-
-                if (bLineCont)
-                    AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
-
-                // For char lines with embedded []TCLFs, the actual line
-                //   length is smaller than the total length, so we need
-                //   to compare against that here
-                aplDimTmp = lstrlenW (lpwsz);   // Get line length
-                aplDimTmp = min (aplDimTmp, aplLastDim);// Use the smaller
-                uOffset = 0;                // Initialize the line offset
-                while (aplDimTmp > uQuadPW)
+                // Loop through the formatted rows
+                for (lpwsz = lpwszFormat,
+                       uFmtRow = 0;
+                     uFmtRow < lpFmtHeader->uFmtRows;
+                     uFmtRow++,
+                       lpwsz += aplLastDim)
                 {
+                    WCHAR   wch;                // The replaced WCHAR
+                    APLDIM  aplDimTmp;          // Remaining line length to output
+                    APLUINT uOffset;            // Offset in line to start of display
+
+                    // ***FIXME*** -- this routine may split a number in half
+                    //                because it doesn't know the difference
+                    //                between numbers and characters
+
+                    if (uColGrp NE 0)
+                    {
+                        AppendLine (wszIndent, TRUE, FALSE);            // Display the indent
+                        uOutLen = uQuadPW - DEF_INDENT;                 // Maximum output length
+                        uOffset = uQuadPW + (uColGrp - 1) * uOutLen;    // Initialize the line offset
+                    } else
+                    {
+                        uOutLen = uQuadPW;                              // Maximum output length
+                        uOffset = 0;                                    // Initialize line offset
+                    } // End IF/ELSE
+
+                    // For char lines with embedded []TCLFs, the actual line
+                    //   length is smaller than the total length, so we need
+                    //   to compare against that here
+                    aplDimTmp = lstrlenW (lpwsz);                       // Get line length
+                    aplDimTmp = min (aplDimTmp, aplLastDim);            // Use the smaller
+                    uOutLen   = min (aplDimTmp, uOffset + uOutLen) - uOffset;   // ...
+
                     // Check for Ctrl-Break
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
@@ -631,31 +643,21 @@ UBOOL DisplayGlbArr_EM
                     //   we need to create one
                     wch = lpwsz[uOffset + uOutLen];     // Save the ending char
                     lpwsz[uOffset + uOutLen] = WC_EOS;  // Terminate the line
-                    AppendLine (lpwsz + uOffset, bLineCont, TRUE);  // Display the line
+
+                    // If we're at the last line, ...
+                    if (uColGrp EQ (uColLim - 1)
+                     && uFmtRow EQ (lpFmtHeader->uFmtRows - 1))
+                        AppendLine (lpwsz + uOffset, bLineCont, bEndingCR); // Display the line
+                    else
+                        AppendLine (lpwsz + uOffset, bLineCont, TRUE);      // Display the line
+
                     lpwsz[uOffset + uOutLen] = wch;     // Restore the ending char
+                } // End FOR
 
-                    bLineCont = TRUE;                   // Lines from here on are continuations
-                    AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
-
-                    aplDimTmp -= uOutLen;               // Less how much we output
-                    uOffset += uOutLen;                 // Skip over what we just output
-                    uOutLen = uQuadPW - DEF_INDENT;     // Take into account the indent
-                } // End WHILE
-
-                // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
-                    goto ERROR_EXIT;
-
-                // Output whatever remains
-
-                // Because AppendLine works on single zero-terminated lines,
-                //   we need to create one
-                wch = lpwsz[uOffset + aplDimTmp];       // Save the ending char
-                lpwsz[uOffset + aplDimTmp] = WC_EOS;    // Terminate the line
-                AppendLine (lpwsz + uOffset,
-                            bLineCont,
-                            bEndingCR || (uFmtRow NE (lpFmtHeader->uFmtRows - 1))); // Display the line
-                lpwsz[uOffset + aplDimTmp] = wch;       // Restore the ending char
+                // If we're not at the last line, ...
+                if (uColGrp NE (uColLim - 1))
+                    // Display a blank separator line
+                    AppendLine (L"", FALSE, TRUE);
             } // End FOR
         } // End IF
 

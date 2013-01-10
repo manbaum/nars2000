@@ -406,8 +406,9 @@ Welcome to NARS2000</h1>
       NARS2000 can run on any operating system that can run Wine (which
       includes virtually every Linux-based system, among others).  Note that
       Wine is not an emulator, but a layer between the Windows executable
-      and the non-Windows operating system.  In fact, the name <b>Wine</b>
-      is a recursive acronym for <b>Wine Is Not an Emulator</b>.</p>
+      and the non-Windows operating system.  In fact, the name <b>Wine</b> is a
+      <a class="linkleft" href="http://en.wikipedia.org/wiki/Recursive_acronym">recursive acronym</a>
+      for <b>Wine Is Not an Emulator</b>.</p>
 
     <p>For more details on running NARS2000 on your operating system, see
       <a class="linkleft" href="http://wiki.nars2000.org/index.php/Platforms">Platforms</a>
@@ -466,13 +467,14 @@ Welcome to NARS2000</h1>
 
       <li><b>Source Code Under Version Control:</b>
         <ul>
-          <li>The source may be <a class="linkleft" href="http://svn.nars2000.org">viewed</a>,
+          <li>The source may be
+            <a class="linkleft" href="http://code.google.com/p/nars2000/source/browse/trunk">viewed</a>,
             as well as downloaded, one file at a time, from your browser.
           </li>
 
           <li>Or, using a version control program, the source may be
             downloaded, one file at a time or the whole lot.  In
-            particular, the source code is maintained on this site using
+            particular, the source code is maintained on the Google Code site using
             <a class="linkleft" href="http://subversion.tigris.org/">Subversion</a>.
             There are various clients which may commmunicate with a Subversion
             server depending upon the operating system running on your computer.
@@ -480,14 +482,8 @@ Welcome to NARS2000</h1>
             the program <a class="linkleft" href="http://tortoisesvn.tigris.org/">Tortoise SVN</a>.
             This is one means by which developers may checkout and commit changes to
             the code.
-            Using a version control program, the source code may be viewed using
-            the URL <a class="linkleft" href="svn://svn.nars2000.org/nars2000/trunk">svn://svn.nars2000.org/nars2000/trunk</a>
-            (valid only if you have a version control program on your system).
-          </li>
-
-          <li>The <a class="linkleft" href="http://svn.nars2000.org">browser view</a>
-            also allows you to download the entire source code as a compressed file.
-            Try the link at the bottom of each index page labeled "Download GNU tarball".
+            Using a version control program, the source code may be viewed using the URL
+            <a class="linkleft" href="http://code.google.com/p/nars2000/source/browse/trunk">http://code.google.com/p/nars2000/source/browse/trunk</a>.
           </li>
         </ul>
       </li>
@@ -562,7 +558,8 @@ Welcome to NARS2000</h1>
     privacy issues, etc., I'd prefer that if you are interested in being
     notified when a new version is released that you sign up with a (free)
     service that does this such as the one linked to at the bottom of this
-    page (for new <b>features</b>) and/or the download page (for new <b>releases</b>).</p>
+    page (for new <b>features</b>) and/or the <a class="linkleft" href="/download">download</a>
+    page (for new <b>releases</b>).</p>
 </div>
 
 <div class="section">
@@ -571,7 +568,7 @@ Welcome to NARS2000</h1>
   <p>This project was started by
   <script type="text/javascript"
           src="/email.cgi?n=bsmith&amp;d=sudleyplace.com&amp;t=Bob%20Smith&amp;class=mailright"></script>
-  and is &copy; 2006-2011, Sudley Place Software.  Here's a link to some of my other
+  and is &copy; 2006-2013, Sudley Place Software.  Here's a link to some of my other
   <a class="linkleft" href="http://www.sudleyplace.com/APL/projects.html">APL-related pages</a>.</p>
 </div>
 

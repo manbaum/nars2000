@@ -113,7 +113,8 @@ Downloads</h1>
           privacy issues, etc., I'd prefer that if you are interested in being
           notified when a new version is released that you sign up with a (free)
           service that does this such as the one linked to on the right of this
-          section (for new <b>releases</b>) and/or the main page (for new <b>features</b>).</p>
+          section (for new <b>releases</b>) and/or the <a class="linkleft" href="/">main</a>
+          page (for new <b>features</b>).</p>
       </td>
 
       <td valign="top">

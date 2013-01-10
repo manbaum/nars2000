@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -98,11 +98,13 @@ typedef enum tagIC_INDICES
     ICNDX_1LOG1     ,       // 18:  1 {log} 1
     ICNDX_0GCDInf   ,       // 19:  0 {gcd} ±_  or  ±_ {gcd} 0
     ICNDX_0LCMInf   ,       // 1A:  0 {lcm} ±_  or  ±_ {lcm} 0
-    ICNDX_LENGTH            // 1B:  # entries in this enum
+    ICNDX_0LOGN     ,       // 1B:  0 {log} N  (N NE 0 or 1)
+    ICNDX_LENGTH            // 1C:  # entries in this enum
 } IC_INDICES;
 
 // N.B.:  Whenever changing the above enum (IC_INDICES),
 //   be sure to make a corresponding change to
+//   <aplDefaultIC> below, and
 //   <icIndexNames> in <customize.c>.
 
 EXTERN
@@ -135,6 +137,7 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
     ICVAL_ONE          ,    // 18:  1 {log} 1
     ICVAL_LEFT         ,    // 19:  0 {gcd} ±_  or  ±_ {gcd} 0
     ICVAL_DOMAIN_ERROR ,    // 1A:  0 {lcm} ±_  or  ±_ {lcm} 0
+    ICVAL_DOMAIN_ERROR ,    // 1B:  0 {log} N  (N NE 0 or 1)
    }
 #endif
 ;
@@ -2142,13 +2145,13 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 #endif
 ,      mpfPosInfinity           // Positive infinity
 #ifdef DEFINE_VALUES
-= {0, 0x7FFFFFFF, 0, NULL}
+= {0}
 #endif
 ,      mpfNegInfinity           // Negative infinity
 #ifdef DEFINE_VALUES
-= {0, 0x80000000, 0, NULL}
+= {0}
 #endif
-,      mpfHalf                  // ...          0.5 ...
+,      mpfHalf                  // 0.5
 #ifdef DEFINE_VALUES
 = {0}
 #endif

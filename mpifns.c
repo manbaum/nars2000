@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3358,7 +3358,7 @@ int IsMpfNegInfinity
 //***************************************************************************
 //  $mpifr_copy
 //
-//  Copy a MPF from a MPF
+//  Copy a MPFR from a MPFR
 //***************************************************************************
 
 void mpifr_copy
@@ -3376,7 +3376,7 @@ void mpifr_copy
 //***************************************************************************
 //  $mpifr_set_d
 //
-//  Set a MPF from a double
+//  Set a MPFR from a double
 //***************************************************************************
 
 void mpifr_set_d
@@ -3395,7 +3395,7 @@ void mpifr_set_d
 //***************************************************************************
 //  $mpifr_set_z
 //
-//  Set a MPF from a API
+//  Set a MPFR from a API
 //***************************************************************************
 
 void mpifr_set_z
@@ -3414,7 +3414,7 @@ void mpifr_set_z
 //***************************************************************************
 //  $mpifr_set_q
 //
-//  Set a MPF from a rational
+//  Set a MPFR from a rational
 //***************************************************************************
 
 void mpifr_set_q
@@ -3465,7 +3465,7 @@ int mpifr_set_str
 //***************************************************************************
 //  $mpifr_init_copy
 //
-//  Set a MPF from a MPF
+//  Set a MPFR from a MPFR
 //***************************************************************************
 
 void mpifr_init_copy
@@ -3474,10 +3474,8 @@ void mpifr_init_copy
 
 {
     if (mpfr_inf_p (op))
-    {
-        mpfr_init0 (rop);
         mpfr_set_inf (rop, mpfr_sgn (op));
-    } else
+    else
         mpfr_init_copy (rop, op);
 } // End mpifr_init_copy
 
@@ -3485,7 +3483,7 @@ void mpifr_init_copy
 //***************************************************************************
 //  $mpifr_init_set_d
 //
-//  Set a MPF from a double
+//  Set a MPFR from a double
 //***************************************************************************
 
 void mpifr_init_set_d
@@ -3495,10 +3493,8 @@ void mpifr_init_set_d
 
 {
     if (IsInfinity (op))
-    {
-        mpfr_init0 (rop);
         mpfr_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
-    } else
+    else
         mpfr_init_set_d (rop, op, rnd);
 } // End mpifr_init_set_d
 
@@ -3684,7 +3680,7 @@ void mpifr_add
 //***************************************************************************
 //  $mpifr_add_ui
 //
-//  Add an MPF and an unsigned long int
+//  Add an MPFR and an unsigned long int
 //***************************************************************************
 
 void mpifr_add_ui
@@ -3750,7 +3746,7 @@ void mpifr_sub
 //***************************************************************************
 //  $mpifr_ui_sub
 //
-//  Subtract an unsigned long int and a MPF
+//  Subtract an unsigned long int and a MPFR
 //***************************************************************************
 
 void mpifr_ui_sub
@@ -3770,7 +3766,7 @@ void mpifr_ui_sub
 //***************************************************************************
 //  $mpifr_sub_ui
 //
-//  Subtract a MPF and an unsigned long int
+//  Subtract a MPFR and an unsigned long int
 //***************************************************************************
 
 void mpifr_sub_ui
@@ -3833,7 +3829,7 @@ void mpifr_mul
 //***************************************************************************
 //  $mpifr_mul_ui
 //
-//  Multiply a MPF and an unsigned long int
+//  Multiply a MPFR and an unsigned long int
 //***************************************************************************
 
 void mpifr_mul_ui
@@ -3893,7 +3889,7 @@ void mpifr_div
 //***************************************************************************
 //  $mpifr_ui_div
 //
-//  Divide an unsigned long int and a MPF
+//  Divide an unsigned long int and a MPFR
 //***************************************************************************
 
 void mpifr_ui_div
@@ -3916,7 +3912,7 @@ void mpifr_ui_div
 //***************************************************************************
 //  $mpifr_div_ui
 //
-//  Divide a MPF and an unsigned long int
+//  Divide a MPFR and an unsigned long int
 //***************************************************************************
 
 void mpifr_div_ui
@@ -4003,7 +3999,7 @@ void mpifr_abs
 //***************************************************************************
 //  $mpifr_mul_2exp
 //
-//  Multiply a MPF and 2^unsigned long int
+//  Multiply a MPFR and 2^unsigned long int
 //***************************************************************************
 
 void mpifr_mul_2exp
@@ -4023,7 +4019,7 @@ void mpifr_mul_2exp
 //***************************************************************************
 //  $mpifr_div_2exp
 //
-//  Divide a MPF and 2^unsigned long int
+//  Divide a MPFR and 2^unsigned long int
 //***************************************************************************
 
 void mpifr_div_2exp

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,9 +71,9 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
    INF WS_UTF16_COLONBAR INF L" (same sign)"                                          , // 06:  _ {div} _   (same sign)
    INF WS_UTF16_COLONBAR INF L" (diff sign)"                                          , // 07:  _ {div} _   (different sign)
    INF L"-"              INF L" (and related)"                                        , // 08:  _ - _ or _ + -_ or ...
-   L"L|"   INF L"  for L>0"                                                            , // 09:  L   |    _  for L > 0
+   L"L|"   INF L"  for L>0"                                                           , // 09:  L   |    _  for L > 0
    L"L|"  NINF L" for L>0"                                                            , // 0A:  L   |   -_  for L > 0
-   L"L|"   INF L"  for L<0"                                                            , // 0B:  L   |    _  for L < 0
+   L"L|"   INF L"  for L<0"                                                           , // 0B:  L   |    _  for L < 0
    L"L|"  NINF L" for L<0"                                                            , // 0C:  L   |   -_  for L < 0
    NINF L"|R"                                                                         , // 0D:  -_  |   R   for R > 0
     INF L"|R"                                                                         , // 0E:   _  |   R   for R < 0
@@ -89,6 +89,7 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
    L"1" WS_UTF16_CIRCLESTAR L"1"                                                      , // 18:  1 {log} 1
    L"0" WS_UTF16_DOWNCARET L"±" INF L"  or  ±" INF WS_UTF16_DOWNCARET L"0"            , // 19:  0 {gcd} ±_  or  ±_ {gcd} 0
    L"0" WS_UTF16_UPCARET   L"±" INF L"  or  ±" INF WS_UTF16_UPCARET   L"0"            , // 1A:  0 {lcm} ±_  or  ±_ {lcm} 0
+   L"0" WS_UTF16_CIRCLESTAR L"R (R" WS_UTF16_NOTEQUAL L"0 or 1)"                      , // 1B:  0 {log} N (N NE 0 or 1)
   };
 
 // []IC Index Values -- these must be in the same order as the IC_VALUES enum.

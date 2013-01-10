@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -357,10 +357,10 @@ APLVFP LogVfp
     (APLVFP aplVfpRht)
 
 {
-    APLVFP mpfRes   = {0},      // MPF result
-           mpfTmp1  = {0},      // ... temp
+    APLVFP mpfRes   = {0},      // MPFR result
+           mpfTmp1  = {0},      // ...  temp
            mpfTmp2  = {0},      // ...
-           mpfBase  = {0};      // ... base
+           mpfBase  = {0};      // ...  base
     UINT   uRes;                // Loop counter
 
     mpfr_init0 (&mpfRes);
@@ -458,27 +458,29 @@ APLFLOAT PrimFnDydCircleStarFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLFLOAT aplFloatRes;
-
     // Check for indeterminates:  B {log} B
     if (IsBooleanValue (aplIntegerLft)
      && IsBooleanValue (aplIntegerRht))
         return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
                                      icndxLog[aplIntegerLft][aplIntegerRht],
                                      (APLFLOAT) aplIntegerRht);
+    // Check for indeterminates:  0 {log} N (N != 0 or 1)
+    if (aplIntegerLft EQ 0)
+        return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
+                                     ICNDX_0LOGN,
+                                     (APLFLOAT) aplIntegerRht);
+    // Check for Complex result
+    if (aplIntegerLft < 0)
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     // The EAS says "If A and B are equal, return one."
     if (aplIntegerLft EQ aplIntegerRht)
         return 1;
 
     // Calculate the log
-    aplFloatRes = log ((APLFLOAT) aplIntegerRht) / log ((APLFLOAT) aplIntegerLft);
-
-    // Check for ± infinity result (both args are finite)
-    if (IsInfinity (aplFloatRes))
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return aplFloatRes;
+    // Note that the native IEEE code correctly handles infinite results
+    //   such as 5{log}0
+    return log ((APLFLOAT) aplIntegerRht) / log ((APLFLOAT) aplIntegerLft);
 } // End PrimFnDydCircleStarFisIvI
 
 
@@ -494,8 +496,6 @@ APLFLOAT PrimFnDydCircleStarFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLFLOAT    aplFloatRes;
-
     // Check for special cases:  0 {log} ±_
     // Check for special cases:  ±_ {log} 0
     // Check for special cases:  ±_ {log} ±_
@@ -511,20 +511,23 @@ APLFLOAT PrimFnDydCircleStarFisFvF
                                      icndxLog[(UINT) aplFloatLft][(UINT) aplFloatRht],
                                      aplFloatRht);
 
+    // Check for indeterminates:  0 {log} N  (N != 0 or 1)
+    if (aplFloatLft EQ 0.0)
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_0LOGN,
+                                     aplFloatRht);
+    // Check for Complex result
+    if (aplFloatLft < 0.0)
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
     // The EAS says "If A and B are equal, return one."
     if (aplFloatLft EQ aplFloatRht)
         return 1;
 
     // Calculate the log
-    aplFloatRes = log (aplFloatRht) / log (aplFloatLft);
-
-    // Check for ± infinity result with both args finite
-    if ( IsInfinity (aplFloatRes)
-     && !IsInfinity (aplFloatLft)
-     && !IsInfinity (aplFloatRht))
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return aplFloatRes;
+    // Note that the native IEEE code correctly handles infinite results
+    //   such as 5{log}0  and  0.5{log}0
+    return log (aplFloatRht) / log (aplFloatLft);
 } // End PrimFnDydCircleStarFisFvF
 
 
@@ -540,9 +543,7 @@ APLVFP PrimFnDydCircleStarVisVvV
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLVFP mpfRes = {0},
-           mpfLft,
-           mpfRht;
+    APLVFP mpfRes = {0};
 
     // Check for special cases:  0 {log} ±_
     // Check for special cases:  ±_ {log} 0
@@ -559,6 +560,16 @@ APLVFP PrimFnDydCircleStarVisVvV
                                 icndxLog[IsMpf1 (&aplVfpLft)][IsMpf1(&aplVfpRht)],
                                 aplVfpRht,
                                 mpfRes);
+    // Check for indeterminates:  0 {log} N  (N != 0 or 1)
+    if (mpfr_zero_p (&aplVfpLft))
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_0LOGN,
+                                 aplVfpRht,
+                                 mpfRes);
+    // Check for Complex result
+    if (mpfr_sgn (&aplVfpLft) < 0)
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
     // Initialize the result
     mpfr_init0 (&mpfRes);
 
@@ -567,7 +578,12 @@ APLVFP PrimFnDydCircleStarVisVvV
         mpfr_set_ui (&mpfRes, 1, MPFR_RNDN);
     else
     {
-        // Calculate log (aplMpfRht) / log (aplVfpLft)
+        APLVFP mpfLft,
+               mpfRht;
+
+        // Calculate log (aplVfpRht) / log (aplVfpLft)
+        // Note that the MPFR code correctly handles infinite results
+        //   such as 5{log}0  and  0.5{log}0
         mpfLft = PrimFnMonCircleStarVisV (aplVfpLft, lpPrimSpec);
         mpfRht = PrimFnMonCircleStarVisV (aplVfpRht, lpPrimSpec);
         mpfr_div (&mpfRes, &mpfRht, &mpfLft, MPFR_RNDN);

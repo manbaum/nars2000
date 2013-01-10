@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -991,7 +991,7 @@ int mpq_integer_p
 
 
 //***************************************************************************
-//  MPF Functions
+//  MPFR Functions
 //***************************************************************************
 
 //***************************************************************************
@@ -1055,7 +1055,7 @@ APLVFP mpfr_QuadICValue
 //***************************************************************************
 //  $mpfr_copy
 //
-//  Save an MPF value as a Variable FP with the same precision
+//  Save an MPFR value as a Variable FP with the same precision
 //***************************************************************************
 
 void mpfr_copy
@@ -1071,7 +1071,7 @@ void mpfr_copy
 //***************************************************************************
 //  $mpfr_init_copy
 //
-//  Save an MPF value as a Variable FP with the same precision
+//  Save an MPFR value as a Variable FP with the same precision
 //***************************************************************************
 
 void mpfr_init_copy

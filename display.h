@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ displayed/formatted.
 
 The topmost struct is
 
-(FMTHEADER) (nCols * FMTCOLSTR) (nRows * FMTROWSTR)
+HEADER
 
 If the data for the first item is simple, it follows in the stream.
 Otherwise, FMTHEADER appears and the process nests
@@ -38,22 +38,17 @@ COLSTRS:
     | COLSTRS FMTCOLSTR
     ;
 
-ROWSTRS:
-      FMTROWSTR
-    | ROWSTRS FMTROWSTR
-    ;
-
 HEADER:
-      FMTHEADER COLSTRS ROWSTRS
-    | FMTHEADER COLSTRS ROWSTRS Data
-    | FMTHEADER COLSTRS ROWSTRS HEADER
+      FMTHEADER COLSTRS FMTROWSTR
+    | FMTHEADER COLSTRS FMTROWSTR Data
+    | FMTHEADER COLSTRS FMTROWSTR HEADER
     ;
 
 ***************************************************************************/
 
 typedef struct tagFMTHEADER
 {
-    struct tagFMTHEADER *lpFmtHeadUp;   // 00:  Ptr to next chain up
+    struct tagFMTHEADER *lpFmtHdrUp;    // 00:  Ptr to next chain up
     struct tagFMTROWSTR *lpFmtRowUp;    // 04:  Ptr to parent FMTROWSTR
     struct tagFMTCOLSTR *lpFmtColUp;    // 08:  Ptr to parent FMTCOLSTR
     struct tagFMTROWSTR *lpFmtRow1st;   // 0C:  Ptr to 1st child FMTROWSTR
@@ -64,17 +59,14 @@ typedef struct tagFMTHEADER
                 uActCols,               // 20:  # FMTCOLSTRs to follow
                 uFmtRows,               // 24:  # formatted rows in this block (+/FMTROWSTR.uFmtRows)
                 uFmtLdBl,               // 28:  ...         LdBl ...           (+/FMTCOLSTR.uLdBl)
-                uFmtInts,               // 2C:  ...         ints ...           (+/FMTCOLSTR.uInts)
-                uFmtChrs,               // 30:  ...         chars...           (+/FMTCOLSTR.uChrs)
-                uFmtFrcs,               // 34:  ...         frcs ...           (+/FMTCOLSTR.uFrcs)
-                uFmtTrBl;               // 38:  ...         TrBl ...           (+/FMTCOLSTR.uTrBl)
-    UINT        uDepth:31,              // 3C:  7FFFFFFF:  Depth of this struct (0 = top)
-                uMatRes:1;              //      80000000:  TRUE iff there is a rank > 1 item contained in this item
-                                        // 40:  Length
+                uFmtIntWid,             // 2C:  ...         interior width
+                uFmtTrBl;               // 30:  ...         TrBl ...           (+/FMTCOLSTR.uTrBl)
+    UINT        uMatRes:1;              // 34:  80000000:  TRUE iff there is a rank > 1 item contained in this item
+                                        // 38:  Length
 #ifdef DEBUG
   #define FMTHEADER_SIGNATURE 'HHHH'    // 48484848
-      HEADER_SIGNATURE Sig;             // 40:  FMTHEADER signature
-                                        // 44:  Length
+      HEADER_SIGNATURE Sig;             // 38:  FMTHEADER signature
+                                        // 3C:  Length
 #endif
 } FMTHEADER, *LPFMTHEADER;
 
@@ -92,23 +84,23 @@ typedef enum tagCOL_TYPES
 
 typedef struct tagFMTCOLSTR
 {
-    UINT        uLdBl,                  // 00:  # Leading blanks
-                uTrBl,                  // 04:  # Trailing blanks
-                uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
+    UINT        uLdBlMax,               // 00:  # Leading blanks due to NOTCHAR+
+                uLdBlNst,               // 04:  # Leading blanks due to nesting
+                uIntWid,                // 08:  Interior width
+                uInts,                  // 0C:  # Integer digits in Boolean/Integer/APA/Float column,
                                         //      including sign
-                uChrs,                  // 0C:  # CHARs
-                uFrcs,                  // 10:  # Fractional digits in Float column
+                uChrs,                  // 10:  # CHARs
+                uFrcs,                  // 14:  # Fractional digits in Float column
                                         //      including decimal point
-                uFrc2;                  // 14:  # Fractional digits in Float column
-                                        //      including decimal point, except this
-                                        //      one is propagated up the line if there's
-                                        //      only one column
-    COLTYPES    colType;                // 18   Column type (see COLTYPES)
-                                        // 1C:  Length
+                uTrBlNst;               // 18:  # Trailing blanks due to nesting
+    COLTYPES    colType;                // 1C:  Column type (see COLTYPES)
+    struct tagFMTCOLSTR
+               *lpFmtColUp;             // 20:  Ptr to parent FMTCOLSTR
+                                        // 24:  Length
 #ifdef DEBUG
   #define FMTCOLSTR_SIGNATURE 'CCCC'    // 43434343
-      HEADER_SIGNATURE Sig;             // 1C:  FMTCOLSTR signature
-                                        // 20:  Length
+      HEADER_SIGNATURE Sig;             // 24:  FMTCOLSTR signature
+                                        // 28:  Length
 #endif
 } FMTCOLSTR, *LPFMTCOLSTR;
 
@@ -119,19 +111,21 @@ typedef struct tagFMTROWSTR
                 bDone:1,                //      20000000:  TRUE iff this row is done with output
                 bRealRow:1,             //      40000000:  TRUE iff a real row (not from []TCLF)
                 bBlank:1;               //      80000000:  TRUE iff this row is blank
-    UINT        uFmtRows,               // 00:  # formatted rows in this row
-                uColOff,                // 04:  Column offset of this row
-                uItemCount,             // 08:  # following items
-                uAccWid;                // 0C:  Accumulated width for this row
-    struct tagFMTROWSTR *lpFmtRowNxt;   // 10:  Ptr to next sibling FMTROWSTR
-    LPAPLCHAR   lpNxtChar,              // 12:  Ptr to next entry for raw output
-                lpEndChar;              // 18:  ...    byte after last entry ...
-                                        // 1C:  Length
-#ifdef DEBUG
-  #define FMTROWSTR_SIGNATURE 'RRRR'    // 52525252
-      HEADER_SIGNATURE Sig;             // 1C:  FMTROWSTR signature
-      FMTCOLSTR   *lpFmtColUp;          // 20:  Ptr to parent FMTCOLSTR
+    UINT        uFmtRows,               // 04:  # formatted rows in this row
+                uColOff,                // 08:  Column offset of this row
+                uItemCount,             // 0C:  # following items
+                uAccWid;                // 10:  Accumulated width for this row
+    struct tagFMTROWSTR
+               *lpFmtRowNxt;            // 14:  Ptr to next sibling FMTROWSTR
+    LPAPLCHAR   lpNxtChar,              // 18:  Ptr to next entry for raw output
+                lpEndChar;              // 1C:  ...    byte after last entry ...
+    APLSTYPE    aplType;                // 20:  Type of following array (if not nested)
                                         // 24:  Length
+#ifdef DEBUG
+      FMTCOLSTR *lpFmtColUp;            // 24:  Ptr to parent FMTCOLSTR
+  #define FMTROWSTR_SIGNATURE 'RRRR'    // 52525252
+      HEADER_SIGNATURE Sig;             // 28:  FMTROWSTR signature
+                                        // 2C:  Length
 #endif
 } FMTROWSTR, *LPFMTROWSTR;
 

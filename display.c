@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,6 +68,8 @@ UBOOL ArrayDisplay_EM
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPAPLCHAR    lpaplChar;         // Ptr to output save area
     LPWCHAR      lpwszFormat;       // Ptr to formatting save area
+    IMM_TYPES    immType;           // Type of immediate value
+    APLCHAR      aplChar;           // Immediate value if character
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -116,6 +118,9 @@ UBOOL ArrayDisplay_EM
             lpaplChar =
               FormatSymTabConst (lpwszFormat,
                                  lptkRes->tkData.tkSym);
+            immType = lptkRes->tkData.tkSym->stFlags.ImmType;
+            aplChar = lptkRes->tkData.tkSym->stData.stChar;
+
             break;
 
         case TKT_VARIMMED:  // The tkData is an immediate constant
@@ -127,6 +132,9 @@ UBOOL ArrayDisplay_EM
               FormatImmed (lpwszFormat,
                            lptkRes->tkFlags.ImmType,
                           &lptkRes->tkData.tkLongest);
+            immType = lptkRes->tkFlags.ImmType;
+            aplChar = lptkRes->tkData.tkChar;
+
             break;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
@@ -143,6 +151,9 @@ UBOOL ArrayDisplay_EM
                     lpaplChar =
                       FormatSymTabConst (lpwszFormat,
                                          lptkRes->tkData.tkSym);
+                    immType = lptkRes->tkData.tkSym->stFlags.ImmType;
+                    aplChar = lptkRes->tkData.tkSym->stData.stChar;
+
                     break;
 
                 case PTRTYPE_HGLOBAL:
@@ -169,6 +180,38 @@ UBOOL ArrayDisplay_EM
         *--lpaplChar = WC_EOS;
     else
         *lpaplChar = WC_EOS;
+
+    // If the value is a character, ...
+    if (IsImmChr (immType))
+    // Split cases based upon the character value
+    switch (aplChar)
+    {
+        case TCBEL:
+            // Sound the alarum!
+            MessageBeep (NEG1U);
+
+            // Empty the line
+            lpwszFormat[0] = WC_EOS;
+
+            break;
+
+        case TCHT:
+            FillMemoryW (lpwszFormat, uTabStops, L' ');
+
+            // Append a terminating zero
+            lpwszFormat[uTabStops] = WC_EOS;
+
+            break;
+
+        case TCLF:
+        case TCNL:
+        default:
+            // If the char is not printable, ...
+            if (aplChar < L' ')
+                // Empty the line
+                lpwszFormat[0] = WC_EOS;
+            break;
+    } // End IF/SWITCH
 
     // Display the line
     AppendLine (lpwszFormat, FALSE, bEndingCR);
@@ -207,7 +250,8 @@ UBOOL DisplayGlbArr_EM
     LPAPLCHAR    lpaplCharIni = NULL,
                  lpaplChar,
                  lpaplCharStart,
-                 lpwsz;
+                 lpwszNxt,          // Ptr to next char of input
+                 lpwszEnd;          // ..     end  char of input
     APLSTYPE     aplType;           // Arg storage type
     APLNELM      aplNELM;           // Arg NELM
     APLRANK      aplRank;           // Arg rank
@@ -336,7 +380,6 @@ UBOOL DisplayGlbArr_EM
 ////////lpFmtHeader->uFmtChrs    = 0;                   // ...
 ////////lpFmtHeader->uFmtFrcs    = 0;                   // ...
 ////////lpFmtHeader->uFmtTrBl    = 0;                   // ...
-////////lpFmtHeader->uDepth      = 0;                   // ...
 ////////lpFmtHeader->uMatRes     = 0;                   // ...
 
         // Create <aplChrNCols> FMTCOLSTRs in the output
@@ -530,7 +573,7 @@ UBOOL DisplayGlbArr_EM
         //   output stream into lpaplChar
 
         // Calc when to use raw output
-        bRawOut = !IsNested (aplType);
+        bRawOut = (!IsNested (aplType) && !IsSimpleHet (aplType) && !IsSimpleChar (aplType));
 
         // Split cases based upon the array's storage type
         switch (aplType)
@@ -591,79 +634,189 @@ UBOOL DisplayGlbArr_EM
         //   of groups of rows
         if (!bRawOut)
         {
-            APLUINT uColGrp,
-                    uColLim;
+            APLUINT     uColGrp,
+                        uColLim;
+            WCHAR       wcCur = L' ';       // The replaced WCHAR (start with anything non-zero)
+            UINT        uFmtRow;            // Loop counter
+            LPFMTROWSTR lpFmtRowLcl;        // Ptr to local FMTROWSTR
+            LPAPLCHAR   lpwsz;              // Temporary ptr
+            LPWCHAR     lpwszTemp;          // Ptr to formatting temp area
+
+            // Get ptr to formatting temp area
+            //   and protect by skipping over it
+            lpwszTemp = lpMemPTD->lpwszTemp;
+            lpMemPTD->lpwszTemp += aplLastDim;
+
+            // Insert a terminating zero
+            *lpaplChar = WC_EOS;
 
             // Calculate the # of cols per row group
             uColLim = (aplLastDim + uQuadPW - 1) / uQuadPW;
 
+            // Save the data ptr for each row
+            for (lpFmtRowLcl = lpFmtHeader->lpFmtRow1st,
+                   lpwsz = lpwszFormat;
+                 lpFmtRowLcl NE NULL;
+                 lpFmtRowLcl = lpFmtRowLcl->lpFmtRowNxt)
+            {
+                lpFmtRowLcl->lpNxtChar = lpwsz;
+                lpwsz += aplLastDim;
+                lpFmtRowLcl->lpEndChar = lpwsz;
+            } // End FOR
+
             // Loop through the groups of cols
             for (uColGrp = 0; uColGrp < uColLim; uColGrp++, bLineCont = TRUE)
             {
-                UINT uFmtRow;               // Loop counter
-
                 // Loop through the formatted rows
-                for (lpwsz = lpwszFormat,
-                       uFmtRow = 0;
-                     uFmtRow < lpFmtHeader->uFmtRows;
+                for (uFmtRow = 0,
+                       lpFmtRowLcl = lpFmtHeader->lpFmtRow1st;
+                     lpFmtRowLcl NE NULL;
                      uFmtRow++,
-                       lpwsz += aplLastDim)
+                       lpFmtRowLcl = lpFmtRowLcl->lpFmtRowNxt)
                 {
-                    WCHAR   wch;                // The replaced WCHAR
-                    APLDIM  aplDimTmp;          // Remaining line length to output
-                    APLUINT uOffset;            // Offset in line to start of display
+                    APLUINT uColCur,            // ...
+                            uTmp,               // Temporary
+                            uMaxWidth,          // Maximum col width
+                            uCurPos;            // Current col position
 
                     // ***FIXME*** -- this routine may split a number in half
                     //                because it doesn't know the difference
                     //                between numbers and characters
 
+                    // Set start and end of input
+                    lpwszNxt = lpFmtRowLcl->lpNxtChar;
+                    lpwszEnd = lpFmtRowLcl->lpEndChar;
+
+                    if (lpwszNxt >= lpwszEnd)
+                        break;
+
                     if (uColGrp NE 0)
                     {
-                        AppendLine (wszIndent, TRUE, FALSE);            // Display the indent
+                        lstrcpyW (lpwszTemp, wszIndent);                // Copy the indent
                         uOutLen = uQuadPW - DEF_INDENT;                 // Maximum output length
-                        uOffset = uQuadPW + (uColGrp - 1) * uOutLen;    // Initialize the line offset
+                        uCurPos = DEF_INDENT;
                     } else
                     {
                         uOutLen = uQuadPW;                              // Maximum output length
-                        uOffset = 0;                                    // Initialize line offset
+                        uCurPos = 0;
                     } // End IF/ELSE
 
-                    // For char lines with embedded []TCLFs, the actual line
-                    //   length is smaller than the total length, so we need
-                    //   to compare against that here
-                    aplDimTmp = lstrlenW (lpwsz);                       // Get line length
-                    aplDimTmp = min (aplDimTmp, aplLastDim);            // Use the smaller
-                    uOutLen   = min (aplDimTmp, uOffset + uOutLen) - uOffset;   // ...
+                    // Set the current maximum width
+                    uMaxWidth = uCurPos;
 
-                    // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
-                        goto ERROR_EXIT;
+                    // Loop through this part of the output line
+                    for (uColCur = 0; (uColCur < uOutLen) && lpwszNxt < lpwszEnd; uColCur++)
+                    {
+                        // Get the next char
+                        wcCur = *lpwszNxt++;
 
-                    // Because AppendLine works on single zero-terminated lines,
-                    //   we need to create one
-                    wch = lpwsz[uOffset + uOutLen];     // Save the ending char
-                    lpwsz[uOffset + uOutLen] = WC_EOS;  // Terminate the line
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        // If the char is not printable, ...
+                        if (wcCur < L' ')
+                            uColCur--;      // Count it out
+
+                        // Split cases based upon the character
+                        switch (wcCur)
+                        {
+                            case TCHT:          // []TCHT -- Move ahead to the next tab stop
+                                // *Insert* enough blanks to get to the next tabstop
+                                uTmp = uTabStops - (uCurPos % uTabStops);
+                                MoveMemoryW (&lpwszTemp[uCurPos + uTmp], &lpwszTemp[uCurPos], (APLU3264) uTmp);
+                                FillMemoryW (&lpwszTemp[uCurPos], (APLU3264) uTmp, L' ');
+
+                                // Increase the maximum width and current position by the # inserted blanks
+                                uMaxWidth += uTmp;
+                                uCurPos   += uTmp;
+
+                                break;
+
+                            case TCBEL:         // []TCBEL -- Sound the alarum!
+                                MessageBeep (NEG1U);
+
+                                break;
+
+                            case TCBS:          // []TCBS -- Backspace if there's room
+                                if (uCurPos)
+                                    uCurPos--;
+                                break;
+
+                            case TCNL:          // []TCNL -- Restart at the beginning of a new line
+                                // Zap the temp buffer at the maximum width
+                                lpwszTemp[uMaxWidth] = WC_EOS;
+
+                                // Output the line up to this point w/NL
+                                AppendLine (lpwszTemp, FALSE, TRUE);
+
+                                // Reset the maximum width and current position
+                                uMaxWidth =
+                                uCurPos   =
+                                uColCur   = 0;
+                                uColCur--;              // Count it out
+                                uOutLen = uQuadPW;      // Maximum output length
+
+                                break;
+
+                            case TCLF:          // []TCLF -- Start a new line
+                                // Zap the temp buffer at the maximum width
+                                lpwszTemp[uMaxWidth] = WC_EOS;
+
+                                // Output the line up to this point w/NL
+                                AppendLine (lpwszTemp, FALSE, TRUE);
+
+                                // Output enough blanks to get back to the current position
+                                FillMemoryW (lpwszTemp, (APLU3264) uCurPos, L' ');
+
+                                break;
+
+                            default:
+                                // If the char is printable, ...
+                                if (wcCur >= L' ')
+                                {
+                                    // Save the new char
+                                    lpwszTemp[uCurPos++] = wcCur;
+                                    uMaxWidth = max (uMaxWidth, uCurPos);
+                                } // End IF/ELSE
+
+                                break;
+                        } // End SWITCH
+                    } // End FOR
+
+                    // Save ptr to next input
+                    lpFmtRowLcl->lpNxtChar = lpwszNxt;
+
+                    // Zap the temp buffer at the maximum width
+                    lpwszTemp[uMaxWidth] = WC_EOS;          // Zap it
 
                     // If we're at the last line, ...
                     if (uColGrp EQ (uColLim - 1)
                      && uFmtRow EQ (lpFmtHeader->uFmtRows - 1))
-                        AppendLine (lpwsz + uOffset, bLineCont, bEndingCR); // Display the line
+                        AppendLine (lpwszTemp, bLineCont, bEndingCR); // Display the line
                     else
-                        AppendLine (lpwsz + uOffset, bLineCont, TRUE);      // Display the line
-
-                    lpwsz[uOffset + uOutLen] = wch;     // Restore the ending char
+                        AppendLine (lpwszTemp, bLineCont, TRUE);      // Display the line
                 } // End FOR
 
-                // If we're not at the last line, ...
-                if (uColGrp NE (uColLim - 1))
+                // If we're not at the last line, and
+                //   the array is multirank, ...
+                // ***FIXME*** -- Sometimes on matrices whose lines contain TCNLs at low []PW,
+                //                we may display extra blank line(s) at the end because we
+                //                use up uColGrps faster than does the FOR loop.
+                if (uColGrp NE (uColLim - 1)
+                 && IsMultiRank (aplRank))
                     // Display a blank separator line
                     AppendLine (L"", FALSE, TRUE);
             } // End FOR
+
+            // Restore original ptr to formatting temp area
+            lpMemPTD->lpwszTemp -= aplLastDim;
         } // End IF
 
         // If this is an empty vector, make sure it skips a line
-        if (IsEmpty (lpFmtHeader->uFmtRows)
-         && IsVector (aplRank))
+        if (IsEmpty (lpFmtHeader->uFmtIntWid)
+         && IsVector (aplRank)
+         && !bRawOut)
             AppendLine (L"", FALSE, TRUE);// Display the empty line
     } __except (CheckVirtAlloc (GetExceptionInformation (),
                                 L"DisplayGlbArr_EM"))
@@ -733,7 +886,6 @@ LPAPLCHAR FormatImmed
      LPAPLLONGEST lpaplLongest)
 
 {
-    WCHAR             wc;
     LPVARARRAY_HEADER lpMemHdr;
     LPVOID            lpMemGlbNum;
 
@@ -753,48 +905,8 @@ LPAPLCHAR FormatImmed
             break;
 
         case IMMTYPE_CHAR:
-            // Get the char
-            wc = *(LPAPLCHAR) lpaplLongest;
-
-            // Test for Terminal Control chars
-            switch (wc)
-            {
-                case TCBEL:     // Bel
-                    MessageBeep (NEG1U);    // Sound the alarum!
-
-                    // Fall through to common code
-
-                case TCESC:     // Esc
-                case TCFF:      // FF
-                case TCNUL:     // NUL
-                case TCBS:      // BS
-                case TCNL:      // NL
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
-
-                    break;          // Can't go any farther left
-
-                case TCHT:      // HT
-                    // We're always at the (virtual) left margin,
-                    //   so insert enough blanks for a TAB
-                    lpaplChar = FillMemoryW (lpaplChar, uTabStops + 1, L' ');
-///////////////////*lpaplChar++ = L' ';     // Append a blank to be deleted
-
-                    break;
-
-                case TCLF:      // LF       // Handled during raw output
-                    *lpaplChar++ = wc;      // Append it
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
-
-                    break;
-
-                default:
-                    if (wc >= 32)           // If none of the above but printable,
-                        *lpaplChar++ = wc;  //   append it
-
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
-
-                    break;
-            } // End SWITCH
+            *lpaplChar++ = *(LPAPLCHAR) lpaplLongest;
+            *lpaplChar++ = L' ';    // Append a blank to be deleted
 
             break;
 
@@ -1866,8 +1978,7 @@ LPAPLCHAR FormatAplVfpFC
             {
                 *lpaplChar++ = aplCharDecimal;
 
-                FillMemoryW (lpaplChar, (APLU3264) ((-nDigits) - 1), L'0');
-                lpaplChar += (-nDigits) - 1;
+                lpaplChar = FillMemoryW (lpaplChar, (APLU3264) ((-nDigits) - 1), L'0');
 
                 *lpaplChar++ = L'E';
                 *lpaplChar++ = L'0';
@@ -1877,8 +1988,7 @@ LPAPLCHAR FormatAplVfpFC
             {
                 *lpaplChar++ = aplCharDecimal;
 
-                FillMemoryW (lpaplChar, (APLU3264)    nDigits      , L'0');
-                lpaplChar += nDigits;
+                lpaplChar = FillMemoryW (lpaplChar, (APLU3264)    nDigits      , L'0');
             } // End IF
         } else
         // If we're formatting in E-format, ...
@@ -2137,7 +2247,7 @@ LPWCHAR DisplayTransferImm2
 
 {
     // If the immediate is a char, ...
-    if (lpSymEntry->stFlags.ImmType EQ IMMTYPE_CHAR)
+    if (IsImmChr (lpSymEntry->stFlags.ImmType))
         // Display the char immediate
         lpwszTemp =
           DisplayTransferChr2 (lpwszTemp,   // Ptr to output save area

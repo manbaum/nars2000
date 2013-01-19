@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ WCHAR wszVarFileInfo[] = WS_SLOPE L"VarFileInfo" WS_SLOPE L"Translation",
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
 extern HICON hIconAbout;
+extern char ecm_version[];
 
 
 //***************************************************************************
@@ -170,6 +171,12 @@ APLU3264 CALLBACK AboutDlgProc
 
             // Append the MPFR version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", mpfr_get_version ());
+
+            // Copy the ECM prefix to the text
+            lstrcatW (wszTemp, L"ECM #");
+
+            // Append the ECM version #
+            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", ecm_version);
 
             // Copy the COMCTL32.DLL prefix to the text
             lstrcatW (wszTemp, L"COMCTL32.DLL #");

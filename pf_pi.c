@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1255,18 +1255,23 @@ APLMPI PrimeFactor
      LPUBOOL        lpbRet)             // Ptr to TRUE iff the result is valid
 
 {
-    APLMPI  mpzFactor1 = {0},           // Factor #1
-            mpzFactor2 = {0},           // ...     2
-            mpzRes     = {0};           // Result
-    APLUINT uVal,                       // Temporary unsigned value
-            bits;                       // # bits in the value
-    int     iVal;                       // Temporary signed value
-    ecm_params ecmParams;               // ECM parameters
-    UINT    uEcmInit = 0;               // # times ecmParams have been initialized
+    APLMPI       mpzFactor1 = {0},      // Factor #1
+                 mpzFactor2 = {0},      // ...     2
+                 mpzRes     = {0};      // Result
+    APLUINT      uVal,                  // Temporary unsigned value
+                 bits;                  // # bits in the value
+    int          iVal;                  // Temporary signed value
+    ecm_params   ecmParams;             // ECM parameters
+    UINT         uEcmInit = 0;          // # times ecmParams have been initialized
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
 #ifdef DEBUG
-    char    szTemp1[1024],              // Temporary output save area
-            szTemp2[1024];              // ...
+    char         szTemp1[1024],         // Temporary output save area
+                 szTemp2[1024];         // ...
+    LPCHAR       szMethods[] = {"ECM", "p-1", "p+1"};
 #endif
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // get the bit size of the incoming number
     bits = mpz_sizeinbase (&mpzNumber, 2);
@@ -1388,7 +1393,8 @@ APLMPI PrimeFactor
         } // End IF
     } // End IF
 
-    if (mpz_likely_prime_p (&mpzRes, GetMemPTD ()->randState, PRECOMPUTED_PRIME_MAX))
+    // Izit a prime?
+    if (mpz_likely_prime_p (&mpzRes, lpMemPTD->randState, PRECOMPUTED_PRIME_MAX))
     {
         dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));
 
@@ -1400,7 +1406,7 @@ APLMPI PrimeFactor
         goto NORMAL_EXIT;
 #endif
 
-#define TryECM(Method)                                                                                          \
+#define TryECM(Method,useNTT)                                                                                   \
     /* Uninitialize ecmParams */                                                                                \
     if (uEcmInit)                                                                                               \
     {                                                                                                           \
@@ -1414,27 +1420,38 @@ APLMPI PrimeFactor
     ecmParams->stop_asap = &StopASAP;                                                                           \
     ecmParams->B1done    = PRECOMPUTED_PRIME_MAX;                                                               \
     ecmParams->method    = Method;                                                                              \
+    ecmParams->use_ntt   = useNTT;                                                                              \
+                                                                                                                \
+    dprintfWL0 (L"Trying %S", szMethods[Method]);                                                               \
                                                                                                                 \
     /* Try ECM */                                                                                               \
-    iVal = ecm_factor (&mpzFactor1, &mpzRes, 10 * ecmParams->B1done, ecmParams);                                \
+    iVal = ecm_factor (&mpzFactor1, &mpzRes, 20 * ecmParams->B1done, ecmParams);                                \
                                                                                                                 \
     /* Check for Ctrl-Break */                                                                                  \
     if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))                                                            \
         goto BREAK_EXIT;                                                                                        \
                                                                                                                 \
     /* If there was an error, ... */                                                                            \
-    if (iVal < 0)                                                                                               \
+    if (ECM_ERROR_P (iVal))                                                                                     \
         goto ERROR_EXIT;                                                                                        \
     /* If it succeeded, ... */                                                                                  \
-    if (iVal > 0)                                                                                               \
+    if (ECM_FACTOR_FOUND_P (iVal))                                                                              \
     {                                                                                                           \
-        /* Copy the new factor to the result */                                                                 \
-        mpz_set (&mpzRes, &mpzFactor1);                                                                         \
+        /* Is this factor prime? */                                                                             \
+        if (mpz_likely_prime_p (&mpzFactor1, lpMemPTD->randState, PRECOMPUTED_PRIME_MAX))                       \
+            /* Copy the new factor to the result */                                                             \
+            mpz_set (&mpzRes, &mpzFactor1);                                                                     \
+        else                                                                                                    \
+        {                                                                                                       \
+            /* Try again */                                                                                     \
+            Myz_clear (&mpzRes);                                                                                \
+            mpzRes = PrimeFactor (mpzFactor1, lpProcPrime, lpbRet);                                             \
+        } /* End IF/ELSE */                                                                                     \
                                                                                                                 \
         goto NORMAL_EXIT;                                                                                       \
     } /* End IF */                                                                                              \
                                                                                                                 \
-    if (mpz_likely_prime_p (&mpzRes, GetMemPTD ()->randState, PRECOMPUTED_PRIME_MAX))   \
+    if (mpz_likely_prime_p (&mpzRes, lpMemPTD->randState, PRECOMPUTED_PRIME_MAX))                               \
     {                                                                                                           \
         dprintfWL0 (L"prime?:  %S", mpz_get_str (szTemp1, 10, &mpzRes));                                        \
                                                                                                                 \
@@ -1442,13 +1459,22 @@ APLMPI PrimeFactor
     } /* End IF */
 
     // Try ECM
-    TryECM (ECM_ECM);
+    TryECM (ECM_ECM, 0);
 
     // Try P-1
-    TryECM (ECM_PM1);
+    TryECM (ECM_PM1, 0);
 
     // Try P+1
-    TryECM (ECM_PP1);
+    TryECM (ECM_PP1, 0);
+
+    // Try ECM
+    TryECM (ECM_ECM, 1);
+
+    // Try P-1
+    TryECM (ECM_PM1, 1);
+
+    // Try P+1
+    TryECM (ECM_PP1, 1);
 
 NONCE_EXIT:
 ERROR_EXIT:
@@ -1506,7 +1532,7 @@ void ProcessPrime
     // Split cases based upon the function index
     switch (lpProcPrime->uFcnIndex)
     {
-        case NUMTHEORY_FACTOR:
+        case NUMTHEORY_FACTOR:      //    {pi} R
             break;
 
         case NUMTHEORY_MOBIUS:      // 12 {pi} R
@@ -1567,11 +1593,11 @@ void ProcessPrime
 
             break;
 
+        case NUMTHEORY_NTHPRIME:    // -2 {pi} R
+        case NUMTHEORY_PREVPRIME:   // -1 {pi} R
         case NUMTHEORY_ISPRIME:     //  0 {pi} R
         case NUMTHEORY_NEXTPRIME:   //  1 {pi} R
-        case NUMTHEORY_PREVPRIME:   // -1 {pi} R
         case NUMTHEORY_NUMPRIMES:   //  2 {pi} R
-        case NUMTHEORY_NTHPRIME:    // -2 {pi} R
         defstop
             break;
     } // End SWITCH
@@ -1871,7 +1897,7 @@ APLMPI PrimFnPiNthPrime
     if (mpz_cmp_ui (&mpzInd, NthPrimeCnt) < 0)
     {
         // Get the table index
-        uCnt = mpz_get_ui (&mpzInd);
+        uCnt = (UINT) mpz_get_ui (&mpzInd);
 
         if (NthPrime (&mpzRes, mpzArg, lpbCtrlBreak, lpMemPTD, bQuadIO, TABSTATE_NTHPRIMETAB, uCnt))
             goto NORMAL_EXIT2;
@@ -1987,9 +2013,6 @@ UBOOL NumPrimes
     mpz_init (&mpzLow);
     mpz_init (&mpzUpp);
 
-    // Copy as lower bound count
-    mpz_set_sx ( mpzRes, iCnt);
-
     // Calculate the upper and lower bounds of the search
 
     // Split cases based upon the table state
@@ -2027,7 +2050,8 @@ UBOOL NumPrimes
     } // End SWITCH
 
     // If we're not using the Last Value, ...
-    if (tabState NE TABSTATE_LASTVALUE)
+    if (tabState NE TABSTATE_LASTVALUE
+     && mpz_cmp_si (&mpzUpp, -1) NE 0)
     {
         Assert (mpz_cmp (&mpzLow, &mpzArg)          <= 0
              && mpz_cmp (         &mpzArg, &mpzUpp) <= 0);
@@ -2083,8 +2107,13 @@ UBOOL NumPrimes
         // Set the lower bound offset
         iMid = iMin;
 
+        // If the incoming value is not a prime, ...
+        if (!mpz_likely_prime_p (&mpzArg, lpMemPTD->randState, 0))
+            // Set it to the previous prime so we're always comparing primes
+            mpz_prev_prime (&mpzArg, &mpzArg, lpbCtrlBreak, lpMemPTD);
+
         // Search forwards
-        while (mpz_cmp (&mpzArg, &mpzLow) > 0)
+        while (mpz_cmp (&mpzArg, &mpzLow) >= 0)
         {
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -2152,11 +2181,9 @@ APLMPI PrimFnPiNumPrimes
      LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    APLMPI mpzRes = {0},            // The result
-           mpzLow = {0},            // Temporary MPIs
-           mpzUpp = {0};            // ...
+    APLMPI mpzRes = {0};            // The result
     UBOOL  bRet = FALSE;            // TRUE iff the result is valid
-//         bDir;                    // TRUE iff we're searching forwards
+    int    iCmp;                    // Comparison result
     APLINT iMid,                    // Loop counter
            iMin,                    // Minimum index
            iMax;                    // Maximum ...
@@ -2206,8 +2233,12 @@ APLMPI PrimFnPiNumPrimes
 
         // If it's an exact match, ...
         if (bRet)
-            mpz_set_sx (&mpzRes, iMid * NthPrimeInc);
-        else
+        {
+            // Set the result
+            mpz_set_sx (&mpzRes, iMid * NthPrimeInc + 1);
+
+            goto NORMAL_EXIT;
+        } else
         {
             // The arg is between NthPrimeTab[iMax] and NthPrimeTab[iMin]
             Assert (iMax EQ (iMin - 1));
@@ -2218,29 +2249,28 @@ APLMPI PrimFnPiNumPrimes
     } else
     {
         // Find the corresponding entry in NthPowerTab
-        for (uCnt = 0,
-               mpz_set (&mpzRes, &NthPowerTab[uCnt].aplMPI);
-             uCnt < NthPowerCnt;
-             uCnt++,
-               mpz_set (&mpzRes, &NthPowerTab[uCnt].aplMPI))
-        if (mpz_cmp (&aplMPIArg, &mpzRes) < 0)
+        for (uCnt = 0; uCnt < NthPowerCnt; uCnt++)
+        if ((iCmp = mpz_cmp (&aplMPIArg, &NthPowerTab[uCnt].aplMPI)) <= 0)
         {
-            if (NumPrimes (&mpzRes, aplMPIArg, lpbCtrlBreak, lpMemPTD, TABSTATE_NTHPOWERTAB, uCnt - 1))
+            // Save the current value
+            mpz_set (&mpzRes, &NthPowerTab[uCnt].aplMPI);
+
+            if (NumPrimes (&mpzRes, aplMPIArg, lpbCtrlBreak, lpMemPTD, TABSTATE_NTHPOWERTAB, uCnt - (iCmp NE 0)))
                 goto NORMAL_EXIT;
             break;
-        } // End IF
+        } // End FOR/IF
 
-        // We no longer need this storage
-        Myz_clear (&mpzRes);
-
-        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+        // Search forwards for the answer
+        if (NumPrimes (&mpzRes, aplMPIArg, lpbCtrlBreak, lpMemPTD, TABSTATE_NTHPOWERTAB, uCnt - 2))
+            goto NORMAL_EXIT;
     } // End IF/ELSE
 
-NORMAL_EXIT:
     // We no longer need this storage
-    Myz_clear (&mpzUpp);
-    Myz_clear (&mpzLow);
+    Myz_clear (&mpzRes);
 
+    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
+NORMAL_EXIT:
     return mpzRes;
 } // End PrimFnPiNumPrimes
 

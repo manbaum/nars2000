@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -334,7 +334,7 @@ APLRAT PrimFnMonQuoteDotRisR
         mpq_init (&mpqRes);
 
         // Extract the numerator
-        uRht = mpz_get_si (mpq_numref (&aplRatRht));
+        uRht = (UINT) mpz_get_si (mpq_numref (&aplRatRht));
 
         // Compute the factorial
         mpz_fac_ui (mpq_numref (&mpqRes), uRht);
@@ -749,7 +749,7 @@ APLRAT PrimFnDydQuoteDotRisRvR
      && mpz_fits_slong_p (mpq_numref (&aplRatLft)) NE 0)
     {
         // Extract the numerator
-        uLft = mpz_get_si (mpq_numref (&aplRatLft));
+        uLft = (UINT) mpz_get_si (mpq_numref (&aplRatLft));
 
         // Compute the binomial coefficient
         mpz_bin_ui (mpq_numref (&mpqRes), mpq_numref (&aplRatRht), uLft);

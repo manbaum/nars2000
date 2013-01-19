@@ -453,7 +453,7 @@ void mpiz_init_set_d
 //  Return the arg as an unsigned integer
 //***************************************************************************
 
-unsigned long int mpiz_get_ui
+mpir_ui mpiz_get_ui
     (mpz_t op)                  // Source
 
 {
@@ -470,7 +470,7 @@ unsigned long int mpiz_get_ui
 //  Return the arg as an signed integer
 //***************************************************************************
 
-signed long int mpiz_get_si
+mpir_si mpiz_get_si
     (mpz_t op)                  // Source
 
 {
@@ -1036,7 +1036,7 @@ void mpiz_cdiv_qr
 //  Divide N by D and return the quotient
 //***************************************************************************
 
-unsigned long int mpiz_cdiv_q_ui
+mpir_ui mpiz_cdiv_q_ui
     (mpz_t             q,       // Destination (quotient)
      mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
@@ -1067,7 +1067,7 @@ unsigned long int mpiz_cdiv_q_ui
 //  Divide N by D and return the remainder
 //***************************************************************************
 
-unsigned long int mpiz_cdiv_r_ui
+mpir_ui mpiz_cdiv_r_ui
     (mpz_t             r,       // Destination (remainder)
      mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
@@ -1089,7 +1089,7 @@ unsigned long int mpiz_cdiv_r_ui
 //  Divide N by D and return the quotient and remainder
 //***************************************************************************
 
-unsigned long int mpiz_cdiv_qr_ui
+mpir_ui mpiz_cdiv_qr_ui
     (mpz_t             q,       // Destination (quotient)
      mpz_t             r,       // Destination (remainder)
      mpz_t             n,       // Left arg (numerator)
@@ -1112,7 +1112,7 @@ unsigned long int mpiz_cdiv_qr_ui
 //  Divide N by D and return the remainder
 //***************************************************************************
 
-unsigned long int mpiz_cdiv_ui
+mpir_ui mpiz_cdiv_ui
     (mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
 
@@ -1253,7 +1253,7 @@ void mpiz_fdiv_qr
 //  Divide N by D and return the quotient
 //***************************************************************************
 
-unsigned long int mpiz_fdiv_q_ui
+mpir_ui mpiz_fdiv_q_ui
     (mpz_t             q,       // Destination (quotient)
      mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
@@ -1284,7 +1284,7 @@ unsigned long int mpiz_fdiv_q_ui
 //  Divide N by D and return the remainder
 //***************************************************************************
 
-unsigned long int mpiz_fdiv_r_ui
+mpir_ui mpiz_fdiv_r_ui
     (mpz_t             r,       // Destination (remainder)
      mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
@@ -1306,7 +1306,7 @@ unsigned long int mpiz_fdiv_r_ui
 //  Divide N by D and return the quotient and remainder
 //***************************************************************************
 
-unsigned long int mpiz_fdiv_qr_ui
+mpir_ui mpiz_fdiv_qr_ui
     (mpz_t             q,       // Destination (quotient)
      mpz_t             r,       // Destination (remainder)
      mpz_t             n,       // Left arg (numerator)
@@ -1329,7 +1329,7 @@ unsigned long int mpiz_fdiv_qr_ui
 //  Divide N by D and return the remainder
 //***************************************************************************
 
-unsigned long int mpiz_fdiv_ui
+mpir_ui mpiz_fdiv_ui
     (mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
 
@@ -1470,7 +1470,7 @@ void mpiz_tdiv_qr
 //  Divide N by D and return the quotient
 //***************************************************************************
 
-unsigned long int mpiz_tdiv_q_ui
+mpir_ui mpiz_tdiv_q_ui
     (mpz_t             q,       // Destination (quotient)
      mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
@@ -1501,7 +1501,7 @@ unsigned long int mpiz_tdiv_q_ui
 //  Divide N by D and return the remainder
 //***************************************************************************
 
-unsigned long int mpiz_tdiv_r_ui
+mpir_ui mpiz_tdiv_r_ui
     (mpz_t             r,       // Destination (remainder)
      mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
@@ -1523,7 +1523,7 @@ unsigned long int mpiz_tdiv_r_ui
 //  Divide N by D and return the quotient and remainder
 //***************************************************************************
 
-unsigned long int mpiz_tdiv_qr_ui
+mpir_ui mpiz_tdiv_qr_ui
     (mpz_t             q,       // Destination (quotient)
      mpz_t             r,       // Destination (remainder)
      mpz_t             n,       // Left arg (numerator)
@@ -1546,7 +1546,7 @@ unsigned long int mpiz_tdiv_qr_ui
 //  Divide N by D and return the remainder
 //***************************************************************************
 
-unsigned long int mpiz_tdiv_ui
+mpir_ui mpiz_tdiv_ui
     (mpz_t             n,       // Left arg (numerator)
      unsigned long int d)       // Right arg (denominator)
 
@@ -1676,7 +1676,7 @@ void mpiz_mod
 //  Set the result to N mod D
 //***************************************************************************
 
-unsigned long int mpiz_mod_ui
+mpir_ui mpiz_mod_ui
     (mpz_t             r,       // The result
      mpz_t             n,       // The argument
      unsigned long int d)       // The modulus

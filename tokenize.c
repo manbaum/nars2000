@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1858,8 +1858,9 @@ UBOOL fnPointDone
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
-        UINT uVar,              // Loop counter
-             uLen;              // Loop length
+        UINT   uVar,            // Loop counter
+               uLen;            // Loop length
+        SCTYPE scType;          // Name type
 
         // Get the number of chars
         uLen = lptkLocalVars->iNumLen;
@@ -1870,9 +1871,32 @@ UBOOL fnPointDone
             // Save the column index
             lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_DIGIT;
 
+            // Split cases based upon the char
+            //   to get the syntax color type
+            switch (lpszNum[uVar])
+            {
+                case 'b':
+                case 'e':
+                case 'E':
+                case 'p':
+                case DEF_RATSEP:
+                case 'v':
+                case 'x':
+                    // Point notation separator
+                    scType = SC_PNSEP;
+
+                    break;
+
+                default:
+                    // Numeric constant
+                    scType = SC_NUMCONST;
+
+                    break;
+            } // End SWITCH
+
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =
-              gSyntaxColorName[SC_NUMCONST].syntClr;
+              gSyntaxColorName[scType].syntClr;
         } // End FOR
 
         // Mark as successful

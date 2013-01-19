@@ -1313,17 +1313,18 @@ SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
    {{DEF_SC_CTRLSTRUC  }, L"Control Structure"            },  // 09:  Control Structure
    {{DEF_SC_NUMCONST   }, L"Numeric Constant"             },  // 0A:  Numeric constant
    {{DEF_SC_CHRCONST   }, L"Character Constant"           },  // 0B:  Character constant
-   {{DEF_SC_COMMENT    }, L"Comment"                      },  // 0C:  Comment
-   {{DEF_SC_LINEDRAWING}, L"Line Drawing Chars"           },  // 0D:  Line drawing chars
-   {{DEF_SC_FCNLINENUMS}, L"Function Line Numbers"        },  // 0E:  Function line numbers
-   {{DEF_SC_MATCHGRP1  }, L"Matched Group Level 1"        },  // 0F:  Matched Grouping Symbols [] () {}
-   {{DEF_SC_MATCHGRP2  }, L"Matched Group Level 2"        },  // 10:  Matched Grouping Symbols [] () {}
-   {{DEF_SC_MATCHGRP3  }, L"Matched Group Level 3"        },  // 11:  Matched Grouping Symbols [] () {}
-   {{DEF_SC_MATCHGRP4  }, L"Matched Group Level 4"        },  // 12:  Matched Grouping Symbols [] () {}
-   {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"              },  // 13:  Unmatched Grouping Symbols [] () {} ' "
-   {{DEF_SC_UNNESTED   }, L"Improper Nesting"             },  // 14:  Improperly Nested Grouping Symbols [] () {}
-   {{DEF_SC_UNK        }, L"Unknown Symbols"              },  // 15:  Unknown symbol
-   {{DEF_SC_WINTEXT    }, L"Window Text"                  },  // 16:  Window text
+   {{DEF_SC_PNSEP      }, L"Point Notation Separator"     },  // 0C:  Point notation separator
+   {{DEF_SC_COMMENT    }, L"Comment"                      },  // 0D:  Comment
+   {{DEF_SC_LINEDRAWING}, L"Line Drawing Chars"           },  // 0E:  Line drawing chars
+   {{DEF_SC_FCNLINENUMS}, L"Function Line Numbers"        },  // 0F:  Function line numbers
+   {{DEF_SC_MATCHGRP1  }, L"Matched Group Level 1"        },  // 10:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP2  }, L"Matched Group Level 2"        },  // 11:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP3  }, L"Matched Group Level 3"        },  // 12:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_MATCHGRP4  }, L"Matched Group Level 4"        },  // 13:  Matched Grouping Symbols [] () {}
+   {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"              },  // 14:  Unmatched Grouping Symbols [] () {} ' "
+   {{DEF_SC_UNNESTED   }, L"Improper Nesting"             },  // 15:  Improperly Nested Grouping Symbols [] () {}
+   {{DEF_SC_UNK        }, L"Unknown Symbols"              },  // 16:  Unknown symbol
+   {{DEF_SC_WINTEXT    }, L"Window Text"                  },  // 17:  Window text
   }
 #endif
 ;
@@ -1342,26 +1343,29 @@ EXTERN
 UBOOL gSyntClrBGTrans[SC_LENGTH]
 #ifdef DEFINE_VALUES
 = {TRUE,                    // 00:  Global Name
-   TRUE,                    // 01:  Local Name
+   TRUE,                    // 01:  Local  ...
    TRUE,                    // 02:  Label
-   TRUE,                    // 03:  Primitive
-   TRUE,                    // 04:  System Function
-   TRUE,                    // 05:  Global System Var
-   TRUE,                    // 06:  Local  ...
-   TRUE,                    // 07:  Control Structure
-   TRUE,                    // 08:  Numeric Constant
-   TRUE,                    // 09:  Character ...
-   TRUE,                    // 0A:  Comment
-   TRUE,                    // 0B:  Line drawing chars
-   TRUE,                    // 0C:  Function line numbers
-   TRUE,                    // 0D:  Matched Grouping Symbol, Level 1
-   TRUE,                    // 0E:  ...                            2
-   TRUE,                    // 0F:  ...                            3
-   TRUE,                    // 10:  ...                            4
-   FALSE,                   // 11:  Unmatched Grouping Symbol
-   FALSE,                   // 12:  Improperly Nested Grouping Symbol
-   FALSE,                   // 13:  Unknown Symbol
-   FALSE,                   // 14:  Window Background
+   TRUE,                    // 03:  Primitive Function
+   TRUE,                    // 04:  Primitive Monadic Operator
+   TRUE,                    // 05:  Primitive Dyadic Operator
+   TRUE,                    // 06:  System Function
+   TRUE,                    // 07:  Global System Variable
+   TRUE,                    // 08:  Local  ...
+   TRUE,                    // 09:  Control Structure
+   TRUE,                    // 0A:  Numeric constant
+   TRUE,                    // 0B:  Character constant
+   TRUE,                    // 0C:  Point notation separator
+   TRUE,                    // 0D:  Comment
+   TRUE,                    // 0E:  Line drawing chars
+   TRUE,                    // 0F:  Function line numbers
+   TRUE,                    // 10:  Matched Grouping Symbols Level 1
+   TRUE,                    // 11:  ...                            2
+   TRUE,                    // 12:  ...                            3
+   TRUE,                    // 13:  ...                            4
+   FALSE,                   // 14:  Unmatched Grouping Symbols
+   FALSE,                   // 15:  Improperly Nested Grouping Symbols
+   FALSE,                   // 16:  Unknown symbol
+   FALSE,                   // 17:  Window background
   }
 #endif
 ;

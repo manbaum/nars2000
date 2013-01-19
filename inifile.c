@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -121,6 +121,7 @@
 #define KEYNAME_SC_CTRLSTRUC            L"CtrlStruc"
 #define KEYNAME_SC_NUMCONST             L"NumConst"
 #define KEYNAME_SC_CHRCONST             L"ChrConst"
+#define KEYNAME_SC_PNSEP                L"PNSep"
 #define KEYNAME_SC_COMMENT              L"Comment"
 #define KEYNAME_SC_LINEDRAWING          L"LineDrawing"
 #define KEYNAME_SC_FCNLINENUMS          L"FcnLineNums"
@@ -172,17 +173,18 @@ LPWCHAR aColorKeyNames[] =
  KEYNAME_SC_CTRLSTRUC   ,       // 09:  Control Structure
  KEYNAME_SC_NUMCONST    ,       // 0A:  Numeric constant
  KEYNAME_SC_CHRCONST    ,       // 0B:  Character constant
- KEYNAME_SC_COMMENT     ,       // 0C:  Comment
- KEYNAME_SC_LINEDRAWING ,       // 0D:  Line drawing chars
- KEYNAME_SC_FCNLINENUMS ,       // 0E:  Function line numbers
- KEYNAME_SC_MATCHGRP1   ,       // 0F:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP2   ,       // 10:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP3   ,       // 11:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP4   ,       // 12:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_UNMATCHGRP  ,       // 13:  Unmatched Grouping Symbols [] () {} ' "
- KEYNAME_SC_UNNESTED    ,       // 14:  Improperly Nested Grouping Symbols [] () {}
- KEYNAME_SC_UNK         ,       // 15:  Unknown symbol
- KEYNAME_SC_WINTEXT     ,       // 16:  Window text
+ KEYNAME_SC_PNSEP       ,       // 0C:  Point notation separator
+ KEYNAME_SC_COMMENT     ,       // 0D:  Comment
+ KEYNAME_SC_LINEDRAWING ,       // 0E:  Line drawing chars
+ KEYNAME_SC_FCNLINENUMS ,       // 0F:  Function line numbers
+ KEYNAME_SC_MATCHGRP1   ,       // 10:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP2   ,       // 11:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP3   ,       // 12:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP4   ,       // 13:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_UNMATCHGRP  ,       // 14:  Unmatched Grouping Symbols [] () {} ' "
+ KEYNAME_SC_UNNESTED    ,       // 15:  Improperly Nested Grouping Symbols [] () {}
+ KEYNAME_SC_UNK         ,       // 16:  Unknown symbol
+ KEYNAME_SC_WINTEXT     ,       // 17:  Window text
 };
 
 // Array of keynames for use in [Toolbars] section

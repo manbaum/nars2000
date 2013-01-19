@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #define DEF_SC_CTRLSTRUC       DEF_SCN_MAROON       , DEF_SCN_TRANSPARENT
 #define DEF_SC_NUMCONST        DEF_SCN_GRAY         , DEF_SCN_TRANSPARENT
 #define DEF_SC_CHRCONST        DEF_SCN_TEAL         , DEF_SCN_TRANSPARENT
+#define DEF_SC_PNSEP           DEF_SCN_CRIMSON      , DEF_SCN_TRANSPARENT
 #define DEF_SC_COMMENT         DEF_SCN_GREEN        , DEF_SCN_TRANSPARENT
 #define DEF_SC_LINEDRAWING     DEF_SCN_TEAL         , DEF_SCN_TRANSPARENT
 #define DEF_SC_FCNLINENUMS     DEF_SCN_DARKSEAGREEN , DEF_SCN_TRANSPARENT
@@ -62,18 +63,19 @@ typedef enum tagSC_TYPE
     SC_CTRLSTRUC,       // 09:  Control Structure (including leading colon)
     SC_NUMCONST,        // 0A:  Numeric constant (including leading overbar)
     SC_CHRCONST,        // 0B:  Character constant (including single- or double-quote marks)
-    SC_COMMENT,         // 0C:  Comment (including comment symbol)
-    SC_LINEDRAWING,     // 0D:  Line drawing chars
-    SC_FCNLINENUMS,     // 0E:  Function Line Numbers
-    SC_MATCHGRP1,       // 0F:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP2,       // 10:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP3,       // 11:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP4,       // 12:  Matched Grouping Symbols [] () {}
-    SC_UNMATCHGRP,      // 13:  Unmatched Grouping Symbols [] () {} ' "
-    SC_UNNESTED,        // 14:  Improperly Nested Grouping Symbols [] () {}
-    SC_UNK,             // 15:  Unknown symbol
-    SC_WINTEXT,         // 16:  Window text
-    SC_LENGTH           // 17:  # entries in this enum
+    SC_PNSEP,           // 0C:  Point notation separator (beEprvx)
+    SC_COMMENT,         // 0D:  Comment (including comment symbol)
+    SC_LINEDRAWING,     // 0E:  Line drawing chars
+    SC_FCNLINENUMS,     // 0F:  Function Line Numbers
+    SC_MATCHGRP1,       // 10:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP2,       // 11:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP3,       // 12:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP4,       // 13:  Matched Grouping Symbols [] () {}
+    SC_UNMATCHGRP,      // 14:  Unmatched Grouping Symbols [] () {} ' "
+    SC_UNNESTED,        // 15:  Improperly Nested Grouping Symbols [] () {}
+    SC_UNK,             // 16:  Unknown symbol
+    SC_WINTEXT,         // 17:  Window text
+    SC_LENGTH           // 18:  # entries in this enum
                         //      Because this enum is origin-0, this value is the # valid columns.
 } SCTYPE, *LPSCTYPE;
 

@@ -407,6 +407,7 @@ INT_PTR CALLBACK CustomizeDlgProc
     static UINT         ResetRadioCT      [] = {IDC_RESET_CT_RADIO1      , IDC_RESET_CT_RADIO2      },
                         ResetRadioFC      [] = {IDC_RESET_FC_RADIO1      , IDC_RESET_FC_RADIO2      },
                         ResetRadioFEATURE [] = {IDC_RESET_FEATURE_RADIO1 , IDC_RESET_FEATURE_RADIO2 },
+                        ResetRadioFPC     [] = {IDC_RESET_FPC_RADIO1     , IDC_RESET_FPC_RADIO2     },
                         ResetRadioIC      [] = {IDC_RESET_IC_RADIO1      , IDC_RESET_IC_RADIO2      },
                         ResetRadioIO      [] = {IDC_RESET_IO_RADIO1      , IDC_RESET_IO_RADIO2      },
                         ResetRadioPP      [] = {IDC_RESET_PP_RADIO1      , IDC_RESET_PP_RADIO2      },
@@ -415,6 +416,7 @@ INT_PTR CALLBACK CustomizeDlgProc
     static LPUINT       ResetRadioPtr[] = {&ResetRadioCT      [0],
                                            &ResetRadioFC      [0],
                                            &ResetRadioFEATURE [0],
+                                           &ResetRadioFPC     [0],
                                            &ResetRadioIC      [0],
                                            &ResetRadioIO      [0],
                                            &ResetRadioPP      [0],
@@ -1476,11 +1478,12 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[0][lclResetVars.CT     ]), BM_SETCHECK, TRUE, 0);
                         SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[1][lclResetVars.FC     ]), BM_SETCHECK, TRUE, 0);
                         SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[2][lclResetVars.FEATURE]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[3][lclResetVars.IC     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[4][lclResetVars.IO     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[5][lclResetVars.PP     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[6][lclResetVars.PW     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[7][lclResetVars.RL     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[3][lclResetVars.FPC    ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[4][lclResetVars.IC     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[5][lclResetVars.IO     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[6][lclResetVars.PP     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[7][lclResetVars.PW     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[8][lclResetVars.RL     ]), BM_SETCHECK, TRUE, 0);
 
                         break;
 
@@ -2942,6 +2945,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         bResetVars.CT      = IsDlgButtonChecked (hWndProp, IDC_RESET_CT_RADIO2      );
                         bResetVars.FC      = IsDlgButtonChecked (hWndProp, IDC_RESET_FC_RADIO2      );
                         bResetVars.FEATURE = IsDlgButtonChecked (hWndProp, IDC_RESET_FEATURE_RADIO2 );
+                        bResetVars.FPC     = IsDlgButtonChecked (hWndProp, IDC_RESET_FPC_RADIO2     );
                         bResetVars.IC      = IsDlgButtonChecked (hWndProp, IDC_RESET_IC_RADIO2      );
                         bResetVars.IO      = IsDlgButtonChecked (hWndProp, IDC_RESET_IO_RADIO2      );
                         bResetVars.PP      = IsDlgButtonChecked (hWndProp, IDC_RESET_PP_RADIO2      );
@@ -4473,6 +4477,36 @@ INT_PTR CALLBACK CustomizeDlgProc
                     {
                         // Save the new setting in our local copy
                         lclResetVars.FC = (IDC_RESET_FC_RADIO2 EQ idCtl);
+
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_RESET_FEATURE_RADIO1:
+                case IDC_RESET_FEATURE_RADIO2:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Save the new setting in our local copy
+                        lclResetVars.FEATURE = (IDC_RESET_FEATURE_RADIO2 EQ idCtl);
+
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_RESET_FPC_RADIO1:
+                case IDC_RESET_FPC_RADIO2:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Save the new setting in our local copy
+                        lclResetVars.FPC = (IDC_RESET_FPC_RADIO2 EQ idCtl);
 
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);

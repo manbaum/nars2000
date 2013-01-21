@@ -1,6 +1,18 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #1020 -- Version 0.3.8.xx
+-------------------------------
+
+* Fix Bug In Customize
+
+Directory trunk:
+
+CUSTOMIZE.C:
+  Fix Bug:  In the Syntax Coloring tab, changing the background color
+    to transparent doesn't take effect.
+
+
 Build #1019 -- Version 0.3.8.xx
 -------------------------------
 

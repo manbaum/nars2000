@@ -2908,9 +2908,10 @@ INT_PTR CALLBACK CustomizeDlgProc
                             // Copy the local Foreground/Background Colors to the global var
                             gSyntaxColorName[uCnt].syntClr = lclSyntaxColors[uCnt];
 
-                            // If the background is transparent, change it
+                            // If the background is transparent, ...
                             if (gSyntClrBGTrans[uCnt])
-                                gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorName[uCnt].syntClr.crBack;
+                                // Change it to the Windows text background
+                                gSyntaxColorName[uCnt].syntClr.crBack = gSyntaxColorName[SC_WINTEXT].syntClr.crBack;
                         } // End IF
 
                         // Copy the state of the "Enable ... Coloring" checkboxes to the OptionFlags

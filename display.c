@@ -640,12 +640,13 @@ UBOOL DisplayGlbArr_EM
             UINT        uFmtRow;            // Loop counter
             LPFMTROWSTR lpFmtRowLcl;        // Ptr to local FMTROWSTR
             LPAPLCHAR   lpwsz;              // Temporary ptr
-            LPWCHAR     lpwszTemp;          // Ptr to formatting temp area
+            LPWCHAR     lpwszTemp,          // Ptr to formatting temp area
+                        lpwszOrigTemp;      // ...    original value ...
 
             // Get ptr to formatting temp area
             //   and protect by skipping over it
-            lpwszTemp = lpMemPTD->lpwszTemp;
-            lpMemPTD->lpwszTemp += aplLastDim;
+            lpwszTemp = lpwszOrigTemp = lpMemPTD->lpwszTemp;
+            lpMemPTD->lpwszTemp += aplLastDim + 1;  // "+ 1" for the terminating zero
 
             // Insert a terminating zero
             *lpaplChar = WC_EOS;
@@ -810,7 +811,7 @@ UBOOL DisplayGlbArr_EM
             } // End FOR
 
             // Restore original ptr to formatting temp area
-            lpMemPTD->lpwszTemp -= aplLastDim;
+            lpMemPTD->lpwszTemp = lpwszOrigTemp;
         } // End IF
 
         // If this is an empty vector, make sure it skips a line

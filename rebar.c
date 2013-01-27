@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2906,8 +2906,8 @@ typedef struct tagLANGCHARS
                                          L"Such constants are of infinite precision."
                                          },
         {DEF_VFPSEP               , {0}, L"Variable-precision Floating Point notation",
-                                         L"This notation allows you to enter VFP numbers as in 1v3.  "
-                                         L"The precision of such a constant is controlled by the current value of " WS_UTF16_QUAD L"FPC."
+                                         L"This suffix notation allows you to enter VFP numbers as in 1.3v to represent 1.3 or 12v to represent 12 where both have "
+                                         L"a precision controlled by the current value of " WS_UTF16_QUAD L"FPC, as opposed to the 53-bit precision of IEEE-754 floating point numbers."
                                          },
         {L'x'                     , {0}, L"Euler point notation",
                                          L"This notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "

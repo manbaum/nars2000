@@ -311,7 +311,7 @@ Welcome to NARS2000</h1>
     <li>Array predicates (a la Bernecky) for Permutation Vectors</li>
     <li>Rational numbers (e.g., <span class="APL">1r3</span>
       and <span class="APL">12345x</span>)</li>
-    <li>Variable precision floating point numbers (e.g., <span class="APL">1v234</span>
+    <li>Variable precision floating point numbers (e.g., <span class="APL">1.234v</span>
       and <span class="APL">12v</span>)</li>
     </ul>
 

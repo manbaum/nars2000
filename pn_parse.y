@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -232,7 +232,10 @@ DecPoint:
 
                                      $$ = $1;
                                     }
-    |     INF                       {DbgMsgWP (L"%%DecPoint:  " WS_UTF16_INFINITY);
+    ;
+
+DecConstants:
+          INF                       {DbgMsgWP (L"%%DecConstants:  " WS_UTF16_INFINITY);
                                      // Terminate the argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
@@ -242,62 +245,13 @@ DecPoint:
 
                                      $$ = $1;
                                     }
-    | OVR INF                       {DbgMsgWP (L"%%DecPoint:  " WS_UTF16_OVERBAR WS_UTF16_INFINITY);
+    | OVR INF                       {DbgMsgWP (L"%%DecConstants:  " WS_UTF16_OVERBAR WS_UTF16_INFINITY);
                                      // Terminate the argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
                                      // Mark the result as float
                                      $1.chType = PN_NUMTYPE_FLT;
                                      $1.at.aplFloat = NegInfinity;
-
-                                     $$ = $1;
-                                    }
-    ;
-
-VfpDecimal:
-      Integer DEF_VFPSEP            {DbgMsgWP (L"%%VfpDecimal:  Integer 'v'");
-                                     // Accumulate the decimal point
-                                     PN_NumAcc (lppnLocalVars, '.');
-
-                                     $$ = $1;
-                                    }
-    |         DEF_VFPSEP            {DbgMsgWP (L"%%VfpDecimal:  'v' Digit");
-                                     // Mark starting offset
-                                     $1.uNumOff = lppnLocalVars->uNumAcc;
-
-                                     // Accumulate the decimal point
-                                     PN_NumAcc (lppnLocalVars, '.');
-
-                                     $$ = $1;
-                                    }
-    | OVR     DEF_VFPSEP            {DbgMsgWP (L"%%VfpDecimal:  '" WS_UTF16_OVERBAR L"' 'v' Digit");
-                                     // Mark starting offset
-                                     $1.uNumOff = lppnLocalVars->uNumAcc;
-
-                                     // Accumulate the negative sign
-                                     PN_NumAcc (lppnLocalVars, OVERBAR1);
-
-                                     // Accumulate the decimal point
-                                     PN_NumAcc (lppnLocalVars, '.');
-
-                                     $$ = $1;
-                                    }
-    | VfpDecimal  Digit             {DbgMsgWP (L"%%VfpDecimal:  VfpDecimal Digit");
-                                     // Accumulate the digit
-                                     PN_NumAcc (lppnLocalVars, $2.chCur);
-                                    }
-    | VfpDecimal  error             {DbgMsgWP (L"%%VfpDecimal:  VfpDecimal ERROR");
-                                     YYERROR2;
-                                    }
-    ;
-
-VfpDecPoint:
-      VfpDecimal                    {DbgMsgWP (L"%%VfpDecPoint:  VfpDecimal");
-                                     // Terminate the argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
-                                     // Mark the result as VFP
-                                     $1.chType = PN_NUMTYPE_VFP;
 
                                      $$ = $1;
                                     }
@@ -314,24 +268,6 @@ VfpConstants:
                                      $$ = $1;
                                     }
     | OVR INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
-                                     // Mark as negative infinity
-                                     mpfr_set_inf (&$1.at.aplVfp, -1);
-
-                                     // Mark the result as VFP
-                                     $1.chType = PN_NUMTYPE_VFP;
-
-                                     $$ = $1;
-                                    }
-    |     INF DEF_VFPSEP Integer    {DbgMsgWP (L"%%VfpConstants:  INF 'v'" Integer);
-                                     // Mark as positive infinity
-                                     mpfr_set_inf (&$1.at.aplVfp, 1);
-
-                                     // Mark the result as VFP
-                                     $1.chType = PN_NUMTYPE_VFP;
-
-                                     $$ = $1;
-                                    }
-    | OVR INF DEF_VFPSEP Integer    {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v' Integer");
                                      // Mark as negative infinity
                                      mpfr_set_inf (&$1.at.aplVfp, -1);
 
@@ -405,8 +341,7 @@ Hc2Point:
 
                                      $$ = $1;
                                     }
-    | DecPoint 'a' DEF_RATSEP DecPoint
-                                    {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'r' DecPoint");
+    | DecPoint 'a' 'r' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'r' DecPoint");
                                      // If the real part is integer, ...
                                      if (IsIntegerType ($1.chType))
                                          // Convert it to float
@@ -725,16 +660,18 @@ ExpPoint:
     ;
 
 VfpPoint:
-      VfpDecPoint                   {DbgMsgWP (L"%%VfpPoint:  VfpDecPoint");
+      DecPoint DEF_VFPSEP           {DbgMsgWP (L"%%VfpPoint:  DecPoint 'v'");
                                      $$ = *PN_MakeVfpPoint (lppnLocalVars, &$1, NULL);
                                     }
-    | VfpDecPoint 'e' Integer       {DbgMsgWP (L"%%VfpPoint:  VfpDecPoint 'e' Integer");
+    | DecPoint 'e' Integer DEF_VFPSEP
+                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'e' Integer 'v'");
                                      // Terminate the (Exponent) argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
                                      $$ = *PN_MakeVfpPoint (lppnLocalVars, &$1, &$3);
                                     }
-    | VfpDecPoint 'E' Integer       {DbgMsgWP (L"%%VfpPoint:  VfpDecPoint 'E' Integer");
+    | DecPoint 'E' Integer DEF_VFPSEP
+                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'E' Integer 'v'");
                                      // Terminate the (Exponent) argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
@@ -820,6 +757,10 @@ Number:
                                      lppnLocalVars->chType         = $1.chType;
                                     }
     | VfpPoint                      {DbgMsgWP (L"%%Number:  VfpPoint");
+                                     lppnLocalVars->at             = $1.at;
+                                     lppnLocalVars->chType         = $1.chType;
+                                    }
+    | DecConstants                  {DbgMsgWP (L"%%Number:  DecConstants");
                                      lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }

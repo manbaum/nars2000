@@ -175,9 +175,9 @@ APLFLOAT PrimFnMonCircleStarFisI
                                      ICNDX_LOG0,
                                      (APLFLOAT) aplIntegerRht);
 
-    // Check for special cases:  {log} N  for N < 0
+    // Check for Complex result
     if (aplIntegerRht < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     return log ((APLFLOAT) aplIntegerRht);
 } // End PrimFnMonCircleStarFisI
@@ -205,10 +205,12 @@ APLFLOAT PrimFnMonCircleStarFisF
         return PosInfinity;
 
     // Check for special cases:  {log} -_
-    // Check for special cases:  {log} N  for N < 0
-    if (IsNegInfinity (aplFloatRht)
-     || aplFloatRht < 0)
+    if (IsNegInfinity (aplFloatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // Check for Complex result
+    if (aplFloatRht < 0)
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     return log (aplFloatRht);
 } // End PrimFnMonCircleStarFisF
@@ -254,16 +256,16 @@ APLVFP PrimFnMonCircleStarVisV
         return mpfPosInfinity;
 
     // Check for special cases:  {log} -_
-    // Check for special cases:  {log} N  for N < 0
-    if (IsMpfNegInfinity (&aplVfpRht)
-     || mpfr_cmp_ui (&aplVfpRht, 0) < 0)
+    if (IsMpfNegInfinity (&aplVfpRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    // Check for Complex result
+    if (mpfr_cmp_ui (&aplVfpRht, 0) < 0)
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
 #if OWN_EXPLOG
     // Initialize the result
     mpfr_init_copy (&mpfRes, &aplVfpRht);
-
-
 
     // First, represent V as r * 2 ^ m where m is an integer
     //   and r is between 1/sqrt (2) and sqrt (2).

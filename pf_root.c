@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -177,8 +177,9 @@ APLFLOAT PrimFnMonRootFisI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for Complex result
     if (aplIntegerRht < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     return sqrt ((APLFLOAT) aplIntegerRht);
 } // End PrimFnMonRootFisI
@@ -195,8 +196,9 @@ APLFLOAT PrimFnMonRootFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for Complex result
     if (aplFloatRht < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     return sqrt (aplFloatRht);
 } // End PrimFnMonRootFisF
@@ -215,8 +217,9 @@ APLVFP PrimFnMonRootVisV
 {
     APLVFP mpfRes = {0};
 
+    // Check for Complex result
     if (mpfr_cmp_ui (&aplVfpRht, 0) < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     // Initialize the result
     mpfr_init0 (&mpfRes);
@@ -433,10 +436,9 @@ APLFLOAT PrimFnDydRootFisIvI
 ////    return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
 ////                                 ICNDX_0EXP0,
 ////                                 (APLFLOAT) aplIntegerRht);
+    // Check for Complex result
     if (aplIntegerRht < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    if (aplIntegerRht < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     // Calculate the root
     aplFloatRes = pow ((APLFLOAT) aplIntegerRht, 1 / (APLFLOAT) aplIntegerLft);
@@ -503,11 +505,9 @@ APLFLOAT PrimFnDydRootFisFvF
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0EXP0,
                                      aplFloatRht);
+    // Check for Complex result
     if (aplFloatRht < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    if (aplFloatRht < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     // Calculate the root
     aplFloatRes = pow (aplFloatRht, 1 / aplFloatLft);
@@ -588,8 +588,9 @@ APLVFP PrimFnDydRootVisVvV
                                 ICNDX_0EXP0,
                                 aplVfpRht,
                                 mpfRes);
+    // Check for Complex result
     if (mpfr_cmp_ui (&aplVfpRht, 0) < 0)        // R < 0
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     // Nth root (V) = exp (ln (a) / N)
 

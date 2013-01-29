@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -503,14 +503,16 @@ APLFLOAT PrimFnDydCircleFisFvF
             return sqrt (1 - pow (aplFloatRht, 2));
 
         case -1:        // asin (R)
+            // Check for Complex result
             if (fabs (aplFloatRht) > 1)
-                break;
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
             return asin (aplFloatRht);
 
         case -2:        // acos (R)
+            // Check for Complex result
             if (fabs (aplFloatRht) > 1)
-                break;
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
             return acos (aplFloatRht);
 
@@ -518,6 +520,11 @@ APLFLOAT PrimFnDydCircleFisFvF
             return atan (aplFloatRht);
 
         case -4:        // R x (1 - R * -2) * 0.5
+            // Check for Complex result
+            if (fabs (aplFloatRht) < 1
+             && aplFloatRht NE 0)
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
             return aplFloatRht * sqrt (1 - pow (aplFloatRht, -2));
 
         case -5:        // asinh (R)
@@ -531,6 +538,10 @@ APLFLOAT PrimFnDydCircleFisFvF
 
         case -6:        // acosh (R)
                         // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
+            // Check for Complex result
+            if (aplFloatRht < 1)
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
             aplFloatTmp = gsl_acosh (aplFloatRht);
 
             // Check for NaN
@@ -542,6 +553,10 @@ APLFLOAT PrimFnDydCircleFisFvF
                         // 0.5 x (ln (1 + R) - ln (1 - R))
             if (IsInfinity (aplFloatRht))
                 break;
+
+            // Check for Complex result
+            if (fabs (aplFloatRht) > 1)
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
             aplFloatTmp = gsl_atanh (aplFloatRht);
 
@@ -621,15 +636,31 @@ APLVFP PrimFnDydCircleVisVvV
                 return mpfRes;      // sqrt (1 - pow (aplVfpRht, 2));
 
             case -1:        // asin (R)
+                // Check for Complex result
+                if (mpfr_cmp_si (&aplVfpRht,  1) > 0
+                 || mpfr_cmp_si (&aplVfpRht, -1) < 0)
+                    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
                 return asinVfp (aplVfpRht);
 
             case -2:        // acos (R)
+                // Check for Complex result
+                if (mpfr_cmp_si (&aplVfpRht,  1) > 0
+                 || mpfr_cmp_si (&aplVfpRht, -1) < 0)
+                    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
                 return acosVfp (aplVfpRht);
 
             case -3:        // atan (R)
                 return atanVfp (aplVfpRht);
 
             case -4:        // R x (1 - R * -2) * 0.5
+                // Check for Complex result
+                if (mpfr_cmp_si (&aplVfpRht,  1) < 0
+                 && mpfr_cmp_si (&aplVfpRht, -1) < 0
+                 && !mpfr_zero_p (&aplVfpRht))
+                    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
                 mpfr_init0 (&mpfRes);
                 mpfr_mul (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
                 mpfr_ui_div (&mpfRes, 1, &mpfRes         , MPFR_RNDN);          // R * -2
@@ -645,10 +676,19 @@ APLVFP PrimFnDydCircleVisVvV
 
             case -6:        // acosh (R)
                             // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
+                // Check for Complex result
+                if (mpfr_cmp_si (&aplVfpRht, 1) < 0)
+                    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
                 return acoshVfp (aplVfpRht);
 
             case -7:        // atanh (R)
                             // 0.5 x (ln (1 + R) - ln (1 - R))
+                // Check for Complex result
+                if (mpfr_cmp_si (&aplVfpRht,  1) > 0
+                 || mpfr_cmp_si (&aplVfpRht, -1) < 0)
+                    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
                 return atanhVfp (aplVfpRht);
 
             default:

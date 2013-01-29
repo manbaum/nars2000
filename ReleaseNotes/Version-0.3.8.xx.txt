@@ -1,6 +1,21 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #1023 -- Version 0.3.8.xx
+-------------------------------
+
+* Signal NONCE ERROR For Complex Results
+
+Directory trunk:
+
+PF_CIRCLE.C:
+PF_CSTAR.C:
+PF_ROOT.C:
+PF_STAR.C:
+  Update copyright year.
+  Signal NONCE ERROR for complex results instead of DOMAIN ERROR.
+
+
 Build #1022 -- Version 0.3.8.xx
 -------------------------------
 

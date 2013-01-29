@@ -669,12 +669,17 @@ APLFLOAT PrimFnDydStarFisFvF
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_NEXPPi,
                                      aplFloatRht);
-    // Check for indeterminates:  L * R for L < 0 and R not an integer
+////// Check for indeterminates:  L * R for L < 0 and R not an integer
+////if (aplFloatLft < 0
+//// && aplFloatRht NE floor (aplFloatRht))
+////////return TranslateQuadICIndex (aplFloatLft,
+////////                             ICNDX_NegEXPFrc,
+////////                             aplFloatRht);
+    // Check for complex result
     if (aplFloatLft < 0
      && aplFloatRht NE floor (aplFloatRht))
-        return TranslateQuadICIndex (aplFloatLft,
-                                     ICNDX_NegEXPFrc,
-                                     aplFloatRht);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
     // Check for special cases:  _ * 0 and -_ * 0
     if (IsInfinity (aplFloatLft)
      && aplFloatRht EQ 0)
@@ -736,13 +741,18 @@ APLRAT PrimFnDydStarRisRvR
                                 ICNDX_NEXPPi,
                                 aplRatRht,
                                 mpqRes);
-    // Check for indeterminates:  L * R for L < 0 and R not an integer
+////// Check for indeterminates:  L * R for L < 0 and R not an integer
+////if (mpq_sgn (&aplRatLft) < 0
+//// && !mpq_integer_p (&aplRatRht))
+////    return mpq_QuadICValue (aplRatLft,
+////                            ICNDX_NegEXPFrc,
+////                            aplRatRht,
+////                            mpqRes);
+    // Check for complex result
     if (mpq_sgn (&aplRatLft) < 0
      && !mpq_integer_p (&aplRatRht))
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_NegEXPFrc,
-                                aplRatRht,
-                                mpqRes);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
     // Check for special cases:  _ * 0 and -_ * 0
     if (mpq_inf_p (&aplRatLft)
      && IsMpq0 (&aplRatRht))
@@ -846,12 +856,17 @@ APLVFP PrimFnDydStarVisVvV
                                  aplVfpRht,
                                  mpfRes);
     // Check for indeterminates:  L * R for L < 0 and R not an integer
+////if (mpfr_sgn (&aplVfpLft) < 0
+//// && !mpfr_integer_p (&aplVfpRht))
+////    return mpfr_QuadICValue (aplVfpLft,
+////                             ICNDX_NegEXPFrc,
+////                             aplVfpRht,
+////                             mpfRes);
+    // Check for complex result
     if (mpfr_sgn (&aplVfpLft) < 0
      && !mpfr_integer_p (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_NegEXPFrc,
-                                 aplVfpRht,
-                                 mpfRes);
+        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
     // Check for special cases:  _ * 0 and -_ * 0
     if (mpfr_inf_p (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))

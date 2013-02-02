@@ -1,6 +1,18 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #1024 -- Version 0.3.8.xx
+-------------------------------
+
+* Fix Bug In )LIB
+
+Directory trunk:
+
+SC_LIB.C:
+  In <CmdLibCom_EM>, a global variable may be overwritten during
+    processing which causes some entries to be omitted.
+
+
 Build #1023 -- Version 0.3.8.xx
 -------------------------------
 

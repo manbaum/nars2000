@@ -61,14 +61,20 @@ UBOOL CmdUlib_EM
 //                               )ULIB [dir] [[first][-][last]]
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CmdLibCom_EM"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL CmdLibCom_EM
     (LPWCHAR lpwszTail,                         // Ptr to command line tail
      UBOOL   bUniqWs)                           // TRUE iff listing unique workspaces only
 
 {
     LPPERTABDATA  lpMemPTD;                     // Ptr to PerTabData global memory
-    LPWCHAR       lpwszTemp,                    // Ptr to temporary storage
-                  lpwszFormat,                  // ...
+    LPWCHAR       lpwszFormat,                  // Ptr to temporary storage
+                  lpwszSaveBase = NULL,         // Ptr to base of Saved Names
                   lpwszSaveName,                // Ptr to next save area for a filename
                   lpwszLeadRange,               // Ptr to the leading range
                   lpwszTailRange,               // ...        trailing ... (after the separator)
@@ -80,8 +86,9 @@ UBOOL CmdLibCom_EM
     UINT          uExtLen,                      // Length of workspace extension
                   uNameCnt,                     // Name counter
                   uCnt;                         // Loop counter
-    UBOOL         bEndDQ = FALSE;               // TRUE iff the string ends with a Double Quote
-    LPWSZLIBDIRS  lpwszLibDirs;                 // Ptr to LibDirs
+    UBOOL         bEndDQ = FALSE,               // TRUE iff the string ends with a Double Quote
+                  bRet = FALSE;                 // TRUE iff the result is valid
+    LPWSZLIBDIRS  lpwszLibDirs = NULL;          // Ptr to LibDirs
 
     // Check for command line switches
     if (!CheckCommandLine (lpwszTail,           // Ptr to command line (after the command itself)
@@ -96,11 +103,15 @@ UBOOL CmdLibCom_EM
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage
-    lpwszTemp   = lpMemPTD->lpwszTemp;
     lpwszFormat = lpMemPTD->lpwszFormat;
 
     // Lock the memory to get a ptr to it
     lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
+
+    // Allocate temp storage for the saved names
+    lpwszSaveBase = MyGlobalAlloc (GPTR, 64*1024*sizeof (WCHAR));
+    if (lpwszSaveBase EQ NULL)
+        goto WSFULL_EXIT;
 
     // Loop through the search dirs
     for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
@@ -143,7 +154,7 @@ UBOOL CmdLibCom_EM
         // Initialize the name counter and name ptr
         uNameCnt = 0;
         lplpwszPtr = (LPWCHAR *) lpwszFormat;
-        lpwszSaveName = lpwszTemp;
+        lpwszSaveName = lpwszSaveBase;
 
         // Accumulate the workspaces (*.ws.nars)
         lpwszSaveName =
@@ -189,11 +200,35 @@ UBOOL CmdLibCom_EM
         } // End IF
     } // End FOR
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbLibDirs); lpwszLibDirs = NULL;
+    // Mark as successful
+    bRet = TRUE;
 
-    return TRUE;
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    AppendLine (ERRMSG_WS_FULL APPEND_NAME, FALSE, TRUE);
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    // If we allocated it, ...
+    if (lpwszSaveBase)
+    {
+        // We no longer need this storage
+        MyGlobalFree (lpwszSaveBase); lpwszSaveBase = lpwszSaveName = NULL;
+    } // End IF
+
+    // If we locked it, ...
+    if (lpwszLibDirs)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLibDirs); lpwszLibDirs = NULL;
+    } // End IF
+
+    return bRet;
 } // End CmdLibCom_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

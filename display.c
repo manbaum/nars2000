@@ -46,6 +46,12 @@ DTOAMODE gDTOA_Mode[FLTDISPFMT_LENGTH] = {DTOAMODE_SIGDIGS,     // E :  2 = nDig
                                           DTOAMODE_SIGDIGS,     // RI:  2 = nDigits significant digits
                                           DTOAMODE_SHORT_RND};  // RF:  0 = shortest string
 
+typedef struct tagROWPTRS
+{
+    LPAPLCHAR lpNxtChar,        // Ptr to next entry of formatted data
+              lpEndChar;        // ...    byte after row end of ...
+} ROWPTRS, *LPROWPTRS;
+
 
 //***************************************************************************
 //  $ArrayDisplay_EM
@@ -638,10 +644,10 @@ UBOOL DisplayGlbArr_EM
                         uColLim;
             WCHAR       wcCur = L' ';       // The replaced WCHAR (start with anything non-zero)
             UINT        uFmtRow;            // Loop counter
-            LPFMTROWSTR lpFmtRowLcl;        // Ptr to local FMTROWSTR
             LPAPLCHAR   lpwsz;              // Temporary ptr
             LPWCHAR     lpwszTemp,          // Ptr to formatting temp area
                         lpwszOrigTemp;      // ...    original value ...
+            LPROWPTRS   lpRowPtrs;
 
             // Get ptr to formatting temp area
             //   and protect by skipping over it
@@ -654,26 +660,28 @@ UBOOL DisplayGlbArr_EM
             // Calculate the # of cols per row group
             uColLim = (aplLastDim + uQuadPW - 1) / uQuadPW;
 
+            // Reserve space for Nxt and End Char ptrs
+            lpRowPtrs = (LPVOID) lpMemPTD->lpwszTemp;
+            lpMemPTD->lpwszTemp += (sizeof (ROWPTRS) * lpFmtHeader->uFmtRows);
+
             // Save the data ptr for each row
-            for (lpFmtRowLcl = lpFmtHeader->lpFmtRow1st,
+            for (uFmtRow = 0,
                    lpwsz = lpwszFormat;
-                 lpFmtRowLcl NE NULL;
-                 lpFmtRowLcl = lpFmtRowLcl->lpFmtRowNxt)
+                 uFmtRow < lpFmtHeader->uFmtRows;
+                 uFmtRow++)
             {
-                lpFmtRowLcl->lpNxtChar = lpwsz;
+                lpRowPtrs[uFmtRow].lpNxtChar = lpwsz;
                 lpwsz += aplLastDim;
-                lpFmtRowLcl->lpEndChar = lpwsz;
+                lpRowPtrs[uFmtRow].lpEndChar = lpwsz;
             } // End FOR
 
             // Loop through the groups of cols
             for (uColGrp = 0; uColGrp < uColLim; uColGrp++, bLineCont = TRUE)
             {
                 // Loop through the formatted rows
-                for (uFmtRow = 0,
-                       lpFmtRowLcl = lpFmtHeader->lpFmtRow1st;
-                     lpFmtRowLcl NE NULL;
-                     uFmtRow++,
-                       lpFmtRowLcl = lpFmtRowLcl->lpFmtRowNxt)
+                for (uFmtRow = 0;
+                     uFmtRow < lpFmtHeader->uFmtRows;
+                     uFmtRow++)
                 {
                     APLUINT uColCur,            // ...
                             uTmp,               // Temporary
@@ -685,8 +693,8 @@ UBOOL DisplayGlbArr_EM
                     //                between numbers and characters
 
                     // Set start and end of input
-                    lpwszNxt = lpFmtRowLcl->lpNxtChar;
-                    lpwszEnd = lpFmtRowLcl->lpEndChar;
+                    lpwszNxt = lpRowPtrs[uFmtRow].lpNxtChar;
+                    lpwszEnd = lpRowPtrs[uFmtRow].lpEndChar;
 
                     if (lpwszNxt >= lpwszEnd)
                         break;
@@ -786,7 +794,7 @@ UBOOL DisplayGlbArr_EM
                     } // End FOR
 
                     // Save ptr to next input
-                    lpFmtRowLcl->lpNxtChar = lpwszNxt;
+                    lpRowPtrs[uFmtRow].lpNxtChar = lpwszNxt;
 
                     // Zap the temp buffer at the maximum width
                     lpwszTemp[uMaxWidth] = WC_EOS;          // Zap it

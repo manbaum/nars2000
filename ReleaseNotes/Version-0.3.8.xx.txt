@@ -1,6 +1,17 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #1026 -- Version 0.3.8.xx
+-------------------------------
+
+* Optimize Table Function On Matrices
+
+Directory trunk:
+
+PF_COMMA.C:
+  Optimize table function on matrices by passing through the right arg.
+
+
 Build #1025 -- Version 0.3.8.xx
 -------------------------------
 

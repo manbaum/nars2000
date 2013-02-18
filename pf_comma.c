@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -600,6 +600,17 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     bTableRes = (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
     if (bTableRes)
     {
+        // If the right arg is already a matrix, ...
+        // Note that the axis operator does not apply to the table function
+        //   so there can be no reordering.
+        if (IsMatrix (aplRankRht))
+        {
+            // Copy the right arg
+            hGlbRes = CopySymGlbDir_PTB (hGlbRht);
+
+            goto YYALLOC_EXIT;
+        } // End IF
+
         aplLastAxis = aplRankRht - 1;
         aplNELMAxis = aplRankRht - 1;
     } else

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -135,7 +135,7 @@ double round
 //***************************************************************************
 //  $CmpLPSYMENTRY
 //
-//  Compare two LPSYMENTRYs being sorted
+//  Compare names in two LPSYMENTRYs being sorted
 //
 //  Note that the names may include the characters
 //    {alpha}, {omega}, {delta}, {deltaunderbar}, and {overbar}.
@@ -163,6 +163,39 @@ int CmpLPSYMENTRY
 
     return iCmp;
 } // End CmpLPSYMENTRY
+
+
+//***************************************************************************
+//  $CmpLPLBLENTRY
+//
+//  Compare the names in two LBLENTRYs being sorted
+//
+//  Note that the names may include the characters
+//    {alpha}, {omega}, {delta}, {deltaunderbar}, and {overbar}.
+//***************************************************************************
+
+int CmpLPLBLENTRY
+    (LPLBLENTRY lpLblLft,
+     LPLBLENTRY lpLblRht)
+
+{
+    LPAPLCHAR lpMemLft,     // Ptr to left arg global memory
+              lpMemRht;     // Ptr to right ...
+    int       iCmp;         // Comparison result
+
+    // Lock the memory to get a ptr to it
+    lpMemLft = MyGlobalLock (lpLblLft->lpSymEntry->stHshEntry->htGlbName);
+    lpMemRht = MyGlobalLock (lpLblRht->lpSymEntry->stHshEntry->htGlbName);
+
+    // Compare the two names
+    iCmp = aplcmp (lpMemLft, lpMemRht);
+
+    // We no longer need these ptrs
+    MyGlobalUnlock (lpLblRht->lpSymEntry->stHshEntry->htGlbName); lpMemRht = NULL;
+    MyGlobalUnlock (lpLblLft->lpSymEntry->stHshEntry->htGlbName); lpMemLft = NULL;
+
+    return iCmp;
+} // End CmpLPLBLENTRY
 
 
 //***************************************************************************

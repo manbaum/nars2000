@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -172,8 +172,9 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
                  lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
 
-    // If there's a function strand, ...
-    if (lpYYFcnStr NE NULL)
+    // If there's no axis and a function strand, ...
+    if (lptkAxis EQ NULL
+     && lpYYFcnStr NE NULL)
         // Check for axis operator
         lptkAxis = CheckAxisOper (lpYYFcnStr);
 
@@ -381,7 +382,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
     lpMemPTD->lpSISNxt->CurLineNum   = 1;
     lpMemPTD->lpSISNxt->NxtLineNum   = 2;
-////lpMemPTD->lpSISNxt->numLabels    =              // Filled in by LocalizeAll
+    lpMemPTD->lpSISNxt->numLabels    = lpMemDfnHdr->numLblLines;
     lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
 ////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
 
@@ -660,7 +661,6 @@ void LocalizeAll
     // Search for line labels, localize and initialize them
     lpSymEntryNxt =
       LocalizeLabels (lpSymEntryNxt,
-                     &lpMemPTD->lpSISNxt->numLabels,
                       lpMemDfnHdr,
                       lpMemPTD);
     // Save the # LPSYMENTRYs localized
@@ -674,7 +674,7 @@ void LocalizeAll
            + (lpMemDfnHdr->steRhtOpr NE NULL)
            + lpMemDfnHdr->numRhtArgSTE
            + lpMemDfnHdr->numLocalsSTE
-           + lpMemPTD->lpSISNxt->numLabels));
+           + lpMemDfnHdr->numLblLines));
     // Save as new SISNxt ptr
     lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
 } // End LocalizeAll
@@ -1560,96 +1560,80 @@ void UnlocalizeSTEs
 //***************************************************************************
 
 LPSYMENTRY LocalizeLabels
-    (LPSYMENTRY   lpSymEntryNxt,    // Ptr to next SYMENTRY save area
-     LPUINT       lpNumLabels,      // Ptr to # labels initialized so far
-     LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header
-     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+    (LPSYMENTRY   lpSymEntryNxt,        // Ptr to next SYMENTRY save area
+     LPDFN_HEADER lpMemDfnHdr,          // Ptr to user-defined function/operator header
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    UINT           numFcnLines,     // # lines in the function
-                   uLineNum;        // Loop counter
-    LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
-    LPTOKEN        lptkLine;        // Ptr to tokenized line
-    STFLAGS stFlagsClr = {0};       // Flags for clearing an STE
+    UINT           numLblLines,         // # labeled lines in the function
+                   uLineNum1;           // Line # (origin-1)
+    LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    LPTOKEN_HEADER lptkHdr;             // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;            // Ptr to tokenized line
+    STFLAGS        stFlagsClr = {0};    // Flags for clearing an STE
 
     // Set the Inuse flag
     stFlagsClr.Inuse = TRUE;
 
-    // Get # lines in the function
-    numFcnLines = lpMemDfnHdr->numFcnLines;
+    // Get # labeled lines in the function
+    numLblLines = lpMemDfnHdr->numLblLines;
 
     // Get ptr to array of function line structs (FCNLINE[numFcnLines])
     lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-    // Loop through the function lines
-    for (*lpNumLabels = uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+    // Loop through the labeled function lines
+    for (uLineNum1 = lpMemDfnHdr->num1stLabel1;
+         uLineNum1 NE 0;
+         uLineNum1 = lpFcnLines[uLineNum1 - 1].numNxtLabel1)
     {
-        UINT numTokens;     // # tokens in the line
+        LPSYMENTRY lpSymEntrySrc;   // Ptr to source SYMENTRY
 
         // Get a ptr to the token header
-        lptkHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine);
-
-        // Get the # tokens in the line
-        numTokens = lptkHdr->TokenCnt;
+        lptkHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[uLineNum1 - 1].offTknLine);
 
         // Get ptr to the tokens in the line
         lptkLine = TokenBaseToStart (lptkHdr);
 
-        Assert (lptkLine[0].tkFlags.TknType EQ TKT_EOL
-             || lptkLine[0].tkFlags.TknType EQ TKT_EOS);
+        Assert (lptkHdr->TokenCnt >= 3
+             && (lptkLine[0].tkFlags.TknType EQ TKT_EOL
+              || lptkLine[0].tkFlags.TknType EQ TKT_EOS)
+             && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED
+             && lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP);
 
-        // If there are at least three tokens, ...
-        //   (TKT_EOL, TKT_VARNAMED, TKT_LABELSEP)
-        if (numTokens >= 3)
-        {
-            if (lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP
-             && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED)
-            {
-                LPSYMENTRY lpSymEntrySrc;   // Ptr to source SYMENTRY
+        // Get the source LPSYMENTRY
+        lpSymEntrySrc = lptkLine[1].tkData.tkSym;
 
-                // Get the source LPSYMENTRY
-                lpSymEntrySrc = lptkLine[1].tkData.tkSym;
+        // stData is an LPSYMENTRY
+        Assert (GetPtrTypeDir (lpSymEntrySrc) EQ PTRTYPE_STCONST);
 
-                // stData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lpSymEntrySrc) EQ PTRTYPE_STCONST);
+        // Copy the old SYMENTRY to the SIS
+        *lpSymEntryNxt = *lpSymEntrySrc;
 
-                // Copy the old SYMENTRY to the SIS
-                *lpSymEntryNxt = *lpSymEntrySrc;
+        // Clear the STE flags & data
+        *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
+////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
 
-                // Clear the STE flags & data
-                *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
-////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
+        // Initialize the SYMENTRY to an integer constant
+        lpSymEntrySrc->stFlags.Imm        = TRUE;
+        lpSymEntrySrc->stFlags.ImmType    = IMMTYPE_INT;
+        lpSymEntrySrc->stFlags.Inuse      = TRUE;
+        lpSymEntrySrc->stFlags.Value      = TRUE;
+        lpSymEntrySrc->stFlags.ObjName    = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
+                                          ? OBJNAME_SYS
+                                          : OBJNAME_USR;
+        lpSymEntrySrc->stFlags.stNameType = NAMETYPE_VAR;
+        lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
+        lpSymEntrySrc->stData.stInteger   = uLineNum1;
 
-                // Initialize the SYMENTRY to an integer constant
-                lpSymEntrySrc->stFlags.Imm        = TRUE;
-                lpSymEntrySrc->stFlags.ImmType    = IMMTYPE_INT;
-                lpSymEntrySrc->stFlags.Inuse      = TRUE;
-                lpSymEntrySrc->stFlags.Value      = TRUE;
-                lpSymEntrySrc->stFlags.ObjName    = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
-                                                  ? OBJNAME_SYS
-                                                  : OBJNAME_USR;
-                lpSymEntrySrc->stFlags.stNameType = NAMETYPE_VAR;
-                lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
-                lpSymEntrySrc->stData.stInteger   = uLineNum + 1;
+        // Set the ptr to the previous entry to the STE in its shadow chain
+        lpSymEntrySrc->stPrvEntry         = lpSymEntryNxt;
 
-                // Set the ptr to the previous entry to the STE in its shadow chain
-                lpSymEntrySrc->stPrvEntry         = lpSymEntryNxt;
+        // Save the SI level for this SYMENTRY
+        Assert (lpMemPTD->SILevel);
+        lpSymEntrySrc->stSILevel          = lpMemPTD->SILevel - 1;
 
-                // Save the SI level for this SYMENTRY
-                Assert (lpMemPTD->SILevel);
-                lpSymEntrySrc->stSILevel          = lpMemPTD->SILevel - 1;
-
-                // Count in another label
-                (*lpNumLabels)++;
-
-                // Skip to the next SYMENTRY
-                lpSymEntryNxt++;
-            } // End IF
-        } // End IF
-
-        // Skip to the next struct
-        lpFcnLines++;
+        // Skip to the next SYMENTRY
+        lpSymEntryNxt++;
     } // End FOR
 
     return lpSymEntryNxt;

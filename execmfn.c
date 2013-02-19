@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -625,8 +625,8 @@ HGLOBAL Init1MagicFunction
             goto ERROR_EXIT;
         } // End IF
 
-        // Check for special labels ([]ID, etc.)
-        if (!GetSpecialLabelNums (lpMemDfnHdr, NULL, TRUE))
+        // Check for line labels ([]ID, etc.)
+        if (!GetLabelNums (lpMemDfnHdr, NULL, TRUE, NULL))
             goto ERROR_EXIT;
 
         // Get the function/operator LPSYMENTRY

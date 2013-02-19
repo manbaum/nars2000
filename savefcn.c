@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1572,8 +1572,8 @@ UBOOL SaveFunctionCom
             goto ERROR_EXIT;
         } // End IF
 
-        // Check for special labels ([]ID, etc.)
-        if (!GetSpecialLabelNums (lpMemDfnHdr, hWndEC, hWndFE NE NULL))
+        // Check for line labels ([]ID, etc.)
+        if (!GetLabelNums (lpMemDfnHdr, hWndEC, hWndFE NE NULL, lpSF_Fcns))
             goto ERROR_EXIT;
 
         // If there was a previous function, ...
@@ -1971,36 +1971,57 @@ UBOOL IsLineEmpty
 
 
 //***************************************************************************
-//  $GetSpecialLabelNums
+//  $GetLabelNums
 //
-//  Return the line #s (or zero if not found) of the special line labels
+//  Calculate the line #s of the line labels
 //***************************************************************************
 
-UBOOL GetSpecialLabelNums
-    (LPDFN_HEADER  lpMemDfnHdr,     // Ptr to user-defined function/operator header
-     HWND          hWndEC,          // Edit Ctrl window handle (FE only)
-     UBOOL         bDispErrMsg)     // TRUE iff we may display error messages
+UBOOL GetLabelNums
+    (LPDFN_HEADER  lpMemDfnHdr,         // Ptr to user-defined function/operator header
+     HWND          hWndEC,              // Edit Ctrl window handle (FE only)
+     UBOOL         bDispErrMsg,         // TRUE iff we may display error messages
+     LPSF_FCNS     lpSF_Fcns)           // Ptr to common struc (may be NULL)
 
 {
-    UINT           numFcnLines,     // # lines in the function
-                   uLineNum;        // Loop counter
-    LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
-    LPTOKEN        lptkLine;        // Ptr to tokenized line
+    UINT           numFcnLines,         // # lines in the function
+                   uDupLineNum1,        // Line # of duplicate label (origin-1)
+                   uCnt,                // Loop counter
+                   uLineNum0;           // Line # (origin-0)
+    LPLBLENTRY    *lplpLblEntry = NULL, // Ptr to array of LPLBLENTRYs of labeled lines
+                   lpLblEntry;          // Ptr to an individual LBLENTRY
+    LPFCNLINE      lpFcnLines,          // Ptr to array of function line structs (FCNLINE[numFcnLines])
+                   lpLstLabel;          // Ptr to the last labeled line
+    LPTOKEN_HEADER lptkHdr;             // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;            // Ptr to tokenized line
+    UBOOL          bRet;                // TRUE iff the result is valid
+    HGLOBAL        hGlbName;            // Name's global memory handle
 
     // Get # lines in the function
     numFcnLines = lpMemDfnHdr->numFcnLines;
 
+    // Allocate room for <numFcnLines> of <LPSYMENTRY>s for the line labels
+    //   so we can sort the labels and find duplicates
+    lplpLblEntry = DbgGlobalAlloc (GPTR, numFcnLines * (sizeof (LBLENTRY) + sizeof (LPVOID)));
+    if (lplpLblEntry EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Save ptr to start of LBLENTRYs
+    lpLblEntry = (LPLBLENTRY) &lplpLblEntry[numFcnLines];
+
     // Get ptr to array of function line structs (FCNLINE[numFcnLines])
     lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
+    // Save as ptr to the last labeled line
+    lpLstLabel = NULL;
+    lpMemDfnHdr->numLblLines = 0;
+
     // Loop through the function lines
-    for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+    for (uLineNum0 = 0; uLineNum0 < numFcnLines; uLineNum0++)
     if (lpFcnLines->offTknLine)
     {
         UINT numTokens;     // # tokens in the line
 
-        // Lock the memory to get a ptr to it
+        // Get a ptr to the token header
         lptkHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine);
 
         // Get the # tokens in the line
@@ -2019,7 +2040,6 @@ UBOOL GetSpecialLabelNums
             if (lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP
              && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED)
             {
-                HGLOBAL   hGlbName;     // Name's global memory handle
                 LPAPLCHAR lpMemName;    // Ptr to the name
 
                 // stData is an LPSYMENTRY
@@ -2037,33 +2057,62 @@ UBOOL GetSpecialLabelNums
 
                     if (lstrcmpiW (lpMemName, $QUAD_ID ) EQ 0)
                     {
-                        if (lpMemDfnHdr->nSysLblId )
-                            goto ERROR_EXIT;
-                        lpMemDfnHdr->nSysLblId  = uLineNum + 1;
+                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblId )
+                            goto SYSDUP_EXIT;
+                        // Save line # in origin-1
+                        lpMemDfnHdr->nSysLblId  = uLineNum0 + 1;
                     } else
                     if (lstrcmpiW (lpMemName, $QUAD_INV) EQ 0)
                     {
-                        if (lpMemDfnHdr->nSysLblInv)
-                            goto ERROR_EXIT;
-                        lpMemDfnHdr->nSysLblInv = uLineNum + 1;
+                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblInv)
+                            goto SYSDUP_EXIT;
+                        // Save line # in origin-1
+                        lpMemDfnHdr->nSysLblInv = uLineNum0 + 1;
                     } else
                     if (lstrcmpiW (lpMemName, $QUAD_MS ) EQ 0)
                     {
-                        if (lpMemDfnHdr->nSysLblMs )
-                            goto ERROR_EXIT;
-                        lpMemDfnHdr->nSysLblMs  = uLineNum + 1;
+                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblMs )
+                            goto SYSDUP_EXIT;
+                        // Save line # in origin-1
+                        lpMemDfnHdr->nSysLblMs  = uLineNum0 + 1;
                     } else
                     if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
                     {
-                        if (lpMemDfnHdr->nSysLblPro)
-                            goto ERROR_EXIT;
-                        lpMemDfnHdr->nSysLblPro = uLineNum + 1;
+                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblPro)
+                            goto SYSDUP_EXIT;
+                        // Save line # in origin-1
+                        lpMemDfnHdr->nSysLblPro = uLineNum0 + 1;
                     } else
                     if (lstrcmpiW (lpMemName, $QUAD_SGL) EQ 0)
                     {
-                        if (lpMemDfnHdr->nSysLblSgl)
-                            goto ERROR_EXIT;
-                        lpMemDfnHdr->nSysLblSgl = uLineNum + 1;
+                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblSgl)
+                            goto SYSDUP_EXIT;
+                        // Save line # in origin-1
+                        lpMemDfnHdr->nSysLblSgl = uLineNum0 + 1;
+                    } else
+                    {
+                        // If there's a previous label, ...
+                        if (lpLstLabel)
+                            // Save the line # of the next labeled line
+                            lpLstLabel->numNxtLabel1 = uLineNum0 + 1;
+                        else
+                            // Save the line # of the first labeled line
+                            lpMemDfnHdr->num1stLabel1 = uLineNum0 + 1;
+                        // Save as the ptr to the last labeled line
+                        lpLstLabel = lpFcnLines;
+
+                        // Create a ptr to the LBLENTRY
+                        lplpLblEntry[lpMemDfnHdr->numLblLines] = lpLblEntry++;
+
+                        // Save the LBLENTRY of the label
+                        lplpLblEntry[lpMemDfnHdr->numLblLines]->lpSymEntry = lptkLine[1].tkData.tkSym;
+                        lplpLblEntry[lpMemDfnHdr->numLblLines]->uLineNum1  = uLineNum0 + 1;
+
+                        // Mark as a labeled line
+                        lpLstLabel->bLabel = TRUE;
+
+                        // Count in another labeled line
+                        lpMemDfnHdr->numLblLines++;
                     } // End IF/ELSE/...
 
                     // We no longer need this ptr
@@ -2076,30 +2125,106 @@ UBOOL GetSpecialLabelNums
         lpFcnLines++;
     } // End FOR/IF
 
-    // Mark as successful
-    return TRUE;
+    // Check for duplicate labels
 
-ERROR_EXIT:
-    if (bDispErrMsg)
+    // If there is more than one label, ...
+    if (lpMemDfnHdr->numLblLines > 1)
     {
-        WCHAR wszTemp[1024];            // Save area for error message text
+        // Sort the array of LPSYMENTRYs of labels
+        ShellSort (lplpLblEntry, lpMemDfnHdr->numLblLines, CmpLPLBLENTRY);
 
-        // Format the error message
-        wsprintfW (wszTemp,
-                   L"Duplicate special []label line # %d -- function not saved",
-                   uLineNum + 1);
-        // Display the error message
-        MessageBoxW (NULL,
-                     wszTemp,
-                     lpwszAppName,
-                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-        if (hWndEC)
-            SetFocus (GetParent (hWndEC));
+        // Loop through the LPSYMENTRYs looking for duplicates
+        for (uCnt = 0; uCnt < (lpMemDfnHdr->numLblLines - 1); uCnt++)
+        if (CmpLPLBLENTRY (lplpLblEntry[uCnt], lplpLblEntry[uCnt + 1]) EQ 0)
+            goto LBLDUP_EXIT;
     } // End IF
 
+    // Mark as successful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    if (bDispErrMsg)
+        // Display the error message
+        MessageBoxW (NULL,
+                     L"Unable to allocate space to test for duplicate labels -- function not saved",
+                     lpwszAppName,
+                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+    goto ERROR_EXIT;
+
+LBLDUP_EXIT:
+    if (bDispErrMsg)
+        // Call common error function
+        ErrLabelNums (lplpLblEntry[uCnt]->lpSymEntry->stHshEntry->htGlbName,
+                      lplpLblEntry[uCnt]->uLineNum1);
+    // If we can pass on the line # in error, ...
+    if (lpSF_Fcns)
+        // Save the line # (origin-0)
+        lpSF_Fcns->uErrLine = lplpLblEntry[uCnt]->uLineNum1 - 1;
+
+    goto ERROR_EXIT;
+
+SYSDUP_EXIT:
+    if (bDispErrMsg)
+        // Call common error function
+        ErrLabelNums (hGlbName,
+                      uDupLineNum1);
+    // If we can pass on the line # in error, ...
+    if (lpSF_Fcns)
+        // Save the line # (origin-0)
+        lpSF_Fcns->uErrLine = uDupLineNum1 - 1;
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (bDispErrMsg && hWndEC NE NULL)
+        SetFocus (GetParent (hWndEC));
+
     // Mark as in error
-    return FALSE;
-} // End GetSpecialLabelNums
+    bRet = FALSE;
+NORMAL_EXIT:
+    if (lplpLblEntry)
+    {
+        // We no longer need this storage
+        MyGlobalFree (lplpLblEntry); lplpLblEntry = NULL;
+    } // End IF
+
+    return bRet;
+} // End GetLabelNums
+
+
+//***************************************************************************
+//  $ErrLabelNums
+//
+//  Display common error message from <GetLabelNums>
+//***************************************************************************
+
+void ErrLabelNums
+    (HGLOBAL hGlbName,              // Line label name's global memory handle
+     UINT    uLineNum1)             // Line # in error (origin-1)
+
+{
+    WCHAR     wszTemp[1024];        // Save area for error message text
+    LPAPLCHAR lpMem;                // Ptr to LPSYMENTRY global memory name
+
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlbName);
+
+    // Format the error message
+    wsprintfW (wszTemp,
+               L"Duplicate label <%s> on line # %d -- function not saved",
+               lpMem,
+               uLineNum1);
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbName); lpMem = NULL;
+
+    // Display the error message
+    MessageBoxW (NULL,
+                 wszTemp,
+                 lpwszAppName,
+                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+} // ErrLabelNums
 
 
 //***************************************************************************

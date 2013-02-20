@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -906,15 +906,15 @@ void YYFreeArray
         else
         if (lpYYArg[uCnt].tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
         {
-            // tkData is an HGLOBAL
-            Assert (GetPtrTypeDir (lpYYArg[uCnt].tkToken.tkData.tkVoid) EQ PTRTYPE_HGLOBAL);
-
             // Get the global memory handle or function address if direct
             hGlbFcn = lpYYArg[uCnt].tkToken.tkData.tkGlbData;
 
             // If it hasn't already been erased, ...
             if (!PtrReusedDir (hGlbFcn))
             {
+                // tkData is an HGLOBAL
+                Assert (GetPtrTypeDir (hGlbFcn) EQ PTRTYPE_HGLOBAL);
+
                 // stData is a valid HGLOBAL function array
                 //   or user-defined function/operator
                 Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)

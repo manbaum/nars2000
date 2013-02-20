@@ -314,18 +314,18 @@ void mpz_init_set_fr
 //***************************************************************************
 
 APLINT mpz_get_sa
-    (mpz_ptr src,               // Ptr to source
+    (mpz_ptr src,               // Ptr to source value
      LPUBOOL lpbRet)            // Ptr to TRUE iff result is valid (may be NULL)
 
 {
     UBOOL        bRet;
     APLUINTUNION dwSplit;
 
+    if (lpbRet EQ NULL)
+        lpbRet = &bRet;
     // Check the range
-    bRet = (0 <= mpz_cmp (src, &mpzMinInt)
-         &&      mpz_cmp (src, &mpzMaxInt) <= 0);
-    if (lpbRet)
-        *lpbRet = bRet;
+    *lpbRet = (0 <= mpz_cmp (src, &mpzMinInt)
+            &&      mpz_cmp (src, &mpzMaxInt) <= 0);
 #if GMP_LIMB_BITS == 32
     dwSplit.dwords[0] = mpz_getlimbn (src, 0);
     dwSplit.dwords[1] = mpz_getlimbn (src, 1);
@@ -685,19 +685,19 @@ void mpq_init_set_str
 //***************************************************************************
 
 APLINT mpq_get_sx
-    (mpq_ptr src,
-     LPUBOOL lpbRet)
+    (mpq_ptr src,           // Ptr to source value
+     LPUBOOL lpbRet)        // TRUE iff the result is valid (may be NULL)
 
 {
     APLMPI mpzDiv = {0};
     APLINT aplInteger;
     UBOOL  bRet;
 
+    if (lpbRet EQ NULL)
+        lpbRet = &bRet;
     // Check the range
-    bRet = (0 <= mpz_cmp (mpq_numref (src), &mpzMinInt)
-         &&      mpz_cmp (mpq_numref (src), &mpzMaxInt) <= 0);
-    if (lpbRet)
-        *lpbRet = bRet;
+    *lpbRet = (0 <= mpz_cmp (mpq_numref (src), &mpzMinInt)
+            &&      mpz_cmp (mpq_numref (src), &mpzMaxInt) <= 0);
     // Initialize the quotient
     mpz_init (&mpzDiv);
 
@@ -721,57 +721,100 @@ APLINT mpq_get_sx
 //***************************************************************************
 
 APLINT mpq_get_ctsa
-    (mpq_ptr src,
-     LPUBOOL lpbRet)
+    (mpq_ptr src,           // Ptr to source value
+     LPUBOOL lpbRet)        // TRUE iff the result is valid (may be NULL)
 
 {
     APLVFP mpfSrc  = {0},
            mpfTmp1 = {0},
            mpfTmp2 = {0};
     APLINT aplInt;
+    UBOOL  bRet;
+#if defined (DEBUG) && defined (GET_DEBUG)
+    char szTemp1[1024],
+         szTemp2[1024];
+    int  expptr1,
+         expptr2;
+    double fTmp1,
+           fTmp2;
+#endif
+    if (lpbRet EQ NULL)
+        lpbRet = &bRet;
 
-    // Initialize the temps
-    mpfr_init0 (&mpfSrc);
-    mpfr_init0 (&mpfTmp1);
-    mpfr_init0 (&mpfTmp2);
-
-    // Convert the RAT to a VFP
-    mpfr_set_q (&mpfSrc , src, MPFR_RNDN);
-
-    // Get the floor
-    mpfr_floor (&mpfTmp1, &mpfSrc);
-
-    // Get the ceil
-    mpfr_ceil  (&mpfTmp2, &mpfSrc);
-
-    // Calculate the relative difference between the source and its floor
-    mpfr_reldiff (&mpfTmp1, &mpfTmp1, &mpfSrc, MPFR_RNDN);
-
-    // Calculate the relative difference between the source and its ceil
-    mpfr_reldiff (&mpfTmp2, &mpfTmp2, &mpfSrc, MPFR_RNDN);
-
-    // Compare the relative diff with SYS_CT
-    if (fabs (mpfr_get_d (&mpfTmp1, MPFR_RNDN)) < SYS_CT)
+    // Handle special case of 0 as <mpfr_reldiff> returns 1 (= 0{div}0)
+    if (mpq_sgn (src) EQ 0)
     {
+        aplInt  = 0;
+        *lpbRet = TRUE;
+    } else
+    {
+        // Initialize the temps
+        mpfr_init0 (&mpfSrc);
+        mpfr_init0 (&mpfTmp1);
+        mpfr_init0 (&mpfTmp2);
+
+        // Convert the RAT to a VFP
+        mpfr_set_q (&mpfSrc , src, MPFR_RNDN);
+
+#if defined (DEBUG) && defined (GET_DEBUG)
+        DbgBrk ();
+        mpq_get_str  (szTemp1, 10, src);
+        mpfr_get_str (szTemp2, &expptr2, 10, 200, &mpfSrc, MPFR_RNDN);
+#endif
+
+        // Get the floor
         mpfr_floor (&mpfTmp1, &mpfSrc);
-        aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
-        *lpbRet = TRUE;
-    } else
-    if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
-    {
-        mpfr_ceil  (&mpfTmp2, &mpfSrc);
-        aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
-        *lpbRet = TRUE;
-    } else
-    {
-        aplInt = mpfr_get_sx (&mpfSrc , lpbRet);
-        *lpbRet = FALSE;
-    } // End IF/ELSE/...
 
-    // We no longer need this storage
-    Myf_clear (&mpfTmp2);
-    Myf_clear (&mpfTmp1);
-    Myf_clear (&mpfSrc );
+#if defined (DEBUG) && defined (GET_DEBUG)
+        mpfr_get_str (szTemp1, &expptr1, 10, 200, &mpfTmp1, MPFR_RNDN);
+#endif
+
+        // Get the ceil
+        mpfr_ceil  (&mpfTmp2, &mpfSrc);
+
+#if defined (DEBUG) && defined (GET_DEBUG)
+        mpfr_get_str (szTemp2, &expptr2, 10, 200, &mpfTmp2, MPFR_RNDN);
+#endif
+
+        // Calculate the relative difference between the source and its floor
+        mpfr_reldiff (&mpfTmp1, &mpfTmp1, &mpfSrc, MPFR_RNDN);
+
+#if defined (DEBUG) && defined (GET_DEBUG)
+        mpfr_get_str (szTemp1, &expptr1, 10, 200, &mpfTmp1, MPFR_RNDN);
+#endif
+
+        // Calculate the relative difference between the source and its ceil
+        mpfr_reldiff (&mpfTmp2, &mpfTmp2, &mpfSrc, MPFR_RNDN);
+
+#if defined (DEBUG) && defined (GET_DEBUG)
+        mpfr_get_str (szTemp2, &expptr2, 10, 200, &mpfTmp2, MPFR_RNDN);
+        fTmp1 = mpfr_get_d (&mpfTmp1, MPFR_RNDN);
+        fTmp2 = mpfr_get_d (&mpfTmp2, MPFR_RNDN);
+#endif
+
+        // Compare the relative diff with SYS_CT
+        if (fabs (mpfr_get_d (&mpfTmp1, MPFR_RNDN)) < SYS_CT)
+        {
+            mpfr_floor (&mpfTmp1, &mpfSrc);
+            aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
+            *lpbRet = TRUE;
+        } else
+        if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
+        {
+            mpfr_ceil  (&mpfTmp2, &mpfSrc);
+            aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
+            *lpbRet = TRUE;
+        } else
+        {
+            aplInt = mpfr_get_sx (&mpfSrc , lpbRet);
+            *lpbRet = FALSE;
+        } // End IF/ELSE/...
+
+        // We no longer need this storage
+        Myf_clear (&mpfTmp2);
+        Myf_clear (&mpfTmp1);
+        Myf_clear (&mpfSrc );
+    } // End IF/ELSE
 
     return aplInt;
 } // End mpq_get_ctsa
@@ -1242,8 +1285,8 @@ void mpfr_set_sx
 //***************************************************************************
 
 APLINT mpfr_get_sx
-    (mpfr_ptr src,
-     LPUBOOL lpbRet)
+    (mpfr_ptr src,          // Ptr to source value
+     LPUBOOL lpbRet)        // TRUE iff the result is valid (may be NULL)
 
 {
     APLRAT mpqTmp = {0};
@@ -1269,51 +1312,62 @@ APLINT mpfr_get_sx
 //***************************************************************************
 
 APLINT mpfr_get_ctsa
-    (mpfr_ptr src,
-     LPUBOOL lpbRet)
+    (mpfr_ptr src,          // Ptr to source value
+     LPUBOOL lpbRet)        // TRUE iff the result is valid (may be NULL)
 
 {
     APLVFP mpfTmp1 = {0},
            mpfTmp2 = {0};
     APLINT aplInt;
+    UBOOL  bRet;
 
-    // Initialize the temps
-    mpfr_init0 (&mpfTmp1);
-    mpfr_init0 (&mpfTmp2);
-
-    // Get the floor
-    mpfr_floor (&mpfTmp1, src);
-
-    // Get the ceil
-    mpfr_ceil  (&mpfTmp2, src);
-
-    // Calculate the relative difference between the source and its floor
-    mpfr_reldiff (&mpfTmp1, &mpfTmp1, src, MPFR_RNDN);
-
-    // Calculate the relative difference between the source and its ceil
-    mpfr_reldiff (&mpfTmp2, &mpfTmp2, src, MPFR_RNDN);
-
-    // Compare the relative diff with []CT
-    if (fabs (mpfr_get_d (&mpfTmp1, MPFR_RNDN)) < SYS_CT)
+    if (lpbRet EQ NULL)
+        lpbRet = &bRet;
+    // Handle special case of 0 as <mpfr_reldiff> returns 1 (= 0{div}0)
+    if (mpfr_zero_p (src))
     {
+        aplInt  = 0;
+        *lpbRet = TRUE;
+    } else
+    {
+        // Initialize the temps
+        mpfr_init0 (&mpfTmp1);
+        mpfr_init0 (&mpfTmp2);
+
+        // Get the floor
         mpfr_floor (&mpfTmp1, src);
-        aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
-        *lpbRet = TRUE;
-    } else
-    if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
-    {
-        mpfr_ceil  (&mpfTmp2, src);
-        aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
-        *lpbRet = TRUE;
-    } else
-    {
-        aplInt = mpfr_get_sx (src     , lpbRet);
-        *lpbRet = FALSE;
-    } // End IF/ELSE/...
 
-    // We no longer need this storage
-    Myf_clear (&mpfTmp2);
-    Myf_clear (&mpfTmp1);
+        // Get the ceil
+        mpfr_ceil  (&mpfTmp2, src);
+
+        // Calculate the relative difference between the source and its floor
+        mpfr_reldiff (&mpfTmp1, &mpfTmp1, src, MPFR_RNDN);
+
+        // Calculate the relative difference between the source and its ceil
+        mpfr_reldiff (&mpfTmp2, &mpfTmp2, src, MPFR_RNDN);
+
+        // Compare the relative diff with []CT
+        if (fabs (mpfr_get_d (&mpfTmp1, MPFR_RNDN)) < SYS_CT)
+        {
+            mpfr_floor (&mpfTmp1, src);
+            aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
+            *lpbRet = TRUE;
+        } else
+        if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
+        {
+            mpfr_ceil  (&mpfTmp2, src);
+            aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
+            *lpbRet = TRUE;
+        } else
+        {
+            aplInt = mpfr_get_sx (src     , lpbRet);
+            *lpbRet = FALSE;
+        } // End IF/ELSE/...
+
+        // We no longer need this storage
+        Myf_clear (&mpfTmp2);
+        Myf_clear (&mpfTmp1);
+    } // Endf IF/ELSE
 
     return aplInt;
 } // End mpfr_get_ctsa
@@ -1326,10 +1380,14 @@ APLINT mpfr_get_ctsa
 //// //***************************************************************************
 ////
 //// APLUINT mpfr_get_ux
-////     (mpfr_ptr src,
-////      LPUBOOL lpbRet)
+////     (mpfr_ptr src,             // Ptr to source value
+////      LPUBOOL lpbRet)           // TRUE iff the result is valid (may be NULL)
 ////
 //// {
+////     UBOOL bRet;
+////
+////     if (lpbRet EQ NULL)
+////         lpbRet = &bRet;
 ////     // See if it fits
 ////     *lpbRet = mpfr_fits_uintmax_p (src, MPFR_RNDN);
 ////

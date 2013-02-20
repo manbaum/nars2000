@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,6 +65,7 @@ EXIT_TYPES GotoLine_EM
     UBOOL          bExecEC,         // TRUE iff we're executing under []EC
                    bRet;            // TRUE iff the result is valid
     HGLOBAL        lpSymGlb;        // Ptr to global numeric value
+    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header ...
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -198,17 +199,17 @@ EXIT_TYPES GotoLine_EM
          || lpSISCur->DfnType EQ DFNTYPE_EXEC))
         lpSISCur = lpSISCur->lpSISPrv;
 
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
+
     if (lpSISCur NE NULL
      && !bExecEC
-     && aplIntegerRht > 0)
+     && aplIntegerRht > 0
+     && aplIntegerRht <= lpMemDfnHdr->numFcnLines)
     {
         UINT         uStmtLen,          // Statement length (in TOKENs)
                      TokenCnt;          // Token count in this line
-        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
         LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
-
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
@@ -238,9 +239,6 @@ EXIT_TYPES GotoLine_EM
         // Get the next token and its type
         tkNxt = *lpMemTknLine;
         TknType = tkNxt.tkFlags.TknType;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         // Check for branch to non-restartable Control Structure tokens:
         //   CASE, CASELIST (both covered by SKIPCASE)
@@ -277,6 +275,9 @@ EXIT_TYPES GotoLine_EM
                 goto DESTIN_EXIT;
         } // End IF/ELSE/IF
     } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
 
     // Save the exit type
     exitType = EXITTYPE_GOTO_LINE;

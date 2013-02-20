@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -128,25 +128,33 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht,        // Right arg storage type
-                 aplTypeRes;        // Result    ...
-    APLNELM      aplNELMRht;        // Right arg NELM
-    APLRANK      aplRankRht;        // Right arg rank
-    HGLOBAL      hGlbRht,           // Right arg global memory handle
-                 hGlbRes,           // Result    ...
-                 lpSymGlbRht;       // Right arg as rational
-    APLUINT      ByteRes;           // # bytes in the result
-    APLINT       iRes,              // Loop counter
-                 iLim;              // Loop limit
-    LPVOID       lpMemRes;          // Ptr to result global memory
-    UBOOL        bRet;              // TRUE iff result is valid
-    APLLONGEST   aplLongestRht;     // Right arg iommediate value
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    APLBOOL      bQuadIO;           // []IO
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    APLSTYPE      aplTypeRht,       // Right arg storage type
+                  aplTypeRes;       // Result    ...
+    APLNELM       aplNELMRht;       // Right arg NELM
+    APLRANK       aplRankRht;       // Right arg rank
+    HGLOBAL       hGlbRht,          // Right arg global memory handle
+                  hGlbRes,          // Result    ...
+                  lpSymGlbRht;      // Right arg as rational
+    APLUINT       ByteRes;          // # bytes in the result
+    APLINT        iRes,             // Loop counter
+                  iLim;             // Loop limit
+    LPVOID        lpMemRes;         // Ptr to result global memory
+    UBOOL         bRet;             // TRUE iff result is valid
+    APLLONGEST    aplLongestRht;    // Right arg iommediate value
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
+    APLBOOL       bQuadIO;          // []IO
+    LPPERTABDATA  lpMemPTD;         // Ptr to PerTabData global memory
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -323,13 +331,25 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
             if (SIGN_APLINT (aplLongestRht))
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Initialize and save the value
                     mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, aplLongestRht + iRes, 1);
+                } // End FOR
             else
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Initialize and save the value
                     mpq_init_set_sx (((LPAPLRAT) lpMemRes)++,                 iRes, 1);
+                } // End FOR
             break;
 
         case ARRAY_VFP:
@@ -339,13 +359,25 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
             if (SIGN_APLINT (aplLongestRht))
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Initialize and save the value
                     mpfr_init_set_sx (((LPAPLVFP) lpMemRes)++, aplLongestRht + iRes, MPFR_RNDN);
+                } // End FOR
             else
                 // Loop through the result
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Initialize and save the value
                     mpfr_init_set_sx (((LPAPLVFP) lpMemRes)++,                 iRes, MPFR_RNDN);
+                } // End FOR
             break;
 
         defstop

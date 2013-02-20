@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -372,7 +372,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Initialize the common item rank
     aplRankCom = 0;
@@ -599,7 +599,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
         lpMemDimRes[uCom + aplRankRht] = lpMemDimCom[uCom];
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Handle prototypes
     if (IsEmpty (aplNELMRes))
@@ -636,7 +636,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     lpMemSub = MyGlobalLock (hGlbSub);
 
                     // Skip over the header and dimensions to the data
-                    lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+                    lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                     // Save first item as prototype
                     *((LPAPLNESTED) lpMemRes) = CopySymGlbInd_PTB (lpMemSub);
@@ -1744,7 +1744,7 @@ NORMAL_EXIT:
         *VarArrayBaseToDim (lpMemLft) = aplRankRes;
 
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, 1);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // Lock the memory to get a ptr to it
         lpMemAxis = MyGlobalLock (hGlbAxis);
@@ -2004,7 +2004,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
 
     // Skip over the header and dimensions
-    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    lpMemLft = VarArrayDataFmBase (lpMemLft);
 
     if (!PrimFnDydRightShoeGlbImm_EM (aplNELMLft,           // Left arg NELM
                                       lpMemLft,             // Ptr to left arg global memory
@@ -2340,10 +2340,13 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             // Lock the memory to get a ptr to it
             lpMemLft = MyGlobalLock (hGlbLft);
 
-            Assert (IsScalar (((LPVARARRAY_HEADER) lpMemLft)->Rank));
+            // If it's not a scalar/vector singleton, ...
+            if (IsMultiRank (((LPVARARRAY_HEADER) lpMemLft)->Rank)
+             || !IsSingleton (((LPVARARRAY_HEADER) lpMemLft)->NELM))
+                goto LENGTH_EXIT;
 
             // Skip over the header and dimensions to the data
-            lpMemLft = VarArrayBaseToData (lpMemLft, 0);
+            lpMemLft = VarArrayDataFmBase (lpMemLft);
 
             // Attempt to convert the RAT to an integer using System CT
             aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpMemLft, &bRet);
@@ -2357,10 +2360,13 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             // Lock the memory to get a ptr to it
             lpMemLft = MyGlobalLock (hGlbLft);
 
-            Assert (IsScalar (((LPVARARRAY_HEADER) lpMemLft)->Rank));
+            // If it's not a scalar/vector singleton, ...
+            if (IsMultiRank (((LPVARARRAY_HEADER) lpMemLft)->Rank)
+             || !IsSingleton (((LPVARARRAY_HEADER) lpMemLft)->NELM))
+                goto LENGTH_EXIT;
 
             // Skip over the header and dimensions to the data
-            lpMemLft = VarArrayBaseToData (lpMemLft, 0);
+            lpMemLft = VarArrayDataFmBase (lpMemLft);
 
             // Attempt to convert the VFP to an integer using System CT
             aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpMemLft, &bRet);
@@ -2497,7 +2503,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     lpMemLft = MyGlobalLock (hGlbLft);
 
     // Skip over the header and dimensions to the data
-    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    lpMemLft = VarArrayDataFmBase (lpMemLft);
 
     // Take into account nested prototypes
     if (IsNested (aplTypeLft))
@@ -2505,6 +2511,12 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     else
         aplNELMNstLft = aplNELMLft;
 
+    // If the left arg is empty, ...
+    if (IsEmpty (aplNELMLft))
+        // Get the attributes (Type, NELM, and Rank)
+        //   of the right arg global
+        AttrsOfGlb (hGlbRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+    else
     // Loop through the elements of the left arg
     //   reaching into the right arg
     for (uLft = 0; uLft < aplNELMNstLft; uLft++)
@@ -2530,7 +2542,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
         // Get the index value from the left arg
         GetNextValueGlb (hGlbLft,               // Left arg global memory handle
@@ -2571,7 +2583,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             lpMemSubLft = MyGlobalLock (hGlbSubLft);
 
             // Skip over the header and dimensions to the data
-            lpMemSubLft = VarArrayBaseToData (lpMemSubLft, aplRankSubLft);
+            lpMemSubLft = VarArrayDataFmBase (lpMemSubLft);
 
             // Initialize accumulator to identity element for addition
             aplLongestSubLft = 0;
@@ -2978,7 +2990,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     aplRankPrvRht = lpHeader->Rank;
 #undef  lpHeader
                     // Skip over the header and dimensions to the data
-                    lpMemPrvRht = VarArrayBaseToData (lpMemPrvRht, aplRankPrvRht);
+                    lpMemPrvRht = VarArrayDataFmBase (lpMemPrvRht);
 
                     // Save the new hGlbRht in the array from which we got it
                     //   (i.e., the <aplLongestPrvLft> entry in <hGlbPrvRht>)
@@ -2996,7 +3008,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 aplRankRht = lpHeader->Rank;
 #undef  lpHeader
                 // Skip over the header and dimensions to the data
-                lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+                lpMemRht = VarArrayDataFmBase (lpMemRht);
 
                 // Replace the <aplLongestSubLft> element in hGlbRht
                 //   with <aplLongestSet> or <hGlbSet> depending upon <aplTypeRht>
@@ -3028,7 +3040,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
             goto NORMAL_EXIT;
         } // End IF/ELSE
-    } // End FOR
+    } // End IF/ELSE/FOR
 
     // If we're not assigning a new value, ...
     if (!bArraySet)

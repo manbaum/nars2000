@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -486,6 +486,29 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     if (!IsVector (aplRankItm))
                         goto RANK_EXIT;
 
+                    // If the item is simple,
+                    //   and empty, ...
+                    if (IsSimple (aplTypeItm)
+                     && IsEmpty (aplNELMItm))
+                    {
+                        // If the list arg is not a singleton, ...
+                        if (!IsSingleton (aplNELMSub))
+                            goto INDEX_EXIT;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                        // Free the allocated memory
+                        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+
+                        Assert (hGlbNam NE NULL);
+
+                        // The result is the name arg
+                        hGlbRes = hGlbNam;
+                        DbgIncrRefCntDir_PTB (hGlbNam);
+
+                        goto YYALLOC_EXIT;
+                    } else
                     // If it's simple numeric and the name arg rank
                     //   matches the list arg subitem NELM,
                     //   use Scatter Index Reference; otherwise,
@@ -641,7 +664,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                 defstop
                     break;
             } // End FOR/SWITCH
-
+YYALLOC_EXIT:
             // Allocate a new YYRes
             lpYYRes = YYAlloc ();
 
@@ -3142,7 +3165,9 @@ UBOOL ArrayIndexSetSingLst_EM
         } // End FOR
     } else
     {
-        APLSTYPE aplTypeSet;
+        APLSTYPE  aplTypeSet,
+                  aplTypeSet2;
+        IMM_TYPES immTypeSet;
 
         //***************************************************************
         // From here on the singleton list arg is nested
@@ -3178,11 +3203,12 @@ UBOOL ArrayIndexSetSingLst_EM
         {
             // Get the next value from the right arg
             if (!IsSingleton (aplNELMRht))
-                GetNextItemMem (lpMemRht,                           // Ptr to right arg global memory data
-                                aplTypeRht,                         // Right arg storage type
-                                uRes,                               // Index into right arg
-                               &hGlbSubRht,                         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                               &aplLongestRht);                     // Ptr to result immediate value (may be NULL)
+                GetNextValueMemSub (lpMemRht,                           // Ptr to right arg global memory data
+                                    aplTypeRht,                         // Right arg storage type
+                                    uRes,                               // Index into right arg
+                                   &hGlbSubRht,                         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                   &aplLongestRht,                      // Ptr to result immediate value (may be NULL)
+                                   &immTypeSet);                        // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
             // Split cases based upon the list arg subitem ptr type
             switch (GetPtrTypeDir (((LPAPLHETERO) lpMemSubLst)[uRes]))
             {
@@ -3190,6 +3216,7 @@ UBOOL ArrayIndexSetSingLst_EM
                 HGLOBAL      hGlbSubLst2;
                 APLSTYPE     aplTypeSubLst2;
                 APLNELM      aplNELMSubLst2;
+                APLRANK      aplRankSubLst2;
 
                 case PTRTYPE_STCONST:
                     // Check for RANK ERROR
@@ -3221,8 +3248,30 @@ UBOOL ArrayIndexSetSingLst_EM
                     // Get the global memory handle
                     hGlbSubLst2 = ((LPAPLHETERO) lpMemSubLst)[uRes];
 
-                    AttrsOfGlb (hGlbSubLst2, &aplTypeSubLst2, &aplNELMSubLst2, NULL, NULL);
+                    AttrsOfGlb (hGlbSubLst2, &aplTypeSubLst2, &aplNELMSubLst2, &aplRankSubLst2, NULL);
 
+                    // If the global is an empty vector, ...
+                    if (IsVector (aplRankSubLst2)
+                     && IsEmpty  (aplNELMSubLst2))
+                    {
+                        // We no longer need this ptr
+                        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+
+                        // We no longer need this storage
+                        MyGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
+
+                        // If the list is a singleton, ...
+                        if (IsSingleton (aplNELMSubLst))
+                        {
+                            // Assign the right arg to the name
+                            if (AssignName_EM (lptkNamArg,
+                                               lptkRhtArg))
+                                goto NORMAL_EXIT;
+                            else
+                                goto ERROR_EXIT;
+                        } else
+                            goto INDEX_EXIT;
+                    } else
                     // Because of the way RightShoe works, if this global is simple
                     //   or global numeric and its NELM matches the rank of the name arg,
                     //   we need to enclose it first
@@ -3239,6 +3288,15 @@ UBOOL ArrayIndexSetSingLst_EM
                         YYFree (lpYYItm); lpYYItm = NULL;
                     } // End IF
 
+                    // If the item is immediate,
+                    //   and the parent is hetero, ...
+                    if (hGlbSubRht EQ NULL
+                     && IsSimpleHet (aplTypeSet))
+                        // Use the immediate type
+                        aplTypeSet2 = TranslateImmTypeToArrayType (immTypeSet);
+                    else
+                        aplTypeSet2 = aplTypeSet;
+
                     // Set the corresponding element of the result
                     // Note the args get switched between indexing and pick
                     lpYYItm =
@@ -3246,7 +3304,7 @@ UBOOL ArrayIndexSetSingLst_EM
                                                      *lphGlbRes,        // Right arg global memory handle
                                                       lptkFunc,         // Ptr to function token
                                                       TRUE,             // TRUE iff array assignment
-                                                      aplTypeSet,       // Set arg storage type
+                                                      aplTypeSet2,      // Set arg storage type
                                                       hGlbSubRht,       // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
                                                       aplLongestRht,    // Set arg immediate value
                                                       lpMemPTD);        // Ptr to PerTabData global memory
@@ -3374,16 +3432,62 @@ UBOOL ArrayIndexSetVector_EM
     UBOOL      bRet = TRUE;             // TRUE iff the result is valid
     APLLONGEST aplLongestSubLst;        // List arg subitem immediate value
     HGLOBAL    hGlbSubLst;              // Ptr to list arg subitem global memory handle/LPSYMENTRY
-    IMM_TYPES  immTypeRht;              // Right arg item immediate type
+    IMM_TYPES  immTypeRht,              // Right arg item immediate type
+               immTypeSubLst;           // List arg subitem immediate type
     LPSYMENTRY lpSymTmp;                // Ptr to temporary LPSYMENTRY
 
     // Get next index from global memory
-    GetNextItemMem (lpMemSubLst,        // Ptr to item global memory data
-                    aplTypeSubLst,      // Item storage type
-                    uRes,               // Index into item
-                   &hGlbSubLst,         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                   &aplLongestSubLst);  // Ptr to result immediate value (may be NULL)
+    GetNextValueMem (lpMemSubLst,       // Ptr to item global memory data
+                     aplTypeSubLst,     // Item storage type
+                     uRes,              // Index into item
+                    &hGlbSubLst,        // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                    &aplLongestSubLst,  // Ptr to result immediate value (may be NULL)
+                    &immTypeSubLst);    // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
     // Check for DOMAIN ERROR
+    if (!IsImmErr (immTypeSubLst))
+    {
+        // Split cases based upon the list arg subitem immediate type
+        switch (immTypeSubLst)
+        {
+            case IMMTYPE_BOOL:
+                aplLongestSubLst &= BIT0;
+
+                break;
+
+            case IMMTYPE_INT:
+                break;
+
+            case IMMTYPE_FLOAT:
+                // Attempt to convert the float to an integer using System CT
+                aplLongestSubLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLst, &bRet);
+                if (bRet)
+                    break;
+
+                // Fall through to common DOMAIN ERROR code
+
+            case IMMTYPE_CHAR:
+                goto DOMAIN_EXIT;
+
+            case IMMTYPE_RAT:
+                 // Attempt to convert the RAT to an integer using System CT
+                 aplLongestSubLst = mpq_get_ctsa ((LPAPLRAT) hGlbSubLst, &bRet);
+
+                 if (!bRet)
+                     goto DOMAIN_EXIT;
+                 break;
+
+            case IMMTYPE_VFP:
+                // Attempt to convert the VFP to an integer using System CT
+                aplLongestSubLst = mpfr_get_ctsa ((LPAPLVFP) hGlbSubLst, &bRet);
+
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
     // Split cases based upon the list arg subitem storage type
     switch (aplTypeSubLst)
     {

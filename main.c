@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -943,6 +943,44 @@ void CreateNewFontSM
                       &tmSM,
                       &GetFSDirAveCharSize (FONTENUM_SM)->cx,
                       &GetFSDirAveCharSize (FONTENUM_SM)->cy);
+    // If we're applying, ...
+    if (bApply)
+    {
+#define TXTLEN  100
+
+        HDC   hDC;
+        WCHAR wszTemp[TXTLEN + 1];
+        SIZE  sz;
+
+        // The following code is necessary as the code in CreateNewFontCom
+        //   doesn't always calculate the correct average char width.
+        // ***FIXME*** I don't understand why, but this corrects it.
+
+        // Get a DC for the Session Manager
+        hDC = MyGetDC (HWND_DESKTOP);
+
+        // Set the font
+        SelectObject (hDC, hFontSM);
+
+        // Set the mapping mode
+        SetMapMode (hDC, MM_TEXT);
+
+        // Fill the temp string with Quads
+        FillMemoryW (wszTemp, TXTLEN, UTF16_QUAD);
+
+        // Terminate it
+        wszTemp[TXTLEN] = WC_EOS;
+
+        // Get the size in pixels of TXTLEN Quads
+        GetTextExtentPoint32W (hDC, wszTemp, TXTLEN, &sz);
+
+        // Save as the "new" average char width of this font
+        GetFSDirAveCharSize (FONTENUM_SM)->cx = sz.cx / TXTLEN;
+
+        // We no longer need this resource
+        MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
+    } // End IF
+
     // Change the font name in the ComboBox in the Font Window
     InitFontName ();
 

@@ -1340,6 +1340,7 @@ LPAPLCHAR CompileArrHetero
     LPAPLCHAR   lpwszOut;       // Ptr to output buffer
     LPWCHAR     lpwsz;          // ...
     LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to current FMTROWSTR
+    APLSTYPE    aplTypeItm;     // Item's array storage type
     IMM_TYPES   immTypeCur,     // Current immediate type
                 immTypeLst;     // Last    ...
 
@@ -1384,10 +1385,28 @@ LPAPLCHAR CompileArrHetero
         // Loop through the cols
         for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
         {
+            // Split cases based upon the ptr type bits
+            switch (GetPtrTypeInd (lpMem))
+            {
+                case PTRTYPE_STCONST:
 #define lpSymEntry      ((LPAPLHETERO) lpMem)
+                    // Save the immediate type
+                    immTypeCur = (*lpSymEntry)->stFlags.ImmType;
 
-            // Save the immediate type
-            immTypeCur = (*lpSymEntry)->stFlags.ImmType;
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    // Get the attributes of the global memory handle
+                    AttrsOfGlb (*(HGLOBAL *) lpMem, &aplTypeItm, NULL, NULL, NULL);
+
+                    // Save the immediate type
+                    immTypeCur = TranslateArrayTypeToImmType (aplTypeItm);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
 
             // Set column type
             lpFmtColStr[aplDimCol].colType =

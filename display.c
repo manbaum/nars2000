@@ -342,7 +342,7 @@ UBOOL DisplayGlbArr_EM
         lpMemDim = VarArrayBaseToDim (lpMem);
 
         // Skip over the header and dimension to the data
-        lpMem = VarArrayBaseToData (lpMem, aplRank);
+        lpMem = VarArrayDataFmBase (lpMem);
 
         // Get the # columns
         if (IsScalar (aplRank))
@@ -926,6 +926,19 @@ LPAPLCHAR FormatImmed
                            0);                        // Use default significant digits
             break;
 
+        case IMMTYPE_RAT:
+            lpaplChar =
+              FormatAplRat (lpaplChar,      // Ptr to output save area
+                *(LPAPLRAT) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // The value to format
+            break;
+
+        case IMMTYPE_VFP:
+            lpaplChar =
+              FormatAplVfp (lpaplChar,      // Ptr to output save area
+                *(LPAPLVFP) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),  // The value to format
+                            GetQuadPPV ()); // Use this many significant digits for VFP
+            break;
+
         case IMMTYPE_ERROR:
             Assert (GetPtrTypeDir (lpaplLongest) EQ PTRTYPE_HGLOBAL);
 
@@ -933,7 +946,7 @@ LPAPLCHAR FormatImmed
             lpMemHdr = MyGlobalLock (lpaplLongest);
 
             // Skip over the header and dimensions to the data
-            lpMemGlbNum = VarArrayBaseToData (lpMemHdr, 0);
+            lpMemGlbNum = VarArrayDataFmBase (lpMemHdr);
 
             // Split cases based upon the storage type
             switch (lpMemHdr->ArrType)
@@ -2651,7 +2664,7 @@ APLCHAR GetQuadFCValue
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemQuadFC = VarArrayBaseToData (lpMemQuadFC, aplRankQuadFC);
+    lpMemQuadFC = VarArrayDataFmBase (lpMemQuadFC);
 
     // Check for short []FC
     if (uIndex >= aplNELMQuadFC)
@@ -2703,7 +2716,7 @@ APLINT GetQuadICValue
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemQuadIC = VarArrayBaseToData (lpMemQuadIC, aplRankQuadIC);
+    lpMemQuadIC = VarArrayDataFmBase (lpMemQuadIC);
 
     // Check for short []IC
     if (uIndex >= aplNELMQuadIC)

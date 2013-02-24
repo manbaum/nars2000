@@ -1,6 +1,18 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #1038 -- Version 0.3.8.xx
+-------------------------------
+
+* Fix Bug In DownShoe (Unique)
+
+Directory trunk:
+
+PF_DSHOE.C:
+  Update copyright year.
+  Fix Bug:  The unique function fails on global numeric scalars.
+
+
 Build #1037 -- Version 0.3.8.xx
 -------------------------------
 

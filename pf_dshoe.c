@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -234,11 +234,11 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
         lpMemHdrRht = lpMemRht;
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     } // End IF
 
-    // If the right arg is an immediate or an APA with a zero multiplier, ...
-    if (hGlbRht EQ NULL
+    // If the right arg is a scalar or an APA with a zero multiplier, ...
+    if (IsScalar (aplRankRht)
      || (IsSimpleAPA (aplTypeRht)
       && ((LPAPLAPA) lpMemRht)->Mul EQ 0))
     {
@@ -250,11 +250,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
         else
             aplTypeRes = aplTypeRht;
 
-        // Mark as one-element
-        aplNELMRes = 1;
-
         // Calculate space needed for the result
-        ByteRes = CalcArraySize (aplTypeRht, aplNELMRes, 1);
+        ByteRes = CalcArraySize (aplTypeRht, 1, 1);
 
         // Check for overflow
         if (ByteRes NE (APLU3264) ByteRes)
@@ -277,15 +274,15 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 ////////lpHeader->PV0        = FALSE;           // Already zero from GHND
 ////////lpHeader->PV1        = FALSE;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
-        lpHeader->NELM       = aplNELMRes;
+        lpHeader->NELM       = 1;
         lpHeader->Rank       = 1;
 #undef  lpHeader
 
         // Save the dimension in the result
-        *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+        *VarArrayBaseToDim (lpMemRes) = 1;
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Split cases based upon the right arg storage type
         switch (aplTypeRht)
@@ -311,6 +308,22 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
                 break;
 
+            case ARRAY_RAT:
+                mpq_init_set ((LPAPLRAT) lpMemRes, (LPAPLRAT) lpMemRht);
+
+                break;
+
+            case ARRAY_VFP:
+                mpfr_init_set ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemRht, MPFR_RNDN);
+
+                break;
+
+            case ARRAY_NESTED:
+                *((LPAPLNESTED) lpMemRes) = CopySymGlbInd_PTB (lpMemRht);
+
+                break;
+
+            case ARRAY_HETERO:      // No such thing as a salar hetero array
             defstop
                 break;
         } // End SWITCH
@@ -399,7 +412,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
             // Skip over the header and dimensions to the data
-            lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+            lpMemRes = VarArrayDataFmBase (lpMemRes);
 
             if (aplNELMRes)
                 *((LPAPLBOOL) lpMemRes) = (APLBOOL) aplLongestRht;
@@ -469,7 +482,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             lpMemGup = MyGlobalLock (hGlbGup);
 
             // Skip over the header and dimensions to the data
-            lpMemGup = VarArrayBaseToData (lpMemGup, 1);
+            lpMemGup = VarArrayDataFmBase (lpMemGup);
 
             // Split cases based upon the right arg storage type
             switch (aplTypeRht)
@@ -626,7 +639,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             *VarArrayBaseToDim (lpMemTmp) = aplNELMRes;
 
             // Skip over the header and dimensions to the data
-            lpMemTmp = VarArrayBaseToData (lpMemTmp, 1);
+            lpMemTmp = VarArrayDataFmBase (lpMemTmp);
 
             // Copy the data from lpMemGup to lpMemTmp
             CopyMemory (lpMemTmp, lpMemGup, (APLU3264) aplNELMRes * sizeof (APLINT));
@@ -669,7 +682,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             lpMemGup = MyGlobalLock (hGlbGup);
 
             // Skip over the header and dimensions to the data
-            lpMemGup = VarArrayBaseToData (lpMemGup, 1);
+            lpMemGup = VarArrayDataFmBase (lpMemGup);
 
             // Calculate space needed for the result
             ByteRes = CalcArraySize (aplTypeRht, aplNELMRes, 1);
@@ -702,7 +715,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
             // Skip over the header and dimensions to the data
-            lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+            lpMemRes = VarArrayDataFmBase (lpMemRes);
 
             // Split cases based upon the right arg storage type
             switch (aplTypeRht)

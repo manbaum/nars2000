@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1454,7 +1454,8 @@ UBOOL CS_SELECT_Stmt_EM
                                              tdSOS.Next.uLineNum,   // Function line #
                                              tdSOS.Next.uTknNum,    // Starting token # in the above function line
                                              TRUE,                  // TRUE iff we should act on errors
-                                             TRUE);                 // TRUE iff executing only one stmt
+                                             TRUE,                  // TRUE iff executing only one stmt
+                                             FALSE);                // TRUE iff we're to skip the depth check
                 // If the offset from dfn header to tokenized line header is valid, ...
                 if (offTknHdr)
                 {
@@ -1529,6 +1530,7 @@ UBOOL CS_SELECT_Stmt_EM
                         break;
 
                     case EXITTYPE_ERROR:
+                    case EXITTYPE_STACK_FULL:
                         return FALSE;
 
                     case EXITTYPE_GOTO_ZILDE:

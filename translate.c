@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -732,6 +732,7 @@ UINT TranslateExitTypeToReturnCode
             return EC_RETCODE_GOTO_LINE;
 
         case EXITTYPE_ERROR:
+        case EXITTYPE_STACK_FULL:
         case EXITTYPE_QUADERROR_INIT:
             return EC_RETCODE_ERROR;
 

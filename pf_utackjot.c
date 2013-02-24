@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -361,6 +361,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
                                    lpwszCompLine,   // Ptr to text of line to execute
                                    aplNELMComp,     // Length of the line to execute
                                    bActOnErrors,    // TRUE iff we should act on errors
+                                   FALSE,           // TRUE iff we're to skip the depth check
                                    lptkFunc);       // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)
@@ -404,6 +405,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
             // Fall through to error code
 
         case EXITTYPE_ERROR:
+        case EXITTYPE_STACK_FULL:
         case EXITTYPE_RETURNxLX:
             // Mark as in error
             lpYYRes = NULL;
@@ -449,6 +451,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
      LPAPLCHAR    lpwszCompLine,        // Ptr to text of line to execute
      APLNELM      aplNELMComp,          // Length of the line to execute
      UBOOL        bActOnErrors,         // TRUE iff we should act on errors
+     UBOOL        bNoDepthCheck,        // TRUE iff we're to skip the depth check
      LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
@@ -522,7 +525,8 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
                                  1,                 // Function line # (1 for execute or immexec)
                                  0,                 // Starting token # in the above function line
                                  bActOnErrors,      // TRUE iff we should act on errors
-                                 FALSE);            // TRUE iff executing only one stmt
+                                 FALSE,             // TRUE iff executing only one stmt
+                                 bNoDepthCheck);    // TRUE iff we're to skip the depth check
     // Untokenize the temporary line and free its memory
     Untokenize (lpMemTknHdr);
 
@@ -566,7 +570,8 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
      UINT           uLineNum,           // Function line #
      UINT           uTknNum,            // Starting token # in the above function line
      UBOOL          bActOnErrors,       // TRUE iff we should act on errors
-     UBOOL          bExec1Stmt)         // TRUE iff executing only one stmt
+     UBOOL          bExec1Stmt,         // TRUE iff executing only one stmt
+     UBOOL          bNoDepthCheck)      // TRUE iff we're to skip the depth check
 
 {
     EXIT_TYPES    exitType;             // Return code from ParseLine
@@ -591,7 +596,8 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
                  uTknNum,               // Starting token # in the above function line
                  NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
                  bActOnErrors,          // TRUE iff errors are acted upon
-                 bExec1Stmt);           // TRUE iff executing only one stmt
+                 bExec1Stmt,            // TRUE iff executing only one stmt
+                 bNoDepthCheck);        // TRUE iff we're to skip the depth check
     // Get this thread's LocalVars ptr
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
@@ -619,6 +625,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
         case EXITTYPE_QUADERROR_INIT:
         case EXITTYPE_QUADERROR_EXEC:
         case EXITTYPE_ERROR:
+        case EXITTYPE_STACK_FULL:
         case EXITTYPE_STOP:
         case EXITTYPE_DISPLAY:
         case EXITTYPE_NOVALUE:

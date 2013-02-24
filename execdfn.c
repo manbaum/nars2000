@@ -884,7 +884,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                      uTknNum,               // Starting token # in the above function line
                      hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
                      TRUE,                  // TRUE iff errors are acted upon
-                     FALSE);                // TRUE iff executing only one stmt
+                     FALSE,                 // TRUE iff executing only one stmt
+                     FALSE);                // TRUE iff we're to skip the depth check
         // If line monitoring is enabled, stop it for this line
         if (lpMemDfnHdr->MonOn)
             StartStopMonInfo (lpMemDfnHdr, uLineNum, FALSE);
@@ -985,6 +986,7 @@ NEXTLINE:
         case EXITTYPE_QUADERROR_INIT:
         case EXITTYPE_QUADERROR_EXEC:
         case EXITTYPE_ERROR:
+        case EXITTYPE_STACK_FULL:
         case EXITTYPE_STOP:
         case EXITTYPE_DISPLAY:
         case EXITTYPE_NODISPLAY:
@@ -1022,7 +1024,8 @@ NEXTLINE:
                              0,                         // Starting token # in the above function line
                              hGlbDfnHdr,                // User-defined function/operator global memory handle (NULL = execute/immexec)
                              TRUE,                      // TRUE iff errors are acted upon
-                             FALSE);                    // TRUE iff executing only one stmt
+                             FALSE,                     // TRUE iff executing only one stmt
+                             FALSE);                    // TRUE iff we're to skip the depth check
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@
 ////lpMemPTD->hExitphore    = NULL;
 ////lpMemPTD->hWndFENxt     = NULL;
 ////lpMemPTD->EventType     = EVENTTYPE_NOERROR;
+////lpMemPTD->uExecDepth    = 0;
 
 #define DESTROY_PERTABVARS                          \
     gmp_randclear (lpMemPTD->randState);            \
@@ -115,6 +116,7 @@ typedef struct tagPERTABDATA
                  lpwszBaseTemp,             // Ptr to base of lpwszTemp
                  lpwszTemp;                 // Ptr to temporary  ...
     UINT         uTempMaxSize,              // Maximum size of lpwszTemp
+                 uExecDepth,                // Execution depth
                  uErrLine;                  // Error line # from []FX for )IN
     APLU3264     RegisterEBP;               // Register EBP/RBP from an exception
     LPTOKEN      lptkCSIni,                 // Ptr to start of CtrlStruc token stack (static)

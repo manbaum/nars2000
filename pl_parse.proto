@@ -1,5 +1,5 @@
 int pl_yyparse (LPPLLOCALVARS lpplLocalVars);
-EXIT_TYPES ParseLine (HWND hWndSM, LPTOKEN_HEADER lpMemTknHdr, HGLOBAL hGlbTxtLine, LPWCHAR lpwszLine, LPPERTABDATA lpMemPTD, UINT uLineNum, UINT uTknNum, HGLOBAL hGlbDfnHdr, UBOOL bActOnErrors, UBOOL bExec1Stmt);
+EXIT_TYPES ParseLine (HWND hWndSM, LPTOKEN_HEADER lpMemTknHdr, HGLOBAL hGlbTxtLine, LPWCHAR lpwszLine, LPPERTABDATA lpMemPTD, UINT uLineNum, UINT uTknNum, HGLOBAL hGlbDfnHdr, UBOOL bActOnErrors, UBOOL bExec1Stmt, UBOOL bNoDepthCheck);
 char SymbTypeVFO (LPTOKEN lptkNext);
 char LookaheadSurround (LPPLLOCALVARS lpplLocalVars);
 char LookaheadAdjacent (LPPLLOCALVARS lpplLocalVars, UBOOL bSkipBrackets, UBOOL bCheckLeft);

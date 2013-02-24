@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,8 @@ in the lexical analyser (pl_yylex).
 #define   DIRECT    FALSE           // Flags for PushFcnStrand_YY
 #define INDIRECT    TRUE            // ...
 
+#define DEF_MAX_EXEC_DEPTH      70  // Maximum execution depth
+
 ////#define YYLEX_DEBUG
 ////#define YYFPRINTF_DEBUG
 
@@ -73,7 +75,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 #define yydestruct              pl_yydestruct
 
 #define YYERROR2        {lpplLocalVars->bYYERROR = TRUE; YYERROR;}
-#define YYERROR3        {lpplLocalVars->ExitType = EXITTYPE_ERROR; YYERROR2;}
+#define YYERROR3        {if (lpplLocalVars->ExitType NE EXITTYPE_STACK_FULL) lpplLocalVars->ExitType = EXITTYPE_ERROR; YYERROR2;}
 
 ////#define DbgMsgWP(a)         DbgMsgW2 (lpplLocalVars->bLookAhead ? L"==" a : a)
 ////#define DbgMsgWP(a)         DbgMsgW  (lpplLocalVars->bLookAhead ? L"==" a : a); DbgBrk ()
@@ -901,6 +903,7 @@ StmtSing:
                                                          YYACCEPT;          // Stop executing this line
 
                                                  case EXITTYPE_ERROR:       // Error
+                                                 case EXITTYPE_STACK_FULL:  // ...
                                                      YYERROR3               // Stop on error
 
                                                  defstop
@@ -7431,27 +7434,32 @@ IndexListWE2:
 #endif
 
 EXIT_TYPES ParseLine
-    (HWND           hWndSM,             // Session Manager window handle
-     LPTOKEN_HEADER lpMemTknHdr,        // Ptr to tokenized line global memory header
-     HGLOBAL        hGlbTxtLine,        // Text of tokenized line global memory handle
-     LPWCHAR        lpwszLine,          // Ptr to the line text (may be NULL)
-     LPPERTABDATA   lpMemPTD,           // Ptr to PerTabData global memory
-     UINT           uLineNum,           // Function line #
-     UINT           uTknNum,            // Starting token # in the above function line
-     HGLOBAL        hGlbDfnHdr,         // User-defined function/operator global memory handle (NULL = execute/immexec)
-     UBOOL          bActOnErrors,       // TRUE iff errors are acted upon
-     UBOOL          bExec1Stmt)         // TRUE iff executing only one stmt
+    (HWND           hWndSM,                 // Session Manager window handle
+     LPTOKEN_HEADER lpMemTknHdr,            // Ptr to tokenized line global memory header
+     HGLOBAL        hGlbTxtLine,            // Text of tokenized line global memory handle
+     LPWCHAR        lpwszLine,              // Ptr to the line text (may be NULL)
+     LPPERTABDATA   lpMemPTD,               // Ptr to PerTabData global memory
+     UINT           uLineNum,               // Function line #
+     UINT           uTknNum,                // Starting token # in the above function line
+     HGLOBAL        hGlbDfnHdr,             // User-defined function/operator global memory handle (NULL = execute/immexec)
+     UBOOL          bActOnErrors,           // TRUE iff errors are acted upon
+     UBOOL          bExec1Stmt,             // TRUE iff executing only one stmt
+     UBOOL          bNoDepthCheck)          // TRUE iff we're to skip the depth check
 
 {
-    PLLOCALVARS   plLocalVars = {0};    // ParseLine local vars
-    LPPLLOCALVARS oldTlsPlLocalVars;    // Ptr to previous value of dwTlsPlLocalVars
-    UINT          oldTlsType,           // Previous value of dwTlsType
-                  uRet;                 // The result from pl_yyparse
-    ERROR_CODES   uError;               // Error code
-    UBOOL         bOldExecuting;        // Old value of bExecuting
-    HWND          hWndEC;               // Edit Ctrl window handle
-    LPSIS_HEADER  lpSISCur,             // Ptr to current SI Stack Header
-                  lpSISPrv;             // Ptr to previous ...
+    PLLOCALVARS   plLocalVars = {0};        // ParseLine local vars
+    LPPLLOCALVARS oldTlsPlLocalVars;        // Ptr to previous value of dwTlsPlLocalVars
+    UINT          oldTlsType,               // Previous value of dwTlsType
+                  uRet;                     // The result from pl_yyparse
+    ERROR_CODES   uError = ERRORCODE_NONE;  // Error code
+    UBOOL         bOldExecuting;            // Old value of bExecuting
+    HWND          hWndEC;                   // Edit Ctrl window handle
+    LPSIS_HEADER  lpSISCur,                 // Ptr to current SI Stack Header
+                  lpSISPrv;                 // Ptr to previous ...
+
+    // If we're in too deep, ...
+    if (!bNoDepthCheck && lpMemPTD->uExecDepth >= DEF_MAX_EXEC_DEPTH)
+        goto STKFULL_EXIT;
 
     // Save the previous value of dwTlsType
     oldTlsType = PtrToUlong (TlsGetValue (dwTlsType));
@@ -7477,6 +7485,9 @@ EXIT_TYPES ParseLine
     bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
 
     EnterCriticalSection (&CSOPL);
+
+    // Increment the depth counter
+    lpMemPTD->uExecDepth++;
 
     // Link this plLocalVars into the chain of such objects
     plLocalVars.lpPLPrev = lpMemPTD->lpPLCur;
@@ -7622,6 +7633,17 @@ EXIT_TYPES ParseLine
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
+            case EXCEPTION_STACK_FULL:
+                // Set the exit type
+                plLocalVars.ExitType = EXITTYPE_ERROR;
+
+                // Mark as in error
+                uRet = 1;
+                uError = ERRORCODE_DM;
+                ErrorMessageIndirectToken (ERRMSG_STACK_FULL APPEND_NAME,
+                                           NULL);
+                break;
+
             case EXCEPTION_STACK_OVERFLOW:
                 // Set the exit type
                 plLocalVars.ExitType = EXITTYPE_ERROR;
@@ -7708,8 +7730,16 @@ EXIT_TYPES ParseLine
             // Fall through to common code
 
         case EXITTYPE_ERROR:        // Mark user-defined function/operator as suspended
-        case EXITTYPE_STOP:
-        {
+        case EXITTYPE_STACK_FULL:   // ...
+        case EXITTYPE_STOP:         // ...
+            // If it's STACK FULL, ...
+            if (plLocalVars.ExitType EQ EXITTYPE_STACK_FULL)
+            {
+                uError = ERRORCODE_DM;
+                ErrorMessageIndirectToken (ERRMSG_STACK_FULL APPEND_NAME,
+                                           NULL);
+            } // End IF
+
             // Get a ptr to the current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
 
@@ -7741,7 +7771,6 @@ EXIT_TYPES ParseLine
               || lpSISCur->DfnType EQ DFNTYPE_FCN))
                 lpSISCur->Suspended = TRUE;
             break;
-        } // End EXITTYPE_ERROR
 
         case EXITTYPE_DISPLAY:      // Nothing more to do with these types
         case EXITTYPE_NODISPLAY:    // ...
@@ -7820,8 +7849,10 @@ EXIT_TYPES ParseLine
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
         } // End IF/ELSE
 
-        // Mark as in error
-        uError = ERRORCODE_ELX;
+        // If not already set, ...
+        if (uError EQ ERRORCODE_NONE)
+            // Mark as in error
+            uError = ERRORCODE_ELX;
     } // End IF
 NORMAL_EXIT:
     EnterCriticalSection (&CSOPL);
@@ -7846,14 +7877,27 @@ NORMAL_EXIT:
         EXIT_TYPES exitType;        // Return code from ImmExecStmt
 
 #ifdef DEBUG
-        if (uError EQ ERRORCODE_ELX)
+        // Split cases based upon the error code
+        switch (uError)
         {
-            DbgMsgW2 (L"~~Start []ELX on");
-        } else
-        {
-            DbgMsgW2 (L"~~Start []ALX on");
-        } // End IF/ELSE -- DO NOT REMOVE as the DbgMsgW2 macro needs
-        //                  this because of the trailing semicolon
+            case ERRORCODE_ALX:
+                DbgMsgW2 (L"~~Start []ALX on");
+
+                break;
+
+            case ERRORCODE_ELX:
+                DbgMsgW2 (L"~~Start []ELX on");
+
+                break;
+
+            case ERRORCODE_DM:
+                DbgMsgW2 (L"~~Display []DM on");
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         if (lpwszLine)
         {
@@ -7873,19 +7917,40 @@ NORMAL_EXIT:
         } // End IF/ELSE
 #endif
         // Set the text for the line
-        if (uError EQ ERRORCODE_ELX)
-            lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX";
-        else
-            lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ALX";
+        // Split cases based upon the error code
+        switch (uError)
+        {
+            case ERRORCODE_ALX:
+                lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ALX";
+                bNoDepthCheck = FALSE;
+
+                break;
+
+            case ERRORCODE_ELX:
+                lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX";
+                bNoDepthCheck = FALSE;
+
+                break;
+
+            case ERRORCODE_DM:
+                lpwszLine = WS_UTF16_QUAD L"DM";
+                bNoDepthCheck = TRUE;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // Execute the statement
         exitType =
-          PrimFnMonUpTackJotCSPLParse (hWndEC,      // Edit Ctrl window handle
-                                       lpMemPTD,    // Ptr to PerTabData global memory
-                                       lpwszLine,   // Ptr to text of line to execute
+          PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
+                                       lpMemPTD,        // Ptr to PerTabData global memory
+                                       lpwszLine,       // Ptr to text of line to execute
                                        lstrlenW (lpwszLine), // Length of the line to execute
-                                       TRUE,        // TRUE iff we should act on errors
-                                       NULL);       // Ptr to function token
+                                       TRUE,            // TRUE iff we should act on errors
+                                       bNoDepthCheck,   // TRUE iff we're to skip the depth check
+                                       NULL);           // Ptr to function token
         // Split cases based upon the exit type
         switch (exitType)
         {
@@ -7916,6 +7981,7 @@ NORMAL_EXIT:
                 // Fall through to common code
 
             case EXITTYPE_ERROR:        // Display the prompt unless called by Quad or User fcn/opr
+            case EXITTYPE_STACK_FULL:   // ...
             case EXITTYPE_NOVALUE:      // ...
                 // Get the ptr to the current SIS header
                 lpSISPrv =
@@ -7941,17 +8007,17 @@ NORMAL_EXIT:
 
                     // Pass on this exit type to the caller
                     plLocalVars.ExitType = exitType;
-
-                    break;
+////////////////////
+////////////////////break;
                 } // End IF
 
-                // If this level or an adjacent preceding level is from
-                //   Execute or Immediate Execution Mode,
-                //   peel back to the preceding level
-                while (lpSISPrv
-                    && (lpSISPrv->DfnType EQ DFNTYPE_EXEC
-                     || lpSISPrv->DfnType EQ DFNTYPE_IMM))
-                    lpSISPrv = lpSISPrv->lpSISPrv;
+////////////////// If this level or an adjacent preceding level is from
+//////////////////   Execute or Immediate Execution Mode,
+//////////////////   peel back to the preceding level
+////////////////while (lpSISPrv
+////////////////    && (lpSISPrv->DfnType EQ DFNTYPE_EXEC
+////////////////     || lpSISPrv->DfnType EQ DFNTYPE_IMM))
+////////////////    lpSISPrv = lpSISPrv->lpSISPrv;
                 break;
 
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these
@@ -7969,9 +8035,15 @@ NORMAL_EXIT:
     // Restore the previous executing state
     lpMemPTD->bExecuting = bOldExecuting;
 
+    // Decrement the depth counter
+    lpMemPTD->uExecDepth--;
+
     DBGLEAVE;
 
     return plLocalVars.ExitType;
+
+STKFULL_EXIT:
+    return EXITTYPE_STACK_FULL;
 } // End ParseLine
 #undef  APPEND_NAME
 

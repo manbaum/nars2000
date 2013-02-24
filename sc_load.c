@@ -1944,6 +1944,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                              lpwLine,               // Ptr to text of line to execute
                                              lstrlenW (lpwLine),    // Length of the line to execute
                                              TRUE,                  // TRUE iff we should act on errors
+                                             FALSE,                 // TRUE iff we're to skip the depth check
                                              NULL);                 // Ptr to function token
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 

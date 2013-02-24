@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -509,7 +509,8 @@ DWORD WINAPI ImmExecStmtInThread
                      0,                     // Starting token # in the above function line
                      NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
                      bActOnErrors,          // TRUE iff errors are acted upon
-                     FALSE);                // TRUE iff executing only one stmt
+                     FALSE,                 // TRUE iff executing only one stmt
+                     FALSE);                // TRUE iff we're to skip the depth check
         // The matching <ForceSendCursorMsg (hWndEC, FALSE)> is
         //   in <DisplayPrompt>.
 
@@ -545,6 +546,7 @@ DWORD WINAPI ImmExecStmtInThread
                                                        EXEC_QUAD_ELX_TXT,                       // Ptr to text of line to execute
                                                        EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
                                                        TRUE,                                    // TRUE iff we should act on errors
+                                                       FALSE,                                   // TRUE iff we're to skip the depth check
                                                        NULL);                                   // Ptr to function token
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
@@ -586,6 +588,7 @@ DWORD WINAPI ImmExecStmtInThread
                                                    EXEC_QUAD_ELX_TXT,                       // Ptr to text of line to execute
                                                    EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
                                                    TRUE,                                    // TRUE iff we should act on errors
+                                                   FALSE,                                   // TRUE iff we're to skip the depth check
                                                    NULL);                                   // Ptr to function token
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
@@ -597,6 +600,7 @@ DWORD WINAPI ImmExecStmtInThread
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
             case EXITTYPE_NONE:         // ...
             case EXITTYPE_ERROR:        // ...
+            case EXITTYPE_STACK_FULL:   // ...
             case EXITTYPE_RETURNxLX:    // ...
                 break;
 
@@ -752,6 +756,7 @@ EXIT_TYPES ActOnError
                                    EXEC_QUAD_ELX_TXT,                       // Ptr to text of line to execute
                                    EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
                                    TRUE,                                    // TRUE iff we should act on errors
+                                   FALSE,                                   // TRUE iff we're to skip the depth check
                                    NULL);                                   // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)
@@ -760,6 +765,7 @@ EXIT_TYPES ActOnError
         case EXITTYPE_RESET_ALL:        // ...
         case EXITTYPE_RESET_ONE:        // ...
         case EXITTYPE_RESET_ONE_INIT:   // ...
+        case EXITTYPE_STACK_FULL:       // ...
             break;
 
         case EXITTYPE_NODISPLAY:        // Display the result (if any)

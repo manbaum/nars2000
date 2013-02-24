@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@
 #define ERRMSG_SI_DAMAGE                        L"SI DAMAGE"
 #define ERRMSG_SYMBOL_TABLE_FULL                L"SYMBOL TABLE FULL"
 #define ERRMSG_STACK_OVERFLOW                   L"STACK OVERFLOW"
+#define ERRMSG_STACK_FULL                       L"STACK FULL"
 #define ERRMSG_SYNTAX_ERROR                     L"SYNTAX ERROR"
 #define ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER  L"SYNTAX ERROR in function header, position %d -- function not saved"
 #define ERRMSG_SYNTAX_ERROR_IN_FUNCTION_LINE    L"SYNTAX ERROR in function line %d, position %d -- function not saved"

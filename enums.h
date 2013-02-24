@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -135,10 +135,13 @@ typedef enum tagEXCEPTION_CODES // Exception Codes
     EXCEPTION_NONCE_ERROR  ,    // 06:  Signal a NONCE ERROR
     EXCEPTION_WS_FULL      ,    // 07:  Signal a WS FULL
     EXCEPTION_CTRL_BREAK   ,    // 08:  Ctrl-Break pressed
+    EXCEPTION_STACK_FULL   ,    // 09:  Signal a STACK FULL
 } EXCEPTION_CODES;
 
 // If you change the above tagEXCEPTION_CODES enum, be sure
-//   to change <CheckException> in <except.c>.
+//   to change <CheckException> in <except.c>,
+//             <MyGetExceptionStr> in <except.c>,
+//             <ExceptNames> in <except.c>
 
 
 typedef enum tagMAKE_PROTO
@@ -165,16 +168,21 @@ typedef enum tagEXIT_TYPES
     EXITTYPE_NODISPLAY,         // 0B:  Value already displayed
     EXITTYPE_NOVALUE,           // 0C:  No value returned
     EXITTYPE_RETURNxLX,         // 0D:  Return from []ELX/[]ALX
-                                // 0E-0F:  Available entries (4 bits)
+    EXITTYPE_STACK_FULL,        // 0E:  ERROR -> STACK FULL
+                                // 0F-0F:  Available entries (4 bits)
 } EXIT_TYPES, *LPEXITTYPES;
 
 
 typedef enum tagERROR_CODES     // Error codes
 {
     ERRORCODE_NONE = 0,         // 00:  No error
-    ERRORCODE_ALX,              // 01:  Signal []ALX
-    ERRORCODE_ELX,              // 02:  Signal []ELX
+    ERRORCODE_ALX     ,         // 01:  Signal []ALX
+    ERRORCODE_ELX     ,         // 02:  Signal []ELX
+    ERRORCODE_DM      ,         // 03:  Display []DM
 } ERROR_CODES, *LPERROR_CODES;
+
+// If you change the above tagERROR_CODES enum, be sure
+//   to change SWITCH stmts in <ParseLine> in <pl_parse.y>
 
 
 typedef enum tagLINE_NUMS       // Starting line #s

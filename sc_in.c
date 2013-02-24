@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -405,6 +405,7 @@ UBOOL TransferInverseArr2_EM
                                        lpwName,             // Ptr to text of line to execute
                                        lstrlenW (lpwName),  // Length of the line to execute
                                        TRUE,                // TRUE iff we should act on errors
+                                       FALSE,               // TRUE iff we're to skip the depth check
                                        NULL);               // Ptr to function token
         // Split cases based upon the exit type
         switch (exitType)
@@ -424,6 +425,7 @@ UBOOL TransferInverseArr2_EM
                 break;
 
             case EXITTYPE_ERROR:
+            case EXITTYPE_STACK_FULL:
                 if (!lptkFunc)
                 {
                     // Display the leading part of the error message
@@ -549,6 +551,7 @@ UBOOL TransferInverseFcn2_EM
                                    lpwData,             // Ptr to text of line to execute
                                    lstrlenW (lpwData),  // Length of the line to execute
                                    TRUE,                // TRUE iff we should act on errors
+                                   FALSE,               // TRUE iff we're to skip the depth check
                                    NULL);               // Ptr to function token
     Assert (exitType EQ EXITTYPE_NODISPLAY
          || exitType EQ EXITTYPE_NOVALUE
@@ -1078,6 +1081,7 @@ UBOOL TransferInverseNum1_EM
                                        lpwName,             // Ptr to text of line to execute
                                        lstrlenW (lpwName),  // Length of the line to execute
                                        TRUE,                // TRUE iff we should act on errors
+                                       FALSE,               // TRUE iff we're to skip the depth check
                                        NULL);               // Ptr to function token
         Assert (exitType EQ EXITTYPE_NODISPLAY
              || exitType EQ EXITTYPE_ERROR);

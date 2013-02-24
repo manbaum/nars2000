@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -388,6 +388,7 @@
 #define IsImmRat(a)                 ((a) EQ IMMTYPE_RAT)
 #define IsImmVfp(a)                 ((a) EQ IMMTYPE_VFP)
 #define IsImmGlbNum(a)              (IsImmRat (a) || IsImmVfp (a))
+#define IsImmErr(a)                 ((a) EQ IMMTYPE_ERROR)
 
 // The enum NAME_TYPES in <symtab.h> is constructed to allow
 //  the following macros to be used.

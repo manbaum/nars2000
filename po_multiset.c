@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2416,7 +2416,7 @@ static APLCHAR DydHeaderMMUL[] =
 
 static APLCHAR DydLineMMUL1[] =
   $QUAD_MS L":"
-  L"Z" $IS $NEG L"2-/" $IOTAUND L"1,(2" $NE L"/R[" $GUP L"R" $IOTA L"R]),1"
+  L"Z" $IS $NEG L"2-/" $IOTAUND L"1,(2" $NE L"/R[" $GUP L"(1/R)" $IOTA L"R]),1"
        $DIAMOND $GOTO L"0";
 
 static APLCHAR DydLineMMUL2[] =

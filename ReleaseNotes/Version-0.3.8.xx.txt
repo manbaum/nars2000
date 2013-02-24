@@ -1,6 +1,17 @@
 Version 0.3.8.xx consists of the following Builds:
 
 
+Build #1035 -- Version 0.3.8.xx
+-------------------------------
+
+* Fix Bug Passing Global Numeric Array to UDFO Argument List
+
+Directory trunk:
+
+EXECDFN.C:
+  Fix Bug:  In a UDFO, passing a global numeric array to a argument list isn't handled.
+
+
 Build #1034 -- Version 0.3.8.xx
 -------------------------------
 
@@ -171,7 +182,7 @@ Build #1024 -- Version 0.3.8.xx
 Directory trunk:
 
 SC_LIB.C:
-  In <CmdLibCom_EM>, a global variable may be overwritten during
+  In <CmdLibCom_EM>, the global variable <lpwszTemp> may be overwritten during
     processing which causes some entries to be omitted.
 
 

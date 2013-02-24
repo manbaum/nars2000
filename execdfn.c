@@ -466,18 +466,20 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     LocalizeAll (lpMemPTD, lpMemDfnHdr);
 
     // Setup the left arg STEs
-    InitVarSTEs (lptkLftTmp,
-                 lpMemDfnHdr->numLftArgSTE,
-                 (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE));
+    if (!InitVarSTEs (lptkLftTmp,
+                      lpMemDfnHdr->numLftArgSTE,
+                      (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE)))
+        goto WSFULL_EXIT;
     // Setup the left operand STE
     if (lpYYFcnTmpLft
      && lpYYFcnTmpLft->tkToken.tkFlags.TknType NE TKT_FILLJOT)
     {
         // Split cases based upon fcn vs. var
         if (!IsTknFcnOpr (&lpYYFcnTmpLft->tkToken))
-            InitVarSTEs (&lpYYFcnTmpLft->tkToken,
-                          lpMemDfnHdr->steLftOpr NE NULL,
-                         &lpMemDfnHdr->steLftOpr);
+            if (!InitVarSTEs (&lpYYFcnTmpLft->tkToken,
+                               lpMemDfnHdr->steLftOpr NE NULL,
+                              &lpMemDfnHdr->steLftOpr))
+                goto WSFULL_EXIT;
         else
         if (!InitFcnSTEs (lpYYFcnTmpLft,
                           lpMemDfnHdr->steLftOpr NE NULL,
@@ -486,18 +488,20 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     } // End IF
 
     // Setup the axis operand STE
-    InitVarSTEs (lptkAxis,
-                 lpMemDfnHdr->steAxisOpr NE NULL,
-                &lpMemDfnHdr->steAxisOpr);
+    if (!InitVarSTEs (lptkAxis,
+                      lpMemDfnHdr->steAxisOpr NE NULL,
+                     &lpMemDfnHdr->steAxisOpr))
+        goto WSFULL_EXIT;
     // Setup the right operand STE
     if (lpYYFcnTmpRht
      && lpYYFcnTmpRht->tkToken.tkFlags.TknType NE TKT_FILLJOT)
     {
         // Split cases based upon fcn vs. var
         if (!IsTknFcnOpr (&lpYYFcnTmpRht->tkToken))
-            InitVarSTEs (&lpYYFcnTmpRht->tkToken,
-                          lpMemDfnHdr->steRhtOpr NE NULL,
-                         &lpMemDfnHdr->steRhtOpr);
+            if (!InitVarSTEs (&lpYYFcnTmpRht->tkToken,
+                               lpMemDfnHdr->steRhtOpr NE NULL,
+                              &lpMemDfnHdr->steRhtOpr))
+            goto WSFULL_EXIT;
         else
         if (!InitFcnSTEs (lpYYFcnTmpRht,
                           lpMemDfnHdr->steRhtOpr NE NULL,
@@ -506,9 +510,10 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     } // End IF
 
     // Setup the right arg STEs
-    InitVarSTEs (lptkRhtTmp,
-                 lpMemDfnHdr->numRhtArgSTE,
-                 (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE));
+    if (!InitVarSTEs (lptkRhtTmp,
+                      lpMemDfnHdr->numRhtArgSTE,
+                      (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE)))
+        goto WSFULL_EXIT;
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
@@ -568,6 +573,11 @@ AXIS_SYNTAX_EXIT:
 
 RIGHT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStr->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                               &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
 
@@ -1145,7 +1155,7 @@ NEXTLINE:
             *VarArrayBaseToDim (lpMemRes) = numResultSTE;
 
             // Skip over the header and dimension
-            lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+            lpMemRes = VarArrayDataFmBase (lpMemRes);
 
             // Fill in the result
             for (numRes = 0; numRes < numResultSTE; numRes++)
@@ -1646,7 +1656,7 @@ LPSYMENTRY LocalizeLabels
 //  Initialize variable arg STEs
 //***************************************************************************
 
-void InitVarSTEs
+UBOOL InitVarSTEs
     (LPTOKEN      lptkArg,      // Ptr to variable token
      UINT         numArgSTE,    // # STEs to initialize
      LPSYMENTRY  *lplpSymEntry) // Ptr to LPSYMENTRYs
@@ -1683,7 +1693,7 @@ void InitVarSTEs
                     (*lplpSymEntry)->stData.stLongest   = lptkArg->tkData.tkLongest;
                 } // End FOR
 
-                return;
+                return TRUE;
 
             case TKT_VARARRAY:
             case TKT_AXISARRAY:
@@ -1717,7 +1727,7 @@ void InitVarSTEs
                         (*lplpSymEntry)->stData.stLongest   = lptkArg->tkData.tkSym->stData.stLongest;
                     } // End FOR
 
-                    return;
+                    return TRUE;
                 } else
                     // Get the arg global memory handle
                     hGlbArg = lptkArg->tkData.tkSym->stData.stGlbData;
@@ -1752,6 +1762,9 @@ void InitVarSTEs
             UINT     uBitIndex;             // Bit index for Booleans
             APLINT   apaOffArg,             // APA offset
                      apaMulArg;             // ... multiplier
+            APLUINT  ByteRes;               // # bytes in the result
+            HGLOBAL  hGlbRes;               // Result global memory handle
+            LPVOID   lpMemRes;              // Ptr to result global memory
 
             // Lock the memory to get a ptr to it
             lpMemArg = MyGlobalLock (hGlbArg);
@@ -1767,7 +1780,7 @@ void InitVarSTEs
             Assert (IsVector (aplRankArg));
 
             // Skip over the header and dimensions to the data
-            lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
+            lpMemArg = VarArrayDataFmBase (lpMemArg);
 
             // In case the arg is Boolean
             uBitIndex = 0;
@@ -1886,6 +1899,102 @@ void InitVarSTEs
 
                         break;
 
+                    case ARRAY_RAT:
+                        // Allocate memory for a scalar RAT
+                        // Calculate space needed for the result
+                        ByteRes = CalcArraySize (ARRAY_RAT, 1, 0);
+
+                        // Check for overflow
+                        if (ByteRes NE (APLU3264) ByteRes)
+                            goto WSFULL_EXIT;
+
+                        // Allocate space for the result
+                        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                        if (!hGlbRes)
+                            goto WSFULL_EXIT;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+                        // Fill in the header
+                        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                        lpHeader->ArrType    = ARRAY_RAT;
+////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                        lpHeader->RefCnt     = 1;
+                        lpHeader->NELM       = 1;
+////////////////////////lpHeader->Rank       = 0;               // Already zero from GHNS
+#undef  lpHeader
+                        // Skip over the header and dimension
+                        lpMemRes = VarArrayDataFmBase (lpMemRes);
+
+                        // Fill in the scalar value
+                        mpq_init_set ((LPAPLRAT) lpMemRes, (LPAPLRAT) lpMemArg);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from previous initialization
+                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_RAT;
+                        (*lplpSymEntry)->stFlags.Value      = TRUE;
+                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stGlbData   = MakePtrTypeGlb (hGlbRes);
+
+                        // Skip to next element in arg
+                        ((LPAPLRAT) lpMemArg)++;
+
+                        break;
+
+                    case ARRAY_VFP:
+                        // Allocate memory for a scalar VFP
+                        // Calculate space needed for the result
+                        ByteRes = CalcArraySize (ARRAY_VFP, 1, 0);
+
+                        // Check for overflow
+                        if (ByteRes NE (APLU3264) ByteRes)
+                            goto WSFULL_EXIT;
+
+                        // Allocate space for the result
+                        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                        if (!hGlbRes)
+                            goto WSFULL_EXIT;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+                        // Fill in the header
+                        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                        lpHeader->ArrType    = ARRAY_VFP;
+////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                        lpHeader->RefCnt     = 1;
+                        lpHeader->NELM       = 1;
+////////////////////////lpHeader->Rank       = 0;               // Already zero from GHNS
+#undef  lpHeader
+                        // Skip over the header and dimension
+                        lpMemRes = VarArrayDataFmBase (lpMemRes);
+
+                        // Fill in the scalar value
+                        mpfr_init_set ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemArg, MPFR_RNDN);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from previous initialization
+                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_VFP;
+                        (*lplpSymEntry)->stFlags.Value      = TRUE;
+                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stGlbData   = MakePtrTypeGlb (hGlbRes);
+
+                        // Skip to next element in arg
+                        ((LPAPLVFP) lpMemArg)++;
+
+                        break;
+
                     defstop
                         break;
                 } // End SWITCH
@@ -1895,6 +2004,11 @@ void InitVarSTEs
             MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
         } // End IF/ELSE
     } // End IF
+
+    return TRUE;
+
+WSFULL_EXIT:
+    return FALSE;
 } // End InitVarSTEs
 
 

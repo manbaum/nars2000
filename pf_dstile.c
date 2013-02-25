@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -334,7 +334,7 @@ APLRAT PrimFnMonDownStileRisR
 
         // Split cases based upon the signum of the difference between
         //   (the number and its floor) and (the ceiling and the number)
-        switch (mpq_cmp (&mpqTmp1, &mpqTmp2))
+        switch (signum (mpq_cmp (&mpqTmp1, &mpqTmp2)))
         {
             case  1:
                 mpq_set (&mpqNear, &mpqCeil);
@@ -447,7 +447,7 @@ APLVFP PrimFnMonDownStileVisV
 
         // Split cases based upon the signum of the difference between
         //   (the number and its floor) and (the ceiling and the number)
-        switch (mpfr_cmp (&mpfTmp1, &mpfTmp2))
+        switch (signum (mpfr_cmp (&mpfTmp1, &mpfTmp2)))
         {
             case  1:
                 mpfr_set (&mpfNear, &mpfCeil, MPFR_RNDN);

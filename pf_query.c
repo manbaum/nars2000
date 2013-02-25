@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,12 +79,6 @@ PRIMSPEC PrimSpecQuery =
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
 #endif
-
-// Generate the next value of QuadRL
-#define NextQuadRL(a)   ((a) * DEF_QUADRL_CWS) % QUADRL_MODULUS;
-
-// Ye old Linear Congruential Generator
-#define LinConGen(a,b)  ((a) * (b)) / QUADRL_MODULUS
 
 
 //***************************************************************************
@@ -210,8 +204,8 @@ APLINT PrimFnMonQueryIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLBOOL bQuadIO;            // []IO
-    APLUINT uQuadRL;            // []RL
+    APLBOOL      bQuadIO;       // []IO
+    APLUINT      uQuadRL;       // []RL
 
     // Get the current value of []IO & []RL
     bQuadIO = GetQuadIO ();
@@ -227,8 +221,7 @@ APLINT PrimFnMonQueryIisI
     // Save uQuadRL back into lpPrimSpec
     lpPrimSpec->QuadRL = uQuadRL;
 
-    // Ye old Linear Congruential Generator
-    return bQuadIO + LinConGen (uQuadRL, aplIntegerRht);
+    return bQuadIO + GetRandomNum (aplIntegerRht, uQuadRL, GetMemPTD ());
 } // End PrimFnMonQueryIisI
 
 
@@ -253,6 +246,94 @@ APLINT PrimFnMonQueryIisF
 
     return PrimFnMonQueryIisI ((APLINT) aplFloatRht, lpPrimSpec);
 } // End PrimFnMonQueryIisF
+
+
+//***************************************************************************
+//  $NextQuadRL
+//
+//  Return the next value of []RL given the current one
+//***************************************************************************
+
+APLUINT NextQuadRL
+    (APLUINT uQuadRL)           // Current value of []RL
+
+{
+    // Generate the next value of QuadRL
+    // #define NextQuadRL(a)       (((a) * DEF_QUADRL_CWS) % QUADRL_MODULUS);
+    APLUINT aplIntegerRes;      // The result
+    mpz_t   mpzTmp1 = {0},      // Temp
+            mpzTmp2 = {0};      // ...
+
+    // Initialize the temps
+    mpz_init (mpzTmp1);
+    mpz_init (mpzTmp2);
+
+    // Tmp1 = uQuadRL
+    // Tmp2 = DEF_QUADRL_CWS
+    mpz_set_ux (mpzTmp1, uQuadRL);
+    mpz_set_ux (mpzTmp2, DEF_QUADRL_CWS);
+
+    // Tmp1 = Tmp1 * Tmp2
+    mpz_mul    (mpzTmp1, mpzTmp1, mpzTmp2);
+
+    // Tmp2 = QUADRL_MODULUS
+    mpz_set_ux (mpzTmp2, QUADRL_MODULUS);
+
+    // Tmp1 = Tmp1 % Tmp2
+    mpz_tdiv_r (mpzTmp1, mpzTmp1, mpzTmp2);
+
+    // aplIntegerRht = Tmp1
+    aplIntegerRes = mpz_get_sx (mpzTmp1);
+
+    // We no longer need this storage
+    Myz_clear (mpzTmp2);
+    Myz_clear (mpzTmp1);
+
+    return aplIntegerRes;
+} // End NextQuadRL
+
+
+//***************************************************************************
+//  $GetRandomNum
+//
+//  Return a random number
+//***************************************************************************
+
+APLINT GetRandomNum
+    (APLINT       aplIntegerRht,        // The integer arg
+     APLUINT      uQuadRL,              // []RL
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    mpz_t mpzTmp1 = {0},                // Temp
+          mpzTmp2 = {0};                // ...
+
+    // Initialize the temps
+    mpz_init (mpzTmp1);
+    mpz_init (mpzTmp2);
+
+    // Tmp1 = uQuadRL
+    // Tmp2 = aplIntegerRht
+    mpz_set_ux (mpzTmp1, uQuadRL);
+    mpz_set_sx (mpzTmp2, aplIntegerRht);
+
+    // Tmp1 = Tmp1 * Tmp2
+    mpz_mul    (mpzTmp1, mpzTmp1, mpzTmp2);
+
+    // Tmp2 = QUADRL_MODULUS
+    mpz_set_ux (mpzTmp2, QUADRL_MODULUS);
+
+    // Tmp1 = Tmp1 / Tmp2
+    mpz_tdiv_q (mpzTmp1, mpzTmp1, mpzTmp2);
+
+    // aplIntegerRht = Tmp1
+    aplIntegerRht = mpz_get_sx (mpzTmp1);
+
+    Myz_clear (mpzTmp2);
+    Myz_clear (mpzTmp1);
+
+    return aplIntegerRht;
+} // End GetRandomNum
 
 
 //***************************************************************************
@@ -345,7 +426,7 @@ APLVFP PrimFnMonQueryVisV
 
         // Generate a uniformly-distributed random number in [0, Rht)
         mpz_urandomm (&mpzRes,
-                      lpMemPTD->randState,
+                       lpMemPTD->randState,
                       &mpzRes);
         // Add in []IO
         mpz_add_ui (&mpzRes, &mpzRes, bQuadIO);
@@ -355,6 +436,9 @@ APLVFP PrimFnMonQueryVisV
 
         // We no longer need this storage
         Myz_clear (&mpzRes);
+#ifndef DEBUG
+  #undef  lpMemPTD
+#endif
     } else
         // Otherwise, it's an error
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -370,7 +454,7 @@ APLVFP PrimFnMonQueryVisV
 //
 //  This algorithm was taken from
 //    "APLGOL, an Experimental Structured Programming Language" by R. A. Kelley,
-//    IBM Journal of Research and Delvelopment, January 1973, pp. 69-73.
+//    IBM Journal of Research and Development, January 1973, pp. 69-73.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -413,8 +497,12 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     UBOOL         bRet;             // TRUE iff result is valid
     LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
     APLBOOL       bQuadIO;          // []IO
+    LPPERTABDATA  lpMemPTD;         // Ptr to PerTabData global memory
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -563,9 +651,8 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
             // Calculate the next QuadRL
             uQuadRL = NextQuadRL (uQuadRL);
 
-            // Get a random number using
-            // Ye old Linear Congruential Generator
-            uTmp = bQuadIO + LinConGen (uQuadRL, aplIntegerRht);
+            // Get a random number using the appropriate algorithm
+            uTmp = bQuadIO + GetRandomNum (aplIntegerRht, uQuadRL, lpMemPTD);
 
             // Search for it in the existing set
             for (uSub = 0; uSub < uLft; uSub++)
@@ -596,9 +683,8 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
             // Calculate the next QuadRL
             uQuadRL = NextQuadRL (uQuadRL);
 
-            // Get a random number using
-            // Ye old Linear Congruential Generator
-            uRht = uLft + LinConGen (uQuadRL, aplIntegerRht - uLft);
+            // Get a random number using the appropriate algorithm
+            uRht = uLft + GetRandomNum (aplIntegerRht - uLft, uQuadRL, lpMemPTD);
 
             // Swap the two values
             uTmp           = lpMemRes[uLft];            // Z[{quad}IO + I J] {is} Z[{quad}IO + J I]

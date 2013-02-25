@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 #define DEF_QUADMF_CWS      TIMERSOURCE_PC2MS
 #define DEF_QUADPP_CWS         10
 #define DEF_QUADPW_CWS         80
-#define DEF_QUADRL_CWS      16807
+#define DEF_QUADRL_CWS      216928637           // A primitive root >= (sqrt (-1+2*61))/7
 #define DEF_QUADPR_CWS      L" "
 #define DEF_QUADxSA_CWS         0   // 0 = "", 1 = "CLEAR", 2 = "ERROR", 3 = "EXIT", 4 = "OFF"
 #define DEF_QUADLX_CWS      L""
@@ -52,7 +52,7 @@
 #define DEF_QUADALX_GLB     hGlbQuadxLX
 #define DEF_QUADELX_GLB     hGlbQuadxLX
 
-#define QUADRL_MODULUS      0x7FFFFFFF          // (2*31)-1 is a prime
+#define QUADRL_MODULUS      0x1FFFFFFFFFFFFFFF  // -1+2*61 is a prime
 
 #define DEF_MIN_QUADCT      0                   // Minimum value for []CT
 #define DEF_MAX_QUADCT      1E-10               // Maximum ...

@@ -9236,6 +9236,9 @@ PL_YYLEX_START:
             // Skip to end of the current stmt
             lpplLocalVars->lptkNext = &lpplLocalVars->lptkNext[lpplLocalVars->lptkNext->tkData.tkIndex];
 
+            // Save a ptr to the token
+            lpplLocalVars->lptkEOS = lpplLocalVars->lptkNext;
+
             // And again to the end of the next stmt
             lpplLocalVars->lptkNext = &lpplLocalVars->lptkNext[lpplLocalVars->lptkNext->tkData.tkIndex];
 
@@ -9923,7 +9926,7 @@ void ArrExprCheckCaller
     // Save the Execute/Quad result
     //   unless the current line starts with a "sink"
     //   or there's a error control parent active
-    if (lpplLocalVars->lpwszLine[0] NE UTF16_LEFTARROW
+    if (lpplLocalVars->lptkEOS[1].tkFlags.TknType NE TKT_ASSIGN
      || lpMemPTD->lpSISCur->lpSISErrCtrl NE NULL)
         lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
 

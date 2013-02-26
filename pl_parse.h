@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,9 +114,10 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                                     //      in thread creation order (NULL = none)
     UINT           uLineNum,        // A0:  Function line # (1 for execute or immexec)
                    uTokenCnt;       // A4:  # tokens in the function line
-    HGLOBAL        hGlbDfnHdr;      // A8:  User-defined functio/operator global memory handle (NULL = execute/immexec)
-    TOKEN          tkSelSpec;       // AC:  TOKEN for Selective Specification (24 bytes)
-                                    // C4:  Length
+    HGLOBAL        hGlbDfnHdr;      // A8:  User-defined function/operator global memory handle (NULL = execute/immexec)
+    LPTOKEN        lptkEOS;         // AC:  ...    EOS ...
+    TOKEN          tkSelSpec;       // B0:  TOKEN for Selective Specification (24 bytes)
+                                    // C8:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

@@ -9926,7 +9926,8 @@ void ArrExprCheckCaller
     // Save the Execute/Quad result
     //   unless the current line starts with a "sink"
     //   or there's a error control parent active
-    if (lpplLocalVars->lptkEOS[1].tkFlags.TknType NE TKT_ASSIGN
+    if (lpplLocalVars->lptkEOS EQ NULL
+     || lpplLocalVars->lptkEOS[1].tkFlags.TknType NE TKT_ASSIGN
      || lpMemPTD->lpSISCur->lpSISErrCtrl NE NULL)
         lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
 

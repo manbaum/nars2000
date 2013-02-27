@@ -476,11 +476,12 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     {
         // Split cases based upon fcn vs. var
         if (!IsTknFcnOpr (&lpYYFcnTmpLft->tkToken))
+        {
             if (!InitVarSTEs (&lpYYFcnTmpLft->tkToken,
                                lpMemDfnHdr->steLftOpr NE NULL,
                               &lpMemDfnHdr->steLftOpr))
                 goto WSFULL_EXIT;
-        else
+        } else
         if (!InitFcnSTEs (lpYYFcnTmpLft,
                           lpMemDfnHdr->steLftOpr NE NULL,
                          &lpMemDfnHdr->steLftOpr))
@@ -498,11 +499,12 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     {
         // Split cases based upon fcn vs. var
         if (!IsTknFcnOpr (&lpYYFcnTmpRht->tkToken))
+        {
             if (!InitVarSTEs (&lpYYFcnTmpRht->tkToken,
                                lpMemDfnHdr->steRhtOpr NE NULL,
                               &lpMemDfnHdr->steRhtOpr))
             goto WSFULL_EXIT;
-        else
+        } else
         if (!InitFcnSTEs (lpYYFcnTmpRht,
                           lpMemDfnHdr->steRhtOpr NE NULL,
                          &lpMemDfnHdr->steRhtOpr))

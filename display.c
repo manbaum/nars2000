@@ -1423,22 +1423,18 @@ LPAPLCHAR FormatFloatFC
             // Determine if the value is a power of two
             bPowerOfTwo = (aplFloatUnion.aplFloatStr.uMantissa EQ 0);
 
-            // If it's not a power of two, ...
-            if (!bPowerOfTwo)
-            {
-                nDigits = 0;                    // No digits (integral)
-                dtoaMode = DTOAMODE_FRACTDIGS;  // 3 = nDigits past decimal point
+            nDigits = 0;                    // No digits (integral)
+            dtoaMode = DTOAMODE_FRACTDIGS;  // 3 = nDigits past decimal point
 
-                // Round aplFloat to the nearest integer
-                //   taking into account the sign (which floor doesn't)
-                if (aplFloat >= 0)
-                    aplFloat =  floor (0.5 + aplFloat);
-                else
-                    aplFloat = -floor (0.5 - aplFloat);
-                // Handle signed zero
-                if (aplFloat EQ 0)
-                    aplFloat = 0;
-            } // End IF
+            // Round aplFloat to the nearest integer
+            //   taking into account the sign (which floor doesn't)
+            if (aplFloat >= 0)
+                aplFloat =  floor (0.5 + aplFloat);
+            else
+                aplFloat = -floor (0.5 - aplFloat);
+            // Handle signed zero
+            if (aplFloat EQ 0)
+                aplFloat = 0;
         } // End IF
 
         // Convert aplFloat to an ASCII string

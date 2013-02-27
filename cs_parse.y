@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1088,6 +1088,8 @@ ElseIf:
                                                                     // Set the next .uCLIndex value
                                                                     CS_SetCLIndex (&$2);
 
+                                                                    // If $4 has an unmatched Continue, ...
+                                                                    if ($4.lptk1st)
                                                                     // Loop through $4's tokens setting that token's .uCLIndex to $2's
                                                                     for (lptk1st = $4.lptk1st; lptk1st <= $4.lptkCur; lptk1st++)
                                                                     // If it's an ANDIF or ORIF, ...
@@ -1150,6 +1152,8 @@ ElseIfRec:
                                                                     // Chain together the last token in ElseIfRec and the first token in ElseIf
                                                                     CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $3.lptkIF1st);
 
+                                                                    // If $3 has an unmatched Continue, ...
+                                                                    if ($3.lptk1st)
                                                                     // Loop through $3's tokens converting that token's .uCLIndex to $1's
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     // If it's the same .uCLIndex
@@ -1750,6 +1754,8 @@ CCListRec:
                                                                     } // End IF
 
                                                                     // If $2 has an unmatched CONTINUE, ...
+                                                                    if ($2.lptk1st)
+                                                                    // Loop through $2's unmatched Continue
                                                                     for (lptk1st = $2.lptk1st; lptk1st <= $2.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
@@ -1769,7 +1775,7 @@ CCListRec:
 
                                                                         // Mark with same index as $1's
                                                                         lptk1st->tkData.uCLIndex = $1.uCLIndex;
-                                                                    } // End IF
+                                                                    } // End IF/FOR/IF
 
                                                                     // Chain together the SkipCase token and the CASE token
                                                                     CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptk1st);
@@ -1808,6 +1814,8 @@ CCListRec:
                                                                     } // End IF
 
                                                                     // If $2 has an unmatched CONTINUE, ...
+                                                                    if ($2.lptk1st)
+                                                                    // Loop through $2's unmatched Continue
                                                                     for (lptk1st = $2.lptk1st; lptk1st <= $2.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
@@ -1827,7 +1835,7 @@ CCListRec:
 
                                                                         // Mark with same index as $1's
                                                                         lptk1st->tkData.uCLIndex = $1.uCLIndex;
-                                                                    } // End IF
+                                                                    } // End IF/FOR/IF
 
                                                                     // Chain together the SkipCase token and the CASELIST token
                                                                     CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $4.lptk1st);
@@ -1850,6 +1858,7 @@ CCListCS:
 
                                                                     // If $2 has an unmatched CONTINUE, ...
                                                                     if ($2.lptk1st)
+                                                                    // Loop through $2's unmatched Continue
                                                                     for (lptk1st = $2.lptk1st; lptk1st <= $2.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
@@ -1895,8 +1904,9 @@ SelectStmt:
                                                                     // Save as the ptr to the previous token
                                                                     lptkPrv = $1.lptk1st;
 
-                                                                    // Loop through the tokens in CCListCS
+                                                                    // If $3 has an unmatched CONTINUE, ...
                                                                     if ($3.lptk1st)
+                                                                    // Loop through the tokens in CCListCS
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
@@ -1950,6 +1960,7 @@ SelectStmt:
 
                                                                     // Loop through the tokens in CCListCS
                                                                     if ($3.lptk1st)
+                                                                    // Loop through $3's unmatched Continue
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
@@ -2011,8 +2022,9 @@ SelectStmt:
                                                                     // Save as the ptr to the previous token
                                                                     lptkPrv = $1.lptk1st;
 
-                                                                    // Loop through the tokens in CCListCS
+                                                                    // If $3 has an unmatched CONTINUE, ...
                                                                     if ($3.lptk1st)
+                                                                    // Loop through the tokens in CCListCS
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
@@ -2130,6 +2142,8 @@ WhileStmt:
                                                                     // Save as the ptr to the previous token
                                                                     lptkPrv = $1.lptk1st;
 
+                                                                    // If $3 has an unmatched CONTINUE, ...
+                                                                    if ($3.lptk1st)
                                                                     // Loop through the tokens in OrIfAndIf
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     if (lptk1st->tkFlags.TknType EQ TKT_CS_ANDIF
@@ -2140,7 +2154,7 @@ WhileStmt:
 
                                                                         // Save as the ptr to the previous token
                                                                         lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
+                                                                    } // End IF/FOR/IF
 
                                                                     // Chain together the last token in OrIfAndIf and the EndWhile token
                                                                     CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkIF1st);
@@ -2231,6 +2245,8 @@ WhileStmt:
                                                                     // Save as the ptr to the previous token
                                                                     lptkPrv = $1.lptkCur;
 
+                                                                    // If $3 has an unmatched CONTINUE, ...
+                                                                    if ($3.lptk1st)
                                                                     // Loop through the tokens in OrIfAndIf
                                                                     for (lptk1st = $3.lptk1st; lptk1st <= $3.lptkCur; lptk1st++)
                                                                     if (lptk1st->tkFlags.TknType EQ TKT_CS_ANDIF
@@ -2241,7 +2257,7 @@ WhileStmt:
 
                                                                         // Save as the ptr to the previous token
                                                                         lptkPrv = lptk1st;
-                                                                    } // End FOR/IF
+                                                                    } // End IF/FOR/IF
 
                                                                     // Chain together the last token in OrIfAndIf and the first token in Until
                                                                     CS_ChainTokens (lpcsLocalVars, &$3.lptkCur->tkData, $5.lptkIF1st);

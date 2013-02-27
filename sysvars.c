@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"ncreate"  ,      1,      FALSE, SysFnNCREATE_EM_YY  , 0              },    // Create And Open A Native File
     {WS_UTF16_QUAD L"nerase"   ,      1,      FALSE, SysFnNERASE_EM_YY   , 0              },    // Erase An Open Native File
     {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM_YY       , 0              },    // Name List
-////{WS_UTF16_QUAD L"nlock"    ,      1,      FALSE, SysFnNLOCK_EM_YY    , 0              },    // Lock An Open Native File
+    {WS_UTF16_QUAD L"nlock"    ,      1,      FALSE, SysFnNLOCK_EM_YY    , 0              },    // Lock An Open Native File
     {WS_UTF16_QUAD L"nread"    ,      1,      FALSE, SysFnNREAD_EM_YY    , 0              },    // Read Data From An Open Native File
     {WS_UTF16_QUAD L"nrename"  ,      1,      FALSE, SysFnNRENAME_EM_YY  , 0              },    // Rename An Open Native File
     {WS_UTF16_QUAD L"nreplace" ,      1,      FALSE, SysFnNREPLACE_EM_YY , 0              },    // Replace Data In An Open Native File

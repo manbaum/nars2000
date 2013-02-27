@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -541,7 +541,7 @@ LPPL_YYSTYPE SysFnCreateTie_EM_YY
                    NULL,                    // Security attributes
                    bCreate ? CREATE_ALWAYS
                            : OPEN_EXISTING, // Create/open flags
-                   FILE_ATTRIBUTE_NORMAL,   // File attributes
+                   FILE_FLAG_OVERLAPPED,    // File attributes
                    NULL);                   // Template file
     // If it failed, ...
     if (hFile EQ INVALID_HANDLE_VALUE)
@@ -711,11 +711,10 @@ LPPL_YYSTYPE SysFnDydNERASE_EM_YY
 #undef  APPEND_NAME
 
 
-#if FALSE
 //***************************************************************************
 //  $SysFnNLOCK_EM_YY
 //
-//  System function:  []NLOCK -- Lock an open native file
+//  System function:  []NLOCK -- Lock/Unlock an open native file
 //***************************************************************************
 
 #ifdef DEBUG
@@ -753,10 +752,8 @@ AXIS_SYNTAX_EXIT:
     return NULL;
 } // End SysFnNLOCK_EM_YY
 #undef  APPEND_NAME
-#endif
 
 
-#if FALSE
 //***************************************************************************
 //  $SysFnMonNLOCK_EM_YY
 //
@@ -778,14 +775,12 @@ LPPL_YYSTYPE SysFnMonNLOCK_EM_YY
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNLOCK_EM_YY
 #undef  APPEND_NAME
-#endif
 
 
-#if FALSE
 //***************************************************************************
 //  $SysFnDydNLOCK_EM_YY
 //
-//  Dyadic []NLOCK -- Lock an open native file
+//  Dyadic []NLOCK -- Lock/Unlock an open native file
 //
 //  Type [Timeout] []NLOCK tn [Offset [Length]]
 //***************************************************************************
@@ -797,34 +792,36 @@ LPPL_YYSTYPE SysFnMonNLOCK_EM_YY
 #endif
 
 LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                // Ptr to left arg token
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // Right ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    APLRANK      aplRankLft,        // Left arg Rank
-                 aplRankRht;        // Right ...
-    APLLONGEST   aplLongestLft,     // Left arg longest if immediate
-                 aplLongestRht;     // Right ...
-    UINT         uTie;              // Offset of matching tie number entry
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL;    // Right ...
-    LPAPLINT     lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL;   // Ptr to right ...
-    APLINT       TieNum,            // File tie number
-                 LockLength,        // Lock length
-                 LockType,          // Lock type
-                 LockOffset;        // Lock offset
-////             LockTimeout;       // Lock timeout
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPNFNSHDR    lpNfnsHdr = NULL;  // Ptr to NFNSHDR global memory
-    LPNFNSDATA   lpNfnsMem;         // Ptr to aNfnsData
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht;           // Right ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht;           // Right ...
+    APLRANK       aplRankLft,           // Left arg Rank
+                  aplRankRht;           // Right ...
+    APLLONGEST    aplLongestLft,        // Left arg longest if immediate
+                  aplLongestRht;        // Right ...
+    UINT          uTie;                 // Offset of matching tie number entry
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL;       // Right ...
+    LPAPLINT      lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL;      // Ptr to right ...
+    APLINT        TieNum,               // File tie number
+                  LockLength,           // Lock length
+                  LockType,             // Lock type
+                  LockOffset;           // Lock offset
+    LARGE_INTEGER LockTimeout;          // Lock timeout
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+    LPNFNSHDR     lpNfnsHdr = NULL;     // Ptr to NFNSHDR global memory
+    LPNFNSDATA    lpNfnsMem;            // Ptr to aNfnsData
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    OVERLAPPED    overLapped = {0};     // OVERLAPPED struct
+    DWORD         dwFlags = 0;          // LockFileEx flags
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -843,8 +840,8 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
         goto RIGHT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR
-    if (aplNELMRht NE 1
-     && aplNELMRht NE 2)
+    if (aplNELMLft NE 1
+     && aplNELMLft NE 2)
         goto LEFT_LENGTH_EXIT;
 
     // Check for RIGHT LENGTH ERROR
@@ -906,8 +903,20 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
                        &LockOffset))    // Ptr to result APLINT
         goto RIGHT_DOMAIN_EXIT;
 
+    // Lock the memory to get a ptr to it
+    lpNfnsHdr = InitLockNfns (lptkFunc, lpMemPTD);
+
+    // Point to the matching tie number entry
+    lpNfnsMem = &lpNfnsHdr->aNfnsData[uTie];
+
+    // Get the file size
+    LOAPLINT (LockLength) =
+      GetFileSize (lpNfnsMem->hFile,            // File handle
+                  &HIAPLINT (LockLength));      // High-order file size
+    // Less the offset to encompass the remainder of the file
+    LockLength -= LockOffset;
+
     // Parse LockLength from lpMemRht
-    LockLength = -1;                    // Set default value
     if (!NfnsArgAplint (aplTypeRht,     // Arg storage type
                         lpMemRht,       // Ptr to global memory data
                         aplNELMRht,     // NELM of arg
@@ -923,29 +932,28 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
                        &LockType))      // Ptr to result APLINT
         goto LEFT_DOMAIN_EXIT;
 
-////// Parse LockTimeout from lpMemLft
-////LockTimeout = -1;                   // Set default value
-////if (!NfnsArgAplint (aplTypeLft,     // Arg storage type
-////                    lpMemLft,       // Ptr to global memory data
-////                    aplNELMLft,     // NELM of arg
-////                    1,              // Index # into lpMem
-////                   &LockTimeout))   // Ptr to result APLINT
-////    goto RIGHT_DOMAIN_EXIT;
+    // Parse LockTimeout from lpMemLft
+    LockTimeout.QuadPart = -1;                  // Set default value
+    if (!NfnsArgAplint (aplTypeLft,             // Arg storage type
+                        lpMemLft,               // Ptr to global memory data
+                        aplNELMLft,             // NELM of arg
+                        1,                      // Index # into lpMem
+                       &LockTimeout.QuadPart))  // Ptr to result APLINT
+        goto RIGHT_DOMAIN_EXIT;
 
-    // Lock the memory to get a ptr to it
-    lpNfnsHdr = InitLockNfns (lptkFunc, lpMemPTD);
-
-    // Point to the matching tie number entry
-    lpNfnsMem = &lpNfnsHdr->aNfnsData[uTie];
+    // Initialize the OVERLAPPED struc
+    overLapped.Offset     = LOAPLINT (LockOffset);
+    overLapped.OffsetHigh = HIAPLINT (LockOffset);
+////overLapped.hEvent     = NULL;                       // Set above to zero by = {0}
 
     switch (LockType)
     {
         case 0:             // Unlock
-            if (!UnlockFile (lpNfnsMem->hFile,
-                             LOAPLINT (LockOffset),
-                             HIAPLINT (LockOffset),
-                             LOAPLINT (LockLength),
-                             HIAPLINT (LockLength)))
+            if (!UnlockFileEx (lpNfnsMem->hFile,        // File handle
+                               0,                       // Reserved
+                               LOAPLINT (LockLength),   // # bytes to unlock, low dword
+                               HIAPLINT (LockLength),   // ...                high ...
+                              &overLapped))             // Ptr to OVERLAPPED struct
             {
                 SysErrMsg_EM (GetLastError (), lptkFunc);
 
@@ -954,17 +962,71 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
 
             break;
 
-        case 1:             // Read Lock            // ***FIXME***
         case 2:             // Write Lock
-            if (!LockFile (lpNfnsMem->hFile,
-                           LOAPLINT (LockOffset),
-                           HIAPLINT (LockOffset),
-                           LOAPLINT (LockLength),
-                           HIAPLINT (LockLength)))
-            {
-                SysErrMsg_EM (GetLastError (), lptkFunc);
+            dwFlags |= LOCKFILE_EXCLUSIVE_LOCK;
 
-                goto ERROR_EXIT;
+            // Fall through to common lock code
+        case 1:             // Read Lock
+            // If LockTimeout is valid, ...
+            if (LockTimeout.QuadPart NE -1)
+            {
+                // Create an event
+                overLapped.hEvent =
+                  CreateEvent (NULL,                        // Ptr to security attributes (may be NULL)
+                               TRUE,                        // TRUE iff manual-reset timer
+                               FALSE,                       // TRUE if initial state is signalled
+                               NULL);                       // Ptr to event name (may be NULL)
+                if (overLapped.hEvent EQ NULL)
+                    goto EVENT_EXIT;
+            } // End IF
+
+            if (!LockFileEx (lpNfnsMem->hFile,          // File handle
+                             dwFlags,                   // Flags
+                             0,                         // Reserved
+                             LOAPLINT (LockLength),     // # bytes to lock, low dword
+                             HIAPLINT (LockLength),     // ...              high ...
+                            &overLapped))               // Ptr to OVERLAPPED struct
+            {
+                DWORD dwErr = GetLastError ();
+
+                if (dwErr NE ERROR_IO_PENDING)
+                {
+                    SysErrMsg_EM (dwErr, lptkFunc);
+
+                    goto ERROR_EXIT;
+                } // End IF
+            } // End IF
+
+            // If LockTimeout is valid, ...
+            if (LockTimeout.QuadPart NE -1)
+            {
+                DWORD dwRet;
+                HANDLE hWaitEvent;
+
+                // Convert from seconds to milliseconds
+                LockTimeout.QuadPart *= 1000;   // Seconds to milliseconds
+
+                // Check for overflow
+                Assert (LockTimeout.QuadPart EQ (DWORD) LockTimeout.QuadPart);
+
+                // Check for previous uncleared event
+                Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                // Save the wait event in case the user Ctrl-Breaks
+                lpMemPTD->hWaitEvent = overLapped.hEvent;
+
+                // Wait for the specified time
+                dwRet = WaitForSingleObject (overLapped.hEvent, (DWORD) LockTimeout.QuadPart);
+
+                // Save and clear the wait event
+                //  so as to test for Ctrl-Break signalling the event
+                hWaitEvent = lpMemPTD->hWaitEvent;
+                lpMemPTD->hWaitEvent = NULL;
+
+                // If the lock is not granted, ...
+                if (hWaitEvent EQ NULL
+                 || dwRet NE WAIT_OBJECT_0)
+                    goto LOCKED_EXIT;
             } // End IF
 
             break;
@@ -981,11 +1043,15 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
     // If the result is a global, ...
     if (hGlbRht)
     {
+        // Increment the right arg ref cnt so we can return it as the result
+        hGlbRht = MakePtrTypeGlb (hGlbRht);
+        DbgIncrRefCntDir_PTB (hGlbRht);
+
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Filled in below
-        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRht);
+        lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
 ////////lpYYRes->tkToken.tkCharIndex       =                // Filled in below
     } else
     {
@@ -1032,8 +1098,24 @@ RIGHT_DOMAIN_EXIT:
                                lptkRhtArg);
     goto ERROR_EXIT;
 
+EVENT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LOCKED_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_FILE_NOT_LOCKED APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
 NORMAL_EXIT:
+    if (overLapped.hEvent)
+    {
+        // We no longer need this resource
+        CloseHandle (overLapped.hEvent); overLapped.hEvent = NULL;
+    } // End IF
+
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -1055,7 +1137,6 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End SysFnDydNLOCK_EM_YY
 #undef  APPEND_NAME
-#endif
 
 
 //***************************************************************************
@@ -3344,7 +3425,7 @@ void NfnsReleaseOneResource
     (LPNFNSDATA lpNfnsMem)          // Ptr to aNfnsData
 
 {
-    // Close the handle
+    // Close the handle -- this also releases all locked regions
     CloseHandle (lpNfnsMem->hFile); lpNfnsMem->hFile = NULL;
 
     // Free the filename global memory handle
@@ -3626,7 +3707,7 @@ UBOOL NfnsArgMode
             bRet = FALSE;
 
             break;
-    } // End SWITCH
+    } // End IF/SWITCH
 
     // If the result is valid, ...
     if (bRet)
@@ -3658,7 +3739,7 @@ UBOOL NfnsArgMode
             bRet = FALSE;
 
             break;
-    } // End SWITCH
+    } // End IF/SWITCH
 
     return bRet;
 } // End NfnsArgMode
@@ -3756,7 +3837,7 @@ UBOOL NfnsArgConv
 
                         defstop
                             break;
-                    } // End SWITCH
+                    } // End IF/SWITCH
 
                     break;
 
@@ -3776,159 +3857,157 @@ UBOOL NfnsArgConv
 
                     // If it's valid, ...
                     if (bRet)
+                    // Split cases based upon the storage type
+                    switch (lpMemHdr->ArrType)
                     {
-                        // Split cases based upon the storage type
-                        switch (lpMemHdr->ArrType)
-                        {
-                            case ARRAY_BOOL:
-                            case ARRAY_INT:
-                            case ARRAY_APA:
-                                // Split cases based upon the NELM
-                                switch (lpMemHdr->NELM)
-                                {
-                                    case 2:
-                                        if (bOnly1)
-                                            bRet = FALSE;
-                                        else
-                                            *lpWsConv   = GetNextInteger (VarArrayDataFmBase (lpMemHdr), lpMemHdr->ArrType, 1);
+                        case ARRAY_BOOL:
+                        case ARRAY_INT:
+                        case ARRAY_APA:
+                            // Split cases based upon the NELM
+                            switch (lpMemHdr->NELM)
+                            {
+                                case 2:
+                                    if (bOnly1)
+                                        bRet = FALSE;
+                                    else
+                                        *lpWsConv   = GetNextInteger (VarArrayDataFmBase (lpMemHdr), lpMemHdr->ArrType, 1);
 
-                                        // Fall through to singleton case
+                                    // Fall through to singleton case
 
-                                    case 1:
-                                        *lpDiskConv = GetNextInteger (VarArrayDataFmBase (lpMemHdr), lpMemHdr->ArrType, 0);
+                                case 1:
+                                    *lpDiskConv = GetNextInteger (VarArrayDataFmBase (lpMemHdr), lpMemHdr->ArrType, 0);
 
-                                        break;
+                                    break;
 
-                                    case 0:
-                                        break;
+                                case 0:
+                                    break;
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                                defstop
+                                    break;
+                            } // End SWITCH
 
-                                break;
+                            break;
 
-                            case ARRAY_FLOAT:
-                                // Split cases based upon the NELM
-                                switch (lpMemHdr->NELM)
-                                {
-                                    case 2:
-                                        if (bOnly1)
-                                            bRet = FALSE;
-                                        else
-                                            // Attempt to convert the float to an integer using System CT
-                                            *lpWsConv   = FloatToAplint_SCT (((LPAPLFLOAT) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
+                        case ARRAY_FLOAT:
+                            // Split cases based upon the NELM
+                            switch (lpMemHdr->NELM)
+                            {
+                                case 2:
+                                    if (bOnly1)
+                                        bRet = FALSE;
+                                    else
+                                        // Attempt to convert the float to an integer using System CT
+                                        *lpWsConv   = FloatToAplint_SCT (((LPAPLFLOAT) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
 
-                                        // Fall through to singleton case
+                                    // Fall through to singleton case
 
-                                    case 1:
-                                        *lpDiskConv = FloatToAplint_SCT (((LPAPLFLOAT) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
+                                case 1:
+                                    *lpDiskConv = FloatToAplint_SCT (((LPAPLFLOAT) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
 
-                                        break;
+                                    break;
 
-                                    case 0:
-                                        break;
+                                case 0:
+                                    break;
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                                defstop
+                                    break;
+                            } // End SWITCH
 
-                                break;
+                            break;
 
-                            case ARRAY_RAT:
-                                // Split cases based upon the NELM
-                                switch (lpMemHdr->NELM)
-                                {
-                                    case 2:
-                                        if (bOnly1)
-                                            bRet = FALSE;
-                                        else
-                                            // Attempt to convert the RAT to an integer using System CT
-                                            *lpWsConv   = mpq_get_ctsa (&((LPAPLRAT) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
-
-                                        // Fall through to singleton case
-
-                                    case 1:
+                        case ARRAY_RAT:
+                            // Split cases based upon the NELM
+                            switch (lpMemHdr->NELM)
+                            {
+                                case 2:
+                                    if (bOnly1)
+                                        bRet = FALSE;
+                                    else
                                         // Attempt to convert the RAT to an integer using System CT
-                                        *lpDiskConv = mpq_get_ctsa (&((LPAPLRAT) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
+                                        *lpWsConv   = mpq_get_ctsa (&((LPAPLRAT) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
 
-                                        break;
+                                    // Fall through to singleton case
 
-                                    case 0:
-                                        break;
+                                case 1:
+                                    // Attempt to convert the RAT to an integer using System CT
+                                    *lpDiskConv = mpq_get_ctsa (&((LPAPLRAT) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                                    break;
 
-                                break;
+                                case 0:
+                                    break;
 
-                            case ARRAY_VFP:
-                                // Split cases based upon the NELM
-                                switch (lpMemHdr->NELM)
-                                {
-                                    case 2:
-                                        if (bOnly1)
-                                            bRet = FALSE;
-                                        else
-                                            // Attempt to convert the VFP to an integer using System CT
-                                            *lpWsConv   = mpfr_get_ctsa (&((LPAPLVFP) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
+                                defstop
+                                    break;
+                            } // End SWITCH
 
-                                        // Fall through to singleton case
+                            break;
 
-                                    case 1:
+                        case ARRAY_VFP:
+                            // Split cases based upon the NELM
+                            switch (lpMemHdr->NELM)
+                            {
+                                case 2:
+                                    if (bOnly1)
+                                        bRet = FALSE;
+                                    else
                                         // Attempt to convert the VFP to an integer using System CT
-                                        *lpDiskConv = mpfr_get_ctsa (&((LPAPLVFP) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
+                                        *lpWsConv   = mpfr_get_ctsa (&((LPAPLVFP) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
 
-                                        break;
+                                    // Fall through to singleton case
 
-                                    case 0:
-                                        break;
+                                case 1:
+                                    // Attempt to convert the VFP to an integer using System CT
+                                    *lpDiskConv = mpfr_get_ctsa (&((LPAPLVFP) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                                    break;
 
-                                break;
+                                case 0:
+                                    break;
 
-                            case ARRAY_CHAR:
-                                // Attempt to convert the item to a DR_xxx enum
-                                *lpDiskConv = NestedCharVec (lpSymGlb, *lpDiskConv);
+                                defstop
+                                    break;
+                            } // End SWITCH
 
-                                break;
+                            break;
 
-                            case ARRAY_NESTED:
-                                // Split cases based upon the NELM
-                                switch (lpMemHdr->NELM)
-                                {
-                                    case 2:
-                                        if (bOnly1)
-                                            bRet = FALSE;
-                                        else
-                                            // Attempt to convert the item to a DR_xxx enum
-                                            *lpWsConv = NestedCharVec (((HGLOBAL *) VarArrayDataFmBase (lpMemHdr))[1], *lpDiskConv);
+                        case ARRAY_CHAR:
+                            // Attempt to convert the item to a DR_xxx enum
+                            *lpDiskConv = NestedCharVec (lpSymGlb, *lpDiskConv);
 
-                                        // Fall through to singleton case
+                            break;
 
-                                    case 1:
+                        case ARRAY_NESTED:
+                            // Split cases based upon the NELM
+                            switch (lpMemHdr->NELM)
+                            {
+                                case 2:
+                                    if (bOnly1)
+                                        bRet = FALSE;
+                                    else
                                         // Attempt to convert the item to a DR_xxx enum
-                                        *lpDiskConv = NestedCharVec (((HGLOBAL *) VarArrayDataFmBase (lpMemHdr))[0], *lpDiskConv);
+                                        *lpWsConv = NestedCharVec (((HGLOBAL *) VarArrayDataFmBase (lpMemHdr))[1], *lpDiskConv);
 
-                                        break;
+                                    // Fall through to singleton case
 
-                                    case 0:
-                                        break;
+                                case 1:
+                                    // Attempt to convert the item to a DR_xxx enum
+                                    *lpDiskConv = NestedCharVec (((HGLOBAL *) VarArrayDataFmBase (lpMemHdr))[0], *lpDiskConv);
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                                    break;
 
-                                break;
+                                case 0:
+                                    break;
 
-                            defstop
-                                break;
-                        } // End SWITCH
-                    } // End If
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End IF/SWITCH
 
                     // We no longer need this ptr
                     MyGlobalUnlock (lpSymGlb); lpMemHdr = NULL;
@@ -3945,7 +4024,7 @@ UBOOL NfnsArgConv
         case ARRAY_HETERO:
         defstop
             break;
-    } // End SWITCH
+    } // End IF/SWITCH
 
     // If the result is valid, ...
     if (bRet)
@@ -4466,7 +4545,7 @@ void SysErrMsg_EM
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    static WCHAR wszTemp[256];
+    static WCHAR wszTemp[256];      // ***FIXME*** -- Not thread-safe
 
     // Split cases based upon the last error
     switch (dwLastError)

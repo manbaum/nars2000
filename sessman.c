@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1622,10 +1622,22 @@ NORMAL_EXIT:
                     // Mark as Ctrl-Break
                     if (lpMemPTD->lpPLCur)
                     {
-                        // If there's a delay active, signal it
+                        HANDLE hWaitEvent = lpMemPTD->hWaitEvent;
+
+                        // If there's a delay active, ...
                         if (lpMemPTD->hSemaDelay)
+                            // Release the semaphore
                             MyReleaseSemaphore (lpMemPTD->hSemaDelay, 1, NULL);
                         else
+                        // If there's a wait event active, ...
+                        if (hWaitEvent)
+                        {
+                            // Clear the event handle
+                            lpMemPTD->hWaitEvent = NULL;
+
+                            // Signal the event
+                            SetEvent (hWaitEvent);
+                        } else
                             lpMemPTD->lpPLCur->bCtrlBreak = TRUE;
                     } // End IF
 

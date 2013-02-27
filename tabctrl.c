@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -867,6 +867,27 @@ void FreeGlobalStorage
     LPHSHTABSTR lpHTS;                  // Loop var
     LPSYMENTRY  lpSymEntry;             // ...
     LPHSHENTRY  lpHshEntry;             // ...
+    HGLOBAL     hGlb;                   // Temp var
+
+    // If there's a pending wait event, ...
+    if (lpMemPTD->hWaitEvent)
+    {
+        SetEvent (lpMemPTD->hWaitEvent); lpMemPTD->hWaitEvent = NULL;
+    } // End IF
+
+    // Free global memory for []DM
+    hGlb = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData;
+    if (hGlb)
+    {
+        FreeResultGlobalVar (hGlb); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
+    } // End IF
+
+    // Free global memory for []EM
+    hGlb = lpMemPTD->hGlbQuadEM;
+    if (hGlb)
+    {
+        FreeResultGlobalVar (hGlb); lpMemPTD->hGlbQuadEM = NULL;
+    } // End IF
 
     // Free global storage for Native File functions
     if (lpMemPTD->hGlbNfns)

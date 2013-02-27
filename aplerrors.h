@@ -60,6 +60,7 @@
 #define ERRMSG_FILE_NOT_FOUND                   L"FILE NOT FOUND"
 #define ERRMSG_FILE_ACCESS_ERROR                L"FILE ACCESS_ERROR"
 #define ERRMSG_FILE_SHARE_ERROR                 L"FILE SHARE_ERROR"
+#define ERRMSG_FILE_NOT_LOCKED                  L"FILE NOT LOCKED"
 #define ERRMSG_PATH_NOT_FOUND                   L"PATH NOT FOUND"
 
 #define ERRMSG_NOT_ERASED                       L"NOT ERASED:"

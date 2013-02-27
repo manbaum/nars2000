@@ -49,6 +49,7 @@
 ////lpMemPTD->hWndFENxt     = NULL;
 ////lpMemPTD->EventType     = EVENTTYPE_NOERROR;
 ////lpMemPTD->uExecDepth    = 0;
+////lpMemPTD->hWaitEvent    = NULL;
 
 #define DESTROY_PERTABVARS                          \
     gmp_randclear (lpMemPTD->randState);            \
@@ -132,7 +133,8 @@ typedef struct tagPERTABDATA
     APLCHAR      cQuadPR,                   // []PR     (' ') (When a char scalar) (2 bytes)
                  cQuadxSA;                  // []SA     (0)   (in its index form as an integer) (2 bytes)
     DWORD        dwThreadId;                // Corresponding thread ID
-    HANDLE       hExitphore;                // Semaphore used to close a tab (may be NULL)
+    HANDLE       hExitphore,                // Semaphore used to close a tab (may be NULL)
+                 hWaitEvent;                // Handle for a pending Wait event
     HWND         hWndFENxt;                 // Next FE window handle (NULL = none)
     APLINT       aplCurrentFEATURE[FEATURENDX_LENGTH];  // Current values for []FEATURE
     gmp_randstate_t randState;              // MPIR random number state for Query

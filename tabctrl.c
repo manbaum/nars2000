@@ -867,26 +867,11 @@ void FreeGlobalStorage
     LPHSHTABSTR lpHTS;                  // Loop var
     LPSYMENTRY  lpSymEntry;             // ...
     LPHSHENTRY  lpHshEntry;             // ...
-    HGLOBAL     hGlb;                   // Temp var
 
     // If there's a pending wait event, ...
     if (lpMemPTD->hWaitEvent)
     {
         SetEvent (lpMemPTD->hWaitEvent); lpMemPTD->hWaitEvent = NULL;
-    } // End IF
-
-    // Free global memory for []DM
-    hGlb = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData;
-    if (hGlb)
-    {
-        FreeResultGlobalVar (hGlb); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
-    } // End IF
-
-    // Free global memory for []EM
-    hGlb = lpMemPTD->hGlbQuadEM;
-    if (hGlb)
-    {
-        FreeResultGlobalVar (hGlb); lpMemPTD->hGlbQuadEM = NULL;
     } // End IF
 
     // Free global storage for Native File functions

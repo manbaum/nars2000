@@ -155,6 +155,7 @@ LPPL_YYSTYPE SysFnDydNAPPEND_EM_YY
     LPNFNSHDR    lpNfnsHdr = NULL;  // Ptr to NFNSHDR global memory
     LPNFNSDATA   lpNfnsMem;         // Ptr to aNfnsData
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
+    OVERLAPPED   overLapped = {0};  // OVERLAPPED struc
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -229,6 +230,19 @@ LPPL_YYSTYPE SysFnDydNAPPEND_EM_YY
     if (!NfnsArgConv   (aplTypeRht, lpMemRht, aplNELMRht, 1, TRUE, &DiskConv, lpNfnsMem->DiskConv, NULL, 0, NULL))
         goto RIGHT_DOMAIN_EXIT;
 
+    // Initialize the OVERLAPPED struc with the file offset (-1 for append)
+    overLapped.Offset     =
+    overLapped.OffsetHigh = -1;
+
+    // Create an event
+    overLapped.hEvent =
+      CreateEvent (NULL,                        // Ptr to security attributes (may be NULL)
+                   TRUE,                        // TRUE iff manual-reset timer
+                   FALSE,                       // TRUE if initial state is signalled
+                   NULL);                       // Ptr to event name (may be NULL)
+    if (overLapped.hEvent EQ NULL)
+        goto EVENT_EXIT;
+
     // Set the file pointer to the end-of-file for appending
     aplFileOff = 0;
     LOAPLINT (aplFileOff) =
@@ -243,6 +257,8 @@ LPPL_YYSTYPE SysFnDydNAPPEND_EM_YY
                            lpMemLft,                // Ptr to left arg data
                            DiskConv,                // Disk conversion value (DR_xxx)
                           &aplFileOut,              // # bytes written to disk
+                          &overLapped,              // Ptr to OVERLAPPED struc
+                           lpMemPTD,                // Ptr to PerTabData global memory
                            lptkFunc))               // Ptr to function token
         goto ERROR_EXIT;
 
@@ -281,8 +297,19 @@ RIGHT_DOMAIN_EXIT:
                                lptkRhtArg);
     goto ERROR_EXIT;
 
+EVENT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
 NORMAL_EXIT:
+    if (overLapped.hEvent)
+    {
+        // We no longer need this resource
+        CloseHandle (overLapped.hEvent); overLapped.hEvent = NULL;
+    } // End IF
+
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -820,7 +847,7 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
     LPNFNSHDR     lpNfnsHdr = NULL;     // Ptr to NFNSHDR global memory
     LPNFNSDATA    lpNfnsMem;            // Ptr to aNfnsData
     LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
-    OVERLAPPED    overLapped = {0};     // OVERLAPPED struct
+    OVERLAPPED    overLapped = {0};     // OVERLAPPED struc
     DWORD         dwFlags = 0;          // LockFileEx flags
 
     // Get ptr to PerTabData global memory
@@ -941,7 +968,7 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
                        &LockTimeout.QuadPart))  // Ptr to result APLINT
         goto RIGHT_DOMAIN_EXIT;
 
-    // Initialize the OVERLAPPED struc
+    // Initialize the OVERLAPPED struc with the lock offset
     overLapped.Offset     = LOAPLINT (LockOffset);
     overLapped.OffsetHigh = HIAPLINT (LockOffset);
 ////overLapped.hEvent     = NULL;                       // Set above to zero by = {0}
@@ -953,7 +980,7 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
                                0,                       // Reserved
                                LOAPLINT (LockLength),   // # bytes to unlock, low dword
                                HIAPLINT (LockLength),   // ...                high ...
-                              &overLapped))             // Ptr to OVERLAPPED struct
+                              &overLapped))             // Ptr to OVERLAPPED struc
             {
                 SysErrMsg_EM (GetLastError (), lptkFunc);
 
@@ -985,7 +1012,7 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
                              0,                         // Reserved
                              LOAPLINT (LockLength),     // # bytes to lock, low dword
                              HIAPLINT (LockLength),     // ...              high ...
-                            &overLapped))               // Ptr to OVERLAPPED struct
+                            &overLapped))               // Ptr to OVERLAPPED struc
             {
                 DWORD dwErr = GetLastError ();
 
@@ -1024,8 +1051,8 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
                 lpMemPTD->hWaitEvent = NULL;
 
                 // If the lock is not granted, ...
-                if (hWaitEvent EQ NULL
-                 || dwRet NE WAIT_OBJECT_0)
+                if (hWaitEvent EQ NULL          // Ctrl-Break
+                 || dwRet NE WAIT_OBJECT_0)     // Incomplete I/O
                     goto LOCKED_EXIT;
             } // End IF
 
@@ -1100,7 +1127,7 @@ RIGHT_DOMAIN_EXIT:
 
 EVENT_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
-                               lptkLftArg);
+                               lptkFunc);
     goto ERROR_EXIT;
 
 LOCKED_EXIT:
@@ -1548,12 +1575,16 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
     APLNELM      uCnt,              // Loop counter
                  uMin;              // Loop limit
     UBOOL        bFileOffset;       // TRUE iff the file offset is specified
-    DWORD        dwRead;            // # bytes to read
+    DWORD        dwRead,            // # bytes to read
+                 dwRet,             // Return code from WaitForSingleObject
+                 dwErr;             // GetLastError code
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPNFNSHDR    lpNfnsHdr = NULL;  // Ptr to NFNSHDR global memory
     LPNFNSDATA   lpNfnsMem;         // Ptr to aNfnsData
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     NFNS_BUFFER  NfnsBuff;          // Temporary buffer
+    OVERLAPPED   overLapped = {0};  // OVERLAPPED struc
+    HANDLE       hWaitEvent;        // Wait event handle
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -1662,6 +1693,19 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                           FILE_CURRENT);
     } // End IF/ELSE
 
+    // Initialize the OVERLAPPED struc with the file offset
+    overLapped.Offset     = LOAPLINT (aplFileOff);
+    overLapped.OffsetHigh = HIAPLINT (aplFileOff);
+
+    // Create an event
+    overLapped.hEvent =
+      CreateEvent (NULL,                        // Ptr to security attributes (may be NULL)
+                   TRUE,                        // TRUE iff manual-reset timer
+                   FALSE,                       // TRUE if initial state is signalled
+                   NULL);                       // Ptr to event name (may be NULL)
+    if (overLapped.hEvent EQ NULL)
+        goto EVENT_EXIT;
+
     // Calculate the default result NELM
     // Split cases based upon the disk conversion code
     switch (DiskConv)
@@ -1741,126 +1785,238 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 
     // Read and translate the data from the file
 
-#define LIMIT_READ_IN(DstCast,SrcBuff,minval,maxval,SrcType,GetNext,ArrType)                \
-                    /* Loop through the chunks of the arg */                                \
-                    while (aplNELMRes)                                                      \
-                    {                                                                       \
-                        SrcType aplTemp;                                                    \
-                                                                                            \
-                        /* Get # source elements to handle in this chunk */                 \
-                        uMin = min (countof (NfnsBuff.SrcBuff), aplNELMRes);                \
-                                                                                            \
-                        /* Calculate the # bytes to read in */                              \
-                        dwRead = (DWORD) (uMin * sizeof (NfnsBuff.SrcBuff[0]));             \
-                                                                                            \
-                        /* Read in the next chunk of data */                                \
-                        if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */   \
-                                       NfnsBuff.SrcBuff,    /* Ptr to buffer           */   \
-                                       dwRead,              /* # bytes to read         */   \
-                                      &dwRead,              /* # bytes read            */   \
-                                       NULL))               /* Ptr to Overlapped struc */   \
-                            goto SYS_ERROR_EXIT;                                            \
-                        /* Loop through the arg */                                          \
-                        for (uCnt = 0; uCnt < uMin; uCnt++)                                 \
-                        {                                                                   \
-                            /* Get the source value */                                      \
-                            aplTemp = GetNext (NfnsBuff.SrcBuff, ArrType, uCnt);            \
-                                                                                            \
-                            /* If it's within range, ... */                                 \
-                            if (minval <= aplTemp                                           \
-                             &&           aplTemp <= maxval)                                \
-                                *((DstCast *) lpMemRes)++ = (DstCast) aplTemp;              \
-                            else                                                            \
-                                goto DOMAIN_EXIT;                                           \
-                        } /* End FOR */                                                     \
-                                                                                            \
-                        /* Remove from NELM */                                              \
-                        aplNELMRes -= uMin;                                                 \
-                     /* aplOff     += uMin; */                                              \
+#define LIMIT_READ_IN(DstCast,SrcBuff,minval,maxval,SrcType,GetNext,ArrType)                    \
+                    /* Loop through the chunks of the arg */                                    \
+                    while (aplNELMRes)                                                          \
+                    {                                                                           \
+                        SrcType aplTemp;                                                        \
+                                                                                                \
+                        /* Get # source elements to handle in this chunk */                     \
+                        uMin = min (countof (NfnsBuff.SrcBuff), aplNELMRes);                    \
+                                                                                                \
+                        /* Calculate the # bytes to read in */                                  \
+                        dwRead = (DWORD) (uMin * sizeof (NfnsBuff.SrcBuff[0]));                 \
+                                                                                                \
+                        /* Read in the next chunk of data */                                    \
+                        if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */       \
+                                       NfnsBuff.SrcBuff,    /* Ptr to buffer           */       \
+                                       dwRead,              /* # bytes to read         */       \
+                                       NULL,                /* # bytes read            */       \
+                                      &overLapped))         /* Ptr to OVERLAPPED struc */       \
+                        {                                                                       \
+                            /* Get the last error code */                                       \
+                            dwErr = GetLastError ();                                            \
+                                                                                                \
+                            /* If not still doing asynchronous I/O, ... */                      \
+                            if (dwErr NE ERROR_IO_PENDING)                                      \
+                                goto SYS_ERROR_EXIT;                                            \
+                        } /* End IF */                                                          \
+                                                                                                \
+                        /* Check for previous uncleared event */                                \
+                        Assert (lpMemPTD->hWaitEvent EQ NULL);                                  \
+                                                                                                \
+                        /* Save the wait event in case the user Ctrl-Breaks */                  \
+                        lpMemPTD->hWaitEvent = overLapped.hEvent;                               \
+                                                                                                \
+                        /* Wait for the I/O complete */                                         \
+                        dwRet = WaitForSingleObject (overLapped.hEvent, INFINITE);              \
+                                                                                                \
+                        /* Save and clear the wait event                                        \
+                            so as to test for Ctrl-Break signalling the event */                \
+                        hWaitEvent = lpMemPTD->hWaitEvent;                                      \
+                        lpMemPTD->hWaitEvent = NULL;                                            \
+                                                                                                \
+                        /* If the read is incomplete, ... */                                    \
+                        if (hWaitEvent EQ NULL          /* Ctrl-Break     */                    \
+                         || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */                    \
+                            goto INCOMPLETE_EXIT;                                               \
+                                                                                                \
+                        /* Get # bytes read */                                                  \
+                        GetOverlappedResult (lpNfnsMem->hFile,  /* File handle              */  \
+                                            &overLapped,        /* Ptr to OVERLAPPED struc  */  \
+                                            &dwRead,            /* Ptr to # bytes read      */  \
+                                             TRUE);             /* TRUE iff the function waits  \
+                                                                     for I/O completion     */  \
+                        /* Loop through the arg */                                              \
+                        for (uCnt = 0; uCnt < uMin; uCnt++)                                     \
+                        {                                                                       \
+                            /* Get the source value */                                          \
+                            aplTemp = GetNext (NfnsBuff.SrcBuff, ArrType, uCnt);                \
+                                                                                                \
+                            /* If it's within range, ... */                                     \
+                            if (minval <= aplTemp                                               \
+                             &&           aplTemp <= maxval)                                    \
+                                *((DstCast *) lpMemRes)++ = (DstCast) aplTemp;                  \
+                            else                                                                \
+                                goto DOMAIN_EXIT;                                               \
+                        } /* End FOR */                                                         \
+                                                                                                \
+                        /* Remove from NELM */                                                  \
+                        aplNELMRes -= uMin;                                                     \
+                     /* aplOff     += uMin; */                                                  \
+                                                                                                \
+                        /* Increment the offset in overLapped for next read */                  \
+                        aplFileOff += dwRead;                                                   \
+                        overLapped.Offset     = LOAPLINT (aplFileOff);                          \
+                        overLapped.OffsetHigh = HIAPLINT (aplFileOff);                          \
                     } /* End WHILE */
 
-#define READ_IN_PROMOTE_FROM_BOOL(DstCast)                                                  \
-                    /* Loop through the chunks of the arg */                                \
-                    while (aplNELMRes)                                                      \
-                    {                                                                       \
-                        APLINT aplTemp;                                                     \
-                                                                                            \
-                        /* Get # source elements to handle in this chunk */                 \
-                        uMin = min (8 * countof (NfnsBuff.Tchar8), aplNELMRes);             \
-                                                                                            \
-                        /* Calculate the # bytes to read in */                              \
-                        dwRead = (DWORD) RoundUpBitsToBytes (uMin);                         \
-                                                                                            \
-                        /* Read in the next chunk of data */                                \
-                        if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */   \
-                                       NfnsBuff.Tchar8,     /* Ptr to buffer           */   \
-                                       dwRead,              /* # bytes to read         */   \
-                                      &dwRead,              /* # bytes read            */   \
-                                       NULL))               /* Ptr to Overlapped struc */   \
-                            goto SYS_ERROR_EXIT;                                            \
-                                                                                            \
-                        /* Loop through the bytes in the arg */                             \
-                        for (uCnt = 0; uCnt < dwRead; uCnt++)                               \
-                            /* Reverse the bytes */                                         \
-                            NfnsBuff.Tchar8[uCnt] =                                         \
-                              FastBoolTrans[NfnsBuff.Tchar8[uCnt]][FBT_REVERSE];            \
-                                                                                            \
-                        /* Loop through the arg */                                          \
-                        for (uCnt = 0; uCnt < uMin; uCnt++)                                 \
-                        {                                                                   \
-                            /* Get the source value */                                      \
-                            aplTemp = GetNextInteger (NfnsBuff.Tchar8, ARRAY_BOOL, uCnt);   \
-                                                                                            \
-                            /* If it's within range, ... */                                 \
-                            if (IsBooleanValue (aplTemp))                                   \
-                                *((DstCast *) lpMemRes)++ = (DstCast) aplTemp;              \
-                            else                                                            \
-                                goto DOMAIN_EXIT;                                           \
-                        } /* End FOR */                                                     \
-                                                                                            \
-                        /* Remove from NELM */                                              \
-                        aplNELMRes -= uMin;                                                 \
-                     /* aplOff     += uMin; */                                              \
+#define READ_IN_PROMOTE_FROM_BOOL(DstCast)                                                      \
+                    /* Loop through the chunks of the arg */                                    \
+                    while (aplNELMRes)                                                          \
+                    {                                                                           \
+                        APLINT aplTemp;                                                         \
+                                                                                                \
+                        /* Get # source elements to handle in this chunk */                     \
+                        uMin = min (8 * countof (NfnsBuff.Tchar8), aplNELMRes);                 \
+                                                                                                \
+                        /* Calculate the # bytes to read in */                                  \
+                        dwRead = (DWORD) RoundUpBitsToBytes (uMin);                             \
+                                                                                                \
+                        /* Read in the next chunk of data */                                    \
+                        if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */       \
+                                       NfnsBuff.Tchar8,     /* Ptr to buffer           */       \
+                                       dwRead,              /* # bytes to read         */       \
+                                       NULL,                /* # bytes read            */       \
+                                      &overLapped))         /* Ptr to OVERLAPPED struc */       \
+                        {                                                                       \
+                            /* Get the last error code */                                       \
+                            dwErr = GetLastError ();                                            \
+                                                                                                \
+                            /* If not still doing asynchronous I/O, ... */                      \
+                            if (dwErr NE ERROR_IO_PENDING)                                      \
+                                goto SYS_ERROR_EXIT;                                            \
+                        } /* End IF */                                                          \
+                                                                                                \
+                        /* Check for previous uncleared event */                                \
+                        Assert (lpMemPTD->hWaitEvent EQ NULL);                                  \
+                                                                                                \
+                        /* Save the wait event in case the user Ctrl-Breaks */                  \
+                        lpMemPTD->hWaitEvent = overLapped.hEvent;                               \
+                                                                                                \
+                        /* Wait for the I/O complete */                                         \
+                        dwRet = WaitForSingleObject (overLapped.hEvent, INFINITE);              \
+                                                                                                \
+                        /* Save and clear the wait event                                        \
+                            so as to test for Ctrl-Break signalling the event */                \
+                        hWaitEvent = lpMemPTD->hWaitEvent;                                      \
+                        lpMemPTD->hWaitEvent = NULL;                                            \
+                                                                                                \
+                        /* If the read is incomplete, ... */                                    \
+                        if (hWaitEvent EQ NULL         /* Ctrl-Break     */                     \
+                         || dwRet NE WAIT_OBJECT_0)    /* Incomplete I/O */                     \
+                            goto INCOMPLETE_EXIT;                                               \
+                                                                                                \
+                        /* Get # bytes read */                                                  \
+                        GetOverlappedResult (lpNfnsMem->hFile,  /* File handle              */  \
+                                            &overLapped,        /* Ptr to OVERLAPPED struc  */  \
+                                            &dwRead,            /* Ptr to # bytes read      */  \
+                                             TRUE);             /* TRUE iff the function waits  \
+                                                                     for I/O completion     */  \
+                        /* Loop through the bytes in the arg */                                 \
+                        for (uCnt = 0; uCnt < dwRead; uCnt++)                                   \
+                            /* Reverse the bytes */                                             \
+                            NfnsBuff.Tchar8[uCnt] =                                             \
+                              FastBoolTrans[NfnsBuff.Tchar8[uCnt]][FBT_REVERSE];                \
+                                                                                                \
+                        /* Loop through the arg */                                              \
+                        for (uCnt = 0; uCnt < uMin; uCnt++)                                     \
+                        {                                                                       \
+                            /* Get the source value */                                          \
+                            aplTemp = GetNextInteger (NfnsBuff.Tchar8, ARRAY_BOOL, uCnt);       \
+                                                                                                \
+                            /* If it's within range, ... */                                     \
+                            if (IsBooleanValue (aplTemp))                                       \
+                                *((DstCast *) lpMemRes)++ = (DstCast) aplTemp;                  \
+                            else                                                                \
+                                goto DOMAIN_EXIT;                                               \
+                        } /* End FOR */                                                         \
+                                                                                                \
+                        /* Remove from NELM */                                                  \
+                        aplNELMRes -= uMin;                                                     \
+                     /* aplOff     += uMin; */                                                  \
+                                                                                                \
+                        /* Increment the offset in overLapped for next read */                  \
+                        aplFileOff += dwRead;                                                   \
+                        overLapped.Offset     = LOAPLINT (aplFileOff);                          \
+                        overLapped.OffsetHigh = HIAPLINT (aplFileOff);                          \
                     } /* End WHILE */
 
-#define READ_IN_DEMOTE_TO_BOOL(DstType,GetNext,ArrType,SrcType)                             \
-                    /* Loop through the chunks of the arg */                                \
-                    while (aplNELMRes)                                                      \
-                    {                                                                       \
-                        BYTE    uBitCount = 0;                                              \
-                        SrcType aplTemp;                                                    \
-                                                                                            \
-                        /* Get # source elements to handle in this chunk */                 \
-                        uMin = min (countof (NfnsBuff.DstType), aplNELMRes);                \
-                                                                                            \
-                        /* Calculate the # bytes to read in */                              \
-                        dwRead = (DWORD) (uMin * sizeof (SrcType));                         \
-                                                                                            \
-                        /* Read in the next chunk of data */                                \
-                        if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */   \
-                                       NfnsBuff.DstType,    /* Ptr to buffer           */   \
-                                       dwRead,              /* # bytes to read         */   \
-                                      &dwRead,              /* # bytes read            */   \
-                                       NULL))               /* Ptr to Overlapped struc */   \
-                            goto SYS_ERROR_EXIT;                                            \
-                                                                                            \
-                        /* Loop through the arg */                                          \
-                        for (uCnt = 0; uCnt < uMin; uCnt++)                                 \
-                        {                                                                   \
-                            /* Get the source value */                                      \
-                            aplTemp = GetNext (NfnsBuff.DstType, ArrType, uCnt);            \
-                                                                                            \
-                            /* If it's within range, ... */                                 \
-                            if (IsBooleanValue (aplTemp))                                   \
-                                ((LPAPLBOOL) lpMemRes)[(aplOff + uCnt) >> LOG2NBIB] |=      \
-                                  (aplTemp EQ 1) << (uBitCount++ % NBIB);                   \
-                            else                                                            \
-                                goto DOMAIN_EXIT;                                           \
-                        } /* End FOR */                                                     \
-                                                                                            \
-                        /* Remove from NELM */                                              \
-                        aplNELMRes -= uMin;                                                 \
-                        aplOff     += uMin;                                                 \
+#define READ_IN_DEMOTE_TO_BOOL(DstType,GetNext,ArrType,SrcType)                                 \
+                    /* Loop through the chunks of the arg */                                    \
+                    while (aplNELMRes)                                                          \
+                    {                                                                           \
+                        BYTE    uBitCount = 0;                                                  \
+                        SrcType aplTemp;                                                        \
+                                                                                                \
+                        /* Get # source elements to handle in this chunk */                     \
+                        uMin = min (countof (NfnsBuff.DstType), aplNELMRes);                    \
+                                                                                                \
+                        /* Calculate the # bytes to read in */                                  \
+                        dwRead = (DWORD) (uMin * sizeof (SrcType));                             \
+                                                                                                \
+                        /* Read in the next chunk of data */                                    \
+                        if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */       \
+                                       NfnsBuff.DstType,    /* Ptr to buffer           */       \
+                                       dwRead,              /* # bytes to read         */       \
+                                       NULL,                /* # bytes read            */       \
+                                      &overLapped))         /* Ptr to OVERLAPPED struc */       \
+                        {                                                                       \
+                            /* Get the last error code */                                       \
+                            dwErr = GetLastError ();                                            \
+                                                                                                \
+                            /* If not still doing asynchronous I/O, ... */                      \
+                            if (dwErr NE ERROR_IO_PENDING)                                      \
+                                goto SYS_ERROR_EXIT;                                            \
+                        } /* End IF */                                                          \
+                                                                                                \
+                        /* Check for previous uncleared event */                                \
+                        Assert (lpMemPTD->hWaitEvent EQ NULL);                                  \
+                                                                                                \
+                        /* Save the wait event in case the user Ctrl-Breaks */                  \
+                        lpMemPTD->hWaitEvent = overLapped.hEvent;                               \
+                                                                                                \
+                        /* Wait for the I/O complete */                                         \
+                        dwRet = WaitForSingleObject (overLapped.hEvent, INFINITE);              \
+                                                                                                \
+                        /* Save and clear the wait event                                        \
+                            so as to test for Ctrl-Break signalling the event */                \
+                        hWaitEvent = lpMemPTD->hWaitEvent;                                      \
+                        lpMemPTD->hWaitEvent = NULL;                                            \
+                                                                                                \
+                        /* If the read is incomplete, ... */                                    \
+                        if (hWaitEvent EQ NULL         /* Ctrl-Break     */                     \
+                         || dwRet NE WAIT_OBJECT_0)    /* Incomplete I/O */                     \
+                            goto INCOMPLETE_EXIT;                                               \
+                                                                                                \
+                        /* Get # bytes read */                                                  \
+                        GetOverlappedResult (lpNfnsMem->hFile,  /* File handle              */  \
+                                            &overLapped,        /* Ptr to OVERLAPPED struc  */  \
+                                            &dwRead,            /* Ptr to # bytes read      */  \
+                                             TRUE);             /* TRUE iff the function waits  \
+                                                                     for I/O completion     */  \
+                        /* Loop through the arg */                                              \
+                        for (uCnt = 0; uCnt < uMin; uCnt++)                                     \
+                        {                                                                       \
+                            /* Get the source value */                                          \
+                            aplTemp = GetNext (NfnsBuff.DstType, ArrType, uCnt);                \
+                                                                                                \
+                            /* If it's within range, ... */                                     \
+                            if (IsBooleanValue (aplTemp))                                       \
+                                ((LPAPLBOOL) lpMemRes)[(aplOff + uCnt) >> LOG2NBIB] |=          \
+                                  (aplTemp EQ 1) << (uBitCount++ % NBIB);                       \
+                            else                                                                \
+                                goto DOMAIN_EXIT;                                               \
+                        } /* End FOR */                                                         \
+                                                                                                \
+                        /* Remove from NELM */                                                  \
+                        aplNELMRes -= uMin;                                                     \
+                        aplOff     += uMin;                                                     \
+                                                                                                \
+                        /* Increment the offset in overLapped for next read */                  \
+                        aplFileOff += dwRead;                                                   \
+                        overLapped.Offset     = LOAPLINT (aplFileOff);                          \
+                        overLapped.OffsetHigh = HIAPLINT (aplFileOff);                          \
                     } /* End WHILE */
 
     // Split cases based upon the destination storage format
@@ -1879,9 +2035,42 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                     if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */
                                    lpMemRes,            /* Ptr to buffer           */
                                    dwRead,              /* # bytes to read         */
-                                  &dwRead,              /* # bytes read            */
-                                   NULL))               /* Ptr to Overlapped struc */
-                        goto SYS_ERROR_EXIT;
+                                   NULL,                /* # bytes read            */
+                                  &overLapped))         /* Ptr to OVERLAPPED struc */
+                    {
+                        /* Get the last error code */
+                        dwErr = GetLastError ();
+
+                        /* If not still doing asynchronous I/O, ... */
+                        if (dwErr NE ERROR_IO_PENDING)
+                            goto SYS_ERROR_EXIT;
+                    } /* End IF */
+
+                    /* Check for previous uncleared event */
+                    Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                    /* Save the wait event in case the user Ctrl-Breaks */
+                    lpMemPTD->hWaitEvent = overLapped.hEvent;
+
+                    /* Wait for the I/O complete */
+                    dwRet = WaitForSingleObject (overLapped.hEvent, INFINITE);
+
+                    /* Save and clear the wait event
+                        so as to test for Ctrl-Break signalling the event */
+                    hWaitEvent = lpMemPTD->hWaitEvent;
+                    lpMemPTD->hWaitEvent = NULL;
+
+                    /* If the read is incomplete, ... */
+                    if (hWaitEvent EQ NULL          /* Ctrl-Break     */
+                     || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */
+                        goto INCOMPLETE_EXIT;
+
+                    /* Get # bytes read */
+                    GetOverlappedResult (lpNfnsMem->hFile,  /* File handle                  */
+                                        &overLapped,        /* Ptr to OVERLAPPED struc      */
+                                        &dwRead,            /* Ptr to # bytes read          */
+                                         TRUE);             /* TRUE iff the function waits
+                                                                 for I/O completion         */
                     // Loop through the result reversing the bits in each byte
                     for (uCnt = 0; uCnt < uMin; uCnt++)
                         *((LPAPLBOOL) lpMemRes)++ = FastBoolTrans[*(LPAPLBOOL) lpMemRes][FBT_REVERSE];
@@ -2034,9 +2223,42 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                     if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */
                                    lpMemRes,            /* Ptr to buffer           */
                                    dwRead,              /* # bytes to read         */
-                                  &dwRead,              /* # bytes read            */
-                                   NULL))               /* Ptr to Overlapped struc */
-                        goto SYS_ERROR_EXIT;
+                                   NULL,                /* # bytes read            */
+                                  &overLapped))         /* Ptr to OVERLAPPED struc */
+                    {
+                        /* Get the last error code */
+                        dwErr = GetLastError ();
+
+                        /* If not still doing asynchronous I/O, ... */
+                        if (dwErr NE ERROR_IO_PENDING)
+                            goto SYS_ERROR_EXIT;
+                    } /* End IF */
+
+                    /* Check for previous uncleared event */
+                    Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                    /* Save the wait event in case the user Ctrl-Breaks */
+                    lpMemPTD->hWaitEvent = overLapped.hEvent;
+
+                    /* Wait for the I/O complete */
+                    dwRet = WaitForSingleObject (overLapped.hEvent, INFINITE);
+
+                    /* Save and clear the wait event
+                        so as to test for Ctrl-Break signalling the event */
+                    hWaitEvent = lpMemPTD->hWaitEvent;
+                    lpMemPTD->hWaitEvent = NULL;
+
+                    /* If the read is incomplete, ... */
+                    if (hWaitEvent EQ NULL          /* Ctrl-Break     */
+                     || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */
+                        goto INCOMPLETE_EXIT;
+
+                    /* Get # bytes read */
+                    GetOverlappedResult (lpNfnsMem->hFile,  /* File handle                  */
+                                        &overLapped,        /* Ptr to OVERLAPPED struc      */
+                                        &dwRead,            /* Ptr to # bytes read          */
+                                         TRUE);             /* TRUE iff the function waits
+                                                                 for I/O completion         */
                     break;
 
                 case DR_FLOAT:          // Read -- Dest = INT, Src = FLOAT
@@ -2093,9 +2315,42 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                     if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */
                                    lpMemRes,            /* Ptr to buffer           */
                                    dwRead,              /* # bytes to read         */
-                                  &dwRead,              /* # bytes read            */
-                                   NULL))               /* Ptr to Overlapped struc */
-                        goto SYS_ERROR_EXIT;
+                                   NULL,                /* # bytes read            */
+                                  &overLapped))         /* Ptr to OVERLAPPED struc */
+                    {
+                        /* Get the last error code */
+                        dwErr = GetLastError ();
+
+                        /* If not still doing asynchronous I/O, ... */
+                        if (dwErr NE ERROR_IO_PENDING)
+                            goto SYS_ERROR_EXIT;
+                    } /* End IF */
+
+                    /* Check for previous uncleared event */
+                    Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                    /* Save the wait event in case the user Ctrl-Breaks */
+                    lpMemPTD->hWaitEvent = overLapped.hEvent;
+
+                    /* Wait for the I/O complete */
+                    dwRet = WaitForSingleObject (overLapped.hEvent, INFINITE);
+
+                    /* Save and clear the wait event
+                        so as to test for Ctrl-Break signalling the event */
+                    hWaitEvent = lpMemPTD->hWaitEvent;
+                    lpMemPTD->hWaitEvent = NULL;
+
+                    /* If the read is incomplete, ... */
+                    if (hWaitEvent EQ NULL          /* Ctrl-Break     */
+                     || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */
+                        goto INCOMPLETE_EXIT;
+
+                    /* Get # bytes read */
+                    GetOverlappedResult (lpNfnsMem->hFile,  /* File handle                  */
+                                        &overLapped,        /* Ptr to OVERLAPPED struc      */
+                                        &dwRead,            /* Ptr to # bytes read          */
+                                         TRUE);             /* TRUE iff the function waits
+                                                                 for I/O completion         */
                     break;
 
                 case DR_CHAR32:         // Read -- Dest = CHAR, Src = CHAR32
@@ -2236,9 +2491,42 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                     if (!ReadFile (lpNfnsMem->hFile,    /* File Handle             */
                                    lpMemRes,            /* Ptr to buffer           */
                                    dwRead,              /* # bytes to read         */
-                                  &dwRead,              /* # bytes read            */
-                                   NULL))               /* Ptr to Overlapped struc */
-                        goto SYS_ERROR_EXIT;
+                                   NULL,                /* # bytes read            */
+                                  &overLapped))         /* Ptr to OVERLAPPED struc */
+                    {
+                        /* Get the last error code */
+                        dwErr = GetLastError ();
+
+                        /* If not still doing asynchronous I/O, ... */
+                        if (dwErr NE ERROR_IO_PENDING)
+                            goto SYS_ERROR_EXIT;
+                    } /* End IF */
+
+                    /* Check for previous uncleared event */
+                    Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                    /* Save the wait event in case the user Ctrl-Breaks */
+                    lpMemPTD->hWaitEvent = overLapped.hEvent;
+
+                    /* Wait for the I/O complete */
+                    dwRet = WaitForSingleObject (overLapped.hEvent, INFINITE);
+
+                    /* Save and clear the wait event
+                        so as to test for Ctrl-Break signalling the event */
+                    hWaitEvent = lpMemPTD->hWaitEvent;
+                    lpMemPTD->hWaitEvent = NULL;
+
+                    /* If the read is incomplete, ... */
+                    if (hWaitEvent EQ NULL          /* Ctrl-Break     */
+                     || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */
+                        goto INCOMPLETE_EXIT;
+
+                    /* Get # bytes read */
+                    GetOverlappedResult (lpNfnsMem->hFile,  /* File handle                  */
+                                        &overLapped,        /* Ptr to OVERLAPPED struc      */
+                                        &dwRead,            /* Ptr to # bytes read          */
+                                         TRUE);             /* TRUE iff the function waits
+                                                                 for I/O completion         */
                     break;
 
                 defstop
@@ -2288,6 +2576,16 @@ WSFULL_EXIT:
                                lptkFunc);
     goto ERROR_EXIT;
 
+EVENT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+INCOMPLETE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_INCOMPLETE_IO APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 SYS_ERROR_EXIT:
     SysErrMsg_EM (GetLastError (), lptkFunc);
 
@@ -2306,6 +2604,12 @@ ERROR_EXIT:
         MyGlobalFree (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    if (overLapped.hEvent)
+    {
+        // We no longer need this resource
+        CloseHandle (overLapped.hEvent); overLapped.hEvent = NULL;
+    } // End IF
+
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
@@ -2560,6 +2864,7 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
     LPNFNSHDR    lpNfnsHdr = NULL;  // Ptr to NFNSHDR global memory
     LPNFNSDATA   lpNfnsMem;         // Ptr to aNfnsData
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
+    OVERLAPPED   overLapped = {0};  // OVERLAPPED struc
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -2666,6 +2971,19 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
                           FILE_CURRENT);
     } // End IF/ELSE
 
+    // Save the file offset in the OVERLAPPED struc
+    overLapped.Offset     = LOAPLINT (aplFileOff);
+    overLapped.OffsetHigh = HIAPLINT (aplFileOff);
+
+    // Create an event
+    overLapped.hEvent =
+      CreateEvent (NULL,                        // Ptr to security attributes (may be NULL)
+                   TRUE,                        // TRUE iff manual-reset timer
+                   FALSE,                       // TRUE if initial state is signalled
+                   NULL);                       // Ptr to event name (may be NULL)
+    if (overLapped.hEvent EQ NULL)
+        goto EVENT_EXIT;
+
     // Translate the data to DiskConv format and write it out
     if (!NfnsWriteData_EM (lpNfnsMem->hFile,        // File handle
                            aplTypeLft,              // Left arg storage type
@@ -2673,6 +2991,8 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
                            lpMemLft,                // Ptr to left arg data
                            DiskConv,                // Disk conversion value (DR_xxx)
                           &aplFileOut,              // # bytes written to disk
+                          &overLapped,              // Ptr to OVERLAPPED struc
+                           lpMemPTD,                // Ptr to PerTabData global memory
                            lptkFunc))               // Ptr to function token
         goto ERROR_EXIT;
 
@@ -2711,8 +3031,19 @@ RIGHT_DOMAIN_EXIT:
                                lptkRhtArg);
     goto ERROR_EXIT;
 
+EVENT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
 NORMAL_EXIT:
+    if (overLapped.hEvent)
+    {
+        // We no longer need this resource
+        CloseHandle (overLapped.hEvent); overLapped.hEvent = NULL;
+    } // End IF
+
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -4913,22 +5244,32 @@ UBOOL NfnsResize
 #endif
 
 UBOOL NfnsWriteData_EM
-    (HANDLE   hFile,                    // File handle
-     APLSTYPE aplType,                  // Source storage type
-     APLNELM  aplNELM,                  // ...    NELM
-     LPVOID   lpMem,                    // Ptr to source data
-     DR_VAL   DiskConv,                 // Disk conversion value (DR_xxx)
-     LPAPLINT lpaplFileOut,             // # bytes written to disk
-     LPTOKEN  lptkFunc)                 // Ptr to function token
+    (HANDLE       hFile,                // File handle
+     APLSTYPE     aplType,              // Source storage type
+     APLNELM      aplNELM,              // ...    NELM
+     LPVOID       lpMem,                // Ptr to source data
+     DR_VAL       DiskConv,             // Disk conversion value (DR_xxx)
+     LPAPLINT     lpaplFileOut,         // # bytes written to disk
+     LPOVERLAPPED lpOverLapped,         // Ptr to overlapped struct
+     LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
+     LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
     UBOOL       bRet = TRUE;            // TRUE iff the result is valid
     APLUINT     uCnt;                   // Loop counter
-    DWORD       dwWritten;              // # bytes to write out
+    APLINT      aplFileOff;             // Starting offset of write
+    DWORD       dwWritten,              // # bytes to write out
+                dwRet,                  // Return code from WaitForSingleObject
+                dwErr;                  // GetLastError code
     APLNELM     uMin,                   // Minimum of size and NELM
                 aplOff = 0;             // Offset from start
     UINT        uBitMask = BIT0;        // Bit mask for looping through Booleans
     NFNS_BUFFER NfnsBuff;               // Temporary buffer
+    HANDLE      hWaitEvent;             // Wait event handle
+
+    // Get the initial write offset (possibly -1)
+    LOAPLINT (aplFileOff) = lpOverLapped->Offset;
+    HIAPLINT (aplFileOff) = lpOverLapped->OffsetHigh;
 
     // Initialize the # bytes written to disk
     *lpaplFileOut = 0;
@@ -4968,12 +5309,53 @@ UBOOL NfnsWriteData_EM
                         if (!WriteFile (hFile,              // File handle
                                         NfnsBuff.Tchar8,    // Data to write out
                                         dwWritten,          // # bytes to write out
-                                       &dwWritten,          // Ptr to # bytes written
-                                        NULL))              // Ptr to Overlapped struc
-                            goto SYS_ERROR_EXIT;
+                                        NULL,               // Ptr to # bytes written
+                                        lpOverLapped))      // Ptr to OVERLAPPED struc
+                        {
+                            // Get the last error code
+                            dwErr = GetLastError ();
 
+                            // If not still doing asynchronous I/O, ...
+                            if (dwErr NE ERROR_IO_PENDING)
+                                goto SYS_ERROR_EXIT;
+                        } // End IF
+
+                        // Check for previous uncleared event
+                        Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                        // Save the wait event in case the user Ctrl-Breaks
+                        lpMemPTD->hWaitEvent = lpOverLapped->hEvent;
+
+                        // Wait for the specified time
+                        dwRet = WaitForSingleObject (lpOverLapped->hEvent, INFINITE);
+
+                        // Save and clear the wait event
+                        //  so as to test for Ctrl-Break signalling the event
+                        hWaitEvent = lpMemPTD->hWaitEvent;
+                        lpMemPTD->hWaitEvent = NULL;
+
+                        // If the write is incomplete, ...
+                        if (hWaitEvent EQ NULL          /* Ctrl-Break     */
+                         || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */
+                            goto INCOMPLETE_EXIT;
+
+                        // Get # bytes written
+                        GetOverlappedResult (hFile,         // File handle
+                                             lpOverLapped,  // Ptr to OVERLAPPED struc
+                                            &dwWritten,     // Ptr to # bytes written
+                                             TRUE);         // TRUE iff the function waits
+                                                            //   for I/O completion
                         // Accumulate the # bytes written to disk
                         *lpaplFileOut += dwWritten;
+
+                        /* If it's not append, ... */
+                        if (aplFileOff NE -1)
+                        {
+                            /* Increment the offset in overLapped for next write */
+                            aplFileOff += dwWritten;
+                            lpOverLapped->Offset     = LOAPLINT (aplFileOff);
+                            lpOverLapped->OffsetHigh = HIAPLINT (aplFileOff);
+                        } /* End IF */
                     } // Wnd WHILE
 
                     break;
@@ -5012,12 +5394,53 @@ UBOOL NfnsWriteData_EM
                         if (!WriteFile (hFile,              /* File handle             */           \
                                         NfnsBuff.a,         /* Data to write out       */           \
                                         dwWritten,          /* # bytes to write out    */           \
-                                       &dwWritten,          /* Ptr to # bytes written  */           \
-                                        NULL))              /* Ptr to Overlapped struc */           \
-                            goto SYS_ERROR_EXIT;                                                    \
+                                        NULL,               /* Ptr to # bytes written  */           \
+                                        lpOverLapped))      /* Ptr to OVERLAPPED struc */           \
+                        {                                                                           \
+                            /* Get the last error code */                                           \
+                            dwErr = GetLastError ();                                                \
                                                                                                     \
+                            /* If not still doing asynchronous I/O, ... */                          \
+                            if (dwErr NE ERROR_IO_PENDING)                                          \
+                                goto SYS_ERROR_EXIT;                                                \
+                        } /* End IF */                                                              \
+                                                                                                    \
+                        /* Check for previous uncleared event */                                    \
+                        Assert (lpMemPTD->hWaitEvent EQ NULL);                                      \
+                                                                                                    \
+                        /* Save the wait event in case the user Ctrl-Breaks */                      \
+                        lpMemPTD->hWaitEvent = lpOverLapped->hEvent;                                \
+                                                                                                    \
+                        /* Wait for the specified time */                                           \
+                        dwRet = WaitForSingleObject (lpOverLapped->hEvent, INFINITE);               \
+                                                                                                    \
+                        /* Save and clear the wait event                                            \
+                            so as to test for Ctrl-Break signalling the event */                    \
+                        hWaitEvent = lpMemPTD->hWaitEvent;                                          \
+                        lpMemPTD->hWaitEvent = NULL;                                                \
+                                                                                                    \
+                        /* If the write is incomplete, ... */                                       \
+                        if (hWaitEvent EQ NULL          /* Ctrl-Break     */                        \
+                         || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */                        \
+                            goto INCOMPLETE_EXIT;                                                   \
+                                                                                                    \
+                        /* Get # bytes written */                                                   \
+                        GetOverlappedResult (hFile,         /* File handle                */        \
+                                             lpOverLapped,  /* Ptr to OVERLAPPED struc    */        \
+                                            &dwWritten,     /* Ptr to # bytes written     */        \
+                                             TRUE);         /* TRUE iff the function waits          \
+                                                                 for I/O completion       */        \
                         /* Accumulate the # bytes written to disk */                                \
                         *lpaplFileOut += dwWritten;                                                 \
+                                                                                                    \
+                        /* If it's not append, ... */                                               \
+                        if (aplFileOff NE -1)                                                       \
+                        {                                                                           \
+                            /* Increment the offset in overLapped for next write */                 \
+                            aplFileOff += dwWritten;                                                \
+                            lpOverLapped->Offset     = LOAPLINT (aplFileOff);                       \
+                            lpOverLapped->OffsetHigh = HIAPLINT (aplFileOff);                       \
+                        } /* End IF */                                                              \
                     } /* End WHILE */
 
                 case DR_CHAR8:          // Write -- Src = BOOL, Dest = CHAR8
@@ -5100,12 +5523,53 @@ UBOOL NfnsWriteData_EM
                         if (!WriteFile (hFile,              /* File handle             */   \
                                         NfnsBuff.DstType,   /* Data to write out       */   \
                                         dwWritten,          /* # bytes to write out    */   \
-                                       &dwWritten,          /* Ptr to # bytes written  */   \
-                                        NULL))              /* Ptr to Overlapped struc */   \
-                            goto SYS_ERROR_EXIT;                                            \
+                                        NULL,               /* Ptr to # bytes written  */   \
+                                        lpOverLapped))      /* Ptr to OVERLAPPED struc */   \
+                        {                                                                   \
+                            /* Get the last error code */                                   \
+                            dwErr = GetLastError ();                                        \
                                                                                             \
+                            /* If not still doing asynchronous I/O, ... */                  \
+                            if (dwErr NE ERROR_IO_PENDING)                                  \
+                                goto SYS_ERROR_EXIT;                                        \
+                        } /* End IF */                                                      \
+                                                                                            \
+                        /* Check for previous uncleared event */                            \
+                        Assert (lpMemPTD->hWaitEvent EQ NULL);                              \
+                                                                                            \
+                        /* Save the wait event in case the user Ctrl-Breaks */              \
+                        lpMemPTD->hWaitEvent = lpOverLapped->hEvent;                        \
+                                                                                            \
+                        /* Wait for the specified time */                                   \
+                        dwRet = WaitForSingleObject (lpOverLapped->hEvent, INFINITE);       \
+                                                                                            \
+                        /* Save and clear the wait event                                    \
+                            so as to test for Ctrl-Break signalling the event */            \
+                        hWaitEvent = lpMemPTD->hWaitEvent;                                  \
+                        lpMemPTD->hWaitEvent = NULL;                                        \
+                                                                                            \
+                        /* If the write is incomplete, ... */                               \
+                        if (hWaitEvent EQ NULL          /* Ctrl-Break     */                \
+                         || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */                \
+                            goto INCOMPLETE_EXIT;                                           \
+                                                                                            \
+                        /* Get # bytes written */                                           \
+                        GetOverlappedResult (hFile,         /* File handle                */\
+                                             lpOverLapped,  /* Ptr to OVERLAPPED struc    */\
+                                            &dwWritten,     /* Ptr to # bytes written     */\
+                                             TRUE);         /* TRUE iff the function waits  \
+                                                                 for I/O completion       */\
                         /* Accumulate the # bytes written to disk */                        \
                         *lpaplFileOut += dwWritten;                                         \
+                                                                                            \
+                        /* If it's not append, ... */                                       \
+                        if (aplFileOff NE -1)                                               \
+                        {                                                                   \
+                            /* Increment the offset in overLapped for next write */         \
+                            aplFileOff += dwWritten;                                        \
+                            lpOverLapped->Offset     = LOAPLINT (aplFileOff);               \
+                            lpOverLapped->OffsetHigh = HIAPLINT (aplFileOff);               \
+                        } /* End IF */                                                      \
                     } /* End WHILE */
 
 #define DEMOTE_TO_BOOL_WRITE_OUT(GetNext,SrcType)                                           \
@@ -5143,12 +5607,53 @@ UBOOL NfnsWriteData_EM
                         if (!WriteFile (hFile,              /* File handle             */   \
                                         NfnsBuff.Tchar8,    /* Data to write out       */   \
                                         dwWritten,          /* # bytes to write out    */   \
-                                       &dwWritten,          /* Ptr to # bytes written  */   \
-                                        NULL))              /* Ptr to Overlapped struc */   \
-                            goto SYS_ERROR_EXIT;                                            \
+                                        NULL,               /* Ptr to # bytes written  */   \
+                                        lpOverLapped))      /* Ptr to OVERLAPPED struc */   \
+                        {                                                                   \
+                            /* Get the last error code */                                   \
+                            dwErr = GetLastError ();                                        \
                                                                                             \
+                            /* If not still doing asynchronous I/O, ... */                  \
+                            if (dwErr NE ERROR_IO_PENDING)                                  \
+                                goto SYS_ERROR_EXIT;                                        \
+                        } /* End IF */                                                      \
+                                                                                            \
+                        /* Check for previous uncleared event */                            \
+                        Assert (lpMemPTD->hWaitEvent EQ NULL);                              \
+                                                                                            \
+                        /* Save the wait event in case the user Ctrl-Breaks */              \
+                        lpMemPTD->hWaitEvent = lpOverLapped->hEvent;                        \
+                                                                                            \
+                        /* Wait for the specified time */                                   \
+                        dwRet = WaitForSingleObject (lpOverLapped->hEvent, INFINITE);       \
+                                                                                            \
+                        /* Save and clear the wait event                                    \
+                            so as to test for Ctrl-Break signalling the event */            \
+                        hWaitEvent = lpMemPTD->hWaitEvent;                                  \
+                        lpMemPTD->hWaitEvent = NULL;                                        \
+                                                                                            \
+                        /* If the write is incomplete, ... */                               \
+                        if (hWaitEvent EQ NULL          /* Ctrl-Break     */                \
+                         || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */                \
+                            goto INCOMPLETE_EXIT;                                           \
+                                                                                            \
+                        /* Get # bytes written */                                           \
+                        GetOverlappedResult (hFile,         /* File handle                */\
+                                             lpOverLapped,  /* Ptr to OVERLAPPED struc    */\
+                                            &dwWritten,     /* Ptr to # bytes written     */\
+                                             TRUE);         /* TRUE iff the function waits  \
+                                                                 for I/O completion       */\
                         /* Accumulate the # bytes written to disk */                        \
                         *lpaplFileOut += dwWritten;                                         \
+                                                                                            \
+                        /* If it's not append, ... */                                       \
+                        if (aplFileOff NE -1)                                               \
+                        {                                                                   \
+                            /* Increment the offset in overLapped for next write */         \
+                            aplFileOff += dwWritten;                                        \
+                            lpOverLapped->Offset     = LOAPLINT (aplFileOff);               \
+                            lpOverLapped->OffsetHigh = HIAPLINT (aplFileOff);               \
+                        } /* End IF */                                                      \
                     } /* End WHILE */
 
         case ARRAY_INT:                 // Write -- Src = INT
@@ -5234,9 +5739,42 @@ UBOOL NfnsWriteData_EM
                         if (!WriteFile (hFile,          // File handle
                                         lpMem,          // Data to write out
                                         dwWritten,      // # bytes to write out
-                                       &dwWritten,      // Ptr to # bytes written
-                                        NULL))          // Ptr to Overlapped struc
-                            goto SYS_ERROR_EXIT;
+                                        NULL,           // Ptr to # bytes written
+                                        lpOverLapped))  // Ptr to OVERLAPPED struc
+                        {
+                            /* Get the last error code */
+                            dwErr = GetLastError ();
+
+                            /* If not still doing asynchronous I/O, ... */
+                            if (dwErr NE ERROR_IO_PENDING)
+                                goto SYS_ERROR_EXIT;
+                        } /* End IF */
+
+                        /* Check for previous uncleared event */
+                        Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                        /* Save the wait event in case the user Ctrl-Breaks */
+                        lpMemPTD->hWaitEvent = lpOverLapped->hEvent;
+
+                        /* Wait for the specified time */
+                        dwRet = WaitForSingleObject (lpOverLapped->hEvent, INFINITE);
+
+                        /* Save and clear the wait event
+                            so as to test for Ctrl-Break signalling the event */
+                        hWaitEvent = lpMemPTD->hWaitEvent;
+                        lpMemPTD->hWaitEvent = NULL;
+
+                        /* If the write is incomplete, ... */
+                        if (hWaitEvent EQ NULL          /* Ctrl-Break     */
+                         || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */
+                            goto INCOMPLETE_EXIT;
+
+                        // Get # bytes written
+                        GetOverlappedResult (hFile,         // File handle
+                                             lpOverLapped,  // Ptr to OVERLAPPED struc
+                                            &dwWritten,     // Ptr to # bytes written
+                                             TRUE);         // TRUE iff the function waits
+                                                            //   for I/O completion
                     } // End IF/ELSE
 
                     // Accumulate the # bytes written to disk
@@ -5285,10 +5823,42 @@ UBOOL NfnsWriteData_EM
                     if (!WriteFile (hFile,          // File handle
                                     lpMem,          // Data to write out
                                     dwWritten,      // # bytes to write out
-                                   &dwWritten,      // Ptr to # bytes written
-                                    NULL))          // Ptr to Overlapped struc
-                        goto SYS_ERROR_EXIT;
+                                    NULL,           // Ptr to # bytes written
+                                    lpOverLapped))  // Ptr to OVERLAPPED struc
+                    {
+                        /* Get the last error code */
+                        dwErr = GetLastError ();
 
+                        /* If not still doing asynchronous I/O, ... */
+                        if (dwErr NE ERROR_IO_PENDING)
+                            goto SYS_ERROR_EXIT;
+                    } /* End IF */
+
+                    /* Check for previous uncleared event */
+                    Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                    /* Save the wait event in case the user Ctrl-Breaks */
+                    lpMemPTD->hWaitEvent = lpOverLapped->hEvent;
+
+                    /* Wait for the specified time */
+                    dwRet = WaitForSingleObject (lpOverLapped->hEvent, INFINITE);
+
+                    /* Save and clear the wait event
+                        so as to test for Ctrl-Break signalling the event */
+                    hWaitEvent = lpMemPTD->hWaitEvent;
+                    lpMemPTD->hWaitEvent = NULL;
+
+                    /* If the write is incomplete, ... */
+                    if (hWaitEvent EQ NULL          /* Ctrl-Break     */
+                     || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */
+                        goto INCOMPLETE_EXIT;
+
+                    // Get # bytes written
+                    GetOverlappedResult (hFile,         // File handle
+                                         lpOverLapped,  // Ptr to OVERLAPPED struc
+                                        &dwWritten,     // Ptr to # bytes written
+                                         TRUE);         // TRUE iff the function waits
+                                                        //   for I/O completion
                     // Accumulate the # bytes written to disk
                     *lpaplFileOut += dwWritten;
 
@@ -5450,10 +6020,42 @@ UBOOL NfnsWriteData_EM
                     if (!WriteFile (hFile,          // File handle
                                     lpMem,          // Data to write out
                                     dwWritten,      // # bytes to write out
-                                   &dwWritten,      // Ptr to # bytes written
-                                    NULL))          // Ptr to Overlapped struc
-                        goto SYS_ERROR_EXIT;
+                                    NULL,           // Ptr to # bytes written
+                                    lpOverLapped))  // Ptr to OVERLAPPED struc
+                    {
+                        /* Get the last error code */
+                        dwErr = GetLastError ();
 
+                        /* If not still doing asynchronous I/O, ... */
+                        if (dwErr NE ERROR_IO_PENDING)
+                            goto SYS_ERROR_EXIT;
+                    } /* End IF */
+
+                    /* Check for previous uncleared event */
+                    Assert (lpMemPTD->hWaitEvent EQ NULL);
+
+                    /* Save the wait event in case the user Ctrl-Breaks */
+                    lpMemPTD->hWaitEvent = lpOverLapped->hEvent;
+
+                    /* Wait for the specified time */
+                    dwRet = WaitForSingleObject (lpOverLapped->hEvent, INFINITE);
+
+                    /* Save and clear the wait event
+                        so as to test for Ctrl-Break signalling the event */
+                    hWaitEvent = lpMemPTD->hWaitEvent;
+                    lpMemPTD->hWaitEvent = NULL;
+
+                    /* If the write is incomplete, ... */
+                    if (hWaitEvent EQ NULL          /* Ctrl-Break     */
+                     || dwRet NE WAIT_OBJECT_0)     /* Incomplete I/O */
+                        goto INCOMPLETE_EXIT;
+
+                    // Get # bytes written
+                    GetOverlappedResult (hFile,         // File handle
+                                         lpOverLapped,  // Ptr to OVERLAPPED struc
+                                        &dwWritten,     // Ptr to # bytes written
+                                         TRUE);         // TRUE iff the function waits
+                                                        //   for I/O completion
                     // Accumulate the # bytes written to disk
                     *lpaplFileOut += dwWritten;
 
@@ -5478,6 +6080,11 @@ SYS_ERROR_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+INCOMPLETE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_INCOMPLETE_IO APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

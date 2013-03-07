@@ -150,6 +150,10 @@ Welcome to NARS2000</h1>
           <span class="APL">A[{iota}-{rho}A]</span>, and even
           <span class="APL">A[{iota}{neg}1 1[?({rho}{rho}A){rho}2]{times}{rho}A]</span>
           are all identical for any array <span class="APL">A</span> in either origin</li>
+        <li>± Infinity (e.g., <span class="APL">{infinity}</span> for infinity
+          and <span class="APL">{overbar}{infinity}</span> for negative infinity)
+          &mdash; considerable development work needs to be done to this
+          feature to handle the many special cases</li>
         <li>Monadic and dyadic domino (<span class="APL">{domino}R</span> and <span class="APL">L{domino}R</span>)
           &mdash; matrix inverse/divide extended to use Moore-Penrose pseudo-inverse algorithm via Singular Value
           Decomposition</li>
@@ -178,8 +182,10 @@ Welcome to NARS2000</h1>
         <li>Primitive monadic/dyadic functions (<span class="APL">{pi}R</span>) (Prime Decomposition)
           and (<span class="APL">L{pi}R</span>) (Number Theoretic)</li>
         <li>Primitive dyadic function (<span class="APL">L..R</span>) (Sequence)</li>
+        <li>Primitive dyadic operator quad colon (<span class="APL">f{variant}b R</span> and <span class="APL">L f{variant}b R</span>) (Variant)</li>
         <li>System variables:
           <ul>
+			<li><span class="APL">{quad}DT</span> (Distribution Type)</li>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
             <li><span class="APL">{quad}FPC</span> (Floating Point Control)</li>
             <li><span class="APL">{quad}IC</span> (Indeterminate Control)</li>
@@ -348,7 +354,7 @@ Welcome to NARS2000</h1>
       along contiguous bits</li>
     <li>Right double click on an editable name brings up the function editor on that name</li>
     <li>Control chars (<span class="APL">{quad}TCBEL</span>, <span class="APL">{quad}TCBS</span>,
-      <span class="APL">{quad}TCDEL</span>, <span class="APL">{quad}TCESC</span>,
+      <span class="APL">{quad}TCESC</span>,
       <span class="APL">{quad}TCFF</span>, <span class="APL">{quad}TCHT</span>,
       <span class="APL">{quad}TCLF</span>, <span class="APL">{quad}TCNL</span>, and
       <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</li>
@@ -365,6 +371,7 @@ Welcome to NARS2000</h1>
       that system variable may assume</li>
     <li>An empty vector assignment to
       <span class="APL">{quad}CT</span>,
+      <span class="APL">{quad}DT</span>,
       <span class="APL">{quad}FC</span>,
       <span class="APL">{quad}IC</span>,
       <span class="APL">{quad}IO</span>,

@@ -5,7 +5,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
     DBGENTER;
 
-    Assert (lpYYFcnStr->YYInuse);
+    Assert (lpYYFcnStr->YYInuse || lpYYFcnStr->tkToken.tkFlags.TknType EQ TKT_FCNIMMED);
 
     // Get the left and right arg global memory handle
     if (lptkLftArg)
@@ -1112,6 +1112,10 @@ LPPL_YYSTYPE ExecOp2_EM_YY
 
             return NULL;
 
+        case UTF16_VARIANT:         // Variant
+            return PrimOpVariant_EM_YY (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
+                                        lpYYFcnStrOpr,      // Ptr to operator function strand
+                                        lptkRhtArg);        // Ptr to right arg token
         defstop
             return NULL;
     } // End SWITCH

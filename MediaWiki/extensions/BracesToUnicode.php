@@ -61,11 +61,12 @@
 
 $wgHooks['ParserAfterTidy'][] = 'fnBracesToUnicode';
 
-$Home = '/rul/mediawiki';   // Do not end with a backslash
-$PathToExt = 'extensions';  // Do not start or end with a backslash
+$Home      = '/rul/mediawiki';      // Do not end with a backslash
+$PathToExt = 'extensions';          // Do not start or end with a backslash
+$FileName  = 'b2a.inc.php';         // Do not start with a backslash
 
 // Get the array of mappings of names to numbers
-require_once ("$Home/$PathToExt/b2a.inc.php");
+require_once ("$Home/$PathToExt/$FileName");
 
 // Initialize various flags
 $bTitle = false;    // TRUE iff surround Unicode symbol with <span title="..."> </span>

@@ -4118,6 +4118,27 @@ int mpifr_cmp_si
 
 
 //***************************************************************************
+//  $mpifr_cmp_d
+//
+//  Compare op1 and op1, returning
+//    positive if op1 >  op2,
+//    zero     if op1 == op2
+//    negative if op1 <  op2
+//***************************************************************************
+
+int mpifr_cmp_d
+    (mpfr_t op1,                // Left arg
+     double op2)                // Right arg
+
+{
+    if (mpfr_inf_p (op1))
+        return mpfr_sgn (op1);
+    else
+        return mpfr_cmp_d (op1, op2);
+} // End mpifr_cmp_d
+
+
+//***************************************************************************
 //  $mpifr_eq
 //
 //  Return non-zero if the first op3 bits of op1 and op2 are equal,
@@ -4164,12 +4185,24 @@ void mpifr_reldiff
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    UBOOL bZ1,
+          bZ2;
+
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            mpfr_reldiff (mpfr_clr_inf (rop), op1, op2, rnd);
+            bZ1 = mpfr_zero_p (op1);
+            bZ2 = mpfr_zero_p (op2);
+
+            if (bZ1 && bZ2)
+                mpfr_set_ui (mpfr_clr_inf (rop), 0, MPFR_RNDN);
+            else
+            if (bZ1 || bZ2)
+                mpfr_set_ui (mpfr_clr_inf (rop), 1, MPFR_RNDN);
+            else
+                // Call the original function
+                mpfr_reldiff (mpfr_clr_inf (rop), op1, op2, rnd);
 
             break;
 

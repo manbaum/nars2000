@@ -48,6 +48,7 @@
 ////lpMemPTD->hExitphore    = NULL;
 ////lpMemPTD->hWndFENxt     = NULL;
 ////lpMemPTD->EventType     = EVENTTYPE_NOERROR;
+////lpMemPTD->gslRNG        = NULL;
 ////lpMemPTD->uExecDepth    = 0;
 ////lpMemPTD->hWaitEvent    = NULL;
 
@@ -55,6 +56,7 @@
     gmp_randclear (lpMemPTD->randState);            \
     Myf_clear (&lpMemPTD->mpfrPi);                  \
     Myf_clear (&lpMemPTD->mpfrE);                   \
+    gsl_rng_free (lpMemPTD->gslRNG);                \
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -141,6 +143,7 @@ typedef struct tagPERTABDATA
     APLVFP       mpfrPi,                    // MPFR value for Pi
                  mpfrE;                     // MPFR value for e
     HGLOBAL      hGlbNfns;                  // Global memory handle for []Nfns data
+    LPVOID       gslRNG;                    // Ptr to GSL random number generator
 } PERTABDATA, *LPPERTABDATA;
 
 

@@ -69,6 +69,7 @@
 
 #define KEYNAME_QUADALX                 L"QuadALX"
 #define KEYNAME_QUADCT                  L"QuadCT"
+#define KEYNAME_QUADDT                  L"QuadDT"
 #define KEYNAME_QUADELX                 L"QuadELX"
 #define KEYNAME_QUADFC                  L"QuadFC"
 #define KEYNAME_QUADFEATURE             L"QuadFEATURE"
@@ -697,6 +698,17 @@ UBOOL ReadIniFileGlb
                                KEYNAME_QUADCT,      // Ptr to the key name
                                DEF_QUADCT_CWS,      // Ptr to the default value
                                lpwszIniFile);       // Ptr to the file name
+    // Read in []DT
+    GetPrivateProfileStringW (SECTNAME_SYSVARS,     // Ptr to the section name
+                              KEYNAME_QUADDT,       // Ptr to the key name
+                              DEF_QUADDT_CWS,       // Ptr to the default value
+                              wszTemp,              // Ptr to the output buffer
+                              TEMPBUFLEN,           // Count of the output buffer
+                              lpwszIniFile);        // Ptr to the file name
+    // Convert any {name}s to symbols
+    ConvertNameInPlace (wszTemp);
+    cQuadDT_CWS = wszTemp[0];
+
     // Read in []ELX
     hGlbQuadELX_CWS =
       GetPrivateProfileGlbCharW (SECTNAME_SYSVARS,  // Ptr to the section name
@@ -924,6 +936,12 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADCT,        // Ptr to the key name
                              DEF_RESETVARS_CT,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bResetVars.DT
+    bResetVars.DT =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
+                             KEYNAME_QUADDT,        // Ptr to the key name
+                             DEF_RESETVARS_DT,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bResetVars.FC
     bResetVars.FC =
@@ -1847,6 +1865,7 @@ void SaveIniFile
     UINT          uCnt,                             // Loop counter
                   uCnt2,                            // ...
                   uCol,                             // ...
+                  uLen,                             // Length value
                   uTmp;                             // Temp var
     LPVOID        lpMemObj;                         // Ptr to object global memory
     LPAPLCHAR     lpaplChar;                        // Ptr to output save area
@@ -2253,6 +2272,19 @@ void SaveIniFile
                                 KEYNAME_QUADCT,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
+    //************************ []DT ***************************
+    // Format []DT
+    wszTemp[0] = WC_SQ;
+    uLen = (UINT)
+      ConvertWideToNameLength (&wszTemp[1], &cQuadDT_CWS, 1);
+    wszTemp[uLen + 1] = WC_SQ;
+    wszTemp[uLen + 2] = WC_EOS;
+
+    // Write out []DT
+    WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
+                                KEYNAME_QUADDT,             // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
     //************************ []ELX **************************
     // Write out []ELX
     WritePrivateProfileGlbCharW (SECTNAME_SYSVARS,
@@ -2396,8 +2428,6 @@ void SaveIniFile
         wszTemp[2] = WC_EOS;
     } else
     {
-        UINT uLen;
-
         wszTemp[0] = WC_SQ;
         uLen = (UINT)
           ConvertWideToNameLength (&wszTemp[1], &cQuadPR_CWS, 1);
@@ -2544,6 +2574,16 @@ void SaveIniFile
     // Write out bResetVars.CT
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
                                 KEYNAME_QUADCT,             // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //****************** bResetVars.DT ************************
+    // Format bResetVars.DT
+    wszTemp[0] = L'0' + bResetVars.DT;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bResetVars.DT
+    WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
+                                KEYNAME_QUADDT,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.FC ************************
@@ -2773,7 +2813,6 @@ void SaveIniFile
     {
         WCHAR wszKeybChars[8 * 8 - 2 + 1],              // Room for a string formatted by FMTSTR_KEYBCHARS
               wszCount[8 + 1];                          // Scancode count
-        UINT uLen;                                      // Length value
 
         // Format the section name
         wsprintfW (wszSectName,

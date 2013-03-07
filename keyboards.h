@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,7 +83,6 @@ typedef struct tagVKSTATE
 //     < Left Caret               Alt-'3'
 //     ? Question Mark            Alt-'q'
 //     > Right Caret              Alt-'7'
-//     ! Shriek                   Alt-'_'
 //     ' Single Quote             Alt-'k'
 //     ~ Tilde                    Alt-'t'
 //     ^ Up Caret (Circumflex)    Alt-'0'
@@ -120,7 +119,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {L'8', UTF16_NOTEQUAL          , 0, 0, L'*', UTF16_CIRCLESTAR        , 0, 0},    // 09:  '8'
  {L'9', UTF16_DOWNCARET         , 0, 0, L'(', UTF16_DOWNCARETTILDE    , 0, 0},    // 0A:  '9'
  {L'0', UTF16_UPCARET           , 0, 0, L')', UTF16_UPCARETTILDE      , 0, 0},    // 0B:  '0'
- {L'-', UTF16_TIMES             , 0, 0, L'_', UTF16_QUOTEDOT          , 0, 0},    // 0C:  '-'
+ {L'-', UTF16_TIMES             , 0, 0, L'_', UTF16_VARIANT           , 0, 0},    // 0C:  '-'
  {L'=', UTF16_COLONBAR          , 0, 0, L'+', UTF16_DOMINO            , 0, 0},    // 0D:  '='
  {  0 },                                                                          // 0E:  BS
  {  0 },                                                                          // 0F:  HT
@@ -234,7 +233,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {L'8', 0, UTF16_NOTEQUAL          , 0, L'*', 0, UTF16_CIRCLESTAR        , 0},    // 09:  '8'
  {L'9', 0, UTF16_DOWNCARET         , 0, L'(', 0, UTF16_DOWNCARETTILDE    , 0},    // 0A:  '9'
  {L'0', 0, UTF16_UPCARET           , 0, L')', 0, UTF16_UPCARETTILDE      , 0},    // 0B:  '0'
- {L'-', 0, UTF16_TIMES             , 0, L'_', 0, UTF16_QUOTEDOT          , 0},    // 0C:  '-'
+ {L'-', 0, UTF16_TIMES             , 0, L'_', 0, UTF16_VARIANT           , 0},    // 0C:  '-'
  {L'=', 0, UTF16_COLONBAR          , 0, L'+', 0, UTF16_DOMINO            , 0},    // 0D:  '='
  {  0 },                                                                          // 0E:  BS
  {  0 },                                                                          // 0F:  HT
@@ -304,7 +303,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {  0 },                                                                          // 4C:  Center ???
  {  0 },                                                                          // 4D:  Right
  {L'+', 0, UTF16_DOMINO            , 0, L'+', 0, UTF16_DOMINO            , 0},    // 4E:  PadPlus
-//  U   A  C                        AC    S  SA  SC                       SCA
+//  U   A  C                        AC    S   SA                     SC   SCA
  {  0 },                                                                          // 4F:  End
  {  0 },                                                                          // 50:  Down
  {  0 },                                                                          // 51:  PageDown
@@ -347,7 +346,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {  L'8' ,  0    , 0x2260,  0    ,  L'(' ,  L'[' , 0x235F,  0     },              // 09:  '8'
  {  L'9' ,  0    , 0x2228,  0    ,  L')' ,  L']' , 0x2371,  0     },              // 0A:  '9'
  {  L'0' ,  0    , 0x2227,  0    ,  L'=' ,  L'}' , 0x2372,  0     },              // 0B:  '0'
- {  L'+' ,  0    , 0x00D7,  0    ,  L'?' ,  0    ,  L'!' ,  0     },              // 0C:  '-'
+ {  L'+' ,  0    , 0x00D7,  0    ,  L'?' ,  0    , 0x2360,  0     },              // 0C:  '-'
  { 0x00B4,  0    , 0x00F7,  0    ,  L'`' ,  L'|' , 0x2339,  0     },              // 0D:  '='
  {  0 },                                                                          // 0E:  BS
  {  0 },                                                                          // 0F:  HT
@@ -456,7 +455,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {  L'_' , 0x2260,  L'\\',  0    ,  L'8' , 0x235F,  0    ,  0     },              // 09:  '8'
  { 0x00E7, 0x2228,  L'^' ,  0    ,  L'9' , 0x2371,  0    ,  0     },              // 0A:  '9'
  { 0x00E0, 0x2227,  L'@' ,  0    ,  L'0' , 0x2372,  0    ,  0     },              // 0B:  '0'
- {  L')' , 0x00D7,  L']' ,  0    , 0x2218,  L'!' ,  0    ,  0     },              // 0C:  '-'
+ {  L')' , 0x00D7,  L']' ,  0    , 0x2218, 0x2360,  0    ,  0     },              // 0C:  '-'
  {  L'=' , 0x00F7,  L'}' ,  0    ,  L'+' , 0x2339,  0    ,  0     },              // 0D:  '='
  {  0 },                                                                          // 0E:  BS
  {  0 },                                                                          // 0F:  HT

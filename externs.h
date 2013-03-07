@@ -200,6 +200,9 @@ HGLOBAL  hGlbQuadALX_CWS     ,          // []ALX     ([]dm)
          hGlbQuadWSID_CWS    ,          // []WSID    (WS_EOS)
          hGlbQuadPR_CWS      ;          // []PR      (L"") (When an empty vector)
 EXTERN
+APLCHAR  cQuadDT_CWS         ;          // []DT
+
+EXTERN
 APLFLOAT fQuadCT_CWS         ;          // []CT
 
 EXTERN
@@ -253,6 +256,7 @@ RANGELIMIT bRangeLimit
 typedef struct tagRESET_VARS
 {
     UBOOL CT     :1,
+          DT     :1,
           FC     :1,
           FEATURE:1,
           FPC    :1,
@@ -267,6 +271,7 @@ EXTERN
 RESET_VARS bResetVars
 #ifdef DEFINE_VALUES
 = {DEF_RESETVARS_CT,        // []CT
+   DEF_RESETVARS_DT,        // []DT
    DEF_RESETVARS_FC,        // []FC
    DEF_RESETVARS_FEATURE,   // []FEATURE
    DEF_RESETVARS_FPC,       // []FPC
@@ -463,6 +468,11 @@ typedef struct tagPRIMFLAGS
                        :18;             //      FFFFC000:  Available flag bits
     LPPRIMOPS lpPrimOps;                // 04:  Ptr to PRIMOPS entry of the identity function (or NULL if it's a scalar fcn)
 } PRIMFLAGS, *LPPRIMFLAGS;
+
+// N.B.:  Whenever changing the above struct (PRIMFLAGS),
+//   be sure to make a corresponding change to
+//    <DfnIdents[]> in <GetPrimFlagsPtr> in <getfns.c>, and
+//    <InitPrimFlags> in <initdata.c>.
 
 EXTERN
 PRIMFLAGS PrimFlags[PRIMTAB_LEN];       // The flag tables for all primitive functions/operators
@@ -1262,7 +1272,7 @@ HIMAGELIST hImageListTC,                // Handle to the common image list for T
            hImageListOW;                // ...                                 OW
 
 // Same order as in ARRAY_TYPES
-// so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED < LIST < RAT
+// so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED < LIST < RAT < VFP
 EXTERN
 UINT uTypeMap[]
 #ifdef DEFINE_VALUES
@@ -1281,6 +1291,50 @@ UBOOL gbResDebug
 #endif
 #endif
 ;
+
+//***************************************************************************
+//  Variant enums, strucs, etc.
+//***************************************************************************
+
+typedef enum tagVARIANT_KEYS
+{
+    VARIANT_KEY_CT = 0,     // 00:  []CT
+    VARIANT_KEY_DT    ,     // 01:  []DT
+    VARIANT_KEY_IO    ,     // 02:  []IO
+    VARIANT_KEY_PP    ,     // 03:  []PP
+    VARIANT_KEY_LENGTH,     // 04:  # entries
+} VARIANTKEYS, *LPVARIANTKEYS;
+
+#define VARIANT_KEY_ERROR   VARIANT_KEY_LENGTH
+
+// N.B.:  Whenever changing the above enum (VARIANT_KEYS)
+//   be sure to make a corresponding change to
+//   <aVariantKeyStr> below, and
+//   <InitSystemVars> in <sysvars.c>.
+
+typedef struct tagVARIANT_KEY_STR
+{
+    LPAPLCHAR         lpKeyName;        // 00:  Ptr to key name (ASCIIZ)
+    SYS_VARS          sysVarIndex;      // 04:  Sys var index (see SYSVARS)
+    ASYSVARVALIDSET   aSysVarValidSet;  // 08:  Ptr to validation function
+} VARIANTKEYSTR, LPVARIANTKEYSTR;
+
+EXTERN
+VARIANTKEYSTR aVariantKeyStr[VARIANT_KEY_LENGTH]
+#ifdef DEFINE_VALUES
+= {{L"CT"   , SYSVAR_CT, NULL},
+   {L"DT"   , SYSVAR_DT, NULL},
+   {L"IO"   , SYSVAR_IO, NULL},
+   {L"PP"   , SYSVAR_PP, NULL},
+  }
+#endif
+;
+
+typedef struct tagVARIANT_USE_STR
+{
+    UBOOL    bInuse;            // 00:  TRUE iff this entry is in use
+    SYMENTRY OldSymEntry;       // 04:  Old SYMENTRY
+} VARIANTUSESTR, *LPVARIANTUSESTR;
 
 
 //***************************************************************************

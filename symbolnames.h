@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -239,7 +239,8 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_DOWNCARETTILDE       , L"{nor}"                },  // ...
   {UTF16_UPCARETTILDE         , L"{upcarettilde}"       },  // Alt-')' - nand
   {UTF16_UPCARETTILDE         , L"{nand}"               },  // ...
-  {UTF16_QUOTEDOT             , L"{quotedot}"           },  // Alt-'_' - quote-dot
+  {UTF16_VARIANT              , L"{variant}"            },  // Alt-'_' - variant
+  {UTF16_VARIANT              , L"{quadcolon}"          },  // Alt-'_' - variant
   {UTF16_DOMINO               , L"{domino}"             },  // Alt-'+' - domino
 
 // Second row, unshifted
@@ -280,6 +281,7 @@ SYMBOLNAMES aSymbolNames[]
   {L' '                       , L"{space}"              },
 
 // Non-Alt key equivalents (these are the only ones we need for SaveWS)
+  {UTF16_QUOTEDOT             , L"{quotedot}"           },  // 0021:  Quote dot
   {UTF16_DOUBLEQUOTE          , L"{doublequote}"        },  // 0022:  Double quote
   {UTF16_NUMBER               , L"{number}"             },  // 0023:  Number
   {UTF16_STAR                 , L"{star}"               },  // 002A:  Star
@@ -289,8 +291,8 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_SLOPE                , L"{backslash}"          },  // 005C:  ...
   {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // 005E:  Circumflex
   {UTF16_LEFTBRACE            , L"{leftbrace}"          },  // 007B:  Left brace
-  {UTF16_STILE                , L"{stile}"              },  // 2223:   Modulus
-  {UTF16_STILE                , L"{mod}"                },  // ...
+  {UTF16_STILE                , L"{stile}"              },  // 2223:  Modulus
+  {UTF16_STILE                , L"{mod}"                },  // ...    Stile
   {UTF16_STILE2               , L"{stile2}"             },  // 007C:  Stile (a.k.a. 0x2223)
   {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 007D:  Right brace
   {UTF16_TILDE2               , L"{tilde2}"             },  // 007E:  Tilde (a.k.a. 0x223C)

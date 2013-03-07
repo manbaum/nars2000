@@ -133,7 +133,7 @@ MV=makever
 LINKDEBUG=0
 
 MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
-MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN).lib
+MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
 ECM_LIB  = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
 
 CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)" /D "_STDINT_H"
@@ -520,6 +520,7 @@ $(O)po_jotdot.obj:      $(@B).c         $(PO_JOTDOT_DEP)
 $(O)po_multiset.obj:    $(@B).c         $(PO_MULTISET_DEP)
 $(O)po_slash.obj:       $(@B).c         $(PO_SLASH_DEP)
 $(O)po_slope.obj:       $(@B).c         $(PO_SLOPE_DEP)
+$(O)po_variant.obj:     $(@B).c         $(PO_VARIANT_DEP)
 $(O)primfns.obj:        $(@B).c         $(PRIMFNS_DEP)
 $(O)primspec.obj:       $(@B).c         $(PRIMSPEC_DEP)
 $(O)progbar.obj:        $(@B).c         $(PROGBAR_DEP)

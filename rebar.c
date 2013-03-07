@@ -2511,7 +2511,7 @@ typedef struct tagLANGCHARS
         {UTF16_QUOTEDOT           , {0}, L"QuoteDot",
                                          L"Factorial:      !R\n"
                                          L"Combinations:  L!R  or  L![X] R\n\n"
-                                         L"Keyboard:  '!' or Shift-'1' or Alt-'k'\n\n"
+                                         L"Keyboard:  '!' or Shift-'1'\n\n"
                                          L"Unicode:  0x0021 or 33"},
         {UTF16_QUERY              , {0}, L"Query",
                                          L"Roll:   ?R\n"
@@ -2701,11 +2701,11 @@ typedef struct tagLANGCHARS
                                          L"Unicode:  0x00A7 or 167"},
         {UTF16_PI                 , {0}, L"Pi",
                                          L"Prime Factors:            " WS_UTF16_PI L"R\n"
-                                         L"Nth Prime:              " WS_UTF16_OVERBAR L"2" WS_UTF16_PI L"R\n"
+                                         L"Rth Prime:              " WS_UTF16_OVERBAR L"2" WS_UTF16_PI L"R\n"
                                          L"Previous Prime:         " WS_UTF16_OVERBAR L"1" WS_UTF16_PI L"R\n"
                                          L"Primality Test:          0" WS_UTF16_PI L"R\n"
                                          L"Next Prime:              1" WS_UTF16_PI L"R\n"
-                                         L"Number of Primes:        2" WS_UTF16_PI L"R\n"
+                                         L"Number of Primes " WS_UTF16_LEFTCARETUNDERBAR L"R:     2" WS_UTF16_PI L"R\n"
                                          L"Divisor Count Function: 10" WS_UTF16_PI L"R\n"
                                          L"Divisor Sum Function:   11" WS_UTF16_PI L"R\n"
                                          L"M" L"\x00F6" L"bius Function:        12" WS_UTF16_PI L"R\n"
@@ -2768,19 +2768,19 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'.'\n\n"
                                          L"Unicode:  0x2340 or 9024"},
         {UTF16_CIRCLEMIDDLEDOT    , {0}, L"CircleMiddleDot",
-                                         L"Null Operator:    f" WS_UTF16_CIRCLEMIDDLEDOT L"R\n"
-                                         L"                L f" WS_UTF16_CIRCLEMIDDLEDOT L"R\n\n"
+                                         L"Null Operator:    f" WS_UTF16_CIRCLEMIDDLEDOT L" R\n"
+                                         L"                L f" WS_UTF16_CIRCLEMIDDLEDOT L" R\n\n"
                                          L"Keyboard:  Alt-'?' or Alt-Shift-'/'\n\n"
                                          L"Unicode:  0x2299 or 8857"},
         {UTF16_DIERESIS           , {0}, L"Dieresis",
-                                         L"Each Operator:  f" WS_UTF16_DIERESIS L"R\n"
-                                         L"              L f" WS_UTF16_DIERESIS L"R\n"
+                                         L"Each Operator:  f" WS_UTF16_DIERESIS L" R\n"
+                                         L"              L f" WS_UTF16_DIERESIS L" R\n"
                                          L"              L f" WS_UTF16_DIERESIS L"[X] R\n\n"
                                          L"Keyboard:  Alt-'1'\n\n"
                                          L"Unicode:  0x00A8 or 168"},
         {UTF16_DIERESISTILDE      , {0}, L"DieresisTilde",
-                                         L"Duplicate Operator:  f" WS_UTF16_DIERESISTILDE L"R\n"
-                                         L"Commute Operator:  L f" WS_UTF16_DIERESISTILDE L"R\n\n"
+                                         L"Duplicate Operator:  f" WS_UTF16_DIERESISTILDE L" R\n"
+                                         L"Commute Operator:  L f" WS_UTF16_DIERESISTILDE L" R\n\n"
                                          L"Keyboard:  Alt-'T' or Alt-Shift-'t'\n\n"
                                          L"Unicode:  0x2368 or 9064"},
         {UTF16_DIERESISJOT        , {0}, L"DieresisJot",
@@ -2791,8 +2791,8 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'J' or Alt-Shift-'j'\n\n"
                                          L"Unicode:  0x2364 or 9060"},
         {UTF16_DOWNSHOESTILE      , {0}, L"Multiset",
-                                         L"Multiset Operator:  f" WS_UTF16_DOWNSHOESTILE L"R\n"
-                                         L"                  L f" WS_UTF16_DOWNSHOESTILE L"R\n"
+                                         L"Multiset Operator:  f" WS_UTF16_DOWNSHOESTILE L" R\n"
+                                         L"                  L f" WS_UTF16_DOWNSHOESTILE L" R\n"
                                          L"Keyboard:  Alt-'m'\n\n"
                                          L"Unicode:  0x2366 or 9062"},
 ////////{UTF16_DIERESISSTAR       , {0}, L""},       // Uncomment when implemented
@@ -2806,8 +2806,9 @@ typedef struct tagLANGCHARS
 ////////{UTF16_CIRCLESTILE        , {0}, L""},       // ...
         {UTF16_DOT                , {0}, L"Dot",
                                          L"Inner Product Operator:  L f.g R\n"
-                                         L"Outer Product Operator:  L " WS_UTF16_JOT L".g R\n\n"
-                                         L"Sequence:  L .. R\n\n"
+                                         L"Outer Product Operator:  L " WS_UTF16_JOT L".g R\n"
+                                         L"Sequence:  L..R\n"
+                                         L"Decimal notation separator:  1.23\n\n"
                                          L"Keyboard:  '.'\n\n"
                                          L"Unicode:  0x002E or 46"},
         {UTF16_JOT                , {0}, L"Jot",
@@ -2817,6 +2818,11 @@ typedef struct tagLANGCHARS
                                          L"                 L f" WS_UTF16_JOT L"g  R\n\n"
                                          L"Keyboard:  Alt-'j'\n\n"
                                          L"Unicode:  0x2218 or 8728"},
+        {UTF16_VARIANT            , {0}, L"QuadColon",
+                                         L"Variant Operator:  (f" WS_UTF16_VARIANT L"b) R\n"
+                                         L"                 L (f" WS_UTF16_VARIANT L"b) R\n\n"
+                                         L"Keyboard:  Alt-'_'\n\n"
+                                         L"Unicode:  0x2360 or 9056"},
         LANGCHARS_SEPARATOR
         {UTF16_QUOTEQUAD          , {0}, L"QuoteQuad",
                                          L"Character input from the keyboard:  A" WS_UTF16_LEFTARROW WS_UTF16_QUOTEQUAD L"\n"
@@ -2825,7 +2831,8 @@ typedef struct tagLANGCHARS
                                          L"Unicode:  0x235E or 9054"},
         {UTF16_QUAD               , {0}, L"Quad",
                                          L"Used as the first character in system names\n\n"
-                                         L"Evaluated Input:  A" WS_UTF16_LEFTARROW WS_UTF16_QUAD L"\n\n"
+                                         L"Evaluated Input:  A" WS_UTF16_LEFTARROW WS_UTF16_QUAD L"\n"
+                                         L"Evaluated Output: " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"A\n\n"
                                          L"Keyboard:  Alt-'l'\n\n"
                                          L"Unicode:  0x2395 or 9109"},
         {UTF16_UPTACKJOT          , {0}, L"UpTackJot",
@@ -2862,7 +2869,7 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'H' or Alt-Shift-'h'\n\n"
                                          L"Unicode:  0x2359 or 9049"},
         {UTF16_UNDERBAR           , {0}, L"Underbar",
-                                         L"Used as the first or subsequent character in names\n\n"
+                                         L"Used as the first or subsequent character in names such as _type\n\n"
                                          L"Keyboard:  '_' or Shift-'-'\n\n"
                                          L"Unicode:  0x005F or 95"},
         {UTF16_ALPHA              , {0}, L"Alpha",
@@ -2876,33 +2883,35 @@ typedef struct tagLANGCHARS
         LANGCHARS_SEPARATOR
         {UTF16_OVERBAR            , {0}, L"Overbar",
                                          L"When it immediately precedes a number, it indicates that the number is negative.  "
-                                         L"It also may be used as the second or subsequent character in names.\n\n"
+                                         L"It also may be used as the second or subsequent character in names such as a" WS_UTF16_OVERBAR L"3.\n\n"
                                          L"Keyboard:  Alt-'2'\n\n"
                                          L"Unicode:  0x00AF or 175"},
         {UTF16_ZILDE              , {0}, L"Zilde",
-                                         L"Empty numeric vector\n\n"
+                                         L"Empty numeric vector as opposed to ''\n"
+                                         L"which is an empty character vector\n\n"
                                          L"Keyboard:  Alt-'}' or Alt-Shift-']'\n\n"
                                          L"Unicode:  0x236C or 9068"},
         {UTF16_INFINITY           , {0}, L"Infinity",
                                          L" "             WS_UTF16_INFINITY L" is the largest (floating point) number\n"
-                                         WS_UTF16_OVERBAR WS_UTF16_INFINITY L" is the smallest (floating point) number\n\n"
+                                         WS_UTF16_OVERBAR WS_UTF16_INFINITY L" is the smallest (floating point) number\n"
+                                         WS_UTF16_INFINITY L"r1 is an infinite rational number\n\n"
                                          L"Keyboard:  Alt-'f'\n\n"
                                          L"Unicode:  0x221E or 8734"},
         LANGCHARS_SEPARATOR
         {L'b'                     , {0}, L"Base point notation",
-                                         L"This notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF.  "
+                                         L"This infix notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF to represent 16" WS_UTF16_UPTACK L"15 15 15 15 or 65535.  "
                                          L"The number to the left of the b is the base of the number system for the characters to the right of the b."
                                          },
         {L'e'                     , {0}, L"Exponential point notation",
-                                         L"This notation allows you to enter numeric constants by specifying a signed multiplier and a signed base 10 exponent "
-                                         L"as in 1.23e" WS_UTF16_OVERBAR L"3."
+                                         L"This infix notation allows you to enter numeric constants by specifying a signed multiplier and a signed base 10 exponent "
+                                         L"as in 1.23e" WS_UTF16_OVERBAR L"3 to represent 1.23" WS_UTF16_TIMES L"10*" WS_UTF16_OVERBAR L"3."
                                          },
         {L'p'                     , {0}, L"Pi point notation",
-                                         L"This notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
+                                         L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
                                          L"as in 0.5p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"3."
                                          },
         {DEF_RATSEP               , {0}, L"Rational Point Notation",
-                                         L"This notation allows you to enter Rational numbers as in 1r3, or, if the denominator is 1, using the suffix x as in 123x.  "
+                                         L"This infix notation allows you to enter Rational numbers as in 1r3 to represent 1" WS_UTF16_COLONBAR L"3, or, if the denominator is 1, using the suffix x as in 123x.  "
                                          L"Such constants are of infinite precision."
                                          },
         {DEF_VFPSEP               , {0}, L"Variable-precision Floating Point notation",
@@ -2910,9 +2919,10 @@ typedef struct tagLANGCHARS
                                          L"a precision controlled by the current value of " WS_UTF16_QUAD L"FPC, as opposed to the 53-bit precision of IEEE-754 floating point numbers."
                                          },
         {L'x'                     , {0}, L"Euler point notation",
-                                         L"This notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "
+                                         L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "
                                          L"as in 3x2 for three times e squared where e is the base of the natural logarithm.\r\n\r\n"
-                                         L"A suffix \"x\" on  a numeric integer constant such as 123x indicates that the constant is a rational number."
+                                         L"As a suffix notation, \"x\" following an integer constant such as " WS_UTF16_OVERBAR L"123x indicates "
+                                         L"that the constant is a rational integer identical to " WS_UTF16_OVERBAR L"123r1."
                                          },
     };
 

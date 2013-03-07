@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,6 +91,276 @@ APLLONGEST ValidateFirstItemToken
 
     return aplLongestRht;
 } // End ValidateFirstItemToken
+
+
+//***************************************************************************
+//  $GetNextIntegerToken
+//
+//  Return the next value from a token as an integer.
+//***************************************************************************
+
+APLINT GetNextIntegerToken
+    (LPTOKEN  lptkArg,                  // Ptr to arg token
+     APLINT   uIndex,                   // Index
+     APLSTYPE aplTypeArg,               // Arg storage type
+     LPUBOOL  lpbRet)                   // Ptr to TRUE iff the result is valid
+
+{
+    APLLONGEST aplLongestArg;           // Immediate value
+    HGLOBAL    hGlbArg;                 // Right arg global memory handle
+    LPVOID     lpMemArg;                // Ptr to right arg global memory
+    APLINT     aplIntegerRes;           // The result
+    APLSTYPE   aplTypeItm;              // Item storage type
+    APLFLOAT   aplFloatItm;             // Immediate item as a float
+    APLCHAR    aplCharItm;              // Immediate item as a char
+    HGLOBAL    hGlbItm;                 // ...                 HGLOBAL
+
+    // Assume it'll be successful
+    *lpbRet = TRUE;
+
+    // If the arg is simple non-hetero, ...
+    if (IsSimpleNH (aplTypeArg))
+        // Get the next value from the right operand (index origin)
+        GetNextValueToken (lptkArg,                     // Ptr to the token
+                           uIndex,                      // Index to use
+                           NULL,                        // Ptr to the integer (or Boolean) (may be NULL)
+                           NULL,                        // ...        float (may be NULL)
+                           NULL,                        // ...        char (may be NULL)
+                          &aplLongestArg,               // ...        longest (may be NULL)
+                           NULL,                        // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                           NULL,                        // ...        immediate type (see IMM_TYPES) (may be NULL)
+                           NULL);                       // ...        array type:  ARRAY_TYPES (may be NULL)
+    else
+    // Otherwise it's global numeric
+    {
+        // Get the global ptrs
+        GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemArg);
+
+        // If it's not an immediate, ...
+        if (hGlbArg)
+            lpMemArg = VarArrayDataFmBase (lpMemArg);
+    } // End IF/ELSE
+
+    // Split cases based upon the storage type
+    switch (aplTypeArg)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            aplIntegerRes = aplLongestArg;
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Attempt to convert the float to an integer using System CT
+            aplIntegerRes = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestArg, lpbRet);
+
+            break;
+
+        case ARRAY_RAT:
+            aplIntegerRes = GetNextRatIntMem (lpMemArg, uIndex, lpbRet);
+
+            break;
+
+        case ARRAY_VFP:
+            aplIntegerRes = GetNextVfpIntMem (lpMemArg, uIndex, lpbRet);
+
+            break;
+
+        case ARRAY_HETERO:
+            // Get the next values and type
+            aplTypeItm = GetNextHetero (lpMemArg, uIndex, &aplIntegerRes, &aplFloatItm, &aplCharItm, &hGlbItm);
+
+            // Split cases based upon the storage type
+            switch (aplTypeItm)
+            {
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                    goto NORMAL_EXIT;
+
+                case ARRAY_FLOAT:
+                    // Attempt to convert the float to an integer using System CT
+                    aplIntegerRes = FloatToAplint_SCT (aplFloatItm, lpbRet);
+
+                    goto NORMAL_EXIT;
+
+                case ARRAY_RAT:
+                    Assert (GetPtrTypeDir (hGlbItm) NE PTRTYPE_HGLOBAL);
+
+                    // Attempt to convert the RAT to an integer using System CT
+                    aplIntegerRes = mpq_get_ctsa ((LPAPLRAT) hGlbItm, lpbRet);
+
+                    goto NORMAL_EXIT;
+
+                case ARRAY_VFP:
+                    Assert (GetPtrTypeDir (hGlbItm) NE PTRTYPE_HGLOBAL);
+
+                    // Attempt to convert the VFP to an integer using System CT
+                    aplIntegerRes = mpfr_get_ctsa ((LPAPLVFP) hGlbItm, lpbRet);
+
+                    goto NORMAL_EXIT;
+
+                case ARRAY_CHAR:
+                case ARRAY_NESTED:
+                    break;
+
+                case ARRAY_APA:             // Can't happen
+                case ARRAY_HETERO:          // ...
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Fall through to common error code
+
+        case ARRAY_CHAR:
+        case ARRAY_NESTED:
+            // Mark as in error
+            *lpbRet = FALSE;
+
+            break;
+    } // End SWITCH
+NORMAL_EXIT:
+    // If it's not an immediate, ...
+    if (hGlbArg)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+    } // End IF
+
+    return aplIntegerRes;
+} // End GetNextIntegerToken
+
+
+//***************************************************************************
+//  $GetNextFloatToken
+//
+//  Return the next value from a token as a float.
+//***************************************************************************
+
+APLFLOAT GetNextFloatToken
+    (LPTOKEN  lptkArg,                  // Ptr to arg token
+     APLINT   uIndex,                   // Index
+     APLSTYPE aplTypeArg,               // Arg storage type
+     LPUBOOL  lpbRet)                   // Ptr to TRUE iff the result is valid
+
+{
+    APLLONGEST aplLongestArg;           // Immediate value
+    HGLOBAL    hGlbArg;                 // Right arg global memory handle
+    LPVOID     lpMemArg;                // Ptr to right arg global memory
+    APLINT     aplIntegerItm;           // Immediate value as integer
+    APLSTYPE   aplTypeItm;              // Item storage type
+    APLFLOAT   aplFloatRes;             // The result
+    APLCHAR    aplCharItm;              // Immediate item as a char
+    HGLOBAL    hGlbItm;                 // ...                 HGLOBAL
+
+    // Assume it'll be successful
+    *lpbRet = TRUE;
+
+    // If the arg is simple non-hetero, ...
+    if (IsSimpleNH (aplTypeArg))
+        // Get the next value from the right operand (index origin)
+        GetNextValueToken (lptkArg,                     // Ptr to the token
+                           uIndex,                      // Index to use
+                           NULL,                        // Ptr to the integer (or Boolean) (may be NULL)
+                           NULL,                        // ...        float (may be NULL)
+                           NULL,                        // ...        char (may be NULL)
+                          &aplLongestArg,               // ...        longest (may be NULL)
+                           NULL,                        // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                           NULL,                        // ...        immediate type (see IMM_TYPES) (may be NULL)
+                           NULL);                       // ...        array type:  ARRAY_TYPES (may be NULL)
+    else
+    // Otherwise it's global numeric
+    {
+        // Get the global ptrs
+        GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemArg);
+
+        // If it's not an immediate, ...
+        if (hGlbArg)
+            lpMemArg = VarArrayDataFmBase (lpMemArg);
+    } // End IF/ELSE
+
+    // Split cases based upon the storage type
+    switch (aplTypeArg)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            aplFloatRes = (APLFLOAT) aplLongestArg;
+
+            break;
+
+        case ARRAY_FLOAT:
+            aplFloatRes = *(LPAPLFLOAT) &aplLongestArg;
+
+            break;
+
+        case ARRAY_RAT:
+            aplFloatRes = GetNextRatFltMem (lpMemArg, uIndex, lpbRet);
+
+            break;
+
+        case ARRAY_VFP:
+            aplFloatRes = GetNextVfpFltMem (lpMemArg, uIndex, lpbRet);
+
+            break;
+
+        case ARRAY_HETERO:
+            // Get the next values and type
+            aplTypeItm = GetNextHetero (lpMemArg, uIndex, &aplIntegerItm, &aplFloatRes, &aplCharItm, &hGlbItm);
+
+            // Split cases based upon the storage type
+            switch (aplTypeItm)
+            {
+                case ARRAY_BOOL:            // GetNextHetero already converts INT to FLOAT
+                case ARRAY_INT:             // ...
+                case ARRAY_FLOAT:
+                    goto NORMAL_EXIT;
+
+                case ARRAY_RAT:
+                    Assert (GetPtrTypeDir (hGlbItm) NE PTRTYPE_HGLOBAL);
+
+                    // Attempt to convert the RAT to a float
+                    aplFloatRes = mpq_get_d ((LPAPLRAT) hGlbItm);
+
+                    goto NORMAL_EXIT;
+
+                case ARRAY_VFP:
+                    Assert (GetPtrTypeDir (hGlbItm) NE PTRTYPE_HGLOBAL);
+
+                    // Attempt to convert the VFP to a float
+                    aplFloatRes = mpfr_get_d ((LPAPLVFP) hGlbItm, MPFR_RNDN);
+
+                    goto NORMAL_EXIT;
+
+                case ARRAY_CHAR:
+                case ARRAY_NESTED:
+                    break;
+
+                case ARRAY_APA:             // Can't happen
+                case ARRAY_HETERO:          // ...
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_NESTED:
+            // Mark as in error
+            *lpbRet = FALSE;
+
+            break;
+    } // End SWITCH
+NORMAL_EXIT:
+    // If it's not an immediate, ...
+    if (hGlbArg)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+    } // End IF
+
+    return aplFloatRes;
+} // End GetNextFloatToken
 
 
 //***************************************************************************
@@ -569,6 +839,9 @@ void GetNextValueToken
                               lpArrType);
             return;
 
+        case TKT_CHRSTRAND:
+        case TKT_NUMSTRAND:
+        case TKT_NUMSCALAR:
         case TKT_VARARRAY:
             hGlbData = lpToken->tkData.tkGlbData;
 
@@ -1223,6 +1496,65 @@ APLINT GetNextRatIntGlb
 
 
 //***************************************************************************
+//  $GetNextRatIntMem
+//
+//  Get the next value from a rational array global memory handle
+//***************************************************************************
+
+APLINT GetNextRatIntMem
+    (LPAPLRAT lpMemRat,                     // Ptr to global memory
+     APLINT   uRes,                         // Index
+     LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
+
+{
+    // Convert the next RAT to an INT
+    return mpq_get_ctsa (&lpMemRat[uRes], lpbRet);
+} // End GetNextRatIntMem
+
+
+//***************************************************************************
+//  $GetNextRatFltMem
+//
+//  Get the next value from a rational array global memory ptr
+//***************************************************************************
+
+APLFLOAT GetNextRatFltMem
+    (LPAPLRAT lpMemRat,                     // Ptr to global memory
+     APLINT   uRes,                         // Index
+     LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
+
+{
+    APLVFP mpfTmp = {0};
+
+    // Initialize the temp
+    mpfr_init (&mpfTmp);
+
+    // Copy the RAT to a VFP
+    mpfr_set_q (&mpfTmp, &lpMemRat[uRes], MPFR_RNDN);
+
+    // Zero the sign
+    mpfr_abs (&mpfTmp, &mpfTmp, MPFR_RNDN);
+
+    // Compare against the maximum float
+    if (mpfr_cmp_d (&mpfTmp, DBL_MAX) > 0
+     || (mpfr_cmp_d (&mpfTmp, DBL_MIN) < 0
+      && !mpfr_zero_p (&mpfTmp)))
+        *lpbRet = FALSE;
+    else
+        *lpbRet = TRUE;
+    // We no longer need this storage
+    Myf_clear (&mpfTmp);
+
+    // If the value is in range, ...
+    if (*lpbRet)
+        // Convert the next RAT to an FLOAT
+        return mpq_get_d (&lpMemRat[uRes]);
+    else
+        return 0.0;
+} // End GetNextRatFltMem
+
+
+//***************************************************************************
 //  $GetNextVfpIntGlb
 //
 //  Get the next value from a VFP array global memory handle
@@ -1253,6 +1585,65 @@ APLINT GetNextVfpIntGlb
 
     return aplInteger;
 } // End GetNextVfpIntGlb
+
+
+//***************************************************************************
+//  $GetNextVfpIntMem
+//
+//  Get the next value from a VFP array global memory ptr
+//***************************************************************************
+
+APLINT GetNextVfpIntMem
+    (LPAPLVFP lpMemVfp,                     // Ptr to global memory
+     APLINT   uRes,                         // Index
+     LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
+
+{
+    // Convert the next VFP to an INT
+    return mpfr_get_ctsa (&lpMemVfp[uRes], lpbRet);
+} // End GetNextVfpIntMem
+
+
+//***************************************************************************
+//  $GetNextVfpFltMem
+//
+//  Get the next value from a VFP array global memory ptr
+//***************************************************************************
+
+APLFLOAT GetNextVfpFltMem
+    (LPAPLVFP lpMemVfp,                     // Ptr to global memory
+     APLINT   uRes,                         // Index
+     LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
+
+{
+    APLVFP mpfTmp = {0};
+
+    // Initialize the temp
+    mpfr_init (&mpfTmp);
+
+    // Copy the RAT to a VFP
+    mpfr_set (&mpfTmp, &lpMemVfp[uRes], MPFR_RNDN);
+
+    // Zero the sign
+    mpfr_abs (&mpfTmp, &mpfTmp, MPFR_RNDN);
+
+    // Compare against the maximum float
+    if (mpfr_cmp_d (&mpfTmp, DBL_MAX) > 0
+     || (mpfr_cmp_d (&mpfTmp, DBL_MIN) < 0
+      && !mpfr_zero_p (&mpfTmp)))
+        *lpbRet = FALSE;
+    else
+        *lpbRet = TRUE;
+    // We no longer need this storage
+    Myf_clear (&mpfTmp);
+
+    // If the value is in range, ...
+    if (*lpbRet)
+        // Convert the next VFP to an FLOAT
+        return mpfr_get_d (&lpMemVfp[uRes], MPFR_RNDN);
+    else
+        return 0.0;
+} // End GetNextVfpFltMem
 
 
 //***************************************************************************
@@ -2105,6 +2496,44 @@ void SetQuadCT
 
 
 //***************************************************************************
+//  $GetQuadDT
+//
+//  Get the current value of []DT
+//***************************************************************************
+
+APLCHAR GetQuadDT
+    (void)
+
+{
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar;
+} // End GetQuadDT
+
+
+//***************************************************************************
+//  $SetQuadDT
+//
+//  Set the current value of []DT
+//***************************************************************************
+
+void SetQuadDT
+    (APLCHAR cQuadDT)
+
+{
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar = cQuadDT;
+} // End SetQuadDT
+
+
+//***************************************************************************
 //  $GetQuadIO
 //
 //  Get the current value of []IO
@@ -2159,6 +2588,26 @@ APLUINT GetQuadPP
 
     return min (DEF_MAX_QUADPP64, lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger);
 } // End GetQuadPP
+
+
+//***************************************************************************
+//  $SetQuadPP
+//
+//  Set the current value of []PP
+//***************************************************************************
+
+void SetQuadPP
+    (APLINT uQuadPP)
+
+{
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger=
+        min (DEF_MAX_QUADPP64, uQuadPP);
+} // End SetQuadPP
 
 
 //***************************************************************************
@@ -2304,6 +2753,9 @@ LPPRIMFNS GetPrototypeFcnPtr
             //   is called, the same parameter is a ptr to the function strand.
             // Get a ptr to the prototype function for the first symbol (an operator)
             return (LPPRIMFNS) PrimProtoOpsTab[SymTrans (lptkFunc)];
+
+        case TKT_FCNNAMED:      // e.g. []VR{each}0{rho}{enclose}'abc'
+            return NULL;
 
         case TKT_FCNARRAY:
             // Split cases based upon the function array signature

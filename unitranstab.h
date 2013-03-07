@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x00B5, 0x00EB,  SAME ,  SAME , 0x00D9,   NA  , UTF16_CIRCLESTAR        }, // Circle star
     {0x00B2, 0x00EC,  SAME ,  SAME , 0x00F2,   NA  , UTF16_CIRCLESTILE       }, // Circle stile
     {0x00F7, 0x00A6,  SAME ,  SAME , 0x00BD,   NA  , UTF16_COLONBAR          }, // Colon bar
-    {0x00AE, 0x00EF,  SAME ,  SAME ,   NA  ,   NA  , UTF16_COMMABAR          }, // commabar
+    {0x00AE, 0x00EF,  SAME ,  SAME ,   NA  ,   NA  , UTF16_COMMABAR          }, // Commabar
     {0x2019, 0x00AE,  SAME ,  SAME , 0x005B,   NA  , UTF16_DEL               }, // Del
     {0x201D, 0x00E7,  SAME ,  SAME , 0x00FC,   NA  , UTF16_DELSTILE          }, // Del stile
     {0x2018, 0x00AF,  SAME ,  SAME , 0x005D,   NA  , UTF16_DELTA             }, // Delta
@@ -73,7 +73,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x00A8, 0x00A1,  SAME ,  SAME , 0x00CA,   NA  , UTF16_DIERESIS          }, // Dieresis
     {  NA  ,   NA  ,   NA  ,   NA  , 0x00D6,   NA  , UTF16_DIERESISDOT       }, // Dieresis dot
     {0x00F0, 0x00F8,   NA  ,   NA  ,   NA  ,   NA  , UTF16_DIERESISJOT       }, // Dieresis jot
-    {0x00FE, 0x00A1,   NA  ,   NA  ,   NA  ,   NA  , UTF16_DIERESISTILDE     }, // dieresis-tilde
+    {0x00FE, 0x00A1,   NA  ,   NA  ,   NA  ,   NA  , UTF16_DIERESISTILDE     }, // Dieresis-tilde
     {0x017D, 0x00E1,  SAME ,  SAME , 0x00D3,   NA  , UTF16_DOMINO            }, // Domino
     { SAME ,  SAME , 0x001E,  SAME ,  SAME ,   NA  , UTF16_DOT               }, // Dot
     {0x2021, 0x00B7,  SAME ,  SAME , 0x00BB,   NA  , UTF16_DOWNARROW         }, // Down arrow
@@ -87,7 +87,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x00B9, 0x00AD,  SAME ,  SAME , 0x00A3,   NA  , UTF16_EPSILON           }, // Epsilon
     {0x00BA,  SAME ,  SAME ,  SAME , 0x00CD,   NA  , UTF16_EPSILONUNDERBAR   }, // Epsilon underbar     Missing from ISO charset
     {0x00AD, 0x00F4,  SAME ,  SAME , 0x005C,   NA  , UTF16_EQUALUNDERBAR     }, // Equal underbar
-////{0x20AC,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_EURO              }, // Euro
+    { SAME ,   NA  ,  SAME ,  SAME ,   NA  ,   NA  , UTF16_EURO              }, // Euro
     {  NA  ,   NA  ,   NA  ,   NA  , 0x00B9,   NA  , UTF16_IBEAM             }, // I-beam
     {  NA  ,   NA  ,   NA  ,   NA  , 0x00C8,   NA  , UTF16_IOTAUNDERBAR      }, // Iota underbar
     {0x00BC, 0x00B0,  SAME ,  SAME , 0x00A5,   NA  , UTF16_IOTA              }, // Iota
@@ -131,6 +131,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x2014, 0x00B6,  SAME ,  SAME , 0x00FD,   NA  , UTF16_UPSTILE           }, // Upstile
     {0x0192, 0x00AA,  SAME ,  SAME , 0x00D0,   NA  , UTF16_UPTACK            }, // Up tack
     {0x2013, 0x00DF,  SAME ,  SAME , 0x00DA,   NA  , UTF16_UPTACKJOT         }, // Up tack jot
+    {  NA  ,   NA  ,   NA  ,  SAME ,   NA  ,   NA  , UTF16_VARIANT           }, // Variant
     {0x00D0,   NA  ,   NA  ,   NA  ,   NA  ,   NA  , UTF16_ZILDE             }, // Zilde                Missing from ISO charset
 
 //  APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS

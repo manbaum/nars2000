@@ -24,6 +24,8 @@
 #include <windows.h>
 #include <math.h>
 #include "headers.h"
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 
 
 #ifndef PROTO
@@ -305,34 +307,98 @@ APLINT GetRandomNum
      LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    mpz_t mpzTmp1 = {0},                // Temp
-          mpzTmp2 = {0};                // ...
+    APLINT   aplIntRes;                 // The integer result
+    APLFLOAT aplFloatRht,               // The arg as a float
+             aplFloatRes;               // The FP result
+    mpz_t    mpzTmp1 = {0},             // Temp
+             mpzTmp2 = {0};             // ...
 
-    // Initialize the temps
-    mpz_init (mpzTmp1);
-    mpz_init (mpzTmp2);
+    // Split cases based upon the Distribution Type
+    switch (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar)
+    {
+        case L'r':
+            // Initialize the temps
+            mpz_init (mpzTmp1);
+            mpz_init (mpzTmp2);
 
-    // Tmp1 = uQuadRL
-    // Tmp2 = aplIntegerRht
-    mpz_set_ux (mpzTmp1, uQuadRL);
-    mpz_set_sx (mpzTmp2, aplIntegerRht);
+            // Tmp1 = uQuadRL
+            // Tmp2 = aplIntegerRht
+            mpz_set_ux (mpzTmp1, uQuadRL);
+            mpz_set_sx (mpzTmp2, aplIntegerRht);
 
-    // Tmp1 = Tmp1 * Tmp2
-    mpz_mul    (mpzTmp1, mpzTmp1, mpzTmp2);
+            // Tmp1 = Tmp1 * Tmp2
+            mpz_mul    (mpzTmp1, mpzTmp1, mpzTmp2);
 
-    // Tmp2 = QUADRL_MODULUS
-    mpz_set_ux (mpzTmp2, QUADRL_MODULUS);
+            // Tmp2 = QUADRL_MODULUS
+            mpz_set_ux (mpzTmp2, QUADRL_MODULUS);
 
-    // Tmp1 = Tmp1 / Tmp2
-    mpz_tdiv_q (mpzTmp1, mpzTmp1, mpzTmp2);
+            // Tmp1 = Tmp1 / Tmp2
+            mpz_tdiv_q (mpzTmp1, mpzTmp1, mpzTmp2);
 
-    // aplIntegerRht = Tmp1
-    aplIntegerRht = mpz_get_sx (mpzTmp1);
+            // aplIntegerRht = Tmp1
+            aplIntegerRht = mpz_get_sx (mpzTmp1);
 
-    Myz_clear (mpzTmp2);
-    Myz_clear (mpzTmp1);
+            Myz_clear (mpzTmp2);
+            Myz_clear (mpzTmp1);
 
-    return aplIntegerRht;
+            return aplIntegerRht;
+
+        case L'g':
+            // If the rng has not been allocated as yet, ...
+            if (lpMemPTD->gslRNG EQ NULL)
+                // Allocate storage for a RNG of type
+                // The algorithm chosen (minstd) is completely arbitrary
+                lpMemPTD->gslRNG = gsl_rng_alloc (gsl_rng_minstd);
+
+            // Convert the range to [0, aplIntegerRht)
+            aplIntegerRht--;
+
+#define SD      2       // Standard deviations
+            // Generate a Gaussian-distributed pseudo-random number
+            //   with a standard deviation of SD
+            aplFloatRes =  gsl_ran_gaussian (lpMemPTD->gslRNG, SD);
+
+            // Convert the arg to float
+            aplFloatRht = (APLFLOAT) aplIntegerRht;
+
+            // Cutoff values to ±3 standard deviations [-3*SD, 3*SD]
+            aplFloatRes = max (aplFloatRes, -3*SD);
+            aplFloatRes = min (aplFloatRes,  3*SD);
+
+            // Scale the range to ±aplFloatRht / 2
+            aplFloatRes *= aplFloatRht / (2 * 3 * SD);
+#undef  SD
+            // Shift the range to [0, aplFloatRht] = [0, aplIntegerRht)
+            aplFloatRes += (aplFloatRht / 2);
+
+            // Convert to integer
+            return (APLINT) aplFloatRes;
+
+        case L'p':
+            // If the rng has not been allocated as yet, ...
+            if (lpMemPTD->gslRNG EQ NULL)
+                // Allocate storage for a RNG of type
+                // The algorithm chosen (minstd) is completely arbitrary
+                lpMemPTD->gslRNG = gsl_rng_alloc (gsl_rng_minstd);
+
+            // Convert the range to [0, aplIntegerRht)
+            aplIntegerRht--;
+
+            // Convert the arg to float
+            aplFloatRht = (APLFLOAT) aplIntegerRht;
+
+            // Generate a Poisson-distributed pseudo-random number
+            //   with a mean of aplFloatRht / 2
+            aplIntRes = gsl_ran_poisson (lpMemPTD->gslRNG, aplFloatRht / 2);
+
+            return aplIntRes;   // ***FIXME***
+
+            // Truncate the high end at aplIntegerRht
+            return min (aplIntRes, aplIntegerRht);
+
+        defstop
+            return -1;
+    } // End SWITCH
 } // End GetRandomNum
 
 
@@ -368,15 +434,31 @@ APLRAT PrimFnMonQueryRisR
 #else
   #define lpMemPTD  GetMemPTD ()
 #endif
-        // Initialize the result to 0/1
-        mpq_init (&mpqRes);
+        // Split cases based upon the Distribution Type
+        switch (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar)
+        {
+            case L'r':
+                // Initialize the result to 0/1
+                mpq_init (&mpqRes);
 
-        // Generate a uniformly-distributed random number in [0, Rht)
-        mpz_urandomm (mpq_numref (&mpqRes),
-                      lpMemPTD->randState,
-                      mpq_numref (&aplRatRht));
-        // Add in []IO
-        mpz_add_ui (mpq_numref (&mpqRes), mpq_numref (&mpqRes), bQuadIO);
+                // Generate a uniformly-distributed random number in [0, Rht)
+                mpz_urandomm (mpq_numref (&mpqRes),
+                              lpMemPTD->randState,
+                              mpq_numref (&aplRatRht));
+                // Add in []IO
+                mpz_add_ui (mpq_numref (&mpqRes), mpq_numref (&mpqRes), bQuadIO);
+
+                break;
+
+            case L'g':
+            case L'p':
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } else
         // Otherwise, it's an error
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -421,21 +503,37 @@ APLVFP PrimFnMonQueryVisV
 #else
   #define lpMemPTD  GetMemPTD ()
 #endif
-        // Initialize the result to R
-        mpz_init_set_fr (&mpzRes, &aplVfpRht);
+        // Split cases based upon the Distribution Type
+        switch (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar)
+        {
+            case L'r':
+                // Initialize the result to R
+                mpz_init_set_fr (&mpzRes, &aplVfpRht);
 
-        // Generate a uniformly-distributed random number in [0, Rht)
-        mpz_urandomm (&mpzRes,
-                       lpMemPTD->randState,
-                      &mpzRes);
-        // Add in []IO
-        mpz_add_ui (&mpzRes, &mpzRes, bQuadIO);
+                // Generate a uniformly-distributed random number in [0, Rht)
+                mpz_urandomm (&mpzRes,
+                              lpMemPTD->randState,
+                              &mpzRes);
+                // Add in []IO
+                mpz_add_ui (&mpzRes, &mpzRes, bQuadIO);
 
-        // Copy to the VFP result
-        mpfr_init_set_z (&mpfRes, &mpzRes, MPFR_RNDN);
+                // Copy to the VFP result
+                mpfr_init_set_z (&mpfRes, &mpzRes, MPFR_RNDN);
 
-        // We no longer need this storage
-        Myz_clear (&mpzRes);
+                // We no longer need this storage
+                Myz_clear (&mpzRes);
+
+                break;
+
+            case L'g':
+            case L'p':
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 #ifndef DEBUG
   #undef  lpMemPTD
 #endif

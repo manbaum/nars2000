@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -171,6 +171,7 @@
 
 // Empty assignment to []vars as Fixed System value (TRUE) or .ini file value (FALSE)
 #define DEF_RESETVARS_CT            FALSE
+#define DEF_RESETVARS_DT            FALSE
 #define DEF_RESETVARS_FC            FALSE
 #define DEF_RESETVARS_FEATURE       FALSE
 #define DEF_RESETVARS_FPC           FALSE

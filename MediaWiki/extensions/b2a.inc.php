@@ -97,6 +97,9 @@ $br2a = array (
 'reciprocal'            => 0x00F7,
 '%'                     => 0x00F7,
 
+'dagger'                => 0x2020,
+'doubledagger'          => 0x2021,
+
 'peseta'                => 0x20A7,
 
 'euro'                  => 0x20AC,
@@ -408,6 +411,7 @@ $br2a = array (
 '^.'                    => 0x235F,
 
 'quadcolon'             => 0x2360,
+'variant'               => 0x2360,
 
 'downtackdieresis'      => 0x2361,
 'encodedieresis'        => 0x2361,

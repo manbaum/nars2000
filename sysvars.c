@@ -33,6 +33,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , NULL                , SYSVAR_ALX     },    // Attention Latent Expression
     {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , NULL                , SYSVAR_CT      },    // Comparison Tolerance
     {WS_UTF16_QUAD L"dm"       , SYSVAR,      TRUE , NULL                , SYSVAR_DM      },    // Diagnostic Message (Read-only)
+    {WS_UTF16_QUAD L"dt"       , SYSVAR,      TRUE , NULL                , SYSVAR_DT      },    // Distribution Type
     {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , NULL                , SYSVAR_ELX     },    // Error Latent Expression
     {WS_UTF16_QUAD L"fc"       , SYSVAR,      TRUE , NULL                , SYSVAR_FC      },    // Format Control
     {WS_UTF16_QUAD L"feature"  , SYSVAR,      TRUE , NULL                , SYSVAR_FEATURE },    // Feature Control
@@ -174,7 +175,7 @@ void MakePermVars
     *VarArrayBaseToDim (lpHeader) = ALPHANELM;
 
     // Skip over the header and dimensions to the data
-    lpHeader = VarArrayBaseToData (lpHeader, 1);
+    lpHeader = VarArrayDataFmBase (lpHeader);
 
     // Copy the data to the result
     CopyMemoryW (lpHeader, ALPHABET, ALPHANELM);
@@ -381,7 +382,7 @@ HGLOBAL MakePermVectorCom
     *VarArrayBaseToDim (lpHeader) = uLen;
 
     // Skip over the header and dimensions to the data
-    lpHeader = VarArrayBaseToData (lpHeader, 1);
+    lpHeader = VarArrayDataFmBase (lpHeader);
 
     // Copy the data to memory
     CopyMemory (lpHeader, lpwc, uLen * aplSizeCom);
@@ -644,6 +645,218 @@ UBOOL AssignCharScalarCWS
 
 
 //***************************************************************************
+//  $ValidateCharDT_EM
+//
+//  Validate a value about to be assigned to an character system var.
+//
+//  We allow any character scalar or one-element vector.
+//
+//  The order of error checking is RANK, LENGTH, DOMAIN.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ValidateCharDT_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL ValidateCharDT_EM
+    (LPTOKEN  lptkNamArg,           // Ptr to name token
+     LPTOKEN  lptkExpr,             // Ptr to value token
+     APLCHAR  cDefault)             // Default value
+
+{
+    APLSTYPE aplTypeRht;            // Right arg storage type
+    APLNELM  aplNELMRht;            // Right arg NELM
+    APLRANK  aplRankRht;            // Right arg rank
+    HGLOBAL  hGlbRht = NULL;        // Right arg global memory handle
+    LPVOID   lpMemRht = NULL;       // Ptr to right arg global memory
+    UBOOL    bRet = FALSE;          // TRUE iff the result is valid
+    APLCHAR  aplChar;
+
+    // Split cases based upon the token type
+    switch (lptkExpr->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            if (!lptkExpr->tkData.tkSym->stFlags.Imm)
+            {
+                // Get the HGLOBAL
+                hGlbRht = lptkExpr->tkData.tkSym->stData.stGlbData;
+
+                break;      // Continue with HGLOBAL processing
+            } // End IF
+
+            // Handle the immediate case
+
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // Split cases based upon the symbol table immediate type
+            switch (lptkExpr->tkData.tkSym->stFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                case IMMTYPE_FLOAT:
+                    break;
+
+                case IMMTYPE_CHAR:
+                    // Get the value
+                    aplChar = lptkExpr->tkData.tkSym->stData.stChar;
+
+                    // Test the value
+                    bRet = (strchrW (DEF_QUADDT_ALLOW, aplChar) NE NULL);
+
+                    break;
+            } // End SWITCH
+
+            if (bRet)
+                goto NORMAL_EXIT;
+            else
+                goto DOMAIN_EXIT;
+
+        case TKT_VARIMMED:
+            // Split cases based upon the token immediate type
+            switch (lptkExpr->tkFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                case IMMTYPE_FLOAT:
+                    break;
+
+                case IMMTYPE_CHAR:
+                    // Get the value
+                    aplChar = lptkExpr->tkData.tkChar;
+
+                    // Test the value
+                    bRet = (strchrW (DEF_QUADDT_ALLOW, aplChar) NE NULL);
+
+                    break;
+            } // End SWITCH
+
+            if (bRet)
+                goto NORMAL_EXIT;
+            else
+                goto DOMAIN_EXIT;
+
+        case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
+            goto SYNTAX_EXIT;
+
+        case TKT_CHRSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_NUMSTRAND: // tkData is an HGLOBAL of an array of ???
+        case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
+            // Get the HGLOBAL
+            hGlbRht = lptkExpr->tkData.tkGlbData;
+
+            break;          // Continue with HGLOBAL processing
+
+        defstop
+            goto DOMAIN_EXIT;
+    } // End SWITCH
+
+    // st/tkData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir_PTB (hGlbRht));
+
+    // Clear the type bits
+    hGlbRht = ClrPtrTypeDir (hGlbRht);
+
+    // Lock the memory to get a ptr to it
+    lpMemRht = MyGlobalLock (hGlbRht);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
+    // Get the Array Type, NELM, and Rank
+    aplTypeRht = lpHeader->ArrType;
+    aplNELMRht = lpHeader->NELM;
+    aplRankRht = lpHeader->Rank;
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+
+    // Check for scalar or vector
+    if (IsMultiRank (aplRankRht))
+        goto RANK_EXIT;
+    else
+    // Check for singleton or empty
+    if (IsMultiNELM (aplNELMRht))
+        goto LENGTH_EXIT;
+    else
+    if (IsEmpty (aplNELMRht))
+    {
+        // Must be simple to be valid
+        bRet = IsSimple (aplTypeRht);
+        if (bRet)
+            // Use the system default value
+            aplChar = cDefault;
+    } else
+    // Split cases based upon the array type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            break;
+
+        case ARRAY_CHAR:
+            // Get the value
+            aplChar = *(LPAPLCHAR) lpMemRht;
+
+            // Test the value
+            bRet = (strchrW (DEF_QUADDT_ALLOW, aplChar) NE NULL);
+
+            break;
+
+        defstop
+            break;
+    } // End IF/ELSE/SWITCH
+
+    if (!bRet)
+        goto DOMAIN_EXIT;
+NORMAL_EXIT:
+    // Save the value in the name
+    lptkNamArg->tkData.tkSym->stData.stChar = aplChar;
+    lptkNamArg->tkFlags.NoDisplay = TRUE;
+
+    goto UNLOCK_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkExpr);
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkExpr);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkExpr);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkExpr);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+UNLOCK_EXIT:
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    return bRet;
+} // End ValidateCharDT_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $ValidateInteger_EM
 //
 //  Validate a value about to be assigned to an integer system var.
@@ -822,7 +1035,7 @@ UBOOL ValidateInteger_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Check for scalar or vector
     if (IsMultiRank (aplRankRht))
@@ -1148,7 +1361,7 @@ UBOOL ValidateFloat_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Check for scalar or vector
     if (IsMultiRank (aplRankRht))
@@ -1427,7 +1640,7 @@ UBOOL ValidateCharVector_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Check for scalar or vector
     if (IsMultiRank (aplRankRht))
@@ -1546,7 +1759,7 @@ ALLOC_VECTOR:
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     if (bWSID)
         CopyMemoryW (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes);
@@ -1791,7 +2004,7 @@ UBOOL ValidateIntegerVector_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Ensure scalar or vector
     if (IsMultiRank (aplRankRht))
@@ -1947,7 +2160,7 @@ UBOOL ValidateIntegerVector_EM
                 *VarArrayBaseToDim (lpMemRes) = aplNELMRht;
 
                 // Skip over the header and dimensions to the data
-                lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+                lpMemRes = VarArrayDataFmBase (lpMemRes);
 
                 // Point back to the start of the right data
                 lpMemRht = lpMemIniRht;
@@ -2041,7 +2254,7 @@ MAKE_VECTOR:
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     *((LPAPLINT) lpMemRes) = aplInteger;
 
@@ -2091,6 +2304,65 @@ UNLOCK_EXIT:
     return bRet;
 } // End ValidateIntegerVector_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $VariantValidateCom_EM
+//
+//  Validate a value to be assigned to []CT/[]DT/[]IO/[]PP
+//***************************************************************************
+
+UBOOL VariantValidateCom_EM
+    (IMM_TYPES       immType,           // Immediate type
+     LPAPLLONGEST    lpaplLongest,      // Ptr to immediate value (ignored if bReset)
+     UBOOL           bReset,            // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
+     ASYSVARVALIDSET aSysVarValidSet,   // Ptr to validate set function
+     LPSYMENTRY      lpSymEntry,        // Ptr to sysvar SYMENTRY
+     LPTOKEN         lptkFunc)          // Ptr to function token
+
+{
+    TOKEN tkNamArg = {0},       // Temporary named var token
+          tkRhtArg = {0};       // ...       right arg ...
+
+    // Set the named var token
+    tkNamArg.tkFlags.TknType = TKT_VARNAMED;
+    tkNamArg.tkFlags.ImmType   = IMMTYPE_ERROR;
+////tkNamArg.tkFlags.NoDisplay = FALSE;         // Already set by = {0}
+    tkNamArg.tkData.tkSym      = lpSymEntry;
+////tkNamArg.tkCharIndex       = 0;             // Unused and already set by = {0}
+
+    // If we're resetting, ...
+    if (bReset)
+    {
+        // Setup the token
+        tkRhtArg.tkFlags.TknType   = TKT_VARARRAY;
+////////tkRhtArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////tkRhtArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkRhtArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbZilde);
+        tkRhtArg.tkCharIndex       = lptkFunc->tkCharIndex;
+    } else
+    if (IsImmGlbNum (immType))
+    {
+        // Setup the token
+        tkRhtArg.tkFlags.TknType   = TKT_VARARRAY;
+////////tkRhtArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////tkRhtArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkRhtArg.tkData.tkGlbData  = (HGLOBAL) lpaplLongest;
+        tkRhtArg.tkCharIndex       = lptkFunc->tkCharIndex;
+    } else
+    {
+        // Setup the token
+        tkRhtArg.tkFlags.TknType   = TKT_VARIMMED;
+        tkRhtArg.tkFlags.ImmType   = immType;
+////////tkRhtArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkRhtArg.tkData.tkLongest  = *lpaplLongest;
+        tkRhtArg.tkCharIndex       = lptkFunc->tkCharIndex;
+    } // End IF/ELSE
+
+    // Validate the arg
+    return (*aSysVarValidSet) (&tkNamArg,   // Ptr to name arg token
+                               &tkRhtArg);  // Ptr to right arg token
+} // End VariantValidateCom_EM
 
 
 //***************************************************************************
@@ -2293,6 +2565,67 @@ UBOOL ValidNdxDM
 
 
 //***************************************************************************
+//  $ValidNdxDT
+//
+//  Validate a single value before assigning it to a position in []DT.
+//
+//  We allow the characters in DEF_QUADDT_ALLOW..
+//***************************************************************************
+
+UBOOL ValidNdxDT
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
+     LPTOKEN      lptkFunc)                 // Ptr to function token
+
+{
+    APLCHAR aplChar;                // The value to validate
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        case ARRAY_CHAR:
+            aplChar = (APLCHAR) *lpaplLongestRht;
+
+            return (strchrW (DEF_QUADDT_ALLOW, aplChar) NE NULL);
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+} // End ValidNdxDT
+
+
+//***************************************************************************
+//  $ValidSetDT_EM
+//
+//  Validate a value before assigning it to []DT
+//***************************************************************************
+
+UBOOL ValidSetDT_EM
+    (LPTOKEN lptkNamArg,            // Ptr to name arg token
+     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+
+{
+    // Ensure the argument is either a real scalar or
+    //   one-element vector (demoted to a scalar)
+    return ValidateCharDT_EM (lptkNamArg,             // Ptr to name arg token
+                              lptkRhtArg,             // Ptr to right arg token
+              bResetVars.DT ? DEF_QUADDT_CWS[0]
+                            : cQuadDT_CWS);           // Default ...
+} // End ValidSetDT_EM
+
+
+//***************************************************************************
 //  $ValidSetELX_EM
 //
 //  Validate a value before assigning it to []ELX
@@ -2420,7 +2753,7 @@ UBOOL ValidSetFEATURE_EM
         if (hGlbRht)
         {
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
         } else
             // Point to the data
             lpMemRht = &aplLongestRht;
@@ -2538,7 +2871,7 @@ void SetCurrentFeatureCWS
     lpMemCWS = MyGlobalLock (hGlbQuadFEATURE_CWS);
 
     // Skip over the header and dimensions to the data
-    lpMemCWS = VarArrayBaseToData (lpMemCWS, 1);
+    lpMemCWS = VarArrayDataFmBase (lpMemCWS);
 
     // Save the values in the PTD
     CopyMemory (lpMemPTD->aplCurrentFEATURE,
@@ -3124,7 +3457,7 @@ UBOOL ValidSetPR_EM
             if (IsVector (lpHeader->Rank) && IsEmpty (lpHeader->NELM))
                 lpMemPTD->cQuadPR = CQUADPR_MT;
             else
-                lpMemPTD->cQuadPR = *(LPAPLCHAR) VarArrayBaseToData (lpHeader, lpHeader->Rank);
+                lpMemPTD->cQuadPR = *(LPAPLCHAR) VarArrayDataFmBase (lpHeader);
             break;
 
         defstop
@@ -3455,7 +3788,7 @@ UBOOL ValidSetSA_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Check for vector
     if (!IsVector (aplRankRht))
@@ -3663,6 +3996,7 @@ UBOOL AssignDefaultSysVars
     if (!AssignGlobalCWS     (hGlbQuadALX_CWS     , SYSVAR_ALX     , lpSymQuad[SYSVAR_ALX     ])) return FALSE;   // Attention Latent Expression
     if (!AssignRealScalarCWS (fQuadCT_CWS         , SYSVAR_CT      , lpSymQuad[SYSVAR_CT      ])) return FALSE;   // Comparison Tolerance
     if (!AssignGlobalCWS     (hGlbV0Char          , SYSVAR_DM      , lpSymQuad[SYSVAR_DM      ])) return FALSE;   // Diagnostic Message
+    if (!AssignCharScalarCWS (cQuadDT_CWS         , SYSVAR_DT      , lpSymQuad[SYSVAR_DT      ])) return FALSE;   // Distribution Type
     if (!AssignGlobalCWS     (hGlbQuadELX_CWS     , SYSVAR_ELX     , lpSymQuad[SYSVAR_ELX     ])) return FALSE;   // Error Latent Expression
     if (!AssignGlobalCWS     (hGlbQuadFC_CWS      , SYSVAR_FC      , lpSymQuad[SYSVAR_FC      ])) return FALSE;   // Format Control
     if (!AssignGlobalCWS     (hGlbQuadFEATURE_CWS , SYSVAR_FEATURE , lpSymQuad[SYSVAR_FEATURE ])) return FALSE;   // Feature Control
@@ -3705,10 +4039,17 @@ UBOOL InitSystemVars
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
+    // Set the variant operator validation routines
+    aVariantKeyStr[VARIANT_KEY_CT].aSysVarValidSet = ValidSetCT_EM;
+    aVariantKeyStr[VARIANT_KEY_DT].aSysVarValidSet = ValidSetDT_EM;
+    aVariantKeyStr[VARIANT_KEY_IO].aSysVarValidSet = ValidSetIO_EM;
+    aVariantKeyStr[VARIANT_KEY_PP].aSysVarValidSet = ValidSetPP_EM;
+
     // Set the array set validation routines
     aSysVarValidSet[SYSVAR_ALX     ] = ValidSetALX_EM      ;
     aSysVarValidSet[SYSVAR_CT      ] = ValidSetCT_EM       ;
     aSysVarValidSet[SYSVAR_DM      ] = ValidSetDM_EM       ;
+    aSysVarValidSet[SYSVAR_DT      ] = ValidSetDT_EM       ;
     aSysVarValidSet[SYSVAR_ELX     ] = ValidSetELX_EM      ;
     aSysVarValidSet[SYSVAR_FC      ] = ValidSetFC_EM       ;
     aSysVarValidSet[SYSVAR_FEATURE ] = ValidSetFEATURE_EM  ;
@@ -3728,6 +4069,7 @@ UBOOL InitSystemVars
     aSysVarValidNdx[SYSVAR_ALX     ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_CT      ] = ValidNdxCT          ;
     aSysVarValidNdx[SYSVAR_DM      ] = ValidNdxDM          ;
+    aSysVarValidNdx[SYSVAR_DT      ] = ValidNdxDT          ;
     aSysVarValidNdx[SYSVAR_ELX     ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_FC      ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_FEATURE ] = ValidNdxFEATURE     ;

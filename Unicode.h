@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@
 #define UTF16_QUADRIGHTARROW     0x2348         //
 #define UTF16_QUADUPARROW        0x2350         //
 #define UTF16_QUADDOWNARROW      0x2357         //
+#define UTF16_QUADCOLON          0x2360         // Variant operator
 #define UTF16_LEFTSINGLEQUOTE    0x2018         // Left single quotation mark
 #define UTF16_RIGHTSINGLEQUOTE   0x2019         // Right ...
 #define UTF16_DELTILDE           0x236B         // Del-tilde
@@ -162,7 +163,7 @@
 #define UTF16_CIRCLESTAR         0x235F         // Alt-'*' - log
 #define UTF16_DOWNCARETTILDE     0x2371         // Alt-'(' - nor
 #define UTF16_UPCARETTILDE       0x2372         // Alt-')' - nand
-#define UTF16_QUOTEDOT           0x0021         // Alt-'_' - quote-dot
+#define UTF16_VARIANT            0x2360         // Alt-'_' - variant
 #define UTF16_DOMINO             0x2339         // Alt-'+' - domino
 
 // Second row, unshifted
@@ -195,6 +196,7 @@
 
 // Non-Alt key equivalents
 #define UTF16_JOTDOT             0x0001         // Pseudo-symbol for {jot}{dot} digraph
+#define UTF16_QUOTEDOT           0x0021         // Quote dot
 #define UTF16_DOUBLEQUOTE        0x0022         // Double quote
 #define UTF16_NUMBER             0x0023         // Number
 #define UTF16_DOLLAR             0x0024         // Dollar
@@ -219,6 +221,7 @@
 #define UTF16_UNDERBAR           0x005F         // Underbar
 #define UTF16_BACKTICK           0x0060         // Backtick
 #define UTF16_LEFTBRACE          0x007B         // Left brace
+#define UTF16_STILE              0x2223         // Stile
 #define UTF16_STILE2             0x007C         // Stile (a.k.a. 0x2223)
 #define UTF16_RIGHTBRACE         0x007D         // Right brace
 #define UTF16_TILDE2             0x007E         // Tilde (a.k.a. 0x223C)
@@ -278,6 +281,7 @@
 #define WS_UTF16_QUADRIGHTARROW     L"\x2348"   //
 #define WS_UTF16_QUADUPARROW        L"\x2350"   //
 #define WS_UTF16_QUADDOWNARROW      L"\x2357"   //
+#define WS_UTF16_QUADCOLON          L"\x2360"   // Variant operator
 #define WS_UTF16_DELTILDE           L"\x236B"   // Del-tilde
 #define WS_UTF16_HORIZELLIPSIS      L"\x2026"   // Horizontal ellipsis
 #define WS_UTF16_CHECKMARK          L"\x221A"   // Check mark
@@ -390,7 +394,7 @@
 #define WS_UTF16_CIRCLESTAR         L"\x235F"   // Alt-'*' - log
 #define WS_UTF16_DOWNCARETTILDE     L"\x2371"   // Alt-'(' - nor
 #define WS_UTF16_UPCARETTILDE       L"\x2372"   // Alt-')' - nand
-#define WS_UTF16_QUOTEDOT           L"\x0021"   // Alt-'_' - quote-dot
+#define WS_UTF16_VARIANT            L"\x2360"   // Alt-'_' - variant
 #define WS_UTF16_DOMINO             L"\x2339"   // Alt-'+' - domino
 
 // Second row, unshifted
@@ -423,6 +427,7 @@
 
 // Non-Alt key equivalents
 #define WS_UTF16_JOTDOT             L"\x0001"   // Pseudo-symbol for {jot}{dot} digraph
+#define WS_UTF16_QUOTEDOT           L"\x0021"   // Quote dot
 #define WS_UTF16_DOUBLEQUOTE        L"\x0022"   // Double quote
 #define WS_UTF16_NUMBER             L"\x0023"   // Number
 #define WS_UTF16_DOLLAR             L"\x0024"   // Dollar
@@ -447,6 +452,7 @@
 #define WS_UTF16_UNDERBAR           L"\x005F"   // Underbar
 #define WS_UTF16_BACKTICK           L"\x0060"   // Backtick
 #define WS_UTF16_LEFTBRACE          L"\x007B"   // Left brace
+#define WS_UTF16_STILE              L"\x2223"   // Stile
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. \x2223)
 #define WS_UTF16_RIGHTBRACE         L"\x007D"   // Right brace
 #define WS_UTF16_TILDE2             L"\x007E"   // Tilde (a.k.a. \x223C)

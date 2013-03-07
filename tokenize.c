@@ -1858,8 +1858,8 @@ UBOOL fnPointDone
     // Check for Syntax Coloring
     if (lptkLocalVars->lpMemClrNxt)
     {
-        UINT   uVar,            // Loop counter
-               uLen;            // Loop length
+        UINT uVar,              // Loop counter
+             uLen;              // Loop length
         SCTYPE scType;          // Name type
 
         // Get the number of chars
@@ -4955,14 +4955,14 @@ TKCOLINDICES CharTransTK
         case UTF16_LEFTTACK:            // Alt-'\' - left tack
         case UTF16_RIGHTARROW:          // Alt-']' - right arrow
         case UTF16_CIRCLESLOPE:         // Alt-'^' - transpose
-        case UTF16_QUOTEDOT:            // Alt-'_' - quote-dot
+////////case UTF16_VARIANT:             // Alt-'_' - variant (TKCOL_PRIM_OP2)
 ////////case UTF16_DIAMOND:             // Alt-'`' - diamond (TKCOL_DIAMOND)
 ////////case UTF16_QUOTEQUAD:           // Alt-'{' - quote-quad
         case UTF16_RIGHTTACK:           // Alt-'|' - right tack
 ////////case UTF16_ZILDE:               // Alt-'}' - zilde (TKCOL_PRIM_FN0)
         case UTF16_COMMABAR:            // Alt-'~' - comma-bar
         case UTF16_TILDE2:              //     '~' - tilde
-////////case UTF16_QUOTEDOT:            //     '!' - shriek
+        case UTF16_QUOTEDOT:            //     '!' - shriek
         case UTF16_CIRCUMFLEX:          //     '^' - up caret
         case UTF16_STAR:                //     '*' - star
         case UTF16_BAR:                 //     '-' - bar
@@ -4987,6 +4987,7 @@ TKCOLINDICES CharTransTK
         case UTF16_CIRCLEMIDDLEDOT:     // Alt-'?' - circle-middle-dot
             return TKCOL_PRIM_OP1;
 
+        case UTF16_VARIANT:             // Alt-'_' - variant
         case UTF16_DIERESISDEL:         // Alt-'G' - dual
         case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot)
         case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution

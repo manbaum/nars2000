@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include <gsl/gsl_rng.h>
 
 
 // The width & height of an image as drawn on the tab

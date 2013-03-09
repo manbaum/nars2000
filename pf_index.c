@@ -2403,13 +2403,13 @@ UBOOL ArrayIndexSetNamImmed_EM
         // If this is indexed assignment into a SysVar, ...
         if (bSysVar)
         {
-            ASYSVARVALIDNDX SysVarValid;    // Ptr to the SysVar validation routine
+            ASYSVARVALIDNDX SysVarValidNdx; // Ptr to the SysVar validation routine
 
             // Save the address of the validation function for later use
-            SysVarValid = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
+            SysVarValidNdx = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
 
             // Validate the one (and only) element in the right arg
-            if (!(*SysVarValid) (0, aplTypeRht, &aplLongestRht, &immTypeRht, hGlbSubRht, lptkLstArg))
+            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, &immTypeRht, hGlbSubRht, lptkLstArg))
                 goto DOMAIN_EXIT;
         } // End IF
 
@@ -2417,6 +2417,11 @@ UBOOL ArrayIndexSetNamImmed_EM
         lptkNamArg->tkData.tkSym->stFlags.Imm      = TRUE;
         lptkNamArg->tkData.tkSym->stFlags.ImmType  = immTypeRht;
         lptkNamArg->tkData.tkSym->stData.stLongest = aplLongestRht;
+
+        // If this is indexed assignment into a SysVar, ...
+        if (bSysVar)
+            // Execute the post-validation function
+            (*aSysVarValidPost[lptkNamArg->tkData.tkSym->stFlags.SysVarValid]) (lptkNamArg);
     } // End IF/ELSE
 
     goto NORMAL_EXIT;
@@ -2556,11 +2561,11 @@ HGLOBAL ArrayIndexSetNoLst_EM
     // If this is indexed assignment into a SysVar, ...
     if (bSysVar)
     {
-        ASYSVARVALIDNDX SysVarValid;    // Ptr to the SysVar validation routine
-        UINT            uBitMask;       // Mask for looping through Booleans
+        ASYSVARVALIDNDX SysVarValidNdx;     // Ptr to the SysVar validation routine
+        UINT            uBitMask;           // Mask for looping through Booleans
 
         // Save the address of the validation function for later use
-        SysVarValid = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
+        SysVarValidNdx = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
 
         // Copy the name arg
         hGlbRes = CopyGlbAsType_EM (hGlbNam, aplTypeNam, lptkNamArg);
@@ -2586,7 +2591,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
                                 &aplLongestRht,     // Ptr to result immediate value (may be NULL)
                                  NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
             // Validate all elements in the right arg
-            if (!(*SysVarValid) (uRht, aplTypeRht, &aplLongestRht, NULL, hGlbSubRht, lptkFunc))
+            if (!(*SysVarValidNdx) (uRht, aplTypeRht, &aplLongestRht, NULL, hGlbSubRht, lptkFunc))
                 goto DOMAIN_EXIT;
             // Split cases based upon the name arg storage type
             switch (aplTypeNam)
@@ -2624,6 +2629,9 @@ HGLOBAL ArrayIndexSetNoLst_EM
                     break;
             } // End SWITCH
         } // End FOR
+
+        // Execute the post-validation function
+        (*aSysVarValidPost[lptkNamArg->tkData.tkSym->stFlags.SysVarValid]) (lptkNamArg);
 
         goto NORMAL_EXIT;
     } // End IF
@@ -2718,54 +2726,58 @@ NORMAL_EXIT:
 #endif
 
 UBOOL ArrayIndexSetSingLst_EM
-    (LPTOKEN      lptkNamArg,           // Ptr to name arg token
-     LPTOKEN      lptkLstArg,           // Ptr to list ...
-     LPTOKEN      lptkRhtArg,           // Ptr to right ...
-     HGLOBAL     *lphGlbRes,            // Ptr to result global memory handle
-     UBOOL        bSysVar,              // TRUE iff indexed assignment into a SysVar
-     LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
-     LPTOKEN      lptkFunc)             // Ptr to function token
+    (LPTOKEN      lptkNamArg,               // Ptr to name arg token
+     LPTOKEN      lptkLstArg,               // Ptr to list ...
+     LPTOKEN      lptkRhtArg,               // Ptr to right ...
+     HGLOBAL     *lphGlbRes,                // Ptr to result global memory handle
+     UBOOL        bSysVar,                  // TRUE iff indexed assignment into a SysVar
+     LPPERTABDATA lpMemPTD,                 // Ptr to PerTabData global memory
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
-    HGLOBAL         hGlbNam = NULL,     // Name arg global memory handle
-                    hGlbLst = NULL,     // List ...
-                    hGlbSubLst = NULL,  // List arg item global memory handle
-                    hGlbRht = NULL,     // Right arg ...
-                    hGlbSubRht = NULL;  // Right arg item...
-    LPVOID          lpMemNam = NULL,    // Ptr to name arg global memory
-                    lpMemLst = NULL,    // Ptr to list arg global memory
-                    lpMemSubLst = NULL, // Ptr to list arg item global memory
-                    lpMemRht = NULL,    // Ptr to right arg global memory
-                    lpMemRes = NULL;    // Ptr to result   ...
-    LPAPLDIM        lpMemDimRes;        // Ptr to result dimensions
-    APLSTYPE        aplTypeNam,         // Name arg storage type
-                    aplTypeSubLst,      // List arg subitem ...
-                    aplTypeRht,         // Right ...
-                    aplTypeRes;         // Result    ...
-    APLNELM         aplNELMNam,         // Name arg NELM
-                    aplNELMLst,         // List ...
-                    aplNELMSubLst,      // List arg subitem ...
-                    aplNELMRht;         // Right ...
-    APLRANK         aplRankNam,         // Name arg rank
-                    aplRankSubLst,      // List arg subitem ...
-                    aplRankRht;         // Right ...
-    APLLONGEST      aplLongestSubLst,   // List arg subitem immediate value
-                    aplLongestRht;      // Right arg item   ...
-    IMM_TYPES       immTypeRht;         // Right ...
-    APLUINT         uRht,               // Loop counter
-                    uRes;               // Loop counter
-    APLINT          apaOffNam,          // Name arg APA offset
-                    apaMulNam;          // ...          multiplier
-    UINT            uBitMask,           // Bit mask for when looping through Booleans
-                    bRet = TRUE;        // TRUE iff result is valid
-    UBOOL           bQuadIO;            // []IO
-    ASYSVARVALIDNDX SysVarValid;        // Ptr to the SysVar validation routine
-    LPSYMENTRY      lpSymTmp;           // Ptr to temporary LPSYMENTRY
+    HGLOBAL          hGlbNam = NULL,        // Name arg global memory handle
+                     hGlbLst = NULL,        // List ...
+                     hGlbSubLst = NULL,     // List arg item global memory handle
+                     hGlbRht = NULL,        // Right arg ...
+                     hGlbSubRht = NULL;     // Right arg item...
+    LPVOID           lpMemNam = NULL,       // Ptr to name arg global memory
+                     lpMemLst = NULL,       // Ptr to list arg global memory
+                     lpMemSubLst = NULL,    // Ptr to list arg item global memory
+                     lpMemRht = NULL,       // Ptr to right arg global memory
+                     lpMemRes = NULL;       // Ptr to result   ...
+    LPAPLDIM         lpMemDimRes;           // Ptr to result dimensions
+    APLSTYPE         aplTypeNam,            // Name arg storage type
+                     aplTypeSubLst,         // List arg subitem ...
+                     aplTypeRht,            // Right ...
+                     aplTypeRes;            // Result    ...
+    APLNELM          aplNELMNam,            // Name arg NELM
+                     aplNELMLst,            // List ...
+                     aplNELMSubLst,         // List arg subitem ...
+                     aplNELMRht;            // Right ...
+    APLRANK          aplRankNam,            // Name arg rank
+                     aplRankSubLst,         // List arg subitem ...
+                     aplRankRht;            // Right ...
+    APLLONGEST       aplLongestSubLst,      // List arg subitem immediate value
+                     aplLongestRht;         // Right arg item   ...
+    IMM_TYPES        immTypeRht;            // Right ...
+    APLUINT          uRht,                  // Loop counter
+                     uRes;                  // Loop counter
+    APLINT           apaOffNam,             // Name arg APA offset
+                     apaMulNam;             // ...          multiplier
+    UINT             uBitMask,              // Bit mask for when looping through Booleans
+                     bRet = TRUE;           // TRUE iff result is valid
+    UBOOL            bQuadIO;               // []IO
+    ASYSVARVALIDNDX  SysVarValidNdx;        // Ptr to the SysVar validation routine
+    ASYSVARVALIDPOST SysVarValidPost;       // Ptr to the SysVar post-validation routine
+    LPSYMENTRY       lpSymTmp;              // Ptr to temporary LPSYMENTRY
 
     // If this is indexed assignment into a SysVar, ...
     if (bSysVar)
-        // Save the address of the validation function for later use
-        SysVarValid = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
+    {
+        // Save the address of the validation functions for later use
+        SysVarValidNdx  = aSysVarValidNdx [lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
+        SysVarValidPost = aSysVarValidPost[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
+    } // End IF
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -2944,7 +2956,7 @@ UBOOL ArrayIndexSetSingLst_EM
         if (bSysVar)
         {
             // Validate the one (and only) item from the right arg
-            if (!(*SysVarValid) (0, aplTypeRht, &aplLongestRht, NULL, hGlbSubRht, lptkLstArg))
+            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, NULL, hGlbSubRht, lptkLstArg))
                 goto DOMAIN_EXIT;
 
             // As we don't promote sysvars, ...
@@ -3087,6 +3099,11 @@ UBOOL ArrayIndexSetSingLst_EM
         // We no longer need this ptr
         MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
 
+        // If this is indexed assignment into a SysVar, ...
+        if (bSysVar)
+            // Execute the post-validation function
+            (*aSysVarValidPost[lptkNamArg->tkData.tkSym->stFlags.SysVarValid]) (lptkNamArg);
+
         goto NORMAL_EXIT;
     } // End IF
 
@@ -3157,7 +3174,9 @@ UBOOL ArrayIndexSetSingLst_EM
                                            aplLongestRht,   // Right arg immediate value
                                            bQuadIO,         // []IO
                                            bSysVar,         // TRUE iff indexed assignment into a SysVar
-                                           SysVarValid,     // Ptr to the SysVar validation routine
+                                           SysVarValidNdx,  // Ptr to the SysVar validation routine
+                                           SysVarValidPost, // Ptr to the SysVar post-validation routine
+                                           lptkNamArg,      // Ptr to name arg token
                                            lpMemPTD,        // Ptr to PerTabData global memory
                                            lptkFunc);       // Ptr to function token
             if (!bRet)
@@ -3237,7 +3256,9 @@ UBOOL ArrayIndexSetSingLst_EM
                                                    aplLongestRht,   // Right arg immediate value
                                                    bQuadIO,         // []IO
                                                    bSysVar,         // TRUE iff indexed assignment into a SysVar
-                                                   SysVarValid,     // Ptr to the SysVar validation routine
+                                                   SysVarValidNdx,  // Ptr to the SysVar validation routine
+                                                   SysVarValidPost, // Ptr to the SysVar post-validation routine
+                                                   lptkNamArg,      // Ptr to name arg token
                                                    lpMemPTD,        // Ptr to PerTabData global memory
                                                    lptkFunc);       // Ptr to function token
                     if (!bRet)
@@ -3411,22 +3432,24 @@ NORMAL_EXIT:
 #endif
 
 UBOOL ArrayIndexSetVector_EM
-    (APLNELM         aplNELMNam,        // Name arg NELM
-     LPVOID          lpMemSubLst,       // Ptr to list arg subitem
-     APLSTYPE        aplTypeSubLst,     // List arg subitem storage type
-     APLSTYPE        aplTypeRes,        // Result storage type
-     LPVOID          lpMemRes,          // Ptr to result global memory
-     APLUINT         uRes,              // Index into the list arg subitem
-     LPVOID          lpMemRht,          // Ptr to right arg global memory
-     APLUINT         uRht,              // Index into the right arg
-     HGLOBAL         hGlbSubRht,        // Right arg item global memory handle
-     APLSTYPE        aplTypeRht,        // Right arg storage type
-     APLLONGEST      aplLongestRht,     // Right arg immediate value
-     UBOOL           bQuadIO,           // []IO
-     UBOOL           bSysVar,           // TRUE iff indexed assignment into a SysVar
-     ASYSVARVALIDNDX SysVarValid,       // Ptr to the SysVar validation routine
-     LPPERTABDATA    lpMemPTD,          // Ptr to PerTabData global memory
-     LPTOKEN         lptkFunc)          // Ptr to function token
+    (APLNELM          aplNELMNam,       // Name arg NELM
+     LPVOID           lpMemSubLst,      // Ptr to list arg subitem
+     APLSTYPE         aplTypeSubLst,    // List arg subitem storage type
+     APLSTYPE         aplTypeRes,       // Result storage type
+     LPVOID           lpMemRes,         // Ptr to result global memory
+     APLUINT          uRes,             // Index into the list arg subitem
+     LPVOID           lpMemRht,         // Ptr to right arg global memory
+     APLUINT          uRht,             // Index into the right arg
+     HGLOBAL          hGlbSubRht,       // Right arg item global memory handle
+     APLSTYPE         aplTypeRht,       // Right arg storage type
+     APLLONGEST       aplLongestRht,    // Right arg immediate value
+     UBOOL            bQuadIO,          // []IO
+     UBOOL            bSysVar,          // TRUE iff indexed assignment into a SysVar
+     ASYSVARVALIDNDX  SysVarValidNdx,   // Ptr to the SysVar validation routine
+     ASYSVARVALIDPOST SysVarValidPost,  // Ptr to the SysVar post-validation routine
+     LPTOKEN          lptkNamArg,       // Ptr to name arg token
+     LPPERTABDATA     lpMemPTD,         // Ptr to PerTabData global memory
+     LPTOKEN          lptkFunc)         // Ptr to function token
 
 {
     UBOOL      bRet = TRUE;             // TRUE iff the result is valid
@@ -3648,7 +3671,7 @@ UBOOL ArrayIndexSetVector_EM
     if (bSysVar)
     {
         // Validate the one (and only) item from the right arg
-        if (!(*SysVarValid) (aplLongestSubLst, aplTypeRht, &aplLongestRht, &immTypeRht, hGlbSubRht, lptkFunc))
+        if (!(*SysVarValidNdx) (aplLongestSubLst, aplTypeRht, &aplLongestRht, &immTypeRht, hGlbSubRht, lptkFunc))
             goto DOMAIN_EXIT;
     } else
         immTypeRht = TranslateArrayTypeToImmType (aplTypeRht);
@@ -3741,6 +3764,11 @@ UBOOL ArrayIndexSetVector_EM
         defstop
             break;
     } // End SWITCH
+
+    // If this is indexed assignment into a SysVar, ...
+    if (bSysVar)
+        // Execute the post-validation function
+        (*SysVarValidPost) (lptkNamArg);
 
     goto NORMAL_EXIT;
 

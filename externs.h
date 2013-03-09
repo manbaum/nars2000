@@ -1094,6 +1094,12 @@ EXTERN
 // Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht, &immTypeRht, hGlbSubRht, lptkFunc);
 ASYSVARVALIDNDX aSysVarValidNdx[SYSVAR_LENGTH];
 
+typedef void  (*ASYSVARVALIDPOST) (LPTOKEN);
+
+EXTERN
+// Use as in:  (*aSysVarValidPost[SYSVAR_IO]) (lptkNamArg);
+ASYSVARVALIDPOST aSysVarValidPost[SYSVAR_LENGTH];
+
 EXTERN
 int MFSizeState                         // Size state for MF (SIZE_xxx)
 #ifdef DEFINE_VALUES

@@ -1548,7 +1548,7 @@ void GetImageRect
 //***************************************************************************
 
 void NewTabName
-    (void)
+    (LPAPLCHAR lpMemWSID)       // Ptr to new workspace name (may be NULL)
 
 {
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -1561,9 +1561,20 @@ void NewTabName
     // Get the tab index
     iCurTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
 
+    // If the arg is a WSID, ...
+    if (lpMemWSID)
+    {
+        LPAPLCHAR p;            // Temp ptr
+
+        // Skip over the path
+        while (p = strchrW (lpMemWSID, WC_SLOPE))
+            lpMemWSID = p + 1;
+    } else
+        lpMemWSID = PointToWsName (iCurTabIndex);
+
     // Initialize the item struc
     tcItem.mask       = TCIF_TEXT;
-    tcItem.pszText    = PointToWsName (iCurTabIndex);
+    tcItem.pszText    = lpMemWSID;
 ////tcItem.cchTextMax =
 ////tcItem.iImage     =
 ////tcItem.lParam     =

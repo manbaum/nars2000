@@ -3903,12 +3903,6 @@ UNLOCK_EXIT:
 //  Validate a value before assigning it to []WSID
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidSetWSID_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL ValidSetWSID_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
@@ -3918,7 +3912,33 @@ UBOOL ValidSetWSID_EM
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, TRUE);
 } // End ValidSetWSID_EM
-#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ValidPostWSID
+//
+//  Post-validate code for []WSID
+//***************************************************************************
+
+void ValidPostWSID
+    (LPTOKEN lptkNamArg)            // Ptr to name arg token
+
+{
+    LPAPLCHAR lpMemWSID;
+
+    // Lock the memory to get a ptr to it
+    lpMemWSID = MyGlobalLock (lptkNamArg->tkData.tkGlbData);
+
+    // Skip over the header and dimensions to the data
+    lpMemWSID = VarArrayDataFmBase (lpMemWSID);
+
+    // Tell the Tab Ctrl about the new workspace name
+    NewTabName (lpMemWSID);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lptkNamArg->tkData.tkGlbData); lpMemWSID = NULL;
+} // End ValidPostWSID_EM
+
 
 //***************************************************************************
 //  $ValidSetZ_EM
@@ -3981,6 +4001,19 @@ UBOOL ValidNdxAny
 {
     return TRUE;
 } // End ValidNdxAny
+
+
+//***************************************************************************
+//  $ValidPostNone
+//
+//  Post-validation for SysVars that don't need any
+//***************************************************************************
+
+void ValidPostNone
+    (LPTOKEN lptkNamArg)                    // Ptr to name arg token
+
+{
+} // End ValidPostNone
 
 
 //***************************************************************************
@@ -4084,6 +4117,26 @@ UBOOL InitSystemVars
     aSysVarValidNdx[SYSVAR_SA      ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_WSID    ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_Z       ] = ValidNdxAny         ;
+
+    // Set the array index validation routine
+    aSysVarValidPost[SYSVAR_ALX     ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_CT      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_DM      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_DT      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_ELX     ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_FC      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_FEATURE ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_FPC     ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_IC      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_IO      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_LX      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_PP      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_PR      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_PW      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_RL      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_SA      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_WSID    ] = ValidPostWSID       ;
+    aSysVarValidPost[SYSVAR_Z       ] = ValidPostNone       ;
 
     // Assign default values to the system vars
     if (!AssignDefaultSysVars (lpMemPTD->htsPTD.lpSymQuad))

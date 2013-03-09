@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,7 +68,13 @@ UBOOL AssignName_EM
             goto SYNTAX_EXIT;
 
         // Validate the value
-        return (*aSysVarValidSet[lptkNam->tkData.tkSym->stFlags.SysVarValid]) (lptkNam, lptkSrc);
+        bRet = (*aSysVarValidSet[lptkNam->tkData.tkSym->stFlags.SysVarValid]) (lptkNam, lptkSrc);
+
+        // If it validated, ...
+        if (bRet)
+            // Execute the post-validation function
+            (*aSysVarValidPost[lptkNam->tkData.tkSym->stFlags.SysVarValid]) (lptkNam);
+        return bRet;
     } // End IF
 
     // Note that we have to wait until all errors have been

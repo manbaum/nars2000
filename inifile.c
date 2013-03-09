@@ -835,12 +835,16 @@ UBOOL ReadIniFileGlb
     } else
         cQuadPR_CWS = wszTemp[0];
 
-    // Read in []RL
-    uQuadRL_CWS =
-      GetPrivateProfileIntW (SECTNAME_SYSVARS,      // Ptr to the section name
-                             KEYNAME_QUADRL,        // Ptr to the key name
-                             DEF_QUADRL_CWS,        // Default value if not found
-                             lpwszIniFile);         // Ptr to the file name
+    // Read in []RL as a string as the IntW form doesn't support 64-bit integers
+    GetPrivateProfileStringW (SECTNAME_SYSVARS,     // Ptr to the section name
+                              KEYNAME_QUADRL,       // Ptr to the key name
+                              DEF_QUADRL_CWS_WS,    // Ptr to the default value
+                              wszTemp,              // Ptr to the output buffer
+                              TEMPBUFLEN,           // Count of the output buffer
+                              lpwszIniFile);        // Ptr to the file name
+    // Convert to a number
+    sscanfW (wszTemp, L"%I64u", &uQuadRL_CWS);
+
     // Read in []SA index
     cQuadxSA_CWS = (APLCHAR)
       GetPrivateProfileIntW (SECTNAME_SYSVARS,      // Ptr to the section name

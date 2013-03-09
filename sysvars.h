@@ -41,7 +41,8 @@
 #define DEF_QUADMF_CWS      TIMERSOURCE_PC2MS
 #define DEF_QUADPP_CWS         10
 #define DEF_QUADPW_CWS         80
-#define DEF_QUADRL_CWS      216928637           // A primitive root >= (sqrt (-1+2*61))/7
+#define DEF_QUADRL_CWS        1745365914586     // The 1st primitive root >= (-1+2*61)*2r3
+#define DEF_QUADRL_CWS_WS   L"1745365914586"    // ...
 #define DEF_QUADPR_CWS      L" "
 #define DEF_QUADxSA_CWS         0   // 0 = "", 1 = "CLEAR", 2 = "ERROR", 3 = "EXIT", 4 = "OFF"
 #define DEF_QUADLX_CWS      L""

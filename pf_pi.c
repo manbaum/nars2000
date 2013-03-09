@@ -1922,10 +1922,10 @@ APLMPI PrimFnPiNthPrime
             goto ERROR_EXIT;
     } else
     {
-        //
+        // Set to last + 1 index in NthPrimeTab
         mpz_set_sx (&mpzRes, NthPrimeCnt * NthPrimeInc);
 
-        // Check to see if the value is just beyond our NthPrimeTab
+        // Check to see if the value is beyond our NthPrimeTab
         if (mpz_cmp (&mpzArg, &mpzRes) <= 0)
         {
             // Set the Nth Prime Count & Value
@@ -2101,19 +2101,21 @@ UBOOL NumPrimes
         // We're at the endpoint -- go forwards
         bDir = TRUE;
 
+    // If the incoming value is not a prime, ...
+    if (!mpz_likely_prime_p (&mpzArg, lpMemPTD->randState, 0))
+        // Set it to the previous prime so we're always comparing primes
+        mpz_prev_prime (&mpzDif, &mpzArg, lpbCtrlBreak, lpMemPTD);
+    else
+        mpz_set        (&mpzDif, &mpzArg);
+
     // If we're searching forwards, ...
     if (bDir)
     {
         // Set the lower bound offset
         iMid = iMin;
 
-        // If the incoming value is not a prime, ...
-        if (!mpz_likely_prime_p (&mpzArg, lpMemPTD->randState, 0))
-            // Set it to the previous prime so we're always comparing primes
-            mpz_prev_prime (&mpzArg, &mpzArg, lpbCtrlBreak, lpMemPTD);
-
         // Search forwards
-        while (mpz_cmp (&mpzArg, &mpzLow) >= 0)
+        while (mpz_cmp (&mpzDif, &mpzLow) > 0)
         {
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -2132,7 +2134,7 @@ UBOOL NumPrimes
         iMid = iMax;
 
         // Search backwards
-        while (mpz_cmp (&mpzArg, &mpzUpp) < 0)
+        while (mpz_cmp (&mpzDif, &mpzUpp) < 0)
         {
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -2148,7 +2150,7 @@ UBOOL NumPrimes
     } // End IF/ELSE
 
     // Set the result
-    mpz_set_sx (mpzRes, iMid);
+    mpz_set_sx (mpzRes, iMid + 1);
 
     // Mark as valid result
     bRet = TRUE;
@@ -2208,7 +2210,7 @@ APLMPI PrimFnPiNumPrimes
             mpz_set_sx (&mpzRes, NthPrimeTab[iMid]);
 
             // Check for a match
-            switch (mpz_cmp (&aplMPIArg, &mpzRes))
+            switch (signum (mpz_cmp (&aplMPIArg, &mpzRes)))
             {
                 case -1:
                     iMax = iMid - 1;

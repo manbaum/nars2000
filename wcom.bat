@@ -2,11 +2,7 @@ REM Directory of the root of the NARS2000 project
 Set NARSROOT=R:\NARS2000^\
 
 REM Path and name of zip program (7-zip)
-if "%ProgramFiles(x86)%" == "" (
-        Set ZIPPRG="%ProgramFiles%\7-Zip\7z"
-    ) else (
-        Set ZIPPRG="%ProgramFiles(x86)%\7-Zip\7z"
-    )
+Set ZIPPRG="%ProgramFiles%\7-Zip\7z"
 
 REM CygWin flag to suppress DOS file warning message
 Set CYGWIN=nodosfilewarning

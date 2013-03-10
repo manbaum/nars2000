@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -373,7 +373,7 @@ static APLCHAR MonLineBox1[] =
   L"LD" $IS $FORMAT L"(0" $NOTEQUAL $RHO $RHO L"R)/" $NEG L"1" $TAKE $RHO L"R";
 
 static APLCHAR MonLineBox2[] =
-  L"RD" $IS L"0 1" $DROP $FORMAT $COMMABAR $NEG L"1" $DROP $RHO L"R";
+  L"RD" $IS $FORMAT $COMMABAR $NEG L"1" $DROP $RHO L"R";
 
 static APLCHAR MonLineBox3[] =
   L"RD" $IS L"(+/RD=' ')" $ROTATE L"RD";

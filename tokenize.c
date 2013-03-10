@@ -4271,22 +4271,6 @@ void Untokenize
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // Skip it if a variable with no value
-            if (lpToken->tkFlags.TknType EQ TKT_VARNAMED
-             && !lpToken->tkData.tkSym->stFlags.Value)
-                break;
-
-            // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
-            if (!lpToken->tkData.tkSym->stFlags.Imm)
-            {
-                // stData is an internal function, a valid HGLOBAL variable or function array,
-                //   or user-defined function/operator
-                Assert (lpToken->tkData.tkSym->stFlags.FcnDir
-                     || IsGlbTypeVarDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
-                     || IsGlbTypeFcnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData)
-                     || IsGlbTypeDfnDir_PTB (lpToken->tkData.tkSym->stData.stGlbData));
-            } // End IF
-
             // Don't free a name's contents
             break;
 

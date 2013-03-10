@@ -1398,7 +1398,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         lpwSrc += strcountof (AP_FPC);
 
                         // Scan the common precision
-                        sscanfW (lpwSrc, SCANFSTR_APLUINT, &uCommPrec);
+                        sscanfW (lpwSrc, L"%u", &uCommPrec);
 
                         // Skip over the digits
                         while (isdigit ((char) *lpwSrc))

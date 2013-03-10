@@ -2551,12 +2551,12 @@ typedef struct tagLANGCHARS
         {UTF16_LEFTTACK           , {0}, L"LeftTack",
                                          L"Identity:  " WS_UTF16_LEFTTACK L"R\n"
                                          L"Lev:      L" WS_UTF16_LEFTTACK L"R\n\n"
-                                         L"Keyboard:  Alt-'|' or Alt-Shift-\"'\"\n\n"
+                                         L"Keyboard:  Alt-'|' or Alt-Shift-'\\'\n\n"
                                          L"Unicode:  0x22A3 or 8867"},
         {UTF16_RIGHTTACK          , {0}, L"RightTack",
                                          L"Identity:  " WS_UTF16_RIGHTTACK L"R\n"
                                          L"Dex:      L" WS_UTF16_RIGHTTACK L"R\n\n"
-                                         L"Keyboard:  Alt-\"'\"\n\n"
+                                         L"Keyboard:  Alt-'\\'\n\n"
                                          L"Unicode:  0x22A2 or 8866"},
         LANGCHARS_SEPARATOR
         {UTF16_EQUAL              , {0}, L"Equal",

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -780,6 +780,50 @@ IMMED_EXIT:
     } // End IF
 } // End TypeDemote
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $TypeDemoteGlb
+//
+//  Attempt to type demote the data in a global memory handle
+//***************************************************************************
+
+HGLOBAL TypeDemoteGlb
+    (HGLOBAL hGlbRht)               // Right arg global memory handle
+
+{
+    TOKEN      tkRhtArg = {0};      // Right arg token
+    LPSYMENTRY lpSymEntry;          // Result if immediate
+
+    tkRhtArg.tkFlags.TknType   = TKT_VARARRAY;
+////tkRhtArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////tkRhtArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+    tkRhtArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRht);
+////tkRhtArg.tkCharIndex       =                // Unused
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&tkRhtArg);
+
+    // Split cases based upon the token type
+    switch (tkRhtArg.tkFlags.TknType)
+    {
+        case TKT_VARIMMED:
+            lpSymEntry =
+              MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,
+                              &tkRhtArg.tkData.tkLongest,
+                               NULL);
+            if (lpSymEntry EQ NULL)
+                return hGlbRht;
+            else
+                return lpSymEntry;
+
+        case TKT_VARARRAY:
+            return tkRhtArg.tkData.tkGlbData;
+
+        defstop
+            return NULL;
+    } // End SWITCH
+} // End TypeDemoteGlb
 
 
 //***************************************************************************

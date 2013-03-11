@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -937,6 +937,9 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 
+                // See if it fits into a lower (but not necessarily smaller) datatype
+                ((LPAPLNESTED) lpMemRes)[-1] = TypeDemoteGlb (hGlbSub);
+
                 break;
 
             case ARRAY_NESTED:
@@ -992,6 +995,9 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+
+                // See if it fits into a lower (but not necessarily smaller) datatype
+                ((LPAPLNESTED) lpMemRes)[-1] = TypeDemoteGlb (hGlbSub);
 
                 break;
 

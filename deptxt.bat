@@ -7,7 +7,7 @@ REM Skip over it
 shift
 
 REM Run through all the filenames
-FOR %%G IN (%*) DO (call :subroutine "%%G")
+FOR %%G IN (%*) DO (call :subroutine %%G)
 
 Set OUTFILE=
 exit /b

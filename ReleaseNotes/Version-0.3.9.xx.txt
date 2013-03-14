@@ -1,6 +1,17 @@
 Version 0.3.9.xx consists of the following Builds:
 
 
+Build #1063 -- Version 0.3.9.xx
+-------------------------------
+
+* Even More Miscellaneous Build File Changes
+
+Directory trunk:
+
+DEPTXT.BAT:
+  Omit double quote marks around the argument passed to <:subroutine> as they get in the way.
+
+
 Build #1062 -- Version 0.3.9.xx
 -------------------------------
 

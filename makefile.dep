@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2011 Sudley Place Software
+#     Copyright (C) 2006-2013 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ DEP:    $(SRC:???=dep)  \
         $(O)main.dev    \
         $(O)ver.dev     \
         $(O)version.dev
-    !@deptxt.bat $(**F) $(O)dep.txt
+    @deptxt.bat $(O)dep.txt $(**F)
 
 INITIAL:
     if exist $(O)dep.txt del $(O)dep.txt

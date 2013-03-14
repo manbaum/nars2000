@@ -2,7 +2,7 @@
 
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2011 Sudley Place Software
+#     Copyright (C) 2006-2013 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 # ***************************************************************************/
 
 !if "$(DEBUG)" == "1"
-O=RET\D$(WIN)\                  # Define output directory for intermediate files
+O=RET\D$(WIN)^\                 # Define output directory for intermediate files
 !else
-O=RET\ND$(WIN)\                 # Define output directory for intermediate files
+O=RET\ND$(WIN)^\                # Define output directory for intermediate files
 !endif
 
 !if "$(DEL_SW)" == "1"
@@ -29,7 +29,7 @@ O=RET\ND$(WIN)\                 # Define output directory for intermediate files
 !    endif
 !    if [del /Q $(O)*.*]
 !    endif
-!    if [if not exist $(O)dep.txt   nmake /f makefile.dep O=$(O)]
+!    if [if not exist $(O)dep.txt   $(NMAKE) /f makefile.dep O=$(O)]
 !    endif
 !endif
 
@@ -37,9 +37,9 @@ O=RET\ND$(WIN)\                 # Define output directory for intermediate files
 !    message ***File $(O)dep.txt is missing:  Creating it...
 !    if [if not exist $(O)  mkdir $(O)]
 !    endif
-!    if [nmake /f makefile.dep O=$(O)]
+!    if [$(NMAKE) /f makefile.dep O=$(O)]
 !    endif
 !endif
 
-!if [nmake /f makefile.w$(WIN) /nologo $(NMAKE_SWS) O=$(O) WIN=$(WIN) DEBUG=$(DEBUG)]
+!if [$(NMAKE) /f makefile.w$(WIN) /nologo $(NMAKE_SWS) O=$(O) WIN=$(WIN) DEBUG=$(DEBUG)]
 !endif

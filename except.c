@@ -334,7 +334,7 @@ int CheckPTDVirtStr
             else
             // Can't allocate more memory??
             {
-                MessageBoxW (NULL,
+                MessageBoxW (hWndMF,
                              L"Not enough memory for <VirtualAlloc> in <CheckPTDVirtStr>",
                              lpwszAppName,
                              MB_OK | MB_ICONERROR);
@@ -400,7 +400,7 @@ int CheckMemVirtStr
             else
             // Can't allocate more memory??
             {
-                MessageBoxW (NULL,
+                MessageBoxW (hWndMF,
                              L"Not enough memory for <VirtualAlloc> in <CheckMemVirtStr>",
                              lpwszAppName,
                              MB_OK | MB_ICONERROR);

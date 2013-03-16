@@ -2147,7 +2147,7 @@ UBOOL GetLabelNums
 WSFULL_EXIT:
     if (bDispErrMsg)
         // Display the error message
-        MessageBoxW (NULL,
+        MessageBoxW (hWndMF,
                      L"Unable to allocate space to test for duplicate labels -- function not saved",
                      lpwszAppName,
                      MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -2220,7 +2220,7 @@ void ErrLabelNums
     MyGlobalUnlock (hGlbName); lpMem = NULL;
 
     // Display the error message
-    MessageBoxW (NULL,
+    MessageBoxW (hWndMF,
                  wszTemp,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);

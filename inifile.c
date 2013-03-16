@@ -497,7 +497,7 @@ UBOOL ReadIniFileGlb
       MyGlobalAlloc (GHND, max (uNumLibDirs, 2) * _MAX_PATH * sizeof (WCHAR));
     if (hGlbLibDirs EQ NULL)
     {
-        MessageBoxW (NULL, L"Unable to allocate enough memory for Library Directories", WS_APPNAME, MB_OK | MB_ICONSTOP);
+        MessageBoxW (hWndMF, L"Unable to allocate enough memory for Library Directories", WS_APPNAME, MB_OK | MB_ICONSTOP);
 
         return FALSE;
     } // End IF
@@ -1111,7 +1111,7 @@ UBOOL ReadIniFileGlb
       MyGlobalAlloc (GHND, (uGlbKeybLayoutBI + uGlbKeybLayoutUser) * sizeof (KEYBLAYOUTS));
     if (hGlbKeybLayouts EQ NULL)
     {
-        MessageBoxW (NULL, L"Unable to allocate enough memory for Keyboard Layouts", WS_APPNAME, MB_OK | MB_ICONSTOP);
+        MessageBoxW (hWndMF, L"Unable to allocate enough memory for Keyboard Layouts", WS_APPNAME, MB_OK | MB_ICONSTOP);
 
         return FALSE;           // Stop the whole process
     } // End IF

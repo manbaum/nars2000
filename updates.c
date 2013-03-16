@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -429,7 +429,7 @@ INT_PTR CALLBACK UpdatesDlgProc
                         } // End IF
 
                         // Confirm the Cancel and Exit
-                        if (IDYES EQ MessageBoxW (NULL, L"Download in progress -- cancel it and exit?", lpwszAppName, MB_YESNO | MB_ICONWARNING))
+                        if (IDYES EQ MessageBoxW (hWndMF, L"Download in progress -- cancel it and exit?", lpwszAppName, MB_YESNO | MB_ICONWARNING))
                         {
                             // Mark as to be stopped
                             dnlThrStr.bThreadStop = TRUE;
@@ -496,7 +496,7 @@ INT_PTR CALLBACK UpdatesDlgProc
                         } // End IF
 
                         // Confirm the Cancel
-                        if (IDYES EQ MessageBoxW (NULL, L"Really cancel this download?", lpwszAppName, MB_YESNO | MB_ICONWARNING))
+                        if (IDYES EQ MessageBoxW (hWndMF, L"Really cancel this download?", lpwszAppName, MB_YESNO | MB_ICONWARNING))
                         {
                             // Mark as to be stopped
                             dnlThrStr.bThreadStop = TRUE;
@@ -762,7 +762,7 @@ void DownloadRun
     goto NORMAL_EXIT;
 
 WSFULL_EXIT:
-    MessageBoxW (NULL, L"GlobalAlloc failed with WS FULL", lpwszAppName, MB_OK | MB_ICONERROR);
+    MessageBoxW (hWndMF, L"GlobalAlloc failed with WS FULL", lpwszAppName, MB_OK | MB_ICONERROR);
 
     goto ERROR_EXIT;
 
@@ -1143,7 +1143,7 @@ void FormatNetErrorMessage
                     uRet, uRet,
                     wszTemp2);
     // Display it
-    MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+    MessageBoxW (hWndMF, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
 } // End FormatNetErrorMessage
 
 
@@ -1178,7 +1178,7 @@ void FormatSystemErrorMessage
                 L" failed with error code %u (%08X)\n(%s)",
                 uRet, uRet,
                 wszTemp);
-    MessageBoxW (NULL, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
+    MessageBoxW (hWndMF, lpwszGlbTemp, lpwszAppName, MB_OK | MB_ICONERROR);
 } // End FormatSystemErrorMessage
 
 

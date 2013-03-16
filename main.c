@@ -3418,7 +3418,7 @@ UBOOL IzitDB
 {
     WCHAR wszClassName[32];
 
-    GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
+    GetClassNameW (hWnd, wszClassName, countof (wszClassName));
 
     return (lstrcmpW (wszClassName, LDBWNDCLASS) EQ 0);
 } // End IzitDB
@@ -3737,7 +3737,7 @@ UBOOL InitInstance
         HKEY hKeyFont;
 
         // Ask the user if s/he wants to copy it to the Fonts folder
-        if (MessageBoxW (NULL,
+        if (MessageBoxW (hWndMF,
                          L"The default APL font <" DEF_APLFONT_FILE L"> is not installed and will be installed now.  Copy it to the Fonts folder, too?",
                          lpwszAppName,
                          MB_YESNO | MB_ICONQUESTION) EQ IDYES)
@@ -3759,7 +3759,7 @@ UBOOL InitInstance
                 {
                     case ERROR_FILE_EXISTS:
                         // Ask if we should overwrite it
-                        if (MessageBoxW (NULL,
+                        if (MessageBoxW (hWndMF,
                                          L"The default APL font <" DEF_APLFONT_FILE L"> is already in the Fonts folder:  Overwrite it?",
                                          lpwszAppName,
                                          MB_YESNO | MB_ICONQUESTION) EQ IDYES)
@@ -3775,7 +3775,7 @@ UBOOL InitInstance
 
                     case ERROR_FILE_NOT_FOUND:
                         // Tell 'em to copy the font to the program folder
-                        MessageBoxW (NULL,
+                        MessageBoxW (hWndMF,
                                      L"The default APL font <" DEF_APLFONT_FILE L"> is not in the same folder as " WS_APPNAME  L".exe:  Please copy it there and retry.",
                                      lpwszAppName,
                                      MB_OK | MB_ICONERROR);
@@ -3791,7 +3791,7 @@ UBOOL InitInstance
                                         countof (wszError),         // Maximum size of message buffer
                                         NULL);                      // Address of array of message inserts
                         // Tell 'em why it failed
-                        MessageBoxW (NULL,
+                        MessageBoxW (hWndMF,
                                      wszError,
                                      lpwszAppName,
                                      MB_OK | MB_ICONERROR);
@@ -3805,7 +3805,7 @@ UBOOL InitInstance
         // Install the font
         if (AddFontResourceW (wszFntDPFE) EQ 0)
         {
-            MessageBoxW (NULL,
+            MessageBoxW (hWndMF,
                          L"Unable to add the default APL font resource <" DEF_APLFONT_FILE L">.  Please copy it to the same folder as " WS_APPNAME L".exe and retry.",
                          lpwszAppName,
                          MB_OK | MB_ICONERROR);
@@ -3818,7 +3818,7 @@ UBOOL InitInstance
                           &hKeyFont)
             NE ERROR_SUCCESS)
         {
-            MessageBoxW (NULL,
+            MessageBoxW (hWndMF,
                          L"Unable to create the Registry key for the default APL font.",
                          lpwszAppName,
                          MB_OK | MB_ICONERROR);
@@ -3834,7 +3834,7 @@ UBOOL InitInstance
                             sizeof (DEF_APLFONT_FILE))          // Byte size of value (including terminating zero)
             NE ERROR_SUCCESS)
         {
-            MessageBoxW (NULL,
+            MessageBoxW (hWndMF,
                          L"Unable to set the Registry key value for the default APL font.",
                          lpwszAppName,
                          MB_OK | MB_ICONERROR);
@@ -4069,7 +4069,7 @@ int PASCAL WinMain
       || ((osvi.dwMajorVersion == 5)
        && (osvi.dwMinorVersion >= 1))))
     {
-        MessageBoxW (NULL,
+        MessageBoxW (hWndMF,
                      L"Sorry, but the minimum OS version for " WS_APPNAME L" is WinXP.",
                      lpwszAppName,
                      MB_OK | MB_ICONERROR);

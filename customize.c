@@ -2548,7 +2548,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                     // Complain if abandoning changes
                     if (IsWindowEnabled (hWndApply))
                     // Split cases based upon the user response
-                    switch (MessageBoxW (NULL, wszCancelMessage, WS_APPNAME, MB_YESNOCANCEL | MB_ICONWARNING))
+                    switch (MessageBoxW (hWndMF, wszCancelMessage, WS_APPNAME, MB_YESNOCANCEL | MB_ICONWARNING))
                     {
                         case IDYES:
                             // Apply changes by simulating a click of the Apply button
@@ -2732,7 +2732,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                           MyGlobalAlloc (GHND, uCnt * _MAX_PATH * sizeof (WCHAR));
 
                         if (hGlb EQ NULL)
-                            MessageBoxW (NULL, L"Unable to allocate enough memory for Library Directories", WS_APPNAME, MB_OK | MB_ICONSTOP);
+                            MessageBoxW (hWndMF, L"Unable to allocate enough memory for Library Directories", WS_APPNAME, MB_OK | MB_ICONSTOP);
                         else
                         {
                             // Lock the memory to get a ptr to it

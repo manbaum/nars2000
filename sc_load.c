@@ -275,7 +275,7 @@ UBOOL LoadWorkspace_EM
     if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
     {
         // Tell the user the bad news
-        MessageBoxW (NULL,
+        MessageBoxW (hWndMF,
                      L"The version of this workspace is later than the interpreter expects." WS_CRLF
                      L"Please try loading the workspace with a later version of the interpreter.",
                      WS_APPNAME,

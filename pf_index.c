@@ -281,7 +281,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             lpMemSub = VarArrayDimToData (lpMemSub, aplRankSub);
 
             // Skip over the header and dimensions to the data
-            lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
+            lpMemNam = VarArrayDataFmBase (lpMemNam);
 
             // Validate each element of the list arg items as either reach (pick)
             //   or scatter (squad) index reference
@@ -302,14 +302,14 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     switch (aplTypeSub)
                     {
                         case ARRAY_RAT:
-                            // Get the next index
-                            aplLongestItm = mpq_get_ctsa (&((LPAPLRAT) lpMemSub)[uSub], &bRet);
+                            // Get the next index as an integer using System []CT
+                            aplLongestItm = mpq_get_sctsx (&((LPAPLRAT) lpMemSub)[uSub], &bRet);
 
                             break;
 
                         case ARRAY_VFP:
-                            // Get the next index
-                            aplLongestItm = mpfr_get_ctsa (&((LPAPLVFP) lpMemSub)[uSub], &bRet);
+                            // Get the next index as an integer using System []CT
+                            aplLongestItm = mpfr_get_sctsx (&((LPAPLVFP) lpMemSub)[uSub], &bRet);
 
                             break;
 
@@ -403,7 +403,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     // If the immediate is a float, attempt to convert it
                     if (IsImmFlt (immTypeItm))
                     {
-                        // Attempt to convert the float to an integer using System CT
+                        // Attempt to convert the float to an integer using System []CT
                         aplLongestItm = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestItm, &bRet);
                         if (!bRet)
                             goto DOMAIN_EXIT;
@@ -814,30 +814,16 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplLongestLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLst, &bRet);
             if (!bRet)
                 goto DOMAIN_EXIT;
             break;
 
-        case ARRAY_RAT:
-            DbgBrk ();
-
-            // Attempt to convert the RAT to an INT using System CT
-////        aplLongestLst = mpq_get_ctsa (, &bRet)
-
-            break;
-
-        case ARRAY_VFP:
-            DbgBrk ();
-
-            // Attempt to convert the RAT to an INT using System CT
-////        aplLongestLst = mpfr_get_ctsa (, &bRet)
-
-            break;
-
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
+        case ARRAY_RAT:                 // No such thing as an immediate RAT
+        case ARRAY_VFP:                 // ...                           VFP
+        case ARRAY_HETERO:              // ...                           hetero
+        case ARRAY_NESTED:              // ...                           nested
         defstop
             break;
     } // End SWITCH
@@ -913,7 +899,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
     // No need to fill in the result's dimension as it's a scalar
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Get the indexed value
     GetNextValueGlb (hGlbNam,           // Item global memory handle
@@ -956,7 +942,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
                     lpMemSub = MyGlobalLock (hGlbSub);
 
                     // Skip over the header and dimensions to the data
-                    lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                    lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                     // Copy the global numeric value to the result
                     mpq_init_set ((LPAPLRAT) lpMemRes, (LPAPLRAT) lpMemSub);
@@ -987,7 +973,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
                     lpMemSub = MyGlobalLock (hGlbSub);
 
                     // Skip over the header and dimensions to the data
-                    lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                    lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                     // Copy the global numeric value to the result
                     mpfr_init_copy ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemSub);
@@ -1155,7 +1141,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 ////lpMemLst = VarArrayDimToData (lpMemRes, aplRankLst);
 
     // Skip over the header and dimensions to the data
-    lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
+    lpMemNam = VarArrayDataFmBase (lpMemNam);
 
     // Handle prototypes
     if (IsEmpty (aplNELMLst)
@@ -1202,20 +1188,20 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
                 break;
 
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplLongestLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLst, &bRet);
 
                 break;
 
             case ARRAY_RAT:
-                // Attempt to convert the RAT to an integer using System CT
-                aplLongestLst = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLst, &bRet);
+                // Attempt to convert the RAT to an integer using System []CT
+                aplLongestLst = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLst, &bRet);
 
                 break;
 
             case ARRAY_VFP:
-                // Attempt to convert the VFP to an integer using System CT
-                aplLongestLst = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLst, &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplLongestLst = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLst, &bRet);
 
                 break;
 
@@ -1413,7 +1399,7 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
     lpMemDimLst = VarArrayBaseToDim (lpMemLst);
 
     // Skip over the header and dimensions to the data
-    lpMemLst = VarArrayBaseToData (lpMemLst, aplRankLst);
+    lpMemLst = VarArrayDataFmBase (lpMemLst);
 
     // Confirm that the list of indices is an array of {zilde}s
     if (!ArrayIndexValidZilde_EM (lpMemLst, aplNELMLst, lptkFunc))
@@ -1483,7 +1469,7 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
 
         case ARRAY_NESTED:
             // Skip over the header and dimensions to the data
-            lpMemNam = VarArrayBaseToData (lpMemNam, 0);
+            lpMemNam = VarArrayDataFmBase (lpMemNam);
 
             // If the list arg is empty, copy the name arg prototype to the result
             if (IsEmpty (aplNELMLst))
@@ -1603,7 +1589,7 @@ UBOOL ArrayIndexValidZilde_EM
             lpMemSub = MyGlobalLock (hGlbSub);
 
             // Skip over the header and dimensions to the data
-            lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+            lpMemSub = VarArrayDataFmBase (lpMemSub);
 
             // Loop through the items of this list arg index
             for (uSub = 0; uSub < aplNELMSub; uSub++)
@@ -1821,7 +1807,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         *VarArrayBaseToDim (lpMemAxis) = uCount;
 
         // Skip over the header and dimension to the data
-        lpMemAxis = VarArrayBaseToData (lpMemAxis, 1);
+        lpMemAxis = VarArrayDataFmBase (lpMemAxis);
 
         // Get the current value of []IO
         bQuadIO = GetQuadIO ();
@@ -1939,7 +1925,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
         if (hGlbLft)
         {
             // Skip over the header and dimensions to the data
-            lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+            lpMemLft = VarArrayDataFmBase (lpMemLft);
 
             // Split cases based upon the left arg item ptr type
             switch (GetPtrTypeInd (lpMemLft))
@@ -2297,9 +2283,9 @@ UBOOL ArrayIndexSetNamImmed_EM
         {
             if (hGlbRht)
                 // Skip over the header and dimensions to the data
-                lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+                lpMemRht = VarArrayDataFmBase (lpMemRht);
             // Skip over the header and dimensions to the data
-            lpMemLst = VarArrayBaseToData (lpMemLst, aplRankLst);
+            lpMemLst = VarArrayDataFmBase (lpMemLst);
         } // End IF/ELSE
 
         // Confirm that the list of indices is an array of {zilde}s
@@ -2318,7 +2304,7 @@ UBOOL ArrayIndexSetNamImmed_EM
 
         if (hGlbRht)
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
     } // End IF/ELSE
 
     // Get the last item of the right arg
@@ -2364,7 +2350,7 @@ UBOOL ArrayIndexSetNamImmed_EM
 #undef  lpHeader
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Fill in the data
         *((LPAPLNESTED) lpMemRes) = CopySymGlbDir_PTB (hGlbSubRht);
@@ -2554,7 +2540,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
     } else
     if (hGlbRht)
         // Skip over the header to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
         lpMemRht = &aplLongestRht;
 
@@ -2576,7 +2562,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
         lpMemRes = MyGlobalLock (hGlbRes);
 
         // Skip over the header to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankNam);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Loop through the elements in the right arg
         for (uRht = 0; uRht < aplNELMNam; uRht++)
@@ -2878,7 +2864,7 @@ UBOOL ArrayIndexSetSingLst_EM
 
         if (hGlbRht)
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
         else
             lpMemRht = &aplLongestRht;
     } // End IF/ELSE
@@ -2901,7 +2887,7 @@ UBOOL ArrayIndexSetSingLst_EM
     // If the name arg is an APA, ...
     if (IsSimpleAPA (aplTypeNam))
     {
-#define lpAPA       ((LPAPLAPA) (VarArrayBaseToData (lpMemNam, aplRankNam)))
+#define lpAPA       ((LPAPLAPA) (VarArrayDataFmBase (lpMemNam)))
         // Get APA parameters
         apaOffNam = lpAPA->Off;
         apaMulNam = lpAPA->Mul;
@@ -2997,7 +2983,7 @@ UBOOL ArrayIndexSetSingLst_EM
         lpMemNam = MyGlobalLock (hGlbNam);
 
         // Skip over the header to the data
-        lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
+        lpMemNam = VarArrayDataFmBase (lpMemNam);
 
         // If the types are different, we need to type promote the name arg
         if (aplTypeRes NE aplTypeNam)
@@ -3017,7 +3003,7 @@ UBOOL ArrayIndexSetSingLst_EM
             *lphGlbRes = hGlbNam;
 
             // Skip over the header and dimensions to the data
-            lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
+            lpMemNam = VarArrayDataFmBase (lpMemNam);
         } // End IF
 
         // Split cases based upon the common storage type
@@ -3134,7 +3120,7 @@ UBOOL ArrayIndexSetSingLst_EM
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankNam);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     //***************************************************************
     // If the singleton list arg item is simple or global numeric,
@@ -3481,7 +3467,7 @@ UBOOL ArrayIndexSetVector_EM
                 break;
 
             case IMMTYPE_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplLongestSubLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLst, &bRet);
                 if (bRet)
                     break;
@@ -3492,16 +3478,16 @@ UBOOL ArrayIndexSetVector_EM
                 goto DOMAIN_EXIT;
 
             case IMMTYPE_RAT:
-                 // Attempt to convert the RAT to an integer using System CT
-                 aplLongestSubLst = mpq_get_ctsa ((LPAPLRAT) hGlbSubLst, &bRet);
+                 // Attempt to convert the RAT to an integer using System []CT
+                 aplLongestSubLst = mpq_get_sctsx ((LPAPLRAT) hGlbSubLst, &bRet);
 
                  if (!bRet)
                      goto DOMAIN_EXIT;
                  break;
 
             case IMMTYPE_VFP:
-                // Attempt to convert the VFP to an integer using System CT
-                aplLongestSubLst = mpfr_get_ctsa ((LPAPLVFP) hGlbSubLst, &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplLongestSubLst = mpfr_get_sctsx ((LPAPLVFP) hGlbSubLst, &bRet);
 
                 if (!bRet)
                     goto DOMAIN_EXIT;
@@ -3524,7 +3510,7 @@ UBOOL ArrayIndexSetVector_EM
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplLongestSubLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLst, &bRet);
             if (bRet)
                 break;
@@ -3566,7 +3552,7 @@ UBOOL ArrayIndexSetVector_EM
                     aplRankSubLst2 = ((LPVARARRAY_HEADER) lpMemSubLst2)->Rank;
 
                     // Skip over the header and dimensions
-                    lpMemSubLst2 = VarArrayBaseToData (lpMemSubLst2, aplRankSubLst2);
+                    lpMemSubLst2 = VarArrayDataFmBase (lpMemSubLst2);
 
                     break;
 
@@ -3606,7 +3592,7 @@ UBOOL ArrayIndexSetVector_EM
                         // Get the value
                         aplLongestSubLst = *(LPAPLLONGEST) (LPAPLFLOAT) lpMemSubLst2;
 
-                        // Attempt to convert the float to an integer using System CT
+                        // Attempt to convert the float to an integer using System []CT
                         aplLongestSubLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLst, &bRet);
                         if (bRet)
                             break;
@@ -3636,16 +3622,16 @@ UBOOL ArrayIndexSetVector_EM
         } // End ARRAY_NESTED
 
         case ARRAY_RAT:
-            // Attempt to convert the RAT to an integer using System CT
-            aplLongestSubLst = mpq_get_ctsa ((LPAPLRAT) hGlbSubLst, &bRet);
+            // Attempt to convert the RAT to an integer using System []CT
+            aplLongestSubLst = mpq_get_sctsx ((LPAPLRAT) hGlbSubLst, &bRet);
 
             if (!bRet)
                 goto DOMAIN_EXIT;
             break;
 
         case ARRAY_VFP:
-            // Attempt to convert the VFP to an integer using System CT
-            aplLongestSubLst = mpfr_get_ctsa ((LPAPLVFP) hGlbSubLst, &bRet);
+            // Attempt to convert the VFP to an integer using System []CT
+            aplLongestSubLst = mpfr_get_sctsx ((LPAPLVFP) hGlbSubLst, &bRet);
 
             if (!bRet)
                 goto DOMAIN_EXIT;
@@ -3969,7 +3955,7 @@ UBOOL ArrayIndexSetRect_EM
         *VarArrayBaseToDim (lpMemAxis) = uCount;
 
         // Skip over the header and dimension to the data
-        lpMemAxis = VarArrayBaseToData (lpMemAxis, 1);
+        lpMemAxis = VarArrayDataFmBase (lpMemAxis);
 
         // Get the current value of []IO
         bQuadIO = GetQuadIO ();

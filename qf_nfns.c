@@ -3879,20 +3879,20 @@ UBOOL NfnsArgAplint
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             *lpAplint = FloatToAplint_SCT (((LPAPLFLOAT) lpMem)[uIndex], &bRet);
 
             break;
 
         case ARRAY_RAT:
-            // Attempt to convert the RAT to an integer using System CT
-            *lpAplint = mpq_get_ctsa (&((LPAPLRAT) lpMem)[uIndex], &bRet);
+            // Attempt to convert the RAT to an integer using System []CT
+            *lpAplint = mpq_get_sctsx (&((LPAPLRAT) lpMem)[uIndex], &bRet);
 
             break;
 
         case ARRAY_VFP:
-            // Attempt to convert the VFP to an integer using System CT
-            *lpAplint = mpfr_get_ctsa (&((LPAPLVFP) lpMem)[uIndex], &bRet);
+            // Attempt to convert the VFP to an integer using System []CT
+            *lpAplint = mpfr_get_sctsx (&((LPAPLVFP) lpMem)[uIndex], &bRet);
 
             break;
 
@@ -3919,7 +3919,7 @@ UBOOL NfnsArgAplint
                             break;
 
                         case IMMTYPE_FLOAT:
-                            // Attempt to convert the float to an integer using System CT
+                            // Attempt to convert the float to an integer using System []CT
                             *lpAplint = FloatToAplint_SCT (lpSymGlb->stData.stFloat, &bRet);
 
                             break;
@@ -3948,14 +3948,14 @@ UBOOL NfnsArgAplint
                     switch (lpMemHdr->ArrType)
                     {
                         case ARRAY_RAT:
-                            // Attempt to convert the RAT to an integer using System CT
-                            *lpAplint = mpq_get_ctsa ((LPAPLRAT) VarArrayDataFmBase (lpMemHdr), &bRet);
+                            // Attempt to convert the RAT to an integer using System []CT
+                            *lpAplint = mpq_get_sctsx ((LPAPLRAT) VarArrayDataFmBase (lpMemHdr), &bRet);
 
                             break;
 
                         case ARRAY_VFP:
-                            // Attempt to convert the VFP to an integer using System CT
-                            *lpAplint = mpfr_get_ctsa ((LPAPLVFP) VarArrayDataFmBase (lpMemHdr), &bRet);
+                            // Attempt to convert the VFP to an integer using System []CT
+                            *lpAplint = mpfr_get_sctsx ((LPAPLVFP) VarArrayDataFmBase (lpMemHdr), &bRet);
 
                             break;
 
@@ -4116,20 +4116,20 @@ UBOOL NfnsArgConv
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             *lpDiskConv = FloatToAplint_SCT (*(LPAPLFLOAT) lpMem, &bRet);
 
             break;
 
         case ARRAY_RAT:
-            // Attempt to convert the RAT to an integer using System CT
-            *lpDiskConv = mpq_get_ctsa (&((LPAPLRAT) lpMem)[uIndex], &bRet);
+            // Attempt to convert the RAT to an integer using System []CT
+            *lpDiskConv = mpq_get_sctsx (&((LPAPLRAT) lpMem)[uIndex], &bRet);
 
             break;
 
         case ARRAY_VFP:
-            // Attempt to convert the VFP to an integer using System CT
-            *lpDiskConv = mpfr_get_ctsa (&((LPAPLVFP) lpMem)[uIndex], &bRet);
+            // Attempt to convert the VFP to an integer using System []CT
+            *lpDiskConv = mpfr_get_sctsx (&((LPAPLVFP) lpMem)[uIndex], &bRet);
 
             break;
 
@@ -4156,7 +4156,7 @@ UBOOL NfnsArgConv
                             break;
 
                         case IMMTYPE_FLOAT:
-                            // Attempt to convert the float to an integer using System CT
+                            // Attempt to convert the float to an integer using System []CT
                             *lpDiskConv = FloatToAplint_SCT (lpSymGlb->stData.stFloat, &bRet);
 
                             break;
@@ -4227,7 +4227,7 @@ UBOOL NfnsArgConv
                                     if (bOnly1)
                                         bRet = FALSE;
                                     else
-                                        // Attempt to convert the float to an integer using System CT
+                                        // Attempt to convert the float to an integer using System []CT
                                         *lpWsConv   = FloatToAplint_SCT (((LPAPLFLOAT) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
 
                                     // Fall through to singleton case
@@ -4254,14 +4254,14 @@ UBOOL NfnsArgConv
                                     if (bOnly1)
                                         bRet = FALSE;
                                     else
-                                        // Attempt to convert the RAT to an integer using System CT
-                                        *lpWsConv   = mpq_get_ctsa (&((LPAPLRAT) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
+                                        // Attempt to convert the RAT to an integer using System []CT
+                                        *lpWsConv   = mpq_get_sctsx (&((LPAPLRAT) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
 
                                     // Fall through to singleton case
 
                                 case 1:
-                                    // Attempt to convert the RAT to an integer using System CT
-                                    *lpDiskConv = mpq_get_ctsa (&((LPAPLRAT) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
+                                    // Attempt to convert the RAT to an integer using System []CT
+                                    *lpDiskConv = mpq_get_sctsx (&((LPAPLRAT) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
 
                                     break;
 
@@ -4282,14 +4282,14 @@ UBOOL NfnsArgConv
                                     if (bOnly1)
                                         bRet = FALSE;
                                     else
-                                        // Attempt to convert the VFP to an integer using System CT
-                                        *lpWsConv   = mpfr_get_ctsa (&((LPAPLVFP) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
+                                        // Attempt to convert the VFP to an integer using System []CT
+                                        *lpWsConv   = mpfr_get_sctsx (&((LPAPLVFP) VarArrayDataFmBase (lpMemHdr))[1], &bRet);
 
                                     // Fall through to singleton case
 
                                 case 1:
-                                    // Attempt to convert the VFP to an integer using System CT
-                                    *lpDiskConv = mpfr_get_ctsa (&((LPAPLVFP) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
+                                    // Attempt to convert the VFP to an integer using System []CT
+                                    *lpDiskConv = mpfr_get_sctsx (&((LPAPLVFP) VarArrayDataFmBase (lpMemHdr))[0], &bRet);
 
                                     break;
 

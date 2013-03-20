@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -280,7 +280,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (aplTypeRht))
@@ -668,7 +668,7 @@ RESTART_EXCEPTION_APA:
                                 lpMemHdrRes->ArrType = aplTypeRes;
 
                                 // Restart the pointer
-                                lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+                                lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
                                 dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
@@ -1289,7 +1289,7 @@ RESTART_EXCEPTION:
                                 lpMemHdrRes->ArrType = aplTypeRes;
 
                                 // Restart the pointer
-                                lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+                                lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
                                 goto RESTART_EXCEPTION;
                             } // End IF/ELSE
@@ -1727,20 +1727,20 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
 
             break;
 
         case ARRAY_RAT:
-            // Attempt to convert the RAT to an integer using System CT
-            aplIntegerLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+            // Attempt to convert the RAT to an integer using System []CT
+            aplIntegerLft = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLft, &bRet);
 
             break;
 
         case ARRAY_VFP:
-            // Attempt to convert the VFP to an integer using System CT
-            aplIntegerLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+            // Attempt to convert the VFP to an integer using System []CT
+            aplIntegerLft = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLft, &bRet);
 
             break;
 
@@ -2205,7 +2205,7 @@ RESTART_ALLOC:
         lpMemHdrRes = MyGlobalLock (hGlbRes); MyGlobalUnlock (hGlbRes);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
         // Fill in the right arg token
 ////////tkRhtArg.tkFlags.TknType   =            // To be filled in below
@@ -2427,7 +2427,7 @@ RESTART_EXCEPTION:
                                     lpMemHdrRes->ArrType = aplTypeRes;
 
                                     // Restart the pointer
-                                    lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+                                    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
                                     goto RESTART_EXCEPTION;
                                 } // End IF/ELSE
@@ -2695,7 +2695,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
         *VarArrayBaseToDim (lpMemRes) = 1;
 
         // Skip over the header and dimension
-        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Fill in the value
         // Split cases based upon the immediate type
@@ -2879,7 +2879,7 @@ UBOOL PrimOpDydSlashAllocate_EM
     if (IsSimpleAPA (aplTypeRht))
     {
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters

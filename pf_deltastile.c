@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -359,8 +359,8 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (gradeData.aplTypeRht))
@@ -511,7 +511,7 @@ HGLOBAL MakeEncloseZilde
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Save the one item
     *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbZilde);
@@ -584,32 +584,8 @@ UBOOL PermVecGrade
 
                 break;
 
-            case ARRAY_RAT:
-                // Loop through the right arg
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Check for Ctrl-Break
-                    if (*lpGradeData->lpbCtrlBreak)
-                        goto ERROR_EXIT;
-
-                    lpMemRes[mpq_get_ctsa (((LPAPLRAT) lpMemRht)++, NULL) - PV1] = uRht;
-                } // End FOR
-
-                break;
-
-            case ARRAY_VFP:
-                // Loop through the right arg
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Check for Ctrl-Break
-                    if (*lpGradeData->lpbCtrlBreak)
-                        goto ERROR_EXIT;
-
-                    lpMemRes[mpfr_get_ctsa (((LPAPLVFP) lpMemRht)++, NULL) - PV1] = uRht;
-                } // End FOR
-
-                break;
-
+            case ARRAY_RAT:         // No such thing as a RAT PV
+            case ARRAY_VFP:         // ...                VFP ...
             defstop
                 break;
         } // End SWITCH
@@ -647,32 +623,8 @@ UBOOL PermVecGrade
 
                 break;
 
-            case ARRAY_RAT:
-                // Loop through the right arg
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Check for Ctrl-Break
-                    if (*lpGradeData->lpbCtrlBreak)
-                        goto ERROR_EXIT;
-
-                    lpMemRes[aplNELMRht1 - mpq_get_ctsa (((LPAPLRAT) lpMemRht)++, NULL)] = uRht;
-                } // End FOR
-
-                break;
-
-            case ARRAY_VFP:
-                // Loop through the right arg
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Check for Ctrl-Break
-                    if (*lpGradeData->lpbCtrlBreak)
-                        goto ERROR_EXIT;
-
-                    lpMemRes[aplNELMRht1 - mpfr_get_ctsa (((LPAPLVFP) lpMemRht)++, NULL)] = uRht;
-                } // End FOR
-
-                break;
-
+            case ARRAY_RAT:         // No such thing as a RAT PV
+            case ARRAY_VFP:         // ...                VFP ...
             defstop
                 break;
         } // End SWITCH
@@ -940,7 +892,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     lpMemDimLft = VarArrayBaseToDim (lpMemLft);
 
     // Skip over the header and dimensions to the data
-    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    lpMemLft = VarArrayDataFmBase (lpMemLft);
 
     // Convert the left arg into multiple TTs
     for (uEndLen = 1, iLft = aplRankLft - 1; iLft >= 0; iLft--)
@@ -1035,8 +987,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (gradeData.aplTypeRht))

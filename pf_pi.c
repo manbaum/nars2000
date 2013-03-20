@@ -201,7 +201,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplIntegerRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
             if (!bRet)
                 goto RIGHT_DOMAIN_EXIT;
@@ -555,7 +555,7 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
@@ -689,7 +689,7 @@ RESTART_RAT:
                     break;
                 } // End IF
 
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplIntegerRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
 
                 // If it's not an integer, ...

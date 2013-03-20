@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -317,7 +317,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
         *VarArrayBaseToDim (lpMemRes) = aplRankRht;
 
         // Skip over the header and dimension to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Skip over the header to the right arg's dimensions
         lpMemRht = VarArrayBaseToDim (lpMemRht);
@@ -589,7 +589,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     if (bReshapeSing)
     {
         // Get a ptr to the result's data
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
         // Get the first (and only) value from the right arg
@@ -623,7 +623,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         else
         {
             // Get a ptr to the result's data
-            lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+            lpMemRes = VarArrayDataFmBase (lpMemRes);
 
             // Save the handle
             *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
@@ -711,7 +711,7 @@ UBOOL PrimFnDydRhoRhtCopyData
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -1164,7 +1164,7 @@ UBOOL PrimFnDydRhoLftValid_EM
                     break;
 
                 case IMMTYPE_FLOAT:     // Ensure it's close enough to a non-negative integer
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplIntTmp = FloatToAplint_SCT (lptkLftArg->tkData.tkSym->stData.stFloat, &bRet);
 
                     if (bRet
@@ -1220,7 +1220,7 @@ UBOOL PrimFnDydRhoLftValid_EM
                     break;
 
                 case IMMTYPE_FLOAT:     // Ensure it's close enough to a non-negative integer
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplIntTmp = FloatToAplint_SCT (lptkLftArg->tkData.tkFloat, &bRet);
 
                     if (bRet
@@ -1308,7 +1308,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
     else
     {
         // Point to the left arg's data
-        lpDataLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpDataLft = VarArrayDataFmBase (lpMemLft);
 
         // Check for LEFT DOMAIN ERROR and fill in *lpaplNELMRes
         // Split cases based upon the left arg's storage type
@@ -1374,7 +1374,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                 // Loop through the dimensions
                 for (u = 0; bRet && u < aplNELMLft; u++)
                 {
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplIntTmp = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[u], &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;
@@ -1396,7 +1396,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         // Loop through the rest of the dimensions
                         for (u++; u < aplNELMLft; u++)
                         {
-                            // Attempt to convert the float to an integer using System CT
+                            // Attempt to convert the float to an integer using System []CT
                             aplIntTmp = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[u], &bRet);
                             if (!bRet)
                                 goto DOMAIN_EXIT;
@@ -1476,8 +1476,8 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                 // Loop through the dimensions
                 for (u = 0; bRet && u < aplNELMLft; u++)
                 {
-                    // Attempt to convert the RAT to an integer using System CT
-                    aplIntTmp = mpq_get_ctsa (&((LPAPLRAT) lpDataLft)[u], &bRet);
+                    // Attempt to convert the RAT to an integer using System []CT
+                    aplIntTmp = mpq_get_sctsx (&((LPAPLRAT) lpDataLft)[u], &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;
 
@@ -1521,8 +1521,8 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                 // Loop through the dimensions
                 for (u = 0; bRet && u < aplNELMLft; u++)
                 {
-                    // Attempt to convert the VFP to an integer using System CT
-                    aplIntTmp = mpfr_get_ctsa (&((LPAPLVFP) lpDataLft)[u], &bRet);
+                    // Attempt to convert the VFP to an integer using System []CT
+                    aplIntTmp = mpfr_get_sctsx (&((LPAPLVFP) lpDataLft)[u], &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;
 
@@ -1623,7 +1623,7 @@ void PrimFnDydRhoLftGlbCopyDim
     aplNELMLft = lpHeader->NELM;
 
     // Point to the left arg's data
-    lpDataLft = VarArrayBaseToData (lpMemLft, lpHeader->Rank);
+    lpDataLft = VarArrayDataFmBase (lpMemLft);
 
     // Split cases based upon the left arg's array type
     switch (lpHeader->ArrType)
@@ -1680,12 +1680,12 @@ void PrimFnDydRhoLftGlbCopyDim
 
         case ARRAY_RAT:
             for (uLft = 0; uLft < aplNELMLft; uLft++)
-                *lpaplDim++ = (APLDIM) mpq_get_ctsa (((LPAPLRAT) lpDataLft)++, &bRet);
+                *lpaplDim++ = (APLDIM) mpq_get_sctsx (((LPAPLRAT) lpDataLft)++, &bRet);
             break;
 
         case ARRAY_VFP:
             for (uLft = 0; uLft < aplNELMLft; uLft++)
-                *lpaplDim++ = (APLDIM) mpfr_get_ctsa (((LPAPLVFP) lpDataLft)++, &bRet);
+                *lpaplDim++ = (APLDIM) mpfr_get_sctsx (((LPAPLVFP) lpDataLft)++, &bRet);
             break;
 
         defstop
@@ -1736,7 +1736,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRhtBase)
 
     aplNELMRht = lpHeader->NELM;
-    lpMemRhtNext = lpMemRhtData = VarArrayBaseToData (lpMemRhtBase, lpHeader->Rank);
+    lpMemRhtNext = lpMemRhtData = VarArrayDataFmBase (lpMemRhtBase);
 
     // Check for empty right arg
     if (IsEmpty (aplNELMRht))

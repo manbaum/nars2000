@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -156,20 +156,20 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
                 break;
 
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
 
                 break;
 
             case ARRAY_RAT:
-                // Attempt to convert the RAT to an integer using System CT
-                aplIntegerRht = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht, &bRet);
+                // Attempt to convert the RAT to an integer using System []CT
+                aplIntegerRht = mpq_get_sctsx ((LPAPLRAT) lpSymGlbRht, &bRet);
 
                 break;
 
             case ARRAY_VFP:
-                // Attempt to convert the VFP to an integer using System CT
-                aplIntegerRht = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbRht, &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplIntegerRht = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
                 break;
 
@@ -195,7 +195,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     // If the right arg is a global, ...
     if (hGlbRht)
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
         lpMemRht = (LPAPLCHAR) &aplLongestRht;
 
@@ -298,7 +298,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     if (aplRowsRes NE 0)
     {
         // Skip over the header and dimensions to the data
-        lpMemResUnion = VarArrayBaseToData (lpMemResUnion, 2);
+        lpMemResUnion = VarArrayDataFmBase (lpMemResUnion);
 
         // Lock the memory to get a ptr to it
         lpMemMonInfo = MyGlobalLock (hGlbMonInfo);
@@ -619,19 +619,19 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft,
                                               &bRet);
             break;
 
         case ARRAY_RAT:
-            // Attempt to convert the RAT to an integer using System CT
+            // Attempt to convert the RAT to an integer using System []CT
             aplLongestLft = GetNextRatIntGlb (MakePtrTypeGlb (hGlbLft), 0, &bRet);
 
             break;
 
         case ARRAY_VFP:
-            // Attempt to convert the VFP to an integer using System CT
+            // Attempt to convert the VFP to an integer using System []CT
             aplLongestLft = GetNextVfpIntGlb (MakePtrTypeGlb (hGlbLft), 0, &bRet);
 
             break;
@@ -689,7 +689,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
     (VarArrayBaseToDim (lpMemRes))[0] = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Initialize the bit index
     uBitIndex = 0;
@@ -722,7 +722,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
 
         case 1:
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Loop through the right arg looking for identifiers
             uRht = 0;
@@ -766,7 +766,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
 
         case 2:
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             for (uRht = 0; uRht < aplNELMRes; uRht++)
             {

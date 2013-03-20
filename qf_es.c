@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -170,7 +170,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
             if (hGlbRht)
             {
                 // Skip over the header and dimensions to the data
-                lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+                lpMemRht = VarArrayDataFmBase (lpMemRht);
 
                 // Copy the error message to temporary storage
                 CopyMemoryW (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (APLU3264) aplNELMRht);
@@ -189,7 +189,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                 goto RIGHT_LENGTH_EXIT;
 
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Get the first value
             GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
@@ -216,27 +216,27 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                     break;
 
                 case ARRAY_FLOAT:
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplLongestRht1 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht1, &bRet);
                     if (bRet)
-                        // Attempt to convert the float to an integer using System CT
+                        // Attempt to convert the float to an integer using System []CT
                         aplLongestRht2 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht2, &bRet);
                     break;
 
                 case ARRAY_RAT:
-                    // Attempt to convert the RAT to an integer using System CT
-                    aplLongestRht1 = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht1, &bRet);
+                    // Attempt to convert the RAT to an integer using System []CT
+                    aplLongestRht1 = mpq_get_sctsx ((LPAPLRAT) lpSymGlbRht1, &bRet);
                     if (bRet)
-                        // Attempt to convert the RAT to an integer using System CT
-                        aplLongestRht2 = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht2, &bRet);
+                        // Attempt to convert the RAT to an integer using System []CT
+                        aplLongestRht2 = mpq_get_sctsx ((LPAPLRAT) lpSymGlbRht2, &bRet);
                     break;
 
                 case ARRAY_VFP:
-                    // Attempt to convert the VFP to an integer using System CT
-                    aplLongestRht1 = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbRht1, &bRet);
+                    // Attempt to convert the VFP to an integer using System []CT
+                    aplLongestRht1 = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbRht1, &bRet);
                     if (bRet)
-                        // Attempt to convert the VFP to an integer using System CT
-                        aplLongestRht2 = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbRht2, &bRet);
+                        // Attempt to convert the VFP to an integer using System []CT
+                        aplLongestRht2 = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbRht2, &bRet);
                     break;
 
                 defstop
@@ -271,7 +271,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                 if (hGlbLft)
                 {
                     // Skip over the header and dimensions to the data
-                    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+                    lpMemLft = VarArrayDataFmBase (lpMemLft);
 
                     // Copy the error message to temporary storage
                     CopyMemoryW (lpMemPTD->lpwszQuadErrorMsg, lpMemLft, (APLU3264) aplNELMLft);

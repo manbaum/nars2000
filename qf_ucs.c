@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
         switch (aplTypeRht)
         {
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
@@ -157,7 +157,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                 break;
 
             case ARRAY_RAT:
-                aplLongestRht = mpq_get_ctsa ((LPAPLRAT) VarArrayBaseToData (lpMemRht, aplRankRht), &bRet);
+                aplLongestRht = mpq_get_sctsx ((LPAPLRAT) VarArrayDataFmBase (lpMemRht), &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 // Check for out of range for Unicode
@@ -175,7 +175,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                 break;
 
             case ARRAY_VFP:
-                aplLongestRht = mpfr_get_ctsa ((LPAPLVFP) VarArrayBaseToData (lpMemRht, aplRankRht), &bRet);
+                aplLongestRht = mpfr_get_sctsx ((LPAPLVFP) VarArrayDataFmBase (lpMemRht), &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 // Check for out of range for Unicode
@@ -269,8 +269,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                 VarArrayBaseToDim (lpMemRht),
                 (APLU3264) aplRankRht * sizeof (APLDIM));
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -319,7 +319,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
         case ARRAY_FLOAT:
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplLongestRht = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
@@ -391,7 +391,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                                 break;
 
                             case IMMTYPE_FLOAT:
-                                // Attempt to convert the float to an integer using System CT
+                                // Attempt to convert the float to an integer using System []CT
                                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                                 if (!bRet)
                                     goto DOMAIN_EXIT;
@@ -437,18 +437,18 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                         aplTypeHet = ((LPVARARRAY_HEADER) lpMemHeteroRht)->ArrType;
 
                         // Skip over the header and dimensions to the data
-                        lpMemHeteroRht = VarArrayBaseToData (lpMemHeteroRht, 0);
+                        lpMemHeteroRht = VarArrayDataFmBase (lpMemHeteroRht);
 
                         // Split cases based upon the array storage type
                         switch (aplTypeHet)
                         {
                             case ARRAY_RAT:
-                                aplLongestRht = mpq_get_ctsa ((LPAPLRAT) lpMemHeteroRht, &bRet);
+                                aplLongestRht = mpq_get_sctsx ((LPAPLRAT) lpMemHeteroRht, &bRet);
 
                                 break;
 
                             case ARRAY_VFP:
-                                aplLongestRht = mpfr_get_ctsa ((LPAPLVFP) lpMemHeteroRht, &bRet);
+                                aplLongestRht = mpfr_get_sctsx ((LPAPLVFP) lpMemHeteroRht, &bRet);
 
                                 break;
 
@@ -489,8 +489,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
         case ARRAY_RAT:
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Attempt to convert the RAT to an integer using System CT
-                aplLongestRht = mpq_get_ctsa (((LPAPLRAT) lpMemRht)++, &bRet);
+                // Attempt to convert the RAT to an integer using System []CT
+                aplLongestRht = mpq_get_sctsx (((LPAPLRAT) lpMemRht)++, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
 
@@ -511,8 +511,8 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
         case ARRAY_VFP:
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Attempt to convert the VFP to an integer using System CT
-                aplLongestRht = mpfr_get_ctsa (((LPAPLVFP) lpMemRht)++, &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplLongestRht = mpfr_get_sctsx (((LPAPLVFP) lpMemRht)++, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
 

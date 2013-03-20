@@ -28,7 +28,7 @@
 //***************************************************************************
 //  $ValidateFirstItemToken
 //
-//  Get and validate the first item from the token
+//  Get and validate the first item from the token as an integer
 //***************************************************************************
 
 APLLONGEST ValidateFirstItemToken
@@ -55,7 +55,7 @@ APLLONGEST ValidateFirstItemToken
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, lpbRet);
 
             break;
@@ -63,16 +63,16 @@ APLLONGEST ValidateFirstItemToken
         case ARRAY_RAT:
             Assert (GetPtrTypeDir (hGlbSubRht) NE PTRTYPE_HGLOBAL);
 
-            // Attempt to convert the RAT to an integer using System CT
-            aplLongestRht = mpq_get_ctsa ((LPAPLRAT) hGlbSubRht, lpbRet);
+            // Attempt to convert the RAT to an integer using System []CT
+            aplLongestRht = mpq_get_sctsx ((LPAPLRAT) hGlbSubRht, lpbRet);
 
             break;
 
         case ARRAY_VFP:
             Assert (GetPtrTypeDir (hGlbSubRht) NE PTRTYPE_HGLOBAL);
 
-            // Attempt to convert the VFP to an integer using System CT
-            aplLongestRht = mpfr_get_ctsa ((LPAPLVFP) hGlbSubRht, lpbRet);
+            // Attempt to convert the VFP to an integer using System []CT
+            aplLongestRht = mpfr_get_sctsx ((LPAPLVFP) hGlbSubRht, lpbRet);
 
             break;
 
@@ -152,7 +152,7 @@ APLINT GetNextIntegerToken
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplIntegerRes = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestArg, lpbRet);
 
             break;
@@ -179,7 +179,7 @@ APLINT GetNextIntegerToken
                     goto NORMAL_EXIT;
 
                 case ARRAY_FLOAT:
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplIntegerRes = FloatToAplint_SCT (aplFloatItm, lpbRet);
 
                     goto NORMAL_EXIT;
@@ -187,16 +187,16 @@ APLINT GetNextIntegerToken
                 case ARRAY_RAT:
                     Assert (GetPtrTypeDir (hGlbItm) NE PTRTYPE_HGLOBAL);
 
-                    // Attempt to convert the RAT to an integer using System CT
-                    aplIntegerRes = mpq_get_ctsa ((LPAPLRAT) hGlbItm, lpbRet);
+                    // Attempt to convert the RAT to an integer using System []CT
+                    aplIntegerRes = mpq_get_sctsx ((LPAPLRAT) hGlbItm, lpbRet);
 
                     goto NORMAL_EXIT;
 
                 case ARRAY_VFP:
                     Assert (GetPtrTypeDir (hGlbItm) NE PTRTYPE_HGLOBAL);
 
-                    // Attempt to convert the VFP to an integer using System CT
-                    aplIntegerRes = mpfr_get_ctsa ((LPAPLVFP) hGlbItm, lpbRet);
+                    // Attempt to convert the VFP to an integer using System []CT
+                    aplIntegerRes = mpfr_get_sctsx ((LPAPLVFP) hGlbItm, lpbRet);
 
                     goto NORMAL_EXIT;
 
@@ -1466,6 +1466,7 @@ ERROR_EXIT:
 //  $GetNextRatIntGlb
 //
 //  Get the next value from a rational array global memory handle
+//    as in integer using System []CT
 //***************************************************************************
 
 APLINT GetNextRatIntGlb
@@ -1485,8 +1486,8 @@ APLINT GetNextRatIntGlb
     // Skip over the header and dimensions to the data
     lpMemRat = VarArrayBaseToData (lpMemRat, ((LPVARARRAY_HEADER) lpMemRat)->Rank);
 
-    // Convert the next RAT to an INT
-    aplInteger = mpq_get_ctsa (&lpMemRat[uRes], lpbRet);
+    // Convert the next RAT to an INT using System []CT
+    aplInteger = mpq_get_sctsx (&lpMemRat[uRes], lpbRet);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRat); lpMemRat = NULL;
@@ -1499,6 +1500,7 @@ APLINT GetNextRatIntGlb
 //  $GetNextRatIntMem
 //
 //  Get the next value from a rational array global memory handle
+//    as in integer using System []CT
 //***************************************************************************
 
 APLINT GetNextRatIntMem
@@ -1507,8 +1509,8 @@ APLINT GetNextRatIntMem
      LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
 
 {
-    // Convert the next RAT to an INT
-    return mpq_get_ctsa (&lpMemRat[uRes], lpbRet);
+    // Convert the next RAT to an INT using System []CT
+    return mpq_get_sctsx (&lpMemRat[uRes], lpbRet);
 } // End GetNextRatIntMem
 
 
@@ -1558,6 +1560,7 @@ APLFLOAT GetNextRatFltMem
 //  $GetNextVfpIntGlb
 //
 //  Get the next value from a VFP array global memory handle
+//    as in integer using System []CT
 //***************************************************************************
 
 APLINT GetNextVfpIntGlb
@@ -1577,8 +1580,8 @@ APLINT GetNextVfpIntGlb
     // Skip over the header and dimensions to the data
     lpMemVfp = VarArrayBaseToData (lpMemVfp, ((LPVARARRAY_HEADER) lpMemVfp)->Rank);
 
-    // Convert the next VFP to an INT
-    aplInteger = mpfr_get_ctsa (&lpMemVfp[uRes], lpbRet);
+    // Convert the next VFP to an INT using System []CT
+    aplInteger = mpfr_get_sctsx (&lpMemVfp[uRes], lpbRet);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbVfp); lpMemVfp = NULL;
@@ -1591,6 +1594,7 @@ APLINT GetNextVfpIntGlb
 //  $GetNextVfpIntMem
 //
 //  Get the next value from a VFP array global memory ptr
+//    as in integer using System []CT
 //***************************************************************************
 
 APLINT GetNextVfpIntMem
@@ -1599,8 +1603,8 @@ APLINT GetNextVfpIntMem
      LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
 
 {
-    // Convert the next VFP to an INT
-    return mpfr_get_ctsa (&lpMemVfp[uRes], lpbRet);
+    // Convert the next VFP to an INT using System []CT
+    return mpfr_get_sctsx (&lpMemVfp[uRes], lpbRet);
 } // End GetNextVfpIntMem
 
 

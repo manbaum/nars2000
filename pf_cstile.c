@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -829,7 +829,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 break;
 
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
@@ -883,7 +883,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             lpMemRot = lpMemRotIni = NULL;
 
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // Split cases based upon the left arg storage type
         switch (aplTypeLft)
@@ -916,7 +916,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             case ARRAY_FLOAT:
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,16 +40,38 @@ APLINT FloatToAplint_CT
      LPUBOOL  lpbRet)       // TRUE iff successful conversion
                             // (may be NULL if the caller isn't interested)
 {
+    return _FloatToAplint_CT (fFloat, fQuadCT, lpbRet, FALSE);
+} // End FloatToAplint_CT
+
+
+//***************************************************************************
+//  $_FloatToAplint_CT
+//
+//  Attempt to convert a Floating Point number to an APLINT
+//    using Comparison Tolerance
+//***************************************************************************
+
+APLINT _FloatToAplint_CT
+    (APLFLOAT fFloat,       // The number to convert
+     APLFLOAT fQuadCT,      // Comparison tolerance to use
+     LPUBOOL  lpbRet,       // TRUE iff successful conversion
+                            // (may be NULL if the caller isn't interested)
+     UBOOL    bIntegerTest) // TRUE iff this is an integer test
+{
     APLINT aplInteger;
+    UBOOL  bRet;
+
+    if (lpbRet EQ NULL)
+        lpbRet = &bRet;
 
     // Convert to an integer (rounding down)
     aplInteger = (APLINT) floor (fFloat);
 
     // See how the number and its tolerant floor compare
-    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, fQuadCT, NULL, TRUE))
+    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, fQuadCT, NULL, bIntegerTest))
     {
-        if (lpbRet)
-            *lpbRet = TRUE;
+        *lpbRet = TRUE;
+
         return aplInteger;
     } // End IF
 
@@ -57,21 +79,20 @@ APLINT FloatToAplint_CT
     aplInteger = (APLINT) ceil (fFloat);
 
     // See how the number and its tolerant ceiling compare
-    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, fQuadCT, NULL, TRUE))
+    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, fQuadCT, NULL, bIntegerTest))
     {
-        if (lpbRet)
-            *lpbRet = TRUE;
+        *lpbRet = TRUE;
+
         return aplInteger;
     } // End IF
 
     // It's not close enough, so we failed
-    if (lpbRet)
-        *lpbRet = FALSE;
+    *lpbRet = FALSE;
 
     // Return the ceiling of the fractional value
     // The ceiling is important in CheckAxis for laminate
     return aplInteger;
-} // End FloatToAplint_CT
+} // End _FloatToAplint_CT
 
 
 //***************************************************************************
@@ -86,7 +107,7 @@ APLINT FloatToAplint_SCT
      LPUBOOL  lpbRet)       // TRUE iff successful conversion
                             // (may be NULL if the caller isn't interested)
 {
-    return FloatToAplint_CT (fFloat, SYS_CT, lpbRet);
+    return _FloatToAplint_CT (fFloat, SYS_CT, lpbRet, TRUE);
 } // End FloatToAplint_SCT
 
 
@@ -129,11 +150,11 @@ APLBOOL _CompareCT
              aplRhtAbs,
              aplHoodLo;
 
-    // If Lft EQ Rht (absolutely), return 1
+    // If Lft EQ Rht (absolutely), return TRUE
     if (aplFloatLft EQ aplFloatRht)
         return TRUE;
 
-    // If the comparison tolerance is zero, return 0
+    // If the comparison tolerance is zero, return FALSE
     if (fCompTol EQ 0)
         return FALSE;
 

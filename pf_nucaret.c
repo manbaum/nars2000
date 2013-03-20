@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -272,10 +272,10 @@ APLBOOL PrimFnDydUpCaretTildeBisFvF
            aplRht;
     UBOOL  bRet = TRUE;
 
-    // Attempt to convert the float to an integer using System CT
+    // Attempt to convert the float to an integer using System []CT
     aplLft = FloatToAplint_SCT (aplFloatLft, &bRet);
     if (bRet)
-        // Attempt to convert the float to an integer using System CT
+        // Attempt to convert the float to an integer using System []CT
         aplRht = FloatToAplint_SCT (aplFloatRht, &bRet);
     if (!bRet
      || !IsBooleanValue (aplLft)

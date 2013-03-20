@@ -110,7 +110,7 @@ EXIT_TYPES GotoLine_EM
                     case IMMTYPE_RAT:
                         Assert (GetPtrTypeDir (lpSymGlb) EQ PTRTYPE_HGLOBAL);
 
-                        // Attempt to convert the RAT to an integer using System CT
+                        // Attempt to convert the RAT to an integer using System []CT
                         aplIntegerRht = GetNextRatIntGlb (lpSymGlb, 0, &bRet);
                         if (!bRet)
                             goto DOMAIN_EXIT;
@@ -119,14 +119,14 @@ EXIT_TYPES GotoLine_EM
                     case IMMTYPE_VFP:
                         Assert (GetPtrTypeDir (lpSymGlb) EQ PTRTYPE_HGLOBAL);
 
-                        // Attempt to convert the VFP to an integer using System CT
+                        // Attempt to convert the VFP to an integer using System []CT
                         aplIntegerRht = GetNextVfpIntGlb (lpSymGlb, 0, &bRet);
                         if (!bRet)
                             goto DOMAIN_EXIT;
                         break;
 
                     case IMMTYPE_FLOAT:
-                        // Attempt to convert the float to an integer using System CT
+                        // Attempt to convert the float to an integer using System []CT
                         aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
                         if (!bRet)
                             goto DOMAIN_EXIT;
@@ -142,22 +142,22 @@ EXIT_TYPES GotoLine_EM
                 break;
 
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
 
             case ARRAY_RAT:
-                // Attempt to convert the RAT to an integer using System CT
-                aplIntegerRht = mpq_get_ctsa ((LPAPLRAT) lpSymGlb, &bRet);
+                // Attempt to convert the RAT to an integer using System []CT
+                aplIntegerRht = mpq_get_sctsx ((LPAPLRAT) lpSymGlb, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
 
             case ARRAY_VFP:
-                // Attempt to convert the VFP to an integer using System CT
-                aplIntegerRht = mpfr_get_ctsa ((LPAPLVFP) lpSymGlb, &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplIntegerRht = mpfr_get_sctsx ((LPAPLVFP) lpSymGlb, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;

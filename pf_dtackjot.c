@@ -3801,22 +3801,22 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                 break;
 
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
 
             case ARRAY_RAT:
-                // Attempt to convert the RAT to an integer using System CT
-                aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+                // Attempt to convert the RAT to an integer using System []CT
+                aplLongestLft = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
 
             case ARRAY_VFP:
-                // Attempt to convert the VFP to an integer using System CT
-                aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplLongestLft = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
@@ -3881,7 +3881,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         case ARRAY_FLOAT:
             for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
             {
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
                 if ((!bRet) || ((!uPar) && aplIntegerLft < 0))
                     goto DOMAIN_EXIT;
@@ -3915,8 +3915,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         case ARRAY_RAT:
             for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
             {
-                // Attempt to convert the RAT to an integer using System CT
-                aplIntegerLft = mpq_get_ctsa (((LPAPLRAT) lpMemLft)++, &bRet);
+                // Attempt to convert the RAT to an integer using System []CT
+                aplIntegerLft = mpq_get_sctsx (((LPAPLRAT) lpMemLft)++, &bRet);
                 if ((!bRet) || ((!uPar) && aplIntegerLft < 0))
                     goto DOMAIN_EXIT;
                 if (!uPar)
@@ -3930,8 +3930,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         case ARRAY_VFP:
             for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
             {
-                // Attempt to convert the VFP to an integer using System CT
-                aplIntegerLft = mpfr_get_ctsa (((LPAPLVFP) lpMemLft)++, &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplIntegerLft = mpfr_get_sctsx (((LPAPLVFP) lpMemLft)++, &bRet);
                 if ((!bRet) || ((!uPar) && aplIntegerLft < 0))
                     goto DOMAIN_EXIT;
                 if (!uPar)

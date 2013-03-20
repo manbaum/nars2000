@@ -142,7 +142,7 @@ void TypeDemote
     aplRankRht = lpMemRhtHdr->Rank;
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRhtHdr);
 
     // If the right arg is a simple scalar,
     //   convert it to an immediate
@@ -227,7 +227,7 @@ void TypeDemote
                                 lpMemSub = MyGlobalLock (hGlbSub);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                                lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                                 // Copy the data
                                 lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
@@ -253,7 +253,7 @@ void TypeDemote
                                 lpMemSub = MyGlobalLock (hGlbSub);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                                lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                                 // Copy the data
                                 lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
@@ -290,7 +290,7 @@ void TypeDemote
                         aplTypeSub = ((LPVARARRAY_HEADER) lpMemSub)->ArrType;
 
                         // Skip over the header and dimensions to the data
-                        lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                        lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                         // Split cases based upon the array storage type
                         switch (aplTypeSub)
@@ -626,7 +626,7 @@ UNLOCK_EXIT:
             } // End SWITCH
 
             // Skip over header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRhtHdr);
 
             // Demote the data in the right arg, copying it to the result
             DemoteData (aplTypeRes,
@@ -1109,7 +1109,7 @@ void DemoteData
                                 Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                                lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                                 // Copy the data
                                 mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) lpMemSub);
@@ -1182,7 +1182,7 @@ void DemoteData
                                 Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                                lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                                 // Copy the data
                                 mpfr_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpMemSub);
@@ -2004,7 +2004,7 @@ void TPT_RAT2VFP
     Assert (IsScalar ((LPVARARRAY_HEADER) lpMemRat));
 
     // Skip over the header and dimensions to the data
-    lpMemRat = VarArrayBaseToData (lpMemRat, 0);
+    lpMemRat = VarArrayDataFmBase (lpMemRat);
 
     // Convert the RAT to a VFP
     mpfr_init_set_q (&aplVfp, lpMemRat, MPFR_RNDN);
@@ -2715,7 +2715,7 @@ void TCA_RAT2INT
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplInteger = mpq_get_ctsa (&lpaplRat[uInt], NULL);
+    lpAllTypes->aplInteger = mpq_get_sctsx (&lpaplRat[uInt], NULL);
 } // TCA_RAT2INT
 
 
@@ -2743,7 +2743,7 @@ void TCA_VFP2INT
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplInteger = mpfr_get_ctsa (&lpaplVfp[uInt], NULL);
+    lpAllTypes->aplInteger = mpfr_get_sctsx (&lpaplVfp[uInt], NULL);
 } // TCA_VFP2INT
 
 

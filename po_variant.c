@@ -992,7 +992,7 @@ UBOOL PrimOpVariantCheckHetero
             if (*lpbIntFound)
                 goto ERROR_EXIT;
 
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplIntegerItm = FloatToAplint_SCT (aplFloatItm,
                                               &bRet);
             // Check for error

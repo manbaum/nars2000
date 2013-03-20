@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
     switch (aplTypeLft)
     {
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
 
             // Fall through to common code
@@ -157,13 +157,13 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
             break;
 
         case ARRAY_RAT:
-            // Attempt to convert the RAT to an integer using System CT
+            // Attempt to convert the RAT to an integer using System []CT
             aplLongestLft = GetNextRatIntGlb (hGlbLft, 0, &bRet);
 
             break;
 
         case ARRAY_VFP:
-            // Attempt to convert the VFP to an integer using System CT
+            // Attempt to convert the VFP to an integer using System []CT
             aplLongestLft = GetNextVfpIntGlb (hGlbLft, 0, &bRet);
 
             break;
@@ -205,7 +205,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
     // If the right arg is a global, ...
     if (hGlbRht)
         // Skip over the header to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
         // Otherwise it's an immediate value
         lpMemRht = (LPAPLCHAR) &aplLongestRht;

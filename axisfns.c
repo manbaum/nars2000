@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -148,7 +148,7 @@ UBOOL CheckAxisImm
             break;
 
         case IMMTYPE_FLOAT:     // Ensure it's close enough
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplRank = FloatToAplint_SCT (lptkAxis->tkData.tkFloat, &bRet);
             aplRank -= bQuadIO; // Less the index origin
 
@@ -426,7 +426,7 @@ UBOOL CheckAxisGlb
             // Loop through the elements
             for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
             {
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplRankLcl = FloatToAplint_SCT (*lpaplFloat++, &bRet);
                 aplRankLcl -= bQuadIO; // Less the index origin
 

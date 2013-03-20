@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -445,7 +445,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             mpq_sub (&aplRatTmp, &atRht.aplRat, &aplRatLft);
             mpq_div (&aplRatTmp, &aplRatTmp, &aplRatStep);
             mpq_abs (&aplRatTmp, &aplRatTmp);
-            aplNELMRes = 1 + mpq_get_ctsa (&aplRatTmp, NULL);     // Rounding to nearest integer within SysCT
+            aplNELMRes = 1 + mpq_get_sctsx (&aplRatTmp, NULL);      // Rounding to nearest integer within SysCT
 
             break;
 
@@ -471,7 +471,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             mpfr_sub (&aplVfpTmp, &atRht.aplVfp, &aplVfpLft, MPFR_RNDN);
             mpfr_div (&aplVfpTmp, &aplVfpTmp, &aplVfpStep, MPFR_RNDN);
             mpfr_abs (&aplVfpTmp, &aplVfpTmp, MPFR_RNDN);
-            aplNELMRes = 1 + mpfr_get_ctsa (&aplVfpTmp, NULL);      // Rounding to nearest integer within SysCT
+            aplNELMRes = 1 + mpfr_get_sctsx (&aplVfpTmp, NULL);     // Rounding to nearest integer within SysCT
 
             break;
 
@@ -509,7 +509,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimension
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Split cases based upon the result storage type
     switch (aplTypeRes)

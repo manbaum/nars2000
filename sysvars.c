@@ -938,7 +938,7 @@ UBOOL ValidateInteger_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkSym->stData.stFloat,
                                                    &bRet);
                     // Test the value
@@ -985,7 +985,7 @@ UBOOL ValidateInteger_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkFloat,
                                                    &bRet);
                     // Test the value
@@ -1084,7 +1084,7 @@ UBOOL ValidateInteger_EM
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplInteger = FloatToAplint_SCT (*(LPAPLFLOAT) lpMemRht,
                                            &bRet);
             // Test the value
@@ -1896,7 +1896,7 @@ UBOOL ValidateIntegerVector_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplInteger = FloatToAplint_SCT (lptkRhtArg->tkData.tkSym->stData.stFloat,
                                                    &bRet);
                     if (bRet)
@@ -1948,7 +1948,7 @@ UBOOL ValidateIntegerVector_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplInteger = FloatToAplint_SCT (lptkRhtArg->tkData.tkFloat,
                                                    &bRet);
                     if (bRet)
@@ -2069,7 +2069,7 @@ UBOOL ValidateIntegerVector_EM
             // Test all the values
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplInteger = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht],
                                                &bRet);
                 // Test the value
@@ -2191,7 +2191,7 @@ UBOOL ValidateIntegerVector_EM
                         break;
 
                     case ARRAY_FLOAT:
-                        // Attempt to convert the float to an integer using System CT
+                        // Attempt to convert the float to an integer using System []CT
                         aplInteger = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++,
                                                        &bRet);
                         if (bRet)

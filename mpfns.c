@@ -697,7 +697,8 @@ APLINT mpq_get_sx
         lpbRet = &bRet;
     // Check the range
     *lpbRet = (0 <= mpz_cmp (mpq_numref (src), &mpzMinInt)
-            &&      mpz_cmp (mpq_numref (src), &mpzMaxInt) <= 0);
+            &&      mpz_cmp (mpq_numref (src), &mpzMaxInt) <= 0)
+            && mpq_integer_p (src);
     // Initialize the quotient
     mpz_init (&mpzDiv);
 
@@ -715,109 +716,63 @@ APLINT mpq_get_sx
 
 
 //***************************************************************************
-//  $mpq_get_ctsa
+//  $mpq_get_sctsx
 //
-//  Convert an APLRAT to an APLINT within system CT
+//  Convert an APLRAT to an APLINT within system []CT
 //***************************************************************************
 
-APLINT mpq_get_ctsa
-    (mpq_ptr src,           // Ptr to source value
-     LPUBOOL lpbRet)        // TRUE iff the result is valid (may be NULL)
+APLINT mpq_get_sctsx
+    (mpq_ptr  src,          // Ptr to source value
+     LPUBOOL  lpbRet)       // TRUE iff the result is valid (may be NULL)
 
 {
-    APLVFP mpfSrc  = {0},
-           mpfTmp1 = {0},
-           mpfTmp2 = {0};
+    return _mpq_get_ctsx (src, SYS_CT, lpbRet, TRUE);
+} // End mpq_get_sctsx
+
+
+//***************************************************************************
+//  $mpq_get_ctsx
+//
+//  Convert an APLRAT to an APLINT within []CT
+//***************************************************************************
+
+APLINT mpq_get_ctsx
+    (mpq_ptr  src,          // Ptr to source value
+     APLFLOAT fQuadCT,      // []CT
+     LPUBOOL  lpbRet)       // TRUE iff the result is valid (may be NULL)
+
+{
+    return _mpq_get_ctsx (src, SYS_CT, lpbRet, FALSE);
+} // End mpq_get_ctsx
+
+
+//***************************************************************************
+//  $_mpq_get_ctsx
+//
+//  Convert an APLRAT to an APLINT within []CT
+//***************************************************************************
+
+APLINT _mpq_get_ctsx
+    (mpq_ptr  src,          // Ptr to source value
+     APLFLOAT fQuadCT,      // []CT
+     LPUBOOL  lpbRet,       // TRUE iff the result is valid (may be NULL)
+     UBOOL    bIntegerTest) // TRUE iff this is an integer test
+
+{
+    APLVFP mpfSrc  = {0};
     APLINT aplInt;
-    UBOOL  bRet;
-#if defined (DEBUG) && defined (GET_DEBUG)
-    char szTemp1[1024],
-         szTemp2[1024];
-    int  expptr1,
-         expptr2;
-    double fTmp1,
-           fTmp2;
-#endif
-    if (lpbRet EQ NULL)
-        lpbRet = &bRet;
 
-    // Handle special case of 0 as <mpfr_reldiff> returns 1 (= 0{div}0)
-    if (mpq_sgn (src) EQ 0)
-    {
-        aplInt  = 0;
-        *lpbRet = TRUE;
-    } else
-    {
-        // Initialize the temps
-        mpfr_init0 (&mpfSrc);
-        mpfr_init0 (&mpfTmp1);
-        mpfr_init0 (&mpfTmp2);
+    // Initialize and convert the RAT to a VFP
+    mpfr_init_set_q (&mpfSrc, src, MPFR_RNDN);
 
-        // Convert the RAT to a VFP
-        mpfr_set_q (&mpfSrc , src, MPFR_RNDN);
+    // Use the MPFR routine
+    aplInt = _mpfr_get_ctsx (&mpfSrc, fQuadCT, lpbRet, bIntegerTest);
 
-#if defined (DEBUG) && defined (GET_DEBUG)
-        DbgBrk ();
-        mpq_get_str  (szTemp1, 10, src);
-        mpfr_get_str (szTemp2, &expptr2, 10, 200, &mpfSrc, MPFR_RNDN);
-#endif
-
-        // Get the floor
-        mpfr_floor (&mpfTmp1, &mpfSrc);
-
-#if defined (DEBUG) && defined (GET_DEBUG)
-        mpfr_get_str (szTemp1, &expptr1, 10, 200, &mpfTmp1, MPFR_RNDN);
-#endif
-
-        // Get the ceil
-        mpfr_ceil  (&mpfTmp2, &mpfSrc);
-
-#if defined (DEBUG) && defined (GET_DEBUG)
-        mpfr_get_str (szTemp2, &expptr2, 10, 200, &mpfTmp2, MPFR_RNDN);
-#endif
-
-        // Calculate the relative difference between the source and its floor
-        mpfr_reldiff (&mpfTmp1, &mpfTmp1, &mpfSrc, MPFR_RNDN);
-
-#if defined (DEBUG) && defined (GET_DEBUG)
-        mpfr_get_str (szTemp1, &expptr1, 10, 200, &mpfTmp1, MPFR_RNDN);
-#endif
-
-        // Calculate the relative difference between the source and its ceil
-        mpfr_reldiff (&mpfTmp2, &mpfTmp2, &mpfSrc, MPFR_RNDN);
-
-#if defined (DEBUG) && defined (GET_DEBUG)
-        mpfr_get_str (szTemp2, &expptr2, 10, 200, &mpfTmp2, MPFR_RNDN);
-        fTmp1 = mpfr_get_d (&mpfTmp1, MPFR_RNDN);
-        fTmp2 = mpfr_get_d (&mpfTmp2, MPFR_RNDN);
-#endif
-
-        // Compare the relative diff with SYS_CT
-        if (fabs (mpfr_get_d (&mpfTmp1, MPFR_RNDN)) < SYS_CT)
-        {
-            mpfr_floor (&mpfTmp1, &mpfSrc);
-            aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
-            *lpbRet = TRUE;
-        } else
-        if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
-        {
-            mpfr_ceil  (&mpfTmp2, &mpfSrc);
-            aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
-            *lpbRet = TRUE;
-        } else
-        {
-            aplInt = mpfr_get_sx (&mpfSrc , lpbRet);
-            *lpbRet = FALSE;
-        } // End IF/ELSE/...
-
-        // We no longer need this storage
-        Myf_clear (&mpfTmp2);
-        Myf_clear (&mpfTmp1);
-        Myf_clear (&mpfSrc );
-    } // End IF/ELSE
+    // We no longer need this storage
+    Myf_clear (&mpfSrc);
 
     return aplInt;
-} // End mpq_get_ctsa
+} // End _mpq_get_ctsx
 
 
 //***************************************************************************
@@ -1306,33 +1261,70 @@ APLINT mpfr_get_sx
 
 
 //***************************************************************************
-//  $mpfr_get_ctsa
+//  $mpfr_get_sctsx
 //
-//  Convert an APLVFP to an APLINT within system CT
+//  Convert an APLVFP to an APLINT within system []CT
 //***************************************************************************
 
-APLINT mpfr_get_ctsa
+APLINT mpfr_get_sctsx
     (mpfr_ptr src,          // Ptr to source value
-     LPUBOOL lpbRet)        // TRUE iff the result is valid (may be NULL)
+     LPUBOOL  lpbRet)       // TRUE iff the result is valid (may be NULL)
+
+{
+    return _mpfr_get_ctsx (src, SYS_CT, lpbRet, TRUE);
+} // End mpfr_get_sctsx
+
+
+//***************************************************************************
+//  $mpfr_get_ctsx
+//
+//  Convert an APLVFP to an APLINT within []CT
+//***************************************************************************
+
+APLINT mpfr_get_ctsx
+    (mpfr_ptr src,          // Ptr to source value
+     APLFLOAT fQuadCT,      // []CT
+     LPUBOOL  lpbRet)       // TRUE iff the result is valid (may be NULL)
+
+{
+    return _mpfr_get_ctsx (src, fQuadCT, lpbRet, FALSE);
+} // End mpfr_get_ctsx
+
+
+//***************************************************************************
+//  $_mpfr_get_ctsx
+//
+//  Convert an APLVFP to an APLINT within []CT
+//***************************************************************************
+
+APLINT _mpfr_get_ctsx
+    (mpfr_ptr src,          // Ptr to source value
+     APLFLOAT fQuadCT,      // []CT
+     LPUBOOL  lpbRet,       // TRUE iff the result is valid (may be NULL)
+     UBOOL    bIntegerTest) // TRUE iff this is an integer test
 
 {
     APLVFP mpfTmp1 = {0},
-           mpfTmp2 = {0};
-    APLINT aplInt;
+           mpfTmp2 = {0},
+           mpfSrc  = {0};
+    APLINT aplInt = 0;
     UBOOL  bRet;
 
     if (lpbRet EQ NULL)
         lpbRet = &bRet;
+
     // Handle special case of 0 as <mpfr_reldiff> returns 1 (= 0{div}0)
     if (mpfr_zero_p (src))
-    {
-        aplInt  = 0;
         *lpbRet = TRUE;
-    } else
+    else
     {
         // Initialize the temps
         mpfr_init0 (&mpfTmp1);
         mpfr_init0 (&mpfTmp2);
+        mpfr_init0 (&mpfSrc);
+
+        // Copy the source
+        mpfr_copy (&mpfSrc, src);
 
         // Get the floor
         mpfr_floor (&mpfTmp1, src);
@@ -1340,37 +1332,40 @@ APLINT mpfr_get_ctsa
         // Get the ceil
         mpfr_ceil  (&mpfTmp2, src);
 
-        // Calculate the relative difference between the source and its floor
-        mpfr_reldiff (&mpfTmp1, &mpfTmp1, src, MPFR_RNDN);
-
-        // Calculate the relative difference between the source and its ceil
-        mpfr_reldiff (&mpfTmp2, &mpfTmp2, src, MPFR_RNDN);
-
-        // Compare the relative diff with []CT
-        if (fabs (mpfr_get_d (&mpfTmp1, MPFR_RNDN)) < SYS_CT)
+        // Compare the number and its floor
+        if (_mpfr_cmp_ct (&mpfSrc, &mpfTmp1, fQuadCT, bIntegerTest) EQ 0)
         {
-            mpfr_floor (&mpfTmp1, src);
+            // Return the floor
             aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
+
+            // Mark as within []CT
             *lpbRet = TRUE;
         } else
-        if (fabs (mpfr_get_d (&mpfTmp2, MPFR_RNDN)) < SYS_CT)
+        // Compare the number and its ceiling
+        if (_mpfr_cmp_ct (&mpfSrc, &mpfTmp2, fQuadCT, bIntegerTest) EQ 0)
         {
-            mpfr_ceil  (&mpfTmp2, src);
+            // Return the ceiling
             aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
+
+            // Mark as within []CT
             *lpbRet = TRUE;
         } else
         {
-            aplInt = mpfr_get_sx (src     , lpbRet);
+            // Return the floor even though it isn't within []CT
+            aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
+
+            // Mark as not within []CT
             *lpbRet = FALSE;
         } // End IF/ELSE/...
 
         // We no longer need this storage
+        Myf_clear (&mpfSrc);
         Myf_clear (&mpfTmp2);
         Myf_clear (&mpfTmp1);
     } // Endf IF/ELSE
 
     return aplInt;
-} // End mpfr_get_ctsa
+} // End _mpfr_get_ctsx
 
 
 //// //***************************************************************************
@@ -1516,6 +1511,27 @@ int mpfr_cmp_ct
      APLFLOAT fQuadCT)
 
 {
+    return _mpfr_cmp_ct (&aplVfpLft, &aplVfpRht, fQuadCT, FALSE);
+} // End mpfr_cmp_ct
+
+
+//***************************************************************************
+//  $_mpfr_cmp_ct
+//
+//  Compare two VFPs relative to a given comparison tolerance
+//
+//  Return +1 if Lft >  Rht
+//          0 if Lft EQ Rht
+//         -1 if Lft <  Rht
+//***************************************************************************
+
+int _mpfr_cmp_ct
+    (LPAPLVFP lpaplVfpLft,          // Ptr to left arg
+     LPAPLVFP lpaplVfpRht,          // ...    right ...
+     APLFLOAT fQuadCT,              // []CT
+     UBOOL    bIntegerTest)         // TRUE iff this is an integer test
+
+{
     int iRet;                       // Result of mpfr_cmp
 
 ////#define CT_DEBUG
@@ -1528,31 +1544,48 @@ int mpfr_cmp_ct
 ////*FormatAplVfp (wszTemp, aplVfpRht, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
     // Compare 'em without tolerance
-    iRet = mpfr_cmp (&aplVfpLft, &aplVfpRht);
+    iRet = mpfr_cmp (lpaplVfpLft, lpaplVfpRht);
 
-    // So as to avoid dividing by zero, if neither arg is zero, ...
-    if (!IsMpf0 (&aplVfpLft)                    // Lft NE 0
-     && !IsMpf0 (&aplVfpRht)                    // Rht NE 0
-     && iRet NE 0                               // Lft NE Rht
+    // Ensure args are unequal and []CT is non-zero
+    if (iRet NE 0                               // Lft NE Rht
      && fQuadCT NE 0)                           // []CT NE 0
     {
+        APLVFP mpfLftAbs = {0},     // Absolute value of left arg
+               mpfRhtAbs = {0};     // ...               right ...
+        UINT   sgnLft,              // Left arg sign
+               sgnRht;              // Right ...
+
         // Use an algorithm similar to the one in _CompareCT
 
-        // If the signs differ, ...
-        if (mpfr_sgn (&aplVfpLft) EQ mpfr_sgn (&aplVfpRht))
+        // Initialize the temps
+        mpfr_init0 (&mpfLftAbs);
+        mpfr_init0 (&mpfRhtAbs);
+
+        // Get the signs
+        sgnLft = signum (mpfr_sgn (lpaplVfpLft));
+        sgnRht = signum (mpfr_sgn (lpaplVfpRht));
+
+        // Get the absolute values
+        mpfr_abs (&mpfLftAbs, lpaplVfpLft, MPFR_RNDN);
+        mpfr_abs (&mpfRhtAbs, lpaplVfpRht, MPFR_RNDN);
+
+        // If this is an integer test, allow comparison with zero
+        if (bIntegerTest
+         && sgnLft EQ 0
+         && mpfr_cmp_d (&mpfRhtAbs, fQuadCT) <= 0)
+            iRet = 0;
+        else
+        if (bIntegerTest
+         && sgnRht EQ 0
+         && mpfr_cmp_d (&mpfLftAbs, fQuadCT) <= 0)
+            iRet = 0;
+        else
+        if (!IsMpf0 (lpaplVfpLft)       // Lft NE 0
+         && !IsMpf0 (lpaplVfpRht)       // Rht NE 0
+         && sgnLft EQ sgnRht)           // Signs are the same, ...
         {
-            APLVFP mpfLftAbs = {0},
-                   mpfRhtAbs = {0},
-                   mpfCT     = {0},
+            APLVFP mpfCT     = {0},
                    mpfHoodLo = {0};
-
-            // Initialize the temps
-            mpfr_init0 (&mpfLftAbs);
-            mpfr_init0 (&mpfRhtAbs);
-
-            // Get the absolute values
-            mpfr_abs (&mpfLftAbs, &aplVfpLft, MPFR_RNDN);
-            mpfr_abs (&mpfRhtAbs, &aplVfpRht, MPFR_RNDN);
 
             // Initialize the temps
             mpfr_init0 (&mpfCT);
@@ -1613,13 +1646,14 @@ int mpfr_cmp_ct
             // We no longer need this storage
             Myf_clear (&mpfHoodLo);
             Myf_clear (&mpfCT    );
-            Myf_clear (&mpfRhtAbs);
-            Myf_clear (&mpfLftAbs);
         } // End IF/ELSE
+
+        Myf_clear (&mpfRhtAbs);
+        Myf_clear (&mpfLftAbs);
     } // End IF
 
     return iRet;
-} // End mpfr_cmp_ct
+} // End _mpfr_cmp_ct
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -291,7 +291,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         // Attempt to convert FLOAT left arg
         if (IsSimpleFlt (aplTypeLft))
         {
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
@@ -328,7 +328,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
             lpMemRep = MyGlobalLock (hGlbRep);
 
         // Skip over the header to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // Initialize the result axis dimension accumulator
         uDimLftSum = 0;
@@ -374,7 +374,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
             case ARRAY_FLOAT:
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
                     if (!bRet || !IsBooleanValue (aplIntegerLft))
                         goto LEFT_DOMAIN_EXIT;
@@ -412,7 +412,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
                     // Attempt to convert the RAT to an INT
-                    aplIntegerLft = mpq_get_ctsa (((LPAPLRAT) lpMemLft)++, &bRet);
+                    aplIntegerLft = mpq_get_sctsx (((LPAPLRAT) lpMemLft)++, &bRet);
                     if (!bRet || !IsBooleanValue (aplIntegerLft))
                         goto LEFT_DOMAIN_EXIT;
                     uDimLftSum += aplIntegerLft;
@@ -426,7 +426,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
                     // Attempt to convert the VFP to an INT
-                    aplIntegerLft = mpfr_get_ctsa (((LPAPLVFP) lpMemLft)++, &bRet);
+                    aplIntegerLft = mpfr_get_sctsx (((LPAPLVFP) lpMemLft)++, &bRet);
                     if (!bRet || !IsBooleanValue (aplIntegerLft))
                         goto LEFT_DOMAIN_EXIT;
                     uDimLftSum += aplIntegerLft;
@@ -504,9 +504,9 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     (VarArrayBaseToDim (lpMemRes))[aplAxis] = aplNELMLft;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
     if (lpMemRht)
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Handle empty nested array results (prototypes)
     if (IsEmpty (aplNELMRht) && IsNested (aplTypeRht))

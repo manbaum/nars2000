@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -169,19 +169,19 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
             break;
 
         case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
 
             break;
 
         case ARRAY_RAT:
-            // Attempt to convert the RAT to an integer using System CT
+            // Attempt to convert the RAT to an integer using System []CT
             aplLongestLft = GetNextRatIntGlb (hGlbLft, 0, &bRet);
 
             break;
 
         case ARRAY_VFP:
-            // Attempt to convert the VFP to an integer using System CT
+            // Attempt to convert the VFP to an integer using System []CT
             aplLongestLft = GetNextVfpIntGlb (hGlbLft, 0, &bRet);
 
             break;
@@ -296,7 +296,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
         goto YYALLOC_EXIT;
 
     // Skip over the header and dimensions to the data
-    lpMemDataRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemDataRes = VarArrayDataFmBase (lpMemRes);
 
     // Split cases based upon the right arg rank
     switch (aplRankRht)
@@ -320,7 +320,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
 
         case 1:
             // Skip over the header and dimensions to the data
-            lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemDataRht = VarArrayDataFmBase (lpMemRht);
 
             // Loop through the right arg looking for identifiers
             uRht = 0;
@@ -359,7 +359,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
 
         case 2:
             // Skip over the header and dimensions to the data
-            lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemDataRht = VarArrayDataFmBase (lpMemRht);
 
             for (uRht = 0; uRht < aplRowsRes; uRht++)
             {
@@ -1047,7 +1047,7 @@ APLUINT CalcGlbVarSize
         goto NORMAL_EXIT;
 
     // Skip over the header and dimensions to the data
-    lpMemData = VarArrayBaseToData (lpMemData, aplRank);
+    lpMemData = VarArrayDataFmBase (lpMemData);
 
     // Split cases based upon the array type
     switch (aplType)

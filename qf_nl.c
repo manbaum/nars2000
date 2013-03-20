@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -204,7 +204,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             lpMemLft = &(APLCHAR) aplLongestLft;
         else
             // Skip over the header and dimensions to the data
-            lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+            lpMemLft = VarArrayDataFmBase (lpMemLft);
 
 ////////// Validate the chars in the left arg
 ////////for (uLft = 0; uLft < aplNELMLft; uLft++)
@@ -230,7 +230,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         hGlbRht = MakePtrTypeGlb (hGlbRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     } else
         lpMemRht = &aplLongestRht;
 
@@ -261,7 +261,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 // Get the next value
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
                 if (!bRet
                  || aplLongestRht >= NAMECLASS_LENp1
@@ -278,7 +278,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             // Loop through the right arg elements
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Attempt to convert the RAT to an integer using System CT
+                // Attempt to convert the RAT to an integer using System []CT
                 aplLongestRht = GetNextRatIntGlb (hGlbRht, uRht, &bRet);
 
                 if (!bRet
@@ -296,7 +296,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             // Loop through the right arg elements
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Attempt to convert the RAT to an integer using System CT
+                // Attempt to convert the RAT to an integer using System []CT
                 aplLongestRht = GetNextVfpIntGlb (hGlbRht, uRht, &bRet);
 
                 if (!bRet
@@ -393,7 +393,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     (VarArrayBaseToDim (lpMemRes))[1] = uMaxNameLen;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 2);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Loop through the sorted STEs copying the names to the result
     for (uSymNum = 0; uSymNum < uSymCnt; uSymNum++)

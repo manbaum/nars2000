@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -386,7 +386,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     } // End IF
 
     // lpMemRht now points to its data
@@ -463,7 +463,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
     // Skip over the header and dimensions to the data
     if (lpMemLft)
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
     else
         lpMemLft = &aplLongestLft;
 
@@ -872,7 +872,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         aplRankLft = lpHeader->Rank;
 #undef  lpHeader
         // Point to the left arg data
-        lpDataLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpDataLft = VarArrayDataFmBase (lpMemLft);
     } else
     {
         aplNELMLft = 1;
@@ -973,7 +973,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         case ARRAY_FLOAT:
             for (uDim = 0; bRet && uDim < aplNELMLft; uDim++)
             {
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplIntLft = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[uDim], &bRet);
                 if (bRet)
                 {
@@ -1031,8 +1031,8 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         case ARRAY_RAT:
             for (uDim = 0; bRet && uDim < aplNELMLft; uDim++)
             {
-                // Attempt to convert the RAT to an integer using System CT
-                aplIntLft = mpq_get_ctsa (&((LPAPLRAT) lpDataLft)[uDim], &bRet);
+                // Attempt to convert the RAT to an integer using System []CT
+                aplIntLft = mpq_get_sctsx (&((LPAPLRAT) lpDataLft)[uDim], &bRet);
                 if (bRet)
                 {
                     // If there's an axis, ...
@@ -1051,8 +1051,8 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         case ARRAY_VFP:
             for (uDim = 0; bRet && uDim < aplNELMLft; uDim++)
             {
-                // Attempt to convert the VFP to an integer using System CT
-                aplIntLft = mpfr_get_ctsa (&((LPAPLVFP) lpDataLft)[uDim], &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplIntLft = mpfr_get_sctsx (&((LPAPLVFP) lpDataLft)[uDim], &bRet);
                 if (bRet)
                 {
                     // If there's an axis, ...

@@ -662,23 +662,23 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     bRet = ((!IsSimpleChar (aplTypeLft))
          && (!IsSimpleChar (aplTypeRht)));
     if (bRet && IsSimpleFlt (aplTypeLft))
-        // Attempt to convert the float to an integer using System CT
+        // Attempt to convert the float to an integer using System []CT
         aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
     if (bRet && IsSimpleFlt (aplTypeRht))
-        // Attempt to convert the float to an integer using System CT
+        // Attempt to convert the float to an integer using System []CT
         aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
     if (bRet && IsRat (aplTypeLft))
-        // Attempt to convert the RAT to an integer using System CT
-        aplIntegerLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+        // Attempt to convert the RAT to an integer using System []CT
+        aplIntegerLft = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLft, &bRet);
     if (bRet && IsRat (aplTypeRht))
-        // Attempt to convert the RAT to an integer using System CT
-        aplIntegerRht = mpq_get_ctsa ((LPAPLRAT) lpSymGlbRht, &bRet);
+        // Attempt to convert the RAT to an integer using System []CT
+        aplIntegerRht = mpq_get_sctsx ((LPAPLRAT) lpSymGlbRht, &bRet);
     if (bRet && IsVfp (aplTypeLft))
-        // Attempt to convert the VFP to an integer using System CT
-        aplIntegerLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+        // Attempt to convert the VFP to an integer using System []CT
+        aplIntegerLft = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLft, &bRet);
     if (bRet && IsVfp (aplTypeRht))
-        // Attempt to convert the VFP to an integer using System CT
-        aplIntegerRht = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbRht, &bRet);
+        // Attempt to convert the VFP to an integer using System []CT
+        aplIntegerRht = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbRht, &bRet);
 
     if (!bRet
      || aplIntegerLft < 0
@@ -731,7 +731,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     *VarArrayBaseToDim (lpMemRes) = aplIntegerLft;
 
     // Skip over the header and dimension to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // We make roll atomic by not saving any intermediate values
     //   into lpMemPTD->lpSymQuadRL.

@@ -338,7 +338,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (aplTypeRht))
@@ -508,7 +508,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         *VarArrayBaseToDim (lpMemProto) = aplNELMSub;
 
                         // Skip over the header and dimension to the data
-                        lpMemProto = VarArrayBaseToData (lpMemProto, aplNELMAxis);
+                        lpMemProto = VarArrayDataFmBase (lpMemProto);
 
                         // Fill in the values
                         for (uRes = 0; uRes < aplNELMSub; uRes++)
@@ -1318,7 +1318,7 @@ UBOOL PrimFnMonLeftShoeProto_EM
         *VarArrayBaseToDim (lpMemProto) = aplNELMSub;
 
         // skip over the header and dimension to the data
-        lpMemProto = VarArrayBaseToData (lpMemProto, aplNELMAxis);
+        lpMemProto = VarArrayDataFmBase (lpMemProto);
 
         // Check for overflow
         if (aplNELMSub NE (APLU3264) aplNELMSub)
@@ -1626,14 +1626,14 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
         case ARRAY_RAT:
             // Attempt to convert the RAT to an INT
-            aplLongestLft = mpq_get_ctsa ((LPAPLRAT) VarArrayBaseToData (lpMemLft, aplRankLft), &bRet);
+            aplLongestLft = mpq_get_sctsx ((LPAPLRAT) VarArrayDataFmBase (lpMemLft), &bRet);
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
             break;
 
         case ARRAY_VFP:
             // Attempt to convert the RAT to an INT
-            aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) VarArrayBaseToData (lpMemLft, aplRankLft), &bRet);
+            aplLongestLft = mpfr_get_sctsx ((LPAPLVFP) VarArrayDataFmBase (lpMemLft), &bRet);
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
             break;
@@ -1649,7 +1649,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     if (hGlbLft)
     {
         // Skip over the header to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // Calculate the axis NELM
         for (uCnt = 0,
@@ -1682,14 +1682,14 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
                 case ARRAY_RAT:
                     // Attempt to convert the RAT to an INT
-                    aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+                    aplLongestLft = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLft, &bRet);
                     if (!bRet)
                         goto LEFT_DOMAIN_EXIT;
                     break;
 
                 case ARRAY_VFP:
                     // Attempt to convert the RAT to an INT
-                    aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                    aplLongestLft = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLft, &bRet);
                     if (!bRet)
                         goto LEFT_DOMAIN_EXIT;
                     break;
@@ -1974,14 +1974,14 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
             case ARRAY_RAT:
                 // Attempt to convert the RAT to an INT
-                aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpSymGlbLft, &bRet);
+                aplLongestLft = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
                 break;
 
             case ARRAY_VFP:
                 // Attempt to convert the RAT to an INT
-                aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpSymGlbLft, &bRet);
+                aplLongestLft = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
                 break;

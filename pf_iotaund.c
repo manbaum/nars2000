@@ -193,22 +193,22 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                 break;
 
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplIntegerRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplIntegerRht, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
 
             case ARRAY_RAT:
-                // Attempt to convert the RAT to an integer using System CT
-                aplIntegerRht = mpq_get_ctsa ((LPAPLRAT) VarArrayDataFmBase (lpMemRht), &bRet);
+                // Attempt to convert the RAT to an integer using System []CT
+                aplIntegerRht = mpq_get_sctsx ((LPAPLRAT) VarArrayDataFmBase (lpMemRht), &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
 
             case ARRAY_VFP:
-                // Attempt to convert the VFP to an integer using System CT
-                aplIntegerRht = mpfr_get_ctsa ((LPAPLVFP) VarArrayDataFmBase (lpMemRht), &bRet);
+                // Attempt to convert the VFP to an integer using System []CT
+                aplIntegerRht = mpfr_get_sctsx ((LPAPLVFP) VarArrayDataFmBase (lpMemRht), &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
 
@@ -316,7 +316,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                 //   and copy it to the repetition vector
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplIntegerRht = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++, &bRet);
 
                     // Validate it
@@ -383,8 +383,8 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                 //   and copy it to the repetition vector
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
-                    // Attempt to convert the RAT to an integer using System CT
-                    aplIntegerRht = mpq_get_ctsa (((LPAPLRAT) lpMemRht)++, &bRet);
+                    // Attempt to convert the RAT to an integer using System []CT
+                    aplIntegerRht = mpq_get_sctsx (((LPAPLRAT) lpMemRht)++, &bRet);
 
                     // Validate it
                     if (!bRet || aplIntegerRht < 0)
@@ -410,8 +410,8 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                 //   and copy it to the repetition vector
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
-                    // Attempt to convert the VFP to an integer using System CT
-                    aplIntegerRht = mpfr_get_ctsa (((LPAPLVFP) lpMemRht)++, &bRet);
+                    // Attempt to convert the VFP to an integer using System []CT
+                    aplIntegerRht = mpfr_get_sctsx (((LPAPLVFP) lpMemRht)++, &bRet);
 
                     // Validate it
                     if (!bRet || aplIntegerRht < 0)

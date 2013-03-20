@@ -241,21 +241,24 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
 
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir_PTB (hGlbRht));
+            } else
+                hGlbRht = NULL;
 
-                break;          // Join common global code
-            } // End IF
+            // If it's a scalar, ...
+            if (IsScalar (aplRankRht))
+                // Handle the scalar case
+                return PrimFnMonCommaScalar_EM_YY
+                       (aplTypeRht,                                     // Array storage type
+                        lptkRhtArg->tkData.tkSym->stData.stLongest,     // Immediate value if simple scalar
+                        hGlbRht,                                        // Right arg global memory handle (or NULL if simple scalar)
+                        lptkAxis,                                       // Ptr to axis token (may be NULL)
+                        lptkFunc);                                      // Ptr to function token
+            break;          // Join common global code
 
-            // Handle the scalar case
-            return PrimFnMonCommaScalar_EM_YY
-                   (TranslateImmTypeToArrayType (lptkRhtArg->tkData.tkSym->stFlags.ImmType),    // Array storage type
-                    lptkRhtArg->tkData.tkSym->stData.stLongest,     // Immediate value if simple scalar
-                    NULL,                                           // Right arg global memory handle (or NULL if simple scalar)
-                    lptkAxis,                                       // Ptr to axis token (may be NULL)
-                    lptkFunc);                                      // Ptr to function token
         case TKT_VARIMMED:
             // Handle the scalar case
             return PrimFnMonCommaScalar_EM_YY
-                   (TranslateImmTypeToArrayType (lptkRhtArg->tkFlags.ImmType),  // Array storage type
+                   (aplTypeRht,                                     // Array storage type
                     lptkRhtArg->tkData.tkLongest,                   // Immediate value if simple scalar
                     NULL,                                           // Right arg global memory handle (or NULL if simple scalar)
                     lptkAxis,                                       // Ptr to axis token (may be NULL)
@@ -547,8 +550,6 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
-
-    Assert (!IsScalar (aplRankRht));
 
     // Check for axis present
     if (lptkAxis NE NULL)

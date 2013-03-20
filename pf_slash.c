@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -311,21 +311,21 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                 break;
 
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
                 break;
 
             case ARRAY_RAT:
-                // Attempt to convert the RAT to an integer using System CT
+                // Attempt to convert the RAT to an integer using System []CT
                 aplIntegerLft = mpq_get_sx ((LPAPLRAT) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
                 break;
 
             case ARRAY_VFP:
-                // Attempt to convert the VFP to an integer using System CT
+                // Attempt to convert the VFP to an integer using System []CT
                 aplIntegerLft = mpfr_get_sx ((LPAPLVFP) lpSymGlbLft, &bRet);
                 if (!bRet)
                     goto LEFT_DOMAIN_EXIT;
@@ -382,7 +382,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             lpMemRep = MyGlobalLock (hGlbRep);
 
         // Skip over the header to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // Initialize the result axis dimension accumulator
         uDimAxRes = 0;
@@ -428,7 +428,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             case ARRAY_FLOAT:
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
-                    // Attempt to convert the float to an integer using System CT
+                    // Attempt to convert the float to an integer using System []CT
                     aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
                     if (!bRet || aplIntegerLft < 0)
                         goto LEFT_DOMAIN_EXIT;
@@ -551,9 +551,9 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     (VarArrayBaseToDim (lpMemRes))[aplAxis] = uDimAxRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
     if (lpMemRht)
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Handle empty nested array results (prototypes)
     if (IsEmpty (aplNELMRes))

@@ -270,7 +270,7 @@ APLFLOAT PrimFnMonQuoteDotFisF
     // Check for indeterminates:  !N for integer N < 0
     if (aplFloatRht < 0)
     {
-        // Attempt to convert the float to an integer using System CT
+        // Attempt to convert the float to an integer using System []CT
         (void) FloatToAplint_SCT (aplFloatRht, &iRet);
         if (iRet)
             return TranslateQuadICIndex (0,

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -220,7 +220,7 @@ LPPL_YYSTYPE PrimIdentFnSquad_EM_YY
     *(VarArrayBaseToDim (lpMemRes)) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // If the right arg is an immediate, ...
     if (IsTknImmed (&lpYYRht->tkToken))
@@ -235,7 +235,7 @@ LPPL_YYSTYPE PrimIdentFnSquad_EM_YY
         lpMemRht = MyGlobalLock (hGlbRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, 1);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     } // End IF
 
     // Setup the right arg token
@@ -640,7 +640,11 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     if (aplTypeLft EQ ARRAY_LIST)
         lpMemLft = LstArrayBaseToData (lpMemLft);
     else
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    // If the left arg is not immediate, ...
+    if (hGlbLft)
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
+    else
+        lpMemLft = &aplLongestLft;
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -1003,14 +1007,14 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     // If we're not assigning, ...
     if (lptkSetArg EQ NULL)
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
     else
     // We are assigning
     {
         if (lpMemSet)
         {
             // Skip over the header and dimensions to the data
-            lpMemSet = VarArrayBaseToData (lpMemSet, aplRankSet);
+            lpMemSet = VarArrayDataFmBase (lpMemSet);
 
             if (IsSingleton (aplNELMSet))
                 // Get the first item from the set arg
@@ -1059,7 +1063,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Calc ptr to limit vector
     lpMemLimLft = &lpMemOdo[aplRankRht];
@@ -1144,7 +1148,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                 break;
 
                             case IMMTYPE_FLOAT:
-                                // Attempt to convert the float to an integer using System CT
+                                // Attempt to convert the float to an integer using System []CT
                                 aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestNxt, &bRet);
                                 if (!bRet)
                                     goto DOMAIN_EXIT;
@@ -1154,8 +1158,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                 // Lock the memory to get a ptr to it
                                 lpMemSub = MyGlobalLock (hGlbSub);
 
-                                // Attempt to convert the RAT to an integer using System CT
-                                aplLongestNxt = mpq_get_ctsa (&((LPAPLRAT) VarArrayDataFmBase (lpMemSub))[lpMemOdo[iAxisNxt]], &bRet);
+                                // Attempt to convert the RAT to an integer using System []CT
+                                aplLongestNxt = mpq_get_sctsx (&((LPAPLRAT) VarArrayDataFmBase (lpMemSub))[lpMemOdo[iAxisNxt]], &bRet);
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
@@ -1166,8 +1170,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                 // Lock the memory to get a ptr to it
                                 lpMemSub = MyGlobalLock (hGlbSub);
 
-                                // Attempt to convert the VFP to an integer using System CT
-                                aplLongestNxt = mpfr_get_ctsa (&((LPAPLVFP) VarArrayDataFmBase (lpMemSub))[lpMemOdo[iAxisNxt]], &bRet);
+                                // Attempt to convert the VFP to an integer using System []CT
+                                aplLongestNxt = mpfr_get_sctsx (&((LPAPLVFP) VarArrayDataFmBase (lpMemSub))[lpMemOdo[iAxisNxt]], &bRet);
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
@@ -1195,7 +1199,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                 break;
 
                             case IMMTYPE_FLOAT:
-                                // Attempt to convert the float to an integer using System CT
+                                // Attempt to convert the float to an integer using System []CT
                                 aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSub, &bRet);
 
                                 break;
@@ -1203,16 +1207,16 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                             case IMMTYPE_RAT:
                                 Assert (GetPtrTypeDir (hGlbSub) NE PTRTYPE_HGLOBAL);
 
-                                // Attempt to convert the RAT to an integer using System CT
-                                aplLongestNxt = mpq_get_ctsa ((LPAPLRAT) hGlbSub, &bRet);
+                                // Attempt to convert the RAT to an integer using System []CT
+                                aplLongestNxt = mpq_get_sctsx ((LPAPLRAT) hGlbSub, &bRet);
 
                                 break;
 
                             case IMMTYPE_VFP:
                                 Assert (GetPtrTypeDir (hGlbSub) NE PTRTYPE_HGLOBAL);
 
-                                // Attempt to convert the VFP to an integer using System CT
-                                aplLongestNxt = mpfr_get_ctsa ((LPAPLVFP) hGlbSub, &bRet);
+                                // Attempt to convert the VFP to an integer using System []CT
+                                aplLongestNxt = mpfr_get_sctsx ((LPAPLVFP) hGlbSub, &bRet);
 
                                 break;
 
@@ -1236,7 +1240,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     // If the index value is float, attempt to convert it to int
                     if (IsImmFlt (immTypeSub))
                     {
-                        // Attempt to convert the float to an integer using System CT
+                        // Attempt to convert the float to an integer using System []CT
                         aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSub, &bRet);
                         if (!bRet)
                             goto DOMAIN_EXIT;

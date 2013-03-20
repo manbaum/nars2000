@@ -2322,7 +2322,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
     switch (immTypeLft)
     {
         case IMMTYPE_FLOAT:
-            // Attempt to convert the float to an integer using System CT
+            // Attempt to convert the float to an integer using System []CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
 
             break;
@@ -2348,8 +2348,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             // Skip over the header and dimensions to the data
             lpMemLft = VarArrayDataFmBase (lpMemLft);
 
-            // Attempt to convert the RAT to an integer using System CT
-            aplLongestLft = mpq_get_ctsa ((LPAPLRAT) lpMemLft, &bRet);
+            // Attempt to convert the RAT to an integer using System []CT
+            aplLongestLft = mpq_get_sctsx ((LPAPLRAT) lpMemLft, &bRet);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
@@ -2368,8 +2368,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             // Skip over the header and dimensions to the data
             lpMemLft = VarArrayDataFmBase (lpMemLft);
 
-            // Attempt to convert the VFP to an integer using System CT
-            aplLongestLft = mpfr_get_ctsa ((LPAPLVFP) lpMemLft, &bRet);
+            // Attempt to convert the VFP to an integer using System []CT
+            aplLongestLft = mpfr_get_sctsx ((LPAPLVFP) lpMemLft, &bRet);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
@@ -2670,7 +2670,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        // Attempt to convert the float to an integer using System CT
+                        // Attempt to convert the float to an integer using System []CT
                         aplTmpSubLft = FloatToAplint_SCT (((LPAPLFLOAT) lpMemSubLft)[iDim], &bRet) - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
@@ -2753,8 +2753,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        // Attempt to convert the RAT to an integer using System CT
-                        aplTmpSubLft = mpq_get_ctsa (&((LPAPLRAT) lpMemSubLft)[iDim], &bRet) - bQuadIO;
+                        // Attempt to convert the RAT to an integer using System []CT
+                        aplTmpSubLft = mpq_get_sctsx (&((LPAPLRAT) lpMemSubLft)[iDim], &bRet) - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft)
@@ -2786,8 +2786,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        // Attempt to convert the VFP to an integer using System CT
-                        aplTmpSubLft = mpfr_get_ctsa (&((LPAPLVFP) lpMemSubLft)[iDim], &bRet) - bQuadIO;
+                        // Attempt to convert the VFP to an integer using System []CT
+                        aplTmpSubLft = mpfr_get_sctsx (&((LPAPLVFP) lpMemSubLft)[iDim], &bRet) - bQuadIO;
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft)
@@ -2836,7 +2836,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             // Ensure that the left arg immediate value can convert to an integer
             if (IsImmFlt (immTypeSubLft))
             {
-                // Attempt to convert the float to an integer using System CT
+                // Attempt to convert the float to an integer using System []CT
                 aplLongestSubLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLft, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;

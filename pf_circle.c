@@ -459,7 +459,7 @@ APLFLOAT PrimFnDydCircleFisFvF
     APLFLOAT aplFloatTmp;
 
 
-    // Attempt to convert the float to an integer using System CT
+    // Attempt to convert the float to an integer using System []CT
     aplLft = FloatToAplint_SCT (aplFloatLft, &bRet);
 
     if (bRet)

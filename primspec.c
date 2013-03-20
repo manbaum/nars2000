@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -603,8 +603,8 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
         CopyMemory (lpMemDimRes, lpMemDimRht, (APLU3264) aplRankRes * sizeof (APLDIM));
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // If the right arg (and result) is simple (numeric), ...
     if (IsSimpleNum (aplTypeRht))
@@ -888,8 +888,8 @@ UBOOL PrimIdentFnScalarCommon_EM
                     CopyMemory (lpMemDimRes2, lpMemDimItm, (APLU3264) aplRankRes2 * sizeof (APLDIM));
 
                 // Skip over the header and dimensions to the data
-                lpMemItm  = VarArrayBaseToData (lpMemItm , aplRankItm);
-                lpMemRes2 = VarArrayBaseToData (lpMemRes2, aplRankRes2);
+                lpMemItm  = VarArrayDataFmBase (lpMemItm );
+                lpMemRes2 = VarArrayDataFmBase (lpMemRes2);
 
                 // If the item (and result2) is simple (numeric), ...
                 if (IsSimpleNum (aplTypeItm))
@@ -2905,10 +2905,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
-    Assert (IsSimpleNum (aplTypeRes)
-         || IsRat    (aplTypeRes)
-         || IsVfp    (aplTypeRes)
-         || IsNested (aplTypeRes));
+    Assert (IsNumeric (aplTypeRes)
+         || IsNested  (aplTypeRes));
 
     // Get left and right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -3198,7 +3196,7 @@ UBOOL PrimFnDydSimpNest_EM
         lpMemDimLft = VarArrayBaseToDim (lpMemLft);
 
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
     } // End IF/ELSE
 
     // If the left arg is APA, ...
@@ -3219,8 +3217,8 @@ UBOOL PrimFnDydSimpNest_EM
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Handle axis if present
     if (aplNELMAxis NE aplRankRes)
@@ -3582,7 +3580,7 @@ UBOOL PrimFnDydNestSimp_EM
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     } // End IF/ELSE
 
     // If the right arg is APA, ...
@@ -3603,8 +3601,8 @@ UBOOL PrimFnDydNestSimp_EM
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
     // Skip over the header and dimensions to the data
-    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemLft = VarArrayDataFmBase (lpMemLft);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Handle axis if present
     if (aplNELMAxis NE aplRankRes)
@@ -3967,7 +3965,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
             goto NORMAL_EXIT;
     } // End IF
 
-    Assert (IsSimpleNum (aplTypeRes)
+    Assert (IsSimpleGlbNum (aplTypeRes)
          || IsNested (aplTypeRes));
 
     // Allocate space for result
@@ -3993,8 +3991,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
     lpMemHdrLft = lpMemLft;
 
     // Skip over the header and dimensions to the data
-    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemLft = VarArrayDataFmBase (lpMemLft);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // If the left arg is an APA, ...
     if (IsSimpleAPA (aplTypeLft))
@@ -4007,7 +4005,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     } // End IF
 
     // If simple result, ...
-    if (IsSimpleNum (aplTypeRes))
+    if (IsSimpleGlbNum (aplTypeRes))
         bRet = PrimFnDydMultSing_EM (&hGlbRes,
                                      aplTypeRes,
                                      lpMemHdrRes,
@@ -4027,7 +4025,6 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                      bRhtIdent,
                                      lptkFunc,
                                      lpPrimSpec);
-
     else
     // If nested result, ...
     if (IsNested (aplTypeRes))
@@ -4257,9 +4254,9 @@ UBOOL PrimFnDydNestNest_EM
     lpMemRes = MyGlobalLock (*lphGlbRes);
 
     // Skip over the headers and dimensions to the data
-    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemLft = VarArrayDataFmBase (lpMemLft);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Loop through the left and right args
     for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -4407,7 +4404,7 @@ UBOOL PrimFnDydSingMult_EM
     lpMemRhtStart = lpMemRht;
 RESTART_EXCEPTION:
     // Skip over the header to the data
-    lpMemRes = VarArrayBaseToData (lpMemHdrRes, lpMemHdrRes->Rank);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     __try
     {
@@ -7051,7 +7048,7 @@ UBOOL PrimFnDydMultSing_EM
     lpMemLftStart = lpMemLft;
 RESTART_EXCEPTION:
     // Skip over the header to the data
-    lpMemRes = VarArrayBaseToData (lpMemHdrRes, lpMemHdrRes->Rank);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     __try
     {
@@ -9710,8 +9707,8 @@ HGLOBAL PrimFnDydSiScNest_EM
     lpMemRes = lpMemHdrRes = MyGlobalLock (hGlbRes);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (aplTypeRht))
@@ -10863,7 +10860,7 @@ UBOOL PrimFnDydSimpSimp_EM
                                 NULL);          // Ptr to array type ...
 RESTART_EXCEPTION_SINGLETON:
             // Skip over the header and dimensions to the data
-            lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
             // Skip over the header to the dimensions
             lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
@@ -11531,8 +11528,8 @@ RESTART_EXCEPTION_SINGLETON:
         lpMemHdrArg = (LPVARARRAY_HEADER) lpMemDimArg;
 
         // Skip over the header and dimensions to the data
-        lpMemRes    = VarArrayBaseToData (lpMemRes,    aplRankRes);
-        lpMemDimArg = VarArrayBaseToData (lpMemDimArg, aplRankRes);
+        lpMemRes    = VarArrayDataFmBase (lpMemRes   );
+        lpMemDimArg = VarArrayDataFmBase (lpMemDimArg);
 
         // If the non-singleton arg is an APA, ...
         if (IsSimpleAPA (aplTypeArg))
@@ -11626,9 +11623,9 @@ RESTART_EXCEPTION_SINGLETON:
         lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
-        lpMemLft = VarArrayBaseToData (lpMemHdrLft, aplRankLft);
-        lpMemRht = VarArrayBaseToData (lpMemHdrRht, aplRankRht);
+        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
         // If the left arg is an APA, ...
         if (IsSimpleAPA (aplTypeLft))
@@ -11706,7 +11703,7 @@ RESTART_EXCEPTION_SINGLETON:
             lpMemOdo = MyGlobalLock (hGlbOdo);
 RESTART_EXCEPTION_AXIS:
             // Skip over the header and dimensions to the data
-            lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
             // Skip over the header to the dimensions
             lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
@@ -13077,7 +13074,7 @@ RESTART_EXCEPTION_AXIS:
         {
 RESTART_EXCEPTION_NOAXIS:
             // Skip over the header and dimensions to the data
-            lpMemRes = VarArrayBaseToData (lpMemHdrRes, aplRankRes);
+            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
             // Skip over the header to the dimensions
             lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
@@ -14664,7 +14661,7 @@ UBOOL IsTknBooleanAPA
     GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemArg);
 
     // Skip over the header to the data
-    lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
+    lpMemArg = VarArrayDataFmBase (lpMemArg);
 
     // Check for Boolean APA
     bRet = IsBooleanAPA (lpMemArg);

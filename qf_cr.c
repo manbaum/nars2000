@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 //***************************************************************************
@@ -135,12 +136,14 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY
     STFLAGS        stFlags = {0};       // STE flags
     LPPL_YYSTYPE   lpYYRes = NULL;      // Ptr to the result
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -447,6 +450,8 @@ NORMAL_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
+
+    EXIT_TEMP_OPEN
 
     return lpYYRes;
 } // End SysFnCR_Common_EM_YY

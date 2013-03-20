@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1036,9 +1036,10 @@ int oprintfW
      ...)
 
 {
-    va_list vl;
-    int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
-    WCHAR   wszTemp[1024];
+    va_list  vl;
+    APLU3264 i1, i2, i3, i4, i5, i6, i7, i8;
+    int      iRet;
+    WCHAR    wszTemp[1024];
 
 
     // We hope that no one calls us with more than
@@ -1049,14 +1050,14 @@ int oprintfW
     //   order.
     va_start (vl, lpwszFmt);
 
-    i1 = va_arg (vl, int);
-    i2 = va_arg (vl, int);
-    i3 = va_arg (vl, int);
-    i4 = va_arg (vl, int);
-    i5 = va_arg (vl, int);
-    i6 = va_arg (vl, int);
-    i7 = va_arg (vl, int);
-    i8 = va_arg (vl, int);
+    i1 = va_arg (vl, APLU3264);
+    i2 = va_arg (vl, APLU3264);
+    i3 = va_arg (vl, APLU3264);
+    i4 = va_arg (vl, APLU3264);
+    i5 = va_arg (vl, APLU3264);
+    i6 = va_arg (vl, APLU3264);
+    i7 = va_arg (vl, APLU3264);
+    i8 = va_arg (vl, APLU3264);
 
     va_end (vl);
 
@@ -1082,9 +1083,10 @@ int dprintfWL0
      ...)
 
 {
-    va_list vl;
-    int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
-    WCHAR   wszTemp[1024];
+    va_list  vl;
+    APLU3264 i1, i2, i3, i4, i5, i6, i7, i8;
+    int      iRet;
+    WCHAR    wszTemp[1024];
 
     // We hope that no one calls us with more than
     //   eight arguments.
@@ -1094,14 +1096,14 @@ int dprintfWL0
     //   order.
     va_start (vl, lpwszFmt);
 
-    i1 = va_arg (vl, int);
-    i2 = va_arg (vl, int);
-    i3 = va_arg (vl, int);
-    i4 = va_arg (vl, int);
-    i5 = va_arg (vl, int);
-    i6 = va_arg (vl, int);
-    i7 = va_arg (vl, int);
-    i8 = va_arg (vl, int);
+    i1 = va_arg (vl, APLU3264);
+    i2 = va_arg (vl, APLU3264);
+    i3 = va_arg (vl, APLU3264);
+    i4 = va_arg (vl, APLU3264);
+    i5 = va_arg (vl, APLU3264);
+    i6 = va_arg (vl, APLU3264);
+    i7 = va_arg (vl, APLU3264);
+    i8 = va_arg (vl, APLU3264);
 
     va_end (vl);
 
@@ -1127,9 +1129,10 @@ int dprintfWL9
      ...)
 
 {
-    va_list vl;
-    int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
-    WCHAR   wszTemp[1024];
+    va_list  vl;
+    APLU3264 i1, i2, i3, i4, i5, i6, i7, i8;
+    int      iRet;
+    WCHAR    wszTemp[1024];
 
     if (gDbgLvl < 9)
         return 0;
@@ -1142,14 +1145,14 @@ int dprintfWL9
     //   order.
     va_start (vl, lpwszFmt);
 
-    i1 = va_arg (vl, int);
-    i2 = va_arg (vl, int);
-    i3 = va_arg (vl, int);
-    i4 = va_arg (vl, int);
-    i5 = va_arg (vl, int);
-    i6 = va_arg (vl, int);
-    i7 = va_arg (vl, int);
-    i8 = va_arg (vl, int);
+    i1 = va_arg (vl, APLU3264);
+    i2 = va_arg (vl, APLU3264);
+    i3 = va_arg (vl, APLU3264);
+    i4 = va_arg (vl, APLU3264);
+    i5 = va_arg (vl, APLU3264);
+    i6 = va_arg (vl, APLU3264);
+    i7 = va_arg (vl, APLU3264);
+    i8 = va_arg (vl, APLU3264);
 
     va_end (vl);
 

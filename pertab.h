@@ -78,8 +78,10 @@ typedef struct tagPERTABDATA
                  bExecLX:1,                 // 00000002:  TRUE iff execute []LX after successful load
                  bExecuting:1,              // 00000004:  TRUE iff we're waiting for an execution to complete
                  bInTF:1,                   // 00000008:  TRUE if we're fixing a function via []TF
-                 :28;                       // FFFFFFF0:  Available bits
+                 bTempOpen:1,               // 00000010:  TRUE if lpwszTemp is open and open-ended
+                 :27;                       // FFFFFFE0:  Available bits
     HGLOBAL      hGlbCurLine;               // Current line global memory handle
+    LPWCHAR      lpwszTempName;             // Ptr to current name with lpwszTemp open
     LPWCHAR      lpwszErrorMessage;         // Ptr to error message to signal
     LPWCHAR      lpwszQuadErrorMsg;         // Used for []ERROR/[]ES messages
     UINT         uCaret;                    // Position of the caret in the current line on error

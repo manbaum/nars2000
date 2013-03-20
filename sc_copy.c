@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 //***************************************************************************
@@ -64,12 +65,14 @@ UBOOL CmdCopy_EM
     LPSYMENTRY   lpSymLink = NULL;          // Anchor of SYMENTRY links for [Globals] values
                                             //   so we may delete them easily
     LPDICTIONARY lpDict = NULL;             // Ptr to workspace dictionary
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage & maximum size
     lpwszTemp = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
     uMaxSize  = lpMemPTD->uTempMaxSize;
 
     // Get the Session Manager's hWndEC
@@ -146,7 +149,7 @@ UBOOL CmdCopy_EM
         if (fStream EQ NULL)
             goto WSNOTFOUND_EXIT;
 
-        // We no longer need this handle
+        // We no longer need this resource
         fclose (fStream); fStream = NULL;
 
         // Initialize the iniparser
@@ -173,7 +176,7 @@ UBOOL CmdCopy_EM
                          L"Please try copying from this workspace with a later version of the interpreter.",
                          WS_APPNAME,
                          MB_OK | MB_ICONSTOP);
-            return FALSE;
+            goto ERROR_EXIT;
         } // End IF
 
         // If the replaced char is EOS, copy all names
@@ -350,6 +353,8 @@ NORMAL_EXIT:
         // Free the dictionary
         ProfileUnload (lpDict); lpDict = NULL;
     } // End IF
+
+    EXIT_TEMP_OPEN
 
     return bRet;
 } // End CmdCopy_EM

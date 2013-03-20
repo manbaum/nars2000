@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "headers.h"
 #include "unitranstab.h"
 #include "scancodes.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 // ToDo
@@ -595,20 +596,27 @@ LRESULT APIENTRY FEWndProc
         {
             UINT     uNameLen;      // Function name length
             LPWCHAR  lpwszTemp;     // Ptr to temporary storage
+            LRESULT  lResult;       // Result
+            VARS_TEMP_OPEN
 
             // Get ptr to PerTabData global memory
             lpMemPTD = GetMemPTD ();
 
             // Get ptr to temporary storage
             lpwszTemp = lpMemPTD->lpwszTemp;
+            CHECK_TEMP_OPEN
 
             // Get this window's function name (if any)
             uNameLen = GetFunctionName (hWnd, lpwszTemp);
 
             if (uNameLen && uNameLen EQ uLen)
-                return (strncmpW (lpwszTemp, lpwName, uNameLen) EQ 0);
+                lResult = (strncmpW (lpwszTemp, lpwName, uNameLen) EQ 0);
+            else
+                lResult = FALSE;
 
-            return FALSE;           // The names are unequal
+            EXIT_TEMP_OPEN
+
+            return lResult;         // TRUE iff the names are equal
         } // End MYWM_CMPNAME
 #undef  lpwName
 #undef  uLen
@@ -953,12 +961,14 @@ void SetFETitle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
     UINT         uNameLen;          // Function name length
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
 
     // Get the function name (if any)
     uNameLen = GetFunctionName (hWndFE, lpwszTemp);
@@ -974,6 +984,8 @@ void SetFETitle
                 L" *"[GetWindowLongW (hWndFE, GWLSF_CHANGED)]);
     // Rewrite the window title with the (new?) function name
     SetWindowTextW (hWndFE, &lpwszTemp[uNameLen]);
+
+    EXIT_TEMP_OPEN
 } // End SetFETitle
 
 
@@ -999,11 +1011,21 @@ UBOOL SyntaxColor
     WCHAR        wchOrig;           // The original char
     TKCOLINDICES tkColInd;          // The TKCOL_* of the translated char
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    HGLOBAL      hSyntClr = NULL;   // Syntax Color global memory handle
+    LPSCINDICES  lpSyntClr = NULL;  // Ptr to Syntax Color entries
 
     // Avoid re-entrant code
     EnterCriticalSection (&CSOTokenize);
 
 ////LCLODS ("Entering <SyntaxColor>\r\n");
+
+    // Allocate room for <uLen> Syntax Color entries
+    hSyntClr = MyGlobalAlloc (GHND, uLen * sizeof (SCINDICES));
+    if (hSyntClr EQ NULL)
+        goto CRIT_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpSyntClr = MyGlobalLock (hSyntClr);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -1018,16 +1040,13 @@ UBOOL SyntaxColor
     tkLocalVars.lpMemClrIni      =
     tkLocalVars.lpMemClrNxt      = lpMemClr;        // Save ptr to array of Syntax Colors
     tkLocalVars.lpGrpSeqIni      =
-    tkLocalVars.lpGrpSeqNxt      = (LPSCINDICES) lpMemPTD->lpwszTemp;
+    tkLocalVars.lpGrpSeqNxt      = lpSyntClr;
     tkLocalVars.PrevGroup        = NO_PREVIOUS_GROUPING_SYMBOL;
     tkLocalVars.NameInit         = NO_PREVIOUS_NAME;
     tkLocalVars.hWndEC           = hWndEC;
     tkLocalVars.uSyntClrLen      = uLen;            // # Syntax Color entries
     tkLocalVars.lpMemPTD         = lpMemPTD;        // Ptr to PerTabData global memory
 ////tkLocalVars.bMFO             = FALSE;           // Not a Magic Function/Operator (already zero from = {0})
-
-    // Skip over the temp storage ptr
-    ((LPSCINDICES) lpMemPTD->lpwszTemp) += uLen;
 
     // Set initial limit for hGlbNum
     tkLocalVars.iNumLim = DEF_NUM_INITNELM;
@@ -1141,7 +1160,7 @@ UBOOL SyntaxColor
     // In rare circumstances we fall through to this point.
     // I think what is happening is that the mouse selects
     //   parts of more than one line and moves during the WM_PAINT
-    //   message such that the line-to-be-colored is changes.  I think.
+    //   message such that the line-to-be-colored changes.  I think.
     goto NORMAL_EXIT;
 
 FREEGLB_EXIT:
@@ -1166,9 +1185,19 @@ NORMAL_EXIT:
         MyGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
 
-    // Restore the temp storage ptr
-    ((LPSCINDICES) lpMemPTD->lpwszTemp) -= uLen;
+    // Free the global memory:  hSyntClr
+    if (hSyntClr)
+    {
+        if (lpSyntClr)
+        {
+            // We no longer need this ptr
+            MyGlobalLock (hSyntClr); lpSyntClr = NULL;
+        } // End IF
 
+        // We no longer need this storage
+        MyGlobalFree (hSyntClr); hSyntClr = NULL;
+    } // End IF
+CRIT_EXIT:
 ////LCLODS ("Exiting  <SyntaxColor>\r\n");
 
     // Release the Critical Section
@@ -1719,7 +1748,7 @@ LRESULT WINAPI LclEditCtrlWndProc
     LPWCHAR      lpwszFormat;               // Ptr to formatting save area
     static WNDPROC lpfnOldEditCtrlWndProc = // Ptr to preceding Edit Ctrl window procedure
                 &EditWndProcW;
-    LPWCHAR      lpwszTemp = NULL;          // Ptr to temporary storage
+    LPWCHAR      lpwszTemp;                 // Ptr to temporary storage
     static UINT  uAltNum = 0;               // Accumulator for Alt-nnn (NumPad only)
 
     // If the thread is MF, ...
@@ -1997,6 +2026,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // yPos = (UINT) lParam
         {
             POINT pt;
+            VARS_TEMP_OPEN
 
             // This message is sent whenever the user right clicks
             //   inside a Function Edit window and the Edit Ctrl
@@ -2032,6 +2062,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Tell EM_GETLINE maximum # chars in the buffer
             // The output array is a temporary so we don't have to
             //   worry about overwriting outside the allocated buffer
+            CHECK_TEMP_OPEN
             ((LPWORD) lpwszTemp)[0] = (WORD) uLineLen;
 
             // Get the contents of the line
@@ -2067,13 +2098,17 @@ LRESULT WINAPI LclEditCtrlWndProc
                                                       (UINT) (uCharPosEnd - uCharPosBeg),
                                                      &stFlags);
                 if (lpSymEntry)
-                    return (LRESULT) lpSymEntry;
-
-                // Name not found -- append it
-                // Lookup in or append to the symbol table
-                return (LRESULT) SymTabAppendName_EM (&lpwszTemp[uCharPosBeg], NULL);
+                    lResult = (LRESULT) lpSymEntry;
+                else
+                    // Name not found -- append it
+                    // Lookup in or append to the symbol table
+                    lResult = (LRESULT) SymTabAppendName_EM (&lpwszTemp[uCharPosBeg], NULL);
             } else
-                return (LRESULT) NULL;
+                lResult = 0;
+
+            EXIT_TEMP_OPEN
+
+            return lResult;
         } // End MYWM_IZITNAME
 
 #define fwSizeType  wParam
@@ -3224,6 +3259,9 @@ LRESULT WINAPI LclEditCtrlWndProc
             lpSymEntry = (LPSYMENTRY) SendMessageW (hWnd, MYWM_IZITNAME, xPos, yPos);
             if (lpSymEntry && lpwszTemp)
             {
+                VARS_TEMP_OPEN
+                CHECK_TEMP_OPEN
+
                 // Lock the memory to get a ptr to it
                 lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 
@@ -3282,6 +3320,8 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 // We no longer need this resource
                 MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;
+
+                EXIT_TEMP_OPEN
             } // End IF
 
             return FALSE;           // We handled the msg
@@ -3815,12 +3855,14 @@ void CopyAPLChars_EM
     UBOOL        bUnicode;          // TRUE iff the clipboard contains Unicdoe chars
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temp save area
     lpwszTemp = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
 
     // Open the clipboard so we can write to it
     OpenClipboard (hWndEC);
@@ -3999,6 +4041,8 @@ NORMAL_EXIT:
         // We're done with the clipboard
         CloseClipboard ();
     } // End IF
+
+    EXIT_TEMP_OPEN
 } // End CopyAPLChars_EM
 
 

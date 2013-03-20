@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 //***************************************************************************
@@ -71,7 +72,9 @@ UBOOL CmdSave_EM
                  lpSymTabNext;          // ...
     STFLAGS      stFlags;               // STE flags
     LPWCHAR      lpwszFormat,           // Ptr to formatting save area
+                 lpwszOrigTemp,         // Original lpMemPTD->lpwszTemp
                  lpwszTemp;             // Ptr to temporary storage
+    VARS_TEMP_OPEN
 
     // Skip to the next blank
     lpw = SkipToCharDQW (lpwszTail, L' ');
@@ -82,10 +85,6 @@ UBOOL CmdSave_EM
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
-
-    // Get ptr to formatting save area & temporary storage
-    lpwszFormat = lpMemPTD->lpwszFormat;
-    lpwszTemp   = lpMemPTD->lpwszTemp;
 
     // Lock the memory to get a ptr to it
     lpMemOldWSID = MyGlobalLock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
@@ -134,23 +133,25 @@ UBOOL CmdSave_EM
             // If it already exists, display an error
             if (fStream NE NULL)
             {
-                // We no longer need this handle
+                WCHAR wszTemp[1024];
+
+                // We no longer need this resource
                 fclose (fStream); fStream = NULL;
 
                 // If []WSID is empty, it's a CLEAR WS
                 if (IsEmpty (aplNELMWSID))
-                    lstrcpyW (lpwszTemp, ERRMSG_NOT_SAVED_CLEAR_WS);
+                    lstrcpyW (wszTemp, ERRMSG_NOT_SAVED_CLEAR_WS);
                 else
                 {
                     // Copy the leading part of the message
-                    lstrcpyW (lpwszTemp, ERRMSG_NOT_SAVED);
+                    lstrcpyW (wszTemp, ERRMSG_NOT_SAVED);
 
                     // Followed by the old []WSID
-                    lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpMemSaveWSID, (UINT) aplNELMWSID + 1);
+                    lstrcpynW (&wszTemp[lstrlenW (wszTemp)], lpMemSaveWSID, (UINT) aplNELMWSID + 1);
                 } // End IF/ELSE
 
                 // Display the error message
-                ReplaceLastLineCRPmt (lpwszTemp);
+                ReplaceLastLineCRPmt (wszTemp);
 
                 goto ERROR_EXIT;
             } // End IF
@@ -239,8 +240,13 @@ UBOOL CmdSave_EM
     //   has content of
     //  xxx=<Function Header/Lines>
 
+    // Get ptr to formatting save area & temporary storage
+    lpwszFormat = lpMemPTD->lpwszFormat;
+    lpwszTemp   = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
+
     // Create (or truncate the file)
-    fStream = fopenW (lpMemSaveWSID, L"w");
+    fStream = fopenW (lpMemSaveWSID, L"wb");
     if (!fStream)
         goto NOTSAVED_FILE_EXIT;
 
@@ -491,8 +497,12 @@ UBOOL CmdSave_EM
         } // End FOR/IF/...
     } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM"))
     {
+        EXIT_TEMP_OPEN          // lpwszTemp is used in CleanUpAfterSav
+
         // Clean up after )SAVE
         CleanupAfterSave (lpMemPTD, lpMemCnt, lpMemSaveWSID, uGlbCnt);
+
+        CHECK_TEMP_OPEN         // Restore flag
 
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
@@ -515,6 +525,8 @@ UBOOL CmdSave_EM
     WritePrivateProfileSectionW (SECTNAME_TEMPGLOBALS,  // Ptr to the section name
                                  NULL,                  // Ptr to data
                                  lpMemSaveWSID);        // Ptr to the file name
+    EXIT_TEMP_OPEN          // lpwszTemp is used in CleanUpAfterSav
+
     // Clean up after )SAVE
     CleanupAfterSave (lpMemPTD, lpMemCnt, lpMemSaveWSID, uGlbCnt);
 
@@ -529,6 +541,8 @@ UBOOL CmdSave_EM
     Assert (lpMemSaveWSID[iCmp] EQ L'.');
     lpMemSaveWSID[iCmp] = WC_EOS;
 
+    CHECK_TEMP_OPEN         // Restore flag
+
     // Copy the (possibly shortened WSID)
     lstrcpyW (lpwszTemp, ShortenWSID (lpMemSaveWSID));
 
@@ -538,8 +552,19 @@ UBOOL CmdSave_EM
     // Format the current date & time
     FormatCurDateTime (&lpwszTemp[lstrlenW (lpwszTemp)]);
 
+    // Protect the text
+    lpwszOrigTemp = lpMemPTD->lpwszTemp;
+    lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);
+
+    EXIT_TEMP_OPEN
+
     // Write out the WSID and SAVED date & time
     ReplaceLastLineCRPmt (lpwszTemp);
+
+    // Restore the original ptr
+    lpMemPTD->lpwszTemp = lpwszOrigTemp;
+
+    CHECK_TEMP_OPEN
 
     // Mark as successful
     bRet = TRUE;
@@ -589,6 +614,8 @@ NORMAL_EXIT:
         // We no longer need this storage
         MyGlobalFree (hGlbCnt); hGlbCnt = NULL;
     } // End IF
+
+    EXIT_TEMP_OPEN
 
     return bRet;
 } // End CmdSave_EM

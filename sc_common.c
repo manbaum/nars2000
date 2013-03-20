@@ -226,75 +226,39 @@ void MakeWorkspaceBackup
      LPWCHAR lpwExtType)                // LOADBAK_EXT or SAVEBAK_EXT
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPWCHAR      lpwszTemp;             // Ptr to temporary storage
-    APLUINT      uLen;                  // Temporary length
-    FILE        *fStream = NULL,        // Ptr to file stream for the plain text workspace file
-                *fBackup;               // Ptr to file stream for the backup file
+    WCHAR   wszTemp[_MAX_PATH];         // Save area for workspace backup DPFE
+    APLUINT uLen;                       // Temporary length
+    FILE   *fStream;                    // Ptr to file stream
 
-    // Attempt to open the workspace
+    // The workspace name is of the form d:\path\to\workspace\filename.ws.nars
+    // The backup    ...                 d:\path\to\workspace\filename.load.bak.ws.nars   or
+    //                                   d:\path\to\workspace\filename.save.bak.ws.nars
+
+    // Attempt to open the file
     fStream = fopenW (lpwszDPFE, L"r");
 
     // If the workspace doesn't exist, ...
     if (fStream EQ NULL)
-        goto WSNOTFOUND_EXIT;
+        // No need to make a backup
+        return;
 
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    // Get a ptr to a temporary save area
-    lpwszTemp = lpMemPTD->lpwszTemp;
-
-    // The workspace name is of the form d:\path\to\workspace\filename.ws.nars
-    // The backup    ...                 d:\path\to\workspace\filename.bak.ws.nars
-
-    // Copy the original name
-    lstrcpyW (lpwszTemp, lpwszDPFE);
-
-    // Get the entire length less WS_WKSEXT
-    uLen = lstrlenW (lpwszTemp) - WS_WKSEXT_LEN;
-
-    // Append new extensions
-    lstrcpyW (&lpwszTemp[uLen], lpwExtType);
-
-    fBackup = fopenW (lpwszTemp, L"wb");
-    if (fBackup EQ NULL)
-        goto NOT_OPENED_EXIT;
-
-    // Copy the workspace to its backup
-    while (feof (fStream) EQ 0
-        && ferror (fBackup) EQ 0)
-    {
-        uLen = (APLU3264) fread  (lpwszTemp, 1, DEF_WPTDTEMP_INITNELM * sizeof (WCHAR), fStream);
-                          fwrite (lpwszTemp, 1, (APLU3264) uLen                       , fBackup);
-    } // End WHILE
-
-    // We no longer need this handle
+    // We no longer need this resource
     fclose (fStream); fStream = NULL;
 
-    uLen = ferror (fBackup);
+    // Copy the original name
+    lstrcpyW (wszTemp, lpwszDPFE);
 
-    // We no longer need this handle
-    fclose (fBackup); fBackup = NULL;
+    // Get the entire length less WS_WKSEXT
+    uLen = lstrlenW (wszTemp) - WS_WKSEXT_LEN;
 
-    if (uLen NE 0)
-        AppendLine (L"WORKSPACE BACKUP NOT COMPLETE", FALSE, TRUE);
+    // Append new extensions
+    lstrcpyW (&wszTemp[uLen], lpwExtType);
 
-    goto NORMAL_EXIT;
-
-NOT_OPENED_EXIT:
-    AppendLine (L"WORKSPACE BACKUP NOT OPENED", FALSE, TRUE);
-
-    goto ERROR_EXIT;
-
-WSNOTFOUND_EXIT:
-ERROR_EXIT:
-NORMAL_EXIT:
-    if (fStream)
-    {
-        // We no longer need this handle
-        fclose (fStream); fStream = NULL;
-    } // End IF
+    // Copy the workspace to its backup
+    if (!CopyFileW (lpwszDPFE,      // Source file (must exist)
+                    wszTemp,        // Destination file (need not exist)
+                    FALSE))         // TRUE iff Fail if dest file already exists
+        FormatSystemErrorMessage (L"WORKSPACE BACKUP NOT COMPLETE");
 } // End MakeWorkspaceBackup
 
 

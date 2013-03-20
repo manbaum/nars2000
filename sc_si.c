@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 //***************************************************************************
@@ -73,6 +74,7 @@ UBOOL CmdSiSinlCom_EM
     APLCHAR      szSILevel[10]; // Formatted SI level
     LPWCHAR      lpwszFormat,   // Ptr to formatting save area
                  lpwszTemp;     // Ptr to temporary storage
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -80,6 +82,7 @@ UBOOL CmdSiSinlCom_EM
     // Get ptr to formatting save area & temporary storage
     lpwszFormat = lpMemPTD->lpwszFormat;
     lpwszTemp   = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
 
     // ***FIXME*** -- Make sensitive to [n] in lpwszTail
 
@@ -235,6 +238,8 @@ UBOOL CmdSiSinlCom_EM
                 break;
         } // End SWITCH
     } // End IF/FOR
+
+    EXIT_TEMP_OPEN
 
     return TRUE;
 } // End CmdSiSinlCom_EM

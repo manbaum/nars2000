@@ -4907,7 +4907,7 @@ void SysErrMsg_EM
                             dwLastError,                // Requested message identifier
                             0,                          // Language identifier for requested message
                             wszTemp,                    // Pointer to message buffer
-                            strcountof (wszTemp),       // Maximum size of message buffer
+                            countof (wszTemp),          // Maximum size of message buffer
                             NULL);                      // Address of array of message inserts
             ErrorMessageIndirectToken (wszTemp,
                                        lptkFunc);

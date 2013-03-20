@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 #define SYSLBL      8
@@ -1545,12 +1546,14 @@ UBOOL ValidateCharVector_EM
     APLUINT      ByteRes;           // # bytes in the result
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage
     lpwszTemp = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -1798,6 +1801,8 @@ DOMAIN_EXIT:
 
 ERROR_EXIT:
 UNLOCK_EXIT:
+    EXIT_TEMP_OPEN
+
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr

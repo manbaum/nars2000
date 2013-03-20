@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 /*  Strand Test cases
@@ -1966,12 +1967,14 @@ void MakeTxtLine
     LPAPLCHAR      lpMemTxtSrc,     // Ptr to start of WCHARs
                    lpMemTxtEnd;     // ...    end   ...
     LPPL_YYSTYPE   lpMemFcnArr;     // ...                   global memory
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Use a temp var
     lpMemTxtSrc = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
 
     Assert (GetSignatureMem (lpHeader) EQ FCNARRAY_HEADER_SIGNATURE);
 
@@ -2007,6 +2010,8 @@ void MakeTxtLine
         // We no longer need this ptr
         MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
     } // End IF
+
+    EXIT_TEMP_OPEN
 } // End MakeTxtLine
 #undef  APPEND_NAME
 

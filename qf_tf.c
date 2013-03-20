@@ -22,8 +22,8 @@
 
 #define STRICT
 #include <windows.h>
-#include <stdio.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 //***************************************************************************
@@ -122,6 +122,8 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
     APLLONGEST        aplLongestRht,    // First value from right arg
                       aplLongestTmp;    // First value temporary
     LPWCHAR           lpwszTemp;        // Ptr to temporary storage
+    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
+    VARS_TEMP_OPEN
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg
@@ -186,6 +188,7 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
 
     // Get ptr to temporary format save area
     lpwszTemp = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -243,34 +246,42 @@ LPPL_YYSTYPE SysFnDydTF_EM_YY
 
     // Split cases based upon the left arg
     if (aplLongestTmp EQ 1)
-        return SysFnDydTF1_EM_YY (lptkFunc, lptkRhtArg, lpwszTemp, aplNELMRht, !SIGN_APLLONGEST (aplLongestLft));
+        lpYYRes = SysFnDydTF1_EM_YY (lptkFunc, lptkRhtArg, lpwszTemp, aplNELMRht, !SIGN_APLLONGEST (aplLongestLft));
     else
-        return SysFnDydTF2_EM_YY (lptkFunc, lptkRhtArg, lpwszTemp, aplNELMRht, !SIGN_APLLONGEST (aplLongestLft));
+        lpYYRes = SysFnDydTF2_EM_YY (lptkFunc, lptkRhtArg, lpwszTemp, aplNELMRht, !SIGN_APLLONGEST (aplLongestLft));
+
+    goto NORMAL_EXIT;
 
 LEFT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                lptkLftArg);
-    return NULL;
+    goto ERROR_EXIT;
 
 RIGHT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                lptkRhtArg);
-    return NULL;
+    goto ERROR_EXIT;
 
 LEFT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkLftArg);
-    return NULL;
+    goto ERROR_EXIT;
 
 LEFT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkLftArg);
-    return NULL;
+    goto ERROR_EXIT;
 
 RIGHT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkRhtArg);
-    return NULL;
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    EXIT_TEMP_OPEN
+
+    return lpYYRes;
 } // End SysFnDydTF_EM_YY
 #undef  APPEND_NAME
 

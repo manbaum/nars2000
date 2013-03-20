@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <time.h>
 #include "headers.h"
 #include "transfer.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 // Instead of sequence numbers, why not ...
@@ -86,12 +87,14 @@ UBOOL CmdOut_EM
     SYSTEMTIME   systemTime;                // Current system (UTC) time
     UINT         uCnt;                      // Loop counter
     LPCHAR       lpTrees;                   // Ptr to Trees poem
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary format save area
     lpwszTemp = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
 
     // Check for empty string
     if (lpwszTail[0] EQ WC_EOS)
@@ -300,6 +303,8 @@ NORMAL_EXIT:
         // We no longer need this resource
         fclose (fStream); fStream = NULL;
     } // End IF
+
+    EXIT_TEMP_OPEN
 
     return bRet;
 } // End CmdOut_EM

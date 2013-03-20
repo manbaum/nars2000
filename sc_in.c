@@ -26,6 +26,7 @@
 #include <time.h>
 #include "headers.h"
 #include "transfer.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 //***************************************************************************
@@ -68,12 +69,14 @@ UBOOL CmdIn_EM
     FILETIME      ftCreation;               // Creation timestamp
     HWND          hWndSM,                   // Session Manager Window handle
                   hWndEC;                   // Edit Ctrl    ...
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage & maximum size
     lpwszTemp   = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
     uMaxSize    = lpMemPTD->uTempMaxSize;
     hWndSM      = lpMemPTD->hWndSM;
     lpwszFormat = lpMemPTD->lpwszFormat;
@@ -282,6 +285,8 @@ NORMAL_EXIT:
     {
         CloseHandle (hAtfFile); hAtfFile = NULL;
     } // End IF
+
+    EXIT_TEMP_OPEN
 
     return bRet;
 } // End CmdIn_EM

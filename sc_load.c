@@ -29,6 +29,7 @@
 #endif
 #include <io.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 // System Time Stamp for "1 CLEANSPACE"
@@ -128,7 +129,7 @@ UBOOL CmdLoadCom_EM
         if (fStream EQ NULL)
             goto WSNOTFOUND_EXIT;
 
-        // We no longer need this handle
+        // We no longer need this resource
         fclose (fStream); fStream = NULL;
     } else
         // Copy the name to the expected var
@@ -199,6 +200,7 @@ UBOOL LoadWorkspace_EM
                  wszDPFE [_MAX_PATH] = {WC_EOS};
     LPDICTIONARY lpDict = NULL;         // Ptr to workspace dictionary
     LPWCHAR      lpwszProf;             // Ptr to profile string
+    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -235,7 +237,7 @@ UBOOL LoadWorkspace_EM
     if (fStream EQ NULL)
         goto WSNOTFOUND_EXIT;
 
-    // We no longer need this handle
+    // We no longer need this resource
     fclose (fStream); fStream = NULL;
 
     // Find the actual (case-sensitive) filename.ext of this file
@@ -436,6 +438,7 @@ UBOOL LoadWorkspace_EM
 
                 // Save ptr & maximum size
                 lpwSrc   = lpMemPTD->lpwszTemp;
+                CHECK_TEMP_OPEN
                 uMaxSize = lpMemPTD->uTempMaxSize;
 
                 // Save the starting point
@@ -456,7 +459,11 @@ UBOOL LoadWorkspace_EM
 
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
+                {
+                    EXIT_TEMP_OPEN
+
                     continue;
+                } // End IF
 
                 // Look for the name separator (L'=')
                 lpwCharEnd = strchrW (lpwSrc, L'=');
@@ -493,7 +500,7 @@ UBOOL LoadWorkspace_EM
                     // Append the name as new to get a new LPSYMENTRY
                     lpSymEntry = SymTabAppendNewName_EM (lpwSrcStart, &stFlags);
                     if (!lpSymEntry)
-                        goto ERROR_EXIT;
+                        goto ETO_ERROR_EXIT;
 
                     // Set the common values
 ////////////////////lpSymEntry->stFlags.Imm        =                // Already set from stFlags
@@ -512,7 +519,7 @@ UBOOL LoadWorkspace_EM
                         // Append the name to get a new LPSYMENTRY
                         lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
                         if (!lpSymEntry)
-                            goto ERROR_EXIT;
+                            goto ETO_ERROR_EXIT;
 
                         // Mark the SYMENTRY as immediate so we don't free the
                         //   (non-existant) stGlbData
@@ -546,7 +553,7 @@ UBOOL LoadWorkspace_EM
                                               lpDict,           // Ptr to workspace dictionary
                                              &lpwErrMsg);       // Ptr to ptr to (constant error message text)
                         if (lpwSrc EQ NULL)
-                            goto ERRMSG_EXIT;
+                            goto ETO_ERRMSG_EXIT;
 
                         // Out with the old
                         // Release the current value of the STE
@@ -584,6 +591,8 @@ UBOOL LoadWorkspace_EM
 
                 // Restore the original value
                 *lpwCharEnd = L'=';
+
+                EXIT_TEMP_OPEN
             } // End FOR
 
             //***************************************************************
@@ -609,6 +618,7 @@ UBOOL LoadWorkspace_EM
 
                 // Save ptr & maximum size
                 lpwSrc   = lpMemPTD->lpwszTemp;
+                CHECK_TEMP_OPEN
                 uMaxSize = lpMemPTD->uTempMaxSize;
 
                 // Save the starting point
@@ -629,7 +639,11 @@ UBOOL LoadWorkspace_EM
 
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
+                {
+                    EXIT_TEMP_OPEN
+
                     continue;
+                } // End IF
 
                 // Look for the name separator (L'=')
                 lpwCharEnd = strchrW (lpwSrc, L'=');
@@ -667,7 +681,7 @@ UBOOL LoadWorkspace_EM
                     // Append the name to get a new LPSYMENTRY
                     lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
                     if (!lpSymEntry)
-                        goto ERROR_EXIT;
+                        goto ETO_ERROR_EXIT;
 
                     // Set stFlags as appropriate
                     lpSymEntry->stFlags.ObjName    = OBJNAME_USR;
@@ -688,7 +702,8 @@ UBOOL LoadWorkspace_EM
                                              wszVersion,    // Workspace version text
                                              lpDict,        // Ptr to workspace dictionary
                                             &lpwErrMsg))    // Ptr to ptr to (constant) error message text
-                        goto ERRMSG_EXIT;
+                        goto ETO_ERRMSG_EXIT;
+                EXIT_TEMP_OPEN
             } // End FOR
         } // End FOR
     } __except (CheckVirtAlloc (GetExceptionInformation (),
@@ -721,12 +736,16 @@ WSNOTFOUND_EXIT:
 
     goto ERROR_EXIT;
 
+ETO_ERRMSG_EXIT:
+    EXIT_TEMP_OPEN
 ERRMSG_EXIT:
     // Send this (constant) error message to the previously outgoing tab
     SendMessageLastTab (lpwErrMsg, lpMemPTD);
 
     goto ERROR_EXIT;
 
+ETO_ERROR_EXIT:
+    EXIT_TEMP_OPEN
 ERROR_EXIT:
 NORMAL_EXIT:
     if (hGlbDPFE && lpwszDPFE)
@@ -1890,6 +1909,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 LPWCHAR          lpwLine;           // Ptr to line to execute
                 LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
                 LOADWSGLBVARPARM LoadWsGlbVarParm;  // Extra parms for LoadWsGlbVarConv
+                VARS_TEMP_OPEN
 #ifdef DEBUG
                 EXIT_TYPES exitType;
 #endif
@@ -1933,6 +1953,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                 // Protect lpMemPTD->lpwszTemp
                 lpwszOldTemp        = lpMemPTD->lpwszTemp;
+                CHECK_TEMP_OPEN
+                EXIT_TEMP_OPEN
                 lpMemPTD->lpwszTemp = LoadWsGlbVarParm.lpwSrc;
 
                 // Execute the statement

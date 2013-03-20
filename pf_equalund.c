@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -260,7 +260,7 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
             if (IsNested (aplTypeRht))
             {
                 // Skip over the header and dimensions
-                lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+                lpMemRht = VarArrayDataFmBase (lpMemRht);
 
                 // Loop through the elements of the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -443,7 +443,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                     // If the left arg is global, ...
                     if (lpMemLft)
                         // Skip over the header to the data
-                        lpMemLft = VarArrayBaseToData (lpMemLft, 0);
+                        lpMemLft = VarArrayDataFmBase (lpMemLft);
                     else
                         // Point to the data
                         lpMemLft = &aplLongestLft;
@@ -451,7 +451,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                     // If the right arg is global, ...
                     if (lpMemRht)
                         // Skip over the header to the data
-                        lpMemRht = VarArrayBaseToData (lpMemRht, 0);
+                        lpMemRht = VarArrayDataFmBase (lpMemRht);
                     else
                         // Point to the data
                         lpMemRht = &aplLongestRht;
@@ -622,11 +622,11 @@ UBOOL PrimFnDydEqualUnderbarSimple
         // If the left arg is global numeric, ...
         if (IsGlbNum (aplTypeLft))
             // Skip over the header and dimensions to the data
-            lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+            lpMemLft = VarArrayDataFmBase (lpMemLft);
         // If the right arg is global numeric, ...
         if (IsGlbNum (aplTypeRht))
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
     } // End IF
 
     // lpMemLft and lpMemRht now point to the data
@@ -712,8 +712,10 @@ UBOOL PrimFnDydEqualUnderbarSimple
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE)
-                         NE *((LPAPLFLOAT) lpMemRht)++)
+                        if (!CompareCT ((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1.0 : 0.0,
+                                       *((LPAPLFLOAT) lpMemRht)++,
+                                        fQuadCT,
+                                        NULL))
                             bRet = FALSE;
 
                         // Shift over the bit mask
@@ -1245,7 +1247,7 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                         break;
 
                                     case ARRAY_FLOAT:   // Lft = HETERO:BOOL,  Rht = HETERO:FLOAT
-                                        if ((APLFLOAT) aplIntegerLft NE aplFloatRht)
+                                        if (!CompareCT ((APLFLOAT) aplIntegerLft, aplFloatRht, fQuadCT, NULL))
                                             bRet = FALSE;
                                         break;
 
@@ -1280,12 +1282,12 @@ UBOOL PrimFnDydEqualUnderbarSimple
                                 {
                                     case ARRAY_BOOL:    // Lft = HETERO:FLOAT, Rht = HETERO:BOOL
                                     case ARRAY_INT:     // Lft = HETERO:FLOAT, Rht = HETERO:INT
-                                        if (aplFloatLft NE (APLFLOAT) aplIntegerRht)
+                                        if (!CompareCT (aplFloatLft, (APLFLOAT) aplIntegerRht, fQuadCT, NULL))
                                             bRet = FALSE;
                                         break;
 
                                     case ARRAY_FLOAT:   // Lft = HETERO:FLOAT, Rht = HETERO:FLOAT
-                                        if (aplFloatLft NE aplFloatRht)
+                                        if (!CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL))
                                             bRet = FALSE;
                                         break;
 
@@ -1663,7 +1665,7 @@ UBOOL PrimFnDydEqualUnderbarNested
                 lpMemLft = MyGlobalLock (hGlbSub);
 
                 // Skip over the header and dimensions to the data
-                lpMemLft = VarArrayBaseToData (lpMemLft, 0);
+                lpMemLft = VarArrayDataFmBase (lpMemLft);
 
                 // Point the other to its data
                 lpMemOth = &(*(LPAPLHETERO) lpMemRht)->stData.stLongest;
@@ -1689,7 +1691,7 @@ UBOOL PrimFnDydEqualUnderbarNested
                 lpMemRht = MyGlobalLock (hGlbSub);
 
                 // Skip over the header and dimensions to the data
-                lpMemRht = VarArrayBaseToData (lpMemRht, 0);
+                lpMemRht = VarArrayDataFmBase (lpMemRht);
 
                 // Point the other to its data
                 lpMemOth = &(*(LPAPLHETERO) lpMemLft)->stData.stLongest;

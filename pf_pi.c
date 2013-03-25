@@ -1001,7 +1001,7 @@ APLMPI PrimFnPiCommon
      LPUBOOL      lpbRet)           // Ptr to TRUE iff the result is valid
 
 {
-    APLUINT      uRes,              // Loop counter
+    APLU3264     uRes,              // Loop counter
                  uPrime;            // The current prime
     UINT         uPrimeCnt;         // # occurrences of a specific prime
     APLNELM      aplNELMRes;        // Result NELM
@@ -1037,7 +1037,7 @@ APLMPI PrimFnPiCommon
 
         // Initialize the prime
         uPrime += prime_delta[uRes];
-        mpz_set_ui (&aplPrime, (UINT) uPrime);
+        mpz_set_ui (&aplPrime, uPrime);
 
         // If it's divisible, ...
         if (mpz_divisible_p (mpzRht, &aplPrime))
@@ -1712,7 +1712,7 @@ UBOOL NthPrime
      LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
      UBOOL        bQuadIO,          // []IO
      TABSTATE     tabState,         // Table to use for the value
-     UINT         uCnt)             // The index into NthPowerTab/NthPrimeTab depending upon tabState
+     APLU3264     uCnt)             // The index into NthPowerTab/NthPrimeTab depending upon tabState
 
 {
     UBOOL  bRet = FALSE,            // TRUE iff the result is valid or Ctrl-Break pressed
@@ -1873,11 +1873,11 @@ APLMPI PrimFnPiNthPrime
      LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    APLMPI  mpzRes = {0},           // The result
-            mpzArg = {0},           // Temp arg
-            mpzInd = {0};           // ...
-    APLBOOL bQuadIO;                // []IO
-    UINT    uCnt;                   // Loop counter
+    APLMPI   mpzRes = {0},          // The result
+             mpzArg = {0},          // Temp arg
+             mpzInd = {0};          // ...
+    APLBOOL  bQuadIO;               // []IO
+    APLU3264 uCnt;                  // Loop counter
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -1897,7 +1897,7 @@ APLMPI PrimFnPiNthPrime
     if (mpz_cmp_ui (&mpzInd, NthPrimeCnt) < 0)
     {
         // Get the table index
-        uCnt = (UINT) mpz_get_ui (&mpzInd);
+        uCnt = mpz_get_ui (&mpzInd);
 
         if (NthPrime (&mpzRes, mpzArg, lpbCtrlBreak, lpMemPTD, bQuadIO, TABSTATE_NTHPRIMETAB, uCnt))
             goto NORMAL_EXIT2;
@@ -1994,7 +1994,7 @@ UBOOL NumPrimes
      LPUBOOL      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
      LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
      TABSTATE     tabState,         // Table to use for the value
-     APLINT       iCnt)             // The index into NthPowerTab/NthPrimeTab depending upon tabState
+     APLI3264     iCnt)             // The index into NthPowerTab/NthPrimeTab depending upon tabState
 
 {
     UBOOL  bRet = FALSE,            // TRUE iff the result is valid or Ctrl-Break pressed
@@ -2066,11 +2066,11 @@ UBOOL NumPrimes
     {
         case TABSTATE_NTHPOWERTAB:
             // Copy as lower power of ten
-            mpz_ui_pow_ui (&mpzTmp, 10, (UINT) iCnt    );
+            mpz_ui_pow_ui (&mpzTmp, 10, iCnt    );
             iMin = mpz_get_sx (&mpzTmp);
 
             // Copy as the upper power of ten
-            mpz_ui_pow_ui (&mpzTmp, 10, (UINT) iCnt + 1);
+            mpz_ui_pow_ui (&mpzTmp, 10, iCnt + 1);
             iMax = mpz_get_sx (&mpzTmp);
 
             break;
@@ -2183,13 +2183,13 @@ APLMPI PrimFnPiNumPrimes
      LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
 {
-    APLMPI mpzRes = {0};            // The result
-    UBOOL  bRet = FALSE;            // TRUE iff the result is valid
-    int    iCmp;                    // Comparison result
-    APLINT iMid,                    // Loop counter
-           iMin,                    // Minimum index
-           iMax;                    // Maximum ...
-    UINT   uCnt;                    // Loop counter
+    APLMPI   mpzRes = {0};          // The result
+    UBOOL    bRet = FALSE;          // TRUE iff the result is valid
+    int      iCmp;                  // Comparison result
+    APLI3264 iMid,                  // Loop counter
+             iMin,                  // Minimum index
+             iMax;                  // Maximum ...
+    UINT     uCnt;                  // Loop counter
 
     // Initialize the result to the last table entry
     mpz_init_set_sx (&mpzRes, NthPrimeTab[NthPrimeCnt - 1]);

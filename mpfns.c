@@ -592,8 +592,8 @@ void mpq_init_set_si
 
 void mpq_init_set_ui
     (mpq_ptr dest,
-     UINT    num,
-     UINT    den)
+     mpir_ui num,
+     mpir_ui den)
 
 {
     mpq_init (dest);
@@ -816,8 +816,8 @@ void mpq_set_sx
 void mpq_sub_ui
     (mpq_ptr dest,
      mpq_ptr src,
-     UINT    num,
-     UINT    den)
+     mpir_ui num,
+     mpir_ui den)
 
 {
     APLRAT mpqTmp = {0};
@@ -1123,9 +1123,9 @@ void mpfr_init_set_sx
 //***************************************************************************
 
 void mpfr_init_set_ui
-    (mpfr_ptr   dest,
-     UINT       val,
-     mpfr_rnd_t rnd)
+    (mpfr_ptr          dest,
+     unsigned long int val,
+     mpfr_rnd_t        rnd)
 
 {
     mpfr_init (dest);       // OK not to be mpfr_init0 to avoid recursion
@@ -1141,7 +1141,7 @@ void mpfr_init_set_ui
 
 void mpfr_init_set_si
     (mpfr_ptr   dest,
-     UINT       val,
+     long int   val,
      mpfr_rnd_t rnd)
 
 {

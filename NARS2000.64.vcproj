@@ -63,7 +63,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS_DIR)&quot;;&quot;$(MPIR_DIR)include&quot;;&quot;$(MPFR_DIR)include&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)include&quot;"
-				PreprocessorDefinitions="_WIN64;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_AMD64_;_M_AMD64;DEBUG;RESDEBUG=1"
+				PreprocessorDefinitions="_WIN32;_WIN64;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_AMD64_;_M_AMD64;DEBUG;RESDEBUG=1"
 				StringPooling="false"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -168,7 +168,7 @@
 				Optimization="1"
 				FavorSizeOrSpeed="2"
 				AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS_DIR)&quot;;&quot;$(MPIR_DIR)include&quot;;&quot;$(MPFR_DIR)include&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)include&quot;"
-				PreprocessorDefinitions="_WIN64;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_AMD64_;_M_AMD64"
+				PreprocessorDefinitions="_WIN32;_WIN64;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_AMD64_;_M_AMD64"
 				StringPooling="false"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
@@ -1284,7 +1284,7 @@
 					>
 					<Tool
 						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions="DEBUG;_WIN64"
+						PreprocessorDefinitions="DEBUG;_WIN32;_WIN64"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1292,7 +1292,7 @@
 					>
 					<Tool
 						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions="_WIN64"
+						PreprocessorDefinitions="_WIN32;_WIN64"
 					/>
 				</FileConfiguration>
 			</File>

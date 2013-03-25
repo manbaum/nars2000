@@ -82,9 +82,9 @@ enum tagMP_ENUM
 } MP_ENUM;
 
 
-typedef unsigned long int (*MPZ_INVALID)  (enum MP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , unsigned long int, unsigned long int);
-typedef unsigned long int (*MPQ_INVALID)  (enum MP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , unsigned long int);
-typedef unsigned long int (*MPFR_INVALID) (enum MP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, unsigned long int);
+typedef mpir_ui (*MPZ_INVALID)  (enum MP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , mpir_ui, mpir_ui);
+typedef mpir_ui (*MPQ_INVALID)  (enum MP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , mpir_ui         );
+typedef mpir_ui (*MPFR_INVALID) (enum MP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, mpir_ui         );
 
 MPZ_INVALID  gmpz_invalid  = &mpz_exit;
 MPQ_INVALID  gmpq_invalid  = &mpq_exit;
@@ -106,9 +106,9 @@ MPFR_INVALID gmpfr_invalid = &mpfr_exit;
 //***************************************************************************
 
 void mp_get_invalid_functions
-    (unsigned long int (**mpz_invalid)  (enum tagMP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , unsigned long int, unsigned long int),
-     unsigned long int (**mpq_invalid)  (enum tagMP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , unsigned long int),
-     unsigned long int (**mpfr_invalid) (enum tagMP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, unsigned long int))
+    (mpir_ui (**mpz_invalid)  (enum tagMP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , mpir_ui, mpir_ui),
+     mpir_ui (**mpq_invalid)  (enum tagMP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , mpir_ui         ),
+     mpir_ui (**mpfr_invalid) (enum tagMP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, mpir_ui         ))
 
 {
     if (mpz_invalid)
@@ -127,9 +127,9 @@ void mp_get_invalid_functions
 //***************************************************************************
 
 void mp_set_invalid_functions
-    (unsigned long int (*mpz_invalid)  (enum tagMP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , unsigned long int, unsigned long int),
-     unsigned long int (*mpq_invalid)  (enum tagMP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , unsigned long int),
-     unsigned long int (*mpfr_invalid) (enum tagMP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, unsigned long int))
+    (mpir_ui (*mpz_invalid)  (enum tagMP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , mpir_ui, mpir_ui),
+     mpir_ui (*mpq_invalid)  (enum tagMP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , mpir_ui         ),
+     mpir_ui (*mpfr_invalid) (enum tagMP_ENUM, mpfr_t, mpfr_t, mpfr_t, mpfr_t, mpir_ui         ))
 
 {
     if (mpz_invalid)
@@ -183,14 +183,14 @@ int signumflt
 //  &mpz_exit
 //***************************************************************************
 
-unsigned long int mpz_exit
+mpir_ui mpz_exit
     (enum MP_ENUM mp_enum,
-     mpz_t             rop,
-     mpz_t             op1,
-     mpz_t             op2,
-     mpz_t             op3,
-     unsigned long int a,
-     unsigned long int b)
+     mpz_t   rop,
+     mpz_t   op1,
+     mpz_t   op2,
+     mpz_t   op3,
+     mpir_ui a,
+     mpir_ui b)
 
 {
     exit (0);
@@ -294,12 +294,12 @@ void mpiz_set
 //***************************************************************************
 //  $mpiz_set_ui
 //
-//  Set the integer value from an unsigned long int
+//  Set the integer value from an mpir_ui
 //***************************************************************************
 
 void mpiz_set_ui
-    (mpz_t             rop,     // Destination
-     unsigned long int op)      // Source
+    (mpz_t   rop,               // Destination
+     mpir_ui op)                // Source
 
 {
     mpz_set_ui (mpz_clr_inf (rop), op);
@@ -309,12 +309,12 @@ void mpiz_set_ui
 //***************************************************************************
 //  $mpiz_set_si
 //
-//  Set the integer value from a signed long int
+//  Set the integer value from an mpir_si
 //***************************************************************************
 
 void mpiz_set_si
-    (mpz_t           rop,       // Destination
-     signed long int op)        // Source
+    (mpz_t   rop,               // Destination
+     mpir_si op)                // Source
 
 {
     mpz_set_si (mpz_clr_inf (rop), op);
@@ -458,7 +458,7 @@ mpir_ui mpiz_get_ui
 
 {
     if (mpz_inf_p (op))
-        return (unsigned long int) 0xFFFFFFFF;
+        return (mpir_ui )0xFFFFFFFF;
     else
         return mpz_get_ui (mpz_clr_inf (op));
 } // End mpiz_get_ui
@@ -475,7 +475,7 @@ mpir_si mpiz_get_si
 
 {
     if (mpz_inf_p (op))
-        return (signed long int) 0xFFFFFFFF;
+        return (mpir_si) 0xFFFFFFFF;
     else
         return mpz_get_si (mpz_clr_inf (op));
 } // End mpiz_get_si
@@ -510,21 +510,21 @@ double mpiz_get_d
 //***************************************************************************
 
 double mpiz_get_d_2exp
-    (signed long int *exp,      // Ptr to exponent
-     mpz_t            op)       // Source
+    (mpir_si *exp,              // Ptr to exponent
+     mpz_t    op)               // Source
 
 {
     if (mpz_inf_p (op))
     {
         __int64 Int64;
 
-        *exp = (signed long int) 0xFFFFFFFF;
+        *exp = (mpir_si) 0xFFFFFFFF;
 
         Int64 = (op > 0) ? POS_INFINITY
                          : NEG_INFINITY;
         return *(double *) &Int64;
     } else
-        return mpz_get_d (mpz_clr_inf (op));
+        return mpz_get_d_2exp (exp, mpz_clr_inf (op));
 } // End mpiz_get_d_2exp
 
 
@@ -611,13 +611,13 @@ void mpiz_add
 //***************************************************************************
 //  $mpiz_add_ui
 //
-//  Add an integer and an unsigned long int
+//  Add an integer and an mpir_ui
 //***************************************************************************
 
 void mpiz_add_ui
-    (mpz_t             rop,     // Destination
-     mpz_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+    (mpz_t   rop,               // Destination
+     mpz_t   op1,               // Left arg
+     mpir_ui op2)               // Right arg
 
 {
     if (mpz_inf_p (op1))
@@ -674,13 +674,13 @@ void mpiz_sub
 //***************************************************************************
 //  $mpiz_sub_ui
 //
-//  Subtract an integer and an unsigned long int
+//  Subtract an integer and an mpir_ui
 //***************************************************************************
 
 void mpiz_sub_ui
-    (mpz_t             rop,     // Destination
-     mpz_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+    (mpz_t   rop,               // Destination
+     mpz_t   op1,               // Left arg
+     mpir_ui op2)               // Right arg
 
 {
     if (mpz_inf_p (op1))
@@ -693,13 +693,13 @@ void mpiz_sub_ui
 //***************************************************************************
 //  $mpiz_ui_sub
 //
-//  Subtract an unsigned long int and an integer
+//  Subtract an mpir_ui and an integer
 //***************************************************************************
 
 void mpiz_ui_sub
-    (mpz_t             rop,     // Destination
-     unsigned long int op1,     // Left arg
-     mpz_t             op2)     // Right arg
+    (mpz_t   rop,               // Destination
+     mpir_ui op1,               // Left arg
+     mpz_t   op2)               // Right arg
 
 {
     if (mpz_inf_p (op2))
@@ -753,13 +753,13 @@ void mpiz_mul
 //***************************************************************************
 //  $mpiz_mul_si
 //
-//  Multiply an integer and a signed long int
+//  Multiply an integer and an mpir_si
 //***************************************************************************
 
 void mpiz_mul_si
-    (mpz_t           rop,       // Destination
-     mpz_t           op1,       // Left arg
-     signed long int op2)       // Right arg
+    (mpz_t   rop,               // Destination
+     mpz_t   op1,               // Left arg
+     mpir_si op2)               // Right arg
 
 {
     if (mpz_inf_p (op1))
@@ -772,13 +772,13 @@ void mpiz_mul_si
 //***************************************************************************
 //  $mpiz_mul_ui
 //
-//  Multiply an integer and an unsigned long int
+//  Multiply an integer and an mpir_ui
 //***************************************************************************
 
 void mpiz_mul_ui
-    (mpz_t           rop,       // Destination
-     mpz_t           op1,       // Left arg
-     signed long int op2)       // Right arg
+    (mpz_t   rop,               // Destination
+     mpz_t   op1,               // Left arg
+     mpir_ui op2)               // Right arg
 
 {
     if (mpz_inf_p (op1))
@@ -822,9 +822,9 @@ void mpiz_addmul
 //***************************************************************************
 
 void mpiz_addmul_ui
-    (mpz_t             rop,     // Destination
-     mpz_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+    (mpz_t   rop,               // Destination
+     mpz_t   op1,               // Left arg
+     mpir_ui op2)               // Right arg
 
 {
     if (mpz_inf_p (rop)
@@ -875,9 +875,9 @@ void mpiz_submul
 //***************************************************************************
 
 void mpiz_submul_ui
-    (mpz_t             rop,     // Destination
-     mpz_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+    (mpz_t   rop,               // Destination
+     mpz_t   op1,               // Left arg
+     mpir_ui op2)               // Right arg
 
 {
     if (mpz_inf_p (rop)
@@ -897,7 +897,7 @@ void mpiz_submul_ui
 //***************************************************************************
 //  $mpiz_mul_2exp
 //
-//  Multiply an integer by 2^ unsigned long int
+//  Multiply an integer by 2^ mp_bitcnt_t
 //***************************************************************************
 
 void mpiz_mul_2exp
@@ -1037,9 +1037,9 @@ void mpiz_cdiv_qr
 //***************************************************************************
 
 mpir_ui mpiz_cdiv_q_ui
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1068,9 +1068,9 @@ mpir_ui mpiz_cdiv_q_ui
 //***************************************************************************
 
 mpir_ui mpiz_cdiv_r_ui
-    (mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1090,10 +1090,10 @@ mpir_ui mpiz_cdiv_r_ui
 //***************************************************************************
 
 mpir_ui mpiz_cdiv_qr_ui
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1113,14 +1113,14 @@ mpir_ui mpiz_cdiv_qr_ui
 //***************************************************************************
 
 mpir_ui mpiz_cdiv_ui
-    (mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
     if (d EQ 0
      || mpz_inf_p (n))
-        // Unsigned long int is too small for infinite result
+        // mpir_ui is too small for infinite result
         return (*gmpz_invalid) (MP_CDIV_QR_UI, n, NULL, NULL, NULL, d, 0);
     else
         return mpz_cdiv_ui (mpz_clr_inf (n), d);
@@ -1134,9 +1134,9 @@ mpir_ui mpiz_cdiv_ui
 //***************************************************************************
 
 void mpiz_cdiv_q_2exp
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             n,       // Left qrg (numerator)
-     unsigned long int b)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   n,                 // Left qrg (numerator)
+     mpir_ui b)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1155,9 +1155,9 @@ void mpiz_cdiv_q_2exp
 //***************************************************************************
 
 void mpiz_cdiv_r_2exp
-    (mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left qrg (numerator)
-     unsigned long int b)       // Right arg (denominator)
+    (mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left qrg (numerator)
+     mpir_ui b)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1254,9 +1254,9 @@ void mpiz_fdiv_qr
 //***************************************************************************
 
 mpir_ui mpiz_fdiv_q_ui
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1285,9 +1285,9 @@ mpir_ui mpiz_fdiv_q_ui
 //***************************************************************************
 
 mpir_ui mpiz_fdiv_r_ui
-    (mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1307,10 +1307,10 @@ mpir_ui mpiz_fdiv_r_ui
 //***************************************************************************
 
 mpir_ui mpiz_fdiv_qr_ui
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1330,14 +1330,14 @@ mpir_ui mpiz_fdiv_qr_ui
 //***************************************************************************
 
 mpir_ui mpiz_fdiv_ui
-    (mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
     if (d EQ 0
      || mpz_inf_p (n))
-        // Unsigned long int is too small for infniite result
+        // mpir_ui is too small for infinite result
         return (*gmpz_invalid) (MP_FDIV_QR_UI, n, NULL, NULL, NULL, d, 0);
     else
         return mpz_fdiv_ui (n, d);
@@ -1351,9 +1351,9 @@ mpir_ui mpiz_fdiv_ui
 //***************************************************************************
 
 void mpiz_fdiv_q_2exp
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             n,       // Left qrg (numerator)
-     unsigned long int b)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   n,                 // Left qrg (numerator)
+     mpir_ui b)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1372,9 +1372,9 @@ void mpiz_fdiv_q_2exp
 //***************************************************************************
 
 void mpiz_fdiv_r_2exp
-    (mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left qrg (numerator)
-     unsigned long int b)       // Right arg (denominator)
+    (mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left qrg (numerator)
+     mpir_ui b)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1471,9 +1471,9 @@ void mpiz_tdiv_qr
 //***************************************************************************
 
 mpir_ui mpiz_tdiv_q_ui
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1502,9 +1502,9 @@ mpir_ui mpiz_tdiv_q_ui
 //***************************************************************************
 
 mpir_ui mpiz_tdiv_r_ui
-    (mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1524,10 +1524,10 @@ mpir_ui mpiz_tdiv_r_ui
 //***************************************************************************
 
 mpir_ui mpiz_tdiv_qr_ui
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1547,14 +1547,14 @@ mpir_ui mpiz_tdiv_qr_ui
 //***************************************************************************
 
 mpir_ui mpiz_tdiv_ui
-    (mpz_t             n,       // Left arg (numerator)
-     unsigned long int d)       // Right arg (denominator)
+    (mpz_t   n,                 // Left arg (numerator)
+     mpir_ui d)                 // Right arg (denominator)
 
 {
     // Check for special cases
     if (d EQ 0
      || mpz_inf_p (n))
-        // Unsigned long int is too small for infniite result
+        // mpir_ui is too small for infinite result
         return (*gmpz_invalid) (MP_TDIV_QR_UI, n, NULL, NULL, NULL, d, 0);
     else
         return mpz_tdiv_ui (n, d);
@@ -1568,9 +1568,9 @@ mpir_ui mpiz_tdiv_ui
 //***************************************************************************
 
 void mpiz_tdiv_q_2exp
-    (mpz_t             q,       // Destination (quotient)
-     mpz_t             n,       // Left qrg (numerator)
-     unsigned long int b)       // Right arg (denominator)
+    (mpz_t   q,                 // Destination (quotient)
+     mpz_t   n,                 // Left qrg (numerator)
+     mpir_ui b)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1589,9 +1589,9 @@ void mpiz_tdiv_q_2exp
 //***************************************************************************
 
 void mpiz_tdiv_r_2exp
-    (mpz_t             r,       // Destination (remainder)
-     mpz_t             n,       // Left qrg (numerator)
-     unsigned long int b)       // Right arg (denominator)
+    (mpz_t   r,                 // Destination (remainder)
+     mpz_t   n,                 // Left qrg (numerator)
+     mpir_ui b)                 // Right arg (denominator)
 
 {
     // Check for special cases
@@ -1677,9 +1677,9 @@ void mpiz_mod
 //***************************************************************************
 
 mpir_ui mpiz_mod_ui
-    (mpz_t             r,       // The result
-     mpz_t             n,       // The argument
-     unsigned long int d)       // The modulus
+    (mpz_t   r,                 // The result
+     mpz_t   n,                 // The argument
+     mpir_ui d)                 // The modulus
 
 {
     // Handle zero modulus or argument
@@ -1727,9 +1727,9 @@ void mpiz_divexact
 //***************************************************************************
 
 void mpiz_divexact_ui
-    (mpz_t         q,           // Quotient
-     mpz_t         n,           // Numerator
-     unsigned long d)           // Divisor
+    (mpz_t   q,                 // Quotient
+     mpz_t   n,                 // Numerator
+     mpir_ui d)                 // Divisor
 
 {
     mpz_divexact_ui (q, n, d);  // ***FIXME***
@@ -1749,7 +1749,7 @@ int mpiz_divisible_p
 {
     if (mpz_inf_p (n)
      || mpz_inf_p (d))
-        return (*gmpz_invalid) (MP_DIVISIBLE_P, n, d, NULL, NULL, 0, 0);
+        return (int) (*gmpz_invalid) (MP_DIVISIBLE_P, n, d, NULL, NULL, 0, 0);
     else
         return mpz_divisible_p (n, d);
 } // End mpiz_divisible_p
@@ -1762,12 +1762,12 @@ int mpiz_divisible_p
 //***************************************************************************
 
 int mpiz_divisible_ui_p
-    (mpz_t             n,       // Numerator
-     unsigned long int d)       // Denominator
+    (mpz_t   n,                 // Numerator
+     mpir_ui d)                 // Denominator
 
 {
     if (mpz_inf_p (n))
-        return (*gmpz_invalid) (MP_DIVISIBLE_UI_P, n, NULL, NULL, NULL, 0, 0);
+        return (int) (*gmpz_invalid) (MP_DIVISIBLE_UI_P, n, NULL, NULL, NULL, 0, 0);
     else
         return mpz_divisible_ui_p (n, d);
 } // End mpiz_divisible_ui_p
@@ -1785,7 +1785,7 @@ int mpiz_divisible_2exp_p
 
 {
     if (mpz_inf_p (n))
-        return (*gmpz_invalid) (MP_DIVISIBLE_2EXP_P, n, NULL, NULL, NULL, 0, 0);
+        return (int) (*gmpz_invalid) (MP_DIVISIBLE_2EXP_P, n, NULL, NULL, NULL, 0, 0);
     else
         return mpz_divisible_2exp_p (n, d);
 } // End mpiz_divisible_2exp_p
@@ -1798,9 +1798,9 @@ int mpiz_divisible_2exp_p
 //***************************************************************************
 
 void mpiz_pow_ui
-    (mpz_t             rop,     // Destination
-     mpz_t             base,    // Left arg
-     unsigned long int exp)     // Right arg
+    (mpz_t   rop,               // Destination
+     mpz_t   base,              // Left arg
+     mpir_ui exp)               // Right arg
 
 {
     MP_INT mpzRes = {0};
@@ -1824,9 +1824,9 @@ void mpiz_pow_ui
 //***************************************************************************
 
 void mpiz_ui_pow_ui
-    (mpz_t             rop,     // Destination
-     unsigned long int base,    // Left arg
-     unsigned long int exp)     // Right arg
+    (mpz_t   rop,               // Destination
+     mpir_ui base,              // Left arg
+     mpir_ui exp)               // Right arg
 
 {
     // Check for special cases
@@ -1868,7 +1868,7 @@ void mpiz_sqrt
 int mpiz_likely_prime_p
     (mpz_t           rop,       // Argument
      gmp_randstate_t state,     // Random state
-     unsigned long   div)       // Largest excluded prime divisor (0 = none)
+     mpir_ui         div)       // Largest excluded prime divisor (0 = none)
 
 {
     return mpz_likely_prime_p (rop, state, div);    // ***FIXME***
@@ -1885,7 +1885,7 @@ int mpiz_probable_prime_p
     (mpz_t           rop,       // Argument
      gmp_randstate_t state,     // Random state
      int             prob,      // Error chance is 1 in 2^prob
-     unsigned long   div)       // Largest excluded prime divisor (0 = none)
+     mpir_ui         div)       // Largest excluded prime divisor (0 = none)
 
 {
     return mpz_probable_prime_p (rop, state, prob, div);    // ***FIXME***
@@ -2083,8 +2083,8 @@ int mpiz_cmp_d
 //***************************************************************************
 
 int mpiz_cmp_ui
-    (mpz_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+    (mpz_t   op1,               // Left arg
+     mpir_ui op2)               // Right arg
 
 {
     if (mpz_inf_p (op1))
@@ -2104,8 +2104,8 @@ int mpiz_cmp_ui
 //***************************************************************************
 
 int mpiz_cmp_si
-    (mpz_t           op1,       // Left arg
-     signed long int op2)       // Right arg
+    (mpz_t   op1,               // Left arg
+     mpir_si op2)               // Right arg
 
 {
     if (mpz_inf_p (op1))
@@ -2197,8 +2197,8 @@ int mpiz_cmpabs_d
 //***************************************************************************
 
 int mpiz_cmpabs_ui
-    (mpz_t             op1,     // Left arg
-     unsigned long int op2)     // Right arg
+    (mpz_t   op1,               // Left arg
+     mpir_ui op2)               // Right arg
 
 {
     if (mpz_inf_p (op1))
@@ -2528,13 +2528,13 @@ size_t mpiz_size
 //  &mpq_exit
 //***************************************************************************
 
-unsigned long int mpq_exit
+mpir_ui mpq_exit
     (enum MP_ENUM mp_enum,
-     mpq_t             rop,
-     mpq_t             op1,
-     mpq_t             op2,
-     mpq_t             op3,
-     unsigned long int d)
+     mpq_t   rop,
+     mpq_t   op1,
+     mpq_t   op2,
+     mpq_t   op3,
+     mpir_ui d)
 
 {
     exit (0);
@@ -2722,9 +2722,9 @@ void mpiq_set_z
 //***************************************************************************
 
 void mpiq_set_ui
-    (mpq_t             rop,     // Destination
-     unsigned long int op1,     // Source numerator
-     unsigned long int op2)     // Source denominator
+    (mpq_t   rop,               // Destination
+     mpir_ui op1,               // Source numerator
+     mpir_ui op2)               // Source denominator
 
 {
     if (op2 EQ 0)
@@ -2741,9 +2741,9 @@ void mpiq_set_ui
 //***************************************************************************
 
 void mpiq_set_si
-    (mpq_t             rop,     // Destination
-       signed long int op1,     // Source numerator
-     unsigned long int op2)     // Source denominator
+    (mpq_t   rop,               // Destination
+     mpir_si op1,               // Source numerator
+     mpir_ui op2)               // Source denominator
 
 {
     if (op2 EQ 0)
@@ -3038,7 +3038,7 @@ void mpiq_mul
 //***************************************************************************
 //  $mpiq_mul_2exp
 //
-//  Multiply a rational by 2^ unsigned long int
+//  Multiply a rational by 2^ mp_bitcnt_t
 //***************************************************************************
 
 void mpiq_mul_2exp
@@ -3094,7 +3094,7 @@ void mpiq_div
 //***************************************************************************
 //  $mpiq_div_2exp
 //
-//  Divide a rational and 2^unsigned long int
+//  Divide a rational and 2^ mp_bitcnt_t
 //***************************************************************************
 
 void mpiq_div_2exp
@@ -3213,9 +3213,9 @@ int mpiq_cmp
 //***************************************************************************
 
 int mpiq_cmp_ui
-    (mpq_t             op1,     // Source
-     unsigned long int num,     // Numerator
-     unsigned long int den)     // Denominator
+    (mpq_t   op1,               // Source
+     mpir_ui num,               // Numerator
+     mpir_ui den)               // Denominator
 
 {
     if (den EQ 0)
@@ -3238,9 +3238,9 @@ int mpiq_cmp_ui
 //***************************************************************************
 
 int mpiq_cmp_si
-    (mpq_t             op1,     // Source
-       signed long int num,     // Numerator
-     unsigned long int den)     // Denominator
+    (mpq_t   op1,               // Source
+     mpir_si num,               // Numerator
+     mpir_ui den)               // Denominator
 
 {
     if (den EQ 0)
@@ -3291,16 +3291,16 @@ int mpiq_equal
 //***************************************************************************
 
 //***************************************************************************
-//  &mpfr_exit
+//  $mpfr_exit
 //***************************************************************************
 
-unsigned long int mpfr_exit
+mpir_ui mpfr_exit
     (enum MP_ENUM mp_enum,
-     mpfr_t            rop,
-     mpfr_t            op1,
-     mpfr_t            op2,
-     mpfr_t            op3,
-     unsigned long int d)
+     mpfr_t  rop,
+     mpfr_t  op1,
+     mpfr_t  op2,
+     mpfr_t  op3,
+     mpir_ui d)
 
 {
     exit (0);

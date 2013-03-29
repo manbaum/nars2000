@@ -49,6 +49,32 @@ typedef enum tagNUMTHEORY
 #define INIT_FACTOR_CNT     100
 #define INIT_FACTOR_INC     100
 
+typedef struct tagB1B2TABLE
+{
+    double B1,                      // Optimal B1
+           B2;                      // Default B2
+    int    N;                       // # expected curves
+} B1B2TABLE, *LPB1B2TABLE;
+
+B1B2TABLE dB1B2Table[] =            // Optimal values for B1, B2, and N for ECM factoring
+                                    //  as found in ECM's README file, Table 1.
+//    B1       B2   # curves         # digits in the expected factor
+    {{11e3,   1.9e6,    74},        // 20
+     { 5e4,   1.3e7,   221},        // 25
+     {25e4,   1.3e8,   453},        // 30
+     { 1e6,   1.0e9,   984},        // 35
+     { 3e6,   5.7e9,  2541},        // 40
+     {11e6,  3.5e10,  4949},        // 45
+     {43e6,  2.4e11,  8266},        // 50
+     {11e7,  7.8e11, 20158},        // 55
+     {26e7,  3.2e12, 47173},        // 60
+     {85e7,  1.6e13, 77666},        // 65
+    };
+
+#define B1B2TAB_MIN     20          // Minimum value for # digits in b1Table
+#define B1B2TAB_MAX     65          // Maximum ...
+#define B1B2TAB_INC      5          // Increment     ...
+
 
 //***************************************************************************
 //  $PrimFnPi_EM_YY
@@ -1259,8 +1285,13 @@ APLMPI PrimeFactor
                  mpzFactor2 = {0},      // ...     2
                  mpzRes     = {0};      // Result
     APLUINT      uVal,                  // Temporary unsigned value
+                 digs,                  // # digits in the value
                  bits;                  // # bits in the value
-    int          iVal;                  // Temporary signed value
+    double       B1,                    // Optimal value for B1 for a given # for ECM factoring
+                 B2;                    // Default ...       B2
+    int          N,                     // # expected curves for B1, B2, D
+                 iCnt,                  // Loop counter
+                 iVal;                  // Temporary signed value
     ecm_params   ecmParams;             // ECM parameters
     UINT         uEcmInit = 0;          // # times ecmParams have been initialized
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
@@ -1273,7 +1304,7 @@ APLMPI PrimeFactor
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // get the bit size of the incoming number
+    // Get the # bits in the incoming number
     bits = mpz_sizeinbase (&mpzNumber, 2);
 
     // Initialize the result & temps
@@ -1281,7 +1312,7 @@ APLMPI PrimeFactor
     mpz_init     (&mpzFactor1);
     mpz_init     (&mpzFactor2);
 
-    if (bits <= SMALL_COMPOSITE_CUTOFF_BITS)            // 85
+    if (bits <= (SMALL_COMPOSITE_CUTOFF_BITS + 15))     // = 85 + 15 = 100
     {
         if (bits <= PRECOMPUTED_PRIME_NEXT2_LOG2)       // = 33
             goto NORMAL_EXIT;
@@ -1406,26 +1437,51 @@ APLMPI PrimeFactor
         goto NORMAL_EXIT;
 #endif
 
-#define TryECM(Method,useNTT)                                                                                   \
-    /* Uninitialize ecmParams */                                                                                \
-    if (uEcmInit)                                                                                               \
-    {                                                                                                           \
-        ecm_clear (ecmParams);                                                                                  \
-        uEcmInit--;                                                                                             \
-    } /* End IF */                                                                                              \
-                                                                                                                \
-    /* Initialize ecmParams */                                                                                  \
-    ecm_init (ecmParams);                                                                                       \
-    uEcmInit++;                                                                                                 \
-    ecmParams->stop_asap = &StopASAP;                                                                           \
-    ecmParams->B1done    = PRECOMPUTED_PRIME_MAX;                                                               \
+    // Get the # digits in the incoming number
+    digs = mpz_sizeinbase (&mpzRes, 10);
+
+    // Divide by 2 to get the # digits in the factor we're looking for
+    digs /= 2;
+
+    // Convert # digits to nearest multiple of B1B2TAB_INC
+    digs = B1B2TAB_INC * ((digs + B1B2TAB_INC / 2) / B1B2TAB_INC);
+
+    // If the value is below the minimum of B1B2TAB_MIN, raise it to B1B2TAB_MIN
+    if (digs < B1B2TAB_MIN)
+        digs = B1B2TAB_MIN;
+    else
+    // If the value is above the maximum of B1TAB_MAX, lower it to B1TAB_MAX
+    if (digs > B1B2TAB_MAX)
+        digs = B1B2TAB_MAX;
+
+    // Calculate the appropriate values of B1, B2, & N for this number
+    B1 = dB1B2Table[(digs - B1B2TAB_MIN) / B1B2TAB_INC].B1;
+    B2 = dB1B2Table[(digs - B1B2TAB_MIN) / B1B2TAB_INC].B2;
+    N  = dB1B2Table[(digs - B1B2TAB_MIN) / B1B2TAB_INC].N ;
+#ifdef DEBUG
+#define DPRINTF(dB1,dB2,N)                                                                              \
+    {                                                                                                   \
+        WCHAR wszTemp[1024];                                                                            \
+                                                                                                        \
+        swprintf (wszTemp,                                                                              \
+                 countof (wszTemp),                                                                     \
+                 L"B1 = %.20g, B2 = %.20g, N = %d, Bits = %I64d, D = %d",                               \
+                 dB1, dB2, N, bits, digs);                                                              \
+        DbgMsgW (wszTemp);                                                                              \
+    }
+#else
+#define DPRINTF
+#endif
+
+#define TryECM(Method,dB1,dB2)                                                                                  \
     ecmParams->method    = Method;                                                                              \
-    ecmParams->use_ntt   = useNTT;                                                                              \
+    mpz_set_d (ecmParams->B2, dB2);                                                                             \
                                                                                                                 \
     dprintfWL0 (L"Trying %S", szMethods[Method]);                                                               \
+    DPRINTF (dB1, dB2, N);                                                                                      \
                                                                                                                 \
     /* Try ECM */                                                                                               \
-    iVal = ecm_factor (&mpzFactor1, &mpzRes, 20 * ecmParams->B1done, ecmParams);                                \
+    iVal = ecm_factor (&mpzFactor1, &mpzRes, dB1, ecmParams);                                                   \
                                                                                                                 \
     /* Check for Ctrl-Break */                                                                                  \
     if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))                                                            \
@@ -1458,24 +1514,27 @@ APLMPI PrimeFactor
         goto NORMAL_EXIT;                                                                                       \
     } /* End IF */
 
-    // Try ECM
-    TryECM (ECM_ECM, 0);
+    /* Initialize ecmParams */
+    ecm_init (ecmParams); uEcmInit++;
+    ecmParams->stop_asap = &StopASAP;
+    ecmParams->B1done    = PRECOMPUTED_PRIME_MAX;
 
-    // Try P-1
-    TryECM (ECM_PM1, 0);
+    // Try P-1 once with 10*B1 and B2
+    TryECM (ECM_PM1, 10*B1, B2);
 
-    // Try P+1
-    TryECM (ECM_PP1, 0);
+    // Try P+1 three times with 5*B1 and B2
+    TryECM (ECM_PP1,  5*B1, B2);
+    TryECM (ECM_PP1,  5*B1, B2);
+    TryECM (ECM_PP1,  5*B1, B2);
 
-    // Try ECM
-    TryECM (ECM_ECM, 1);
+    // Try ECM N(B1, B2, D) times
+    for (iCnt = 0; iCnt < N; iCnt++)
+    {
+        TryECM (ECM_ECM, B1, B2);
+    } // End FOR
 
-    // Try P-1
-    TryECM (ECM_PM1, 1);
-
-    // Try P+1
-    TryECM (ECM_PP1, 1);
-
+    /* Uninitialize ecmParams */
+    ecm_clear (ecmParams); uEcmInit--;
 NONCE_EXIT:
 ERROR_EXIT:
     // Mark as a NONCE ERROR

@@ -174,14 +174,14 @@ void mp_free
 //  $mpz_invalid
 //***************************************************************************
 
-unsigned long int mpz_invalid
+mpir_ui mpz_invalid
     (enum MP_ENUM mp_enum,
-     mpz_t             rop,
-     mpz_t             op1,
-     mpz_t             op2,
-     mpz_t             op3,
-     unsigned long int a,
-     unsigned long int b)
+     mpz_t   rop,
+     mpz_t   op1,
+     mpz_t   op2,
+     mpz_t   op3,
+     mpir_ui a,
+     mpir_ui b)
 
 {
     DbgBrk ();
@@ -198,13 +198,13 @@ unsigned long int mpz_invalid
 //  $mpq_invalid
 //***************************************************************************
 
-unsigned long int mpq_invalid
+mpir_ui mpq_invalid
     (enum MP_ENUM mp_enum,
-     mpq_t             rop,
-     mpq_t             op1,
-     mpq_t             op2,
-     mpq_t             op3,
-     unsigned long int d)
+     mpq_t   rop,
+     mpq_t   op1,
+     mpq_t   op2,
+     mpq_t   op3,
+     mpir_ui d)
 
 {
     DbgBrk ();
@@ -221,13 +221,13 @@ unsigned long int mpq_invalid
 //  $mpfr_invalid
 //***************************************************************************
 
-unsigned long int mpfr_invalid
+mpir_ui mpfr_invalid
     (enum MP_ENUM mp_enum,
-     mpfr_t            rop,
-     mpfr_t            op1,
-     mpfr_t            op2,
-     mpfr_t            op3,
-     unsigned long int d)
+     mpfr_t  rop,
+     mpfr_t  op1,
+     mpfr_t  op2,
+     mpfr_t  op3,
+     mpir_ui d)
 
 {
     DbgBrk ();

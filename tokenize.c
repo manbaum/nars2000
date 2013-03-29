@@ -1876,11 +1876,11 @@ UBOOL fnPointDone
             switch (lpszNum[uVar])
             {
                 case 'b':
-                case 'e':
-                case 'E':
+                case DEF_EXPONENT_LC:
+                case DEF_EXPONENT_UC:
                 case 'p':
                 case DEF_RATSEP:
-                case 'v':
+                case DEF_VFPSEP:
                 case 'x':
                     // Point notation separator
                     scType = SC_PNSEP;

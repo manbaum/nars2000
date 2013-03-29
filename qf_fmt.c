@@ -2156,7 +2156,7 @@ void QFMT_CommonEFIR
 
             // Append enough blanks to the result to fill
             //   out the exponent to full width ("E-100")
-            iExpCnt = 5 - ((UINT) (lpwEnd - strchrW (lpwszFormat, L'E')) - 1);
+            iExpCnt = 5 - ((UINT) (lpwEnd - strchrW (lpwszFormat, DEF_EXPONENT_UC)) - 1);
             while (iExpCnt-- > 0)
                 *lpwEnd++ = L' ';
 
@@ -2507,7 +2507,7 @@ void QFMT_CommonEFIR
     // At this point, no substitution has occurred so we can assume that
     //   the Decimal Point is UTF16_DOT or DEF_RATSEP
     //   the Thousands Separator is UTF16_COMMA
-    //   the Exponent Separator is L'E', and
+    //   the Exponent Separator is DEF_EXPONENT_UC, and
     //   the Zero Fill value is L'0'.
 
     // Do the substitution one char at a time so we don't confuse one
@@ -2558,13 +2558,13 @@ void QFMT_CommonEFIR
 
             break;
 
-        case L'_':
+        case DEF_UNDERFLOW:
             *lpwSymChar++ = lpwSub[SYMSUB_PRECISION_LOSS];
             bZeroFill = FALSE;
 
             break;
 
-        case L'E':
+        case DEF_EXPONENT_UC:
             *lpwSymChar++ = lpwSub[SYMSUB_EXPONENT_SEP];
             bZeroFill = FALSE;
 

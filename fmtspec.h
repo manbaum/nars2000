@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -173,7 +173,7 @@ typedef struct tagO_CHAIN           // Struct for an entry in the O-modifier cha
 
 // Standard symbols (1st char in each S-qualifier pair)
 // These chars must be in the same order as the folowing enum
-#define STDSYMSUB           L"*.,0_Z9Er"
+#define STDSYMSUB           L"*.,0" DEF_UNDERFLOW_WS L"Z9" DEF_EXPONENT_UC_WS DEF_RATSEP_WS
 
 typedef enum tagSYM_SUB             // Symbol Substitution enum
 {

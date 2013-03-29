@@ -3005,7 +3005,7 @@ LPAPLCHAR FormatArrSimple
                         else
                         {
                             lpwDec = SkipToCharW (lpaplChar, wcSep);
-                            lpwExp = SkipToCharW (lpaplChar, L'E');
+                            lpwExp = SkipToCharW (lpaplChar, DEF_EXPONENT_UC);
 
                             // Use the earlier value
                             lpw = min (lpwDec, lpwExp);
@@ -4308,7 +4308,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     if (iPrc < 0)
                     {
                         // Find the length of the exponent (counting the 'E')
-                        uMaxExp = uLen - (UINT) ((SkipToCharW (lpaplCharIni, L'E') - lpaplCharIni));
+                        uMaxExp = uLen - (UINT) ((SkipToCharW (lpaplCharIni, DEF_EXPONENT_UC) - lpaplCharIni));
 
                         // Save the old value in case we overflow
                         uOldMaxExp = lpMemWidPrc[aplDimCol].uMaxExp;
@@ -4432,7 +4432,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             if (iPrc < 0)
             {
                 // Find the 'E'
-                lpaplCharExp = SkipToCharW (lpaplChar, L'E');
+                lpaplCharExp = SkipToCharW (lpaplChar, DEF_EXPONENT_UC);
 
                 // If there's an 'E' (not overflowed)
                 if (lpaplCharExp[0]

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -592,15 +592,15 @@ UINT SaveText
             goto FORMAT_EXIT;
 
         // Fill in the default values for Symbol Substitution
-////////wSymSub[SYMSUB_OVERFLOW_FILL]  = L'*';      // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_OVERFLOW_FILL]  = L'*';              // Already set by = STDSYMSUB
         wSymSub[SYMSUB_DECIMAL_SEP]    = GetQuadFCValue (FCNDX_DECIMAL_SEP);
         wSymSub[SYMSUB_THOUSANDS_SEP]  = GetQuadFCValue (FCNDX_THOUSANDS_SEP);
-////////wSymSub[SYMSUB_ZERO_FILL]      = L'0';      // Already set by = STDSYMSUB
-////////wSymSub[SYMSUB_PRECISION_LOSS] = L'_';      // Already set by = STDSYMSUB
-////////wSymSub[SYMSUB_Z_CHAR]         = L'Z';      // Already set by = STDSYMSUB
-////////wSymSub[SYMSUB_9_CHAR]         = L'9';      // Already set by = STDSYMSUB
-////////wSymSub[SYMSUB_EXPONENT_CHAR]  = L'E';      // Already set by = STDSYMSUB
-////////wSymSub[SYMSUB_RATIONAL_CHAR]  = DEF_RATSEP;// Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_ZERO_FILL]      = L'0';              // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_PRECISION_LOSS] = DEF_UNDERFLOW      // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_Z_CHAR]         = L'Z';              // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_9_CHAR]         = L'9';              // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_EXPONENT_CHAR]  = DEF_EXPONENT_UC    // Already set by = STDSYMSUB
+////////wSymSub[SYMSUB_RATIONAL_CHAR]  = DEF_RATSEP;        // Already set by = STDSYMSUB
 
         // Loop through the symbol substitutions
         for (uCnt = 0; uCnt < uScanTxtLenChars; uCnt += 2)

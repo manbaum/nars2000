@@ -59,8 +59,14 @@ Downloads</h1>
     users.  The <b>.map</b> files contain debugging information and are used
     by developers.  The <b>Release Notes</b> contain information about the
     corresponding release and are, generally, of most use to developers.  The
-    <b>Special Files</b> such as <b>mplibs.zip</b>, <b>mpfns.zip</b>, <b>qdebug.zip</b>, <b>misc.zip</b>, and
-    <b>gsldir.zip</b> contain support files needed by developers.</p>
+    <b>Special Files</b> such as
+    <b>gsldir.zip</b>,
+    <b>misc.zip</b>,
+    <b>mplibs.zip</b>,
+    <b>mpfns-src.zip</b>,
+    and
+    <b>qdebug.zip</b>
+    contain support files needed by developers.</p>
 
   <ol>
     <li><p>Download the latest version (marked <b>Recommended</b>) and save it
@@ -222,7 +228,7 @@ Downloads</h1>
         } // End WHILE
 
         // Sort files descendingly by version #
-        //   (which also sorts "gsldir.zip" & "qdebug.zip" & "misc.zip" & "mpfns.zip" & "mplibs.zip" to the front)
+        //   (which also sorts the Special Files to the front)
         natsort ($Files);
         $Files = array_reverse ($Files);
 
@@ -233,11 +239,13 @@ Downloads</h1>
                 continue;
 
             // Handle special files separately
-            $IsSpec = (strcmp ($File, "gsldir.zip") == 0
-                    || strcmp ($File, "misc.zip"  ) == 0
-                    || strcmp ($File, "mpfns.zip" ) == 0
-                    || strcmp ($File, "mplibs.zip") == 0
-                    || strcmp ($File, "qdebug.zip") == 0);
+            $IsSpec = (0
+                    || strcmp ($File, "gsldir.zip"     ) == 0
+                    || strcmp ($File, "misc.zip"       ) == 0
+                    || strcmp ($File, "mpfns-src.zip"  ) == 0
+                    || strcmp ($File, "mplibs.zip"     ) == 0
+                    || strcmp ($File, "qdebug.zip"     ) == 0
+                      );
             if ($IsSpec)
             {
                 $Name   = substr ($File, 0, strpos ($File, '.'));

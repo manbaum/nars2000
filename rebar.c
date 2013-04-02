@@ -368,7 +368,7 @@ HWND CreateRebarCtrl
 
     hWndRes =
       CreateWindowExW (0L,                  // Extended styles
-                       REBARCLASSNAMEW,     // Class
+                       WC_REBARW,           // Class name
                        wszRBTitle,          // Window title (for debugging purposes only)
                        0                    // Styles
                      | WS_BORDER
@@ -428,7 +428,7 @@ HWND MakeWorkspaceWindow
       CreateWindowExW (0                    // Extended styles
                      | TBSTYLE_EX_DOUBLEBUFFER
                        ,
-                       TOOLBARCLASSNAMEW,   // Class
+                       WC_TOOLBARW,         // Class name
                        wszTB_WSTitle,       // Window title (for debugging purposes only)
                        0                    // Styles
                      | WS_CHILD
@@ -617,7 +617,7 @@ HWND MakeEditWindow
       CreateWindowExW (0                    // Extended styles
                      | TBSTYLE_EX_DOUBLEBUFFER
                        ,
-                       TOOLBARCLASSNAMEW,   // Class
+                       WC_TOOLBARW,         // Class name
                        wszTB_EDTitle,       // Window title (for debugging purposes only)
                        0                    // Styles
                      | WS_CHILD
@@ -806,7 +806,7 @@ HWND MakeObjectsWindow
       CreateWindowExW (0                    // Extended styles
                      | TBSTYLE_EX_DOUBLEBUFFER
                        ,
-                       TOOLBARCLASSNAMEW,   // Class
+                       WC_TOOLBARW,         // Class name
                        wszTB_OWTitle,       // Window title (for debugging purposes only)
                        0                    // Styles
                      | WS_CHILD
@@ -1616,7 +1616,7 @@ LRESULT APIENTRY FW_RBWndProc
             //***************************************************************
             hWndUD_FW =
               CreateWindowExW (0L,                  // Extended styles
-                               UPDOWN_CLASSW,
+                               WC_UPDOWNW,          // Class name
                                L"Font Window UpDown Ctrl",  // For debugging only
                                0                    // Styles
                              | WS_CHILD

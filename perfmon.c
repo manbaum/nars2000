@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -295,7 +295,7 @@ LRESULT APIENTRY PMWndProc
         case WM_CREATE:
             // Create a listbox to fit inside this window
             hWndLB =
-              CreateWindowW (L"LISTBOX",
+              CreateWindowW (WC_LISTBOXW,           // Class name
                              L"Performance Listbox",   // For debugging only
                              0
                            | WS_CHILD

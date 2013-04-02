@@ -367,7 +367,7 @@ UBOOL WINAPI CreateNewTabInThread
     // Create the MDI client window
     lpMemPTD->hWndMC =
       CreateWindowExW (0,                   // Extended styles
-                       LMCWNDCLASS,         // Class name
+                       WC_MDICLIENTW,       // Class name
                        wszMCTitle,          // Window title (for debugging purposes only)
                        0
 //////               | MDIS_ALLCHILDSTYLES

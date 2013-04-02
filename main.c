@@ -1295,7 +1295,7 @@ HWND CreateTooltip
     // Create the Tooltip window
     hWnd =
       CreateWindowExW (0L,                  // Extended styles
-                       TOOLTIPS_CLASSW,     // Class for MS Controls
+                       WC_TOOLTIPSW,        // Class for MS Controls
                        NULL,                // Window title
                        0
                      | WS_POPUP

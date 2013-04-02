@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ LRESULT APIENTRY CCWndProc
             // Create an Edit Control to fit inside this window
             hWndCC_LB =
               CreateWindowExW (0L,                  // Extended styles
-                               L"LISTBOX",
+                               WC_LISTBOXW,         // Class name
                                L"Crash Control Listbox",// For debugging only
                                0
                              | WS_CHILD

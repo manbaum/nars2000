@@ -4660,7 +4660,7 @@ UBOOL IzitSM
 //***************************************************************************
 //  $IzitMC
 //
-//  Is the window MCWNDCLASS?
+//  Is the window WC_MDICLIENTW?
 //***************************************************************************
 
 UBOOL IzitMC
@@ -4671,7 +4671,7 @@ UBOOL IzitMC
 
     GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
 
-    return (lstrcmpW (wszClassName, LMCWNDCLASS) EQ 0);
+    return (lstrcmpW (wszClassName, WC_MDICLIENTW) EQ 0);
 } // End IzitMC
 
 
@@ -4707,7 +4707,7 @@ UBOOL IzitDialog
 
     GetClassNameW (hWnd, wszClassName, strcountof (wszClassName));
 
-    return (lstrcmpW (wszClassName, DIALOGCLASS) EQ 0);
+    return (lstrcmpW (wszClassName, WC_DIALOGW) EQ 0);
 } // End IzitDialog
 
 

@@ -258,7 +258,7 @@ LRESULT APIENTRY DBWndProc
 
             // Create a listbox to fit inside this window
             hWndLB =
-              CreateWindowW (L"LISTBOX",
+              CreateWindowW (WC_LISTBOXW,           // Class name
                              L"Debugger Listbox",   // For debugging only
                              0
                            | WS_CHILD

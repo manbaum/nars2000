@@ -927,12 +927,13 @@ UCHAR FastBoolTrans[256][FBT_LENGTH]
 typedef enum tagSTATUSPARTS
 {
     SP_TEXTMSG = 0,         // 00:  Text message
-    SP_LINEPOS,             // 01:  Line # (origin-0)
-    SP_CHARPOS,             // 02:  Char # (origin-0
-    SP_INS,                 // 03:  Ins/Ovr state
-    SP_NUM,                 // 04:  NumLock state
-    SP_CAPS,                // 05:  CapsLock state
-    SP_LENGTH               // 06:  # entries in this enum
+    SP_TIMER,               // 01:  Execution timer
+    SP_LINEPOS,             // 02:  Line # (origin-0)
+    SP_CHARPOS,             // 03:  Char # (origin-0
+    SP_INS,                 // 04:  Ins/Ovr state
+    SP_NUM,                 // 05:  NumLock state
+    SP_CAPS,                // 06:  CapsLock state
+    SP_LENGTH               // 07:  # entries in this enum
 } STATUSPARTS, *LPSTATUSPARTS;
 
 EXTERN

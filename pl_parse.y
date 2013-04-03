@@ -7482,7 +7482,7 @@ EXIT_TYPES ParseLine
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
     // Indicate that we're executing
-    bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
+    bOldExecuting = lpMemPTD->bExecuting; SetExecuting (lpMemPTD, TRUE);
 
     EnterCriticalSection (&CSOPL);
 
@@ -8033,7 +8033,7 @@ NORMAL_EXIT:
     TlsSetValue (dwTlsPlLocalVars, oldTlsPlLocalVars);
 
     // Restore the previous executing state
-    lpMemPTD->bExecuting = bOldExecuting;
+    SetExecuting (lpMemPTD, bOldExecuting);
 
     // Decrement the depth counter
     lpMemPTD->uExecDepth--;

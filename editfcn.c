@@ -3763,7 +3763,7 @@ void ForceSendCursorMsg
     lpMemPTD = GetMemPTD ();
 
     // Indicate the new execution state
-    bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = bExecuting;
+    bOldExecuting = lpMemPTD->bExecuting; SetExecuting (lpMemPTD, bExecuting);
 
     // Get the cursor position in screen coords
     GetCursorPos (&ptCursor);
@@ -3775,7 +3775,7 @@ void ForceSendCursorMsg
     SendMessageW (hWndEC, WM_SETCURSOR, (WPARAM) hWndEC, MAKELPARAM (hitTest, WM_MOUSEMOVE));
 
     // Restore the previous executing state
-    lpMemPTD->bExecuting = bOldExecuting;
+    SetExecuting (lpMemPTD, bOldExecuting);
 } // End ForceSendCursorMsg
 
 

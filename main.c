@@ -89,21 +89,22 @@ WCHAR wszMFTitle[]          = WS_APPNAME WS_BITSIZE WS_APPEND_DEBUG,            
       wszCCTitle[]          = WS_APPNAME L" Crash Control Window" WS_APPEND_DEBUG,  // Crash Control window title
       wszTCTitle[]          = WS_APPNAME L" Tab Control Window" WS_APPEND_DEBUG;    // Tab Control ... (for debugging purposes only)
 
-char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.",
-     pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS ">.",
-     pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS ">.",
-     pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
-     pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.",
-     pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS ">.",
-     pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS ">.",
-     pszNoRegPBWndClass[]   = "Unable to register window class <" PBWNDCLASS ">.",
-     pszNoRegFW_RBWndClass[]= "Unable to register window class <" FW_RBWNDCLASS ">.",
-     pszNoRegLW_RBWndClass[]= "Unable to register window class <" LW_RBWNDCLASS ">.";
+char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS        ">.",
+     pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS        ">.",
+     pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS        ">.",
+     pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS        ">.",
+     pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS        ">.",
+     pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS        ">.",
+     pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS        ">.",
+     pszNoRegPBWndClass[]   = "Unable to register window class <" PBWNDCLASS        ">.",
+     pszNoRegSBWndClass[]   = "Unable to register window class <" LCL_WC_STATUSBARA ">.",
+     pszNoRegFW_RBWndClass[]= "Unable to register window class <" FW_RBWNDCLASS     ">.",
+     pszNoRegLW_RBWndClass[]= "Unable to register window class <" LW_RBWNDCLASS     ">.";
 #ifdef DEBUG
-char pszNoRegDBWndClass[]   = "Unable to register window class <" DBWNDCLASS ">.";
+char pszNoRegDBWndClass[]   = "Unable to register window class <" DBWNDCLASS        ">.";
 #endif
 #ifdef PERFMONON
-char pszNoRegPMWndClass[]   = "Unable to register window class <" PMWNDCLASS ">.";
+char pszNoRegPMWndClass[]   = "Unable to register window class <" PMWNDCLASS        ">.";
 #endif
 
 char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
@@ -112,255 +113,8 @@ char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateSTWnd[]     = "Unable to create Status window",
      pszNoCreateCCWnd[]     = "Unable to create Crash Control window";
 
-int glbStatusPartsWidth[SP_LENGTH] = {0};
-int glbStatusBorders[3];
-WNDPROC lpfnOldStatusWndProc;           // Save area for old Status Window procedure
-
-
-//***************************************************************************
-//  $SendStatusMsg
-//
-//  Send a message to the status window and show or hide the
-//    window afterwards in case the message sent activated it.
-//***************************************************************************
-
-void SendStatusMsg
-    (UINT msg,
-     WPARAM wParam,
-     LPARAM lParam)
-
-{
-    // Send the message to the window
-    SendMessageW (hWndStatus, msg, wParam, lParam);
-
-    // Show or hide the status window in case the above message activated the window
-    ShowWindow (hWndStatus, OptionFlags.bViewStatusBar ? SW_SHOWNORMAL : SW_HIDE);
-} // End SendStatusMsg
-
-
-//***************************************************************************
-//  $SetStatusParts
-//
-//  Set the Status Parts and right edges
-//***************************************************************************
-
-void SetStatusParts
-    (UINT uWidth)               // Width of the Client Area
-
-{
-    HDC         hDC;
-    int         lclStatusPartsRight[SP_LENGTH];
-    STATUSPARTS iCnt;           // Loop counter
-    SIZE        sText;
-    HWND        hWndEC;         // Edit Ctrl window handle
-
-    // Get a Client Area DC for the Status Window
-    hDC = MyGetDC (hWndStatus);
-
-    // Copy the Status Window font
-    SelectObject (hDC, (HFONT) SendMessageW (hWndStatus, WM_GETFONT, 0, 0));
-
-#define GRIPPER_WIDTH       20
-#define SP_BORDER_EXTRA      5
-
-    // Loop backwards through the SetParts enum
-    for (iCnt = SP_LENGTH - 1; iCnt >= 0; iCnt--)
-    // Split cases based upon the enum value
-    switch (iCnt)
-    {
-        case SP_CAPS:
-#define TEXT_CAPS           L"CAPS"
-            // Get the width of the text
-            GetTextExtentPoint32W (hDC,
-                                   TEXT_CAPS,
-                                   strcountof (TEXT_CAPS),
-                                  &sText);
-            // Set the parts width
-            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
-#undef  TEXT_CAPS
-            break;
-
-        case SP_NUM:
-#define TEXT_CAPS           L"NUM"
-            // Get the width of the text
-            GetTextExtentPoint32W (hDC,
-                                   TEXT_CAPS,
-                                   strcountof (TEXT_CAPS),
-                                  &sText);
-            // Set the parts width
-            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
-#undef  TEXT_CAPS
-            break;
-
-        case SP_INS:
-#define TEXT_CAPS           L"OVR"
-            // Get the width of the text
-            GetTextExtentPoint32W (hDC,
-                                   TEXT_CAPS,
-                                   strcountof (TEXT_CAPS),
-                                  &sText);
-            // Set the parts width
-            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
-#undef  TEXT_CAPS
-            break;
-
-        case SP_CHARPOS:
-#define TEXT_CAPS           L"999999"
-            // Get the width of the text
-            GetTextExtentPoint32W (hDC,
-                                   TEXT_CAPS,
-                                   strcountof (TEXT_CAPS),
-                                  &sText);
-            // Set the parts width
-            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
-#undef  TEXT_CAPS
-            break;
-
-        case SP_LINEPOS:
-#define TEXT_CAPS           L"999999"
-            // Get the width of the text
-            GetTextExtentPoint32W (hDC,
-                                   TEXT_CAPS,
-                                   strcountof (TEXT_CAPS),
-                                  &sText);
-            // Set the parts width
-            glbStatusPartsWidth[iCnt] = sText.cx + SP_BORDER_EXTRA;
-#undef  TEXT_CAPS
-            break;
-
-        case SP_TEXTMSG:
-            glbStatusPartsWidth[iCnt] = 0;
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // Back off by size of Gripper
-    uWidth -= GRIPPER_WIDTH;
-
-    // Adjust the Status Parts right edges
-    for (iCnt = SP_LENGTH - 1; iCnt >= 0; iCnt--)
-    if (glbStatusPartsWidth[iCnt] EQ 0)
-        lclStatusPartsRight[iCnt] = uWidth;
-    else
-    {
-        lclStatusPartsRight[iCnt] = uWidth;
-        uWidth -= (glbStatusBorders[2] + abs (glbStatusPartsWidth[iCnt]));
-    } // End FOR/IF/ELSE/...
-
-    // Tell the status window about the new Status Parts right edge
-    SendStatusMsg (SB_SETPARTS, SP_LENGTH, (LPARAM) lclStatusPartsRight);
-
-    // We no longer need this resource
-    MyReleaseDC (hWndStatus, hDC); hDC = NULL;
-
-    // Get the active MDI Child window handle (if any)
-    hWndEC  = GetActiveEC (hWndTC);
-    if (hWndEC)
-        // Tell the Status Window about the new positions
-        SetStatusPos (hWndEC);
-} // End SetStatusParts
-
-
-//***************************************************************************
-//  $SetStatusIns
-//
-//  Set the state of the Ins key in the Status Window
-//***************************************************************************
-
-void SetStatusIns
-    (UBOOL bInsKey)             // TRUE iff the Ins key is ON
-
-{
-    SendStatusMsg (SB_SETTEXTW, SP_INS, (LPARAM) (bInsKey ? WS_HT L"INS" : WS_HT L"OVR"));
-} // End SetStatusIns
-
-
-//***************************************************************************
-//  $SetStatusCaps
-//
-//  Set the state of the CapsLock key in the Status Window
-//***************************************************************************
-
-void SetStatusCaps
-    (UBOOL bCapsKey)            // TRUE iff the CapsLock key is ON
-
-{
-    SendStatusMsg (SB_SETTEXTW, SP_CAPS, (LPARAM) (bCapsKey ? WS_HT L"CAPS" : L""));
-} // End SetStatusCaps
-
-
-//***************************************************************************
-//  $SetStatusNum
-//
-//  Set the state of the NumLock key in the Status Window
-//***************************************************************************
-
-void SetStatusNum
-    (UBOOL bNumKey)             // TRUE iff the NumLock key is ON
-
-{
-    SendStatusMsg (SB_SETTEXTW, SP_NUM, (LPARAM) (bNumKey ? WS_HT L"NUM" : L""));
-} // End SetStatusNum
-
-
-//***************************************************************************
-//  $SetStatusPos
-//
-//  Set the state of the Line and char positions in the Status Window
-//***************************************************************************
-
-void SetStatusPos
-    (HWND hWndEC)               // Edit Ctrl window handle
-
-{
-    APLU3264 uCharPos,              // Character position (origin-0), initially from start
-                                    //   of buffer then eventually from the start of the line
-             uLineNum,              // Line # (origin-0)
-             uLinePos;              // Line position from start of buffer
-    WCHAR    szTemp[32];            // Temp format save area
-
-    // Get the indices of the selected text (if any)
-    SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
-
-    // Get the line # of this char
-    uLineNum = (APLU3264) SendMessageW (hWndEC, EM_LINEFROMCHAR, uCharPos, 0);
-
-    // Get the char position of the start of the current line
-    uLinePos = (APLU3264) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
-
-    // Get the character position from the start of the line
-    uCharPos -= uLinePos;
-
-    // Format the line #
-    wsprintfW (szTemp,
-               L"%u",
-               uLineNum);
-    SendStatusMsg (SB_SETTEXTW, SP_LINEPOS, (LPARAM) szTemp);
-
-    // Format the char #
-    wsprintfW (szTemp,
-               L"%u",
-               uCharPos);
-    SendStatusMsg (SB_SETTEXTW, SP_CHARPOS, (LPARAM) szTemp);
-} // End SetStatusPos
-
-
-//***************************************************************************
-//  $SetStatusMsg
-//
-//  Set the Status Window message
-//***************************************************************************
-
-void SetStatusMsg
-    (LPWCHAR lpwszMsg)          // Ptr to Status Window msg
-
-{
-    SendStatusMsg (SB_SETTEXTW, SP_TEXTMSG, (LPARAM) lpwszMsg);
-    SetPropW (hWndStatus, PROP_STATUSMSG, (HANDLE) lpwszMsg);
-} // End SetStatusMsg
+extern
+WNDPROC lpfnOldStatusBarWndProc;            // Save area for old StatusBar Window procedure
 
 
 //***************************************************************************
@@ -1416,23 +1170,11 @@ UBOOL CreateChildWindows
     //***************************************************************
     // Create the Status Window
     //***************************************************************
-    hWndStatus =
-      CreateStatusWindowW (0
-                         | WS_CHILD
-                         | WS_VISIBLE
-                         | SBARS_SIZEGRIP
-                           ,                // Styles
-                           wszStatusIdle,   // Initial text
-                           hWndParent,      // Parent window
-                           IDWC_MF_ST);     // Window ID
-    if (hWndStatus EQ NULL)
+    if (!MakeStatusWindow (hWndParent))
     {
         MB (pszNoCreateSTWnd);
         return FALSE;
     } // End IF
-
-    // Get the width of the borders of the Status Window
-    SendStatusMsg (SB_GETBORDERS, 0, (LPARAM) glbStatusBorders);
 
     return TRUE;            // Tell 'em it worked
 } // End CreateChildWindows
@@ -3684,6 +3426,33 @@ UBOOL InitApplication
     if (!RegisterClassExW (&wcw))
     {
         MB (pszNoRegPBWndClass);
+        return FALSE;
+    } // End IF
+
+    // Get the base class info prior to superclassing
+    GetClassInfoExW (NULL,              // hInstance (NULL for system classes)
+                     WC_STATUSBARW,     // Class name
+                    &wcw);              // Ptr to WNDCLASSSEX struc
+    // Save the address of the window procedure
+    lpfnOldStatusBarWndProc = wcw.lpfnWndProc;
+
+    // Fill in StatusBar Ctrl window class structure
+////wcw.style           = 0;
+    wcw.lpfnWndProc     = (WNDPROC) LclStatusBarWndProc;
+////wcw.cbClsExtra      = 0;
+////wcw.cbWndExtra      = 0;
+    wcw.hInstance       = hInstance;
+////wcw.hIcon           = NULL;
+////wcw.hIconSm         = NULL;
+////wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+////wcw.hbrBackground   = (HBRUSH) (COLOR_BTNFACE + 1);
+////wcw.lpszMenuName    = NULL;
+    wcw.lpszClassName   = LCL_WC_STATUSBARW;
+
+    // Register the StatusBar Ctrl window class
+    if (!RegisterClassExW (&wcw))
+    {
+        MB (pszNoRegSBWndClass);
         return FALSE;
     } // End IF
 

@@ -146,6 +146,7 @@ typedef struct tagPERTABDATA
                  mpfrE;                     // MPFR value for e
     HGLOBAL      hGlbNfns;                  // Global memory handle for []Nfns data
     LPVOID       gslRNG;                    // Ptr to GSL random number generator
+    LARGE_INTEGER liTickCnt;                // Performance counter
 } PERTABDATA, *LPPERTABDATA;
 
 

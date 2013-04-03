@@ -265,7 +265,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 
     // Indicate that we're executing
-    bOldExecuting = lpMemPTD->bExecuting; lpMemPTD->bExecuting = TRUE;
+    bOldExecuting = lpMemPTD->bExecuting; SetExecuting (lpMemPTD, TRUE);
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -586,7 +586,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     // Restore the previous executing state
-    lpMemPTD->bExecuting = bOldExecuting;
+    SetExecuting (lpMemPTD, bOldExecuting);
 
     if (hGlbDfnHdr && lpMemDfnHdr)
     {

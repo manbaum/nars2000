@@ -471,7 +471,7 @@ void DisplayPrompt
     lpMemPTD = GetMemPTD ();
 
     // Mark as no longer executing
-    lpMemPTD->bExecuting = FALSE;
+    SetExecuting (lpMemPTD, FALSE);
 
     // Set the cursor to indicate the new state
     ForceSendCursorMsg (hWndEC, FALSE);
@@ -1490,8 +1490,11 @@ NORMAL_EXIT:
             // Ensure the SM has the focus
             SetFocus (hWnd);
 
+            // Set all statusbar states
+            SetStatusAll ();
+
             // Repaint the status window
-            InvalidateRect (hWndStatus, NULL, FALSE);
+            InvalidateRect (hWndStatus, NULL, TRUE);
 
             // Tell the Status Window about the new positions
             SetStatusPos (hWndEC);

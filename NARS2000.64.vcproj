@@ -1023,6 +1023,10 @@
                 >
             </File>
             <File
+                RelativePath=".\statusbar.c"
+                >
+            </File>
+            <File
                 RelativePath=".\strand.c"
                 >
             </File>

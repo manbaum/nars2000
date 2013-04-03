@@ -185,6 +185,7 @@
   #include "sc_wsid.pro"
   #include "sessman.pro"
   #include "sort.pro"
+  #include "statusbar.pro"
   #include "strand.pro"
   #include "symtab.pro"
   #include "symtrans.pro"

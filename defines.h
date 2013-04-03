@@ -247,6 +247,9 @@
 #define  LW_RBWNDCLASS  "LW_RBClass"    // Language Window in Rebar Ctrl ...
 #define LLW_RBWNDCLASS L"LW_RBClass"    // ...
 
+#define LCL_WC_STATUSBARA    "LclStatusBar"
+#define LCL_WC_STATUSBARW   L"LclStatusBar"
+
 #define CQUADPR_MT      L'\xFFFF'       // cQuadPR value indicating it's empty
 
 

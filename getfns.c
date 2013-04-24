@@ -107,7 +107,7 @@ APLINT GetNextIntegerToken
 
 {
     APLLONGEST aplLongestArg;           // Immediate value
-    HGLOBAL    hGlbArg;                 // Right arg global memory handle
+    HGLOBAL    hGlbArg = NULL;          // Right arg global memory handle
     LPVOID     lpMemArg;                // Ptr to right arg global memory
     APLINT     aplIntegerRes;           // The result
     APLSTYPE   aplTypeItm;              // Item storage type
@@ -245,7 +245,7 @@ APLFLOAT GetNextFloatToken
 
 {
     APLLONGEST aplLongestArg;           // Immediate value
-    HGLOBAL    hGlbArg;                 // Right arg global memory handle
+    HGLOBAL    hGlbArg = NULL;          // Right arg global memory handle
     LPVOID     lpMemArg;                // Ptr to right arg global memory
     APLINT     aplIntegerItm;           // Immediate value as integer
     APLSTYPE   aplTypeItm;              // Item storage type

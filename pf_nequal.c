@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -265,7 +265,8 @@ APLBOOL PrimFnDydNotEqualBisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return !PrimFnDydEqualBisFvF (aplFloatLft, aplFloatRht, lpPrimSpec);
+    // Compare the two floats relative to []CT
+    return !CompareCT (aplFloatLft, aplFloatRht, GetQuadCT (), lpPrimSpec);
 } // End PrimFnDydNotEqualBisFvF
 
 

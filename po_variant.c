@@ -423,11 +423,17 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             break;
 
         // []IO
-        case UTF16_SQUAD:                   // Dyadic only
+        case UTF16_SQUAD:                   // Dyadic only  (Indexing)
+        case UTF16_CIRCLESLOPE:             // ...          (Dyadic transpose)
             // Ensure there's a left arg
             if (!lptkLftArg)
                 goto LEFT_SYNTAX_EXIT;
 
+        case UTF16_DELSTILE:                // Monadic:  Grade down, Dyadic: Grade down
+        case UTF16_DELTASTILE:              // ...             up    ...           up
+        case UTF16_RIGHTSHOE:               // ...       (IGNORED)   ...     Pick
+        case UTF16_IOTAUNDERBAR:            // ...       Indices     ...     (ERROR)
+        case UTF16_PI:                      // ...       (IGNORED)   ...     Number theoretic
             // Validate the right operand as
             //   a simple numeric scalar or one-element vector
             if (IsMultiRank (aplRankRhtOpr))
@@ -521,16 +527,31 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             break;
 
         // []CT:  Comparison Tolerance
-        case UTF16_LEFTCARET:               // Dyadic only
-        case UTF16_LEFTCARETUNDERBAR:       // ...
-        case UTF16_EQUAL:                   // ...
-        case UTF16_NOTEQUAL:                // ...
-        case UTF16_RIGHTCARETUNDERBAR:      // ...
-        case UTF16_RIGHTCARET:              // ...
+        case UTF16_LEFTCARET:               // Dyadic only  (Less than)
+        case UTF16_LEFTCARETUNDERBAR:       // ...          (Less than or equal)
+        case UTF16_EQUAL:                   // ...          (Equal)
+        case UTF16_NOTEQUAL:                // ...          (Not equal)
+        case UTF16_RIGHTCARETUNDERBAR:      // ...          (Greater than or equal)
+        case UTF16_RIGHTCARET:              // ...          (Greater than)
+        case UTF16_EPSILON:                 // ...          (Membership)
+        case UTF16_EQUALUNDERBAR:           // ...          (Match)
+        case UTF16_NOTEQUALUNDERBAR:        // ...          (Mismatch)
+        case UTF16_STILE:                   // ...          (Residue)
+        case UTF16_STILE2:                  // ...          (Residue)
+        case UTF16_UPSHOE:                  // ...          (Set intersection)
+        case UTF16_LEFTSHOEUNDERBAR:        // ...          (Subset)
+        case UTF16_RIGHTSHOEUNDERBAR:       // ...          (Superset)
+        case UTF16_SECTION:                 // ...          (Set asymmetric difference)
+        case UTF16_TILDE:                   // ...          (Without)
+        case UTF16_TILDE2:                  // ...          (Without)
+        case UTF16_EPSILONUNDERBAR:         // ...          (Find)
             // Ensure there's a left arg
             if (!lptkLftArg)
                 goto LEFT_SYNTAX_EXIT;
 
+        case UTF16_DOWNSHOE:                // Monadic:  Unique,   Dyadic:  Set union
+        case UTF16_DOWNSTILE:               // ...       Minimum   ...      Floor
+        case UTF16_UPSTILE:                 // ...       Maximum   ...      Ceiling
             // Validate the right operand as
             //   a simple numeric scalar or one-element vector
             if (IsMultiRank (aplRankRhtOpr))

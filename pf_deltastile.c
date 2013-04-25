@@ -210,6 +210,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
      UBOOL   bRavelArg)             // TRUE iff we're to treat the right arg as ravelled
 
 {
+    APLSTYPE      aplTypeRes;       // Result storage type
     APLNELM       aplNELMRht,       // Right arg NELM
                   aplNELMRes;       // Result    ...
     APLRANK       aplRankRht;       // Right arg rank
@@ -327,8 +328,15 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
             gradeData.aplNELMRest *= lpMemDimRht[uRes];
     } // End IF/ELSE
 
+    // If the right arg is an APV, the result is an APV
+    if (IsSimpleAPA (gradeData.aplTypeRht)
+     && IsVector (aplRankRht))
+        aplTypeRes = ARRAY_APA;
+    else
+        aplTypeRes = ARRAY_INT;
+
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, 1);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -345,7 +353,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_INT;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->PV0        = bQuadIO EQ 0;
@@ -372,6 +380,14 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 #undef  lpAPA
     } // End IF
 
+    // If the result is an APV, grade it specially
+    if (IsSimpleAPA (aplTypeRes))
+    {
+        if (!ApvGrade (lpMemRes,                // Ptr to result global memory
+                       lpMemRht,                // Ptr to right arg global memory
+                      &gradeData))              // Ptr to extra grade data
+            goto ERROR_EXIT;
+    } else
     // If the right arg is a PV, grade it specially
     if (gradeData.PV0 || gradeData.PV1)
     {
@@ -403,9 +419,18 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
             goto ERROR_EXIT;
     } // End IF/ELSE
 
-    // Add in []IO
-    for (uRes = 0; uRes < aplNELMRes; uRes++)
-        ((LPAPLINT) lpMemRes)[uRes] += bQuadIO;
+    // If it's origin-1, ...
+    if (bQuadIO)
+    {
+        // If the result is not an APA, ...
+        if (!IsSimpleAPA (aplTypeRes))
+            // Add in []IO
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
+                ((LPAPLINT) lpMemRes)[uRes]++;
+        else
+            // Add in []IO
+            ((LPAPLAPA) lpMemRes)->Off++;
+    } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -522,6 +547,30 @@ HGLOBAL MakeEncloseZilde
     return hGlbRes;
 } // End MakeEncloseZilde
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ApvGrade
+//
+//  Grade an APV
+//***************************************************************************
+
+UBOOL ApvGrade
+    (LPAPLAPA     lpMemRes,         // Ptr to result global memory
+     LPAPLAPA     lpMemRht,         // Ptr to right arg global memory
+     LPGRADE_DATA lpGradeData)      // Ptr to extra data
+
+{
+    // The result is an APV
+
+    // The multiplier is the grade direction for non-negative right arg multipliers, -grade direction otherwise
+    lpMemRes->Mul = (lpMemRht->Mul >= 0) ? lpGradeData->iMul : -lpGradeData->iMul;
+
+    // The offset is 0 for non-negative result multipliers, aplNELMRht - 1 otherwise
+    lpMemRes->Off = (lpMemRes->Mul >= 0) ? 0 : lpGradeData->aplNELMRht - 1;
+
+    return TRUE;
+} // End ApvGrade
 
 
 //***************************************************************************

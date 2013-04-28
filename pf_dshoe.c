@@ -438,6 +438,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             TOKEN    tkFunc = {0},      // Grade-up function token
                      tkRht  = {0};      // Right arg token
             APLBOOL  bQuadIO;           // []IO
+            APLFLOAT fQuadCT;           // []CT
             APLINT   aplLastInt;        // The last int   we found
             APLFLOAT aplLastFlt;        // ...      float ...
             APLCHAR  aplLastChr;        // ...      char  ...
@@ -450,6 +451,9 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 ////////////tkFunc.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
             tkFunc.tkData.tkChar     = UTF16_DELTASTILE;
             tkFunc.tkCharIndex       = lptkFunc->tkCharIndex;
+
+            // Get the current value of []CT
+            fQuadCT = GetQuadCT ();
 
             // Save the current index origin and set it to zero
             bQuadIO = GetQuadIO ();
@@ -520,7 +524,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                          uRht < aplNELMRht;
                          uRht++)
                     // Check for a different (and thus unique) value
-                    if (aplLastFlt NE ((LPAPLFLOAT) lpMemRht)[lpMemGup[uRht]])
+                    if (!CompareCT (aplLastFlt, ((LPAPLFLOAT) lpMemRht)[lpMemGup[uRht]], fQuadCT, NULL))
                     {
                         // Save as the next unique value's index
                         lpMemGup[aplNELMRes++] = lpMemGup[uRht];
@@ -586,7 +590,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                          uRht < aplNELMRht;
                          uRht++)
                     // Check for a different (and thus unique) value
-                    if (mpfr_cmp (&aplLastVfp, &((LPAPLVFP) lpMemRht)[lpMemGup[uRht]]) NE 0)
+                    if (mpfr_cmp_ct (aplLastVfp, ((LPAPLVFP) lpMemRht)[lpMemGup[uRht]], fQuadCT) NE 0)
                     {
                         // Save as the next unique value's index
                         lpMemGup[aplNELMRes++] = lpMemGup[uRht];
@@ -603,7 +607,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
             //***************************************************************
             // In order to preserve the order of the unique elements
-            //   we need to grade-up the indices of the unique values
+            //   we need to grade-up the indices of the unique values so we
             //   can place them into the result in the same order as
             //   they occur in the right arg.
             //***************************************************************

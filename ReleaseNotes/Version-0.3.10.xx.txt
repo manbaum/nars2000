@@ -1,6 +1,18 @@
 Version 0.3.10.xx consists of the following Builds:
 
 
+Build #1090 -- Version 0.3.10.xx
+--------------------------------
+
+* Fix Bug In Unique Function
+
+Directory trunk:
+
+PF_DSHOE.C:
+  Fix bug in Unique function where I didn't use []CT when comparing adjacent
+    floating point or VFP values.
+
+
 Build #1089 -- Version 0.3.10.xx
 --------------------------------
 

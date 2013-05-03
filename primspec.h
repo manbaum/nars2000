@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ typedef UBOOL PRIMFN_DYD_SNvSN
      LPVOID       lpMemLft,                 // Points to Sig.nature
      LPVOID       lpMemRht,                 // ...
 
-     LPAPLUINT    lpMemAxisHead,            // Ptr to axis values, fleshed out
+     LPAPLUINT    lpMemAxisHead,            // Ptr to axis values, fleshed out by CheckAxis_EM (may be NULL)
      LPAPLUINT    lpMemAxisTail,            // Ptr to grade up of AxisHead
 
      APLRANK      aplRankLft,               // Left arg rank

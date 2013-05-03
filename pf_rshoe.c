@@ -300,7 +300,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     LPAPLDIM      lpMemDimRht = NULL,   // Ptr to right arg dimensions
                   lpMemDimCom = NULL,   // Ptr to right arg common item dimensions
                   lpMemDimRes;          // Ptr to result dimensions
-    LPAPLUINT     lpMemAxis = NULL,     // Ptr to axis values, fleshed out
+    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
                   lpMemLft;             // Ptr to left arg global memory
     APLUINT       ByteRes;              // # bytes in the result
     APLNELM       aplNELMAxis,          // Axis NELM
@@ -1747,15 +1747,15 @@ NORMAL_EXIT:
         lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // Lock the memory to get a ptr to it
-        lpMemAxis = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLock (hGlbAxis);
 
-        // Copy the values from lpMemAxis
-        CopyMemory (lpMemLft, lpMemAxis, (APLU3264) aplRankRes * sizeof (APLUINT));
+        // Copy the values from lpMemAxisHead
+        CopyMemory (lpMemLft, lpMemAxisHead, (APLU3264) aplRankRes * sizeof (APLUINT));
 
         // Get the current value of []IO
         bQuadIO = GetQuadIO ();
 
-        // Because lpMemAxis is in origin-0, and the left arg to
+        // Because lpMemAxishead is in origin-0, and the left arg to
         //   dyadic transpose is []IO-sensitive, we must
         //   loop through the left arg and add in []IO
         for (uCom = 0; uCom < aplRankRes; uCom++)
@@ -1842,10 +1842,10 @@ TAIL_EXIT:
 
     if (hGlbAxis)
     {
-        if (lpMemAxis)
+        if (lpMemAxisHead)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
+            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
         } // End IF
 
         // We no longer need this storage

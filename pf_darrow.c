@@ -288,7 +288,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
                   uRht,                 // Loop counter
                   uOdo;                 // Loop counter
     LPAPLDIM      lpMemDimRht = NULL;   // Ptr to right arg dimensions
-    LPAPLUINT     lpMemAxisHead,        // Ptr to axis values, fleshed out
+    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
                   lpMemAxisTail = NULL, // Ptr to grade up of AxisHead
                   lpMemOdoRht = NULL,   // Ptr to right arg odometer global memory
                   lpMemWVecRht = NULL;  // Ptr to right arg weighting vector global memory
@@ -841,7 +841,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
      APLLONGEST aplLongestLft,          // Left arg immediate value
      LPAPLDIM   lpMemDimRht,            // Ptr to right arg dimensions global memory
      APLRANK    aplRankRht,             // Right arg rank
-     LPAPLUINT  lpMemAxisTail,          // Ptr to axis global memory (may be NULL if axis not present)
+     LPAPLUINT  lpMemAxisTail,          // Ptr to grade up of AxisHead (may be NULL if axis not present)
      UBOOL      bDownArrow,             // TRUE iff it's DownArrow
      LPTOKEN    lptkFunc)               // Ptr to function token
 

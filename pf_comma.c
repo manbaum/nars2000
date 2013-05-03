@@ -513,8 +513,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     LPVOID        lpMemRht = NULL,      // Ptr to right arg global memory
                   lpMemRes = NULL;      // Ptr to result    ...
     LPAPLDIM      lpMemDimRht = NULL;   // Ptr to right arg dimensions
-    LPAPLUINT     lpMemAxis = NULL,     // Ptr to axis global memory
-                  lpMemGrUp = NULL,     // Ptr to grade up ...
+    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
+                  lpMemAxisTail = NULL, // Ptr to grade up of AxisHead
                   lpMemOdo = NULL,      // Ptr to odometer ...
                   lpMemWVec = NULL;     // Ptr to weighting vector ...
     APLUINT       ByteRes;              // # bytes in the result
@@ -671,17 +671,17 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     if (hGlbAxis)
     {
         // Lock the memory to get a ptr to it
-        lpMemAxis = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLock (hGlbAxis);
 
         // Point to the grade-up of the first
         //   <aplRankRht> values in lpMemAxis
-        lpMemGrUp = &lpMemAxis[aplRankRht];
+        lpMemAxisTail = &lpMemAxisHead[aplRankRht];
 
         // Get the first axis element + 1
-        uRht = lpMemAxis[aplRankRht - aplNELMAxis] + 1;
+        uRht = lpMemAxisHead[aplRankRht - aplNELMAxis] + 1;
 
         for (uRes = aplRankRht + 1 - aplNELMAxis; (!bReorder) && uRes < aplRankRht; uRes++, uRht++)
-            bReorder = (uRht NE lpMemAxis[uRes]);
+            bReorder = (uRht NE lpMemAxisHead[uRes]);
     } // End IF
 
     //***************************************************************
@@ -957,11 +957,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
 
@@ -983,11 +983,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxishead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLINT) lpMemRes)[uRes] = ((LPAPLINT) lpMemRht)[uRht];
@@ -1006,11 +1006,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLFLOAT) lpMemRes)[uRes] = ((LPAPLFLOAT) lpMemRht)[uRht];
@@ -1029,11 +1029,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLCHAR) lpMemRes)[uRes] = ((LPAPLCHAR) lpMemRht)[uRht];
@@ -1052,11 +1052,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     // Note that APLHETERO elements are LPSYMENTRYs, so there's no
@@ -1077,11 +1077,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     // Note that APLNESTED elements are a mixture of LPSYMENTRYs
@@ -1103,11 +1103,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLINT) lpMemRes)[uRes] = apaOffRht + apaMulRht * uRht;
@@ -1126,11 +1126,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &((LPAPLRAT) lpMemRht)[uRht]);
@@ -1149,11 +1149,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
@@ -1234,10 +1234,10 @@ NORMAL_EXIT:
 
     if (hGlbAxis)
     {
-        if (lpMemAxis)
+        if (lpMemAxisHead)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
+            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
         } // End IF
 
         // We no longer need this storage

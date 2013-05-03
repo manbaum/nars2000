@@ -560,7 +560,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                   aplIndexSet;          // Index into set arg
     APLINT        iLft,                 // Loop counter
                   iAxisNxt;             // Index of next axis value
-    LPAPLUINT     lpMemAxis = NULL,     // Ptr to axis global memory
+    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
                   lpMemAxisAct,         // Ptr to actual axis values
                   lpMemAxisLst,         // Ptr to (last + 1) of actual axis values
                   lpMemAxisEli,         // Ptr to elided axis values
@@ -753,15 +753,15 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     // Handle elided axes
 
     // Lock the memory to get a ptr to it
-    lpMemAxis = MyGlobalLock (hGlbAxis);
+    lpMemAxisHead = MyGlobalLock (hGlbAxis);
 
     // Loop through the elided axes
     for (uRes = 0; uRes < (aplRankRht - aplNELMAxis); uRes++)
     {
         // Accumulate the NELM & rank
-        aplNELMRes   *= lpMemDimRht[lpMemAxis[uRes]];
+        aplNELMRes   *= lpMemDimRht[lpMemAxisHead[uRes]];
         aplRankRes   += 1;
-        aplRankN1Res += !IsUnitDim (lpMemDimRht[lpMemAxis[uRes]]);
+        aplRankN1Res += !IsUnitDim (lpMemDimRht[lpMemAxisHead[uRes]]);
     } // End FOR
 
     // If we're not assigning, ...
@@ -851,10 +851,10 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     lpMemLimLft = &lpMemOdo[aplRankRht];
 
     // Calc ptr to first of actual axes
-    lpMemAxisAct = &lpMemAxis[aplRankRht - aplNELMAxis];
+    lpMemAxisAct = &lpMemAxisHead[aplRankRht - aplNELMAxis];
 
     // Calc ptr to (last + 1) of actual dimensions
-    lpMemAxisLst = &lpMemAxis[aplRankRht];
+    lpMemAxisLst = &lpMemAxisHead[aplRankRht];
 
     // Initialize axis index
     iAxisNxt = uLft = 0;
@@ -1069,7 +1069,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     lpMemLimLft = &lpMemOdo[aplRankRht];
 
     // Calc ptr to last of elided dimensions
-    lpMemAxisEli = &lpMemAxis[aplRankRht - aplNELMAxis - 1];
+    lpMemAxisEli = &lpMemAxisHead[aplRankRht - aplNELMAxis - 1];
 
     // Initialize bit mask when looping through Booleans
     uBitMask = BIT0;
@@ -1090,7 +1090,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             goto ERROR_EXIT;
 
         // Calc ptr to last of actual axes
-        lpMemAxisAct = &lpMemAxis[aplRankRht - 1];
+        lpMemAxisAct = &lpMemAxisHead[aplRankRht - 1];
 
         // Initialize axis index
         iAxisNxt = aplRankRht - 1;
@@ -1546,10 +1546,10 @@ NORMAL_EXIT:
 
     if (hGlbAxis)
     {
-        if (lpMemAxis)
+        if (lpMemAxisHead)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
+            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
         } // End IF
 
         // We no longer need this storage

@@ -833,7 +833,7 @@ UBOOL CheckAxis_EM
     if (lptkAxis EQ NULL)
     {
         APLUINT   ByteAxis;         // # bytes for the axis vector
-        LPAPLUINT lpMemAxis;        // Ptr to axis vector global memory
+        LPAPLUINT lpMemAxis;        // Ptr to axis values, fleshed out by CheckAxis_EM
 
         Assert (lphGlbAxis NE NULL);
 

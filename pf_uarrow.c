@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -315,7 +315,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                   uOdo;                 // Loop counter
     LPAPLDIM      lpMemDimRht = NULL,   // Ptr to right arg dimensions
                   lpMemDimRes = NULL;   // Ptr to result    ...
-    LPAPLUINT     lpMemAxisHead,        // Ptr to axis values, fleshed out
+    LPAPLUINT     lpMemAxisHead,        // Ptr to axis values, fleshed out by CheckAxis_EM
                   lpMemAxisTail = NULL, // Ptr to grade up of AxisHead
                   lpMemOdoRht = NULL,   // Ptr to right arg odometer global memory
                   lpMemOdoRes = NULL,   // Ptr to result    ...
@@ -440,7 +440,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                                            aplLongestLft,   // Left arg immediate value
                                            lpMemDimRht,     // Ptr to right arg global memory
                                            aplRankRht,      // Right arg rank
-                                           lpMemAxisTail,   // Ptr to axis global memory (may be NULL if axis not present)
+                                           lpMemAxisTail,   // Ptr to grade up of AxisHead (may be NULL if axis not present)
                                            FALSE,           // TRUE iff it's DownArrow
                                            lptkFunc);       // Ptr to function token
     if (!hGlbTmpLft)

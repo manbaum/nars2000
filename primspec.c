@@ -437,8 +437,8 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
                  lpMemDimRes;           // Ptr to result    ...
     APLLONGEST   aplLongestRht;         // Right arg immediate value
     APLUINT      ByteRes;               // # bytes in the result
-    LPAPLUINT    lpMemAxisHead = NULL,  // Ptr to axis head
-                 lpMemAxisTail = NULL;  // Ptr to axis tail
+    LPAPLUINT    lpMemAxisHead = NULL,  // Ptr to axis values, fleshed out by CheckAxis_EM
+                 lpMemAxisTail = NULL;  // Ptr to grade up of AxisHead
     LPPRIMSPEC   lpPrimSpec;            // Ptr to function PRIMSPEC
     LPPRIMFLAGS  lpPrimFlags;           // Ptr to function PrimFlags entry
     LPPRIMIDENT  lpPrimIdent;           // Ptr to function PrimIdent entry
@@ -749,8 +749,8 @@ UBOOL PrimIdentFnScalarCommon_EM
     APLUINT   ByteRes2;                     // # bytes in the result2
     LPAPLDIM  lpMemDimItm,                  // Ptr to item dimensions
               lpMemDimRes2;                 // Ptr to result2    ...
-    LPAPLUINT lpMemAxisHead = NULL,         // Ptr to axis head
-              lpMemAxisTail = NULL;         // Ptr to axis tail
+    LPAPLUINT lpMemAxisHead = NULL,         // Ptr to axis values, fleshed out by CheckAxis_EM
+              lpMemAxisTail = NULL;         // Ptr to grade up of AxisHead
 
     // Loop through the right arg
     for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -2828,8 +2828,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     APLSTYPE     aplTypeLft,            // Left arg storage type
                  aplTypeRht,            // Right ...
                  aplTypeRes;            // Result   ...
-    LPAPLUINT    lpMemAxisHead = NULL,  // Ptr to axis head
-                 lpMemAxisTail = NULL;  // Ptr to axis tail
+    LPAPLUINT    lpMemAxisHead = NULL,  // Ptr to axis values, fleshed out by CheckAxis_EM
+                 lpMemAxisTail = NULL;  // Ptr to grade up of AxisHead
     LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
                  lpMemRht = NULL;       // Ptr to right ...
     APLINT       aplInteger;            // Temporary integer value
@@ -3030,8 +3030,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                      &hGlbRes,
                       lpMemLft,         // Points to Sig.nature
                       lpMemRht,         // ...
-                      lpMemAxisHead,
-                      lpMemAxisTail,
+                      lpMemAxisHead,    // Ptr to axis values, fleshed out by CheckAxis_EM
+                      lpMemAxisTail,    // Ptr to grade up of AxisHead
                       aplRankLft,
                       aplRankRht,
                       aplRankRes,
@@ -3125,8 +3125,8 @@ UBOOL PrimFnDydSimpNest_EM
      LPVOID        lpMemLft,        // Points to Sig.nature
      LPVOID        lpMemRht,        // ...
 
-     LPAPLUINT     lpMemAxisHead,   //
-     LPAPLUINT     lpMemAxisTail,   //
+     LPAPLUINT     lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+     LPAPLUINT     lpMemAxisTail,   // Ptr to grade up of AxisHead
                                     //
      APLRANK       aplRankLft,      // Left arg rank
      APLRANK       aplRankRht,      // Right ...
@@ -3509,8 +3509,8 @@ UBOOL PrimFnDydNestSimp_EM
      LPVOID        lpMemLft,        // Points to Sig.nature
      LPVOID        lpMemRht,        // ...
 
-     LPAPLUINT     lpMemAxisHead,   //
-     LPAPLUINT     lpMemAxisTail,   //
+     LPAPLUINT     lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+     LPAPLUINT     lpMemAxisTail,   // Ptr to grade up of AxisHead
                                     //
      APLRANK       aplRankLft,      // Left arg rank
      APLRANK       aplRankRht,      // Right ...
@@ -4206,7 +4206,7 @@ UBOOL PrimFnDydNestNest_EM
      LPVOID       lpMemLft,         // Points to Sig.nature
      LPVOID       lpMemRht,         // ...
 
-     LPAPLUINT    lpMemAxisHead,    // Ptr to axis values, fleshed out
+     LPAPLUINT    lpMemAxisHead,    // Ptr to axis values, fleshed out by CheckAxis_EM
      LPAPLUINT    lpMemAxisTail,    // Ptr to grade up of AxisHead
 
      APLRANK      aplRankLft,       // Left arg rank
@@ -10708,7 +10708,7 @@ UBOOL PrimFnDydSimpSimp_EM
      LPVOID       lpMemLft,         // Points to Sig.nature
      LPVOID       lpMemRht,         // ...
 
-     LPAPLUINT    lpMemAxisHead,    // Ptr to axis values, fleshed out
+     LPAPLUINT    lpMemAxisHead,    // Ptr to axis values, fleshed out by CheckAxis_EM
      LPAPLUINT    lpMemAxisTail,    // Ptr to grade up of AxisHead
 
      APLRANK      aplRankLft,       // Left arg rank
@@ -14588,7 +14588,7 @@ void CalcLftRhtArgIndices
      UBOOL     bLftIdent,           // TRUE iff the function has a left identity element and the Axis tail is valid
      UBOOL     bRhtIdent,           // ...                         right ...
      APLNELM   aplNELMAxis,
-     LPAPLUINT lpMemAxisHead,
+     LPAPLUINT lpMemAxisHead,       // Ptr to axis values, fleshed out by CheckAxis_EM
      LPAPLUINT lpMemOdo,
      LPAPLUINT lpMemWVec,
      LPAPLDIM  lpMemDimRes)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -291,50 +291,50 @@ WSFULL_EXIT:
 #endif
 
 LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                // Ptr to left arg token
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeLft,       // Left arg storage type
-                  aplTypeRht,       // Right ...
-                  aplTypeRes;       // Result   ...
-    APLNELM       aplNELMLft,       // Left arg NELM
-                  aplNELMRht,       // Right ...
-                  aplNELMRes;       // Result   ...
-    APLRANK       aplRankLft,       // Left arg rank
-                  aplRankRht,       // Right ...
-                  aplRankRes;       // Result   ...
-    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
-                  hGlbRht = NULL,   // Right ...
-                  hGlbRes = NULL,   // Result   ...
-                  hGlbAxis = NULL,  // Axis     ...
-                  hGlbWVec = NULL,  // Weighting vector ...
-                  hGlbOdo = NULL;   // Odometer ...
-    LPAPLDIM      lpMemDimRht,      // Ptr to right arg dimensions
-                  lpMemDimRes;      // Ptr to result    ...
-    APLDIM        uMinDim;          //
-    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
-                  lpMemRht = NULL,  // Ptr to right ...
-                  lpMemRes = NULL;  // Ptr to result   ...
-    LPAPLUINT     lpMemAxis = NULL, // Ptr to axis global memory
-                  lpMemGrUp,        // Ptr to grade up ...
-                  lpMemWVec = NULL, // Ptr to weighting vector ...
-                  lpMemOdo = NULL;  // Ptr to odometer ...
-    APLUINT       ByteRes,          // # bytes in the result
-                  uRht,             // Right arg loop counter
-                  uRes,             // Result    ...
-                  uOdo;             // Odometer  ...
-    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    UINT          uBitIndex,        // Bit index for marching through Booleans
-                  uBitMask;         // Bit mask  ...
-    APLINT        iDim,             // Dimension loop counter
-                  apaOffRht,        // Right arg APA offset
-                  apaMulRht;        // ...           multiplier
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
-    LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
+    APLSTYPE      aplTypeLft,           // Left arg storage type
+                  aplTypeRht,           // Right ...
+                  aplTypeRes;           // Result   ...
+    APLNELM       aplNELMLft,           // Left arg NELM
+                  aplNELMRht,           // Right ...
+                  aplNELMRes;           // Result   ...
+    APLRANK       aplRankLft,           // Left arg rank
+                  aplRankRht,           // Right ...
+                  aplRankRes;           // Result   ...
+    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
+                  hGlbRht = NULL,       // Right ...
+                  hGlbRes = NULL,       // Result   ...
+                  hGlbAxis = NULL,      // Axis     ...
+                  hGlbWVec = NULL,      // Weighting vector ...
+                  hGlbOdo = NULL;       // Odometer ...
+    LPAPLDIM      lpMemDimRht,          // Ptr to right arg dimensions
+                  lpMemDimRes;          // Ptr to result    ...
+    APLDIM        uMinDim;              //
+    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
+                  lpMemRht = NULL,      // Ptr to right ...
+                  lpMemRes = NULL;      // Ptr to result   ...
+    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
+                  lpMemAxisTail,        // Ptr to grade up of AxisHead
+                  lpMemWVec = NULL,     // Ptr to weighting vector ...
+                  lpMemOdo = NULL;      // Ptr to odometer ...
+    APLUINT       ByteRes,              // # bytes in the result
+                  uRht,                 // Right arg loop counter
+                  uRes,                 // Result    ...
+                  uOdo;                 // Odometer  ...
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    UINT          uBitIndex,            // Bit index for marching through Booleans
+                  uBitMask;             // Bit mask  ...
+    APLINT        iDim,                 // Dimension loop counter
+                  apaOffRht,            // Right arg APA offset
+                  apaMulRht;            // ...           multiplier
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPVARARRAY_HEADER lpMemHdrRht;      // Ptr to right arg header
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -436,11 +436,11 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     aplRankRes++;
 
     // Lock the memory to get a ptr to it
-    lpMemAxis = MyGlobalLock (hGlbAxis);
+    lpMemAxisHead = MyGlobalLock (hGlbAxis);
 
     // Point to the grade-up of the first
-    //   <aplRankRht> values in lpMemAxis
-    lpMemGrUp = &lpMemAxis[aplRankRht];
+    //   <aplRankRht> values in lpMemAxisHead
+    lpMemAxisTail = &lpMemAxisHead[aplRankRht];
 
     // Save a ptr to the right arg header
     lpMemHdrRht = lpMemRht;
@@ -455,17 +455,17 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     aplNELMRes = 1;
     if (!IsScalar (aplRankRes))
     {
-        uMinDim = lpMemDimRht[lpMemGrUp[0]];
+        uMinDim = lpMemDimRht[lpMemAxisTail[0]];
         for (uRht = 1; uRht < aplRankRht; uRht++)
         {
             // Compare the values corresponding to the indices
             //   to see if they are the same (and thus coalescing)
-            if (lpMemAxis[lpMemGrUp[uRht - 1]] EQ lpMemAxis[lpMemGrUp[uRht]])
-                uMinDim = min (uMinDim, lpMemDimRht[lpMemGrUp[uRht]]);
+            if (lpMemAxisHead[lpMemAxisTail[uRht - 1]] EQ lpMemAxisHead[lpMemAxisTail[uRht]])
+                uMinDim = min (uMinDim, lpMemDimRht[lpMemAxisTail[uRht]]);
             else
             {
                 aplNELMRes *= uMinDim;
-                uMinDim = lpMemDimRht[lpMemGrUp[uRht]];
+                uMinDim = lpMemDimRht[lpMemAxisTail[uRht]];
             } // End IF/ELSE
         } // End FOR
 
@@ -506,17 +506,17 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     // Fill in the dimensions
     if (!IsScalar (aplRankRes))
     {
-        uMinDim = lpMemDimRht[lpMemGrUp[0]];
+        uMinDim = lpMemDimRht[lpMemAxisTail[0]];
         for (uRht = 1; uRht < aplRankRht; uRht++)
         {
             // Compare the values corresponding to the indices
             //   to see if they are the same (and thus coalescing)
-            if (lpMemAxis[lpMemGrUp[uRht - 1]] EQ lpMemAxis[lpMemGrUp[uRht]])
-                uMinDim = min (uMinDim, lpMemDimRht[lpMemGrUp[uRht]]);
+            if (lpMemAxisHead[lpMemAxisTail[uRht - 1]] EQ lpMemAxisHead[lpMemAxisTail[uRht]])
+                uMinDim = min (uMinDim, lpMemDimRht[lpMemAxisTail[uRht]]);
             else
             {
                 *((LPAPLDIM) lpMemRes)++ = uMinDim;
-                uMinDim = lpMemDimRht[lpMemGrUp[uRht]];
+                uMinDim = lpMemDimRht[lpMemAxisTail[uRht]];
             } // End IF/ELSE
         } // End FOR
 
@@ -611,7 +611,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+                    uRht += lpMemOdo[lpMemAxisHead[uOdo]] * lpMemWVec[uOdo];
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
@@ -644,7 +644,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+                    uRht += lpMemOdo[lpMemAxisHead[uOdo]] * lpMemWVec[uOdo];
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
@@ -668,7 +668,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+                    uRht += lpMemOdo[lpMemAxisHead[uOdo]] * lpMemWVec[uOdo];
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
@@ -697,7 +697,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+                    uRht += lpMemOdo[lpMemAxisHead[uOdo]] * lpMemWVec[uOdo];
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
@@ -721,7 +721,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+                    uRht += lpMemOdo[lpMemAxisHead[uOdo]] * lpMemWVec[uOdo];
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
@@ -746,7 +746,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+                    uRht += lpMemOdo[lpMemAxisHead[uOdo]] * lpMemWVec[uOdo];
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
@@ -770,7 +770,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+                    uRht += lpMemOdo[lpMemAxisHead[uOdo]] * lpMemWVec[uOdo];
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
@@ -794,7 +794,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   corresponding index in lpMemRes where the
                 //   next value from lpMemRht goes.
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                    uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
+                    uRht += lpMemOdo[lpMemAxisHead[uOdo]] * lpMemWVec[uOdo];
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
@@ -896,10 +896,10 @@ NORMAL_EXIT:
 
     if (hGlbAxis)
     {
-        if (lpMemAxis)
+        if (lpMemAxisHead)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
+            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
         } // End IF
 
         // We no longer need this storage

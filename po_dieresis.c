@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1149,7 +1149,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                   hGlbAxis = NULL,      // Axis     ...
                   hGlbWVec = NULL,      // Weighting vector ...
                   hGlbOdo = NULL;       // Odometer ...
-    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out
+    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
                   lpMemAxisTail = NULL, // Ptr to grade up of AxisHead
                   lpMemOdo = NULL,      // Ptr to odometer global memory
                   lpMemWVec = NULL;     // Ptr to weighting vector ...
@@ -1255,18 +1255,18 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
              && (lpMemAxisTail NE NULL);
 
     // Check for RANK and LENGTH ERRORs
-    if (!CheckRankLengthError_EM (aplRankRes,
-                                  aplRankLft,
-                                  aplNELMLft,
+    if (!CheckRankLengthError_EM (aplRankRes,       // Result rank
+                                  aplRankLft,       // Left arg rank
+                                  aplNELMLft,       // Left arg NELM
                                   lpMemLft,         // Ptr to left arg memory Sig.nature
-                                  aplRankRht,
-                                  aplNELMRht,
+                                  aplRankRht,       // Right arg rank
+                                  aplNELMRht,       // Rigth arg NELM
                                   lpMemRht,         // Ptr to right arg memory Sig.nature
-                                  aplNELMAxis,
-                                  lpMemAxisTail,
+                                  aplNELMAxis,      // Axis NELM
+                                  lpMemAxisTail,    // Ptr to grade up of AxisHead
                                   bLftIdent,        // TRUE iff the function has a left identity element and the Axis tail is valid
                                   bRhtIdent,        // ...                         right ...
-                                 &lpYYFcnStrOpr->tkToken))
+                                 &lpYYFcnStrOpr->tkToken))  // Ptr to function token
         goto ERROR_EXIT;
 
     // The NELM of the result is the larger of the two args
@@ -1455,7 +1455,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                   bLftIdent,            // TRUE iff the function has a left identity element and the Axis tail is valid
                                   bRhtIdent,            // ...                         right ...
                                   aplNELMAxis,
-                                  lpMemAxisHead,
+                                  lpMemAxisHead,        // Ptr to axis values, fleshed out by CheckAxis_EM
                                   lpMemOdo,
                                   lpMemWVec,
                                   lpMemDimRes);

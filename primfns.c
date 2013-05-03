@@ -448,17 +448,17 @@ APLSTYPE StorageType
 //  $IncrOdometer
 //
 //  Increment the odometer in lpMemOdo subject to the
-//    limits in lpMemDim[lpMemAxis] or lpMemDim, all
+//    limits in lpMemDim[lpMemAxisHead] or lpMemDim, all
 //    of length <aplRank>.
 //  Return TRUE iff we wrapped back to all 0s.
 //***************************************************************************
 
 UBOOL IncrOdometer
-    (LPAPLUINT lpMemOdo,    // Ptr to the values to increment
-     LPAPLDIM  lpMemDim,    // Ptr to the limits on each dimension
-     LPAPLINT  lpMemAxis,   // Ptr to optional index vector (may be NULL)
-     APLRANK   aplRank)     // # elements to which each of the
-                            //   ptrs point
+    (LPAPLUINT lpMemOdo,        // Ptr to the values to increment
+     LPAPLDIM  lpMemDim,        // Ptr to the limits on each dimension
+     LPAPLUINT lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM (may be NULL)
+     APLRANK   aplRank)         // # elements to which each of the
+                                //   ptrs point
 
 {
     APLINT iOdo;
@@ -467,10 +467,10 @@ UBOOL IncrOdometer
     // Note we use a signed index variable because we're
     //   walking backwards and the test against zero must be
     //   made as a signed variable.
-    if (lpMemAxis)
+    if (lpMemAxisHead)
     {
         for (iOdo = aplRank - 1; iOdo >= 0; iOdo--)
-        if (++lpMemOdo[iOdo] EQ lpMemDim[lpMemAxis[iOdo]])
+        if (++lpMemOdo[iOdo] EQ lpMemDim[lpMemAxisHead[iOdo]])
             lpMemOdo[iOdo] = 0;
         else
             return FALSE;
@@ -1088,7 +1088,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                 bLftIdent,              // TRUE iff the function has a left identity element and the Axis tail is valid
                 bRhtIdent;              // ...                         right ...
     LPPRIMSPEC  lpPrimSpec;             // Ptr to local PRIMSPEC
-    LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis values, fleshed out
+    LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis values, fleshed out by CheckAxis_EM
                 lpMemAxisTail = NULL,   // Ptr to grade up of AxisHead
                 lpMemOdo = NULL,        // Ptr to odometer global memory
                 lpMemWVec = NULL;       // Ptr to weighting vector ...
@@ -1192,15 +1192,15 @@ HGLOBAL MakeDydPrototype_EM_PTB
              && (lpMemAxisTail NE NULL);
 
     // Check for RANK and LENGTH ERRORs
-    if (!CheckRankLengthError_EM (aplRankRes,
-                                  aplRankLft,
-                                  aplNELMLft,
-                                  lpMemLft,
-                                  aplRankRht,
-                                  aplNELMRht,
-                                  lpMemRht,
-                                  aplNELMAxis,
-                                  lpMemAxisTail,
+    if (!CheckRankLengthError_EM (aplRankRes,       // Result rank
+                                  aplRankLft,       // Left arg rank
+                                  aplNELMLft,       // Left arg NELM
+                                  lpMemLft,         // Ptr to left arg global memory
+                                  aplRankRht,       // Right arg rank
+                                  aplNELMRht,       // Right arg NELM
+                                  lpMemRht,         // Ptr to right arg global memory
+                                  aplNELMAxis,      // Axis NELM
+                                  lpMemAxisTail,    // Ptr to grade up of AxisHead
                                   bLftIdent,        // TRUE iff the function has a left identity element
                                   bRhtIdent,        // ...                         right ...
                                   lptkFunc))        // Ptr to the function token
@@ -2518,18 +2518,18 @@ UBOOL IsGlobalTypeArray_PTB
 #endif
 
 UBOOL CheckRankLengthError_EM
-    (APLRANK  aplRankRes,           // Result rank
-     APLRANK  aplRankLft,           // Left arg ...
-     APLNELM  aplNELMLft,           // ...      NELM
-     LPVOID   lpMemLft,             // Ptr to left arg memory
-     APLRANK  aplRankRht,           // Right arg rank
-     APLNELM  aplNELMRht,           // ...       NELM
-     LPVOID   lpMemRht,             // Ptr to right arg memory
-     APLNELM  aplNELMAxis,          // Axis NELM
-     LPAPLINT lpMemAxisTail,        // Ptr to grade up of AxisHead
-     UBOOL    bLftIdent,            // TRUE iff the function has a left identity element and the Axis tail is valid
-     UBOOL    bRhtIdent,            // ...                         right ...
-     LPTOKEN  lptkFunc)             // Ptr to function token
+    (APLRANK   aplRankRes,          // Result rank
+     APLRANK   aplRankLft,          // Left arg ...
+     APLNELM   aplNELMLft,          // ...      NELM
+     LPVOID    lpMemLft,            // Ptr to left arg memory
+     APLRANK   aplRankRht,          // Right arg rank
+     APLNELM   aplNELMRht,          // ...       NELM
+     LPVOID    lpMemRht,            // Ptr to right arg memory
+     APLNELM   aplNELMAxis,         // Axis NELM
+     LPAPLUINT lpMemAxisTail,       // Ptr to grade up of AxisHead
+     UBOOL     bLftIdent,           // TRUE iff the function has a left identity element and the Axis tail is valid
+     UBOOL     bRhtIdent,           // ...                         right ...
+     LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
     APLINT uRes;

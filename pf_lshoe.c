@@ -232,43 +232,47 @@ LPPL_YYSTYPE PrimFnMonLeftShoeCon_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
-    (HGLOBAL hGlbRht,               // Handle to right arg
-     LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
-     LPTOKEN lptkFunc)              // Ptr to function token
+    (HGLOBAL hGlbRht,                   // Handle to right arg
+     LPTOKEN lptkAxis,                  // Ptr to axis token (may be NULL)
+     LPTOKEN lptkFunc)                  // Ptr to function token
 
 {
-    HGLOBAL       hGlbRes = NULL,
-                  hGlbAxis = NULL,
-                  hGlbSub = NULL,
-                  hSymGlbProto = NULL,
-                  hGlbRhtProto = NULL,
-                  hGlbOdo = NULL,
-                  hGlbWVec = NULL;
-    LPVOID        lpMemRes = NULL,
-                  lpMemRht = NULL,
-                  lpMemSub = NULL,
-                  lpMemProto = NULL;
-    LPAPLDIM      lpMemDimRht = NULL;
-    LPAPLINT      lpMemAxis = NULL,
-                  lpMemGrUp = NULL,
-                  lpMemOdo = NULL,
-                  lpMemWVec = NULL;
-    APLUINT       ByteRes;          // # bytes in the result
-    APLNELM       aplNELMAxis,
-                  aplNELMRes,
-                  aplNELMRht,
-                  aplNELMSub;
-    APLRANK       aplRankRht,
-                  aplRankRes;
-    UBOOL         bRet = TRUE;
-    APLNELM       uRes, uRht, uSub, uOdo, uRhtOff;
-    APLSTYPE      aplTypeRht;
-    APLNELMSIGN   iRht;
-    APLINT        apaOff,
-                  apaMul;
-    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    HGLOBAL       hGlbRes = NULL,       // Result global memory handle
+                  hGlbAxis = NULL,      // Axis   ...
+                  hGlbSub = NULL,       // Subarray ...
+                  hSymGlbProto = NULL,  // Subarray prototype ...
+                  hGlbRhtProto = NULL,  // Right arg prototype ...
+                  hGlbOdo = NULL,       // Odometer vector ...
+                  hGlbWVec = NULL;      // Weighting vector ...
+    LPVOID        lpMemRes = NULL,      // Ptr to result global memory
+                  lpMemRht = NULL,      // Ptr to right arg ...
+                  lpMemSub = NULL,      // Ptr to subarray ...
+                  lpMemProto = NULL;    // Ptr to prototype ...
+    LPAPLDIM      lpMemDimRht = NULL;   // Ptr to right arg dimensions
+    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
+                  lpMemAxisTail = NULL, // Ptr to grade up of AxisHead
+                  lpMemOdo = NULL,      // Ptr to odometer vector
+                  lpMemWVec = NULL;     // Ptr to weighting vector
+    APLUINT       ByteRes;              // # bytes in the result
+    APLNELM       aplNELMAxis,          // Axis NELM
+                  aplNELMRes,           // Result NELM
+                  aplNELMRht,           // Right arg NELM
+                  aplNELMSub;           // Subarray NELM
+    APLRANK       aplRankRht,           // Right arg rank
+                  aplRankRes;           // Result rank
+    UBOOL         bRet = TRUE;          // TRUE iff the result is valid
+    APLNELM       uRes,                 // Loop counter
+                  uRht,                 // ...
+                  uSub,                 // ...
+                  uOdo,                 // ...
+                  uRhtOff;              // ...
+    APLSTYPE      aplTypeRht;           // Right arg storage type
+    APLNELMSIGN   iRht;                 // Loop counter
+    APLINT        apaOff,               // APA offset (if present)
+                  apaMul;               // APA multiplier ...
+    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -350,35 +354,34 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 #undef  lpAPA
     } // End IF
 
+    // Initialize with identity element for multiplication
+    aplNELMRes = aplNELMSub = 1;
+
     // Calculate the NELM of the result taking into
     //   account the axis values.
     if (lptkAxis NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemAxis = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLock (hGlbAxis);
 
         // Point to the grade-up of the first
-        //   <aplRankRht> values in lpMemAxis
-        lpMemGrUp = &lpMemAxis[aplRankRht];
-
-        aplNELMRes = 1;     // Initialize with identity element for multiplication
-        aplNELMSub = 1;     // ...
+        //   <aplRankRht> values in lpMemAxisHead
+        lpMemAxisTail = &lpMemAxisHead[aplRankRht];
 
         // Loop through the leading axis indices
         //   extracting the corresponding dimension
         //   from the right arg to calculate the NELM
         //   of the result.
         for (uRes = 0; uRes < aplRankRes; uRes++)
-            aplNELMRes *= lpMemDimRht[lpMemAxis[uRes]];
+            aplNELMRes *= lpMemDimRht[lpMemAxisHead[uRes]];
 
         // Loop through the trailing axis indices
         //   extracting the corresponding dimension
         //   from the right arg to calulate the NELM
         //   of each subarray.
         for (uRes = aplRankRes; uRes < aplRankRht; uRes++)
-            aplNELMSub *= lpMemDimRht[lpMemAxis[uRes]];
-    } else
-        aplNELMRes = aplNELMSub = 1;
+            aplNELMSub *= lpMemDimRht[lpMemAxisHead[uRes]];
+    } // End IF
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRes, aplRankRes);
@@ -420,7 +423,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     //   extracting the corresponding dimension
     //   from the right arg
     for (uRes = 0; uRes < aplRankRes; uRes++)
-        *((LPAPLDIM) lpMemRes)++ = lpMemDimRht[lpMemAxis[uRes]];
+        *((LPAPLDIM) lpMemRes)++ = lpMemDimRht[lpMemAxisHead[uRes]];
 
     // lpMemRes now points to the result's data
 
@@ -444,25 +447,33 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 case ARRAY_INT:
                 case ARRAY_APA:
                 case ARRAY_FLOAT:
-                    bRet = PrimFnMonLeftShoeProto_EM (&hSymGlbProto,
-                                                       hGlbZilde,
-                                                       ARRAY_BOOL,
-                                                       aplNELMSub,
-                                                       aplNELMAxis,
-                                                       ARRAY_BOOL,
-                                                       lptkFunc);
+                    bRet = PrimFnMonLeftShoeProto_EM (&hSymGlbProto,    // Ptr to handle to prototype result
+                                                       hGlbZilde,       // Handle to empty (zilde or '')
+                                                       ARRAY_BOOL,      // Prototype type
+                                                       aplNELMSub,      // Subarray NELM
+                                                       aplNELMAxis,     // Axis NELM
+                                                       ARRAY_BOOL,      // Right arg type
+                                                       lpMemDimRht,     // Ptr to right arg dimensions
+                                                       lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                       aplRankRht,      // Right arg rank
+                                                       aplRankRes,      // Result rank
+                                                       lptkFunc);       // Ptr to function token
                     if (!bRet)
                         goto ERROR_EXIT;
                     break;
 
                 case ARRAY_CHAR:
-                    bRet = PrimFnMonLeftShoeProto_EM (&hSymGlbProto,
-                                                       hGlbV0Char,
-                                                       ARRAY_CHAR,
-                                                       aplNELMSub,
-                                                       aplNELMAxis,
-                                                       ARRAY_CHAR,
-                                                       lptkFunc);
+                    bRet = PrimFnMonLeftShoeProto_EM (&hSymGlbProto,    // Ptr to handle to prototype result
+                                                       hGlbV0Char,      // Handle to empty (zilde or '')
+                                                       ARRAY_CHAR,      // Prototype type
+                                                       aplNELMSub,      // Subarray NELM
+                                                       aplNELMAxis,     // Axis NELM
+                                                       ARRAY_CHAR,      // Right arg type
+                                                       lpMemDimRht,     // Ptr to right arg dimensions
+                                                       lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                       aplRankRht,      // Right arg rank
+                                                       aplRankRes,      // Result rank
+                                                       lptkFunc);       // Ptr to function token
                     if (!bRet)
                         goto ERROR_EXIT;
                     break;
@@ -534,66 +545,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             goto NORMAL_EXIT;
         } // End IF
 
-        //***************************************************************
-        // Check for empty subarrays
-        //***************************************************************
-
-        if (IsEmpty (aplNELMSub))
-        {
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:
-                case ARRAY_INT:
-                case ARRAY_FLOAT:
-                case ARRAY_APA:
-                    for (uRes = 0; uRes < aplNELMRes; uRes++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Save the HGLOBAL in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbZilde);
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_CHAR:
-                    for (uRes = 0; uRes < aplNELMRes; uRes++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Save the HGLOBAL in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbV0Char);
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_NESTED:
-                case ARRAY_HETERO:
-                    // Fill in the values
-                    for (uRes = 0; uRes < aplNELMRes; uRes++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Save the value in the prototype
-                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd_PTB (lpMemRht);
-                    } // End FOR
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            goto NORMAL_EXIT;
-        } // End IF
-
         // Calculate space needed for the weighting vector
         ByteRes = aplRankRht * sizeof (APLUINT);
 
@@ -657,7 +608,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         //   the right arg
         // The subarray is of rank <aplNELMAxis>.
         // The subarray's dimensions are the first <aplNELMAxis>
-        //   values in lpMemDimRht[lpMemAxis[u]].
+        //   values in lpMemDimRht[lpMemAxisHead[u]].
         // The subarray's NELM is <aplNELMSub>.
         // The subarray's values are the arrays indexed by all <aplNELMRes>
         //   values in the trailing indices in the right arg's dimensions.
@@ -675,18 +626,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_BOOL,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_BOOL,      // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -707,11 +658,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
 
@@ -733,18 +684,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_INT,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_INT,       // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -763,11 +714,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLINT) lpMemSub)[uSub] = ((LPAPLINT) lpMemRht)[uRht];
@@ -786,18 +737,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_FLOAT,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_FLOAT,     // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -816,11 +767,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLFLOAT) lpMemSub)[uSub] = ((LPAPLFLOAT) lpMemRht)[uRht];
@@ -839,18 +790,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_CHAR,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_CHAR,      // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -869,11 +820,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLCHAR) lpMemSub)[uSub] = ((LPAPLCHAR) lpMemRht)[uRht];
@@ -892,18 +843,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_HETERO,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_HETERO,    // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -922,11 +873,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     // Note that APLHETERO elements are LPSYMENTRYs, so there's no
@@ -950,18 +901,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_NESTED,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_NESTED,    // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -980,11 +931,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     // Note that APLNESTED elements are a mixture of LPSYMENTRYs
@@ -1009,18 +960,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_INT,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_INT,       // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -1039,11 +990,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLINT) lpMemSub)[uSub] = apaOff + apaMul * uRht;
@@ -1062,18 +1013,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_RAT,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_RAT,       // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -1092,11 +1043,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     mpq_init_set (&((LPAPLRAT) lpMemSub)[uSub], &((LPAPLRAT) lpMemRht)[uRht]);
@@ -1115,18 +1066,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 //   fill in the subarray header, and
                 //   copy the dimensions from the right arg to the subarray.
                 //***************************************************************
-                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,
-                                                   ARRAY_VFP,
-                                                   aplNELMSub,
-                                                   aplNELMAxis,
-                                                   aplRankRes,
-                                                   aplRankRht,
-                                    ((LPAPLNESTED) lpMemRes)++,
-                                                   lpMemDimRht,
-                                                   lpMemAxis,
-                                                  &hGlbSub,
-                                                  &lpMemSub,
-                                                   lptkFunc);
+                bRet = PrimFnMonLeftShoeGlbSub_EM (ByteRes,         // # bytes in the result
+                                                   ARRAY_VFP,       // Subarray type
+                                                   aplNELMSub,      // Subarray NELM
+                                                   aplNELMAxis,     // Axis NELM
+                                                   aplRankRes,      // Result rank
+                                                   aplRankRht,      // Right arg rank
+                                    ((LPAPLNESTED) lpMemRes)++,     // Ptr to result memory
+                                                   lpMemDimRht,     // Ptr to right arg dimensions
+                                                   lpMemAxisHead,   // Ptr to axis values, fleshed out by CheckAxis_EM
+                                                  &hGlbSub,         // Ptr to subarray handle
+                                                  &lpMemSub,        // Ptr to ptr to subarray memory
+                                                   lptkFunc);       // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -1145,11 +1096,11 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   corresponding index in lpMemRes where the
                     //   next value from lpMemRht goes.
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
-                        uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
+                        uRht += lpMemOdo[lpMemAxisTail[uOdo]] * lpMemWVec[uOdo];
 
                     // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    //   the values in lpMemDimRht[lpMemAxisHead]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxisHead, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     mpfr_init_copy (&((LPAPLVFP) lpMemSub)[uSub], &((LPAPLVFP) lpMemRht)[uRht]);
@@ -1223,10 +1174,10 @@ UNLOCK_EXIT:
         MyGlobalUnlock (hGlbWVec); lpMemWVec = NULL;
     } // End IF
 
-    if (lpMemAxis)
+    if (lpMemAxisHead)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
+        MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
     } // End IF
 
     if (lpMemRht)
@@ -1271,65 +1222,65 @@ QUICK_EXIT:
 #endif
 
 UBOOL PrimFnMonLeftShoeProto_EM
-    (HGLOBAL *lphGlbProto,          // Ptr to handle to prototype result
-     HGLOBAL  hGlbMT,               // Handle to empty (zilde or '')
-     APLSTYPE aplTypeProto,         // Prototype type
-     APLNELM  aplNELMSub,           // Subarray NELM
-     APLNELM  aplNELMAxis,          // Axis NELM
-     APLSTYPE aplType,              // Right arg type
-     LPTOKEN  lptkFunc)             // Ptr to function token
+    (HGLOBAL  *lphGlbProto,         // Ptr to handle to prototype result
+     HGLOBAL   hGlbMT,              // Handle to empty (zilde or '')
+     APLSTYPE  aplTypeProto,        // Prototype type
+     APLNELM   aplNELMSub,          // Subarray NELM
+     APLNELM   aplNELMAxis,         // Axis NELM
+     APLSTYPE  aplType,             // Right arg type
+     LPAPLDIM  lpMemDimRht,         // Ptr to right arg dimensions
+     LPAPLUINT lpMemAxisHead,       // Ptr to axis values, fleshed out by CheckAxis_EM
+     APLRANK   aplRankRht,          // Right arg rank
+     APLRANK   aplRankRes,          // Result rank
+     LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
-    APLUINT ByteRes;                // # bytes in the result
-    LPVOID  lpMemProto;             // Ptr to prototype global memory
+    APLUINT  ByteRes;               // # bytes in the result
+    LPAPLDIM lpMemProto;            // Ptr to prototype global memory
+    APLNELM  uRes;                  // Loop counter
 
-    // If the subarray is empty, the result is zilde
-    if (IsEmpty (aplNELMSub))
-        *lphGlbProto = hGlbMT;
-    else
-    {
-        // Calculate space needed for the result
-        ByteRes = CalcArraySize (aplTypeProto, aplNELMSub, aplNELMAxis);
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (aplTypeProto, aplNELMSub, aplNELMAxis);
 
-        // Check for overflow
-        if (ByteRes NE (APLU3264) ByteRes)
-            goto WSFULL_EXIT;
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
 
-        // Allocate space for the prototype result
-        *lphGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!*lphGlbProto)
-            goto WSFULL_EXIT;
+    // Allocate space for the prototype result
+    *lphGlbProto = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (!*lphGlbProto)
+        goto WSFULL_EXIT;
 
-        // Lock the memory to get a ptr to it
-        lpMemProto = MyGlobalLock (*lphGlbProto);
+    // Lock the memory to get a ptr to it
+    lpMemProto = MyGlobalLock (*lphGlbProto);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemProto)
-        // Fill in the header
-        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeader->ArrType    = aplType;
-////////lpHeader->PermNdx    = PERMNDX_NONE;// ALready zero from GHND
-////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-        lpHeader->RefCnt     = 1;
-        lpHeader->NELM       = aplNELMSub;
-        lpHeader->Rank       = aplNELMAxis;
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplType;
+////lpHeader->PermNdx    = PERMNDX_NONE;// ALready zero from GHND
+////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMSub;
+    lpHeader->Rank       = aplNELMAxis;
 #undef  lpHeader
 
-        // Fill in the dimension
-        *VarArrayBaseToDim (lpMemProto) = aplNELMSub;
+    // Point to the dimensions
+    lpMemProto = VarArrayBaseToDim (lpMemProto);
 
-        // skip over the header and dimension to the data
-        lpMemProto = VarArrayDataFmBase (lpMemProto);
+    // Fill in the dimensions
+    for (uRes = aplRankRes; uRes < aplRankRht; uRes++)
+        *lpMemProto++ = lpMemDimRht[lpMemAxisHead[uRes]];
 
-        // Check for overflow
-        if (aplNELMSub NE (APLU3264) aplNELMSub)
-            goto WSFULL_EXIT;
+    // Check for overflow
+    if (aplNELMSub NE (APLU3264) aplNELMSub)
+        goto WSFULL_EXIT;
 
-        // Fill in the values if character
-        if (IsSimpleChar (aplType))
-            FillMemoryW (lpMemProto, (APLU3264) aplNELMSub, L' ');
-        // We no longer need this ptr
-        MyGlobalUnlock (*lphGlbProto); lpMemProto = NULL;
-    } // End IF/ELSE
+    // Fill in the values if character
+    if (IsSimpleChar (aplType))
+        FillMemoryW ((LPVOID) lpMemProto, (APLU3264) aplNELMSub, L' ');
+    // We no longer need this ptr
+    MyGlobalUnlock (*lphGlbProto); lpMemProto = NULL;
 
     // Set the type bits
     *lphGlbProto = MakePtrTypeGlb (*lphGlbProto);
@@ -1377,7 +1328,7 @@ UBOOL PrimFnMonLeftShoeGlbSub_EM
      APLRANK     aplRankRht,        // Right arg rank
      LPAPLNESTED lpMemRes,          // Ptr to result memory
      LPAPLDIM    lpMemDimRht,       // Ptr to right arg dimensions
-     LPAPLINT    lpMemAxis,         // Ptr to axis memory
+     LPAPLUINT   lpMemAxisHead,     // Ptr to axis values, fleshed out by CheckAxis_EM
      HGLOBAL    *lphGlbSub,         // Ptr to subarray handle
      LPVOID     *lplpMemSub,        // Ptr to ptr to subarray memory
      LPTOKEN     lptkFunc)          // Ptr to function token
@@ -1421,7 +1372,7 @@ UBOOL PrimFnMonLeftShoeGlbSub_EM
 
     *lplpMemSub = VarArrayBaseToDim (*lplpMemSub);
     for (uRht = aplRankRes; uRht < (APLRANKSIGN) aplRankRht; uRht++)
-        *((LPAPLDIM) *lplpMemSub)++ = lpMemDimRht[lpMemAxis[uRht]];
+        *((LPAPLDIM) *lplpMemSub)++ = lpMemDimRht[lpMemAxisHead[uRht]];
 
     return TRUE;
 

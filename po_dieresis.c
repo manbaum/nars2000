@@ -1210,8 +1210,19 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // The rank of the result is the larger of the two args
-    aplRankRes = max (aplRankLft, aplRankRht);
+    // In case we're doing (1 1 1{rho}1)f{each}{iota}4
+    //   set the rank of the result to the rank of
+    //   the non-singleton argument.
+
+    // Split cases based upon the arg's NELM
+    if (!IsSingleton (aplNELMLft))
+        aplRankRes = aplRankLft;
+    else
+    if (!IsSingleton (aplNELMRht))
+        aplRankRes = aplRankRht;
+    else
+        // The rank of the result is the larger of the two args
+        aplRankRes = max (aplRankLft, aplRankRht);
 
     // Check for operator axis present
     if (lptkAxisOpr NE NULL)

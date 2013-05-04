@@ -1,6 +1,17 @@
 Version 0.3.10.xx consists of the following Builds:
 
 
+Build #1093 -- Version 0.3.10.xx
+--------------------------------
+
+* Fix Bug In Dyadic Each With High Rank Singletons Vs. Low Rank Non-singletons
+
+Directory trunk:
+
+PO_DIERESIS.C:
+  Fix Bug in calculation of the result rank of high rank singleton args vs. low rank non-singleton args.
+
+
 Build #1092 -- Version 0.3.10.xx
 --------------------------------
 

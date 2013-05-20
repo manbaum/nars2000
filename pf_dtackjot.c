@@ -4087,6 +4087,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     aplCharOverflow = GetQuadFCValue (FCNDX_OVERFLOW_FILL);
     aplCharOverbar  = GetQuadFCValue (FCNDX_OVERBAR);
 
+__try
+{
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
     {
@@ -4356,6 +4358,18 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         defstop
             break;
     } // End SWITCH
+} __except (CheckVirtAlloc (GetExceptionInformation (), L"PrimFnDydDownTackJot_EM_YY"))
+{
+    // Split cases based upon the exception code
+    switch (MyGetExceptionCode ())
+    {
+        case EXCEPTION_LIMIT_ERROR:
+            goto LIMIT_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End __try/__except
 
     // Calculate the total width, including extra column for auto width
     for (uRht = uTotWid = 0; uRht < aplColsRht; uRht++)
@@ -4487,6 +4501,11 @@ DOMAIN_EXIT:
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LIMIT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

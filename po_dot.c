@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1438,12 +1438,18 @@ RESTART_INNERPROD_RES:
                                 {
                                     // We no longer need this ptr
                                     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+
+                                    // Lock the memory to get a ptr to it
+                                    lpMemLft = MyGlobalLock (hGlbLft);
                                 } // End IF
 
                                 if (hGlbRht && lpMemRht)
                                 {
                                     // We no longer need this ptr
                                     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+                                    // Lock the memory to get a ptr to it
+                                    lpMemRht = MyGlobalLock (hGlbRht);
                                 } // End IF
 
                                 // Save as the new storage type
@@ -1474,12 +1480,18 @@ RESTART_INNERPROD_RES:
                                 {
                                     // We no longer need this ptr
                                     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+
+                                    // Lock the memory to get a ptr to it
+                                    lpMemLft = MyGlobalLock (hGlbLft);
                                 } // End IF
 
                                 if (hGlbRht && lpMemRht)
                                 {
                                     // We no longer need this ptr
                                     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+                                    // Lock the memory to get a ptr to it
+                                    lpMemRht = MyGlobalLock (hGlbRht);
                                 } // End IF
 
                                 // Save as the new storage type

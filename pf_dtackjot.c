@@ -2964,8 +2964,10 @@ LPAPLCHAR FormatArrSimple
             lpaplChar = lpFmtRowStr->lpNxtChar;
 
             // Handle non-blank rows
+            //   and non-empty cols
             if (!lpFmtRowStr->bBlank
-             && !lpFmtRowStr->bDone)
+             && !lpFmtRowStr->bDone
+             && !IsZeroDim (uColLim))
             {
                 if (GetHetChar (lpaplChar, aplType) NE WC_EOS)
                 {

@@ -5879,10 +5879,11 @@ RESTART_EXCEPTION:
             {
                 case ARRAY_BOOL:            // Res = FLOAT, Lft = BOOL(S)
                 case ARRAY_INT:             // Res = FLOAT, Lft = INT(S)
+                case ARRAY_APA:             // Res = FLOAT, Lft = APA(S)
                     // Split cases based upon the storage type of the right arg
                     switch (aplTypeRht)
                     {
-                        case ARRAY_BOOL:    // Res = FLOAT, Lft = BOOL/INT(S), Rht = BOOL(M)
+                        case ARRAY_BOOL:    // Res = FLOAT, Lft = BOOL/INT/APA(S), Rht = BOOL(M)
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5905,7 +5906,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_INT:     // Res = FLOAT, Lft = BOOL/INT(S), Rht = INT(M)
+                        case ARRAY_INT:     // Res = FLOAT, Lft = BOOL/INT/APA(S), Rht = INT(M)
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5922,7 +5923,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_APA:     // Res = FLOAT, Lft = BOOL/INT(S), Rht = APA(M)
+                        case ARRAY_APA:     // Res = FLOAT, Lft = BOOL/INT/APA(S), Rht = APA(M)
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -5939,7 +5940,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_FLOAT:   // Res = FLOAT, Lft = BOOL/INT(S), Rht = FLOAT(M)
+                        case ARRAY_FLOAT:   // Res = FLOAT, Lft = BOOL/INT/APA(S), Rht = FLOAT(M)
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -8479,7 +8480,7 @@ RESTART_EXCEPTION:
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
                     {
-                        case ARRAY_BOOL:    // Res = INT, Lft = BOOL(M),    Rht = BOOL/INT(S)
+                        case ARRAY_BOOL:    // Res = INT, Lft = BOOL(M),    Rht = BOOL/INT/APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -8502,7 +8503,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_INT:     // Res = INT, Lft = INT (M),    Rht = BOOL/INT(S)
+                        case ARRAY_INT:     // Res = INT, Lft = INT (M),    Rht = BOOL/INT/APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -8519,7 +8520,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_APA:     // Res = INT, Lft = APA (M),    Rht = BOOL/INT(S)
+                        case ARRAY_APA:     // Res = INT, Lft = APA (M),    Rht = BOOL/INT/APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -8536,7 +8537,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(M),   Rht = BOOL/INT(S)
+                        case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(M),   Rht = BOOL/INT/APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -8655,10 +8656,11 @@ RESTART_EXCEPTION:
             {
                 case ARRAY_BOOL:            // Res = FLOAT,                 Rht = BOOL(S)
                 case ARRAY_INT:             // Res = FLOAT,                 Rht = INT (S)
+                case ARRAY_APA:             // Res = FLOAT,                 Rht = APA (S)
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
                     {
-                        case ARRAY_BOOL:    // Res = FLOAT, Lft = BOOL (M), Rht = BOOL/INT(S)
+                        case ARRAY_BOOL:    // Res = FLOAT, Lft = BOOL (M), Rht = BOOL/INT/APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -8681,7 +8683,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_INT:     // Res = FLOAT, Lft = INT  (M), Rht = BOOL/INT(S)
+                        case ARRAY_INT:     // Res = FLOAT, Lft = INT  (M), Rht = BOOL/INT/APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -8698,7 +8700,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_APA:     // Res = FLOAT, Lft = APA  (M), Rht = BOOL/INT(S)
+                        case ARRAY_APA:     // Res = FLOAT, Lft = APA  (M), Rht = BOOL/INT/APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
@@ -8715,7 +8717,7 @@ RESTART_EXCEPTION:
 
                             break;
 
-                        case ARRAY_FLOAT:   // Res = FLOAT, Lft = FLOAT(M), Rht = BOOL/INT(S)
+                        case ARRAY_FLOAT:   // Res = FLOAT, Lft = FLOAT(M), Rht = BOOL/INT/APA(S)
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {

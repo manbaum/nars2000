@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -438,33 +438,36 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  L"Z" $IS L"(LO " MFON_MonRank L" Y) R;O";
+  L"Z" $IS L"(LO " MFON_MonRank L" Y) R;O;" $QUAD_FEATURE;
 
 static APLCHAR MonLine1[] =
-  L"Y" $IS L"1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y";
+  $QUAD_FEATURE L"[" $QUAD_IO L"]" $IS L"1";
 
 static APLCHAR MonLine2[] =
-  L"O" $IS $RHO $RHO L"R";
+  L"Y" $IS L"1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y";
 
 static APLCHAR MonLine3[] =
-  L"Y" $IS L"(-" L"O" L")" $MAX L"O" $MIN L"Y";
+  L"O" $IS $RHO $RHO L"R";
 
 static APLCHAR MonLine4[] =
+  L"Y" $IS L"(-" L"O" L")" $MAX L"O" $MIN L"Y";
+
+static APLCHAR MonLine5[] =
 //L"Z" $IS $DISCLOSE L"LO" $EACH $ENCLOSE L"[" $IOTA L"-Y]R"
   L"Z" $IS           L"LO" $EACH $ENCLOSE L"[" $IOTA L"-Y]R"
   $DIAMOND $GOTO L"0";
 
-static APLCHAR MonLine5[] =
+static APLCHAR MonLine6[] =
   $QUAD_PRO L":"
   L"Y" $IS L"1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y";
 
-static APLCHAR MonLine6[] =
+static APLCHAR MonLine7[] =
   L"O" $IS $RHO $RHO L"R";
 
-static APLCHAR MonLine7[] =
+static APLCHAR MonLine8[] =
   L"Y" $IS L"(-" L"O" L")" $MAX L"O" $MIN L"Y";
 
-static APLCHAR MonLine8[] =
+static APLCHAR MonLine9[] =
 //L"Z" $IS $DISCLOSE $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
   L"Z" $IS           $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-Y]" $EACH L"0" $RHO $ENCLOSE L"R";
 
@@ -477,6 +480,7 @@ static LPAPLCHAR MonBody[] =
  MonLine6,
  MonLine7,
  MonLine8,
+ MonLine9,
 };
 
 MAGIC_FCNOPR MFO_MonRank =
@@ -571,33 +575,36 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  L"Z" $IS L"L (LO " MFON_DydRank L" Y) R;O";
+  L"Z" $IS L"L (LO " MFON_DydRank L" Y) R;O;" $QUAD_FEATURE;
 
 static APLCHAR DydLine1[] =
-  L"Y" $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y";
+  $QUAD_FEATURE L"[" $QUAD_IO L"]" $IS L"1";
 
 static APLCHAR DydLine2[] =
-  L"O" $IS L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
+  L"Y" $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y";
 
 static APLCHAR DydLine3[] =
-  L"Y" $IS L"(-O)" $MAX L"O" $MIN L"Y";
+  L"O" $IS L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
 
 static APLCHAR DydLine4[] =
+  L"Y" $IS L"(-O)" $MAX L"O" $MIN L"Y";
+
+static APLCHAR DydLine5[] =
   L"Z" $IS L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE L"Y]L) LO" $EACH
                 $ENCLOSE L"[" $IOTA L"-1" $DROP L"Y]R"
   $DIAMOND $GOTO L"0";
 
-static APLCHAR DydLine5[] =
+static APLCHAR DydLine6[] =
   $QUAD_PRO L":"
   L"Y" $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y";
 
-static APLCHAR DydLine6[] =
+static APLCHAR DydLine7[] =
   L"O" $IS L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
 
-static APLCHAR DydLine7[] =
+static APLCHAR DydLine8[] =
   L"Y" $IS L"(-O)" $MAX L"O" $MIN L"Y";
 
-static APLCHAR DydLine8[] =
+static APLCHAR DydLine9[] =
   L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE L"Y]" $EACH L"0" $RHO $ENCLOSE L"L)LO" $EACH $EACH
                           $ENCLOSE L"[" $IOTA L"-1" $DROP L"Y]" $EACH L"0" $RHO $ENCLOSE L"R";
 
@@ -610,6 +617,7 @@ static LPAPLCHAR DydBody[] =
  DydLine6,
  DydLine7,
  DydLine8,
+ DydLine9,
 };
 
 MAGIC_FCNOPR MFO_DydRank =

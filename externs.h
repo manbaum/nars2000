@@ -161,7 +161,7 @@ typedef enum tagFEATURE_INDICES
 #define FEATUREVAL_MINVAL       FALSE
 #define FEATUREVAL_MAXVAL       TRUE
 
-#define DEF_FEATURE_NEGINDICES  TRUE
+#define DEF_FEATURE_NEGINDICES  FALSE
 
 typedef struct tagFEATURE_NAMES
 {
@@ -385,7 +385,7 @@ CRITICAL_SECTION CSO0,                  // Critical Section Object #0
 #ifdef DEBUG
                  CSOFrisk,              // ...                     for HshTabFrisk
 #endif
-#ifdef RESDEBUG
+#if RESDEBUG
                  CSORsrc,               // ...                     for _SaveObj/_DeleObj
 #endif
                  CSOPL,                 // ...                     for ParseLine
@@ -1291,7 +1291,7 @@ UINT uTypeMap[]
 EXTERN
 UBOOL gbResDebug
 #ifdef DEFINE_VALUES
-#ifdef RESDEBUG
+#if RESDEBUG
  = 1
 #else
  = 0

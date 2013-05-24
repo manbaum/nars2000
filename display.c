@@ -649,16 +649,8 @@ UBOOL DisplayGlbArr_EM
                         lpwszOrigTemp;      // ...    original value ...
             LPROWPTRS   lpRowPtrs;
 
-            // Get ptr to formatting temp area
-            //   and protect by skipping over it
-            lpwszTemp = lpwszOrigTemp = lpMemPTD->lpwszTemp;
-            lpMemPTD->lpwszTemp += aplLastDim + 1;  // "+ 1" for the terminating zero
-
-            // Insert a terminating zero
-            *lpaplChar = WC_EOS;
-
-            // Calculate the # of cols per row group
-            uColLim = (aplLastDim + uQuadPW - 1) / uQuadPW;
+            // Save the original ptr to restore later
+            lpwszOrigTemp = lpMemPTD->lpwszTemp;
 
             // Reserve space for Nxt and End Char ptrs
             lpRowPtrs = (LPVOID) lpMemPTD->lpwszTemp;
@@ -674,6 +666,18 @@ UBOOL DisplayGlbArr_EM
                 lpwsz += aplLastDim;
                 lpRowPtrs[uFmtRow].lpEndChar = lpwsz;
             } // End FOR
+
+            // Get ptr to formatting temp area
+            //   and protect by skipping over it
+            //   taking into account tab stops
+            lpwszTemp = lpMemPTD->lpwszTemp;
+            lpMemPTD->lpwszTemp += (uTabStops * aplLastDim) + 1;    // "+ 1" for the terminating zero
+
+            // Insert a terminating zero
+            *lpaplChar = WC_EOS;
+
+            // Calculate the # of cols per row group
+            uColLim = (aplLastDim + uQuadPW - 1) / uQuadPW;
 
             // Loop through the groups of cols
             for (uColGrp = 0; uColGrp < uColLim; uColGrp++, bLineCont = TRUE)

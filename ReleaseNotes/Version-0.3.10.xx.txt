@@ -1,6 +1,18 @@
 Version 0.3.10.xx consists of the following Builds:
 
 
+Build #1102 -- Version 0.3.10.xx
+--------------------------------
+
+* Fix Bug In Display Of Tabs
+
+Directory trunk:
+
+DISPLAY.C:
+  At the end of <DisplayGlbArr_EM> when displaying a result not displayed as raw output up to that point,
+    the amount of space reserved for the formatted area doesn't take into account tab stops.
+
+
 Build #1101 -- Version 0.3.10.xx
 --------------------------------
 
@@ -47,7 +59,7 @@ Build #1098 -- Version 0.3.10.xx
 Directory trunk\htdocs:
 
 CONTRIBUTORS-MENU.HTML:
-INDEX-MANU.HTML:
+INDEX-MENU.HTML:
 LICENSE-MENU.HTML:
   Change the URL for browsing the source code to one that works better on Google Code.
 

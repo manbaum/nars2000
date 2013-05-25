@@ -1,6 +1,17 @@
 Version 0.3.10.xx consists of the following Builds:
 
 
+Build #1103 -- Version 0.3.10.xx
+--------------------------------
+
+* Fix Bug In {goto} Simple Char
+
+Directory trunk:
+
+GOTO.C:
+  In <GotoLine_EM>, handle the cases where the argument is simple char, or is nested and the first element is simple char.
+
+
 Build #1102 -- Version 0.3.10.xx
 --------------------------------
 

@@ -132,6 +132,7 @@ EXIT_TYPES GotoLine_EM
                             goto DOMAIN_EXIT;
                         break;
 
+                    case IMMTYPE_CHAR:
                     case IMMTYPE_ERROR:
                         goto DOMAIN_EXIT;
 
@@ -161,6 +162,9 @@ EXIT_TYPES GotoLine_EM
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;
+
+            case ARRAY_CHAR:
+                goto DOMAIN_EXIT;
 
             defstop
                 break;
@@ -199,8 +203,10 @@ EXIT_TYPES GotoLine_EM
          || lpSISCur->DfnType EQ DFNTYPE_EXEC))
         lpSISCur = lpSISCur->lpSISPrv;
 
-    // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
+    // If we're at a UDFO layer, ...
+    if (lpSISCur NE NULL)
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
 
     if (lpSISCur NE NULL
      && !bExecEC
@@ -276,8 +282,10 @@ EXIT_TYPES GotoLine_EM
         } // End IF/ELSE/IF
     } // End IF
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
+    // If we're at a UDFO layer, ...
+    if (lpSISCur NE NULL)
+        // We no longer need this ptr
+        MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
 
     // Save the exit type
     exitType = EXITTYPE_GOTO_LINE;

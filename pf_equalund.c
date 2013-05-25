@@ -1887,7 +1887,7 @@ LPPL_YYSTYPE PrimProtoFnNotEqualUnderbar_EM_YY
 //***************************************************************************
 //  $PrimFnMonNotEqualUnderbar_EM_YY
 //
-//  Primitive function for monadic NotEqualUnderbar (ERROR)
+//  Primitive function for monadic NotEqualUnderbar ("tally")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1902,7 +1902,65 @@ LPPL_YYSTYPE PrimFnMonNotEqualUnderbar_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
+    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
+    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    APLRANK      aplRankRht;        // Right arg rank
+    APLINT       aplIntegerRes;     // The result value
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // Get the attributes (Type, NELM, Rank)
+    //   of the arg
+    AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+    // Get right arg's global ptr
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // If the right arg is a non-scalar, ...
+    if (!IsScalar (aplRankRht))
+        // Skip over the header to the dimensions and
+        //   extract the first dimension
+        aplIntegerRes = *VarArrayBaseToDim (lpMemRht);
+    else
+        // Use a tally of 1 for a scalar
+        aplIntegerRes = 1;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkInteger  = aplIntegerRes;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    return lpYYRes;
 } // End PrimFnMonNotEqualUnderbar_EM_YY
 #undef  APPEND_NAME
 

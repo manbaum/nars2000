@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,6 +146,7 @@ typedef enum tagMFO
 #define $QUAD_DM        WS_UTF16_QUAD L"DM"
 #define $QUAD_ELX       WS_UTF16_QUAD L"ELX"
 #define $QUAD_ERROR     WS_UTF16_QUAD L"ERROR"
+#define $QUAD_FEATURE   WS_UTF16_QUAD L"FEATURE"
 #define $QUAD_ID        WS_UTF16_QUAD SYSLBL_ID
 #define $QUAD_INV       WS_UTF16_QUAD SYSLBL_INV
 #define $QUAD_IO        WS_UTF16_QUAD L"IO"

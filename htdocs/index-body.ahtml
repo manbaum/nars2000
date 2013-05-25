@@ -165,14 +165,14 @@ Welcome to NARS2000</h1>
         <li>Control structures on one line or split across multiple lines
           (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>).
           A one line control structure may be used in immediate execution mode</li>
-        <li>Trains are supported, e.g., <span class="APL">avg{is}(+/ {divide} &gt;)</span> creates a
+        <li>Trains are supported, e.g., <span class="APL">avg{is}(+{slashbar} {divide} {mismatch})</span> creates a
           function that calculates the average of a numeric vector</li>
         <li>Primitive dyadic function left shoe (<span class="APL">L{leftshoe}R</span>) (Partitioned Enclose)</li>
         <li>Primitive dyadic function epsilon underbar (<span class="APL">L{epsilon_}R</span>) (Find)</li>
         <li>Reshape (<span class="APL">L{rho}R</span>) is extended to allow a non-empty Reshape of an empty in which case the right argument
           fill element is used, e.g., <span class="APL">2 3{rho}{zilde}</span></li>
         <li>Primitive monadic function iota underbar (<span class="APL">{iota_}R</span>) (Indices)</li>
-        <li>Primitive monadic function right caret (<span class="APL">&gt;R</span>) (Tally)</li>
+        <li>Primitive monadic function not equal underbar (<span class="APL">{mismatch}R</span>) (Tally)</li>
         <li>Primitive dyadic function not equal underbar (<span class="APL">L{mismatch}R</span>) (Mismatch)</li>
         <li>Primitive monadic function down tack (<span class="APL">{downtack}R</span>) (Type)</li>
         <li>Primitive dyadic operator dieresis circle (<span class="APL">L f{circledieresis}g R</span>) (Composition)</li>
@@ -185,7 +185,7 @@ Welcome to NARS2000</h1>
         <li>Primitive dyadic operator quad colon (<span class="APL">f{variant}b R</span> and <span class="APL">L f{variant}b R</span>) (Variant)</li>
         <li>System variables:
           <ul>
-			<li><span class="APL">{quad}DT</span> (Distribution Type)</li>
+            <li><span class="APL">{quad}DT</span> (Distribution Type)</li>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
             <li><span class="APL">{quad}FPC</span> (Floating Point Control)</li>
             <li><span class="APL">{quad}IC</span> (Indeterminate Control)</li>

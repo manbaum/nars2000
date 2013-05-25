@@ -3933,7 +3933,7 @@ int PASCAL WinMain
 #ifdef DEBUG
     InitializeCriticalSection (&CSOFrisk);
 #endif
-#ifdef RESDEBUG
+#if RESDEBUG
     InitializeCriticalSection (&CSORsrc);
 #endif
     InitializeCriticalSection (&CSOPL);
@@ -4060,7 +4060,7 @@ EXIT4:
     DeleteCriticalSection (&CSOPthread);
     DeleteCriticalSection (&CSOTokenize);
     DeleteCriticalSection (&CSOPL);
-#ifdef RESDEBUG
+#if RESDEBUG
     DeleteCriticalSection (&CSORsrc);
 #endif
 #ifdef DEBUG

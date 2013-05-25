@@ -2576,7 +2576,6 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  '<' or Shift-',' or Alt-'6'\n\n"
                                          L"Unicode:  0x003C or 60"},
         {UTF16_RIGHTCARET         , {0}, L"RightCaret",
-                                         L"Tally:          " WS_UTF16_RIGHTCARET L"R\n"
                                          L"Greater Than:  L" WS_UTF16_RIGHTCARET L"R  or  L" WS_UTF16_RIGHTCARET L"[X] R\n\n"
                                          L"Keyboard:  '>' or Shift-'.' or Alt-'7'\n\n"
                                          L"Unicode:  0x003E or 62"},
@@ -2591,6 +2590,7 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'!'  or  Alt-Shift-'1'\n\n"
                                          L"Unicode:  0x2261 or 8801"},
         {UTF16_NOTEQUALUNDERBAR   , {0}, L"NotEqualUnderbar",
+                                         L"Tally:                       " WS_UTF16_NOTEQUALUNDERBAR L"R\n"
                                          L"Mismatch:                   L" WS_UTF16_NOTEQUALUNDERBAR L"R\n"
                                          L"Multiset (Not Identical):   L" WS_UTF16_NOTEQUALUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                          L"Keyboard:  Alt-'@'  or  Alt-Shift-'2'\n\n"

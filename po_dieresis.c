@@ -201,7 +201,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
      (APLU3264) aplRankRht * sizeof (APLDIM));
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // In case the result is empty, we need to process
     //   its prototype
@@ -509,8 +509,8 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 (APLU3264) aplRankRht * sizeof (APLDIM));
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Fill in the right arg token
     tkRhtArg.tkFlags.TknType   = TKT_VARIMMED;
@@ -1215,10 +1215,10 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     //   the non-singleton argument.
 
     // Split cases based upon the arg's NELM
-    if (!IsSingleton (aplNELMLft))
+    if (!IsSingleton (aplNELMLft) && IsSingleton (aplNELMRht))
         aplRankRes = aplRankLft;
     else
-    if (!IsSingleton (aplNELMRht))
+    if (!IsSingleton (aplNELMRht) && IsSingleton (aplNELMLft))
         aplRankRes = aplRankRht;
     else
         // The rank of the result is the larger of the two args
@@ -1341,7 +1341,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         tkLftArg.tkFlags.ImmType = immType;
     } else
     // Otherwise, skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
     // If the right arg is immediate, fill in the token
     if (lpMemRht EQ NULL)
@@ -1358,7 +1358,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         tkRhtArg.tkFlags.ImmType = immType;
     } else
     // Otherwise, skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // If the left arg is APA, ...
     if (IsSimpleAPA (aplTypeLft))
@@ -1384,7 +1384,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Handle axis if present
     if (aplNELMAxis NE aplRankRes)

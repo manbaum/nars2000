@@ -2433,498 +2433,502 @@ LRESULT APIENTRY LW_RBWndProc
 {
 typedef struct tagLANGCHARS
 {
-    WCHAR   wc;             // The char to draw (0 = separator)
+    LPWCHAR lpwc;           // The char to draw (0 = separator)
     RECT    rcHit;          // Hit test rectangle
     LPWCHAR lpwszTitle,     // Ptr to Title text
             lpwszTipText;   // Ptr to Tooltip text
 } LANGCHARS, *LPLANGCHARS;
 
-#define LANGCHARS_SEPARATOR     {0, {0}},
+#define LANGCHARS_SEPARATOR     {NULL, {0}},
 
     static LANGCHARS langChars[] =
     {
-        {UTF16_LEFTARROW          , {0}, L"LeftArrow",
-                                         L"Sink:     " WS_UTF16_LEFTARROW L"R\n"
-                                         L"Assign:  L" WS_UTF16_LEFTARROW L"R\n\n"
-                                         L"Keyboard:  Alt-'['\n\n"
-                                         L"Unicode:  0x2190 or 8592"},
-        {UTF16_RIGHTARROW         , {0}, L"RightArrow",
-                                         L"Goto:  " WS_UTF16_RIGHTARROW L"R\n\n"
-                                         L"Keyboard:  Alt-']'\n\n"
-                                         L"Unicode:  0x2192 or 8594"},
+        {WS_UTF16_LEFTARROW         , {0}, L"LeftArrow",
+                                           L"Sink:     " WS_UTF16_LEFTARROW L"R\n"
+                                           L"Assign:  L" WS_UTF16_LEFTARROW L"R\n\n"
+                                           L"Keyboard:  Alt-'['\n\n"
+                                           L"Unicode:  0x2190 or 8592"},
+        {WS_UTF16_RIGHTARROW        , {0}, L"RightArrow",
+                                           L"Goto:  " WS_UTF16_RIGHTARROW L"R\n\n"
+                                           L"Keyboard:  Alt-']'\n\n"
+                                           L"Unicode:  0x2192 or 8594"},
         LANGCHARS_SEPARATOR
-        {UTF16_PLUS               , {0}, L"Plus",
-                                         L"Conjugate:  +R (when Complex Numbers are implemented)\n"
-                                         L"Addition:  L+R  or  L+[X] R\n\n"
-                                         L"Keyboard:  '+' or Shift-'='\n\n"
-                                         L"Unicode:  0x002B or 43"},
-        {UTF16_BAR                , {0}, L"Bar",
-                                         L"Negation:      -R\n"
-                                         L"Subtraction:  L-R  or  L-[X] R\n\n"
-                                         L"Keyboard:  '-'\n\n"
-                                         L"Unicode:  0x002D or 45"},
-        {UTF16_TIMES              , {0}, L"Times",
-                                         L"Signum:           " WS_UTF16_TIMES L"R\n"
-                                         L"Multiplication:  L" WS_UTF16_TIMES L"R  or  L" WS_UTF16_TIMES L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'-'\n\n"
-                                         L"Unicode:  0x00D7 or 215"},
-        {UTF16_COLONBAR           , {0}, L"ColonBar",
-                                         L"Reciprocal:  " WS_UTF16_COLONBAR L"R\n"
-                                         L"Division:   L" WS_UTF16_COLONBAR L"R  or  L" WS_UTF16_COLONBAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'='\n\n"
-                                         L"Unicode:  0x00F7 or 247"},
-        {UTF16_STAR               , {0}, L"Star",
-                                         L"Power of e:   *R\n"
-                                         L"Power of L:  L*R  or  L*[X] R\n\n"
-                                         L"Keyboard:  '*' or Shift-'8'\n\n"
-                                         L"Unicode:  0x002A or 42"},
-        {UTF16_CIRCLESTAR         , {0}, L"CircleStar",
-                                         L"Log base e:   " WS_UTF16_CIRCLESTAR L"R\n"
-                                         L"Log base L:  L" WS_UTF16_CIRCLESTAR L"R  or  L" WS_UTF16_CIRCLESTAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'*'\n\n"
-                                         L"Unicode:  0x235F or 9055"},
-        {UTF16_DOMINO             , {0}, L"Domino",
-                                         L"Matrix Inverse:    " WS_UTF16_DOMINO L"R\n"
-                                         L"Matrix Division:  L" WS_UTF16_DOMINO L"R\n\n"
-                                         L"Keyboard:  Alt-'+' or Alt-Shift-'='\n\n"
-                                         L"Unicode:  0x2339 or 9017"},
-        {UTF16_CIRCLE             , {0}, L"Circle",
-                                         L"Pi Times:            " WS_UTF16_CIRCLE L"R\n"
-                                         L"Circle Functions:  " WS_UTF16_OVERBAR L"7" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" atanh (R)\n"
-                                         L"                   " WS_UTF16_OVERBAR L"6" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" acosh (R)\n"
-                                         L"                   " WS_UTF16_OVERBAR L"5" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" asinh (R)\n"
-                                         L"                   " WS_UTF16_OVERBAR L"4" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" R" WS_UTF16_TIMES L"sqrt (1-R*" WS_UTF16_OVERBAR L"2)\n"
-                                         L"                   " WS_UTF16_OVERBAR L"3" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" atan  (R)\n"
-                                         L"                   " WS_UTF16_OVERBAR L"2" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" acos  (R)\n"
-                                         L"                   " WS_UTF16_OVERBAR L"1" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" asin  (R)\n"
-                                         L"                    0" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" sqrt (1-R*2)\n"
-                                         L"                    1" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  sin  (R)\n"
-                                         L"                    2" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  cos  (R)\n"
-                                         L"                    3" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  tan  (R)\n"
-                                         L"                    4" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" sqrt (1+R*2)\n"
-                                         L"                    5" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  sinh (R)\n"
-                                         L"                    6" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  cosh (R)\n"
-                                         L"                    7" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  tanh (R)\n"
-                                         L"Also accepts axis operator as in L" WS_UTF16_CIRCLE L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'o'\n\n"
-                                         L"Unicode:  0x25CB or 9675"},
-        {UTF16_QUOTEDOT           , {0}, L"QuoteDot",
-                                         L"Factorial:      !R\n"
-                                         L"Combinations:  L!R  or  L![X] R\n\n"
-                                         L"Keyboard:  '!' or Shift-'1'\n\n"
-                                         L"Unicode:  0x0021 or 33"},
-        {UTF16_QUERY              , {0}, L"Query",
-                                         L"Roll:   ?R\n"
-                                         L"Deal:  L?R\n\n"
-                                         L"Keyboard:  '?' or Shift-'/' or Alt-'q'\n\n"
-                                         L"Unicode:  0x003F or 63"},
-        {UTF16_ROOT               , {0}, L"Root",
-                                         L"Square Root:  " WS_UTF16_ROOT L"R\n"
-                                         L"Nth Root:    L" WS_UTF16_ROOT L"R\n\n"
-                                         L"Keyboard:  Alt-'R' or Alt-Shift-'r'\n\n"
-                                         L"Unicode:  0x221A or 8730"},
+        {WS_UTF16_PLUS              , {0}, L"Plus",
+                                           L"Conjugate:  +R (when Complex Numbers are implemented)\n"
+                                           L"Addition:  L+R  or  L+[X] R\n\n"
+                                           L"Keyboard:  '+' or Shift-'='\n\n"
+                                           L"Unicode:  0x002B or 43"},
+        {WS_UTF16_BAR               , {0}, L"Bar",
+                                           L"Negation:      -R\n"
+                                           L"Subtraction:  L-R  or  L-[X] R\n\n"
+                                           L"Keyboard:  '-'\n\n"
+                                           L"Unicode:  0x002D or 45"},
+        {WS_UTF16_TIMES             , {0}, L"Times",
+                                           L"Signum:           " WS_UTF16_TIMES L"R\n"
+                                           L"Multiplication:  L" WS_UTF16_TIMES L"R  or  L" WS_UTF16_TIMES L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'-'\n\n"
+                                           L"Unicode:  0x00D7 or 215"},
+        {WS_UTF16_COLONBAR          , {0}, L"ColonBar",
+                                           L"Reciprocal:  " WS_UTF16_COLONBAR L"R\n"
+                                           L"Division:   L" WS_UTF16_COLONBAR L"R  or  L" WS_UTF16_COLONBAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'='\n\n"
+                                           L"Unicode:  0x00F7 or 247"},
+        {WS_UTF16_STAR              , {0}, L"Star",
+                                           L"Power of e:   *R\n"
+                                           L"Power of L:  L*R  or  L*[X] R\n\n"
+                                           L"Keyboard:  '*' or Shift-'8'\n\n"
+                                           L"Unicode:  0x002A or 42"},
+        {WS_UTF16_CIRCLESTAR        , {0}, L"CircleStar",
+                                           L"Log base e:   " WS_UTF16_CIRCLESTAR L"R\n"
+                                           L"Log base L:  L" WS_UTF16_CIRCLESTAR L"R  or  L" WS_UTF16_CIRCLESTAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'*'\n\n"
+                                           L"Unicode:  0x235F or 9055"},
+        {WS_UTF16_DOMINO            , {0}, L"Domino",
+                                           L"Matrix Inverse:    " WS_UTF16_DOMINO L"R\n"
+                                           L"Matrix Division:  L" WS_UTF16_DOMINO L"R\n\n"
+                                           L"Keyboard:  Alt-'+' or Alt-Shift-'='\n\n"
+                                           L"Unicode:  0x2339 or 9017"},
+        {WS_UTF16_CIRCLE            , {0}, L"Circle",
+                                           L"Pi Times:            " WS_UTF16_CIRCLE L"R\n"
+                                           L"Circle Functions:  " WS_UTF16_OVERBAR L"7" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" atanh (R)\n"
+                                           L"                   " WS_UTF16_OVERBAR L"6" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" acosh (R)\n"
+                                           L"                   " WS_UTF16_OVERBAR L"5" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" asinh (R)\n"
+                                           L"                   " WS_UTF16_OVERBAR L"4" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" R" WS_UTF16_TIMES WS_UTF16_ROOT L"(1-R*" WS_UTF16_OVERBAR L"2)\n"
+                                           L"                   " WS_UTF16_OVERBAR L"3" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" atan  (R)\n"
+                                           L"                   " WS_UTF16_OVERBAR L"2" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" acos  (R)\n"
+                                           L"                   " WS_UTF16_OVERBAR L"1" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" asin  (R)\n"
+                                           L"                    0" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" " WS_UTF16_ROOT L"(1-R*2)\n"
+                                           L"                    1" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  sin  (R)\n"
+                                           L"                    2" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  cos  (R)\n"
+                                           L"                    3" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  tan  (R)\n"
+                                           L"                    4" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" " WS_UTF16_ROOT L"(1+R*2)\n"
+                                           L"                    5" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  sinh (R)\n"
+                                           L"                    6" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  cosh (R)\n"
+                                           L"                    7" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  tanh (R)\n"
+                                           L"Also accepts axis operator as in L" WS_UTF16_CIRCLE L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'o'\n\n"
+                                           L"Unicode:  0x25CB or 9675"},
+        {WS_UTF16_QUOTEDOT          , {0}, L"QuoteDot",
+                                           L"Factorial:      !R\n"
+                                           L"Combinations:  L!R  or  L![X] R\n\n"
+                                           L"Keyboard:  '!' or Shift-'1'\n\n"
+                                           L"Unicode:  0x0021 or 33"},
+        {WS_UTF16_QUERY             , {0}, L"Query",
+                                           L"Roll:   ?R\n"
+                                           L"Deal:  L?R\n\n"
+                                           L"Keyboard:  '?' or Shift-'/' or Alt-'q'\n\n"
+                                           L"Unicode:  0x003F or 63"},
+        {WS_UTF16_ROOT              , {0}, L"Root",
+                                           L"Square Root:  " WS_UTF16_ROOT L"R\n"
+                                           L"Nth Root:    L" WS_UTF16_ROOT L"R\n\n"
+                                           L"Keyboard:  Alt-'R' or Alt-Shift-'r'\n\n"
+                                           L"Unicode:  0x221A or 8730"},
         LANGCHARS_SEPARATOR
-        {UTF16_STILE              , {0}, L"Stile",
-                                         L"Magnitude:  |R\n"
-                                         L"Modulus:   L|R  or  L|[X] R\n\n"
-                                         L"Keyboard:  '|' or Shift-'\\'\n\n"
-                                         L"Unicode:  0x2223 or 8739"},
-        {UTF16_UPSTILE            , {0}, L"UpStile",
-                                         L"Ceiling:   " WS_UTF16_UPSTILE L"R\n"
-                                         L"Maximum:  L" WS_UTF16_UPSTILE L"R  or  L" WS_UTF16_UPSTILE L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'s'\n\n"
-                                         L"Unicode:  0x2308 or 8968"},
-        {UTF16_DOWNSTILE          , {0}, L"DownStile",
-                                         L"Floor:     " WS_UTF16_DOWNSTILE L"R\n"
-                                         L"Minimum:  L" WS_UTF16_DOWNSTILE L"R  or  L" WS_UTF16_DOWNSTILE L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'d'\n\n"
-                                         L"Unicode:  0x230A or 8970"},
-        {UTF16_UPTACK             , {0}, L"UpTack",
-                                         L"Base value:  L" WS_UTF16_UPTACK L"R\n\n"
-                                         L"Keyboard:  Alt-'b'\n\n"
-                                         L"Unicode:  0x22A5 or 8869"},
-        {UTF16_DOWNTACK           , {0}, L"DownTack",
-                                         L"Type:             " WS_UTF16_DOWNTACK L"R\n"
-                                         L"Representation:  L" WS_UTF16_DOWNTACK L"R\n\n"
-                                         L"Keyboard:  Alt-'n'\n\n"
-                                         L"Unicode:  0x22A4 or 8868"},
-        {UTF16_LEFTTACK           , {0}, L"LeftTack",
-                                         L"Identity:  " WS_UTF16_LEFTTACK L"R\n"
-                                         L"Lev:      L" WS_UTF16_LEFTTACK L"R\n\n"
-                                         L"Keyboard:  Alt-'|' or Alt-Shift-'\\'\n\n"
-                                         L"Unicode:  0x22A3 or 8867"},
-        {UTF16_RIGHTTACK          , {0}, L"RightTack",
-                                         L"Identity:  " WS_UTF16_RIGHTTACK L"R\n"
-                                         L"Dex:      L" WS_UTF16_RIGHTTACK L"R\n\n"
-                                         L"Keyboard:  Alt-'\\'\n\n"
-                                         L"Unicode:  0x22A2 or 8866"},
+        {WS_UTF16_STILE             , {0}, L"Stile",
+                                           L"Magnitude:  |R\n"
+                                           L"Modulus:   L|R  or  L|[X] R\n\n"
+                                           L"Keyboard:  '|' or Shift-'\\'\n\n"
+                                           L"Unicode:  0x2223 or 8739"},
+        {WS_UTF16_UPSTILE           , {0}, L"UpStile",
+                                           L"Ceiling:   " WS_UTF16_UPSTILE L"R\n"
+                                           L"Maximum:  L" WS_UTF16_UPSTILE L"R  or  L" WS_UTF16_UPSTILE L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'s'\n\n"
+                                           L"Unicode:  0x2308 or 8968"},
+        {WS_UTF16_DOWNSTILE         , {0}, L"DownStile",
+                                           L"Floor:     " WS_UTF16_DOWNSTILE L"R\n"
+                                           L"Minimum:  L" WS_UTF16_DOWNSTILE L"R  or  L" WS_UTF16_DOWNSTILE L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'d'\n\n"
+                                           L"Unicode:  0x230A or 8970"},
+        {WS_UTF16_UPTACK            , {0}, L"UpTack",
+                                           L"Base value:  L" WS_UTF16_UPTACK L"R\n\n"
+                                           L"Keyboard:  Alt-'b'\n\n"
+                                           L"Unicode:  0x22A5 or 8869"},
+        {WS_UTF16_DOWNTACK          , {0}, L"DownTack",
+                                           L"Type:             " WS_UTF16_DOWNTACK L"R\n"
+                                           L"Representation:  L" WS_UTF16_DOWNTACK L"R\n\n"
+                                           L"Keyboard:  Alt-'n'\n\n"
+                                           L"Unicode:  0x22A4 or 8868"},
+        {WS_UTF16_LEFTTACK          , {0}, L"LeftTack",
+                                           L"Identity:  " WS_UTF16_LEFTTACK L"R\n"
+                                           L"Lev:      L" WS_UTF16_LEFTTACK L"R\n\n"
+                                           L"Keyboard:  Alt-'|' or Alt-Shift-'\\'\n\n"
+                                           L"Unicode:  0x22A3 or 8867"},
+        {WS_UTF16_RIGHTTACK         , {0}, L"RightTack",
+                                           L"Identity:  " WS_UTF16_RIGHTTACK L"R\n"
+                                           L"Dex:      L" WS_UTF16_RIGHTTACK L"R\n\n"
+                                           L"Keyboard:  Alt-'\\'\n\n"
+                                           L"Unicode:  0x22A2 or 8866"},
         LANGCHARS_SEPARATOR
-        {UTF16_EQUAL              , {0}, L"Equal",
-                                         L"Equal To:  L=R  or  L=[X] R\n\n"
-                                         L"Keyboard:  '=' or Alt-'5'\n\n"
-                                         L"Unicode:  0x003D or 61"},
-        {UTF16_NOTEQUAL           , {0}, L"NotEqual",
-                                         L"Not Equal To:  L" WS_UTF16_NOTEQUAL L"R  or  L" WS_UTF16_NOTEQUAL L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'8'\n\n"
-                                         L"Unicode:  0x2260 or 8800"},
-        {UTF16_LEFTCARETUNDERBAR  , {0}, L"LeftCaretUnderbar",
-                                         L"Less Than or Equal To:  L" WS_UTF16_LEFTCARETUNDERBAR L"R  or  L" WS_UTF16_LEFTCARETUNDERBAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'4'\n\n"
-                                         L"Unicode:  0x2264 or 8804"},
-        {UTF16_LEFTCARET          , {0}, L"LeftCaret",
-                                         L"Less Than:  L" WS_UTF16_LEFTCARET L"R  or  L" WS_UTF16_LEFTCARET L"[X] R\n\n"
-                                         L"Keyboard:  '<' or Shift-',' or Alt-'6'\n\n"
-                                         L"Unicode:  0x003C or 60"},
-        {UTF16_RIGHTCARET         , {0}, L"RightCaret",
-                                         L"Greater Than:  L" WS_UTF16_RIGHTCARET L"R  or  L" WS_UTF16_RIGHTCARET L"[X] R\n\n"
-                                         L"Keyboard:  '>' or Shift-'.' or Alt-'7'\n\n"
-                                         L"Unicode:  0x003E or 62"},
-        {UTF16_RIGHTCARETUNDERBAR , {0}, L"RightCaretUnderbar",
-                                         L"Greater Than or Equal To:  L" WS_UTF16_RIGHTCARETUNDERBAR L"R  or  L" WS_UTF16_RIGHTCARETUNDERBAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'6'\n\n"
-                                         L"Unicode:  0x2265 or 8805"},
-        {UTF16_EQUALUNDERBAR      , {0}, L"EqualUnderbar",
-                                         L"Depth:                   " WS_UTF16_EQUALUNDERBAR L"R\n"
-                                         L"Match:                  L" WS_UTF16_EQUALUNDERBAR L"R\n"
-                                         L"Multiset (Identical):   L" WS_UTF16_EQUALUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'!'  or  Alt-Shift-'1'\n\n"
-                                         L"Unicode:  0x2261 or 8801"},
-        {UTF16_NOTEQUALUNDERBAR   , {0}, L"NotEqualUnderbar",
-                                         L"Tally:                       " WS_UTF16_NOTEQUALUNDERBAR L"R\n"
-                                         L"Mismatch:                   L" WS_UTF16_NOTEQUALUNDERBAR L"R\n"
-                                         L"Multiset (Not Identical):   L" WS_UTF16_NOTEQUALUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'@'  or  Alt-Shift-'2'\n\n"
-                                         L"Unicode:  0x2262 or 8802"},
+        {WS_UTF16_EQUAL             , {0}, L"Equal",
+                                           L"Equal To:  L=R  or  L=[X] R\n\n"
+                                           L"Keyboard:  '=' or Alt-'5'\n\n"
+                                           L"Unicode:  0x003D or 61"},
+        {WS_UTF16_NOTEQUAL          , {0}, L"NotEqual",
+                                           L"Not Equal To:  L" WS_UTF16_NOTEQUAL L"R  or  L" WS_UTF16_NOTEQUAL L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'8'\n\n"
+                                           L"Unicode:  0x2260 or 8800"},
+        {WS_UTF16_LEFTCARETUNDERBAR , {0}, L"LeftCaretUnderbar",
+                                           L"Less Than or Equal To:  L" WS_UTF16_LEFTCARETUNDERBAR L"R  or  L" WS_UTF16_LEFTCARETUNDERBAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'4'\n\n"
+                                           L"Unicode:  0x2264 or 8804"},
+        {WS_UTF16_LEFTCARET         , {0}, L"LeftCaret",
+                                           L"Less Than:  L" WS_UTF16_LEFTCARET L"R  or  L" WS_UTF16_LEFTCARET L"[X] R\n\n"
+                                           L"Keyboard:  '<' or Shift-',' or Alt-'6'\n\n"
+                                           L"Unicode:  0x003C or 60"},
+        {WS_UTF16_RIGHTCARET        , {0}, L"RightCaret",
+                                           L"Greater Than:  L" WS_UTF16_RIGHTCARET L"R  or  L" WS_UTF16_RIGHTCARET L"[X] R\n\n"
+                                           L"Keyboard:  '>' or Shift-'.' or Alt-'7'\n\n"
+                                           L"Unicode:  0x003E or 62"},
+        {WS_UTF16_RIGHTCARETUNDERBAR, {0}, L"RightCaretUnderbar",
+                                           L"Greater Than or Equal To:  L" WS_UTF16_RIGHTCARETUNDERBAR L"R  or  L" WS_UTF16_RIGHTCARETUNDERBAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'6'\n\n"
+                                           L"Unicode:  0x2265 or 8805"},
+        {WS_UTF16_EQUALUNDERBAR     , {0}, L"EqualUnderbar",
+                                           L"Depth:                   " WS_UTF16_EQUALUNDERBAR L"R\n"
+                                           L"Match:                  L" WS_UTF16_EQUALUNDERBAR L"R\n"
+                                           L"Multiset (Identical):   L" WS_UTF16_EQUALUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'!'  or  Alt-Shift-'1'\n\n"
+                                           L"Unicode:  0x2261 or 8801"},
+        {WS_UTF16_NOTEQUALUNDERBAR  , {0}, L"NotEqualUnderbar",
+                                           L"Tally:                       " WS_UTF16_NOTEQUALUNDERBAR L"R\n"
+                                           L"Mismatch:                   L" WS_UTF16_NOTEQUALUNDERBAR L"R\n"
+                                           L"Multiset (Not Identical):   L" WS_UTF16_NOTEQUALUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'@'  or  Alt-Shift-'2'\n\n"
+                                           L"Unicode:  0x2262 or 8802"},
         LANGCHARS_SEPARATOR
-        {UTF16_DOWNCARET          , {0}, L"DownCaret",
-                                         L"Or:  L" WS_UTF16_DOWNCARET L"R  or  L" WS_UTF16_DOWNCARET L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'9'\n\n"
-                                         L"Unicode:  0x2228 or 8744"},
-        {UTF16_UPCARET            , {0}, L"UpCaret",
-                                         L"And:  L" WS_UTF16_UPCARET L"R  or  L" WS_UTF16_UPCARET L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'0'\n\n"
-                                         L"Unicode:  0x2227 or 8743"},
-        {UTF16_DOWNCARETTILDE     , {0}, L"DownCaretTilde",
-                                         L"Nor:  L" WS_UTF16_DOWNCARETTILDE L"R  or  L" WS_UTF16_DOWNCARETTILDE L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'(' or Alt-Shift-'9'\n\n"
-                                         L"Unicode:  0x2371 or 9073"},
-        {UTF16_UPCARETTILDE       , {0}, L"UpCaretTilde",
-                                         L"Nand:  L" WS_UTF16_UPCARETTILDE L"R  or  L" WS_UTF16_UPCARETTILDE L"[X] R\n\n"
-                                         L"Keyboard:  Alt-')' or Alt-Shift-'0'\n\n"
-                                         L"Unicode:  0x2372 or 9074"},
+        {WS_UTF16_DOWNCARET         , {0}, L"DownCaret",
+                                           L"Or:  L" WS_UTF16_DOWNCARET L"R  or  L" WS_UTF16_DOWNCARET L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'9'\n\n"
+                                           L"Unicode:  0x2228 or 8744"},
+        {WS_UTF16_UPCARET           , {0}, L"UpCaret",
+                                           L"And:  L" WS_UTF16_UPCARET L"R  or  L" WS_UTF16_UPCARET L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'0'\n\n"
+                                           L"Unicode:  0x2227 or 8743"},
+        {WS_UTF16_DOWNCARETTILDE    , {0}, L"DownCaretTilde",
+                                           L"Nor:  L" WS_UTF16_DOWNCARETTILDE L"R  or  L" WS_UTF16_DOWNCARETTILDE L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'(' or Alt-Shift-'9'\n\n"
+                                           L"Unicode:  0x2371 or 9073"},
+        {WS_UTF16_UPCARETTILDE      , {0}, L"UpCaretTilde",
+                                           L"Nand:  L" WS_UTF16_UPCARETTILDE L"R  or  L" WS_UTF16_UPCARETTILDE L"[X] R\n\n"
+                                           L"Keyboard:  Alt-')' or Alt-Shift-'0'\n\n"
+                                           L"Unicode:  0x2372 or 9074"},
         LANGCHARS_SEPARATOR
-        {UTF16_UPARROW            , {0}, L"UpArrow",
-                                         L"First:  " WS_UTF16_UPARROW L"R\n"
-                                         L"Take:  L" WS_UTF16_UPARROW L"R  or  L" WS_UTF16_UPARROW L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'y'\n\n"
-                                         L"Unicode:  0x2191 or 8593"},
-        {UTF16_DOWNARROW          , {0}, L"DownArrow",
-                                         L"Drop:  L" WS_UTF16_DOWNARROW L"R  or  L" WS_UTF16_DOWNARROW L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'u'\n\n"
-                                         L"Unicode:  0x2193 or 8595"},
-        {UTF16_LEFTSHOE           , {0}, L"LeftShoe",
-                                         L"Enclose:               " WS_UTF16_LEFTSHOE L"R  or   " WS_UTF16_LEFTSHOE L"[X] R\n"
-                                         L"Partitioned Enclose:  L" WS_UTF16_LEFTSHOE L"R  or  L" WS_UTF16_LEFTSHOE L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'z'\n\n"
-                                         L"Unicode:  0x2282 or 8834"},
-        {UTF16_RIGHTSHOE          , {0}, L"RightShoe",
-                                         L"Disclose:  " WS_UTF16_RIGHTSHOE L"R  or  " WS_UTF16_RIGHTSHOE L"[X] R\n"
-                                         L"Pick:     L" WS_UTF16_RIGHTSHOE L"R\n\n"
-                                         L"Keyboard:  Alt-'x'\n\n"
-                                         L"Unicode:  0x2283 or 8835"},
-        {UTF16_SQUAD              , {0}, L"Squad",
-                                         L"Index:  L" WS_UTF16_SQUAD L"R  or  L" WS_UTF16_SQUAD L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'L' or Alt-Shift-'l'\n\n"
-                                         L"Unicode:  0x2337 or 9015"},
-        {UTF16_DELTASTILE         , {0}, L"DeltaStile",
-                                         L"Grade Up:            " WS_UTF16_DELTASTILE L"R\n"
-                                         L"Grade Up Collated:  L" WS_UTF16_DELTASTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'$' or Alt-Shift-'4'\n\n"
-                                         L"Unicode:  0x234B or 9035"},
-        {UTF16_DELSTILE           , {0}, L"DelStile",
-                                         L"Grade Down:            " WS_UTF16_DELSTILE L"R\n"
-                                         L"Grade Down Collated:  L" WS_UTF16_DELSTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'^' or Alt-Shift-'6'\n\n"
-                                         L"Unicode:  0x2352 or 9042"},
+        {WS_UTF16_UPARROW           , {0}, L"UpArrow",
+                                           L"First:  " WS_UTF16_UPARROW L"R\n"
+                                           L"Take:  L" WS_UTF16_UPARROW L"R  or  L" WS_UTF16_UPARROW L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'y'\n\n"
+                                           L"Unicode:  0x2191 or 8593"},
+        {WS_UTF16_DOWNARROW         , {0}, L"DownArrow",
+                                           L"Drop:  L" WS_UTF16_DOWNARROW L"R  or  L" WS_UTF16_DOWNARROW L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'u'\n\n"
+                                           L"Unicode:  0x2193 or 8595"},
+        {WS_UTF16_LEFTSHOE          , {0}, L"LeftShoe",
+                                           L"Enclose:               " WS_UTF16_LEFTSHOE L"R  or   " WS_UTF16_LEFTSHOE L"[X] R\n"
+                                           L"Partitioned Enclose:  L" WS_UTF16_LEFTSHOE L"R  or  L" WS_UTF16_LEFTSHOE L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'z'\n\n"
+                                           L"Unicode:  0x2282 or 8834"},
+        {WS_UTF16_RIGHTSHOE         , {0}, L"RightShoe",
+                                           L"Disclose:  " WS_UTF16_RIGHTSHOE L"R  or  " WS_UTF16_RIGHTSHOE L"[X] R\n"
+                                           L"Pick:     L" WS_UTF16_RIGHTSHOE L"R\n\n"
+                                           L"Keyboard:  Alt-'x'\n\n"
+                                           L"Unicode:  0x2283 or 8835"},
+        {WS_UTF16_SQUAD             , {0}, L"Squad",
+                                           L"Index:  L" WS_UTF16_SQUAD L"R  or  L" WS_UTF16_SQUAD L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'L' or Alt-Shift-'l'\n\n"
+                                           L"Unicode:  0x2337 or 9015"},
+        {WS_UTF16_DELTASTILE        , {0}, L"DeltaStile",
+                                           L"Grade Up:            " WS_UTF16_DELTASTILE L"R\n"
+                                           L"Grade Up Collated:  L" WS_UTF16_DELTASTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'$' or Alt-Shift-'4'\n\n"
+                                           L"Unicode:  0x234B or 9035"},
+        {WS_UTF16_DELSTILE          , {0}, L"DelStile",
+                                           L"Grade Down:            " WS_UTF16_DELSTILE L"R\n"
+                                           L"Grade Down Collated:  L" WS_UTF16_DELSTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'^' or Alt-Shift-'6'\n\n"
+                                           L"Unicode:  0x2352 or 9042"},
         LANGCHARS_SEPARATOR
-        {UTF16_IOTA               , {0}, L"Iota",
-                                         L"Index Generator:       " WS_UTF16_IOTA L"R\n"
-                                         L"Index Of:             L" WS_UTF16_IOTA L"R\n"
-                                         L"Multiset (Index Of):  L" WS_UTF16_IOTA WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'i'\n\n"
-                                         L"Unicode:  0x2373 or 9075"},
-        {UTF16_EPSILON            , {0}, L"Epsilon",
-                                         L"Enlist:                 " WS_UTF16_EPSILON L"R\n"
-                                         L"Member Of:             L" WS_UTF16_EPSILON L"R\n"
-                                         L"Multiset (Member Of):  L" WS_UTF16_EPSILON WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'e'\n\n"
-                                         L"Unicode:  0x220A or 8714"},
-        {UTF16_IOTAUNDERBAR       , {0}, L"IotaUnderbar",
-                                         L"ArrayLookup:  L" WS_UTF16_IOTAUNDERBAR L"R\n"
-                                         L"Indices:       " WS_UTF16_IOTAUNDERBAR L"R\n\n"
-                                         L"Keyboard:  Alt-'I' or Alt-Shift-'i'\n\n"
-                                         L"Unicode:  0x2378 or 9080"},
-        {UTF16_EPSILONUNDERBAR    , {0}, L"EpsilonUnderbar",
-                                         L"Find:  L" WS_UTF16_EPSILONUNDERBAR L"R\n\n"
-                                         L"Keyboard:  Alt-'E' or Alt-Shift-'e'\n\n"
-                                         L"Unicode:  0x2377 or 9079"},
-        {UTF16_DOWNSHOE           , {0}, L"DownShoe",
-                                         L"Unique:             " WS_UTF16_DOWNSHOE L"R\n"
-                                         L"Union:             L" WS_UTF16_DOWNSHOE L"R\n"
-                                         L"Multiset (Union):  L" WS_UTF16_DOWNSHOE WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'v'\n\n"
-                                         L"Unicode:  0x222A or 8746"},
-        {UTF16_UPSHOE             , {0}, L"UpShoe",
-                                         L"Intersection:             L" WS_UTF16_UPSHOE L"R\n"
-                                         L"Multiset (Intersection):  L" WS_UTF16_UPSHOE WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'c'\n\n"
-                                         L"Unicode:  0x2229 or 8745"},
-        {UTF16_LEFTSHOEUNDERBAR   , {0}, L"LeftShoeUnderbar",
-                                         L"Subset:             L" WS_UTF16_LEFTSHOEUNDERBAR L"R\n"
-                                         L"Multiset (Subset):  L" WS_UTF16_LEFTSHOEUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'Z'\n\n"
-                                         L"Unicode:  0x2286 or 8838"},
-        {UTF16_RIGHTSHOEUNDERBAR  , {0}, L"RightShoeUnderbar",
-                                         L"Superset:             L" WS_UTF16_RIGHTSHOEUNDERBAR L"R\n"
-                                         L"Multiset (Superset):  L" WS_UTF16_RIGHTSHOEUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'X'\n\n"
-                                         L"Unicode:  0x2287 or 8839"},
-        {UTF16_TILDE              , {0}, L"Tilde",
-                                         L"Not:                                " WS_UTF16_TILDE L"R\n"
-                                         L"Without:                           L" WS_UTF16_TILDE L"R\n"
-                                         L"Multiset (Asymmetric Difference):  L" WS_UTF16_TILDE WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  '" WS_UTF16_TILDE L"' or Shift-'`' or Alt-'t'\n\n"
-                                         L"Unicode:  0x223C or 8764"},
-        {UTF16_SECTION            , {0}, L"Section",
-                                         L"Symmetric Difference:             L" WS_UTF16_SECTION L"R\n"
-                                         L"Multiset (Symmetric Difference):  L" WS_UTF16_SECTION WS_UTF16_DOWNSHOESTILE L"R\n\n"
-                                         L"Keyboard:  Alt-'S' or Alt-Shift-'s'\n\n"
-                                         L"Unicode:  0x00A7 or 167"},
-        {UTF16_PI                 , {0}, L"Pi",
-                                         L"Prime Factors:            " WS_UTF16_PI L"R\n"
-                                         L"Rth Prime:              " WS_UTF16_OVERBAR L"2" WS_UTF16_PI L"R\n"
-                                         L"Previous Prime:         " WS_UTF16_OVERBAR L"1" WS_UTF16_PI L"R\n"
-                                         L"Primality Test:          0" WS_UTF16_PI L"R\n"
-                                         L"Next Prime:              1" WS_UTF16_PI L"R\n"
-                                         L"Number of Primes " WS_UTF16_LEFTCARETUNDERBAR L"R:     2" WS_UTF16_PI L"R\n"
-                                         L"Divisor Count Function: 10" WS_UTF16_PI L"R\n"
-                                         L"Divisor Sum Function:   11" WS_UTF16_PI L"R\n"
-                                         L"M" L"\x00F6" L"bius Function:        12" WS_UTF16_PI L"R\n"
-                                         L"Totient Function:       13" WS_UTF16_PI L"R\n\n"
-                                         L"Keyboard:  Alt-'p'\n\n"
-                                         L"Unicode:  0x03C0 or 960"},
+        {WS_UTF16_IOTA              , {0}, L"Iota",
+                                           L"Index Generator:       " WS_UTF16_IOTA L"R\n"
+                                           L"Index Of:             L" WS_UTF16_IOTA L"R\n"
+                                           L"Multiset (Index Of):  L" WS_UTF16_IOTA WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'i'\n\n"
+                                           L"Unicode:  0x2373 or 9075"},
+        {WS_UTF16_EPSILON           , {0}, L"Epsilon",
+                                           L"Enlist:                 " WS_UTF16_EPSILON L"R\n"
+                                           L"Member Of:             L" WS_UTF16_EPSILON L"R\n"
+                                           L"Multiset (Member Of):  L" WS_UTF16_EPSILON WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'e'\n\n"
+                                           L"Unicode:  0x220A or 8714"},
+        {WS_UTF16_IOTAUNDERBAR      , {0}, L"IotaUnderbar",
+                                           L"ArrayLookup:  L" WS_UTF16_IOTAUNDERBAR L"R\n"
+                                           L"Indices:       " WS_UTF16_IOTAUNDERBAR L"R\n\n"
+                                           L"Keyboard:  Alt-'I' or Alt-Shift-'i'\n\n"
+                                           L"Unicode:  0x2378 or 9080"},
+        {WS_UTF16_EPSILONUNDERBAR   , {0}, L"EpsilonUnderbar",
+                                           L"Find:  L" WS_UTF16_EPSILONUNDERBAR L"R\n\n"
+                                           L"Keyboard:  Alt-'E' or Alt-Shift-'e'\n\n"
+                                           L"Unicode:  0x2377 or 9079"},
+        {WS_UTF16_DOWNSHOE          , {0}, L"DownShoe",
+                                           L"Unique:             " WS_UTF16_DOWNSHOE L"R\n"
+                                           L"Union:             L" WS_UTF16_DOWNSHOE L"R\n"
+                                           L"Multiset (Union):  L" WS_UTF16_DOWNSHOE WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'v'\n\n"
+                                           L"Unicode:  0x222A or 8746"},
+        {WS_UTF16_UPSHOE            , {0}, L"UpShoe",
+                                           L"Intersection:             L" WS_UTF16_UPSHOE L"R\n"
+                                           L"Multiset (Intersection):  L" WS_UTF16_UPSHOE WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'c'\n\n"
+                                           L"Unicode:  0x2229 or 8745"},
+        {WS_UTF16_LEFTSHOEUNDERBAR  , {0}, L"LeftShoeUnderbar",
+                                           L"Subset:             L" WS_UTF16_LEFTSHOEUNDERBAR L"R\n"
+                                           L"Multiset (Subset):  L" WS_UTF16_LEFTSHOEUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'Z'\n\n"
+                                           L"Unicode:  0x2286 or 8838"},
+        {WS_UTF16_RIGHTSHOEUNDERBAR , {0}, L"RightShoeUnderbar",
+                                           L"Superset:             L" WS_UTF16_RIGHTSHOEUNDERBAR L"R\n"
+                                           L"Multiset (Superset):  L" WS_UTF16_RIGHTSHOEUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'X'\n\n"
+                                           L"Unicode:  0x2287 or 8839"},
+        {WS_UTF16_TILDE             , {0}, L"Tilde",
+                                           L"Not:                                " WS_UTF16_TILDE L"R\n"
+                                           L"Without:                           L" WS_UTF16_TILDE L"R\n"
+                                           L"Multiset (Asymmetric Difference):  L" WS_UTF16_TILDE WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  '" WS_UTF16_TILDE L"' or Shift-'`' or Alt-'t'\n\n"
+                                           L"Unicode:  0x223C or 8764"},
+        {WS_UTF16_SECTION           , {0}, L"Section",
+                                           L"Symmetric Difference:             L" WS_UTF16_SECTION L"R\n"
+                                           L"Multiset (Symmetric Difference):  L" WS_UTF16_SECTION WS_UTF16_DOWNSHOESTILE L"R\n\n"
+                                           L"Keyboard:  Alt-'S' or Alt-Shift-'s'\n\n"
+                                           L"Unicode:  0x00A7 or 167"},
+        {WS_UTF16_PI                , {0}, L"Pi",
+                                           L"Prime Factors:            " WS_UTF16_PI L"R\n"
+                                           L"Rth Prime:              " WS_UTF16_OVERBAR L"2" WS_UTF16_PI L"R\n"
+                                           L"Previous Prime:         " WS_UTF16_OVERBAR L"1" WS_UTF16_PI L"R\n"
+                                           L"Primality Test:          0" WS_UTF16_PI L"R\n"
+                                           L"Next Prime:              1" WS_UTF16_PI L"R\n"
+                                           L"Number of Primes " WS_UTF16_LEFTCARETUNDERBAR L"R:     2" WS_UTF16_PI L"R\n"
+                                           L"Divisor Count Function: 10" WS_UTF16_PI L"R\n"
+                                           L"Divisor Sum Function:   11" WS_UTF16_PI L"R\n"
+                                           L"M" L"\x00F6" L"bius Function:        12" WS_UTF16_PI L"R\n"
+                                           L"Totient Function:       13" WS_UTF16_PI L"R\n\n"
+                                           L"Keyboard:  Alt-'p'\n\n"
+                                           L"Unicode:  0x03C0 or 960"},
+        {L".."                      , {0}, L"Dot Dot",
+                                           L"Sequence:  L..R\n\n"
+                                           L"Keyboard:  '..'\n\n"
+                                           L"Unicode:  0x002E 0x002E or 46 46"},
         LANGCHARS_SEPARATOR
-        {UTF16_COMMA              , {0}, L"Comma",
-                                         L"Ravel:      ,R  or   ,[X] R\n"
-                                         L"Catenate:  L,R  or  L,[X] R  where X is integral\n"
-                                         L"Laminate:           L,[X] R  where X is fractional\n\n"
-                                         L"Keyboard:  ','\n\n"
-                                         L"Unicode:  0x002C or 44"},
-        {UTF16_COMMABAR           , {0}, L"CommaBar",
-                                         L"Table:                 " WS_UTF16_COMMABAR L"R\n"
-                                         L"Catenate First Axis:  L" WS_UTF16_COMMABAR L"R  or  L" WS_UTF16_COMMABAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'" WS_UTF16_TILDE L"' or Alt-Shift-'`'\n\n"
-                                         L"Unicode:  0x236A or 9066"},
-        {UTF16_RHO                , {0}, L"Rho",
-                                         L"Shape:     " WS_UTF16_RHO L"R\n"
-                                         L"Reshape:  L" WS_UTF16_RHO L"R\n\n"
-                                         L"Keyboard:  Alt-'r'\n\n"
-                                         L"Unicode:  0x2374 or 9076"},
-        {UTF16_CIRCLESTILE        , {0}, L"CircleStile",
-                                         L"Reverse:   " WS_UTF16_CIRCLESTILE L"R  or   " WS_UTF16_CIRCLESTILE L"[X] R\n"
-                                         L"Rotate:   L" WS_UTF16_CIRCLESTILE L"R  or  L" WS_UTF16_CIRCLESTILE L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'%' or Alt-Shift-'5'\n\n"
-                                         L"Unicode:  0x233D or 9021"},
-        {UTF16_CIRCLEBAR          , {0}, L"CircleBar",
-                                         L"Reverse First Axis:  " WS_UTF16_CIRCLEBAR L"R  or   " WS_UTF16_CIRCLEBAR L"[X] R\n"
-                                         L"Rotate First Axis:  L" WS_UTF16_CIRCLEBAR L"R  or  L" WS_UTF16_CIRCLEBAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'&' or Alt-Shift-'7'\n\n"
-                                         L"Unicode:  0x2296 or 8854"},
-        {UTF16_CIRCLESLOPE        , {0}, L"CircleSlope",
-                                         L"Reverse All Coords:  " WS_UTF16_CIRCLESLOPE L"R\n"
-                                         L"Transpose:          L" WS_UTF16_CIRCLESLOPE L"R\n\n"
-                                         L"Keyboard:  Alt-'^' or Alt-Shift-'6'\n\n"
-                                         L"Unicode:  0x2349 or 9033"},
+        {WS_UTF16_COMMA             , {0}, L"Comma",
+                                           L"Ravel:      ,R  or   ,[X] R\n"
+                                           L"Catenate:  L,R  or  L,[X] R  where X is integral\n"
+                                           L"Laminate:           L,[X] R  where X is fractional\n\n"
+                                           L"Keyboard:  ','\n\n"
+                                           L"Unicode:  0x002C or 44"},
+        {WS_UTF16_COMMABAR          , {0}, L"CommaBar",
+                                           L"Table:                 " WS_UTF16_COMMABAR L"R\n"
+                                           L"Catenate First Axis:  L" WS_UTF16_COMMABAR L"R  or  L" WS_UTF16_COMMABAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'" WS_UTF16_TILDE L"' or Alt-Shift-'`'\n\n"
+                                           L"Unicode:  0x236A or 9066"},
+        {WS_UTF16_RHO               , {0}, L"Rho",
+                                           L"Shape:     " WS_UTF16_RHO L"R\n"
+                                           L"Reshape:  L" WS_UTF16_RHO L"R\n\n"
+                                           L"Keyboard:  Alt-'r'\n\n"
+                                           L"Unicode:  0x2374 or 9076"},
+        {WS_UTF16_CIRCLESTILE       , {0}, L"CircleStile",
+                                           L"Reverse:   " WS_UTF16_CIRCLESTILE L"R  or   " WS_UTF16_CIRCLESTILE L"[X] R\n"
+                                           L"Rotate:   L" WS_UTF16_CIRCLESTILE L"R  or  L" WS_UTF16_CIRCLESTILE L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'%' or Alt-Shift-'5'\n\n"
+                                           L"Unicode:  0x233D or 9021"},
+        {WS_UTF16_CIRCLEBAR         , {0}, L"CircleBar",
+                                           L"Reverse First Axis:  " WS_UTF16_CIRCLEBAR L"R  or   " WS_UTF16_CIRCLEBAR L"[X] R\n"
+                                           L"Rotate First Axis:  L" WS_UTF16_CIRCLEBAR L"R  or  L" WS_UTF16_CIRCLEBAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'&' or Alt-Shift-'7'\n\n"
+                                           L"Unicode:  0x2296 or 8854"},
+        {WS_UTF16_CIRCLESLOPE       , {0}, L"CircleSlope",
+                                           L"Reverse All Coords:  " WS_UTF16_CIRCLESLOPE L"R\n"
+                                           L"Transpose:          L" WS_UTF16_CIRCLESLOPE L"R\n\n"
+                                           L"Keyboard:  Alt-'^' or Alt-Shift-'6'\n\n"
+                                           L"Unicode:  0x2349 or 9033"},
         LANGCHARS_SEPARATOR
-        {UTF16_SLASH              , {0}, L"Slash",
-                                         L"Replicate:                 L/R  or    L/[X] R\n"
-                                         L"Reduce Operator:           f/R  or    f/[X] R\n"
-                                         L"N-wise Reduce Operator:  L f/R  or  L f/[X] R\n\n"
-                                         L"Keyboard:  '/'\n\n"
-                                         L"Unicode:  0x002F or 47"},
-        {UTF16_SLOPE              , {0}, L"Slope",
-                                         L"Expand:         L\\R  or  L\\[X] R\n"
-                                         L"Scan Operator:  f\\R  or  f\\[X] R\n\n"
-                                         L"Keyboard:  '\\'\n\n"
-                                         L"Unicode:  0x005C or 92"},
-        {UTF16_SLASHBAR           , {0}, L"SlashBar",
-                                         L"Replicate First Axis:               L" WS_UTF16_SLASHBAR L"R  or    L" WS_UTF16_SLASHBAR L"[X] R\n"
-                                         L"Reduce Operator First Axis:         f" WS_UTF16_SLASHBAR L"R  or    f" WS_UTF16_SLASHBAR L"[X] R\n"
-                                         L"N-wise Reduce Operator First Axis:  f" WS_UTF16_SLASHBAR L"R  or  L f" WS_UTF16_SLASHBAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'/'\n\n"
-                                         L"Unicode:  0x233F or 9023"},
-        {UTF16_SLOPEBAR           , {0}, L"SlopeBar",
-                                         L"Expand First Axis:         L" WS_UTF16_SLOPEBAR L"R  or  L" WS_UTF16_SLOPEBAR L"[X] R\n"
-                                         L"Scan Operator First Axis:  f" WS_UTF16_SLOPEBAR L"R  or  f" WS_UTF16_SLOPEBAR L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'.'\n\n"
-                                         L"Unicode:  0x2340 or 9024"},
-        {UTF16_CIRCLEMIDDLEDOT    , {0}, L"CircleMiddleDot",
-                                         L"Null Operator:    f" WS_UTF16_CIRCLEMIDDLEDOT L" R\n"
-                                         L"                L f" WS_UTF16_CIRCLEMIDDLEDOT L" R\n\n"
-                                         L"Keyboard:  Alt-'?' or Alt-Shift-'/'\n\n"
-                                         L"Unicode:  0x2299 or 8857"},
-        {UTF16_DIERESIS           , {0}, L"Dieresis",
-                                         L"Each Operator:  f" WS_UTF16_DIERESIS L" R\n"
-                                         L"              L f" WS_UTF16_DIERESIS L" R\n"
-                                         L"              L f" WS_UTF16_DIERESIS L"[X] R\n\n"
-                                         L"Keyboard:  Alt-'1'\n\n"
-                                         L"Unicode:  0x00A8 or 168"},
-        {UTF16_DIERESISTILDE      , {0}, L"DieresisTilde",
-                                         L"Duplicate Operator:  f" WS_UTF16_DIERESISTILDE L" R\n"
-                                         L"Commute Operator:  L f" WS_UTF16_DIERESISTILDE L" R\n\n"
-                                         L"Keyboard:  Alt-'T' or Alt-Shift-'t'\n\n"
-                                         L"Unicode:  0x2368 or 9064"},
-        {UTF16_DIERESISJOT        , {0}, L"DieresisJot",
-                                         L"Rank Operator:  (f" WS_UTF16_DIERESISJOT L"Y) R\n"
-                                         L"                (f" WS_UTF16_DIERESISJOT L"[X] Y) R\n"
-                                         L"              L (f" WS_UTF16_DIERESISJOT L"Y) R\n"
-                                         L"              L (f" WS_UTF16_DIERESISJOT L"[X] Y) R\n\n"
-                                         L"Keyboard:  Alt-'J' or Alt-Shift-'j'\n\n"
-                                         L"Unicode:  0x2364 or 9060"},
-        {UTF16_DOWNSHOESTILE      , {0}, L"Multiset",
-                                         L"Multiset Operator:  f" WS_UTF16_DOWNSHOESTILE L" R\n"
-                                         L"                  L f" WS_UTF16_DOWNSHOESTILE L" R\n"
-                                         L"Keyboard:  Alt-'m'\n\n"
-                                         L"Unicode:  0x2366 or 9062"},
-////////{UTF16_DIERESISSTAR       , {0}, L""},       // Uncomment when implemented
-////////{UTF16_DIERESISDOT        , {0}, L""},       // ...
-////////{UTF16_DIERESISDEL        , {0}, L""},       // ...
-////////{UTF16_DIERESISDOWNTACK   , {0}, L""},       // ...
-        {UTF16_DIERESISCIRCLE     , {0}, L"DieresisCircle",
-                                         L"Composition Operator:  L f" WS_UTF16_DIERESISCIRCLE L"g R\n\n"
-                                         L"Keyboard:  Alt-'O' or Alt-shift-'o'\n\n"
-                                         L"Unicode:  0x2365 or 9061"},
-////////{UTF16_CIRCLESTILE        , {0}, L""},       // ...
-        {UTF16_DOT                , {0}, L"Dot",
-                                         L"Inner Product Operator:  L f.g R\n"
-                                         L"Outer Product Operator:  L " WS_UTF16_JOT L".g R\n"
-                                         L"Sequence:  L..R\n"
-                                         L"Decimal notation separator:  1.23\n\n"
-                                         L"Keyboard:  '.'\n\n"
-                                         L"Unicode:  0x002E or 46"},
-        {UTF16_JOT                , {0}, L"Jot",
-                                         L"Compose Operator:  f" WS_UTF16_JOT L"g  R\n"
-                                         L"                  (a" WS_UTF16_JOT L"g) R\n"
-                                         L"                  (f" WS_UTF16_JOT L"b) R\n"
-                                         L"                 L f" WS_UTF16_JOT L"g  R\n\n"
-                                         L"Keyboard:  Alt-'j'\n\n"
-                                         L"Unicode:  0x2218 or 8728"},
-        {UTF16_VARIANT            , {0}, L"QuadColon",
-                                         L"Variant Operator:  (f" WS_UTF16_VARIANT L"b) R\n"
-                                         L"                 L (f" WS_UTF16_VARIANT L"b) R\n\n"
-                                         L"Keyboard:  Alt-'_'\n\n"
-                                         L"Unicode:  0x2360 or 9056"},
+        {WS_UTF16_SLASH             , {0}, L"Slash",
+                                           L"Replicate:                 L/R  or    L/[X] R\n"
+                                           L"Reduce Operator:           f/R  or    f/[X] R\n"
+                                           L"N-wise Reduce Operator:  L f/R  or  L f/[X] R\n\n"
+                                           L"Keyboard:  '/'\n\n"
+                                           L"Unicode:  0x002F or 47"},
+        {WS_UTF16_SLOPE             , {0}, L"Slope",
+                                           L"Expand:         L\\R  or  L\\[X] R\n"
+                                           L"Scan Operator:  f\\R  or  f\\[X] R\n\n"
+                                           L"Keyboard:  '\\'\n\n"
+                                           L"Unicode:  0x005C or 92"},
+        {WS_UTF16_SLASHBAR          , {0}, L"SlashBar",
+                                           L"Replicate First Axis:               L" WS_UTF16_SLASHBAR L"R  or    L" WS_UTF16_SLASHBAR L"[X] R\n"
+                                           L"Reduce Operator First Axis:         f" WS_UTF16_SLASHBAR L"R  or    f" WS_UTF16_SLASHBAR L"[X] R\n"
+                                           L"N-wise Reduce Operator First Axis:  f" WS_UTF16_SLASHBAR L"R  or  L f" WS_UTF16_SLASHBAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'/'\n\n"
+                                           L"Unicode:  0x233F or 9023"},
+        {WS_UTF16_SLOPEBAR          , {0}, L"SlopeBar",
+                                           L"Expand First Axis:         L" WS_UTF16_SLOPEBAR L"R  or  L" WS_UTF16_SLOPEBAR L"[X] R\n"
+                                           L"Scan Operator First Axis:  f" WS_UTF16_SLOPEBAR L"R  or  f" WS_UTF16_SLOPEBAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'.'\n\n"
+                                           L"Unicode:  0x2340 or 9024"},
+        {WS_UTF16_CIRCLEMIDDLEDOT   , {0}, L"CircleMiddleDot",
+                                           L"Null Operator:    f" WS_UTF16_CIRCLEMIDDLEDOT L" R\n"
+                                           L"                L f" WS_UTF16_CIRCLEMIDDLEDOT L" R\n\n"
+                                           L"Keyboard:  Alt-'?' or Alt-Shift-'/'\n\n"
+                                           L"Unicode:  0x2299 or 8857"},
+        {WS_UTF16_DIERESIS          , {0}, L"Dieresis",
+                                           L"Each Operator:  f" WS_UTF16_DIERESIS L" R\n"
+                                           L"              L f" WS_UTF16_DIERESIS L" R\n"
+                                           L"              L f" WS_UTF16_DIERESIS L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'1'\n\n"
+                                           L"Unicode:  0x00A8 or 168"},
+        {WS_UTF16_DIERESISTILDE     , {0}, L"DieresisTilde",
+                                           L"Duplicate Operator:  f" WS_UTF16_DIERESISTILDE L" R\n"
+                                           L"Commute Operator:  L f" WS_UTF16_DIERESISTILDE L" R\n\n"
+                                           L"Keyboard:  Alt-'T' or Alt-Shift-'t'\n\n"
+                                           L"Unicode:  0x2368 or 9064"},
+        {WS_UTF16_DIERESISJOT       , {0}, L"DieresisJot",
+                                           L"Rank Operator:  (f" WS_UTF16_DIERESISJOT L"Y) R\n"
+                                           L"                (f" WS_UTF16_DIERESISJOT L"[X] Y) R\n"
+                                           L"              L (f" WS_UTF16_DIERESISJOT L"Y) R\n"
+                                           L"              L (f" WS_UTF16_DIERESISJOT L"[X] Y) R\n\n"
+                                           L"Keyboard:  Alt-'J' or Alt-Shift-'j'\n\n"
+                                           L"Unicode:  0x2364 or 9060"},
+        {WS_UTF16_DOWNSHOESTILE     , {0}, L"Multiset",
+                                           L"Multiset Operator:  f" WS_UTF16_DOWNSHOESTILE L" R\n"
+                                           L"                  L f" WS_UTF16_DOWNSHOESTILE L" R\n"
+                                           L"Keyboard:  Alt-'m'\n\n"
+                                           L"Unicode:  0x2366 or 9062"},
+////////{WS_UTF16_DIERESISSTAR      , {0}, L""},       // Uncomment when implemented
+////////{WS_UTF16_DIERESISDOT       , {0}, L""},       // ...
+////////{WS_UTF16_DIERESISDEL       , {0}, L""},       // ...
+////////{WS_UTF16_DIERESISDOWNTACK  , {0}, L""},       // ...
+        {WS_UTF16_DIERESISCIRCLE    , {0}, L"DieresisCircle",
+                                           L"Composition Operator:  L f" WS_UTF16_DIERESISCIRCLE L"g R\n\n"
+                                           L"Keyboard:  Alt-'O' or Alt-shift-'o'\n\n"
+                                           L"Unicode:  0x2365 or 9061"},
+////////{WS_UTF16_CIRCLESTILE       , {0}, L""},       // ...
+        {WS_UTF16_DOT               , {0}, L"Dot",
+                                           L"Inner Product Operator:  L f.g R\n"
+                                           L"Outer Product Operator:  L " WS_UTF16_JOT L".g R\n"
+                                           L"Sequence:  L..R\n"
+                                           L"Decimal notation separator:  1.23\n\n"
+                                           L"Keyboard:  '.'\n\n"
+                                           L"Unicode:  0x002E or 46"},
+        {WS_UTF16_JOT               , {0}, L"Jot",
+                                           L"Compose Operator:  f" WS_UTF16_JOT L"g  R\n"
+                                           L"                  (a" WS_UTF16_JOT L"g) R\n"
+                                           L"                  (f" WS_UTF16_JOT L"b) R\n"
+                                           L"                 L f" WS_UTF16_JOT L"g  R\n\n"
+                                           L"Keyboard:  Alt-'j'\n\n"
+                                           L"Unicode:  0x2218 or 8728"},
+        {WS_UTF16_VARIANT           , {0}, L"QuadColon",
+                                           L"Variant Operator:  (f" WS_UTF16_VARIANT L"b) R\n"
+                                           L"                 L (f" WS_UTF16_VARIANT L"b) R\n\n"
+                                           L"Keyboard:  Alt-'_'\n\n"
+                                           L"Unicode:  0x2360 or 9056"},
         LANGCHARS_SEPARATOR
-        {UTF16_QUOTEQUAD          , {0}, L"QuoteQuad",
-                                         L"Character input from the keyboard:  A" WS_UTF16_LEFTARROW WS_UTF16_QUOTEQUAD L"\n"
-                                         L"Character output to the screen:     "  WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"A\n\n"
-                                         L"Keyboard:  Alt-'{' or Alt-Shift-'['\n\n"
-                                         L"Unicode:  0x235E or 9054"},
-        {UTF16_QUAD               , {0}, L"Quad",
-                                         L"Used as the first character in system names\n\n"
-                                         L"Evaluated Input:  A" WS_UTF16_LEFTARROW WS_UTF16_QUAD L"\n"
-                                         L"Evaluated Output: " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"A\n\n"
-                                         L"Keyboard:  Alt-'l'\n\n"
-                                         L"Unicode:  0x2395 or 9109"},
-        {UTF16_UPTACKJOT          , {0}, L"UpTackJot",
-                                         L"Execute:  " WS_UTF16_UPTACKJOT L"R\n\n"
-                                         L"Keyboard:  Alt-';'\n\n"
-                                         L"Unicode:  0x234E or 9038"},
-        {UTF16_DOWNTACKJOT        , {0}, L"DownTackJot",
-                                         L"Format:                    " WS_UTF16_DOWNTACKJOT L"R\n"
-                                         L"Format By Specification:  L" WS_UTF16_DOWNTACKJOT L"R\n\n"
-                                         L"Keyboard:  Alt-\"'\"\n\n"
-                                         L"Unicode:  0x2355 or 9045"},
+        {WS_UTF16_QUOTEQUAD         , {0}, L"QuoteQuad",
+                                           L"Character input from the keyboard:  A" WS_UTF16_LEFTARROW WS_UTF16_QUOTEQUAD L"\n"
+                                           L"Character output to the screen:     "  WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"A\n\n"
+                                           L"Keyboard:  Alt-'{' or Alt-Shift-'['\n\n"
+                                           L"Unicode:  0x235E or 9054"},
+        {WS_UTF16_QUAD              , {0}, L"Quad",
+                                           L"Used as the first character in system names\n\n"
+                                           L"Evaluated Input:  A" WS_UTF16_LEFTARROW WS_UTF16_QUAD L"\n"
+                                           L"Evaluated Output: " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"A\n\n"
+                                           L"Keyboard:  Alt-'l'\n\n"
+                                           L"Unicode:  0x2395 or 9109"},
+        {WS_UTF16_UPTACKJOT         , {0}, L"UpTackJot",
+                                           L"Execute:  " WS_UTF16_UPTACKJOT L"R\n\n"
+                                           L"Keyboard:  Alt-';'\n\n"
+                                           L"Unicode:  0x234E or 9038"},
+        {WS_UTF16_DOWNTACKJOT       , {0}, L"DownTackJot",
+                                           L"Format:                    " WS_UTF16_DOWNTACKJOT L"R\n"
+                                           L"Format By Specification:  L" WS_UTF16_DOWNTACKJOT L"R\n\n"
+                                           L"Keyboard:  Alt-\"'\"\n\n"
+                                           L"Unicode:  0x2355 or 9045"},
         LANGCHARS_SEPARATOR
-        {UTF16_DIAMOND            , {0}, L"Diamond",
-                                         L"Used as a statement separator\n\n"
-                                         L"stmt1 " WS_UTF16_DIAMOND L" stmt2 " WS_UTF16_DIAMOND L" stmt3 " WS_UTF16_DIAMOND L" ...\n\n"
-                                         L"Keyboard:  Alt-'`'\n\n"
-                                         L"Unicode:  0x22C4 or 8900"},
-        {UTF16_LAMP               , {0}, L"Lamp",
-                                         L"Used as the start of a comment\n\n"
-                                         L"expression " WS_UTF16_LAMP L" Comment which is not evaluated\n\n"
-                                         L"Keyboard:  Alt-','\n\n"
-                                         L"Unicode:  0x235D or 9053"},
-        {UTF16_DEL                , {0}, L"Del",
-                                         L"Used to open function definition mode\n\n"
-                                         WS_UTF16_DEL L"foo\n\n"
-                                         L"Keyboard:  Alt-'g'\n\n"
-                                         L"Unicode:  0x2207 or 8711"},
-        {UTF16_DELTA              , {0}, L"Delta",
-                                         L"Used as the first or subsequent character in names\n\n"
-                                         L"Keyboard:  Alt-'h'\n\n"
-                                         L"Unicode:  0x2206 or 8710"},
-        {UTF16_DELTAUNDERBAR      , {0}, L"DeltaUnderbar",
-                                         L"Used as the first or subsequent character in names\n\n"
-                                         L"Keyboard:  Alt-'H' or Alt-Shift-'h'\n\n"
-                                         L"Unicode:  0x2359 or 9049"},
-        {UTF16_UNDERBAR           , {0}, L"Underbar",
-                                         L"Used as the first or subsequent character in names such as _type\n\n"
-                                         L"Keyboard:  '_' or Shift-'-'\n\n"
-                                         L"Unicode:  0x005F or 95"},
-        {UTF16_ALPHA              , {0}, L"Alpha",
-                                         L"Used as an identifier name\n\n"
-                                         L"Keyboard:  Alt-'a'\n\n"
-                                         L"Unicode:  0x237A or 9082"},
-        {UTF16_OMEGA              , {0}, L"Omega",
-                                         L"Used as an identifier name\n\n"
-                                         L"Keyboard:  Alt-'w'\n\n"
-                                         L"Unicode:  0x2375 or 9077"},
+        {WS_UTF16_DIAMOND           , {0}, L"Diamond",
+                                           L"Used as a statement separator\n\n"
+                                           L"stmt1 " WS_UTF16_DIAMOND L" stmt2 " WS_UTF16_DIAMOND L" stmt3 " WS_UTF16_DIAMOND L" ...\n\n"
+                                           L"Keyboard:  Alt-'`'\n\n"
+                                           L"Unicode:  0x22C4 or 8900"},
+        {WS_UTF16_LAMP              , {0}, L"Lamp",
+                                           L"Used as the start of a comment\n\n"
+                                           L"expression " WS_UTF16_LAMP L" Comment which is not evaluated\n\n"
+                                           L"Keyboard:  Alt-','\n\n"
+                                           L"Unicode:  0x235D or 9053"},
+        {WS_UTF16_DEL               , {0}, L"Del",
+                                           L"Used to open function definition mode\n\n"
+                                           WS_UTF16_DEL L"foo\n\n"
+                                           L"Keyboard:  Alt-'g'\n\n"
+                                           L"Unicode:  0x2207 or 8711"},
+        {WS_UTF16_DELTA             , {0}, L"Delta",
+                                           L"Used as the first or subsequent character in names\n\n"
+                                           L"Keyboard:  Alt-'h'\n\n"
+                                           L"Unicode:  0x2206 or 8710"},
+        {WS_UTF16_DELTAUNDERBAR     , {0}, L"DeltaUnderbar",
+                                           L"Used as the first or subsequent character in names\n\n"
+                                           L"Keyboard:  Alt-'H' or Alt-Shift-'h'\n\n"
+                                           L"Unicode:  0x2359 or 9049"},
+        {WS_UTF16_UNDERBAR          , {0}, L"Underbar",
+                                           L"Used as the first or subsequent character in names such as _type\n\n"
+                                           L"Keyboard:  '_' or Shift-'-'\n\n"
+                                           L"Unicode:  0x005F or 95"},
+        {WS_UTF16_ALPHA             , {0}, L"Alpha",
+                                           L"Used as an identifier name\n\n"
+                                           L"Keyboard:  Alt-'a'\n\n"
+                                           L"Unicode:  0x237A or 9082"},
+        {WS_UTF16_OMEGA             , {0}, L"Omega",
+                                           L"Used as an identifier name\n\n"
+                                           L"Keyboard:  Alt-'w'\n\n"
+                                           L"Unicode:  0x2375 or 9077"},
         LANGCHARS_SEPARATOR
-        {UTF16_OVERBAR            , {0}, L"Overbar",
-                                         L"When it immediately precedes a number, it indicates that the number is negative.  "
-                                         L"It also may be used as the second or subsequent character in names such as a" WS_UTF16_OVERBAR L"3.\n\n"
-                                         L"Keyboard:  Alt-'2'\n\n"
-                                         L"Unicode:  0x00AF or 175"},
-        {UTF16_ZILDE              , {0}, L"Zilde",
-                                         L"Empty numeric vector as opposed to ''\n"
-                                         L"which is an empty character vector\n\n"
-                                         L"Keyboard:  Alt-'}' or Alt-Shift-']'\n\n"
-                                         L"Unicode:  0x236C or 9068"},
-        {UTF16_INFINITY           , {0}, L"Infinity",
-                                         L" "             WS_UTF16_INFINITY L" is the largest (floating point) number\n"
-                                         WS_UTF16_OVERBAR WS_UTF16_INFINITY L" is the smallest (floating point) number\n"
-                                         WS_UTF16_INFINITY L"r1 is an infinite rational number\n\n"
-                                         L"Keyboard:  Alt-'f'\n\n"
-                                         L"Unicode:  0x221E or 8734"},
+        {WS_UTF16_OVERBAR           , {0}, L"Overbar",
+                                           L"When it immediately precedes a number, it indicates that the number is negative.  "
+                                           L"It also may be used as the second or subsequent character in names such as a" WS_UTF16_OVERBAR L"3.\n\n"
+                                           L"Keyboard:  Alt-'2'\n\n"
+                                           L"Unicode:  0x00AF or 175"},
+        {WS_UTF16_ZILDE             , {0}, L"Zilde",
+                                           L"Empty numeric vector as opposed to ''\n"
+                                           L"which is an empty character vector\n\n"
+                                           L"Keyboard:  Alt-'}' or Alt-Shift-']'\n\n"
+                                           L"Unicode:  0x236C or 9068"},
+        {WS_UTF16_INFINITY          , {0}, L"Infinity",
+                                           L" "             WS_UTF16_INFINITY L" is the largest (floating point) number\n"
+                                           WS_UTF16_OVERBAR WS_UTF16_INFINITY L" is the smallest (floating point) number\n"
+                                           WS_UTF16_INFINITY L"r1 is an infinite rational number\n\n"
+                                           L"Keyboard:  Alt-'f'\n\n"
+                                           L"Unicode:  0x221E or 8734"},
         LANGCHARS_SEPARATOR
-        {L'b'                     , {0}, L"Base point notation",
-                                         L"This infix notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF to represent 16" WS_UTF16_UPTACK L"15 15 15 15 or 65535.  "
-                                         L"The number to the left of the b is the base of the number system for the characters to the right of the b."
-                                         },
-        {L'e'                     , {0}, L"Exponential point notation",
-                                         L"This infix notation allows you to enter numeric constants by specifying a signed multiplier and a signed base 10 exponent "
-                                         L"as in 1.23e" WS_UTF16_OVERBAR L"3 to represent 1.23" WS_UTF16_TIMES L"10*" WS_UTF16_OVERBAR L"3."
-                                         },
-        {L'p'                     , {0}, L"Pi point notation",
-                                         L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
-                                         L"as in 0.5p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"3."
-                                         },
-        {DEF_RATSEP               , {0}, L"Rational Point Notation",
-                                         L"This infix notation allows you to enter Rational numbers as in 1r3 to represent 1" WS_UTF16_COLONBAR L"3, or, if the denominator is 1, using the suffix x as in 123x.  "
-                                         L"Such constants are of infinite precision."
-                                         },
-        {DEF_VFPSEP               , {0}, L"Variable-precision Floating Point notation",
-                                         L"This suffix notation allows you to enter VFP numbers as in 1.3v to represent 1.3 or 12v to represent 12 where both have "
-                                         L"a precision controlled by the current value of " WS_UTF16_QUAD L"FPC, as opposed to the 53-bit precision of IEEE-754 floating point numbers."
-                                         },
-        {L'x'                     , {0}, L"Euler point notation",
-                                         L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "
-                                         L"as in 3x2 for three times e squared where e is the base of the natural logarithm.\r\n\r\n"
-                                         L"As a suffix notation, \"x\" following an integer constant such as " WS_UTF16_OVERBAR L"123x indicates "
-                                         L"that the constant is a rational integer identical to " WS_UTF16_OVERBAR L"123r1."
-                                         },
+        {L"b"                       , {0}, L"Base point notation",
+                                           L"This infix notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF to represent 16" WS_UTF16_UPTACK L"15 15 15 15 or 65535.  "
+                                           L"The number to the left of the b is the base of the number system for the characters to the right of the b."
+                                           },
+        {L"e"                       , {0}, L"Exponential point notation",
+                                           L"This infix notation allows you to enter numeric constants by specifying a signed multiplier and a signed base 10 exponent "
+                                           L"as in 1.23e" WS_UTF16_OVERBAR L"3 to represent 1.23" WS_UTF16_TIMES L"10*" WS_UTF16_OVERBAR L"3."
+                                           },
+        {L"p"                       , {0}, L"Pi point notation",
+                                           L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
+                                           L"as in 0.5p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"3."
+                                           },
+        {DEF_RATSEP_WS              , {0}, L"Rational Point Notation",
+                                           L"This infix notation allows you to enter Rational numbers as in 1r3 to represent 1" WS_UTF16_COLONBAR L"3, or, if the denominator is 1, using the suffix x as in 123x.  "
+                                           L"Such constants are of infinite precision."
+                                           },
+        {DEF_VFPSEP_WS              , {0}, L"Variable-precision Floating Point notation",
+                                           L"This suffix notation allows you to enter VFP numbers as in 1.3v to represent 1.3 or 12v to represent 12 where both have "
+                                           L"a precision controlled by the current value of " WS_UTF16_QUAD L"FPC, as opposed to the 53-bit precision of IEEE-754 floating point numbers."
+                                           },
+        {L"x"                       , {0}, L"Euler point notation",
+                                           L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "
+                                           L"as in 3x2 for three times e squared where e is the base of the natural logarithm.\r\n\r\n"
+                                           L"As a suffix notation, \"x\" following an integer constant such as " WS_UTF16_OVERBAR L"123x indicates "
+                                           L"that the constant is a rational integer identical to " WS_UTF16_OVERBAR L"123r1."
+                                           },
     };
 
 #define LANGCHARS_LENGTH        countof (langChars)
@@ -3055,9 +3059,9 @@ typedef struct tagLANGCHARS
 
                         // Create the tooltip title
                         wsprintfW (wszText,
-                                   L"%s (%c)\n",
+                                   L"%s (%s)\n",
                                    langChars[uLastCnt].lpwszTitle,
-                                   langChars[uLastCnt].wc);
+                                   langChars[uLastCnt].lpwc);
                         // Get the title length
                         uLen = lstrlenW (wszText);
 
@@ -3125,8 +3129,8 @@ typedef struct tagLANGCHARS
 
                 // Draw the char
                 DrawTextW (hDCMem,
-                          &langChars[uLastCnt].wc,
-                           1,
+                           langChars[uLastCnt].lpwc,
+                           lstrlenW (langChars[uLastCnt].lpwc),
                           &rcChar,
                            0
                          | DT_NOPREFIX
@@ -3313,17 +3317,12 @@ typedef struct tagLANGCHARS
             if (PtInRect (&langChars[uCnt].rcHit, pt))
             {
                 HWND  hWndEC;       // Edit Ctrl window handle
-                WCHAR wszTemp[2];   // Temporary zero-terminated string
 
                 // Get the handle to the Edit Ctrl
                 hWndEC  = GetActiveEC (hWndTC);
 
-                // Save the char in a zero-terminated string
-                wszTemp[0] = langChars[uCnt].wc;
-                wszTemp[1] = WC_EOS;
-
                 // Insert that char into the corresponding Edit Ctrl
-                InsRepCharStr (hWndEC, wszTemp, FALSE);
+                InsRepCharStr (hWndEC, langChars[uCnt].lpwc, FALSE);
 
                 break;              // Seek no more
             } // End FOR/IF
@@ -3357,7 +3356,7 @@ typedef struct tagLANGCHARS
             // Loop through the chars
             for (uCnt = 0; uCnt < LANGCHARS_LENGTH; uCnt++)
             {
-                if (langChars[uCnt].wc)
+                if (langChars[uCnt].lpwc)
                 {
                     RECT rcTemp;            // Temporary rectangle
 
@@ -3366,8 +3365,8 @@ typedef struct tagLANGCHARS
 
                     // Get the size of the surrounding rectangle
                     DrawTextW (hDCMem,
-                              &langChars[uCnt].wc,
-                               1,
+                               langChars[uCnt].lpwc,
+                               lstrlenW (langChars[uCnt].lpwc),
                               &rcTemp,
                                0
                              | DT_CALCRECT
@@ -3465,7 +3464,7 @@ typedef struct tagLANGCHARS
             // Loop through the chars
             for (uCnt = 0; uCnt < LANGCHARS_LENGTH; uCnt++)
             {
-                if (langChars[uCnt].wc)
+                if (langChars[uCnt].lpwc)
                 {
                     RECT rcTemp;            // Temporary rectangle
 
@@ -3474,8 +3473,8 @@ typedef struct tagLANGCHARS
 
                     // Get the size of the surrounding rectangle
                     DrawTextW (hDCMem,
-                              &langChars[uCnt].wc,
-                               1,
+                               langChars[uCnt].lpwc,
+                               lstrlenW (langChars[uCnt].lpwc),
                               &rcTemp,
                                0
                              | DT_CALCRECT
@@ -3501,8 +3500,8 @@ typedef struct tagLANGCHARS
 
                     // Draw the char
                     DrawTextW (hDCMem,
-                              &langChars[uCnt].wc,
-                               1,
+                               langChars[uCnt].lpwc,
+                               lstrlenW (langChars[uCnt].lpwc),
                               &rcChar,
                                0
                              | DT_NOPREFIX

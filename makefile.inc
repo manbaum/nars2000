@@ -642,10 +642,10 @@ $(LIBS_WEXE) $(LIBS_EXT)
         @del $(O)$(@B).lib
         @copy $(O)$(ENAME).map $(B) >NUL
 
-$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE $(FONT)
+$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE* $(FONT)
         @echo ---.zip File----
         @copy $(O)$(ENAME).exe $(ENAME).exe >NUL
-        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE $(FONT) >NUL
+        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE* $(FONT) >NUL
         @del $(ENAME).exe
         @dir /ON $(B)$(ENAME).zip|grep "$(ENAME)\."
 

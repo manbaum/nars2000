@@ -310,7 +310,10 @@ typedef struct tagSTART_ADDRESSES
     "GetPrototypeFcnPtr"        , (LPUCHAR) &GetPrototypeFcnPtr         ,
     "GetPrimFlagsPtr"           , (LPUCHAR) &GetPrimFlagsPtr            ,
     "GetImmedType"              , (LPUCHAR) &GetImmedType               ,
+    "GetImmTypeGlb"             , (LPUCHAR) &GetImmTypeGlb              ,
     "GetSignatureGlb"           , (LPUCHAR) &GetSignatureGlb            ,
+    "GetSignatureGlb_PTB"       , (LPUCHAR) &GetSignatureGlb_PTB        ,
+    "GetMemPTD"                 , (LPUCHAR) &GetMemPTD                  ,
 
     // getreent.c
     "__getreent"                , (LPUCHAR) &__getreent                 ,
@@ -616,6 +619,13 @@ typedef struct tagSTART_ADDRESSES
 
     // po_dot.c
     "PrimOpDot_EM_YY"           , (LPUCHAR) &PrimOpDot_EM_YY            ,
+    "PrimProtoOpDot_EM_YY"      , (LPUCHAR) &PrimProtoOpDot_EM_YY       ,
+    "PrimIdentOpDot_EM_YY"      , (LPUCHAR) &PrimIdentOpDot_EM_YY       ,
+    "PrimOpMonDot_EM_YY"        , (LPUCHAR) &PrimOpMonDot_EM_YY         ,
+    "PrimOpMonDotCommon_EM_YY"  , (LPUCHAR) &PrimOpMonDotCommon_EM_YY   ,
+    "PrimOpDydDot_EM_YY"        , (LPUCHAR) &PrimOpDydDot_EM_YY         ,
+    "PrimOpDydDotCommon_EM_YY"  , (LPUCHAR) &PrimOpDydDotCommon_EM_YY   ,
+    "ExecDydProto_EM"           , (LPUCHAR) &ExecDydProto_EM            ,
 
     // po_jot.c
     "PrimOpJot_EM_YY"           , (LPUCHAR) &PrimOpJot_EM_YY            ,

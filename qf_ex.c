@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -372,7 +372,7 @@ APLBOOL ExpungeName
 
     // Check for eraseability
     if (!EraseableName (lpSymEntry, &bQuadDM, &bQuadEM))
-        return 0;
+        return FALSE;
 
     // If it's []DM, ...
     if (bQuadDM)
@@ -398,7 +398,8 @@ APLBOOL ExpungeName
     } else
     {
         // If the STE is not immediate and has a value, ...
-        if (!lpSymEntry->stFlags.Imm && lpSymEntry->stFlags.Value)
+        if (!lpSymEntry->stFlags.Imm
+         && lpSymEntry->stFlags.Value)
             // Free the global memory handle
             FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData);
 
@@ -407,7 +408,7 @@ APLBOOL ExpungeName
         EraseSTE (lpSymEntry, FALSE);
     } // End IF/ELSE
 
-    return 1;
+    return TRUE;
 } // End ExpungeName
 
 

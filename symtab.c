@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -239,7 +239,7 @@ UBOOL HshTabFrisk
             if (!(((lpNext->uHash & uHashMaskNext) * lpHTS->iHshTabEPB) < uMark))
             {
                 DisplayHshTab (lpHTS);
-                MBC ("DisplayHshTab");
+                MBC ("DisplayHshTab")
             } // End IF
         } // End IF
 
@@ -279,9 +279,9 @@ UBOOL HshTabFrisk
                     DisplayHshTab (lpHTS);
                     DisplaySymTab (lpHTS, TRUE);
                     if (lp->htSymEntry EQ 0)
-                        MBC ("HshTabFrisk:  lp->htSymEntry EQ 0");
+                        MBC ("HshTabFrisk:  lp->htSymEntry EQ 0")
                     else
-                        MBC ("HshTabFrisk:  lp->htSymEntry->stHshEntry NE lp");
+                        MBC ("HshTabFrisk:  lp->htSymEntry->stHshEntry NE lp")
                 } // End IF
             } // End IF/ELSE
         } // End FOR
@@ -301,7 +301,7 @@ UBOOL HshTabFrisk
             {
                 DisplayHshTab (lpHTS);
                 DisplaySymTab (lpHTS, TRUE);
-                MBC ("HshTabFrisk:  lps->stHshEntry EQ 0");
+                MBC ("HshTabFrisk:  lps->stHshEntry EQ 0")
             } else
             if (lps->stHshEntry->htFlags.CharIsValid)
             {
@@ -313,7 +313,7 @@ UBOOL HshTabFrisk
             {
                 DisplayHshTab (lpHTS);
                 DisplaySymTab (lpHTS, TRUE);
-                MBC ("HshTabFrisk:  lps->stHshEntry->htSymEntry NE lps");
+                MBC ("HshTabFrisk:  lps->stHshEntry->htSymEntry NE lps")
             } // End FOR/IF/...
         } // End IF
     } __except (CheckException (GetExceptionInformation (), L"HshTabFrisk"))
@@ -701,7 +701,7 @@ UBOOL HshTabSplitNextEntry_EM
 ////                       lpHshEntrySrc,
 ////                       lpHshEntrySrc->uHashAndMask,
 ////                       uHashMask);
-////            MBC (wszTemp);
+////            MBC (wszTemp)
 ////            lp = lpHshEntryDest;
 ////        } // End IF
 #endif

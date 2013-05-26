@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -393,7 +393,7 @@ UBOOL _MyCloseSemaphore
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -430,7 +430,7 @@ HBITMAP _MyCreateCompatibleBitmap
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -465,7 +465,7 @@ HDC _MyCreateCompatibleDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -502,7 +502,7 @@ HPEN _MyCreatePen
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -537,7 +537,7 @@ HFONT _MyCreateFontIndirect
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -572,7 +572,7 @@ HFONT _MyCreateFontIndirectW
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -609,7 +609,7 @@ HRGN _MyCreatePolygonRgn
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -644,7 +644,7 @@ HRGN _MyCreateRectRgnIndirect
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -686,7 +686,7 @@ HANDLE _MyCreateSemaphoreW
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -721,7 +721,7 @@ HBRUSH _MyCreateSolidBrush
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -756,7 +756,7 @@ UBOOL _MyDeleteDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -801,7 +801,7 @@ UBOOL _MyDeleteObject
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -836,7 +836,7 @@ HDC _MyGetDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -871,7 +871,7 @@ HDC _MyGetWindowDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -907,7 +907,7 @@ HBITMAP _MyLoadBitmap
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -947,7 +947,7 @@ HANDLE _MyLoadImage
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -983,7 +983,7 @@ UBOOL _MyReleaseDC
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -1022,7 +1022,7 @@ UBOOL _MyReleaseSemaphore
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } // End IF
 
@@ -1067,7 +1067,7 @@ LPVOID _MyGlobalAlloc
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -1104,7 +1104,7 @@ HGLOBAL _MyGlobalHandle
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } // End IF
 
@@ -1178,7 +1178,7 @@ LPVOID _MyGlobalLockSub
         wsprintf (&szTemp[lstrlen (szTemp)],
                   " -- hMem = %p",
                   hMem);
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -1246,7 +1246,7 @@ SIZE_T _MyGlobalSize
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } // End IF
 
@@ -1280,7 +1280,7 @@ DWORD _MyGlobalFlags
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } // End IF
 
@@ -1318,7 +1318,7 @@ HGLOBAL _MyGlobalReAlloc
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } // End IF
 
@@ -1339,7 +1339,7 @@ HGLOBAL _MyGlobalReAlloc
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -1423,7 +1423,7 @@ LPVOID _MyHeapAlloc
         if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
             DisplayHeap ();
 #endif
-        MBWC (MyGetExceptionStr ());
+        MBWC (MyGetExceptionStr ())
         DbgBrk ();
     } // End __try/__except
 
@@ -1481,7 +1481,7 @@ HGLOBAL _MyHeapReAlloc
         if (MyGetExceptionCode () EQ STATUS_NO_MEMORY)
             DisplayHeap ();
 #endif
-        MBWC (MyGetExceptionStr ());
+        MBWC (MyGetExceptionStr ())
         DbgBrk ();
     } // End __try/__except
 
@@ -1562,7 +1562,7 @@ LPVOID _MyVirtualAlloc
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } // End IF
 
@@ -1600,7 +1600,7 @@ UBOOL _MyVirtualFree
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        MBC (szTemp);
+        MBC (szTemp)
         DbgBrk ();
     } // End IF
 

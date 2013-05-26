@@ -1424,7 +1424,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             lpwSrc++;
                     } else
                     {
-                        MBC ("Unknown array property when loading workspace -- Load terminated.");
+                        MBC ("Unknown array property when loading workspace -- Load terminated.")
 
                         goto CORRUPTWS_EXIT;
                     } // End IF/ELSE/...

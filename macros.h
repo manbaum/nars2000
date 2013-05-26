@@ -23,8 +23,8 @@
 
 #define MB(a)                       MessageBox  (NULL, (a),      APPNAME, MB_OK)
 #define MBW(a)                      MessageBoxW (hWndMF, (a), WS_APPNAME, MB_OK)
-#define MBC(a)                  if (MessageBox  (NULL, (a),      APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define MBWC(a)                 if (MessageBoxW (hWndMF, (a), WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define MBC(a)                  {if (MessageBox  (NULL, (a),      APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ();}
+#define MBWC(a)                 {if (MessageBoxW (hWndMF, (a), WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ();}
 #define IsGlbTypeVarDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), VARARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeVarInd_PTB(a)  (IsGlobalTypeArray_PTB (*(LPVOID *) (a), VARARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeFcnDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), FCNARRAY_HEADER_SIGNATURE))

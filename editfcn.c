@@ -1191,7 +1191,7 @@ NORMAL_EXIT:
         if (lpSyntClr)
         {
             // We no longer need this ptr
-            MyGlobalLock (hSyntClr); lpSyntClr = NULL;
+            MyGlobalUnlock (hSyntClr); lpSyntClr = NULL;
         } // End IF
 
         // We no longer need this storage

@@ -4728,7 +4728,7 @@ UBOOL IncrGlbNfns
     UINT       uCnt;                // Loop counter
 
     // Calculate the new size
-    ByteRes = sizeof (NFNSHDR) + ((*lplpNfnsHdr)->nMax + DEF_NFNS_INCR) * sizeof (NFNSDATA)
+    ByteRes = sizeof (NFNSHDR) + ((*lplpNfnsHdr)->nMax + DEF_NFNS_INCR) * sizeof (NFNSDATA);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpMemPTD->hGlbNfns); *lplpNfnsHdr = NULL;

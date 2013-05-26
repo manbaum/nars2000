@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -274,17 +274,16 @@ void FormatSTE
     {
 //// {0x00000001,  L" Imm"        },
 //// {0x0000001E,  L" ImmType"    },
-     {0x00000020,  L" Perm"       },
-     {0x00000040,  L" Inuse"      },
-     {0x00000080,  L" Value"      },
-/////{0x00000700,  L" ObjName"    },
-//// {0x00007800,  L" UsrType"    },
-//// {0x000F8000,  L" SysVarValid"},
-     {0x00100000,  L" UsrDfn"     },
-     {0x00200000,  L" DfnLabel"   },
-     {0x00400000,  L" DfnSysLabel"},
-     {0x00800000,  L" DfnAxis"    },
-     {0x01000000,  L" FcnDir"     },
+     {0x00000020,  L" Inuse"      },
+     {0x00000040,  L" Value"      },
+/////{0x00000380,  L" ObjName"    },
+//// {0x00003C00,  L" NameType"   },
+//// {0x0007C000,  L" SysVarValid"},
+     {0x00080000,  L" UsrDfn"     },
+     {0x00100000,  L" DfnLabel"   },
+     {0x00200000,  L" DfnSysLabel"},
+     {0x00400000,  L" DfnAxis"    },
+     {0x00800000,  L" FcnDir"     },
     };
 
 // The # rows in the above table
@@ -294,16 +293,16 @@ void FormatSTE
     stFlags = lpSymEntry->stFlags;
     if (stFlags.Imm)
         wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                   L" Imm/Type=%d",
-                   stFlags.ImmType);
+                    L" Imm/Type=%d",
+                    stFlags.ImmType);
     if (stFlags.ObjName NE OBJNAME_NONE)
         wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                   L" ObjName=%s",
-                   lpwObjNameStr[stFlags.ObjName]);
+                    L" ObjName=%s",
+                    lpwObjNameStr[stFlags.ObjName]);
     if (stFlags.stNameType NE NAMETYPE_UNK)
         wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                   L" stNameType=%s",
-                   lpwNameTypeStr[stFlags.stNameType]);
+                    L" stNameType=%s",
+                    lpwNameTypeStr[stFlags.stNameType]);
 
     for (j = 0;
          j < ST_FLAGNAMES_NROWS;
@@ -314,8 +313,8 @@ void FormatSTE
     if (IsNameTypeVar (stFlags.stNameType)
      && !stFlags.DfnSysLabel)
         wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                   L" SysVarValid=%d",
-                   stFlags.SysVarValid);
+                    L" SysVarValid=%d",
+                    stFlags.SysVarValid);
 
     // In case we didn't find any matching flags,
     //   set the second WCHAR to zero as well --
@@ -338,6 +337,8 @@ void FormatSTE
 
             if (lpHshEntry)
             {
+                Assert (lpHshEntry->htGlbName NE NULL);
+
                 lpwGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpwGlbName NE NULL);
 
                 lstrcpynW (wszName, lpwGlbName, WSZNAME_LEN);
@@ -1710,6 +1711,7 @@ LPWCHAR DisplayFcnSub
 
                         case DFNTYPE_OP2:
                             TknCount = 1 + lpYYMem[1].TknCount;
+
                             // If there's a left operand, ...
                             if (tknNELM > 2)
                             {
@@ -2347,7 +2349,7 @@ void DisplayFnHdr
 
         // Append a separator
         if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
-            lstrcatW (wszTemp, L"[");
+            lstrcatW (wszTemp, L"{");
         else
         if (uLen > 1)
             lstrcatW (wszTemp, L"(");
@@ -2373,7 +2375,7 @@ void DisplayFnHdr
 
         // Append a separator
         if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
-            lstrcatW (wszTemp, L"]");
+            lstrcatW (wszTemp, L"}");
         else
         if (uLen > 1)
             lstrcatW (wszTemp, L")");
@@ -2529,7 +2531,7 @@ void DisplayYYRes
                lpdw[1],
                lpdw[2],
                lpdw[3]);
-    MBWC (lpwszGlbTemp);
+    MBWC (lpwszGlbTemp)
 } // End DisplayYYRes
 #endif
 

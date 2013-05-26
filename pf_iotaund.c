@@ -28,7 +28,7 @@
 //***************************************************************************
 //  $PrimFnIotaUnderbar_EM_YY
 //
-//  Primitive function for monadic and dyadic IotaUnderbar ("indices" and ERROR)
+//  Primitive function for monadic and dyadic IotaUnderbar ("indices" and "arraylookup")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -99,7 +99,7 @@ LPPL_YYSTYPE PrimProtoFnIotaUnderbar_EM_YY
 //
 //  Primitive function for monadic IotaUnderbar ("indices")
 //
-//  This monadic function implements R/{iota}>R
+//  This monadic function implements (,R)/,{iota}{rho}1/R
 //***************************************************************************
 
 #ifdef DEBUG
@@ -790,7 +790,7 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
 //***************************************************************************
 //  $PrimFnDydIotaUnderbar_EM_YY
 //
-//  Primitive function for dyadic IotaUnderbar (ERROR)
+//  Primitive function for dyadic IotaUnderbar ("arraylookup")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -806,9 +806,60 @@ LPPL_YYSTYPE PrimFnDydIotaUnderbar_EM_YY
      LPTOKEN lptkAxis)                      // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
+    HGLOBAL hGlbMFO;                // Magic function/operator global memory handle
+
+    Assert (lptkAxis EQ NULL);
+
+    // Get the magic function/operator global memory handle
+    hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydIotaUnderbar];
+
+    //  Use an internal magic function/operator.
+    return
+      ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
+                                  lptkFunc,     // Ptr to function token
+                                  NULL,         // Ptr to function strand
+                                  lptkRhtArg,   // Ptr to right arg token
+                                  lptkAxis,     // Ptr to axis token
+                                  hGlbMFO,      // Magic function/operator global memory handle
+                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                  LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End PrimFnDydIotaUnderbar_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  Magic function/operator for Extended Dyadic Iota Underbar
+//
+//  Extended Dyadic Iota Underbar -- Matrix Iota
+//
+//  Return an array of indices from searching for the
+//    vector of trailing subarrays from the right arg in the
+//    vector of trailing subarrays from the left arg.
+//***************************************************************************
+
+static APLCHAR DydHeader[] =
+  L"Z" $IS L"L " MFON_DydIotaUnderbar L" R";
+
+static APLCHAR DydLine1[] =
+  L"Z" $IS L"(" $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) L)" $IOTA
+                $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) R "
+   $DIAMOND L" " $GOTO L"0";
+
+static APLCHAR DydLine2[] =
+  $QUAD_MS L":"
+  L"Z" $IS L"(" $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) L)" $IOTA $MULTISET
+                $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) R";
+
+static LPAPLCHAR DydBody[] =
+{DydLine1,
+ DydLine2,
+};
+
+MAGIC_FCNOPR MFO_DydIotaUnderbar =
+{DydHeader,
+ DydBody,
+ countof (DydBody),
+};
 
 
 //***************************************************************************

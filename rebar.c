@@ -2660,7 +2660,8 @@ typedef struct tagLANGCHARS
                                          L"Keyboard:  Alt-'e'\n\n"
                                          L"Unicode:  0x220A or 8714"},
         {UTF16_IOTAUNDERBAR       , {0}, L"IotaUnderbar",
-                                         L"Indices:  " WS_UTF16_IOTAUNDERBAR L"R\n\n"
+                                         L"ArrayLookup:  L" WS_UTF16_IOTAUNDERBAR L"R\n"
+                                         L"Indices:       " WS_UTF16_IOTAUNDERBAR L"R\n\n"
                                          L"Keyboard:  Alt-'I' or Alt-Shift-'i'\n\n"
                                          L"Unicode:  0x2378 or 9080"},
         {UTF16_EPSILONUNDERBAR    , {0}, L"EpsilonUnderbar",

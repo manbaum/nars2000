@@ -172,6 +172,7 @@ Welcome to NARS2000</h1>
         <li>Reshape (<span class="APL">L{rho}R</span>) is extended to allow a non-empty Reshape of an empty in which case the right argument
           fill element is used, e.g., <span class="APL">2 3{rho}{zilde}</span></li>
         <li>Primitive monadic function iota underbar (<span class="APL">{iota_}R</span>) (Indices)</li>
+        <li>Primitive dyadic function iota underbar (<span class="APL">L{iota_}R</span>) (Array Lookup)</li>
         <li>Primitive monadic function not equal underbar (<span class="APL">{mismatch}R</span>) (Tally)</li>
         <li>Primitive dyadic function not equal underbar (<span class="APL">L{mismatch}R</span>) (Mismatch)</li>
         <li>Primitive monadic function down tack (<span class="APL">{downtack}R</span>) (Type)</li>

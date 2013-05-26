@@ -145,30 +145,34 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
 
-    // Get the attributes (Type, NELM, and Rank) of the left & right args
-    if (lptkLftArg)
-        AttrsOfToken (lptkLftArg, &aplTypeLft, NULL, &aplRankLft, NULL);
-    else
-    {
-        aplTypeLft = ARRAY_BOOL;
-        aplRankLft = 1;
-    } // End IF/ELSE
-
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
-
-    // Check for LEFT/RIGHT RANK ERRORs
-    if (IsMultiRank (aplRankLft))
-        goto LEFT_RANK_EXIT;
-
-    if (IsMultiRank (aplRankRht))
-        goto RIGHT_RANK_EXIT;
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // Check for a multiset-sensitive function
     if (lpYYFcnStrLft->TknCount EQ 1)
     {
+        // Get the attributes (Type, NELM, and Rank) of the left & right args
+        if (lptkLftArg)
+            AttrsOfToken (lptkLftArg, &aplTypeLft, NULL, &aplRankLft, NULL);
+        else
+        {
+            aplTypeLft = ARRAY_BOOL;
+            aplRankLft = 1;
+        } // End IF/ELSE
+
+        AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
+
+        // If the function is not {iotaunderbar}, ...
+        if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_IOTAUNDERBAR)
+        {
+            // Check for LEFT/RIGHT RANK ERRORs
+            if (IsMultiRank (aplRankLft))
+                goto LEFT_RANK_EXIT;
+
+            if (IsMultiRank (aplRankRht))
+                goto RIGHT_RANK_EXIT;
+        } // End IF
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
         // Get the current value of []CT
         fQuadCT = GetQuadCT ();
 
@@ -349,6 +353,16 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
 
                 // Get the magic function/operator global memory handle
                 hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MM];
+
+                break;
+
+            case UTF16_IOTAUNDERBAR:
+                // Ensure called dyadically
+                if (lptkLftArg EQ NULL)
+                    goto VALENCE_EXIT;
+
+                // Get the magic function/operator global memory handle
+                hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydIotaUnderbar];
 
                 break;
 

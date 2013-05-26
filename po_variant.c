@@ -352,6 +352,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     {
         // []IO first, []CT second (if present)
         case UTF16_IOTA:                    // Monadic or dyadic
+        case UTF16_IOTAUNDERBAR:            // ...
             // Validate the right operand as
             //   a simple numeric scalar or one- or two-element vector
             if (IsMultiRank (aplRankRhtOpr))
@@ -425,15 +426,14 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
         // []IO
         case UTF16_SQUAD:                   // Dyadic only  (Indexing)
         case UTF16_CIRCLESLOPE:             // ...          (Dyadic transpose)
+        case UTF16_RIGHTSHOE:               // ...          (Pick)
+        case UTF16_PI:                      // ...          (Number theoretic)
             // Ensure there's a left arg
             if (!lptkLftArg)
                 goto LEFT_SYNTAX_EXIT;
 
         case UTF16_DELSTILE:                // Monadic:  Grade down, Dyadic: Grade down
         case UTF16_DELTASTILE:              // ...             up    ...           up
-        case UTF16_RIGHTSHOE:               // ...       (IGNORED)   ...     Pick
-        case UTF16_IOTAUNDERBAR:            // ...       Indices     ...     (ERROR)
-        case UTF16_PI:                      // ...       (IGNORED)   ...     Number theoretic
             // Validate the right operand as
             //   a simple numeric scalar or one-element vector
             if (IsMultiRank (aplRankRhtOpr))

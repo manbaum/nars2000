@@ -1,5 +1,5 @@
 @echo off
-@php wincver.php version.rc
+REM @php wincver.php version.rc
 
 Set NMAKE=NMAKE
 call w32

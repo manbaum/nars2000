@@ -661,6 +661,10 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
     if (IsSimpleChar (aplTypeLft) && IsSimpleChar (aplTypeRht))
         lpPrimFnDydMEO_Com = PrimFnDydMEO_CvC;
     else
+    if ((IsSimpleChar (aplTypeLft) && IsNumeric (aplTypeRht))
+     || (IsSimpleChar (aplTypeRht) && IsNumeric (aplTypeLft)))
+        goto YYALLOC_EXIT;
+    else
         DbgStop ();             // We should never get here
 
     // Loop through the left arg values and look'em up
@@ -687,7 +691,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
                                fQuadCT,         // []CT
                                lpMemRes);       // Ptr to result global memory
     } // End FOR
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -1326,6 +1330,22 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
     if (IsSimpleChar (aplTypeLft) && IsSimpleChar (aplTypeRht))
         lpPrimFnDydMIO_Com = PrimFnDydMIO_CvC;
     else
+    if ((IsSimpleChar (aplTypeLft) && IsNumeric (aplTypeRht))
+     || (IsSimpleChar (aplTypeRht) && IsNumeric (aplTypeLft)))
+    {
+        // Loop through the right arg values
+        for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
+        {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
+            // Fill the result with NotFound
+            *lpMemRes++ = NotFound;
+        } // End FOR
+
+        goto YYALLOC_EXIT;
+    } else
         DbgStop ();             // We should never get here
 
     // Loop through the right arg values and look'em up
@@ -1354,7 +1374,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
                                NotFound,        // Not found value
                                lpMemRes);       // Ptr to result global memory
     } // End FOR
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -1838,7 +1858,10 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for mismatched lengths (RANK ERRORS are handled by the caller)
-    if (aplNELMLft NE aplNELMRht)
+    //   or mismatched types
+    if (aplNELMLft NE aplNELMRht
+     || (IsSimpleChar (aplTypeLft) && IsNumeric (aplTypeRht))
+     || (IsSimpleChar (aplTypeRht) && IsNumeric (aplTypeLft)))
         aplBoolRes = FALSE;
     else
     // If the args are singletons, ...

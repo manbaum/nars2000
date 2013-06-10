@@ -132,8 +132,8 @@ UBOOL CmdOut_EM
     __try
     {
         // Trundle through the Symbol Table
-        for (lpSymTabNext = lpMemPTD->htsPTD.lpSymTab;
-             lpSymTabNext < lpMemPTD->htsPTD.lpSymTabNext;
+        for (lpSymTabNext = lpMemPTD->lphtsPTD->lpSymTab;
+             lpSymTabNext < lpMemPTD->lphtsPTD->lpSymTabNext;
              lpSymTabNext++)
         if (lpSymTabNext->stFlags.Inuse)        // Must be Inuse
         {

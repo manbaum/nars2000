@@ -58,7 +58,7 @@ UBOOL CmdWsid_EM
     lpMemPTD = GetMemPTD ();
 
     // Lock the memory to get a ptr to it
-    lpMemWSID = MyGlobalLock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
+    lpMemWSID = MyGlobalLock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemWSID)
     // Get the NELM and Rank
@@ -76,7 +76,7 @@ UBOOL CmdWsid_EM
     if (*lpwszTail)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemWSID = NULL;
+        MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemWSID = NULL;
 
         // Convert the given workspace name into a canonical form
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
@@ -122,7 +122,7 @@ UBOOL CmdWsid_EM
         MyGlobalUnlock (hGlbWSID); lpMemWSID = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemWSID = MyGlobalLock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
+        lpMemWSID = MyGlobalLock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
 
         // Skip over the header and dimensions to the data
         lpMemWSID = VarArrayBaseToData (lpMemWSID, aplRankWSID);
@@ -140,13 +140,13 @@ UBOOL CmdWsid_EM
             AppendLine (ShortenWSID (lpMemWSID), FALSE, TRUE);
 
         // We no longer need this ptr
-        MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemWSID = NULL;
+        MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemWSID = NULL;
 
         // Free the old []WSID
-        FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData = NULL;
+        FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData = NULL;
 
         // Save the new []WSID
-        lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
+        lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
 
         // Tell the Tab Ctrl about the new workspace name
         NewTabName (NULL);
@@ -170,7 +170,7 @@ UBOOL CmdWsid_EM
         } // End IF/ELSE
 
         // We no longer need this ptr
-        MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemWSID = NULL;
+        MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemWSID = NULL;
     } // End IF/ELSE
 
     // Mark as successful

@@ -1432,13 +1432,13 @@ LPSYMENTRY SymTabLookupChar
     UINT         uHashMasked;
     LPSYMENTRY   lpSymEntry = NULL;
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;      // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -1447,18 +1447,18 @@ LPSYMENTRY SymTabLookupChar
     stMaskFlags.ImmType = NEG1U;
 
     // Save common value
-    uHashMasked = MaskTheHash (uHash, lpHTS);
+    uHashMasked = MaskTheHash (uHash, lphtsPTD);
 
     while (TRUE)
     {
-        for (lpHshEntry = &lpHTS->lpHshTab[uHashMasked];
+        for (lpHshEntry = &lphtsPTD->lpHshTab[uHashMasked];
              lpHshEntry NE LPHSHENTRY_NONE;
              lpHshEntry = lpHshEntry->NextSameHash)
 #ifdef DEBUG
         if (!lpHshEntry)
         {
-            DisplayHshTab (lpHTS);
             DbgStop ();             // We should never get here
+            DisplayHshTab (lphtsPTD);
         } else
 #endif
         {
@@ -1476,11 +1476,11 @@ LPSYMENTRY SymTabLookupChar
         } // End FOR/IF/ELSE
 
         if (lpSymEntry NE NULL
-         || lpHTS->lpHshTabPrvSrch EQ NULL)
+         || lphtsPTD->lphtsPrvSrch EQ NULL)
             break;
 
         // Search through the previous HshTab
-        lpHTS = lpHTS->lpHshTabPrvSrch;
+        lphtsPTD = lphtsPTD->lphtsPrvSrch;
     } // End WHILE
 
     return lpSymEntry;
@@ -1504,13 +1504,13 @@ LPSYMENTRY SymTabLookupNumber
     UINT         uHashMasked;
     LPSYMENTRY   lpSymEntry = NULL;
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;      // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -1519,21 +1519,21 @@ LPSYMENTRY SymTabLookupNumber
     stMaskFlags.ImmType = NEG1U;
 
     // Save common value
-    uHashMasked = MaskTheHash (uHash, lpHTS);
+    uHashMasked = MaskTheHash (uHash, lphtsPTD);
 
 #ifdef DEBUG
-////DisplayHshTab (lpHTS);
+////DisplayHshTab (lphtsPTD);
 #endif
     while (TRUE)
     {
-        for (lpHshEntry = &lpHTS->lpHshTab[uHashMasked];
+        for (lpHshEntry = &lphtsPTD->lpHshTab[uHashMasked];
              lpHshEntry NE LPHSHENTRY_NONE;
              lpHshEntry = lpHshEntry->NextSameHash)
 #ifdef DEBUG
         if (!lpHshEntry)
         {
-            DisplayHshTab (lpHTS);
             DbgStop ();             // We should never get here
+            DisplayHshTab (lphtsPTD);
         } else
 #endif
         {
@@ -1551,11 +1551,11 @@ LPSYMENTRY SymTabLookupNumber
         } // End FOR/IF/ELSE
 
         if (lpSymEntry NE NULL
-         || lpHTS->lpHshTabPrvSrch EQ NULL)
+         || lphtsPTD->lphtsPrvSrch EQ NULL)
             break;
 
         // Search through the previous HshTab
-        lpHTS = lpHTS->lpHshTabPrvSrch;
+        lphtsPTD = lphtsPTD->lphtsPrvSrch;
     } // End WHILE
 
     return lpSymEntry;
@@ -1579,13 +1579,13 @@ LPSYMENTRY SymTabLookupFloat
     UINT         uHashMasked;
     LPSYMENTRY   lpSymEntry = NULL;
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;         // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;      // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -1594,18 +1594,18 @@ LPSYMENTRY SymTabLookupFloat
     stMaskFlags.ImmType = NEG1U;
 
     // Save common value
-    uHashMasked = MaskTheHash (uHash, lpHTS);
+    uHashMasked = MaskTheHash (uHash, lphtsPTD);
 
     while (TRUE)
     {
-        for (lpHshEntry = &lpHTS->lpHshTab[uHashMasked];
+        for (lpHshEntry = &lphtsPTD->lpHshTab[uHashMasked];
              lpHshEntry NE LPHSHENTRY_NONE;
              lpHshEntry = lpHshEntry->NextSameHash)
 #ifdef DEBUG
         if (!lpHshEntry)
         {
-            DisplayHshTab (lpHTS);
             DbgStop ();             // We should never get here
+            DisplayHshTab (lphtsPTD);
         } else
 #endif
         {
@@ -1623,11 +1623,11 @@ LPSYMENTRY SymTabLookupFloat
         } // End FOR/IF/ELSE
 
         if (lpSymEntry NE NULL
-         || lpHTS->lpHshTabPrvSrch EQ NULL)
+         || lphtsPTD->lphtsPrvSrch EQ NULL)
             break;
 
         // Search through the previous HshTab
-        lpHTS = lpHTS->lpHshTabPrvSrch;
+        lphtsPTD = lphtsPTD->lphtsPrvSrch;
     } // End WHILE
 
     return lpSymEntry;
@@ -1719,21 +1719,21 @@ LPSYMENTRY SymTabLookupNameLength
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     WCHAR        sysName[32];       // Temp storage for sysnames in lowercase
     LPWCHAR      lpwName;           // Ptr to name (not necessarily zero-terminated)
-    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;          // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
     // If the name is of a Magic Function/Operator, ...
     if (IsMFOName (lpwString))
     {
         // Peel back the HshTabStrs so we lookup
         //   the name in the top level HshTabStr
-        while (lpHTS->lpHshTabPrvMFO)
-            lpHTS = lpHTS->lpHshTabPrvMFO;
+        while (lphtsPTD->lphtsPrvMFO)
+            lphtsPTD = lphtsPTD->lphtsPrvMFO;
     } // End IF
 
     // Skip over trailing white space
@@ -1788,7 +1788,7 @@ LPSYMENTRY SymTabLookupNameLength
 
     while (TRUE)
     {
-        for (lpHshEntry = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
+        for (lpHshEntry = &lphtsPTD->lpHshTab[MaskTheHash (uHash, lphtsPTD)];
              lpHshEntry NE LPHSHENTRY_NONE;
              lpHshEntry = lpHshEntry->NextSameHash)
         {
@@ -1801,7 +1801,7 @@ LPSYMENTRY SymTabLookupNameLength
                 LPWCHAR  lpwGlbName;
                 APLU3264 iCmp, iCnt;
 #ifdef DEBUG
-////////////////DisplayHshTab (lpHTS);
+////////////////DisplayHshTab (lphtsPTD);
 #endif
                 Assert (lpHshEntry->htGlbName NE NULL);
 
@@ -1839,11 +1839,11 @@ LPSYMENTRY SymTabLookupNameLength
         } // End FOR
 
         if (lpSymEntry NE NULL
-         || lpHTS->lpHshTabPrvSrch EQ NULL)
+         || lphtsPTD->lphtsPrvSrch EQ NULL)
             break;
 
         // Search through the previous HshTab
-        lpHTS = lpHTS->lpHshTabPrvSrch;
+        lphtsPTD = lphtsPTD->lphtsPrvSrch;
     } // End WHILE
 ERROR_EXIT:
     return lpSymEntry;
@@ -1973,13 +1973,13 @@ LPSYMENTRY SymTabAppendInteger_EM
     UINT         uHash;             // The hash of the value to append
     STFLAGS      stNeedFlags = {0}; // The flags we require
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;          // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab strucs
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
     // Use common cases?
     if (bUseCommon)
@@ -2028,7 +2028,7 @@ LPSYMENTRY SymTabAppendInteger_EM
         LPHSHENTRY lpHshEntryHash;
 
         // This constant isn't in the ST -- find the next free entry in the HT
-        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lpHTS);
+        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);
 
         // If it's invalid, quit
         if (!lpHshEntryDest)
@@ -2038,21 +2038,21 @@ LPSYMENTRY SymTabAppendInteger_EM
         //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
         //   split a HTE and change lpHshTabSplitNext and uHashMask,
         //   and thus the result of MaskTheHash.
-        lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
+        lpHshEntryHash = &lphtsPTD->lpHshTab[MaskTheHash (uHash, lphtsPTD)];
 
         // This entry must be a principal one
         Assert (lpHshEntryHash->htFlags.PrinHash);
 
         // Ensure there's enough room in the symbol table for one more entry
-        if (((lpHTS->lpSymTabNext - lpHTS->lpSymTab) >= lpHTS->iSymTabTotalNelm)
-         && (!SymTabResize_EM (lpHTS)))
+        if (((lphtsPTD->lpSymTabNext - lphtsPTD->lpSymTab) >= lphtsPTD->iSymTabTotalNelm)
+         && (!SymTabResize_EM (lphtsPTD)))
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
         lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
-        lpSymEntryDest = lpHTS->lpSymTabNext++;
+        lpSymEntryDest = lphtsPTD->lpSymTabNext++;
 #ifdef DEBUG
         lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
 #endif
@@ -2064,7 +2064,7 @@ LPSYMENTRY SymTabAppendInteger_EM
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
-        lpHshEntryDest->uHashAndMask = MaskTheHash (uHash, lpHTS);
+        lpHshEntryDest->uHashAndMask = MaskTheHash (uHash, lphtsPTD);
 
         // Link the destination entry into the hash entry
         HshTabLink (lpHshEntryHash, lpHshEntryDest);
@@ -2080,7 +2080,7 @@ LPSYMENTRY SymTabAppendInteger_EM
     } // End IF
 ERROR_EXIT:
 NORMAL_EXIT:
-    Assert (HshTabFrisk (lpHTS));
+    Assert (HshTabFrisk (lphtsPTD));
 
     return lpSymEntryDest;
 } // End SymTabAppendInteger_EM
@@ -2101,13 +2101,13 @@ LPSYMENTRY SymTabAppendFloat_EM
     UINT         uHash;             // The hash of the value to append
     STFLAGS      stNeedFlags = {0}; // The flags we require
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;          // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab strucs
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
     // Hash the float
     uHash = hashlittle
@@ -2127,7 +2127,7 @@ LPSYMENTRY SymTabAppendFloat_EM
         LPHSHENTRY lpHshEntryHash;
 
         // This constant isn't in the ST -- find the next free entry in the HT
-        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lpHTS);
+        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);
 
         // If it's invalid, quit
         if (!lpHshEntryDest)
@@ -2137,21 +2137,21 @@ LPSYMENTRY SymTabAppendFloat_EM
         //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
         //   split a HTE and change lpHshTabSplitNext and uHashMask,
         //   and thus the result of MaskTheHash.
-        lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
+        lpHshEntryHash = &lphtsPTD->lpHshTab[MaskTheHash (uHash, lphtsPTD)];
 
         // This entry must be a principal one
         Assert (lpHshEntryHash->htFlags.PrinHash);
 
         // Ensure there's enough room in the symbol table for one more entry
-        if (((lpHTS->lpSymTabNext - lpHTS->lpSymTab) >=lpHTS->iSymTabTotalNelm)
-         && (!SymTabResize_EM (lpHTS)))
+        if (((lphtsPTD->lpSymTabNext - lphtsPTD->lpSymTab) >=lphtsPTD->iSymTabTotalNelm)
+         && (!SymTabResize_EM (lphtsPTD)))
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
         lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
-        lpSymEntryDest = lpHTS->lpSymTabNext++;
+        lpSymEntryDest = lphtsPTD->lpSymTabNext++;
 #ifdef DEBUG
         lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
 #endif
@@ -2163,7 +2163,7 @@ LPSYMENTRY SymTabAppendFloat_EM
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
-        lpHshEntryDest->uHashAndMask = MaskTheHash (uHash, lpHTS);
+        lpHshEntryDest->uHashAndMask = MaskTheHash (uHash, lphtsPTD);
 
         // Link the destination entry into the hash entry
         HshTabLink (lpHshEntryHash, lpHshEntryDest);
@@ -2178,7 +2178,7 @@ LPSYMENTRY SymTabAppendFloat_EM
         lpSymEntryDest->stSILevel  = 0;
     } // End IF
 ERROR_EXIT:
-    Assert (HshTabFrisk (lpHTS));
+    Assert (HshTabFrisk (lphtsPTD));
 
     return lpSymEntryDest;
 } // End SymTabAppendFloat_EM
@@ -2200,13 +2200,13 @@ LPSYMENTRY SymTabAppendChar_EM
     UINT         uHash;             // The hash of the value to append
     STFLAGS      stNeedFlags = {0}; // The flags we require
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;          // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab strucs
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
     // Use common cases?
     if (bUseCommon)
@@ -2244,7 +2244,7 @@ LPSYMENTRY SymTabAppendChar_EM
         LPHSHENTRY lpHshEntryHash;
 
         // This constant isn't in the ST -- find the next free entry
-        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lpHTS);
+        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);
 
         // If it's invalid, quit
         if (!lpHshEntryDest)
@@ -2254,21 +2254,21 @@ LPSYMENTRY SymTabAppendChar_EM
         //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
         //   split a HTE and change lpHshTabSplitNext and uHashMask,
         //   and thus the result of MaskTheHash.
-        lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
+        lpHshEntryHash = &lphtsPTD->lpHshTab[MaskTheHash (uHash, lphtsPTD)];
 
         // This entry must be a principal one
         Assert (lpHshEntryHash->htFlags.PrinHash);
 
         // Ensure there's enough room in the symbol table for one more entry
-        if (((lpHTS->lpSymTabNext - lpHTS->lpSymTab) >= lpHTS->iSymTabTotalNelm)
-         && (!SymTabResize_EM (lpHTS)))
+        if (((lphtsPTD->lpSymTabNext - lphtsPTD->lpSymTab) >= lphtsPTD->iSymTabTotalNelm)
+         && (!SymTabResize_EM (lphtsPTD)))
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
         lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
-        lpSymEntryDest = lpHTS->lpSymTabNext++;
+        lpSymEntryDest = lphtsPTD->lpSymTabNext++;
 #ifdef DEBUG
         lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
 #endif
@@ -2280,7 +2280,7 @@ LPSYMENTRY SymTabAppendChar_EM
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
-        lpHshEntryDest->uHashAndMask = MaskTheHash (uHash, lpHTS);
+        lpHshEntryDest->uHashAndMask = MaskTheHash (uHash, lphtsPTD);
 
         // Link the destination entry into the hash entry
         HshTabLink (lpHshEntryHash, lpHshEntryDest);
@@ -2296,7 +2296,7 @@ LPSYMENTRY SymTabAppendChar_EM
     } // End IF
 ERROR_EXIT:
 NORMAL_EXIT:
-    Assert (HshTabFrisk (lpHTS));
+    Assert (HshTabFrisk (lphtsPTD));
 
     return lpSymEntryDest;
 } // End SymTabAppendChar_EM
@@ -2381,24 +2381,24 @@ LPSYMENTRY SymTabAppendNewName_EM
     LPHSHENTRY   lpHshEntryDest,
                  lpHshEntryHash;
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;          // Ptr to HshTab struc
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab strucs
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
     // If the name is of a Magic Function/Operator, ...
     if (IsMFOName (lpwszString))
     {
         // Peel back the HshTabStrs so we append
         //   the name to the top level HshTabStr
-        while (lpHTS->lpHshTabPrvMFO)
-            lpHTS = lpHTS->lpHshTabPrvMFO;
+        while (lphtsPTD->lphtsPrvMFO)
+            lphtsPTD = lphtsPTD->lphtsPrvMFO;
     } // End IF
 
-    Assert (HshTabFrisk (lpHTS));
+    Assert (HshTabFrisk (lphtsPTD));
 
     // Get the string length in units of WCHAR
     iLen = lstrlenW (lpwszString);
@@ -2410,22 +2410,22 @@ LPSYMENTRY SymTabAppendNewName_EM
                       0);               // Initial value or previous hash
     // This name isn't in the ST -- find the next free entry
     //   in the hash table, split if necessary
-    lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lpHTS);
+    lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);
 
     // If it's invalid, quit
     if (!lpHshEntryDest)
         goto ERROR_EXIT;
 
     // Ensure there's enough room in the symbol table for one more entry
-    if (((lpHTS->lpSymTabNext - lpHTS->lpSymTab) >= lpHTS->iSymTabTotalNelm)
-     && (!SymTabResize_EM (lpHTS)))
+    if (((lphtsPTD->lpSymTabNext - lphtsPTD->lpSymTab) >= lphtsPTD->iSymTabTotalNelm)
+     && (!SymTabResize_EM (lphtsPTD)))
         goto ERROR_EXIT;
 
     // Mark this hash table entry as in use
     lpHshEntryDest->htFlags.Inuse = TRUE;
 
     // Save as return result
-    lpSymEntryDest = lpHTS->lpSymTabNext++;
+    lpSymEntryDest = lphtsPTD->lpSymTabNext++;
 #ifdef DEBUG
     lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
 #endif
@@ -2436,7 +2436,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     // N.B.  It's very important to call MaskTheHash *AFTER*
     //   calling FindNextFreeUsingHash_SPLIT_EM as lpHshTabSplitNext
     //   and UhashMask might change, and thus the result of MaskTheHash.
-    lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
+    lpHshEntryHash = &lphtsPTD->lpHshTab[MaskTheHash (uHash, lphtsPTD)];
     Assert (lpHshEntryHash->htFlags.PrinHash);
 
     // Allocate global memory for the name ("+ 1" for the terminating zero)
@@ -2458,7 +2458,7 @@ LPSYMENTRY SymTabAppendNewName_EM
 
     // Save hash value (so we don't have to rehash on split)
     lpHshEntryDest->uHash        = uHash;
-    lpHshEntryDest->uHashAndMask = MaskTheHash (uHash, lpHTS);
+    lpHshEntryDest->uHashAndMask = MaskTheHash (uHash, lphtsPTD);
 
     // Link the destination entry into the hash entry
     HshTabLink (lpHshEntryHash, lpHshEntryDest);
@@ -2472,7 +2472,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     lpSymEntryDest->stSymLink  = NULL;
     lpSymEntryDest->stSILevel  = 0;
 
-    Assert (HshTabFrisk (lpHTS));
+    Assert (HshTabFrisk (lphtsPTD));
 
     goto NORMAL_EXIT;
 

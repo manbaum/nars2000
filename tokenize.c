@@ -1041,7 +1041,7 @@ UBOOL fnAlpha
                 if (lpSymEntry)
                 {
                     // If it's not []Z or we're fixing a function via []TF, ...
-                    if (lpSymEntry NE lpMemPTD->htsPTD.lpSymQuad[SYSVAR_Z]
+                    if (lpSymEntry NE lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_Z]
                      || lpMemPTD->bInTF)
                         stFlags = lpSymEntry->stFlags;
                 } // End IF
@@ -1183,7 +1183,7 @@ UBOOL fnAlpDone
         if (!lpSymEntry)
             lpSymEntry = lpMemPTD->steNoValue;
         // If it's []Z and we're not fixing a function via []TF, ...
-        if (lpSymEntry EQ lpMemPTD->htsPTD.lpSymQuad[SYSVAR_Z]
+        if (lpSymEntry EQ lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_Z]
          && !lpMemPTD->bInTF)
             lpSymEntry = lpMemPTD->steNoValue;
     } else

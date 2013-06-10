@@ -2696,7 +2696,7 @@ APLCHAR GetQuadFCValue
     lpMemPTD = GetMemPTD ();
 
     // Get the []FC global memory handle
-    hGlbQuadFC = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FC]->stData.stGlbData;
+    hGlbQuadFC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
     lpMemQuadFC = MyGlobalLock (hGlbQuadFC);
@@ -2747,7 +2747,7 @@ APLINT GetQuadICValue
     lpMemPTD = GetMemPTD ();
 
     // Get the []IC global memory handle
-    hGlbQuadIC = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IC]->stData.stGlbData;
+    hGlbQuadIC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_IC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
     lpMemQuadIC = MyGlobalLock (hGlbQuadIC);

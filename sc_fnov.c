@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -206,8 +206,8 @@ UBOOL CmdFNOV_EM
     // Trundle through the Symbol Table
     //   looking for functions (niladic or monadic/dyadic),
     //   operators (monadic or dyadic), and/or variables
-    for (lpSymEntry = lpMemPTD->htsPTD.lpSymTab, uSymCnt = 0;
-         lpSymEntry < lpMemPTD->htsPTD.lpSymTabNext;
+    for (lpSymEntry = lpMemPTD->lphtsPTD->lpSymTab, uSymCnt = 0;
+         lpSymEntry < lpMemPTD->lphtsPTD->lpSymTabNext;
          lpSymEntry++)
     if (lpSymEntry->stFlags.Inuse
      && lpSymEntry->stFlags.Value

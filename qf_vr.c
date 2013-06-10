@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
                                   hGlbMFO,      // Magic function/operator global memory handle
-                                 &lpMemPTD->htsPTD_MonVR, // Ptr to HSHTAB struc (may be NULL)
+                                 &lpMemPTD->htsMFO_MonVR, // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End SysFnMonVR_EM_YY
 

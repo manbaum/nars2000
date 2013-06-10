@@ -65,9 +65,8 @@ typedef struct tagPERTABDATA
     LPPL_YYSTYPE lpYYRes;                   // The result token
     UINT         numYYRes;                  // # YYRes elements in the array
                                             //   pointed to by lpYYRes
-
     // Symbol & hash table variables
-    HSHTABSTR    htsPTD;                    // Current HTS
+    LPHSHTABSTR  lphtsPTD;                  // Ptr to current HTS
     UINT         tkErrorCharIndex;          // Char index for lpwszQuadErrorMsg if ImmExec
 
     HWND         hWndMC,                    // MDI Client window handle
@@ -102,7 +101,7 @@ typedef struct tagPERTABDATA
 
     // Magic function/operator handles and strucs
     HGLOBAL      hGlbMFO[MFOE_LENGTH];      // Magic function/operator global memory handles
-    HSHTABSTR    htsPTD_MonVR;              // HTS for monadic []VR
+    HSHTABSTR    htsMFO_MonVR;              // HTS for monadic []VR
 
     UINT         SILevel,                   // Current State Indicator level
                  CurTabID,                  // ID of the corresponding tab

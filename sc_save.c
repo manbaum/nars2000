@@ -87,7 +87,7 @@ UBOOL CmdSave_EM
     lpMemPTD = GetMemPTD ();
 
     // Lock the memory to get a ptr to it
-    lpMemOldWSID = MyGlobalLock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
+    lpMemOldWSID = MyGlobalLock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemOldWSID)
     // Get the NELM and Rank
@@ -157,7 +157,7 @@ UBOOL CmdSave_EM
             } // End IF
 
             // We no longer need this ptr
-            MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
+            MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
 
             // Set the value of the new []WSID as wszTailDPFE
             if (!SaveNewWsid_EM (wszTailDPFE))
@@ -182,7 +182,7 @@ UBOOL CmdSave_EM
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
+        MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
     } // End IF
 
     // The full workspace name to save to is in lpMemSaveWSID
@@ -261,8 +261,8 @@ UBOOL CmdSave_EM
     __try
     {
         // Trundle through the Symbol Table
-        for (lpSymTabNext = lpMemPTD->htsPTD.lpSymTab;
-             lpSymTabNext < lpMemPTD->htsPTD.lpSymTabNext;
+        for (lpSymTabNext = lpMemPTD->lphtsPTD->lpSymTab;
+             lpSymTabNext < lpMemPTD->lphtsPTD->lpSymTabNext;
              lpSymTabNext++)
         if (lpSymTabNext->stFlags.Inuse)        // Must be Inuse
         // Handle different SI levels
@@ -350,9 +350,9 @@ UBOOL CmdSave_EM
                                 case IMMTYPE_INT:
                                 case IMMTYPE_FLOAT:
                                     // Ensure we format with full precision in case it's floating point
-                                    uQuadPP = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
+                                    uQuadPP = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
                                     if (IsImmFlt (stFlags.ImmType))
-                                        lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
+                                        lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
 
                                     // Format the value
                                     lpaplChar =
@@ -365,7 +365,7 @@ UBOOL CmdSave_EM
                                                      FLTDISPFMT_RAWFLT,                 // Float display format
                                                      TRUE);                             // TRUE iff we're to substitute text for infinity
                                     // Restore user's precision
-                                    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
+                                    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
 
                                     // Delete the last blank in case it matters,
                                     //   and ensure properly terminated
@@ -600,7 +600,7 @@ NORMAL_EXIT:
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
+        MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
     } // End IF
 
     if (hGlbCnt)
@@ -1421,9 +1421,9 @@ LPAPLCHAR SavedWsFormGlbVar
                             case IMMTYPE_INT:
                             case IMMTYPE_FLOAT:
                                 // Ensure we format with full precision in case it's floating point
-                                uQuadPP = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
+                                uQuadPP = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
                                 if (IsImmFlt (stFlags.ImmType))
-                                    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
+                                    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
 
                                 // Format the value
                                 lpaplChar =
@@ -1436,7 +1436,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                                  FLTDISPFMT_RAWFLT,                     // Float display format
                                                  TRUE);                                 // TRUE iff we're to substitute text for infinity
                                 // Restore user's precision
-                                lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
+                                lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = uQuadPP;
 
                                 break;
 

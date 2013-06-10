@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,9 +151,9 @@ typedef struct tagHSHENTRY
 typedef struct tagHSHTABSTR
 {
     struct tagHSHTABSTR
-              *lpHshTabPrvSrch,         // 00:  Ptr to previous HSHTABSTR
+              *lphtsPrvSrch,            // 00:  Ptr to previous HSHTABSTR
                                         //        for the purposes of searching (NULL = none)
-              *lpHshTabPrvMFO;          // 04:  Ptr to previous HSHTABSTR
+              *lphtsPrvMFO;             // 04:  Ptr to previous HSHTABSTR
                                         //        for the purposes of append new/lookup old MFO (NULL = none)
     LPHSHENTRY lpHshTab,                // 08:  Ptr to start of HshTab
                lpHshTabSplitNext;       // 0C:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)

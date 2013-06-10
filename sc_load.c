@@ -581,7 +581,7 @@ UBOOL LoadWorkspace_EM
                          && IsThisSysName (lpSymEntry, WS_UTF16_QUAD L"fpc"))
                         {
                             // Initialize the precision-specific VFP constants
-                            InitVfpPrecision (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FPC]->stData.stInteger);
+                            InitVfpPrecision (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);
 
                             // Initialize PerTabData vars
                             InitPTDVars (lpMemPTD);

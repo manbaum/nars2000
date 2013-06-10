@@ -378,10 +378,10 @@ APLBOOL ExpungeName
     if (bQuadDM)
     {
         // Out with the old
-        FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
+        FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
 
         // In with the new
-        lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+        lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
     } else
     // If it's []EM, ...
     if (bQuadEM)

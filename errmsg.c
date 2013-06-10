@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,10 +113,10 @@ void BreakMessage
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Free the old value
-    FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
+    FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
 
     // Save the new value in the STE
-    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
 
     return;
 
@@ -390,10 +390,10 @@ void ErrorMessageDirect
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Free the old value
-    FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
+    FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
 
     // Save the new value in the PTD
-    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbRes); hGlbRes = NULL;
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbRes); hGlbRes = NULL;
 
     //***************************************************************
     // Also create the corresponding value for []EM

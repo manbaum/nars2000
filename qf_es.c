@@ -408,11 +408,11 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                                               : GetPtrQuadEM (lpMemPTD);
             // Out wth the old
             FreeResultGlobalVar (*lphGlbQuadEM); *lphGlbQuadEM = NULL;
-            FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
+            FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
 
             // In with the new
             *lphGlbQuadEM = hGlbQuadEM_DEF;
-            lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+            lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
 
             // Return as NoValue
             lpYYRes = MakeNoValue_YY (lptkFunc);

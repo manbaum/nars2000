@@ -1,4 +1,3 @@
-
 //***************************************************************************
 //  NARS2000 -- Execution Functions
 //***************************************************************************
@@ -103,8 +102,8 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                  hGlbLft,               // Left arg global memory handle (may be NULL)
                  hGlbRht;               // Right ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    HSHTABSTR    htsPTD;                // Old copy of HshTab struc
-    LPHSHTABSTR  lphtsPTD = NULL;       // Ptr to HshTab struc about to be activated
+    LPHSHTABSTR  lphtsPTD = NULL,       // Ptr to HshTab struc about to be activated
+                 lphtsOld;              // ...    old HTS
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
     UINT         uSysNSLvl;             // System namespace level
 
@@ -156,23 +155,18 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             // Check for system namespace
             if (uSysNSLvl > 0)
             {
-                // Save the old HshTab struc
-                htsPTD = lpMemPTD->htsPTD;
+                // Save the old HTS
+                lphtsPTD =
+                lphtsOld = lpMemPTD->lphtsPTD;
 
                 // Peel back HshTabStrs
-                while (uSysNSLvl-- > 1 && lpMemPTD->htsPTD.lpHshTabPrvSrch)
-                {
-                    lphtsPTD = lpMemPTD->htsPTD.lpHshTabPrvSrch;
-                    lpMemPTD->htsPTD = *lphtsPTD;
-                } // End WHILE
+                while (uSysNSLvl-- > 1 && lphtsPTD->lphtsPrvSrch)
+                    lphtsPTD = lphtsPTD->lphtsPrvSrch;
 
-                // If there's a previous struc, ...
-                if (lphtsPTD)
-                {
-                    // Save the address of the previous struc
-                    lpMemPTD->htsPTD.lpHshTabPrvSrch =
-                    lpMemPTD->htsPTD.lpHshTabPrvMFO  = &htsPTD;
-                } // End IF
+                // If we found a new HTS, ...
+                if (lphtsPTD NE lphtsOld)
+                    // Point to it
+                    lpMemPTD->lphtsPTD = lphtsPTD;
             } // End IF
 
             // Execute the primitive function
@@ -187,19 +181,9 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             // Check for system namespace,
             //   and past HshTabStr struc
             if (uSysNSLvl > 0
-             && lphtsPTD)
-            {
-                // Delete address of previous struc
-                lpMemPTD->htsPTD.lpHshTabPrvSrch =
-                lpMemPTD->htsPTD.lpHshTabPrvMFO  = NULL;
-
-                // Copy back the contents of the current struc
-                *lphtsPTD = lpMemPTD->htsPTD;
-
+             && lphtsPTD NE lphtsOld)
                 // Restore the old HTS
-                lpMemPTD->htsPTD = htsPTD;
-            } // End IF
-
+                lpMemPTD->lphtsPTD = lphtsOld;
             break;
 
         case TKT_FCNNAMED:
@@ -228,23 +212,18 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     // Check for system namespace
                     if (uSysNSLvl > 0)
                     {
-                        // Save the old HshTab struc
-                        htsPTD = lpMemPTD->htsPTD;
+                        // Save the old HTS
+                        lphtsPTD =
+                        lphtsOld = lpMemPTD->lphtsPTD;
 
                         // Peel back HshTabStrs
-                        while (uSysNSLvl-- > 1 && lpMemPTD->htsPTD.lpHshTabPrvSrch)
-                        {
-                            lphtsPTD = lpMemPTD->htsPTD.lpHshTabPrvSrch;
-                            lpMemPTD->htsPTD = *lphtsPTD;
-                        } // End WHILE
+                        while (uSysNSLvl-- > 1 && lphtsPTD->lphtsPrvSrch)
+                            lphtsPTD = lphtsPTD->lphtsPrvSrch;
 
-                        // If there's a previous struc, ...
-                        if (lphtsPTD)
-                        {
-                            // Save the address of the previous struc
-                            lpMemPTD->htsPTD.lpHshTabPrvSrch =
-                            lpMemPTD->htsPTD.lpHshTabPrvMFO  = &htsPTD;
-                        } // End IF
+                        // If we found a new HTS, ...
+                        if (lphtsPTD NE lphtsOld)
+                            // Point to it
+                            lpMemPTD->lphtsPTD = lphtsPTD;
                     } // End IF
 
                     // If it's an internal function, ...
@@ -259,19 +238,9 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     // Check for system namespace,
                     //   and past HshTabStr struc
                     if (uSysNSLvl > 0
-                     && lphtsPTD)
-                    {
-                        // Delete address of previous struc
-                        lpMemPTD->htsPTD.lpHshTabPrvSrch =
-                        lpMemPTD->htsPTD.lpHshTabPrvMFO  = NULL;
-
-                        // Copy back the contents of the current struc
-                        *lphtsPTD = lpMemPTD->htsPTD;
-
+                     && lphtsPTD NE lphtsOld)
                         // Restore the old HTS
-                        lpMemPTD->htsPTD = htsPTD;
-                    } // End IF
-
+                        lpMemPTD->lphtsPTD = lphtsOld;
                     break;
                 } // End IF
 

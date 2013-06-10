@@ -319,8 +319,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
     // Loop through the symbol table looking for STEs
     //   with one of the right arg name classes
-    for (lpSymEntry = lpMemPTD->htsPTD.lpSymTab, uSymCnt = 0;
-         lpSymEntry < lpMemPTD->htsPTD.lpSymTabNext;
+    for (lpSymEntry = lpMemPTD->lphtsPTD->lpSymTab, uSymCnt = 0;
+         lpSymEntry < lpMemPTD->lphtsPTD->lpSymTabNext;
          lpSymEntry++)
     if (lpSymEntry->stFlags.Inuse                                       // It's in use
      && nameClasses & (APLINT) (BIT0 << CalcNameClass (lpSymEntry)))    // It's in one of the specified name classes

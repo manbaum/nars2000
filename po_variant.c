@@ -1323,7 +1323,7 @@ NORMAL_EXIT:
     // Restore the old SYMENTRYs
     for (varKey = 0; varKey < countof (varUseStr); varKey++)
     if (varUseStr[varKey].bInuse)
-        *lpMemPTD->htsPTD.lpSymQuad[aVariantKeyStr[varKey].sysVarIndex] =
+        *lpMemPTD->lphtsPTD->lpSymQuad[aVariantKeyStr[varKey].sysVarIndex] =
           varUseStr[varKey].OldSymEntry;
 
     return lpYYRes;
@@ -1598,7 +1598,7 @@ UBOOL VariantValidateSymVal_EM
     LPSYMENTRY  lpSymEntry;             // Ptr to sysvar SYMENTRY
 
     // Get a ptr to the SYMENTRY
-    lpSymEntry = lpMemPTD->htsPTD.lpSymQuad[aVariantKeyStr[varKey].sysVarIndex];
+    lpSymEntry = lpMemPTD->lphtsPTD->lpSymQuad[aVariantKeyStr[varKey].sysVarIndex];
 
     // If this variant property isn't in use as yet, ...
     if (!lpVarUseStr[varKey].bInuse)

@@ -74,21 +74,22 @@ typedef enum tagPTDMEMVIRTENUM
 {
     PTDMEMVIRT_QUADERROR = 0,           // 00:  lpszQuadErrorMsg
     PTDMEMVIRT_UNDOBEG,                 // 01:  lpUndoBeg
-    PTDMEMVIRT_HSHTAB,                  // 02:  htsPTD.lpHshTab
-    PTDMEMVIRT_SYMTAB,                  // 03:  lpSymTab
-    PTDMEMVIRT_SIS,                     // 04:  lpSISBeg
-    PTDMEMVIRT_CS,                      // 05:  lptkCSIni
-    PTDMEMVIRT_YYRES,                   // 06:  lpYYRes
-    PTDMEMVIRT_STRAND_VAR,              // 07:  lpStrand[STRAND_VAR]
-    PTDMEMVIRT_STRAND_FCN,              // 08:  lpStrand[STRAND_FCN]
-    PTDMEMVIRT_STRAND_LST,              // 09:  lpStrand[STRAND_LST]
-    PTDMEMVIRT_STRAND_NAM,              // 0A:  lpStrand[STRAND_NAM]
-    PTDMEMVIRT_WSZFORMAT,               // 0B:  Temporary formatting
-    PTDMEMVIRT_WSZTEMP,                 // 0C:  Temporary save area
-    PTDMEMVIRT_FORSTMT,                 // 0D:  FOR ... IN stmts
-    PTDMEMVIRT_MFO1,                    // 0E:  Magic functions/operators
-    PTDMEMVIRT_MFO2,                    // 0F:  ...
-    PTDMEMVIRT_LENGTH                   // 10:  # entries
+    PTDMEMVIRT_HTSPTD,                  // 02:  lphtsPTD
+    PTDMEMVIRT_HSHTAB,                  // 03:  lphtsPTD->lpHshTab
+    PTDMEMVIRT_SYMTAB,                  // 04:  lphtsPTD->lpSymTab
+    PTDMEMVIRT_SIS,                     // 05:  lpSISBeg
+    PTDMEMVIRT_CS,                      // 06:  lptkCSIni
+    PTDMEMVIRT_YYRES,                   // 07:  lpYYRes
+    PTDMEMVIRT_STRAND_VAR,              // 08:  lpStrand[STRAND_VAR]
+    PTDMEMVIRT_STRAND_FCN,              // 09:  lpStrand[STRAND_FCN]
+    PTDMEMVIRT_STRAND_LST,              // 0A:  lpStrand[STRAND_LST]
+    PTDMEMVIRT_STRAND_NAM,              // 0B:  lpStrand[STRAND_NAM]
+    PTDMEMVIRT_WSZFORMAT,               // 0C:  Temporary formatting
+    PTDMEMVIRT_WSZTEMP,                 // 0D:  Temporary save area
+    PTDMEMVIRT_FORSTMT,                 // 0E:  FOR ... IN stmts
+    PTDMEMVIRT_MFO1,                    // 0F:  Magic functions/operators
+    PTDMEMVIRT_MFO2,                    // 10:  ...
+    PTDMEMVIRT_LENGTH                   // 11:  # entries
 } PTDMEMVIRTENUM;
 
 
@@ -862,35 +863,36 @@ WM_NCCREATE_FAIL:
             // Save incremented starting ptr in window extra bytes
             SetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG, (APLU3264) (LONG_PTR) ++lpUndoBeg);
 
-////////////// *************** lptkStackBase ***************************
-////////////
-////////////// Allocate virtual memory for the token stack used in parsing
-////////////lpMemPTD->lptkStackBase =
-////////////  GuardAlloc (NULL,         // Any address
-////////////              DEF_TOKENSTACK_MAXNELM * sizeof (TOKEN),
-////////////              MEM_RESERVE,
-////////////              PAGE_READWRITE);
-////////////if (!???)
-////////////{
-////////////    // ***FIXME*** -- WS FULL before we got started???
-////////////    DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lptkStackBase> failed");
-////////////
-////////////    goto WM_CREATE_FAIL;    // Mark as failed
-////////////} // End IF
-////////////
-////////////// Commit the intial size
-////////////VirtualAlloc (p,
-////////////              DEF_TOKENSTACK_INITNELM * sizeof (TOKEN),
-////////////              MEM_COMMIT,
-////////////              PAGE_READWRITE);
+            // *************** lphtsPTD ********************************
 
-            // *************** htsPTD.lpHshTab *************************
+            // Allocate virtual memory for the HSHTABSTR
+            lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].lpText   = "lpMemPTD->lphtsPTD in <SMWndProc>";
+            lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].IncrSize = 0;
+            lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].MaxSize  = sizeof (HSHTABSTR);
+            lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].IniAddr  = (LPVOID)
+            lpMemPTD->lphtsPTD =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].MaxSize,
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+            if (!lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lphtsPTD> failed");
 
-            lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].lpText = "lpMemPTD->htsPTD.lpHshTab in <SMWndProc>";
+                goto WM_CREATE_FAIL;    // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_HTSPTD]);
+
+            // *************** lphtsPTD->lpHshTab **********************
+
+            lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].lpText = "lpMemPTD->lphtsPTD->lpHshTab in <SMWndProc>";
 
             // Allocate virtual memory for the hash table
             bRet = AllocHshTab (&lpLclMemVirtStr[PTDMEMVIRT_HSHTAB],    // Ptr to this entry in MemVirtStr
-                                &lpMemPTD->htsPTD,                      // Ptr to this HSHTABSTR
+                                 lpMemPTD->lphtsPTD,                    // Ptr to this HSHTABSTR
                                  DEF_HSHTAB_NBLKS,                      // Initial # blocks in HshTab
                                  DEF_HSHTAB_INCRNELM,                   // # HTEs by which to resize when low
                                  DEF_HSHTAB_MAXNELM);                   // Maximum # HTEs
@@ -902,14 +904,14 @@ WM_NCCREATE_FAIL:
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
-            // *************** htsPTD.lpSymTab *************************
+            // *************** lphtsPTD->lpSymTab **********************
 
-            lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].lpText = "lpMemPTD->htsPTD.lpSymTab in <SMWndProc>";
+            lpLclMemVirtStr[PTDMEMVIRT_SYMTAB].lpText = "lpMemPTD->lphtsPTD->lpSymTab in <SMWndProc>";
 
             // Allocate virtual memory for the symbol table
             bRet = AllocSymTab (&lpLclMemVirtStr[PTDMEMVIRT_SYMTAB],    // Ptr to this entry in MemVirtStr
                                  lpMemPTD,                              // Ptr to PerTabData global memory
-                                &lpMemPTD->htsPTD,                      // Ptr to this HSHTABSTR
+                                 lpMemPTD->lphtsPTD,                    // Ptr to this HSHTABSTR
                                  TRUE,                                  // TRUE iff we're to initialize the constant STEs
                                  DEF_SYMTAB_INITNELM,                   // Initial # STEs in SymTab
                                  DEF_SYMTAB_INCRNELM,                   // # STEs by which to resize when low
@@ -1444,7 +1446,7 @@ NORMAL_EXIT:
             } // End SWITCH
 
             // Initialize the precision-specific VFP constants
-            InitVfpPrecision (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_FPC]->stData.stInteger);
+            InitVfpPrecision (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);
 
             // Initialize PerTabData vars
             InitPTDVars (lpMemPTD);
@@ -1752,7 +1754,7 @@ NORMAL_EXIT:
 #endif
 #ifdef DEBUG
                 case VK_F2:             // Display hash table entries
-                    DisplayHshTab (&lpMemPTD->htsPTD);
+                    DisplayHshTab (lpMemPTD->lphtsPTD);
                     DisplayHshTab (&htsGLB);
 
                     return FALSE;
@@ -1768,9 +1770,9 @@ NORMAL_EXIT:
                                         //   with non-zero reference counts
                     // If it's Shift-, then display all
                     if (GetKeyState (VK_SHIFT) & BIT15)
-                        DisplaySymTab (&lpMemPTD->htsPTD, TRUE);
+                        DisplaySymTab (lpMemPTD->lphtsPTD, TRUE);
                     else
-                        DisplaySymTab (&lpMemPTD->htsPTD, FALSE);
+                        DisplaySymTab (lpMemPTD->lphtsPTD, FALSE);
 
                     return FALSE;
 #endif
@@ -2026,8 +2028,8 @@ NORMAL_EXIT:
                 // Zap the ptrs in lpMemPTD
                 lpMemPTD->lpwszQuadErrorMsg    = NULL;
 ////////////////lpUndoBeg                      = NULL;
-                lpMemPTD->htsPTD.lpHshTab      = NULL;
-                lpMemPTD->htsPTD.lpSymTab      = NULL;
+                lpMemPTD->lphtsPTD->lpHshTab   = NULL;
+                lpMemPTD->lphtsPTD->lpSymTab   = NULL;
                 lpMemPTD->lpSISBeg             = NULL;
                 lpMemPTD->lptkCSIni            = NULL;
                 lpMemPTD->lpYYRes              = NULL;

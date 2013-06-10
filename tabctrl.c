@@ -865,7 +865,7 @@ void FreeGlobalStorage
     (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    LPHSHTABSTR lpHTS;                  // Loop var
+    LPHSHTABSTR lphtsPTD;               // Loop var
     LPSYMENTRY  lpSymEntry;             // ...
     LPHSHENTRY  lpHshEntry;             // ...
 
@@ -906,7 +906,7 @@ void FreeGlobalStorage
     } // End IF
 
     // Free global storage if the SymTab is valid
-    if (lpMemPTD->htsPTD.lpSymTab)
+    if (lpMemPTD->lphtsPTD->lpSymTab)
     {
         // If there's something suspended, ...
         if (lpMemPTD->lpSISCur)
@@ -939,11 +939,11 @@ void FreeGlobalStorage
         } // End IF
 
         // Get a ptr to the HTS
-        lpHTS = &lpMemPTD->htsPTD;
+        lphtsPTD = lpMemPTD->lphtsPTD;
 
         // Loop through the STEs
-        for (lpSymEntry = lpHTS->lpSymTab;
-             lpSymEntry < lpHTS->lpSymTabNext;
+        for (lpSymEntry = lphtsPTD->lpSymTab;
+             lpSymEntry < lphtsPTD->lpSymTabNext;
              lpSymEntry++)
         if (lpSymEntry->stFlags.Inuse
          && lpSymEntry->stFlags.Value
@@ -978,15 +978,15 @@ void FreeGlobalStorage
         } // End FOR/IF
 
         // Loop through the HTEs to free the names
-        for (lpHshEntry = lpHTS->lpHshTab;
-             lpHshEntry NE &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm];
+        for (lpHshEntry = lphtsPTD->lpHshTab;
+             lpHshEntry NE &lphtsPTD->lpHshTab[lphtsPTD->iHshTabTotalNelm];
              lpHshEntry++)
         if (lpHshEntry->htFlags.Inuse
          && lpHshEntry->htGlbName NE NULL)
             MyGlobalFree (lpHshEntry->htGlbName);
 
         // Zap the SymTab ptr so we don't re-execute this code
-        lpMemPTD->htsPTD.lpSymTab = NULL;
+        lpMemPTD->lphtsPTD->lpSymTab = NULL;
     } // End IF
 } // End FreeGlobalStorage
 #undef  APPEND_NAME
@@ -1466,13 +1466,13 @@ LPAPLCHAR PointToWsName
     lstrcpyW (lpwszGlbTemp, L"  CLEAR WS");
 
     // If the []WSID STE has been setup, ...
-    if (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID])
+    if (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID])
     {
         APLNELM aplNELMWSID;    // []WSID NELM
         APLRANK aplRankWSID;    // []WSID rank
 
         // Get the []WSID global memory handle
-        hGlbWSID = lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData;
+        hGlbWSID = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData;
 
         // If the []WSID STE has been setup, ...
         if (hGlbWSID)

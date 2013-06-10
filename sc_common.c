@@ -344,10 +344,10 @@ UBOOL SaveNewWsid_EM
         hGlbWSID = hGlbV0Char;
 
     // Free the old []WSID
-    FreeResultGlobalVar (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData = NULL;
+    FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData = NULL;
 
     // Save the new []WSID
-    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_WSID]->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
 
     // Tell the Tab Ctrl about the new workspace name
     NewTabName (NULL);

@@ -479,21 +479,21 @@ UBOOL InitSystemNames_EM
 
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
+    LPHSHTABSTR  lphtsPTD;          // Ptr to HshTab struc
     UBOOL        bRet = TRUE;       // TRUE iff result is valid
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab struc
-    lpHTS = &lpMemPTD->htsPTD;
+    lphtsPTD = lpMemPTD->lphtsPTD;
 
-    Assert (HshTabFrisk (lpHTS));
+    Assert (HshTabFrisk (lphtsPTD));
 
     // Append all system names
-    bRet = SymTabAppendAllSysNames_EM (lpHTS);
+    bRet = SymTabAppendAllSysNames_EM (lphtsPTD);
 
-    Assert (HshTabFrisk (lpHTS));
+    Assert (HshTabFrisk (lphtsPTD));
 
     return bRet;
 } // End InitSystemNames_EM
@@ -4144,7 +4144,7 @@ UBOOL InitSystemVars
     aSysVarValidPost[SYSVAR_Z       ] = ValidPostNone       ;
 
     // Assign default values to the system vars
-    if (!AssignDefaultSysVars (lpMemPTD->htsPTD.lpSymQuad))
+    if (!AssignDefaultSysVars (lpMemPTD->lphtsPTD->lpSymQuad))
         return FALSE;
 
     // Save the index value

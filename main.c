@@ -3683,8 +3683,8 @@ UBOOL InitInstance
     } // End FOR
 
     // Initialize the global HshTab values
-    htsGLB.lpHshTabPrvSrch   =
-    htsGLB.lpHshTabPrvMFO    = NULL;
+    htsGLB.lphtsPrvSrch      =
+    htsGLB.lphtsPrvMFO       = NULL;
     htsGLB.lpHshTabSplitNext = htsGLB.lpHshTab;
     htsGLB.iHshTabBaseNelm   = DEF_GLBHSHTAB_INITNELM;
     htsGLB.iHshTabTotalNelm  = DEF_GLBHSHTAB_INITNELM;

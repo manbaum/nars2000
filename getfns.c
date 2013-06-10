@@ -2476,7 +2476,7 @@ APLFLOAT GetQuadCT
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_CT]->stData.stFloat;
+    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_CT]->stData.stFloat;
 } // End GetQuadCT
 
 
@@ -2495,7 +2495,7 @@ void SetQuadCT
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_CT]->stData.stFloat = fQuadCT;
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_CT]->stData.stFloat = fQuadCT;
 } // End SetQuadCT
 
 
@@ -2514,7 +2514,7 @@ APLCHAR GetQuadDT
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar;
+    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar;
 } // End GetQuadDT
 
 
@@ -2533,7 +2533,7 @@ void SetQuadDT
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar = cQuadDT;
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar = cQuadDT;
 } // End SetQuadDT
 
 
@@ -2552,7 +2552,7 @@ APLBOOL GetQuadIO
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IO]->stData.stBoolean;
+    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_IO]->stData.stBoolean;
 } // End GetQuadIO
 
 
@@ -2571,7 +2571,7 @@ void SetQuadIO
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_IO]->stData.stBoolean = bQuadIO;
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_IO]->stData.stBoolean = bQuadIO;
 } // End SetQuadIO
 
 
@@ -2590,7 +2590,7 @@ APLUINT GetQuadPP
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    return min (DEF_MAX_QUADPP64, lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger);
+    return min (DEF_MAX_QUADPP64, lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger);
 } // End GetQuadPP
 
 
@@ -2609,7 +2609,7 @@ void SetQuadPP
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger=
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger=
         min (DEF_MAX_QUADPP64, uQuadPP);
 } // End SetQuadPP
 
@@ -2629,7 +2629,7 @@ APLUINT GetQuadPPV
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PP]->stData.stInteger;
+    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
 } // End GetQuadPPV
 
 
@@ -2648,7 +2648,7 @@ APLUINT GetQuadPW
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_PW]->stData.stInteger;
+    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PW]->stData.stInteger;
 } // End GetQuadPW
 
 
@@ -2668,7 +2668,7 @@ APLUINT GetQuadRL
     lpMemPTD = GetMemPTD ();
 
     // Get the current value
-    return lpMemPTD->htsPTD.lpSymQuad[SYSVAR_RL]->stData.stInteger;
+    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_RL]->stData.stInteger;
 } // End GetQuadRL
 
 
@@ -2688,7 +2688,7 @@ void SetQuadRL
     lpMemPTD = GetMemPTD ();
 
     // Set the new value
-    lpMemPTD->htsPTD.lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
 } // End SetQuadRL
 
 

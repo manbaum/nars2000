@@ -3690,7 +3690,7 @@ void RespecifyNewQuadPW
                                   DEF_MAX_QUADPW,   // High ...
                                   bRangeLimit.PW))  // TRUE iff we're range limiting
             // Save as new []PW
-            GetMemPTD ()->htsPTD.lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
+            GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
     } // End IF
 } // End RespecifynewQuadPW
 

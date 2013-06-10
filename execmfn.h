@@ -180,7 +180,7 @@ typedef struct tagMAGIC_FCNOPR
 
 typedef struct tagINIT_MFO
 {
-    LPHSHTABSTR  lpHTS;             // 00:  Ptr to HSHTABSTR struc
+    LPHSHTABSTR  lphtsMFO;          // 00:  Ptr to HSHTABSTR struc
     LPMEMVIRTSTR lpLclMemVirtStr;   // 04:  Ptr to local MemVirtStr
     UINT         uPtdMemVirtStart,  // 08:  Starting offset into lpLclMemVirtStr
                  uPtdMemVirtEnd;    // 0C:  Ending   ...

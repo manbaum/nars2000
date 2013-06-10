@@ -314,7 +314,7 @@ APLINT GetRandomNum
              mpzTmp2 = {0};             // ...
 
     // Split cases based upon the Distribution Type
-    switch (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar)
+    switch (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar)
     {
         case L'r':
             // Initialize the temps
@@ -435,7 +435,7 @@ APLRAT PrimFnMonQueryRisR
   #define lpMemPTD  GetMemPTD ()
 #endif
         // Split cases based upon the Distribution Type
-        switch (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar)
+        switch (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar)
         {
             case L'r':
                 // Initialize the result to 0/1
@@ -504,7 +504,7 @@ APLVFP PrimFnMonQueryVisV
   #define lpMemPTD  GetMemPTD ()
 #endif
         // Split cases based upon the Distribution Type
-        switch (lpMemPTD->htsPTD.lpSymQuad[SYSVAR_DT]->stData.stChar)
+        switch (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar)
         {
             case L'r':
                 // Initialize the result to R

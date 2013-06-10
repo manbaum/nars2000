@@ -352,16 +352,7 @@ UBOOL AssignName_EM
 
 #ifdef DEBUG
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPHSHTABSTR  lpHTS;             // Ptr to HshTab struc
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    // Get a ptr to the HshTab struc
-    lpHTS = &lpMemPTD->htsPTD;
-
-    Assert (HshTabFrisk (lpHTS));
+    Assert (HshTabFrisk (GetMemPTD ()->lphtsPTD));
 
     if (bFcnOpr)
         DisplayFcnStrand (lptkSrc, TRUE);

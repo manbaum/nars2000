@@ -1234,12 +1234,7 @@ WM_NCCREATE_FAIL:
             // *************** System Vars *****************************
 
             // Initialize all system vars
-            if (!InitSystemVars ())
-            {
-                DbgMsgW (L"WM_CREATE:  InitSystemVars failed");
-
-                goto WM_CREATE_FAIL;    // Mark as failed
-            } // End IF
+            InitSystemVars ();
 
             // *************** Edit Ctrl ****************************
             // Create an Edit Ctrl within which we can enter expressions
@@ -1754,6 +1749,7 @@ NORMAL_EXIT:
 #endif
 #ifdef DEBUG
                 case VK_F2:             // Display hash table entries
+                    DbgBrk ();
                     DisplayHshTab (lpMemPTD->lphtsPTD);
                     DisplayHshTab (&htsGLB);
 
@@ -1768,6 +1764,7 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F4:             // Display symbol table entries
                                         //   with non-zero reference counts
+                    DbgBrk ();
                     // If it's Shift-, then display all
                     if (GetKeyState (VK_SHIFT) & BIT15)
                         DisplaySymTab (lpMemPTD->lphtsPTD, TRUE);
@@ -2007,6 +2004,21 @@ NORMAL_EXIT:
             {
                 UINT uCnt;                  // Loop counter
 
+                // Zap the ptrs in lpMemPTD
+                lpMemPTD->lpwszQuadErrorMsg    = NULL;
+////////////////lpUndoBeg                      = NULL;
+                lpMemPTD->lphtsPTD->lpHshTab   = NULL;
+                lpMemPTD->lphtsPTD->lpSymTab   = NULL;
+                lpMemPTD->lpSISBeg             = NULL;
+                lpMemPTD->lptkCSIni            = NULL;
+                lpMemPTD->lpYYRes              = NULL;
+                lpMemPTD->lpStrand[STRAND_VAR] = NULL;
+                lpMemPTD->lpStrand[STRAND_FCN] = NULL;
+                lpMemPTD->lpStrand[STRAND_LST] = NULL;
+                lpMemPTD->lpStrand[STRAND_NAM] = NULL;
+                lpMemPTD->lpwszFormat          = NULL;
+                lpMemPTD->lpwszBaseTemp        = NULL;
+
                 // Loop through the entries
                 for (uCnt = 0; uCnt < PTDMEMVIRT_LENGTH; uCnt++)
                 // If we allocated virtual storage, ...
@@ -2024,21 +2036,6 @@ NORMAL_EXIT:
 
                 // Zap it in case we come through again
                 SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) NULL);
-
-                // Zap the ptrs in lpMemPTD
-                lpMemPTD->lpwszQuadErrorMsg    = NULL;
-////////////////lpUndoBeg                      = NULL;
-                lpMemPTD->lphtsPTD->lpHshTab   = NULL;
-                lpMemPTD->lphtsPTD->lpSymTab   = NULL;
-                lpMemPTD->lpSISBeg             = NULL;
-                lpMemPTD->lptkCSIni            = NULL;
-                lpMemPTD->lpYYRes              = NULL;
-                lpMemPTD->lpStrand[STRAND_VAR] = NULL;
-                lpMemPTD->lpStrand[STRAND_FCN] = NULL;
-                lpMemPTD->lpStrand[STRAND_LST] = NULL;
-                lpMemPTD->lpStrand[STRAND_NAM] = NULL;
-                lpMemPTD->lpwszFormat          = NULL;
-                lpMemPTD->lpwszBaseTemp        = NULL;
             } // End IF
 
             // Uninitialize window-specific resources

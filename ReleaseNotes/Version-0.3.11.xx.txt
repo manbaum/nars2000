@@ -1,6 +1,23 @@
 Version 0.3.11.xx consists of the following Builds:
 
 
+Build #1111 -- Version 0.3.11.xx
+--------------------------------
+
+* Fix Bug In Reshape When HEAP FULL
+
+Directory trunk:
+
+MPFNS.C:
+  In <_mpfr_get_ctsx>, check for MPFR infinity and handle.
+
+PF_RHO.C:
+  Handle HEAP FULL in reshape.
+
+SESSMAN.C:
+  Move code to before the vars it references are freed.
+
+
 Build #1110 -- Version 0.3.11.xx
 --------------------------------
 

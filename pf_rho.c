@@ -1286,6 +1286,14 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
     UINT     u,
              uBits;
     APLINT   aplIntTmp;
+    jmp_buf  oldHeapFull;   // Save area for previous jmp_buf
+
+    // Save the previous heapFull
+    *oldHeapFull = *heapFull;
+
+    // Set the heapFull for a longjmp
+    if (setjmp (heapFull) NE 0)
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
@@ -1583,10 +1591,18 @@ DOMAIN_EXIT:
                                lptkFunc);
     goto ERROR_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     // Mark as unsuccessful
     bRet = FALSE;
 NORMAL_EXIT:
+    // Restore previous heapFull
+    *heapFull = *oldHeapFull;
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 

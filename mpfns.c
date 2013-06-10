@@ -1317,6 +1317,10 @@ APLINT _mpfr_get_ctsx
     if (mpfr_zero_p (src))
         *lpbRet = TRUE;
     else
+    // Handle special case of infinity as <mpfr_get_sx> fails
+    if (mpfr_inf_p (src))
+        longjmp (heapFull, 3);
+    else
     {
         // Initialize the temps
         mpfr_init0 (&mpfTmp1);

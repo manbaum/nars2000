@@ -298,6 +298,26 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                           &aplNELMAxis,     // Return # elements in axis vector
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
             goto ERROR_EXIT;
+
+        // Optimize {enclose}[{zilde}] R
+
+        // If the axis is empty, this is an identity function.
+        //   We could go through all of the work below and end
+        //   up with the same result, but why bother??
+        if (IsEmpty (aplNELMAxis))
+        {
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbRht);
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+            goto QUICK_EXIT;
+        } // End IF
     } else
         // No axis means enclose all dimensions
         aplNELMAxis = aplRankRht;
@@ -309,25 +329,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
     // Calculate the rank of the result
     aplRankRes = aplRankRht - aplNELMAxis;
-
-    // If the axis is present and it's empty, this
-    //   is an identity function.  We could go through
-    //   all of the work below and end up with the same
-    //   result, but why bother??
-    if (lptkAxis && IsEmpty (aplNELMAxis))
-    {
-        // Allocate a new YYRes
-        lpYYRes = YYAlloc ();
-
-        // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbRht);
-        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-        goto QUICK_EXIT;
-    } // End IF
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);

@@ -105,10 +105,8 @@ UBOOL CmdOut_EM
 
     // If there's no extension, supply one
     if (wszExt[0] EQ WC_EOS)
-        lstrcpyW (wszExt, L".atf");
-
-    // Put it all back together
-    _wmakepath  (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
+        // Put it all back together
+        _wmakepath  (lpwszTail, wszDrive, wszDir, wszFname, WS_ATFEXT);
 
     // Attempt to open the file (in binary mode)
     fStream = fopenW (lpwszTail, L"wb");

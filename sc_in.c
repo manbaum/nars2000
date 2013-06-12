@@ -107,10 +107,8 @@ UBOOL CmdIn_EM
 
     // If there's no extension, supply one
     if (wszExt[0] EQ WC_EOS)
-        lstrcpyW (wszExt, L".atf");
-
-    // Put it all back together
-    _wmakepath  (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
+        // Put it all back together
+        _wmakepath  (lpwszTail, wszDrive, wszDir, wszFname, WS_ATFEXT);
 
     // See if we can open this file
     hAtfFile =
@@ -214,7 +212,7 @@ UBOOL CmdIn_EM
                 //     Aarrayname{is}values
                 //   or
                 //     Aarrayname{is}shape{rho}values
-                //   where 'shape' is the sahpe of the array and 'values' are the values
+                //   where 'shape' is the shape of the array and 'values' are the values
 
                 // Point to the name, skipping over the type char
                 if (!TransferInverseArr2_EM (&lpwszTemp[1], uLen - 1, uOldRecNo, uRecNo, NULL, &ftCreation, TRUE))

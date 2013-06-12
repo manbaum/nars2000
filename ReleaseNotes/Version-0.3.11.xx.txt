@@ -1,6 +1,17 @@
 Version 0.3.11.xx consists of the following Builds:
 
 
+Build #1112 -- Version 0.3.11.xx
+--------------------------------
+
+* Extend Dyadic Iota To Scalar Left Arguments
+
+Directory trunk:
+
+PF_IOTA.C:
+  Extend dyadic iota to scalar left arguments to return some reshape of {enclose} {zilde}.
+
+
 Build #1111 -- Version 0.3.11.xx
 --------------------------------
 

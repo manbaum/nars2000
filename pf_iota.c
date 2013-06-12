@@ -623,21 +623,13 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Check for LEFT RANK ERROR
-    if (IsScalar (aplRankLft))
-        goto RANK_EXIT;
-    else
     // Check for extended dyadic iota
-    if (IsMultiRank (aplRankLft))
+    if (!IsVector (aplRankLft))
     {
-        HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
-        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-
-        // Get ptr to PerTabData global memory
-        lpMemPTD = GetMemPTD ();
+        HGLOBAL hGlbMFO;                // Magic function/operator global memory handle
 
         // Get the magic function/operator global memory handle
-        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydIota];
+        hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydIota];
 
         //  Extend to aplRankLft > 1 args by returning
         //    an array of index vectors where the length
@@ -934,11 +926,6 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
-
-RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkFunc);
-    goto ERROR_EXIT;
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,

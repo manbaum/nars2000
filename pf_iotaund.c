@@ -833,7 +833,7 @@ LPPL_YYSTYPE PrimFnDydIotaUnderbar_EM_YY
 //  Extended Dyadic Iota Underbar -- Matrix Iota
 //
 //  Return an array of indices from searching for the
-//    vector of trailing subarrays from the right arg in the
+//    array  of trailing subarrays from the right arg in the
 //    vector of trailing subarrays from the left arg.
 //***************************************************************************
 
@@ -841,13 +841,13 @@ static APLCHAR DydHeader[] =
   L"Z" $IS L"L " MFON_DydIotaUnderbar L" R";
 
 static APLCHAR DydLine1[] =
-  L"Z" $IS L"(" $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) L)" $IOTA
+  L"Z" $IS L"(" $ENCLOSE $RANK      $NEG L"1 L)" $IOTA
                 $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) R "
    $DIAMOND L" " $GOTO L"0";
 
 static APLCHAR DydLine2[] =
   $QUAD_MS L":"
-  L"Z" $IS L"(" $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) L)" $IOTA $MULTISET
+  L"Z" $IS L"(" $ENCLOSE $RANK      $NEG L"1 L)" $IOTA
                 $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) R";
 
 static LPAPLCHAR DydBody[] =

@@ -3045,7 +3045,7 @@ LPAPLCHAR FormatArrSimple
                              && lpFmtRowStr->lpFmtRowNxt->bRealRow EQ 0)
                                 uTmp = uActLen;
                             else
-                                uTmp = uCmpWid - lpFmtRowStr->uAccWid;
+                                uTmp = uCmpWid - uAlign - lpFmtRowStr->uAccWid;
 
                             // If we're to wrap this item, ...
                             if (uQuadPW < (uTmp + (UINT) (lpwszOut - lpwszOutStart)))
@@ -3085,10 +3085,7 @@ LPAPLCHAR FormatArrSimple
 
                             // Skip over terminating zero
                             lpaplChar++;
-                        } // End IF
-
-                        // If we're repeating this col, ...
-                        if (bRptCol)
+                        } else
                             // Accumulate the width
                             lpFmtRowStr->uAccWid += (UINT) uActLen;
 

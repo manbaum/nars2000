@@ -90,14 +90,14 @@ typedef enum tagIC_INDICES
     ICNDX_NEXPPi    ,       // 10:  L   *   _   for L <= -1
     ICNDX_0EXPPi    ,       // 11:  0   *   +_
     ICNDX_0EXPNi    ,       // 12:  0   *   -_
-    ICNDX_InfEXP0   ,       // 13:  ±_  *   0
+    ICNDX_InfEXP0   ,       // 13:  PoM_  *   0
     ICNDX_NegEXPFrc ,       // 14:  L   *   R   for L < 0 and R != floor (R)
     ICNDX_0LOG0     ,       // 15:  0 {log} 0
     ICNDX_0LOG1     ,       // 16:  0 {log} 1
     ICNDX_1LOG0     ,       // 17:  1 {log} 0
     ICNDX_1LOG1     ,       // 18:  1 {log} 1
-    ICNDX_0GCDInf   ,       // 19:  0 {gcd} ±_  or  ±_ {gcd} 0
-    ICNDX_0LCMInf   ,       // 1A:  0 {lcm} ±_  or  ±_ {lcm} 0
+    ICNDX_0GCDInf   ,       // 19:  0 {gcd} PoM_  or  PoM_ {gcd} 0
+    ICNDX_0LCMInf   ,       // 1A:  0 {lcm} PoM_  or  PoM_ {lcm} 0
     ICNDX_0LOGN     ,       // 1B:  0 {log} N  (N NE 0 or 1)
     ICNDX_LENGTH            // 1C:  # entries in this enum
 } IC_INDICES;
@@ -129,14 +129,14 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
     ICVAL_DOMAIN_ERROR ,    // 10:  L   *   _   for L <= -1
     ICVAL_ZERO         ,    // 11:  0   *   +_
     ICVAL_POS_INFINITY ,    // 12:  0   *   -_
-    ICVAL_DOMAIN_ERROR ,    // 13:  ±_  *   0
+    ICVAL_DOMAIN_ERROR ,    // 13:  PoM_  *   0
     ICVAL_DOMAIN_ERROR ,    // 14:  L   *   R   for L < 0 and R != floor (R)
     ICVAL_ONE          ,    // 15:  0 {log} 0
     ICVAL_DOMAIN_ERROR ,    // 16:  0 {log} 1
     ICVAL_DOMAIN_ERROR ,    // 17:  1 {log} 0
     ICVAL_ONE          ,    // 18:  1 {log} 1
-    ICVAL_LEFT         ,    // 19:  0 {gcd} ±_  or  ±_ {gcd} 0
-    ICVAL_DOMAIN_ERROR ,    // 1A:  0 {lcm} ±_  or  ±_ {lcm} 0
+    ICVAL_LEFT         ,    // 19:  0 {gcd} PoM_  or  PoM_ {gcd} 0
+    ICVAL_DOMAIN_ERROR ,    // 1A:  0 {lcm} PoM_  or  PoM_ {lcm} 0
     ICVAL_DOMAIN_ERROR ,    // 1B:  0 {log} N  (N NE 0 or 1)
    }
 #endif

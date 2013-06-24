@@ -430,7 +430,7 @@ APLFLOAT PrimFnDydRootFisIvI
             return PosInfinity;
     } // End IF
 
-////// Check for indeterminate:  ±_ {root} 0 <==> 0 * 0
+////// Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
 ////if (IsInfinity (aplIntegerLft)
 //// && aplIntegerRht EQ 0)
 ////    return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
@@ -499,7 +499,7 @@ APLFLOAT PrimFnDydRootFisFvF
             return PosInfinity;
     } // End IF
 
-    // Check for indeterminate:  ±_ {root} 0 <==> 0 * 0
+    // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
     if (IsInfinity (aplFloatLft)
      && aplFloatRht EQ 0)
         return TranslateQuadICIndex (aplFloatLft,
@@ -581,7 +581,7 @@ APLVFP PrimFnDydRootVisVvV
             return mpfPosInfinity;
     } // End IF
 
-    // Check for indeterminate:  ±_ {root} 0 <==> 0 * 0
+    // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
     if (mpfr_inf_p (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
         return mpfr_QuadICValue (aplVfpLft,

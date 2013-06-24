@@ -361,11 +361,11 @@ APLINT GetRandomNum
             // Convert the arg to float
             aplFloatRht = (APLFLOAT) aplIntegerRht;
 
-            // Cutoff values to ±3 standard deviations [-3*SD, 3*SD]
+            // Cutoff values to +/-3 standard deviations [-3*SD, 3*SD]
             aplFloatRes = max (aplFloatRes, -3*SD);
             aplFloatRes = min (aplFloatRes,  3*SD);
 
-            // Scale the range to ±aplFloatRht / 2
+            // Scale the range to +/-aplFloatRht / 2
             aplFloatRes *= aplFloatRht / (2 * 3 * SD);
 #undef  SD
             // Shift the range to [0, aplFloatRht] = [0, aplIntegerRht)

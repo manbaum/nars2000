@@ -284,7 +284,7 @@ static APLCHAR MonLineFMT52[] =
   L"    Z" $IS L"((-3" $MAX $RHO $RHO L"Z)" $TAKE L"1," $RHO L"Z)" $RHO L"Z";
 
 static APLCHAR MonLineFMT53[] =
-  L"    Z" $IS L"(((" $NEG L"3" $DROP $RHO L"Z),(" $RHO L"Z)[" $NEG L"2],×/(" $RHO L"Z)[" $NEG L"3 " $NEG L"1])"
+  L"    Z" $IS L"(((" $NEG L"3" $DROP $RHO L"Z),(" $RHO L"Z)[" $NEG L"2]," $TIMES L"/(" $RHO L"Z)[" $NEG L"3 " $NEG L"1])"
   $RHO L",[" $NEG L"2 " $NEG L"3] Z) " MFON_Box L" R";
 
 static APLCHAR MonLineFMT54[] =

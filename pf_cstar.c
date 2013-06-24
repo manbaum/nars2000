@@ -498,9 +498,9 @@ APLFLOAT PrimFnDydCircleStarFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Check for special cases:  0 {log} ±_
-    // Check for special cases:  ±_ {log} 0
-    // Check for special cases:  ±_ {log} ±_
+    // Check for special cases:  0 {log} PoM_
+    // Check for special cases:  PoM_ {log} 0
+    // Check for special cases:  PoM_ {log} PoM_
     if ((aplFloatLft EQ 0 && IsInfinity (aplFloatRht))
      || (IsInfinity (aplFloatLft) && aplFloatRht EQ 0)
      || (IsInfinity (aplFloatLft) && IsInfinity (aplFloatRht)))
@@ -547,9 +547,9 @@ APLVFP PrimFnDydCircleStarVisVvV
 {
     APLVFP mpfRes = {0};
 
-    // Check for special cases:  0 {log} ±_
-    // Check for special cases:  ±_ {log} 0
-    // Check for special cases:  ±_ {log} ±_
+    // Check for special cases:  0 {log} PoM_
+    // Check for special cases:  PoM_ {log} 0
+    // Check for special cases:  PoM_ {log} PoM_
     if ((IsMpf0 (&aplVfpLft) && mpfr_inf_p (&aplVfpRht))
      || (mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
      || (mpfr_inf_p (&aplVfpLft) && mpfr_inf_p (&aplVfpRht)))

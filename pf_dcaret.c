@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -433,14 +433,14 @@ APLFLOAT PrimFnDydDownCaretFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Check for indeterminates:  gcd (±_, 0)  or  gcd (0, ±_)
+    // Check for indeterminates:  gcd (PoM_, 0)  or  gcd (0, PoM_)
     if ((IsInfinity (aplFloatLft) && (aplFloatRht EQ 0))
      || (IsInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0GCDInf,
                                      aplFloatRht);
 
-    // Check for special cases:  gcd (±_, N)  or  gcd (N, ±_)
+    // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
     if (IsInfinity (aplFloatLft)
      || IsInfinity (aplFloatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -463,14 +463,14 @@ APLRAT PrimFnDydDownCaretRisRvR
 {
     APLRAT aplTmp = {0};
 
-    // Check for indeterminates:  gcd (±_, 0)  or  gcd (0, ±_)
+    // Check for indeterminates:  gcd (PoM_, 0)  or  gcd (0, PoM_)
     if ((mpq_inf_p (&aplRatLft) && IsMpq0 (&aplRatRht))
      || (mpq_inf_p (&aplRatRht) && IsMpq0 (&aplRatLft)))
         return mpq_QuadICValue (aplRatLft,
                                 ICNDX_0GCDInf,
                                 aplRatRht,
                                 aplTmp);
-    // Check for special cases:  gcd (±_, N)  or  gcd (N, ±_)
+    // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
     if (mpq_inf_p (&aplRatLft)
      || mpq_inf_p (&aplRatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -515,14 +515,14 @@ APLVFP PrimFnDydDownCaretVisVvV
 {
     APLVFP aplTmp = {0};
 
-    // Check for indeterminates:  gcd (±_, 0)  or  gcd (0, ±_)
+    // Check for indeterminates:  gcd (PoM_, 0)  or  gcd (0, PoM_)
     if ((mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
      || (mpfr_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
         return mpfr_QuadICValue (aplVfpLft,
                                 ICNDX_0GCDInf,
                                 aplVfpRht,
                                 aplTmp);
-    // Check for special cases:  gcd (±_, N)  or  gcd (N, ±_)
+    // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
     if (mpfr_inf_p (&aplVfpLft)
      || mpfr_inf_p (&aplVfpRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);

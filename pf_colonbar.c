@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -185,7 +185,7 @@ APLFLOAT PrimFnMonColonBarFisF
                                      ICNDX_DIV0,
                                      aplFloatRht);
 
-    // If the arg is ± infinity, just return 0.
+    // If the arg is PoM infinity, just return 0.
     // If we don't, then the reciprocal of {neg}infinity
     //   is {neg}0.
     if (IsInfinity (aplFloatRht))

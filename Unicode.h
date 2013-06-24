@@ -39,7 +39,13 @@
 //   to <aSymbolNames> in <symbolnames.h>.
 
 // No keystroke equivalents for these as yet
+#define UTF16_PLUS_OR_MINUS      0x00B1         // Plus or minus symbol
+#define UTF16_LEFTSINGLEQUOTE    0x2018         // Left single quotation mark
+#define UTF16_RIGHTSINGLEQUOTE   0x2019         // Right ...
+#define UTF16_HORIZELLIPSIS      0x2026         // Horizontal ellipsis
 #define UTF16_EURO               0x20AC         // Euro
+#define UTF16_LEFTRIGHTARROWS    0x2194         // Left-right arrows
+#define UTF16_UPDOWNARROWS       0x2195         // Up-down arrows
 #define UTF16_DIERESISDOT        0x2235         //
 #define UTF16_IBEAM              0x2336         //
 #define UTF16_QUADJOT            0x233B         //
@@ -49,12 +55,8 @@
 #define UTF16_QUADUPARROW        0x2350         //
 #define UTF16_QUADDOWNARROW      0x2357         //
 #define UTF16_QUADCOLON          0x2360         // Variant operator
-#define UTF16_LEFTSINGLEQUOTE    0x2018         // Left single quotation mark
-#define UTF16_RIGHTSINGLEQUOTE   0x2019         // Right ...
 #define UTF16_DELTILDE           0x236B         // Del-tilde
-#define UTF16_HORIZELLIPSIS      0x2026         // Horizontal ellipsis
 #define UTF16_CHECKMARK          0x221A         // Check mark
-#define UTF16_REPLACEMENTCHAR    0xFFFD         // Replacement char for unknown
 #define UTF16_LDC_LT_HORZ        0x2500         // LDC light horizontal
 #define UTF16_LDC_LT_VERT        0x2502         // LDC light vertical
 #define UTF16_LDC_LT_UL          0x250C         // LDC light upper left
@@ -77,8 +79,7 @@
 #define UTF16_LDC_DB_HORZ_D      0x2566         // LDC double horizontal and down
 #define UTF16_LDC_DB_HORZ_U      0x2569         // LDC double horizontal and up
 #define UTF16_LDC_DB_CROSS       0x256C         // LDC double horizontal and vertical
-#define UTF16_LEFTRIGHTARROWS    0x2194         // Left-right arrows
-#define UTF16_UPDOWNARROWS       0x2195         // Up-down arrows
+#define UTF16_REPLACEMENTCHAR    0xFFFD         // Replacement char for unknown
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha
@@ -272,7 +273,13 @@
 // The corresponding wide string constants
 
 // No keystroke equivalents for these as yet
+#define WS_UTF16_PLUS_OR_MINUS      L"\x00B1"   // Plus or minus symbol
+#define WS_UTF16_LEFTSINGLEQUOTE    L"\x2018"   // Left single quotation mark
+#define WS_UTF16_RIGHTSINGLEQUOTE   L"\x2019"   // Right ...
+#define WS_UTF16_HORIZELLIPSIS      L"\x2026"   // Horizontal ellipsis
 #define WS_UTF16_EURO               L"\x20AC"   // Euro
+#define WS_UTF16_LEFTRIGHTARROWS    L"\x2194"   // Left-right arrows
+#define WS_UTF16_UPDOWNARROWS       L"\x2195"   // Up-down arrows
 #define WS_UTF16_DIERESISDOT        L"\x2235"   //
 #define WS_UTF16_IBEAM              L"\x2336"   //
 #define WS_UTF16_QUADJOT            L"\x233B"   //
@@ -283,9 +290,7 @@
 #define WS_UTF16_QUADDOWNARROW      L"\x2357"   //
 #define WS_UTF16_QUADCOLON          L"\x2360"   // Variant operator
 #define WS_UTF16_DELTILDE           L"\x236B"   // Del-tilde
-#define WS_UTF16_HORIZELLIPSIS      L"\x2026"   // Horizontal ellipsis
 #define WS_UTF16_CHECKMARK          L"\x221A"   // Check mark
-#define WS_UTF16_REPLACEMENTCHAR    L"\xFFFD"   // Replacement char for unknown
 #define WS_UTF16_LDC_LT_HORZ        L"\x2500"   // LDC light horizontal
 #define WS_UTF16_LDC_LT_VERT        L"\x2502"   // LDC light vertical
 #define WS_UTF16_LDC_LT_UL          L"\x250C"   // LDC light upper left
@@ -308,8 +313,7 @@
 #define WS_UTF16_LDC_DB_HORZ_D      L"\x2566"   // LDC double horizontal and down
 #define WS_UTF16_LDC_DB_HORZ_U      L"\x2569"   // LDC double horizontal and up
 #define WS_UTF16_LDC_DB_CROSS       L"\x256C"   // LDC double horizontal and vertical
-#define WS_UTF16_LEFTRIGHTARROWS    L"\x2194"   // Left-right arrows
-#define WS_UTF16_UPDOWNARROWS       L"\x2195"   // Up-down arrows
+#define WS_UTF16_REPLACEMENTCHAR    L"\xFFFD"   // Replacement char for unknown
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA              L"\x237A"   // Alt-'a' - alpha

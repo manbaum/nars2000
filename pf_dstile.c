@@ -198,7 +198,7 @@ APLINT PrimFnMonDownStileIisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Check for ± infinity and numbers whose
+    // Check for PoM infinity and numbers whose
     //   absolute value is >= 2*53
     if (IsInfinity (aplFloatRht)
      || fabs (aplFloatRht) >= Float2Pow53)
@@ -227,7 +227,7 @@ APLFLOAT PrimFnMonDownStileFisF
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
 
-    // Check for ± infinity
+    // Check for PoM infinity
     if (IsInfinity (aplFloatRht))
         return aplFloatRht;
 
@@ -309,7 +309,7 @@ APLRAT PrimFnMonDownStileRisR
            mpqTmp2  = {0},
            mpqNear  = {0};
 
-    // Check for ± infinity
+    // Check for PoM infinity
     if (IsMpqInfinity (&aplRatRht))
         // Copy to the result
         mpq_init_set  (&mpqRes, &aplRatRht);
@@ -422,7 +422,7 @@ APLVFP PrimFnMonDownStileVisV
            mpfTmp2  = {0},
            mpfNear  = {0};
 
-    // Check for ± infinity
+    // Check for PoM infinity
     if (IsMpfInfinity (&aplVfpRht))
         // Copy to the result
         mpfr_init_copy (&mpfRes, &aplVfpRht);

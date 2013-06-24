@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -421,13 +421,13 @@ APLFLOAT PrimFnDydUpCaretFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Check for indeterminates:  lcm (±_, 0)  or  lcm (0, ±_)
+    // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
     if ((IsInfinity (aplFloatLft) && (aplFloatRht EQ 0))
      || (IsInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0LCMInf,
                                      aplFloatRht);
-    // Check for special cases:  lcm (±_, N)  or  lcm (N, ±_)
+    // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (IsInfinity (aplFloatLft)
      || IsInfinity (aplFloatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -450,14 +450,14 @@ APLRAT PrimFnDydUpCaretRisRvR
 {
     APLRAT aplTmp = {0};
 
-    // Check for indeterminates:  lcm (±_, 0)  or  lcm (0, ±_)
+    // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
     if ((mpq_inf_p (&aplRatLft) && IsMpq0 (&aplRatRht))
      || (mpq_inf_p (&aplRatRht) && IsMpq0 (&aplRatLft)))
         return mpq_QuadICValue (aplRatLft,
                                 ICNDX_0LCMInf,
                                 aplRatRht,
                                 aplTmp);
-    // Check for special cases:  lcm (±_, N)  or  lcm (N, ±_)
+    // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (mpq_inf_p (&aplRatLft)
      || mpq_inf_p (&aplRatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -501,14 +501,14 @@ APLVFP PrimFnDydUpCaretVisVvV
 {
     APLVFP aplTmp = {0};
 
-    // Check for indeterminates:  lcm (±_, 0)  or  lcm (0, ±_)
+    // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
     if ((mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
      || (mpfr_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
         return mpfr_QuadICValue (aplVfpLft,
                                  ICNDX_0LCMInf,
                                  aplVfpRht,
                                  aplTmp);
-    // Check for special cases:  lcm (±_, N)  or  lcm (N, ±_)
+    // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (mpfr_inf_p (&aplVfpLft)
      || mpfr_inf_p (&aplVfpRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);

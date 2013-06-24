@@ -439,33 +439,27 @@ NORMAL_EXIT:
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  L"Z" $IS L"(LO " MFON_MonRank L" Y) R;YR;" $QUAD_FEATURE;
+  L"Z" $IS L"(LO " MFON_MonRank L" Y) R;YR";
 
 static APLCHAR MonLine1[] =
-  $QUAD_FEATURE L"[" $QUAD_IO L"]" $IS L"1";
+  L"YR" $IS L"(1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN $RHO $RHO L"R";
 
 static APLCHAR MonLine2[] =
-  L"YR" $IS L"(1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN $RHO $RHO L"R";
+  L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
 
 static APLCHAR MonLine3[] =
-  L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
-
-static APLCHAR MonLine4[] =
-  L"Z" $IS L"LO" $EACH $ENCLOSE L"[" $IOTA L"-YR] R "
+  L"Z" $IS L"LO" $EACH $ENCLOSE L"[" $IOTA L"YR] R "
   $DIAMOND L" " $GOTO L"0";
 
-static APLCHAR MonLine5[] =
+static APLCHAR MonLine4[] =
   $QUAD_PRO L":"
-  $QUAD_FEATURE L"[" $QUAD_IO L"]" $IS L"1";
-
-static APLCHAR MonLine6[] =
   L"YR" $IS L"(1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN $RHO $RHO L"R";
 
-static APLCHAR MonLine7[] =
+static APLCHAR MonLine5[] =
   L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
 
-static APLCHAR MonLine8[] =
-  L"Z" $IS $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"-YR]" $EACH L"0" $RHO $ENCLOSE L"R";
+static APLCHAR MonLine6[] =
+  L"Z" $IS $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"YR]" $EACH L"0" $RHO $ENCLOSE L"R";
 
 static LPAPLCHAR MonBody[] =
 {MonLine1,
@@ -474,8 +468,6 @@ static LPAPLCHAR MonBody[] =
  MonLine4,
  MonLine5,
  MonLine6,
- MonLine7,
- MonLine8,
 };
 
 MAGIC_FCNOPR MFO_MonRank =
@@ -571,41 +563,35 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  L"Z" $IS L"L (LO " MFON_DydRank L" Y) R;YL;YR;" $QUAD_FEATURE;
+  L"Z" $IS L"L (LO " MFON_DydRank L" Y) R;YL;YR";
 
 static APLCHAR DydLine1[] =
-  $QUAD_FEATURE L"[" $QUAD_IO L"]" $IS L"1";    // We use negative indexing
+  L"(YL YR)" $IS L"(1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
 
 static APLCHAR DydLine2[] =
-  L"(YL YR)" $IS L"(1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
+  L":if 0>YL " $DIAMOND L" YL" $IS L"0" $MAX L"YL+" $RHO $RHO L"L " $DIAMOND L" :end";
 
 static APLCHAR DydLine3[] =
-  L":if 0>YL " $DIAMOND L" YL" $IS L"0" $MAX L"YL+" $RHO $RHO L"L " $DIAMOND L" :end";
+  L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
 
 static APLCHAR DydLine4[] =
-  L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
-
-static APLCHAR DydLine5[] =
-  L"Z" $IS L"(" $ENCLOSE L"[" $IOTA L"-YL] L) LO" $EACH
-                $ENCLOSE L"[" $IOTA L"-YR] R "
+  L"Z" $IS L"(" $ENCLOSE L"[" $IOTA L"YL] L) LO" $EACH
+                $ENCLOSE L"[" $IOTA L"YR] R "
   $DIAMOND L" " $GOTO L"0";
 
-static APLCHAR DydLine6[] =
+static APLCHAR DydLine5[] =
   $QUAD_PRO L":"
-  $QUAD_FEATURE L"[" $QUAD_IO L"]" $IS L"1";    // We use negative indexing
-
-static APLCHAR DydLine7[] =
   L"(YL YR)" $IS L"(1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
 
-static APLCHAR DydLine8[] =
+static APLCHAR DydLine6[] =
   L":if 0>YL " $DIAMOND L" YL" $IS L"0" $MAX L"YL+" $RHO $RHO L"L " $DIAMOND L" :end";
 
-static APLCHAR DydLine9[] =
+static APLCHAR DydLine7[] =
   L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
 
-static APLCHAR DydLine10[] =
-  L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-YL]" $EACH L"0" $RHO $ENCLOSE L"L) LO" $EACH $EACH
-                          $ENCLOSE L"[" $IOTA L"-YR]" $EACH L"0" $RHO $ENCLOSE L"R";
+static APLCHAR DydLine8[] =
+  L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"YL]" $EACH L"0" $RHO $ENCLOSE L"L) LO" $EACH $EACH
+                          $ENCLOSE L"[" $IOTA L"YR]" $EACH L"0" $RHO $ENCLOSE L"R";
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,
@@ -616,8 +602,6 @@ static LPAPLCHAR DydBody[] =
  DydLine6,
  DydLine7,
  DydLine8,
- DydLine9,
- DydLine10,
 };
 
 MAGIC_FCNOPR MFO_DydRank =

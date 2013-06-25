@@ -50,6 +50,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                  aplTypeSub;        // List arg item ...
     APLNELM      aplNELMNam,        // Name arg NELM
                  aplNELMLst,        // List ...
+                 aplNELMNestSub,    // List arg item ...
                  aplNELMSub;        // List arg item ...
     APLRANK      aplRankNam,        // Name arg rank
                  aplRankLst,        // List ...
@@ -292,6 +293,9 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             // Initialize bit index when looping through Booleans
             uBitIndex = 0;
 
+            // Handle nested prototypes
+            aplNELMNestSub = max (aplNELMSub, 1);
+
             // If the list is a global numeric array, ...
             if (IsGlbNum (aplTypeSub))
             {
@@ -383,7 +387,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                 } // End FOR
             } else
             // Loop through the elements of the list arg
-            for (uSub = 0; uSub < aplNELMSub; uSub++)
+            for (uSub = 0; uSub < aplNELMNestSub; uSub++)
             // Split cases based upon the list arg item ptr type
             switch (GetPtrTypeDir (((LPAPLNESTED) lpMemSub)[uSub]))
             {
@@ -492,7 +496,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                      && IsEmpty (aplNELMItm))
                     {
                         // If the list arg is not a singleton, ...
-                        if (!IsSingleton (aplNELMSub))
+                        if (!IsSingleton (aplNELMNestSub))
                             goto INDEX_EXIT;
 
                         // We no longer need this ptr
@@ -1429,7 +1433,7 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
-    lpHeader->NELM       = aplNELMLst;
+    lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankLst;
 #undef  lpHeader
 
@@ -1453,17 +1457,17 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
             break;
 
         case ARRAY_INT:
-            for (uRes = 0; uRes < aplNELMLst; uRes++)
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
                 *((LPAPLINT) lpMemRes)++ = (APLINT) aplLongestNam;
             break;
 
         case ARRAY_FLOAT:
-            for (uRes = 0; uRes < aplNELMLst; uRes++)
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
                 *((LPAPLFLOAT) lpMemRes)++ = *(LPAPLFLOAT) &aplLongestNam;
             break;
 
         case ARRAY_CHAR:
-            for (uRes = 0; uRes < aplNELMLst; uRes++)
+            for (uRes = 0; uRes < aplNELMRes; uRes++)
                 *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestNam;
             break;
 
@@ -1472,7 +1476,7 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
             lpMemNam = VarArrayDataFmBase (lpMemNam);
 
             // If the list arg is empty, copy the name arg prototype to the result
-            if (IsEmpty (aplNELMLst))
+            if (IsEmpty (aplNELMRes))
             {
                 HGLOBAL hSymGlbProto;       // Prototype global memory handle
 
@@ -1590,6 +1594,11 @@ UBOOL ArrayIndexValidZilde_EM
 
             // Skip over the header and dimensions to the data
             lpMemSub = VarArrayDataFmBase (lpMemSub);
+
+            // If non-empty, ensure it's nested
+            if (!IsEmpty (aplNELMSub)
+             && !IsNested (aplTypeSub))
+                goto RANK_EXIT;
 
             // Loop through the items of this list arg index
             for (uSub = 0; uSub < aplNELMSub; uSub++)

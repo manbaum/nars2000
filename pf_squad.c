@@ -431,7 +431,6 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 
             break;
 
-
         case TKT_VARARRAY:
             // Get the right arg global memory handle
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
@@ -452,7 +451,9 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 
     // Common immediate case, value in <aplLongestRht>
 
-    // The only allowed left arg is an empty vector
+    // The only allowed left arg is an empty simple vector
+    //   or an empty nested vector of an empty simple vector
+    //   so as to maintain the identity a{match}({iota}{each}{rho}a){squad}a
 
     // Get the attributes (Type, NELM, and Rank) of the left arg
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -465,9 +466,31 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
     if (!IsEmpty (aplNELMLft))
         goto LENGTH_EXIT;
 
-    // Check for DOMAIN ERROR
-    if (!IsSimpleNH (aplTypeLft))
-        goto DOMAIN_EXIT;
+    // If the left arg is nested, ...
+    if (IsNested (aplTypeLft))
+    {
+        HGLOBAL hGlbLft;            // Left arg global memory handle
+        LPVOID  lpMemLft;           // Ptr to left arg global memory
+        UBOOL   bRet;               // TRUE iff the result is valid
+
+        // Get left arg global ptrs
+        GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+
+        // Skip over header and dimensions to the data
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
+
+        // Confirm that the prototype in the left arg is {zilde}
+        bRet = ArrayIndexValidZilde_EM (lpMemLft, 1, lptkFunc);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+
+        if (!bRet)
+            goto DOMAIN_EXIT;
+    } else
+        // Check for DOMAIN ERROR
+        if (!IsSimpleNH (aplTypeLft))
+            goto DOMAIN_EXIT;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();

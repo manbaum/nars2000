@@ -203,13 +203,13 @@
 
 #define WS_WKSNAME  L"workspaces"       // Name of Workspaces subdirectory under main dir
 
-#define LVER_LEGALCOPYRIGHT_YEARS  L"2006-2011"
+#define LVER_LEGALCOPYRIGHT_YEARS  L"2006-2013"
 #define LVER_COMPANYNAME_STR       L"Sudley Place Software"
 #define LVER_COPYRIGHT1_STR        L"Copyright " WS_UTF16_COPYRIGHT L" " LVER_LEGALCOPYRIGHT_YEARS L" " LVER_COMPANYNAME_STR
 
-#define VER_LEGALCOPYRIGHT_YEARS    "2006-2011"
+#define VER_LEGALCOPYRIGHT_YEARS    "2006-2013"
 #define VER_COMPANYNAME_STR         "Sudley Place Software"
-#define VER_COPYRIGHT1_STR          "Copyright © " VER_LEGALCOPYRIGHT_YEARS " " VER_COMPANYNAME_STR
+#define VER_COPYRIGHT1_STR          "Copyright "    UTF16_COPYRIGHT  " "  VER_LEGALCOPYRIGHT_YEARS  " "  VER_COMPANYNAME_STR
 
 #define PROP_STATUSMSG             L"StatusMsg"
 

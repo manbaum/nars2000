@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -409,7 +409,7 @@ APLFLOAT PrimFnDydBarFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Check for indeterminates:  _ - _  or  ¯_ - ¯_
+    // Check for indeterminates:  _ - _  or  -_ - -_
 
     // If the args are both infinite and of the same signs, ...
     if (IsInfinity (aplFloatLft)
@@ -437,7 +437,7 @@ APLRAT PrimFnDydBarRisRvR
 {
     APLRAT mpqRes = {0};
 
-    // Check for indeterminates:  _ - _  or  ¯_ - ¯_
+    // Check for indeterminates:  _ - _  or  -_ - -_
 
     // If the args are both infinite and of the same signs, ...
     if (mpq_inf_p (&aplRatLft)
@@ -471,7 +471,7 @@ APLVFP PrimFnDydBarVisVvV
 {
     APLVFP mpfRes = {0};
 
-    // Check for indeterminates:  _ - _  or  ¯_ - ¯_
+    // Check for indeterminates:  _ - _  or  -_ - -_
 
     // If the args are both infinite and of the same signs, ...
     if (mpfr_inf_p (&aplVfpLft)

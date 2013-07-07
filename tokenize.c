@@ -1776,7 +1776,9 @@ UBOOL fnPointAcc
         wchCur = INFINITY1;
 
     // Use subroutine
-    bRet = fnPointSub (lptkLocalVars, lpMemPTD, wchCur);
+    if (!fnPointSub (lptkLocalVars, lpMemPTD, wchCur))
+        // Mark as a SYNTAX ERROR
+        lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
 ERROR_EXIT:
     return bRet;
 } // End fnPointAcc
@@ -2005,19 +2007,8 @@ UBOOL fnPointDone
                                       0);
         } // End IF
     } else
-    {
-        // Mark the data as a SYNTAX ERROR
-        tkFlags.TknType = TKT_SYNTERR;
-        tkFlags.ImmType = IMMTYPE_ERROR;
-
-        // Attempt to append as new token, check for TOKEN TABLE FULL,
-        //   and resize as necessary.
-        tkData.tkChar = *lptkLocalVars->lpwszCur;
-        bRet = AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &tkData,
-                                  0);
-    } // End IF/ELSE
+        // Mark as a SYNTAX ERROR
+        lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
 
     goto NORMAL_EXIT;
 
@@ -3041,14 +3032,9 @@ UBOOL GroupDoneCom
     // Ensure proper nesting
     if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL
      || lptkLocalVars->lptkStart[uPrevGroup].tkFlags.TknType NE (UINT) tknTypePrev)
-    {
-        // Save the error caret position
-        lptkLocalVars->lpMemPTD->uCaret = lptkLocalVars->uChar;
-
-        bRet = FALSE;
-
-        goto SYNTAX_EXIT;
-    } else
+        // Mark as a SYNTAX ERROR
+        lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
+    else
     {
         LPTOKEN    lptkNext;
         TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
@@ -3071,12 +3057,6 @@ UBOOL GroupDoneCom
         lptkLocalVars->lpHeader->PrevGroup = lptkLocalVars->lptkStart[uPrevGroup].tkData.tkIndex;
     } // End IF/ELSE
 
-    goto NORMAL_EXIT;
-
-SYNTAX_EXIT:
-    // Save the error message
-    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-NORMAL_EXIT:
     return bRet;
 } // End GroupDoneCom
 #undef  APPEND_NAME
@@ -4217,17 +4197,11 @@ UBOOL CheckGroupSymbols_EM
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    if ((!OptionFlags.bCheckGroup)
-     || lptkLocalVars->lpHeader->PrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL)
-        return TRUE;
-
-    // Save the error caret position
-    lptkLocalVars->lpMemPTD->uCaret = lptkLocalVars->uChar;
-
-    // Save the error message
-    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
-    return FALSE;
+    if (OptionFlags.bCheckGroup
+     && lptkLocalVars->lpHeader->PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
+        // Mark as a SYNTAX ERROR
+        lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
+    return TRUE;
 } // End CheckGroupSymbols_EM
 #undef  APPEND_NAME
 
@@ -4444,6 +4418,30 @@ UBOOL AppendNewToken_EM
      int           iCharOffset)         // Offset from lpwszCur of the token (where the caret goes)
 
 {
+    // If this token is an SOS, ...
+    if (lptkFlags->TknType EQ TKT_SOS)
+    {
+        TKFLAGS    tkFlags = {0};       // Token flags for AppendNewToken_EM
+        TOKEN_DATA tkData = {0};        // Token data  ...
+
+        // If the last EOS token is a SYNTAX ERROR, ...
+        if (lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr)
+        {
+            // Append a SYNTAX ERROR token
+            tkFlags.TknType = TKT_SYNTERR;
+////////////tkFlags.ImmType = IMMTYPE_ERROR;
+
+            // Attempt to append as new token, check for TOKEN TABLE FULL,
+            //   and resize as necessary.
+            tkData.tkChar = *lptkLocalVars->lpwszCur;
+            if (!AppendNewToken_EM (lptkLocalVars,
+                                   &tkFlags,
+                                   &tkData,
+                                    0))
+                return FALSE;
+        } // End IF
+    } // End IF
+
     // Check for TOKEN TABLE FULL
     if (((lptkLocalVars->lpHeader->TokenCnt + 1) * sizeof (TOKEN) + sizeof (TOKEN_HEADER))
       > (int) MyGlobalSize (lptkLocalVars->hGlbToken))

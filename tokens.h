@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -173,8 +173,13 @@ typedef struct tagTKFLAGS
          ImmType:4,         // 00000F00:  Type of immediate data (see IMM_TYPES) (if .TknType is TKT_xxxIMMED)
          NoDisplay:1,       // 00001000:  Do not display this token
          SysNSLvl:3,        // 0000E000:  System namespace level (0 = none, 1 = top)
-         :16;               // FFFF0000:  Available bits
+         bSyntErr:1,        // 00010000:  TRUE iff this stmt is a SYNTAX ERROR
+         :15;               // FFFE0000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
+
+// N.B.:  Whenever changing the above enum (TKFLAGS),
+//   be sure to make a corresponding change to
+//   the values assigned to <tkZero> and <tkBlank> in <externs.h>.
 
 
 typedef struct tagLOCATION

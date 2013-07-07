@@ -1,6 +1,20 @@
 Version 0.4.0.xx consists of the following Builds:
 
 
+Build #1123 -- Version 0.4.0.xx
+-------------------------------
+
+* Reduce Tokenization Failures
+
+Directory trunk:
+
+TOKENIZE.C:
+  Use <bSyntErr> flag to mark stmts as SYNTAX ERRORs instead of failing tokenization.
+
+TOKENS.H:
+  Define flag to mark a stmt as a SYNTAX ERROR.
+
+
 Build #1122 -- Version 0.4.0.xx
 -------------------------------
 

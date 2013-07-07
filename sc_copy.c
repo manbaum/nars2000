@@ -192,8 +192,8 @@ UBOOL CmdCopy_EM
                            &lpSymLink,              // Ptr to ptr to SYMENTRY link
                             wszVersion,             // Ptr to workspace version text
                             lpDict,                 // Ptr to workspace dictionary
-                            lpwszTemp,              // Ptr to temporary storage
-                            uMaxSize)               // Maximum size of lpwszTemp
+                            lpMemPTD,               // Ptr to PerTabData global memory
+                            uMaxSize)               // Maximum size of lpMemPTD->lpwszTemp
                     EQ -1)                          // If it's an error, ...
                 goto ERRMSG_EXIT;
 
@@ -206,8 +206,8 @@ UBOOL CmdCopy_EM
                                &lpSymLink,              // Ptr to ptr to SYMENTRY link
                                 wszVersion,             // Ptr to workspace version text
                                 lpDict,                 // Ptr to workspace dictionary
-                                lpwszTemp,              // Ptr to temporary storage
-                                uMaxSize))              // Maximum size of lpwszTemp
+                                lpMemPTD,               // Ptr to PerTabData global memory
+                                uMaxSize))              // Maximum size of lpMemPTD->lpwszTemp
             {
                 case -1:        // We encountered an error
                 case 1:         // No match???
@@ -247,8 +247,8 @@ UBOOL CmdCopy_EM
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
                                     wszVersion,     // Ptr to workspace version text
                                     lpDict,         // Ptr to workspace dictionary
-                                    lpwszTemp,      // Ptr to temporary storage
-                                    uMaxSize))      // Maximum size of lpwszTemp
+                                    lpMemPTD,       // Ptr to PerTabData global memory
+                                    uMaxSize))      // Maximum size of lpMemPTD->lpwszTemp
                 {
                     case -1:
                         goto ERRMSG_EXIT;
@@ -275,8 +275,8 @@ UBOOL CmdCopy_EM
                                    &lpSymLink,      // Ptr to ptr to SYMENTRY link
                                     wszVersion,     // Ptr to workspace version text
                                     lpDict,         // Ptr to workspace dictionary
-                                    lpwszTemp,      // Ptr to temporary storage
-                                    uMaxSize))      // Maximum size of lpwszTemp
+                                    lpMemPTD,       // Ptr to PerTabData sglobal memory
+                                    uMaxSize))      // Maximum size of lpMemPTD->lpwszTemp
                 {
                     case -1:        // We encountered an error
                         goto ERRMSG_EXIT;
@@ -409,8 +409,8 @@ int CopyWsVars
      LPSYMENTRY   *lplpSymLink,             // Ptr to ptr to SYMENTRY link
      LPWCHAR       lpwszVersion,            // Ptr to workspace version text
      LPDICTIONARY  lpDict,                  // Ptr to workspace dictionary
-     LPWCHAR       lpwszTemp,               // Ptr to temporary storage
-     UINT          uMaxSize)                // Maximum size of lpwszTemp
+     LPPERTABDATA  lpMemPTD,                // Ptr to PerTabData global memory
+     UINT          uMaxSize)                // Maximum size of lpMemPTD->lpwszTemp
 
 {
     WCHAR        wszCount[8];               // Save area for formatted uSymVar/Fcn counter
@@ -435,7 +435,7 @@ int CopyWsVars
         wsprintfW (wszCount, L"%d", uCnt);
 
         // Point to the name in the workspace
-        lpwNameInWrk = lpwszTemp;
+        lpwNameInWrk = lpMemPTD->lpwszTemp;
 
         // Read the next string
         lpwszProf =
@@ -509,7 +509,7 @@ int CopyWsVars
             // Parse the value into aplLongestObj and aplTypeObj
             lpwDataInWrk =
               ParseSavedWsVar_EM (lpwDataInWrk,     // Ptr to input buffer
-                                  uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
+                                  uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpMemPTD->lpwszTemp), // Maximum size of lpwDataInWrk
                                  &lpaplLongestObj,  // Ptr to ptr to output element
                                  &aplTypeObj,       // Ptr to storage type (may be NULL)
                                  &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
@@ -571,8 +571,8 @@ int CopyWsFcns
      LPSYMENTRY   *lplpSymLink,             // Ptr to ptr to SYMENTRY link
      LPWCHAR       lpwszVersion,            // Ptr to workspace version text
      LPDICTIONARY  lpDict,                  // Ptr to workspace dictionary
-     LPWCHAR       lpwszTemp,               // Ptr to temporary storage
-     UINT          uMaxSize)                // Maximum size of lpwszTemp
+     LPPERTABDATA  lpMemPTD,                // Ptr to PerTabData global memory
+     UINT          uMaxSize)                // Maximum size of lpMemPTD->lpwszTemp
 
 {
     WCHAR        wszCount[8];               // Save area for formatted uSymVar/Fcn counter
@@ -583,6 +583,10 @@ int CopyWsFcns
                  uCnt;                      // Loop counter
     LPSYMENTRY   lpSymEntry;                // Ptr to name in command's SYMENTRY
     STFLAGS      stFlags = {0};             // STE flags
+    APLU3264     uLen;                      // Protection length
+    UBOOL        bRet;                      // TRUE iff the result is valid
+    LPWCHAR      lpwszOrigTemp;             // Original lpMemPTD->lpwszTemp
+    VARS_TEMP_OPEN
 
     // Get the [Fcns.0] count
     uSymFcn =
@@ -599,7 +603,8 @@ int CopyWsFcns
         wsprintfW (wszCount, L"%d", uCnt);
 
         // Point to the name in the workspace
-        lpwNameInWrk = lpwszTemp;
+        lpwNameInWrk = lpMemPTD->lpwszTemp;
+        CHECK_TEMP_OPEN
 
         // Read the next string
         lpwszProf =
@@ -650,22 +655,34 @@ int CopyWsFcns
 ////////////////lpSymEntry->stFlags.stNameType = nameType;          // Set in ParseSavedWsFcn_EM
             } // End IF
 
+            // Protect the text
+            lpwszOrigTemp = lpMemPTD->lpwszTemp;
+            uLen = (&lpwDataInWrk[lstrlenW (lpwDataInWrk)] - lpMemPTD->lpwszTemp);
+            lpMemPTD->lpwszTemp += uLen;
+
+            EXIT_TEMP_OPEN
+
             // Parse the line into lpSymEntry->stData
-            if (!ParseSavedWsFcn_EM (lpwDataInWrk,      // Ptr to input buffer
-                                     uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpwszTemp), // Maximum size of lpwDataInWrk
-                                     lpSymEntry,        // Ptr to STE for the object
-                                     nameType,          // Function name type (see NAME_TYPES)
-                                     hWndEC,            // Edit Ctrl window handle
-                                     lplpSymLink,       // Ptr to ptr to SYMENTRY link
-                                     lpwszVersion,      // Ptr to workspace version text
-                                     lpDict,            // Ptr to workspace dictionary
-                                     lplpwErrMsg))      // Ptr to ptr to (constant) error message text
+            bRet = ParseSavedWsFcn_EM (lpwDataInWrk,      // Ptr to input buffer
+                                       uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpMemPTD->lpwszTemp), // Maximum size of lpwDataInWrk
+                                       lpSymEntry,        // Ptr to STE for the object
+                                       nameType,          // Function name type (see NAME_TYPES)
+                                       hWndEC,            // Edit Ctrl window handle
+                                       lplpSymLink,       // Ptr to ptr to SYMENTRY link
+                                       lpwszVersion,      // Ptr to workspace version text
+                                       lpDict,            // Ptr to workspace dictionary
+                                       lplpwErrMsg);      // Ptr to ptr to (constant) error message text
+            CHECK_TEMP_OPEN
+
+            if (!bRet)
                 goto ERRMSG_EXIT;
             // If we're copying a single name, ...
             if (!bAllNames)
                 // Mark as successful (we found a match)
                 return 0;
         } // End IF
+
+        EXIT_TEMP_OPEN
     } // End FOR
 
     if (!bAllNames)

@@ -692,17 +692,34 @@ UBOOL LoadWorkspace_EM
                 // This can happen if a previous Function Array included it as a global (:nnn).
                 if (!lpSymEntry->stFlags.Value
                  || lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
+                {
+                    LPWCHAR lpwszOrigTemp;                      // Original lpMemPTD->lpwszTemp
+
+                    // Protect the text
+                    lpwszOrigTemp = lpMemPTD->lpwszTemp;
+                    lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);
+
+                    EXIT_TEMP_OPEN
+
                     // Parse the line into lpSymEntry->stData
-                    if (!ParseSavedWsFcn_EM (lpwSrc,        // Ptr to input buffer
-                                             uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart), // Maximum size of lpwSrc
-                                             lpSymEntry,    // Ptr to STE for the object
-                                             nameType,      // Function name type (see NAME_TYPES)
-                                             hWndEC,        // Edit Ctrl window handle
-                                            &lpSymLink,     // Ptr to ptr to SYMENTRY link
-                                             wszVersion,    // Workspace version text
-                                             lpDict,        // Ptr to workspace dictionary
-                                            &lpwErrMsg))    // Ptr to ptr to (constant) error message text
+                    bRet = ParseSavedWsFcn_EM (lpwSrc,          // Ptr to input buffer
+                                               uMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart),  // Maximum size of lpwSrc
+                                               lpSymEntry,      // Ptr to STE for the object
+                                               nameType,        // Function name type (see NAME_TYPES)
+                                               hWndEC,          // Edit Ctrl window handle
+                                              &lpSymLink,       // Ptr to ptr to SYMENTRY link
+                                               wszVersion,      // Workspace version text
+                                               lpDict,          // Ptr to workspace dictionary
+                                              &lpwErrMsg);      // Ptr to ptr to (constant) error message text
+                    // Restore the original ptr
+                    lpMemPTD->lpwszTemp = lpwszOrigTemp;
+
+                    CHECK_TEMP_OPEN
+
+                    if (!bRet)
                         goto ETO_ERRMSG_EXIT;
+                } // End IF
+
                 EXIT_TEMP_OPEN
             } // End FOR
         } // End FOR

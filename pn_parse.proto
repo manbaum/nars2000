@@ -1,10 +1,2 @@
 int pn_yyparse (LPPNLOCALVARS lppnLocalVars);
 UBOOL ParsePointNotation (LPPNLOCALVARS lppnLocalVars);
-void PN_NumAcc (LPPNLOCALVARS lppnLocalVars, char chCur);
-void PN_NumCalc (LPPNLOCALVARS lppnLocalVars, LPPN_YYSTYPE lpYYArg, UBOOL bUseRat);
-void PN_ChrAcc (LPPNLOCALVARS lppnLocalVars, char chCur);
-LPPN_YYSTYPE PN_MakeBasePoint (LPPNLOCALVARS lppnLocalVars, LPPN_YYSTYPE lpYYBase, LPPN_YYSTYPE lpYYAlphaInt);
-LPPN_YYSTYPE PN_MakeEulerPoint (LPPNLOCALVARS lppnLocalVars, LPPN_YYSTYPE lpYYMultiplier, LPPN_YYSTYPE lpYYExponent);
-LPPN_YYSTYPE PN_MakeExpPoint (LPPNLOCALVARS lppnLocalVars, LPPN_YYSTYPE lpYYArg, LPPN_YYSTYPE lpYYExponent);
-LPPN_YYSTYPE PN_MakeVfpPoint (LPPNLOCALVARS lppnLocalVars, LPPN_YYSTYPE lpYYArg, LPPN_YYSTYPE lpYYExponent);
-LPPN_YYSTYPE PN_MakePiPoint (LPPNLOCALVARS lppnLocalVars, LPPN_YYSTYPE lpYYMultiplier, LPPN_YYSTYPE lpYYExponent);

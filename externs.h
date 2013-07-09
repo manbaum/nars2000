@@ -2222,6 +2222,18 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 #endif
 ;
 
+//***************************************************************************
+//  Point Notation Prototoypes
+//***************************************************************************
+
+EXTERN
+PNNUMTYPE aNumTypePromote[PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH];
+
+typedef void (*PN_ACTION)(LPPN_YYSTYPE);
+
+EXTERN
+PN_ACTION aNumTypeAction [PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH];
+
 
 #include "typemote.h"
 #include "primes.h"

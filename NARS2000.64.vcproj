@@ -399,6 +399,10 @@
                 >
             </File>
             <File
+                RelativePath=".\fh_proc.c"
+                >
+            </File>
+            <File
                 RelativePath="&quot;$(OutDir)\fh_parse.c&quot;"
                 >
             </File>
@@ -711,6 +715,10 @@
                 >
             </File>
             <File
+                RelativePath=".\pl_proc.c"
+                >
+            </File>
+            <File
                 RelativePath="&quot;$(OutDir)\pl_parse.c&quot;"
                 >
             </File>
@@ -733,6 +741,10 @@
                         AdditionalOptions=""
                     />
                 </FileConfiguration>
+            </File>
+            <File
+                RelativePath=".\pn_proc.c"
+                >
             </File>
             <File
                 RelativePath="&quot;$(OutDir)\pn_parse.c&quot;"

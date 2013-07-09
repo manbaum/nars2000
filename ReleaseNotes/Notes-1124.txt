@@ -1,6 +1,3 @@
-Version 0.4.0.xx consists of the following Builds:
-
-
 Build #1124 -- Version 0.4.0.xx
 -------------------------------
 
@@ -59,47 +56,3 @@ PN_PARSE.Y:
 PN_PROC.C:
   Define new file to hold ancillary functions.
   Move all ancillary functions to <pn_proc.c>.
-
-
-Build #1123 -- Version 0.4.0.xx
--------------------------------
-
-* Reduce Tokenization Failures
-
-Directory trunk:
-
-TOKENIZE.C:
-  Use <bSyntErr> flag to mark stmts as SYNTAX ERRORs instead of failing tokenization.
-
-TOKENS.H:
-  Define flag to mark a stmt as a SYNTAX ERROR.
-
-
-Build #1122 -- Version 0.4.0.xx
--------------------------------
-
-* Fix Bug In Temp Variable Re-use
-
-Directory trunk:
-
-SC_COPY.C:
-SC_LOAD.C:
-  Protect data in <lpMemPTD->lpwszTemp> around call to <ParseSavedWsFcns>.
-  Use <xxx_TEMP_OPEN> macros around calls to <ParseSavedWsFcns_EM> to catch bugs.
-
-
-Build #1121 -- Version 0.4.0.xx
--------------------------------
-
-* Fix More Code Page Bugs
-
-Directory trunk:
-
-DEFINES.H:
-MAIN.RC:
-PF_BAR.C:
-  Replace ASCII chars in the range [128, 255] with the appropriate UTF16_xxxx and WS_UTF16_xxxx defines.
-
-VER.RC:
-  Increment version # to 0.4.0.xx.
-  Replace ASCII chars in the range [128, 255] with the appropriate UTF16_xxxx and WS_UTF16_xxxx defines.

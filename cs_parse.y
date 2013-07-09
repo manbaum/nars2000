@@ -23,7 +23,6 @@
 %{
 #define STRICT
 #include <windows.h>
-#include <stdio.h>
 #include "headers.h"
 
 ////#define YYLEX_DEBUG

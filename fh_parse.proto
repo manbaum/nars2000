@@ -1,7 +1,3 @@
 int fh_yyparse (LPFHLOCALVARS lpfhLocalVars);
 UBOOL ParseFcnHeader (HWND hWndEC, HGLOBAL hGlbTknHdr, LPFHLOCALVARS lpfhLocalVars, UBOOL bDisplayErr);
-BOOL ValidSysName (LPTOKEN lptkName);
-void InitHdrStrand (LPFH_YYSTYPE lpYYArg);
-LPFH_YYSTYPE PushHdrStrand_YY (LPFH_YYSTYPE lpYYArg);
-LPFH_YYSTYPE MakeHdrStrand_YY (LPFH_YYSTYPE lpYYArg);
-BOOL GetOprName_EM (LPFH_YYSTYPE lpYYArg);
+void fh_yyerror (LPFHLOCALVARS lpfhLocalVars, LPCHAR s);

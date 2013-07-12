@@ -448,7 +448,7 @@ static APLCHAR MonLine2[] =
   L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
 
 static APLCHAR MonLine3[] =
-  L"Z" $IS L"LO" $EACH $ENCLOSE L"[" $IOTA L"YR] R "
+  L"Z" $IS L"LO" $EACH $ENCLOSE L"[(-YR)" $TAKE $IOTA $RHO $RHO L"R] R "
   $DIAMOND L" " $GOTO L"0";
 
 static APLCHAR MonLine4[] =
@@ -459,7 +459,7 @@ static APLCHAR MonLine5[] =
   L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
 
 static APLCHAR MonLine6[] =
-  L"Z" $IS $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[" $IOTA L"YR]" $EACH L"0" $RHO $ENCLOSE L"R";
+  L"Z" $IS $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[(-YR)" $TAKE $IOTA $RHO $RHO L"R]" $EACH L"0" $RHO $ENCLOSE L"R";
 
 static LPAPLCHAR MonBody[] =
 {MonLine1,
@@ -575,8 +575,8 @@ static APLCHAR DydLine3[] =
   L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
 
 static APLCHAR DydLine4[] =
-  L"Z" $IS L"(" $ENCLOSE L"[" $IOTA L"YL] L) LO" $EACH
-                $ENCLOSE L"[" $IOTA L"YR] R "
+  L"Z" $IS L"(" $ENCLOSE L"[(-YL)" $TAKE $IOTA $RHO $RHO L"L] L) LO" $EACH
+                $ENCLOSE L"[(-YR)" $TAKE $IOTA $RHO $RHO L"R] R "
   $DIAMOND L" " $GOTO L"0";
 
 static APLCHAR DydLine5[] =
@@ -590,8 +590,8 @@ static APLCHAR DydLine7[] =
   L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
 
 static APLCHAR DydLine8[] =
-  L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"YL]" $EACH L"0" $RHO $ENCLOSE L"L) LO" $EACH $EACH
-                          $ENCLOSE L"[" $IOTA L"YR]" $EACH L"0" $RHO $ENCLOSE L"R";
+  L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[(-YL)" $TAKE $IOTA $RHO $RHO L"L]" $EACH L"0" $RHO $ENCLOSE L"L) LO" $EACH $EACH
+                          $ENCLOSE L"[(-YR)" $TAKE $IOTA $RHO $RHO L"R]" $EACH L"0" $RHO $ENCLOSE L"R";
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,

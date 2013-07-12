@@ -8421,8 +8421,9 @@ PL_YYLEX_START:
 
                     return OP3;
 
-                case 'E':               // If the next token is EOL/EOS, or
-                case '2':               // If the next token is a dyadic operator,
+                case 'E':               // If the next token is EOL/EOS,
+                case 'V':               //   a variable, or
+                case '2':               //   a dyadic operator,
                                         //   then this token is a function
                     lpYYLval->tkToken.tkFlags.TknType = TKT_FCNIMMED;
                     lpYYLval->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
@@ -8430,7 +8431,6 @@ PL_YYLEX_START:
                     return PRIMFCN;
 
                 case '3':               // If the next token is an ambiguous operator,
-                case 'V':               //   or a variable
                 case '0':               //   or a niladic function,
                     return OP3;         //   then this token is ambiguous
 

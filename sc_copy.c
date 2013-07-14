@@ -52,8 +52,7 @@ UBOOL CmdCopy_EM
                  wcTmp;                     // Temporary char
     LPWCHAR      lpwCmd,                    // Ptr to command line
                  lpwErrMsg,                 // Ptr to (constant) error message text
-                 lpwNotFound,               // Ptr to list of names not found
-                 lpwszTemp;                 // Ptr to temporary storage
+                 lpwNotFound;               // Ptr to list of names not found
     UINT         uMaxSize;                  // Maximum size of lpwszTemp
     int          iCurTabID,                 // Tab ID
                  iSrcTabID,                 // Source tab ID
@@ -65,14 +64,10 @@ UBOOL CmdCopy_EM
     LPSYMENTRY   lpSymLink = NULL;          // Anchor of SYMENTRY links for [Globals] values
                                             //   so we may delete them easily
     LPDICTIONARY lpDict = NULL;             // Ptr to workspace dictionary
-    VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // Get ptr to temporary storage & maximum size
-    lpwszTemp = lpMemPTD->lpwszTemp;
-    CHECK_TEMP_OPEN
     uMaxSize  = lpMemPTD->uTempMaxSize;
 
     // Get the Session Manager's hWndEC
@@ -353,8 +348,6 @@ NORMAL_EXIT:
         // Free the dictionary
         ProfileUnload (lpDict); lpDict = NULL;
     } // End IF
-
-    EXIT_TEMP_OPEN
 
     return bRet;
 } // End CmdCopy_EM

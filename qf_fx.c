@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,7 +200,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             goto RIGHT_DOMAIN_EXIT;
 
                         // Ensure the item is simple char
-                        if (!IsSimpleChar (aplTypeItmRht))
+                        if (!IsImmChr (immTypeItmRht))
                             goto RIGHT_DOMAIN_EXIT;
                     } // End IF/ELSE
                 } // End FOR

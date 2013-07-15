@@ -1,6 +1,18 @@
 Version 0.4.0.xx consists of the following Builds:
 
 
+Build #1128 -- Version 0.4.0.xx
+-------------------------------
+
+* Fix Bug In []FX
+
+Directory trunk:
+
+QF_FX.C:
+  Update copyright year.
+  Fix bug in <SysFnMonFX_EM_YY> when fixing a function from a nested vector with a scalar item.
+
+
 Build #1127 -- Version 0.4.0.xx
 -------------------------------
 

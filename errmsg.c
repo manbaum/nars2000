@@ -254,10 +254,13 @@ void ErrorMessageDirect
                 break;
 
             case DFNTYPE_EXEC:
+            case DFNTYPE_ERRCTRL:
                 // Unwind to non-execute level
                 for (lpSISPrv = lpSISCur,
                        uExecCnt = 0;
-                     lpSISPrv && lpSISPrv->DfnType EQ DFNTYPE_EXEC;
+                     lpSISPrv
+                  && (lpSISPrv->DfnType EQ DFNTYPE_EXEC
+                   || lpSISPrv->DfnType EQ DFNTYPE_ERRCTRL);
                      lpSISPrv = lpSISPrv->lpSISPrv,
                        uExecCnt++)
                     ;

@@ -43,7 +43,7 @@
 
 void BreakMessage
     (HWND         hWndSM,       // SM window handle
-     LPSIS_HEADER lpSISCur)     // Ptr to current SIS entry
+     LPSIS_HEADER lpSISCur)     // Ptr to current SIS entry (may be NULL if none)
 
 {
     LPAPLCHAR    lpMemName;     // Ptr to function name global memory
@@ -59,20 +59,26 @@ void BreakMessage
     // Save the event type
     SetEventTypeMessage (EVENTTYPE_BREAK, NULL, NULL);
 
-    // Mark as suspended
-    lpSISCur->Suspended = TRUE;
+    // If it's valid, ...
+    if (lpSISCur)
+    {
+        // Mark as suspended
+        lpSISCur->Suspended = TRUE;
 
-    // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 
-    // Format the name and line #
-    aplNELMRes =
-      wsprintfW (lpMemPTD->lpwszTemp,
-                 L"%s[%d]",
-                 lpMemName,
-                 lpSISCur->CurLineNum);
-    // We no longer need this ptr
-    MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
+        // Format the name and line #
+        aplNELMRes =
+          wsprintfW (lpMemPTD->lpwszTemp,
+                     L"%s[%d]",
+                     lpMemName,
+                     lpSISCur->CurLineNum);
+        // We no longer need this ptr
+        MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
+    } else
+        // Mark as no leading text
+        aplNELMRes = 0;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
@@ -104,7 +110,7 @@ void BreakMessage
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimension to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the function name[line #] to the result
     CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, (APLU3264) aplNELMRes);
@@ -355,7 +361,7 @@ void ErrorMessageDirect
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimension to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the error message to the result
     CopyMemoryW (lpMemRes, lpwszMsg, uErrMsgLen);

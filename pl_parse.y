@@ -7814,10 +7814,10 @@ EXIT_TYPES ParseLine
           || lpSISCur->DfnType EQ DFNTYPE_FCN))
             break;
 
-        // If called from a user-defined function/operator, ...
-        if (lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt)
-            // Signal an error
-            BreakMessage (hWndSM, lpSISCur);
+        // Signal an error
+        BreakMessage (hWndSM,
+                      (lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt) ? lpSISCur
+                                                                   : NULL);
     } // End IF
 
     if (uRet EQ 0 || uError EQ ERRORCODE_ALX)

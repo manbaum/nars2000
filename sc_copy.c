@@ -665,14 +665,14 @@ int CopyWsFcns
                                        lpwszVersion,      // Ptr to workspace version text
                                        lpDict,            // Ptr to workspace dictionary
                                        lplpwErrMsg);      // Ptr to ptr to (constant) error message text
-            CHECK_TEMP_OPEN
-
             if (!bRet)
                 goto ERRMSG_EXIT;
             // If we're copying a single name, ...
             if (!bAllNames)
                 // Mark as successful (we found a match)
                 return 0;
+
+            CHECK_TEMP_OPEN
         } // End IF
 
         EXIT_TEMP_OPEN

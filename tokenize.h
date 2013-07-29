@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -171,9 +171,11 @@ typedef UBOOL (*TK_ACTION) (LPTKLOCALVARS);
 typedef struct tagTK_ACTSTR
 {
     TKROWINDICES iNewState;         // 00:  New state (see TKROW_INDICES)
-    TK_ACTION    fnAction1;         // 04:  Primary action
-    TK_ACTION    fnAction2;         // 08:  Secondary action
-                                    // 0C:  Length
+    TK_ACTION    fnAction1,         // 04:  Primary action
+                 fnAction2,         // 08:  Secondary action
+                 scAction1,         // 0C:  Primary action
+                 scAction2;         // 10:  Secondary action
+                                    // 14:  Length
 } TKACTSTR;
 
 

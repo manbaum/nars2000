@@ -1005,17 +1005,14 @@ UBOOL SyntaxColor
     UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     UINT         uChar,             // Loop counter
                  uCharIni;          // Initial counter
-    TK_ACTION    fnAction1_EM,      // Ptr to 1st action
-                 fnAction2_EM;      // ...    2nd ...
+    TK_ACTION    scAction1_EM,      // Ptr to 1st action
+                 scAction2_EM;      // ...    2nd ...
     TKLOCALVARS  tkLocalVars = {0}; // Local vars
     WCHAR        wchOrig;           // The original char
     TKCOLINDICES tkColInd;          // The TKCOL_* of the translated char
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     HGLOBAL      hSyntClr = NULL;   // Syntax Color global memory handle
     LPSCINDICES  lpSyntClr = NULL;  // Ptr to Syntax Color entries
-
-    // Avoid re-entrant code
-    EnterCriticalSection (&CSOTokenize);
 
 ////LCLODS ("Entering <SyntaxColor>\r\n");
 
@@ -1124,18 +1121,18 @@ UBOOL SyntaxColor
             tkLocalVars.lpMemClrNxt->colIndex = tkColInd;
 
         // Get primary action and new state
-        fnAction1_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].fnAction1;
-        fnAction2_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].fnAction2;
+        scAction1_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].scAction1;
+        scAction2_EM = fsaActTableTK[tkLocalVars.State[0]][tkColInd].scAction2;
         SetTokenStatesTK (&tkLocalVars, fsaActTableTK[tkLocalVars.State[0]][tkColInd].iNewState);
 
         // Check for primary action
-        if (fnAction1_EM
-         && !(*fnAction1_EM) (&tkLocalVars))
+        if (scAction1_EM
+         && !(*scAction1_EM) (&tkLocalVars))
             goto ERROR_EXIT;
 
         // Check for secondary action
-        if (fnAction2_EM
-         && !(*fnAction2_EM) (&tkLocalVars))
+        if (scAction2_EM
+         && !(*scAction2_EM) (&tkLocalVars))
             goto ERROR_EXIT;
 
         // Split cases based upon the return code
@@ -1199,9 +1196,6 @@ NORMAL_EXIT:
     } // End IF
 CRIT_EXIT:
 ////LCLODS ("Exiting  <SyntaxColor>\r\n");
-
-    // Release the Critical Section
-    LeaveCriticalSection (&CSOTokenize);
 
     return bRet;
 } // End SyntaxColor

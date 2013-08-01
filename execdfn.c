@@ -2052,38 +2052,40 @@ UBOOL InitFcnSTEs
         // Split cases based upon the function count
         if (TknCount EQ 1)
         {
-            // If the function is immediate, ...
-            if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNIMMED)
+            // Split cases based upon the token type
+            switch (lpYYArg->tkToken.tkFlags.TknType)
             {
-                // Clear the STE flags
-                *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
+                case TKT_FCNIMMED:
+                    // Clear the STE flags
+                    *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 
-                (*lplpSymEntry)->stFlags.Imm        = TRUE;
-                (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
-                (*lplpSymEntry)->stFlags.Value      = TRUE;
-                (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
-                (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
-////////////////(*lplpSymEntry)->stFlags.UsrDfn     = FALSE;            // Already zero from above
-////////////////(*lplpSymEntry)->stFlags.DfnAxis    = FALSE;            // Already zero from above
-////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
-                (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
-            } else
-            {
-                // If the token type is a named function/operator, ...
-                if (IsTknTypeNamedFcnOpr (lpYYArg->tkToken.tkFlags.TknType))
-                {
+                    (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                    (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
+                    (*lplpSymEntry)->stFlags.Value      = TRUE;
+                    (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                    (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
+////////////////////(*lplpSymEntry)->stFlags.UsrDfn     = FALSE;            // Already zero from above
+////////////////////(*lplpSymEntry)->stFlags.DfnAxis    = FALSE;            // Already zero from above
+////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
+                    (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
+
+                    break;
+
+                case TKT_FCNNAMED:
                     (*lplpSymEntry)->stFlags            = lpYYArg->tkToken.tkData.tkSym->stFlags;
                     (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
-                // If the token type is named, ...
-                } else
-                // If the token type is an unnamed function/operator, ...
-                if (IsTknTypeFcnOpr (lpYYArg->tkToken.tkFlags.TknType))
+
+                    break;
+
+                case TKT_FCNARRAY:
                 {
                     HGLOBAL      hGlbDfnHdr;
                     LPDFN_HEADER lpMemDfnHdr;
 
                     // Copy the HGLOBAL
                     hGlbDfnHdr = lpYYArg->tkToken.tkData.tkGlbData;
+
+                    Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -2103,9 +2105,13 @@ UBOOL InitFcnSTEs
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-                } else
-                    DbgStop ();     // We shoudl never get here
-            } // End IF/ELSE
+
+                    break;
+                } // End TKT_FCNARRAY
+
+                defstop
+                    DbgStop ();     // We should never get here
+            } // End SWITCH
         } else
         {
             APLUINT           ByteRes;          // # bytes in the result
@@ -2117,7 +2123,7 @@ UBOOL InitFcnSTEs
             // If the token is a global, ...
             if (!IsTknImmed (&lpYYArg->tkToken))
             // Split cases based upon the signature
-            switch (GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkSym))
+            switch (GetSignatureGlb_PTB (lpYYArg->tkToken.tkData.tkVoid))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                 case DFN_HEADER_SIGNATURE:

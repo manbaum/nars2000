@@ -8197,19 +8197,19 @@ PL_YYLEX_START:
                     // Call this one TKT_OP1NAMED
                     lpYYLval->tkToken.tkFlags.TknType = TKT_OP1NAMED;
 
-                    return NAMEOP1;
+                    goto PL_YYLEX_NAMEOP1;
 
                 case NAMETYPE_OP2:
                     // Call this one TKT_OP2NAMED
                     lpYYLval->tkToken.tkFlags.TknType = TKT_OP2NAMED;
 
-                    return NAMEOP2;
+                    goto PL_YYLEX_NAMEOP2;
 
                 case NAMETYPE_OP3:
                     // Call this one TKT_OP3NAMED
                     lpYYLval->tkToken.tkFlags.TknType = TKT_OP3NAMED;
 
-                    return NAMEOP3;
+                    goto PL_YYLEX_NAMEOP3;
 
                 case NAMETYPE_TRN:
                     // If the previous token is TKT_ASSIGN, ...
@@ -8282,32 +8282,39 @@ PL_YYLEX_START:
                 return NUMSTRAND;
 
         case TKT_OP1NAMED:
+PL_YYLEX_NAMEOP1:
             // Check for / or /[I] or /[A]
-            if (CheckNullOp3 (lpplLocalVars))
+            if (CheckNullOp3 (lpYYLval, lpplLocalVars))
                 goto PL_YYLEX_START;    // Ignore this token
             else
                 return NAMEOP1;
 
         case TKT_OP2NAMED:
+PL_YYLEX_NAMEOP2:
             return NAMEOP2;
 
         case TKT_OP3NAMED:
+PL_YYLEX_NAMEOP3:
             // Lookahead to see if this ambiguous symbol is adjacent to
+            //   a function or monadic operator (return NAMEOP1), or
+            //   a left paren                   (return NAMEFCN), or
+            //   a dyadic operator              (return NAMEFCN), or
+            //   an ambiguous operator          (return NAMEOP3), or
+            //   a variable or niladic function (return NAMEFCN), or
             //   an assignment arrow            (return NAMEOP3ASSIGN)
 
-            // Split cases based upon the lookahead result
-            switch (LookaheadAdjacent (lpplLocalVars, FALSE, FALSE))
-            {
-                case 'A':                   // If the next token is an assignment arrow
-                    return NAMEOP3ASSIGN;   //   then this token is a named ambiguous assignment
+            Assert (GetPtrTypeDir (lpYYLval->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-                default:
-                    return NAMEOP3;
-            } // End SWITCH
+            // Convert the named OP3 to an immediate OP3
+            lpYYLval->tkToken.tkFlags.TknType = TKT_OP3IMMED;
+            lpYYLval->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP3;
+            lpYYLval->tkToken.tkData.tkChar   = lpYYLval->tkToken.tkData.tkSym->stData.stChar;
+
+            goto PL_YYLEX_OP3IMMED;
 
         case TKT_OP1IMMED:
             // Check for / or /[I] or /[A]
-            if (CheckNullOp3 (lpplLocalVars))
+            if (CheckNullOp3 (lpYYLval, lpplLocalVars))
                 goto PL_YYLEX_START;    // Ignore this token
             else
                 return OP1;
@@ -8357,11 +8364,13 @@ PL_YYLEX_START:
             return OP2;
 
         case TKT_OP3IMMED:
+PL_YYLEX_OP3IMMED:
             // Lookahead to see if this ambiguous symbol is adjacent to
             //   a function or monadic operator (return OP1), or
+            //   a left paren                   (return PRIMFCN), or
             //   a dyadic operator              (return PRIMFCN), or
             //   an ambiguous operator          (return OP3), or
-            //   a variable or niladic function (return OP3), or
+            //   a variable or niladic function (return PRIMFCN), or
             //   an assignment arrow            (return OP3ASSIGN)
 
             // Split cases based upon the lookahead result
@@ -8406,24 +8415,11 @@ PL_YYLEX_START:
 
                     return OP1;
 
-                case '(':               // If the next token is left paren,
-                    // If the preceding token is OP3, ...
-                    // ***FIXME*** -- This doesn't catch the OP3NAMED case
-                    //                or the tricky /(f{is}/)3 4 -- note that f isn't assigned as yet
-                    if (lpplLocalVars->lptkNext[1].tkFlags.TknType EQ TKT_OP3IMMED)
-                    {
-                        // Then this token is a function
-                        lpYYLval->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-                        lpYYLval->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-
-                        return PRIMFCN;
-                    } // End IF
-
-                    return OP3;
-
                 case 'E':               // If the next token is EOL/EOS,
                 case 'V':               //   a variable, or
-                case '2':               //   a dyadic operator,
+                case '2':               //   a dyadic operator, or
+                case '(':               //   a left paren, or
+                case '0':               //   a niladic function,
                                         //   then this token is a function
                     lpYYLval->tkToken.tkFlags.TknType = TKT_FCNIMMED;
                     lpYYLval->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
@@ -8431,7 +8427,6 @@ PL_YYLEX_START:
                     return PRIMFCN;
 
                 case '3':               // If the next token is an ambiguous operator,
-                case '0':               //   or a niladic function,
                     return OP3;         //   then this token is ambiguous
 
                 case 'A':               // If the next token is an assignment arrow

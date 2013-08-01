@@ -714,32 +714,27 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL CheckNullOp3
-    (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPPL_YYSTYPE  lpYYLval,        // Ptr to lval
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPTOKEN lptkNext;               // Ptr to next token to check
 
     // Split cases based upon the current token type
-    switch (lpplLocalVars->lptkNext->tkFlags.TknType)
+    switch (lpYYLval->tkToken.tkFlags.TknType)
     {
         case TKT_OP1IMMED:
             // First of all, the current token must be NULLOP
-            if (lpplLocalVars->lptkNext->tkData.tkChar NE UTF16_CIRCLEMIDDLEDOT)
-                return FALSE;
-            break;
+            if (lpYYLval->tkToken.tkData.tkChar EQ UTF16_CIRCLEMIDDLEDOT)
+                break;
+            return FALSE;
 
         case TKT_OP1NAMED:
-            Assert (lpplLocalVars->lptkNext->tkData.tkSym->stFlags.Imm);
-
-////        // First of all, the current token must be NULLOP
-////        if (lpplLocalVars->lptkNext->tkData.tkSym->stData.stChar NE UTF16_CIRCLEMIDDLEDOT)
-                return FALSE;
-
-            DbgBrk ();      // ***FIXME*** -- Just because it's OP1NAMED, doesn't mean
-                            //                it isn't about to be assigned some other
-                            //                value or type
-
-            break;
+            // First of all, the current token must be NULLOP
+            if (lpYYLval->tkToken.tkData.tkSym->stFlags.Imm
+             && lpYYLval->tkToken.tkData.tkSym->stData.stChar EQ UTF16_CIRCLEMIDDLEDOT)
+                break;
+            return FALSE;
 
         defstop
             break;
@@ -759,10 +754,12 @@ UBOOL CheckNullOp3
         return FALSE;
 
     // Change the "next" token from ambiguous operator to a function
-    lptkNext[0].tkFlags.TknType = TKT_FCNIMMED;
-    lptkNext[0].tkFlags.ImmType = IMMTYPE_PRIMFCN;
+    lpYYLval->tkToken.tkFlags.TknType =
+    lptkNext[0]      .tkFlags.TknType = TKT_FCNIMMED;
+    lpYYLval->tkToken.tkFlags.ImmType =
+    lptkNext[0]      .tkFlags.ImmType = IMMTYPE_PRIMFCN;
 
-        return TRUE;
+    return TRUE;
 } // End CheckNullOp3
 
 

@@ -845,6 +845,11 @@ UBOOL ReadIniFileGlb
     // Convert to a number
     sscanfW (wszTemp, L"%I64u", &uQuadRL_CWS);
 
+    // A past bug in Customize set []RL to zero if it exceeded INT_MAX, so we check for that here
+    if (uQuadRL_CWS EQ 0)
+        // Set to the default value
+        uQuadRL_CWS = DEF_QUADRL_CWS;
+
     // Read in []SA index
     cQuadxSA_CWS = (APLCHAR)
       GetPrivateProfileIntW (SECTNAME_SYSVARS,      // Ptr to the section name

@@ -2707,7 +2707,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // []RL
                         //***************************************************************
                         uQuadRL_CWS =
-                          GetDlgItemInt (hWndProp, IDC_CLEARWS_RL_EC, NULL, FALSE);
+                          GetDlgItemInt64 (hWndProp, IDC_CLEARWS_RL_EC, NULL, FALSE);
                     } // End IF
 
 

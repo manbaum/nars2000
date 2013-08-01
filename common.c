@@ -699,5 +699,52 @@ void GetSystemDate
 
 
 //***************************************************************************
+//  $GetDlgItemInt64
+//
+//  64-bit version of GetDlgItemInt
+//***************************************************************************
+
+APLINT GetDlgItemInt64
+    (HWND   hDlg,                       // Dialog box handle
+     int    nIDDlgItem,                 // Identifier of the control
+     UBOOL *lpTranslated,               // Return value of success (TRUE) or failure (FALSE) (may be NULL)
+     UBOOL  bSigned)                    // TRUE iff the result may be signed
+
+{
+    WCHAR   wszTemp[32];                // Output save area
+    LPWCHAR lpw;                        // Temporary ptr
+    APLINT  aplInt;                     // The result
+
+    // Get the value as text
+    if (GetDlgItemTextW (hDlg, nIDDlgItem, wszTemp, strcountof (wszTemp)) NE 0)
+    {
+        // Skip over leading blanks
+        lpw = SkipPastCharW (wszTemp, L' ');
+
+        if (bSigned
+         && lpw[0] EQ UTF16_OVERBAR)
+            lpw[0] = L'-';
+        // Convert to a number
+        if (sscanfW (lpw, L"%I64u", &aplInt) EQ 1)
+        {
+            // Mark as successful
+            if (lpTranslated)
+                *lpTranslated = TRUE;
+
+            // Return the result
+            return aplInt;
+        } // End IF
+    } // End IF
+
+    // Mark as in error
+    if (lpTranslated)
+        *lpTranslated = FALSE;
+
+    // Return a result of zero
+    return 0;
+} // End GetDlgItemInt64
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

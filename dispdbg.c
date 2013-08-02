@@ -1009,24 +1009,35 @@ static TOKENNAMES tokenNames[] =
  {"CS_SKIPEND"    , TKT_CS_SKIPEND    },    // 3D: ...                 Special token
  {"SYS_NS"        , TKT_SYS_NS        },    // 3E: System namespace
  {"SYNTERR"       , TKT_SYNTERR       },    // 3F: Syntax Error
- {"STRAND"        , TKT_STRAND        },    // 40: Strand accumulating (data is LPTOKEN)
- {"LISTINT"       , TKT_LISTINT       },    // 41: List intermediate (data is HGLOBAL)
- {"LISTPAR"       , TKT_LISTPAR       },    // 42: List in parens    (data is HGLOBAL)
- {"LSTIMMED"      , TKT_LSTIMMED      },    // 43: List in brackets, single element, immed (data is immediate)
- {"LSTARRAY"      , TKT_LSTARRAY      },    // 44: List in brackets, single element, array (data is HGLOBAL)
- {"LSTMULT"       , TKT_LSTMULT       },    // 45: List in brackets, multiple elements (data is HGLOBAL)
- {"FCNARRAY"      , TKT_FCNARRAY      },    // 46: Array of functions (data is HGLOBAL)
- {"FCNNAMED"      , TKT_FCNNAMED      },    // 47: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED"     , TKT_AXISIMMED     },    // 48: An immediate axis specification (data is immediate)
- {"AXISARRAY"     , TKT_AXISARRAY     },    // 49: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"      , TKT_OP1NAMED      },    // 4A: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"      , TKT_OP2NAMED      },    // 4B: ...     dyadic  ...
- {"OP3NAMED"      , TKT_OP3NAMED      },    // 4C: ...     ambiguous ...
- {"STRNAMED"      , TKT_STRNAMED      },    // 4D: ...     strand  ...
- {"CS_NEC"        , TKT_CS_NEC        },    // 4E: Control Structure:  Special token (cs_yyparse only)
- {"CS_EOL"        , TKT_CS_EOL        },    // 4F: ...                 Special token (cs_yyparse only)
- {"CS_ENS"        , TKT_CS_ENS        },    // 50: ...                 Special token (cs_yyparse only)
- {"FILLJOT"       , TKT_FILLJOT       },    // 51: Fill jot
+ {"SETALPHA"      , TKT_SETALPHA      },    // 40: Set {alpha}
+ {"DEL"           , TKT_DEL           },    // 41: Del -- always a function
+ {"DELDEL"        , TKT_DELDEL        },    // 42: Del Del -- either a monadic or dyadic operator
+ {"DELAFO"        , TKT_DELAFO        },    // 43: Anonymous monadic/dyadic operator, bound to its operands
+ {"FCNAFO"        , TKT_FCNAFO        },    // 44: Anonymous function
+ {"OP1AFO"        , TKT_OP1AFO        },    // 45: ...       monadic operator
+ {"OP2AFO"        , TKT_OP2AFO        },    // 46: ...       dyadic  ...
+ {"GLBDFN"        , TKT_GLBDFN        },    // 47: Placeholder for hGlbDfnHdr
+ {"NOP"           , TKT_NOP           },    // 48: NOP
+ {"AFOGUARD"      , TKT_AFOGUARD      },    // 49: AFO guard
+ {"AFORETURN"     , TKT_AFORETURN     },    // 4A: AFO guard
+ {"STRAND"        , TKT_STRAND        },    // 4B: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"       , TKT_LISTINT       },    // 4C: List intermediate (data is HGLOBAL)
+ {"LISTPAR"       , TKT_LISTPAR       },    // 4D: List in parens    (data is HGLOBAL)
+ {"LSTIMMED"      , TKT_LSTIMMED      },    // 4E: List in brackets, single element, immed (data is immediate)
+ {"LSTARRAY"      , TKT_LSTARRAY      },    // 4F: List in brackets, single element, array (data is HGLOBAL)
+ {"LSTMULT"       , TKT_LSTMULT       },    // 50: List in brackets, multiple elements (data is HGLOBAL)
+ {"FCNARRAY"      , TKT_FCNARRAY      },    // 51: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"      , TKT_FCNNAMED      },    // 52: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED"     , TKT_AXISIMMED     },    // 53: An immediate axis specification (data is immediate)
+ {"AXISARRAY"     , TKT_AXISARRAY     },    // 54: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"      , TKT_OP1NAMED      },    // 55: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"      , TKT_OP2NAMED      },    // 56: ...     dyadic  ...
+ {"OP3NAMED"      , TKT_OP3NAMED      },    // 57: ...     ambiguous ...
+ {"STRNAMED"      , TKT_STRNAMED      },    // 58: ...     strand  ...
+ {"CS_NEC"        , TKT_CS_NEC        },    // 59: Control Structure:  Special token (cs_yyparse only)
+ {"CS_EOL"        , TKT_CS_EOL        },    // 5A: ...                 Special token (cs_yyparse only)
+ {"CS_ENS"        , TKT_CS_ENS        },    // 5B: ...                 Special token (cs_yyparse only)
+ {"FILLJOT"       , TKT_FILLJOT       },    // 5C: Fill jot
 };
 
 // The # rows in the above table
@@ -1344,6 +1355,7 @@ LPWCHAR DisplayFcnSub
     UINT         TknCount;          // Token count
     NAME_TYPES   fnNameType;        // Function array name type
     LPPL_YYSTYPE lpMemFcnArr;       // Ptr to function array data
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to AFO global memory header
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1793,6 +1805,116 @@ LPWCHAR DisplayFcnSub
               CopySteName (lpaplChar,                           // Ptr to result global memory
                            lpYYMem->tkToken.tkData.tkSym,       // Ptr to function symbol table entry
                            NULL);                               // Ptr to name length (may be NULL)
+            break;
+
+        case TKT_FCNAFO:
+            // Get the AFO global memory handle
+            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlbData);
+
+            lpaplChar =
+              FillDfnName (lpaplChar,               // Ptr to output save area          // Fcn
+                           hGlbData,                // Global memory handle
+                           lpMemDfnHdr,             // Ptr to global memory
+                           lpSavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                           lpSavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+            // Check for axis operator
+            if (tknNELM > 1
+             && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+              || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+                lpaplChar =
+                  DisplayFcnSub (lpaplChar,                                             // [X]
+                                &lpYYMem[1],
+                                 1,
+                                 lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                 lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+
+            break;
+
+        case TKT_OP1AFO:
+            // Get the AFO global memory handle
+            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlbData);
+
+            if (tknNELM > 1)
+            {
+                lpaplChar =
+                  DisplayFcnSub (lpaplChar,                                         // Fcn
+                                &lpYYMem[1],
+                                 tknNELM - 1,
+                                 lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                 lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+                *lpaplChar++ = L' ';                                                // Sep
+            } // End IF
+
+            lpaplChar =
+              FillDfnName (lpaplChar,               // Ptr to output save area      // Op1
+                           hGlbData,                // Global memory handle
+                           lpMemDfnHdr,             // Ptr to global memory
+                           lpSavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                           lpSavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+
+            break;
+
+        case TKT_OP2AFO:
+            // Get the AFO global memory handle
+            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlbData);
+
+            TknCount = 1 + lpYYMem[1].TknCount;
+
+            // If there's a left operand, ...
+            if (tknNELM > 2)
+            {
+                lpaplChar =
+                  DisplayFcnSub (lpaplChar,                                             // Lfcn
+                                &lpYYMem[1],
+                                 lpYYMem[1].TknCount,
+                                 lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                 lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+                *lpaplChar++ = L' ';                                                    // Sep
+            } // End IF
+
+            lpaplChar =
+              FillDfnName (lpaplChar,               // Ptr to output save area          // Op2
+                           hGlbData,                // Global memory handle
+                           lpMemDfnHdr,             // Ptr to global memory
+                           lpSavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                           lpSavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+            if (lpYYMem[TknCount].TknCount > 1)
+                *lpaplChar++ = L'(';
+            else
+                *lpaplChar++ = L' ';
+            lpaplChar =
+              DisplayFcnSub (lpaplChar,                                                 // Rfcn
+                            &lpYYMem[TknCount],
+                             lpYYMem[TknCount].TknCount,
+                             lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
+                             lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                             lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                             lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+            if (lpYYMem[TknCount].TknCount > 1)
+                *lpaplChar++ = L')';
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+
             break;
 
         case TKT_OP1NAMED:          // At the moment, named operators are all one char

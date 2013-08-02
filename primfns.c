@@ -73,6 +73,8 @@ char TokenTypeFV
     (LPTOKEN lptk)
 
 {
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS
+
     // Split cases based upon the token type
     switch (lptk->tkFlags.TknType)
     {
@@ -94,22 +96,57 @@ char TokenTypeFV
         case TKT_FCNARRAY:
         case TKT_FCNNAMED:
         case TKT_FILLJOT:
+        case TKT_FCNAFO:
             return 'F';
 
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
         case TKT_OPJOTDOT:
+        case TKT_OP1AFO:
             return '1';
 
         case TKT_OP2IMMED:
         case TKT_OP2NAMED:
+        case TKT_OP2AFO:
             return '2';
 
         case TKT_OP3IMMED:
         case TKT_OP3NAMED:
             return '3';
 
+        case TKT_DEL:       // Del -- always a function
+        case TKT_DELAFO:    // Del -- monadic/dyadic operator, bound to its operands
+            return 'F';
+
+        case TKT_DELDEL:    // Del Del -- either a monadic or dyadic function
+            // Search up the SIS chain to see what this is
+            lpSISCur = SrchSISForDfn (GetMemPTD ());
+
+            // If the ptr is valid, ...
+            if (lpSISCur)
+            {
+                // Split case based upon the function type
+                switch (lpSISCur->DfnType)
+                {
+////////////////////case DFNTYPE_FCN:
+////////////////////    return 'F';
+
+                    case DFNTYPE_OP1:
+                        return '1';
+
+                    case DFNTYPE_OP2:
+                        return '2';
+
+                    default:
+                        return '?';
+                } // End SWITCH
+            } // End IF
+
+            return '?';
+
         case TKT_SYNTERR:
+        case TKT_SETALPHA:
+        case TKT_GLBDFN:
             return '?';
 
         case TKT_ASSIGN:
@@ -164,6 +201,9 @@ char TokenTypeFV
         case TKT_CS_SKIPEND:                // ...                 Special token
         case TKT_CS_NEC:                    // ...                 Special token
         case TKT_CS_EOL:                    // ...                 Special token
+        case TKT_NOP:                       // NOP
+        case TKT_AFOGUARD:                  // AFO guard
+        case TKT_AFORETURN:                 // AFO return
         defstop
             return '?';
     } // End SWITCH
@@ -704,9 +744,9 @@ HGLOBAL MakeMonPrototype_EM_PTB
         case PTRTYPE_STCONST:
             // If it's numeric, ...
             if (IsImmNum (((LPSYMENTRY) hGlbArr)->stFlags.ImmType))
-                return lpMemPTD->steZero;
+                return lpMemPTD->lphtsPTD->steZero;
             else
-                return lpMemPTD->steBlank;
+                return lpMemPTD->lphtsPTD->steBlank;
 
         case PTRTYPE_HGLOBAL:
             break;
@@ -867,7 +907,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
                         case IMMTYPE_FLOAT:
-                            lpSymRes = lpMemPTD->steZero;
+                            lpSymRes = lpMemPTD->lphtsPTD->steZero;
 
                             break;
 
@@ -876,7 +916,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                             switch (mpEnum)
                             {
                                 case MP_CHARS:
-                                    lpSymRes = lpMemPTD->steBlank;
+                                    lpSymRes = lpMemPTD->lphtsPTD->steBlank;
 
                                     break;
 
@@ -886,7 +926,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                                     break;
 
                                 case MP_NUMCONV:
-                                    lpSymRes = lpMemPTD->steZero;
+                                    lpSymRes = lpMemPTD->lphtsPTD->steZero;
 
                                     break;
 
@@ -1982,6 +2022,9 @@ HGLOBAL CopyArray_EM
                     case TKT_NUMSTRAND:
                     case TKT_NUMSCALAR:
                     case TKT_AXISARRAY:
+                    case TKT_FCNAFO:
+                    case TKT_OP1AFO:
+                    case TKT_OP2AFO:
                         // Get the item global memory handle
                         hGlbItm = lpMemFcn->tkToken.tkData.tkGlbData;
 
@@ -2226,8 +2269,8 @@ HGLOBAL CopyGlbAsType_EM
                     // Get ptr to PerTabData global memory
                     lpMemPTD = GetMemPTD ();
 
-                    lpSym0 = lpMemPTD->steZero;
-                    lpSym1 = lpMemPTD->steOne;
+                    lpSym0 = lpMemPTD->lphtsPTD->steZero;
+                    lpSym1 = lpMemPTD->lphtsPTD->steOne;
 
                     uBitMask = BIT0;
 
@@ -2977,7 +3020,7 @@ LPPL_YYSTYPE MakeNoValue_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARNAMED;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
     lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
-    lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->steNoValue;
+    lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->lphtsPTD->steNoValue;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -3165,6 +3208,30 @@ UBOOL IsTknTypeNamedFcnOpr
 
 
 //***************************************************************************
+//  $IsTknTypeAFO
+//
+//  Return TRUE iff the given token type is an AFO
+//***************************************************************************
+
+UBOOL IsTknTypeAFO
+    (TOKEN_TYPES tknType)
+
+{
+    // Split cases based upon the token type
+    switch (tknType)
+    {
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+            return TRUE;
+
+        default:
+            return FALSE;
+    } // End SWITCH
+} // End IsTknTypeAFO
+
+
+//***************************************************************************
 //  $IsTknTypeFcnOpr
 //
 //  Return TRUE iff the given token type is a fcn/opr
@@ -3187,6 +3254,9 @@ UBOOL IsTknTypeFcnOpr
         case TKT_OP3IMMED:
         case TKT_OPJOTDOT:
         case TKT_FCNARRAY:
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
             return TRUE;
 
         default:
@@ -3296,6 +3366,9 @@ UBOOL IsTknImmed
             return TRUE;
 
         case TKT_VARNAMED:
+        case TKT_FCNNAMED:
+        case TKT_OP1NAMED:
+        case TKT_OP2NAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkVar->tkData.tkVoid) EQ PTRTYPE_STCONST);
 

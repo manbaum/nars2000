@@ -3938,6 +3938,7 @@ int PASCAL WinMain
 #endif
     InitializeCriticalSection (&CSOPL);
     InitializeCriticalSection (&CSOTokenize);
+    InitializeCriticalSection (&CSOHshTab);
     InitializeCriticalSection (&CSOPthread);
 
     // Mark as CSO defined

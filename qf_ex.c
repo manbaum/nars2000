@@ -105,8 +105,13 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
     LPSYMENTRY   lpSymEntry;        // Ptr to SYMENTRY
     STFLAGS      stFlags;           // STE flags
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
+    UBOOL        bRet = TRUE,       // TRUE iff result is valid
+                 bAFO;              // TRUE iff we're parsing an AFO
     UINT         uBitIndex;         // Bit index for looping through Boolean result
+    APLU3264     uLen;              // Name length
+
+    // Determine if we're parsing an AFO
+    bAFO = (SISAfo (GetMemPTD ()) NE NULL);
 
     // The right arg may be of three forms:
     //   1.  a scalar    name  as in 'a'
@@ -187,20 +192,27 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
     switch (aplRankRht)
     {
         case 0:
-            // Lookup the name in the symbol table
-            // SymTabLookupName sets the .ObjName enum,
-            //   and the .Inuse flag
-            ZeroMemory (&stFlags, sizeof (stFlags));
-            lpSymEntry = SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
-                                                 1,
-                                                &stFlags);
-            // If found, attempt to expunge the name
-            // If not found, return a one if it's a valid name, zero otherwise
-            if (lpSymEntry)
-                *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
-            else
-                *lpMemDataRes |= (IsValidName ((LPAPLCHAR) &aplLongestRht,
-                                               1)) << uBitIndex;
+            // If we're not parsing an AFO,
+            //   or this var is not a special AFO name, ...
+            if (!bAFO
+             || !IsAfoName ((LPAPLCHAR) &aplLongestRht, 1))
+            {
+                // Lookup the name in the symbol table
+                // SymTabLookupName sets the .ObjName enum,
+                //   and the .Inuse flag
+                ZeroMemory (&stFlags, sizeof (stFlags));
+                lpSymEntry = SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
+                                                     1,
+                                                    &stFlags);
+                // If found, attempt to expunge the name
+                // If not found, return a one if it's a valid name, zero otherwise
+                if (lpSymEntry)
+                    *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
+                else
+                    *lpMemDataRes |= (IsValidName ((LPAPLCHAR) &aplLongestRht,
+                                                   1)) << uBitIndex;
+            } // End IF
+
             break;
 
         case 1:
@@ -222,20 +234,30 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                     // Skip over black space
                     while (uRht < aplNELMRht && lpMemDataRht[uRht] NE L' ')
                         uRht++;
-                    // Lookup the name in the symbol table
-                    // SymTabLookupName sets the .ObjName enum,
-                    //   and the .Inuse flag
-                    ZeroMemory (&stFlags, sizeof (stFlags));
-                    lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-                                                        (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart),
-                                                        &stFlags);
-                    // If found, attempt to expunge the name
-                    // If not found, return a one if it's a valid name, zero otherwise
-                    if (lpSymEntry)
-                        *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
-                    else
-                        *lpMemDataRes |= (IsValidName (lpMemDataStart,
-                                                      (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart))) << uBitIndex;
+
+                    // Save the name length
+                    uLen = (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart);
+
+                    // If we're not parsing an AFO,
+                    //   or this var is not a special AFO name, ...
+                    if (!bAFO
+                     || !IsAfoName (lpMemDataStart, uLen))
+                    {
+                        // Lookup the name in the symbol table
+                        // SymTabLookupName sets the .ObjName enum,
+                        //   and the .Inuse flag
+                        ZeroMemory (&stFlags, sizeof (stFlags));
+                        lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
+                                                            uLen,
+                                                            &stFlags);
+                        // If found, attempt to expunge the name
+                        // If not found, return a one if it's a valid name, zero otherwise
+                        if (lpSymEntry)
+                            *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
+                        else
+                            *lpMemDataRes |= (IsValidName (lpMemDataStart, uLen)) << uBitIndex;
+                    } // End IF
+
                     // Check for end-of-byte
                     if (++uBitIndex EQ NBIB)
                     {
@@ -262,20 +284,29 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                 while (uCol < aplNELMCol && lpMemDataStart[uCol] EQ L' ')
                     uCol++;
 
-                // Lookup the name in the symbol table
-                // SymTabLookupName sets the .ObjName enum,
-                //   and the .Inuse flag
-                ZeroMemory (&stFlags, sizeof (stFlags));
-                lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
-                                                      (APLU3264) (aplNELMCol - uCol),
-                                                     &stFlags);
-                // If found, attempt to expunge the name
-                // If not found, return a one if it's a valid name, zero otherwise
-                if (lpSymEntry)
-                    *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
-                else
-                    *lpMemDataRes |= (IsValidName (lpMemDataStart,
-                                                   (APLU3264) (aplNELMCol - uCol))) << uBitIndex;
+                // Save the name length
+                uLen = (APLU3264) (aplNELMCol - uCol);
+
+                // If we're not parsing an AFO,
+                //   or this var is not a special AFO name, ...
+                if (!bAFO
+                 || !IsAfoName (&lpMemDataStart[uCol], uLen))
+                {
+                    // Lookup the name in the symbol table
+                    // SymTabLookupName sets the .ObjName enum,
+                    //   and the .Inuse flag
+                    ZeroMemory (&stFlags, sizeof (stFlags));
+                    lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
+                                                          uLen,
+                                                         &stFlags);
+                    // If found, attempt to expunge the name
+                    // If not found, return a one if it's a valid name, zero otherwise
+                    if (lpSymEntry)
+                        *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
+                    else
+                        *lpMemDataRes |= (IsValidName (lpMemDataStart, uLen)) << uBitIndex;
+                } // End IF
+
                 // Check for end-of-byte
                 if (++uBitIndex EQ NBIB)
                 {

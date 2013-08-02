@@ -176,6 +176,22 @@ LPPL_YYSTYPE PrimFnValueError_EM
     // Append the suffix to the temp
     lstrcatW (wszTemp, APPEND_NAME);
 
+    // If there's a name attached to this error, ...
+    if ((IsTknTypeNamed (lptkFunc->tkFlags.TknType)
+      || IsTknTypeAFO   (lptkFunc->tkFlags.TknType))
+     && GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST
+     && lptkFunc->tkData.tkSym->stHshEntry)
+    {
+        // Leading separator
+        lstrcatW (wszTemp, L" (");
+
+        // Append the name
+        lstrcatW (wszTemp, lptkFunc->tkData.tkSym->stHshEntry->lpwCharName);
+
+        // Trailing separator
+        lstrcatW (wszTemp, L")");
+    } // End IF
+
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR,

@@ -45,9 +45,7 @@ void fh_yyprint     (FILE *yyoutput, unsigned short int yytoknum, FH_YYSTYPE con
 #define YYMALLOC    malloc
 #define YYFREE      free
 
-int  fh_yylex       (LPFH_YYSTYPE lpYYLval, LPFHLOCALVARS lpfhLocalVars);
-void fh_yyerror     (LPFHLOCALVARS lpfhLocalVars, LPCHAR s);
-void fh_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
+#include "fh_parse.proto"
 
 #define    YYSTYPE     FH_YYSTYPE
 #define  LPYYSTYPE   LPFH_YYSTYPE
@@ -150,7 +148,7 @@ not counting the presence/absence of locals and presence/absence of a comment.
 
 
 AxisOpr:
-      NAMEOPR '[' NAMEUNK ']'   {DbgMsgWP (L"%%AxisOpr:  NAMEUNK[NAMEUNK]");
+      NAMEOPR '[' NAMEUNK ']'   {DbgMsgWP (L"%%AxisOpr:  NAMEOPR[NAMEUNK]");
                                  InitHdrStrand (&$1);
                                  PushHdrStrand_YY (&$1);
                                  PushHdrStrand_YY (&$3);
@@ -665,6 +663,7 @@ int fh_yylex
      LPFHLOCALVARS lpfhLocalVars)       // Ptr to Function Header local vars
 
 {
+FH_YYLEX_START:
     // Check for stopping point
     if (lpfhLocalVars->lptkStop EQ lpfhLocalVars->lptkNext)
     {
@@ -696,6 +695,19 @@ int fh_yylex
     // Split cases based upon the token type
     switch (lpfhLocalVars->lptkNext++->tkFlags.TknType)
     {
+        case TKT_DEL:           // Del      -- always a function
+        case TKT_DELDEL:        // Del Del  -- either a monadic or dyadic operator
+        case TKT_DELAFO:        // Del Anon -- either a monadic or dyadic operator, bound to its operands
+            // If we're not processing an AFO
+            if (!lpfhLocalVars->bAFO)
+                return UNK;
+
+            // If the next token is a left bracket, return NAMEOPR
+            if (lpfhLocalVars->lptkNext->tkFlags.TknType EQ TKT_LEFTBRACKET)
+                return NAMEOPR;
+            else
+                return NAMEUNK;
+
         case TKT_VARNAMED:
             // If the token is a sysname, return NAMESYS
             if (lpfhLocalVars->lptkNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
@@ -735,6 +747,9 @@ int fh_yylex
 
         case TKT_SOS:
             return SOS;
+
+        case TKT_GLBDFN:
+            goto FH_YYLEX_START;    // Ignore these tokens
 
         default:
             return UNK;

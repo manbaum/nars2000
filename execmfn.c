@@ -253,7 +253,6 @@ HGLOBAL Init1MagicFunction
             if (!AllocSymTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
                                lpMemPTD,                                                    // PerTabData global memory handle
                                lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
-                               FALSE,                                                       // TRUE iff we're to initialize the constant STEs
                                256,                                                         // Initial # STEs in SymTab
                                16,                                                          // # STEs by which to resize when low
                                1024))                                                       // Maximum # STEs
@@ -270,16 +269,16 @@ HGLOBAL Init1MagicFunction
         lpMemPTD->lphtsPTD = lpInitMFO->lphtsMFO;
 
         // If the system names have not been appended as yet, ...
-        if (!lpMemPTD->lphtsPTD->bSysNames)
+        if (!lpInitMFO->lphtsMFO->bSysNames)
         {
             // Append all system names to the local SymTab
-            SymTabAppendAllSysNames_EM (lpMemPTD->lphtsPTD);
+            SymTabAppendAllSysNames_EM (lpInitMFO->lphtsMFO);
 
             // Assign default values to the system vars
-            AssignDefaultSysVars (lpMemPTD->lphtsPTD->lpSymQuad);
+            _AssignDefaultSysVars (lpMemPTD, lpInitMFO->lphtsMFO);
 
             // Mark as appended so as to avoid doing this the next time
-            lpMemPTD->lphtsPTD->bSysNames = TRUE;
+            lpInitMFO->lphtsMFO->bSysNames = TRUE;
         } // End IF
     } // End IF
 
@@ -330,6 +329,7 @@ HGLOBAL Init1MagicFunction
                         hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                         0,                  // Function line # (0 = header)
                        &ErrorHandler,       // Ptr to error handling function (may be NULL)
+                        NULL,               // Ptr to common struc (may be NULL if unused)
                         TRUE);              // TRUE iff we're tokenizing a Magic Function/Operator
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
@@ -341,6 +341,7 @@ HGLOBAL Init1MagicFunction
                        NULL,                // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                        0,                   // Function line # (0 = header)
                        NULL,                // Ptr to error handling function (may be NULL)
+                       NULL,                // Ptr to common struc (may be NULL if unused)
                        TRUE);               // TRUE iff we're tokenizing a Magic Function/Operator
     if (!hGlbTknHdr)
     {

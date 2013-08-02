@@ -44,7 +44,6 @@ EXCEPT_NAMES ExceptNames[] =
  {"BREAKPOINT"        , EXCEPTION_BREAKPOINT        },
  {"LIMIT ERROR"       , EXCEPTION_LIMIT_ERROR       },
  {"STACK OVERFLOW"    , EXCEPTION_STACK_OVERFLOW    },
- {"STACK FULL"        , EXCEPTION_STACK_FULL        },
 };
 
 #define EXCEPT_NAMES_LENGTH         countof (ExceptNames)
@@ -217,9 +216,6 @@ LPWSTR MyGetExceptionStr
 
         case EXCEPTION_STACK_OVERFLOW:
             return L"EXCEPTION_STACK_OVERFLOW";
-
-        case EXCEPTION_STACK_FULL:
-            return L"EXCEPTION_STACK_FULL";
 
         case EXCEPTION_SUCCESS:
             return L"EXCEPTION_SUCCESS";
@@ -487,7 +483,6 @@ long CheckException
         case EXCEPTION_SINGLE_STEP:
         case EXCEPTION_GUARD_PAGE:
         case EXCEPTION_STACK_OVERFLOW:
-        case EXCEPTION_STACK_FULL:
             return EXCEPTION_EXECUTE_HANDLER;
 
         case EXCEPTION_BREAKPOINT:

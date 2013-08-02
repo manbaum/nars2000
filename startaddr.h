@@ -36,6 +36,15 @@ typedef struct tagSTART_ADDRESSES
 #ifndef PROTO
   START_ADDRESSES StartAddresses[] =
   {
+    // afofns.c
+    "AfoReturn"                 , (LPUCHAR) &AfoReturn                  ,
+    "AfoGuard"                  , (LPUCHAR) &AfoGuard                   ,
+    "MakeAfo_EM_YY"             , (LPUCHAR) &MakeAfo_EM_YY              ,
+    "AfoDisplay_EM"             , (LPUCHAR) &AfoDisplay_EM              ,
+    "SISAfo"                    , (LPUCHAR) &SISAfo                     ,
+    "IsAfoName"                 , (LPUCHAR) &IsAfoName                  ,
+    "ConvertAfoAlias"           , (LPUCHAR) &ConvertAfoAlias            ,
+
     // assign.c
     "AssignName_EM"             , (LPUCHAR) &AssignName_EM              ,
     "GetNameType"               , (LPUCHAR) &GetNameType                ,
@@ -149,13 +158,27 @@ typedef struct tagSTART_ADDRESSES
     "FormatHTE"                 , (LPUCHAR) &FormatHTE                  ,
   #ifdef DEBUG
     "DisplaySymTab"             , (LPUCHAR) &DisplaySymTab              ,
+  #endif
+    "FormatSTE"                 , (LPUCHAR) &FormatSTE                  ,
+  #ifdef DEBUG
     "UpdateDBWindow"            , (LPUCHAR) &UpdateDBWindow             ,
     "DisplayGlobals"            , (LPUCHAR) &DisplayGlobals             ,
+    "DisplayHeap"               , (LPUCHAR) &DisplayHeap                ,
     "DisplayTokens"             , (LPUCHAR) &DisplayTokens              ,
+    "DisplayFcnStrand"          , (LPUCHAR) &DisplayFcnStrand           ,
   #endif
     "DisplayFcnGlb"             , (LPUCHAR) &DisplayFcnGlb              ,
+    "DisplayFcnMem"             , (LPUCHAR) &DisplayFcnMem              ,
     "DisplayFcnSub"             , (LPUCHAR) &DisplayFcnSub              ,
-    "FormatSTE"                 , (LPUCHAR) &FormatSTE                  ,
+    "DisplayVarSub"             , (LPUCHAR) &DisplayVarSub              ,
+  #ifdef DEBUG
+    "DisplayFcnArr"             , (LPUCHAR) &DisplayFcnArr              ,
+    "DisplayFcnLine"            , (LPUCHAR) &DisplayFcnLine             ,
+    "DisplayStrand"             , (LPUCHAR) &DisplayStrand              ,
+    "DisplayUndo"               , (LPUCHAR) &DisplayUndo                ,
+    "DisplayFnHdr"              , (LPUCHAR) &DisplayFnHdr               ,
+    "DisplayYYRes"              , (LPUCHAR) &DisplayYYRes               ,
+  #endif
 
     // display.c
     "ArrayDisplay_EM"           , (LPUCHAR) &ArrayDisplay_EM            ,
@@ -168,6 +191,10 @@ typedef struct tagSTART_ADDRESSES
     "FormatAplRatFC"            , (LPUCHAR) &FormatAplRatFC             ,
     "FormatFloat"               , (LPUCHAR) &FormatFloat                ,
     "FormatFloatFC"             , (LPUCHAR) &FormatFloatFC              ,
+    "FormatExpFmt"              , (LPUCHAR) &FormatExpFmt               ,
+    "FormatAplVfp"              , (LPUCHAR) &FormatAplVfp               ,
+    "FormatAplVfpFC"            , (LPUCHAR) &FormatAplVfpFC             ,
+    "FormatSymTabConst"         , (LPUCHAR) &FormatSymTabConst          ,
 
     // dtoa.c
 
@@ -217,9 +244,6 @@ typedef struct tagSTART_ADDRESSES
     "LocalizeAll"               , (LPUCHAR) &LocalizeAll                ,
     "_CheckSymEntries"          , (LPUCHAR) &_CheckSymEntries           ,
     "ExecuteFunction_EM_YY"     , (LPUCHAR) &ExecuteFunction_EM_YY      ,
-  #ifdef DEBUG
-    "DisplayFcnLine"            , (LPUCHAR) &DisplayFcnLine             ,
-  #endif
     "CheckDfnExitError_EM"      , (LPUCHAR) &CheckDfnExitError_EM       ,
     "UnlocalizeSTEs"            , (LPUCHAR) &UnlocalizeSTEs             ,
     "LocalizeLabels"            , (LPUCHAR) &LocalizeLabels             ,
@@ -781,6 +805,12 @@ typedef struct tagSTART_ADDRESSES
 
     // qf_mf.c
     "SysFnMF_EM_YY"             , (LPUCHAR) &SysFnMF_EM_YY              ,
+    "SysFnMonMF_EM_YY"          , (LPUCHAR) &SysFnMonMF_EM_YY           ,
+    "SysFnMonMF_Numeric_EM"     , (LPUCHAR) &SysFnMonMF_Numeric_EM      ,
+    "SysFnDydMF_EM_YY"          , (LPUCHAR) &SysFnDydMF_EM_YY           ,
+    "ToggleMonInfo"             , (LPUCHAR) &ToggleMonInfo              ,
+    "StartStopMonInfo"          , (LPUCHAR) &StartStopMonInfo           ,
+    "GetPerformanceCount"       , (LPUCHAR) &GetPerformanceCount        ,
 
     // qf_nc.c
     "SysFnNC_EM_YY"             , (LPUCHAR) &SysFnNC_EM_YY              ,
@@ -975,6 +1005,58 @@ typedef struct tagSTART_ADDRESSES
 
     // sysvars.c
     "MakePermVars"              , (LPUCHAR) &MakePermVars               ,
+    "MakePermCharVector"        , (LPUCHAR) &MakePermCharVector         ,
+    "MakePermIntVector"         , (LPUCHAR) &MakePermIntVector          ,
+    "MakePermVectorCom"         , (LPUCHAR) &MakePermVectorCom          ,
+    "SymTabAppendOneSysName_EM" , (LPUCHAR) &SymTabAppendOneSysName_EM  ,
+    "SymTabAppendAllSysNames_EM", (LPUCHAR) &SymTabAppendAllSysNames_EM ,
+    "InitSystemNames_EM"        , (LPUCHAR) &InitSystemNames_EM         ,
+    "AssignGlobalCWS"           , (LPUCHAR) &AssignGlobalCWS            ,
+    "AssignBoolScalarCWS"       , (LPUCHAR) &AssignBoolScalarCWS        ,
+    "AssignIntScalarCWS"        , (LPUCHAR) &AssignIntScalarCWS         ,
+    "AssignRealScalarCWS"       , (LPUCHAR) &AssignRealScalarCWS        ,
+    "AssignCharScalarCWS"       , (LPUCHAR) &AssignCharScalarCWS        ,
+    "ValidateCharDT_EM"         , (LPUCHAR) &ValidateCharDT_EM          ,
+    "ValidateInteger_EM"        , (LPUCHAR) &ValidateInteger_EM         ,
+    "ValidateIntegerTest"       , (LPUCHAR) &ValidateIntegerTest        ,
+    "ValidateFloat_EM"          , (LPUCHAR) &ValidateFloat_EM           ,
+    "ValidateFloatTest"         , (LPUCHAR) &ValidateFloatTest          ,
+    "ValidateCharVector_EM"     , (LPUCHAR) &ValidateCharVector_EM      ,
+    "ValidateIntegerVector_EM"  , (LPUCHAR) &ValidateIntegerVector_EM   ,
+    "VariantValidateCom_EM"     , (LPUCHAR) &VariantValidateCom_EM      ,
+    "ValidSetALX_EM"            , (LPUCHAR) &ValidSetALX_EM             ,
+    "ValidNdxChar"              , (LPUCHAR) &ValidNdxChar               ,
+    "ValidSetCT_EM"             , (LPUCHAR) &ValidSetCT_EM              ,
+    "ValidNdxCT"                , (LPUCHAR) &ValidNdxCT                 ,
+    "ValidSetDM_EM"             , (LPUCHAR) &ValidSetDM_EM              ,
+    "ValidNdxDM"                , (LPUCHAR) &ValidNdxDM                 ,
+    "ValidNdxDT"                , (LPUCHAR) &ValidNdxDT                 ,
+    "ValidSetDT_EM"             , (LPUCHAR) &ValidSetDT_EM              ,
+    "ValidSetELX_EM"            , (LPUCHAR) &ValidSetELX_EM             ,
+    "ValidSetFC_EM"             , (LPUCHAR) &ValidSetFC_EM              ,
+    "ValidSetFEATURE_EM"        , (LPUCHAR) &ValidSetFEATURE_EM         ,
+    "ValidNdxFEATURE"           , (LPUCHAR) &ValidNdxFEATURE            ,
+    "SetCurrentFeatureCWS"      , (LPUCHAR) &SetCurrentFeatureCWS       ,
+    "ValidSetFPC_EM"            , (LPUCHAR) &ValidSetFPC_EM             ,
+    "ValidNdxFPC"               , (LPUCHAR) &ValidNdxFPC                ,
+    "ValidSetIC_EM"             , (LPUCHAR) &ValidSetIC_EM              ,
+    "ValidNdxIC"                , (LPUCHAR) &ValidNdxIC                 ,
+    "ValidSetIO_EM"             , (LPUCHAR) &ValidSetIO_EM              ,
+    "ValidNdxIO"                , (LPUCHAR) &ValidNdxIO                 ,
+    "ValidSetLX_EM"             , (LPUCHAR) &ValidSetLX_EM              ,
+    "ValidSetPP_EM"             , (LPUCHAR) &ValidSetPP_EM              ,
+    "ValidNdxPP"                , (LPUCHAR) &ValidNdxPP                 ,
+    "ValidSetPR_EM"             , (LPUCHAR) &ValidSetPR_EM              ,
+    "ValidSetPW_EM"             , (LPUCHAR) &ValidSetPW_EM              ,
+    "ValidNdxPW"                , (LPUCHAR) &ValidNdxPW                 ,
+    "ValidSetRL_EM"             , (LPUCHAR) &ValidSetRL_EM              ,
+    "ValidNdxRL"                , (LPUCHAR) &ValidNdxRL                 ,
+    "ValidPostNone"             , (LPUCHAR) &ValidPostNone              ,
+    "AssignDefaultSysVars"      , (LPUCHAR) &AssignDefaultSysVars       ,
+    "_AssignDefaultSysVars"     , (LPUCHAR) &_AssignDefaultSysVars      ,
+    "CopySysVars"               , (LPUCHAR) &CopySysVars                ,
+    "DeleSysVars"               , (LPUCHAR) &DeleSysVars                ,
+    "InitSystemVars"            , (LPUCHAR) &InitSystemVars             ,
 
     // tabctrl.c
     "EnumCallbackShowHide"      , (LPUCHAR) &EnumCallbackShowHide       ,

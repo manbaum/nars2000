@@ -59,10 +59,11 @@ typedef enum tagTKCOL_INDICES       // FSA column indices for Tokenize
  TKCOL_DIAMOND      ,               // 1A:  Diamond symbol
  TKCOL_LAMP         ,               // 1B:  Comment symbol
  TKCOL_SYS_NS       ,               // 1C:  System namespace
- TKCOL_EOL          ,               // 1D:  End-Of-Line
- TKCOL_UNK          ,               // 1E:  Unknown symbols
+ TKCOL_DEL          ,               // 1D:  Del
+ TKCOL_EOL          ,               // 1E:  End-Of-Line
+ TKCOL_UNK          ,               // 1F:  Unknown symbols
 
- TKCOL_LENGTH       ,               // 1F:  # column indices (cols in fsaActTableTK)
+ TKCOL_LENGTH       ,               // 20:  # column indices (cols in fsaActTableTK)
                                     //      Because this enum is origin-0, this value is the # valid columns.
 } TKCOLINDICES, *LPTKCOLINDICES;
 
@@ -88,7 +89,10 @@ typedef enum tagTKROW_INDICES       // FSA row indices for Tokenize
  TKROW_JOTAMBIG   ,                 // 0A:  Ambiguous jot:  either TKROW_INIT w/fnOp2Done or TKROW_OUTAMBIG
  TKROW_OUTAMBIG   ,                 // 0B:  Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOp2Done
  TKROW_SYS_NS     ,                 // 0C:  System namespace
- TKROW_LENGTH     ,                 // 0D:  # FSA terminal states (rows in fsaActTableTK)
+ TKROW_LBR_INIT   ,                 // 0D:  Inside braces
+ TKROW_LBR_Q1     ,                 // 0E:  Inside braces, single quotes
+ TKROW_LBR_Q2     ,                 // 0F:  Inside braces, double quotes
+ TKROW_LENGTH     ,                 // 10:  # FSA terminal states (rows in fsaActTableTK)
                                     //      Because this enum is origin-0, this value is the # valid rows.
  TKROW_EXIT  = -1 ,                 // FSA is done
  TKROW_NONCE = -2 ,                 // State not specified as yet
@@ -127,7 +131,7 @@ typedef struct tagCLR_COL
 typedef struct tagTKLOCALVARS
 {
     HGLOBAL        hGlbToken;           // 00:  Global memory handle
-    LPTOKEN_HEADER lpHeader;            // 04:  Ptr to tokenize3d header in global memory
+    LPTOKEN_HEADER lpHeader;            // 04:  Ptr to tokenized header in global memory
     LPTOKEN        lptkStart,           // 08:  First available entry after the header
                    lptkNext,            // 0C:  Next  ...
                    lptkLastEOS;         // 10:  Ptr to last EOS token
@@ -158,12 +162,17 @@ typedef struct tagTKLOCALVARS
     int            iNumLen,             // 78:  # chars in lpszNumAlp
                    iStrLen,             // 7C:  ...        lpwszString
                    iNumLim,             // 80:  Current limit for lpszNumAlp
-                   iStrLim;             // 84:  ...               lpwszString
-    UINT           bMFO:1,              // 88:  00000001:  TRUE iff this is a Magic Function/Operator
-                   :31;                 //      FFFFFFFE:  Available bits
+                   iStrLim,             // 84:  ...               lpwszString
+                   lbrCount;            // 88:  Count of accumulated left braces
+    UINT           bMFO:1,              // 8C:  00000001:  TRUE iff this is a Magic Function/Operator
+                   bAfoArgs:1,          //      00000002:  TRUE iff some stmt references {alpha} or {omega}
+                   :30;                 //      FFFFFFFC:  Available bits
     struct tagPERTABDATA
-                  *lpMemPTD;            // 8C:  Ptr to PerTabData global memory
-                                        // 90:  Length
+                  *lpMemPTD;            // 90:  Ptr to PerTabData global memory
+    LPSF_FCNS      lpSF_Fcns;           // 94:  Ptr to common struc
+    DFN_TYPES      AfoDfnType;          // 98:  Top level AFO defined function type
+    LPHSHTABSTR    lpHTS;               // 9C:  Ptr to local HshTabStr (may *NOT* be NULL)
+                                        // A0:  Length
 } TKLOCALVARS, *LPTKLOCALVARS;
 
 typedef UBOOL (*TK_ACTION) (LPTKLOCALVARS);

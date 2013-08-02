@@ -70,28 +70,6 @@ APLCHAR wszQuadInput[] = WS_UTF16_QUAD L":";
 UBOOL gPrompt = FALSE;
 #endif
 
-typedef enum tagPTDMEMVIRTENUM
-{
-    PTDMEMVIRT_QUADERROR = 0,           // 00:  lpszQuadErrorMsg
-    PTDMEMVIRT_UNDOBEG,                 // 01:  lpUndoBeg
-    PTDMEMVIRT_HTSPTD,                  // 02:  lphtsPTD
-    PTDMEMVIRT_HSHTAB,                  // 03:  lphtsPTD->lpHshTab
-    PTDMEMVIRT_SYMTAB,                  // 04:  lphtsPTD->lpSymTab
-    PTDMEMVIRT_SIS,                     // 05:  lpSISBeg
-    PTDMEMVIRT_CS,                      // 06:  lptkCSIni
-    PTDMEMVIRT_YYRES,                   // 07:  lpYYRes
-    PTDMEMVIRT_STRAND_VAR,              // 08:  lpStrand[STRAND_VAR]
-    PTDMEMVIRT_STRAND_FCN,              // 09:  lpStrand[STRAND_FCN]
-    PTDMEMVIRT_STRAND_LST,              // 0A:  lpStrand[STRAND_LST]
-    PTDMEMVIRT_STRAND_NAM,              // 0B:  lpStrand[STRAND_NAM]
-    PTDMEMVIRT_WSZFORMAT,               // 0C:  Temporary formatting
-    PTDMEMVIRT_WSZTEMP,                 // 0D:  Temporary save area
-    PTDMEMVIRT_FORSTMT,                 // 0E:  FOR ... IN stmts
-    PTDMEMVIRT_MFO1,                    // 0F:  Magic functions/operators
-    PTDMEMVIRT_MFO2,                    // 10:  ...
-    PTDMEMVIRT_LENGTH                   // 11:  # entries
-} PTDMEMVIRTENUM;
-
 
 //***************************************************************************
 //  $SetAttrs
@@ -737,7 +715,7 @@ LRESULT APIENTRY SMWndProc
             lpLclMemVirtStr =
               MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
                               PTDMEMVIRT_LENGTH * sizeof (MEMVIRTSTR),
-                              MEM_COMMIT | MEM_TOP_DOWN,
+                              MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN,
                               PAGE_READWRITE);
             if (!lpLclMemVirtStr)
             {
@@ -873,7 +851,7 @@ WM_NCCREATE_FAIL:
             lpMemPTD->lphtsPTD =
               GuardAlloc (NULL,             // Any address
                           lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].MaxSize,
-                          MEM_COMMIT,
+                          MEM_COMMIT | MEM_RESERVE,
                           PAGE_READWRITE);
             if (!lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].IniAddr)
             {
@@ -912,7 +890,6 @@ WM_NCCREATE_FAIL:
             bRet = AllocSymTab (&lpLclMemVirtStr[PTDMEMVIRT_SYMTAB],    // Ptr to this entry in MemVirtStr
                                  lpMemPTD,                              // Ptr to PerTabData global memory
                                  lpMemPTD->lphtsPTD,                    // Ptr to this HSHTABSTR
-                                 TRUE,                                  // TRUE iff we're to initialize the constant STEs
                                  DEF_SYMTAB_INITNELM,                   // Initial # STEs in SymTab
                                  DEF_SYMTAB_INCRNELM,                   // # STEs by which to resize when low
                                  DEF_SYMTAB_MAXNELM);                   // Maximum # STEs
@@ -2004,11 +1981,19 @@ NORMAL_EXIT:
             {
                 UINT uCnt;                  // Loop counter
 
+                // If it's valid, ...
+                if (lpMemPTD->lphtsPTD)
+                {
+                    // Free the hash & sym tabs
+                    FreeHshSymTabs (lpMemPTD->lphtsPTD, TRUE); lpMemPTD->lphtsPTD = NULL;
+                } // End IF
+
                 // Zap the ptrs in lpMemPTD
                 lpMemPTD->lpwszQuadErrorMsg    = NULL;
 ////////////////lpUndoBeg                      = NULL;
-                lpMemPTD->lphtsPTD->lpHshTab   = NULL;
-                lpMemPTD->lphtsPTD->lpSymTab   = NULL;
+////////////////lpMemPTD->lphtsPTD->lpHshTab   = NULL;      // Zero'ed in FreeHshSymTabs
+////////////////lpMemPTD->lphtsPTD->lpSymTab   = NULL;      // ...
+////////////////lpMemPTD->lphtsPTD             = NULL;      // Zero'ed above
                 lpMemPTD->lpSISBeg             = NULL;
                 lpMemPTD->lptkCSIni            = NULL;
                 lpMemPTD->lpYYRes              = NULL;
@@ -2021,15 +2006,8 @@ NORMAL_EXIT:
 
                 // Loop through the entries
                 for (uCnt = 0; uCnt < PTDMEMVIRT_LENGTH; uCnt++)
-                // If we allocated virtual storage, ...
-                if (lpLclMemVirtStr[uCnt].IniAddr)
-                {
-                    // Free the virtual storage
-                    MyVirtualFree (lpLclMemVirtStr[uCnt].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[uCnt].IniAddr = NULL;
-
-                    // Unlink this entry from the chain
-                    UnlinkMVS (&lpLclMemVirtStr[uCnt]);
-                } // End FOR/IF
+                    // Free the virtual memory and unlink it
+                    FreeVirtUnlink (uCnt, lpLclMemVirtStr);
 
                 // Free the virtual storage
                 MyVirtualFree (lpLclMemVirtStr, 0, MEM_RELEASE); lpLclMemVirtStr = NULL;
@@ -2116,6 +2094,37 @@ void MoveToLine
     // Reset the changed line flag
     SetWindowLongW (lpMemPTD->hWndSM, GWLSF_CHANGED, FALSE);
 } // End MoveToLine
+
+
+//***************************************************************************
+//  $FreeRelinkHshTab
+//
+//  Free a <lpLclMemVirtStr> entry, unlink it, and relink in the new old
+//***************************************************************************
+
+void FreeRelinkHshTab
+    (LPHSHENTRY lpNewHshTab,            // Ptr to the new HshTab
+     LPHSHENTRY lpOldHshTab)            // ...        old ...
+
+{
+    HWND         hWndSM;                // Current SM window handle
+    LPMEMVIRTSTR lpLclMemVirtStr;       // Ptr to local MemVirtStr
+
+    // Get the current SM window handle
+    hWndSM = GetMemPTD ()->hWndSM;
+
+    // Get the ptr to the local virtual memory struc
+    (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWndSM, GWLSF_LPMVS);
+
+    // Free the virtual memory and unlink it
+    FreeVirtUnlink (PTDMEMVIRT_HSHTAB, lpLclMemVirtStr);
+
+    // Respecify the new Initial Address
+    lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].IniAddr = (LPVOID) lpNewHshTab;
+
+    // Link in the new HshTab
+    LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_HSHTAB]);
+} // End FreeRelinkHshTab
 
 
 //***************************************************************************

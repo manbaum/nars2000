@@ -31,6 +31,10 @@ HGLOBAL hGlbRC1,
         hGlbRC2;
 #endif
 
+LPWCHAR lpLW_FcnHdr = $AFORESULT $IS L"{" $ALPHA L"}"             $DEL                $OMEGA,   // Function header
+        lpLW_Op1Hdr = $AFORESULT $IS L"{" $ALPHA L"}" L"(" $LOPER $DELDEL        L")" $OMEGA,   // Monadic operator header
+        lpLW_Op2Hdr = $AFORESULT $IS L"{" $ALPHA L"}" L"(" $LOPER $DELDEL $ROPER L")" $OMEGA;   // Dyadic operator header
+
 
 //***************************************************************************
 //  $SaveFunction
@@ -52,6 +56,7 @@ UBOOL SaveFunction
 
     // Fill in common values
     SF_Fcns.bDisplayErr     = TRUE;             // Display Errors
+////SF_Fcns.bAFO            = FALSE;            // Parsing an AFO (already zero from = {0})
     SF_Fcns.SF_LineLen      = SF_LineLenFE;     // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineFE;    // Ptr to read line function
     SF_Fcns.SF_NumLines     = SF_NumLinesFE;    // Ptr to get # lines function
@@ -65,6 +70,44 @@ UBOOL SaveFunction
                            &SF_Fcns);           // Ptr to common values
 } // End SaveFunction
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SF_LineLenAN
+//
+//  Return the length of a function text header/line
+//    when saving an AFO
+//***************************************************************************
+
+UINT SF_LineLenAN
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
+     LPLW_PARAMS lpLW_Params,       // Ptr to common struc
+     UINT        uLineNum)          // Function line # (0 = header)
+
+{
+    // If it's the header, ...
+    if (uLineNum EQ 0)
+    {
+        // Split cases based upon the UDFO type
+        switch (lpLW_Params->lpYYRht->lptkRhtBrace->tkData.tkDfnType)
+        {
+            case DFNTYPE_FCN:
+                return lstrlenW (lpLW_FcnHdr);
+
+            case DFNTYPE_OP1:
+                return lstrlenW (lpLW_Op1Hdr);
+
+            case DFNTYPE_OP2:
+                return lstrlenW (lpLW_Op2Hdr);
+
+            defstop
+                return -1;
+        } // End SWITCH
+    } else
+        // Position of Right Brace less that of the char to the right of the left brace
+        return lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
+            - (lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1);
+} // End SF_LineLenAN
 
 
 //***************************************************************************
@@ -278,6 +321,74 @@ UINT SF_LineLenAA
     // Return the line length
     return lstrlenW (lpw);
 } // End SF_LineLenAA
+
+
+//***************************************************************************
+//  $SF_ReadLineAN
+//
+//  Read in a header/function line
+//    when saving an AFO
+//***************************************************************************
+
+void SF_ReadLineAN
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
+     LPLW_PARAMS lpLW_Params,       // Ptr to common struc
+     UINT        uLineNum,          // Function line # (0 = header)
+     LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
+
+{
+    // If it's the header, ...
+    if (uLineNum EQ 0)
+    {
+        // Split cases based upon the UDFO type
+        switch (lpLW_Params->lpYYRht->lptkRhtBrace->tkData.tkDfnType)
+        {
+            case DFNTYPE_FCN:
+                lstrcpyW (lpMemLine, lpLW_FcnHdr);
+
+                break;
+
+            case DFNTYPE_OP1:
+                lstrcpyW (lpMemLine, lpLW_Op1Hdr);
+
+                break;
+
+            case DFNTYPE_OP2:
+                lstrcpyW (lpMemLine, lpLW_Op2Hdr);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
+    {
+        // If the line text is present, ...
+        if (lpLW_Params->lpplLocalVars->lpwszLine)
+            // Copy the line to the caller's memory
+            //   with room for the trailing zero
+            lstrcpynW (lpMemLine,
+                      &lpLW_Params->lpplLocalVars->lpwszLine[lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
+                       lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
+                     - lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex);
+        else
+        {
+            LPMEMTXT_UNION lpMemTxtLine;
+
+            // Lock the memory to get a ptr to it
+            lpMemTxtLine = MyGlobalLock (lpLW_Params->lpplLocalVars->hGlbTxtLine);
+
+            // Copy the line to the caller's memory
+            //   with room for the trailing zero
+            lstrcpynW (lpMemLine,
+                      &(&lpMemTxtLine->C)[lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
+                       lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
+                     - lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex);
+            // We no longer need this ptr
+            MyGlobalUnlock (lpLW_Params->lpplLocalVars->hGlbTxtLine); lpMemTxtLine = NULL;
+        } // End IF/ELSE
+    } // End IF/ELSE
+} // End SF_ReadLineAN
 
 
 //***************************************************************************
@@ -574,6 +685,22 @@ UINT SF_NumLinesCom
 
 
 //***************************************************************************
+//  $SF_NumLinesAN
+//
+//  Return the # lines in the function (excluding the header line)
+//    when saving an AFO
+//***************************************************************************
+
+UINT SF_NumLinesAN
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
+     LPVOID    lpVoid)              // Ptr to common struc
+
+{
+    return 1;
+} // End SF_NumLinesAN
+
+
+//***************************************************************************
 //  $SF_NumLinesFE
 //
 //  Return the # lines in the function (excluding the header line)
@@ -674,6 +801,7 @@ UINT SF_NumLinesAA
 //    when called from []FX with a simple char matrix arg, or
 //    when called from []FX with a nested arg
 //    when called from []TF with a simple char matrix arg
+//    when saving an AFO
 //***************************************************************************
 
 void SF_CreationTimeCom
@@ -714,6 +842,7 @@ void SF_CreationTimeLW
 //    when called from []FX with a simple char matrix arg
 //    when called from []FX with a nested arg
 //    when called from []TF with a simple char matrix arg
+//    when saving an AFO
 //***************************************************************************
 
 void SF_LastModTimeCom
@@ -753,6 +882,7 @@ void SF_LastModTimeLW
 //    when called from []FX with a simple char matrix arg
 //    when called from []FX with a nested arg
 //    when called from []TF with a simple char matrix arg
+//    when saving an AFO
 //***************************************************************************
 
 HGLOBAL SF_UndoBufferCom
@@ -1071,7 +1201,7 @@ UBOOL SaveFunctionCom
     LPTOKEN        lptkCSBeg;               // Ptr to next token on the CS stack
 
     // Fill in common values
-    lpSF_Fcns->bRet = FALSE;
+    lpSF_Fcns->bRet     = FALSE;
     lpSF_Fcns->uErrLine = NEG1U;
 
     Assert ((hWndFE EQ NULL) ? TRUE : IzitFE (hWndFE));
@@ -1082,6 +1212,43 @@ UBOOL SaveFunctionCom
     // Save the ptr to the next token on the CS stack
     //   as our beginning
     lptkCSBeg = lpMemPTD->lptkCSNxt;
+
+    // If we're saving an AFO, ...
+    if (lpSF_Fcns->bAFO)
+    {
+        // Allocate a global HshTab
+        if (!AllocHshTab (NULL,                     // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
+                         &((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN, // Ptr to HshTab Struc
+                          DEF_AFO_HSHTAB_NBLKS,     // # blocks in this HshTab
+                          DEF_AFO_HSHTAB_INCRNELM,  // # HTEs by which to resize when low
+                          DEF_AFO_HSHTAB_MAXNELM))  // Maximum # HTEs
+            goto WSFULL_EXIT;
+
+        if (!AllocSymTab (NULL,                     // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
+                          lpMemPTD,                 // Ptr to PerTabData global memory
+                         &((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN, // Ptr to HshTab Struc
+                          DEF_AFO_SYMTAB_INITNELM,  // Initial # STEs in SymTab
+                          DEF_AFO_SYMTAB_INCRNELM,  // # STEs by which to resize when low
+                          DEF_AFO_SYMTAB_MAXNELM))  // Maximum # STEs
+            goto WSFULL_EXIT;
+
+        // Mark as global Hsh & Sym tabs
+        ((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN.bGlbHshSymTabs = TRUE;
+
+        // Put the new one into effect so that symbol table
+        //   references are made in the new tables
+        lpSF_Fcns->lpHTS = &((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN;
+
+        // Append all system names to the local SymTab
+        SymTabAppendAllSysNames_EM (&((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN);
+
+        // Assign default values to the system vars
+        _AssignDefaultSysVars (lpMemPTD, &((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN);
+
+        // Link the current HshTab & SymTabs to the new
+        // This link is what provides static scoping
+        ((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN.lphtsPrvSrch = lpMemPTD->lphtsPTD;
+    } // End IF
 
     // Get the handle to the Edit Ctrl
     if (hWndFE)
@@ -1140,12 +1307,13 @@ UBOOL SaveFunctionCom
 
         // Tokenize the line
         hGlbTknHdr =
-          Tokenize_EM (&lpMemTxtLine->C,    // The line to tokenize (not necessarily zero-terminated)
-                        uLineLen,           // NELM of lpwszLine
-                        hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                        0,                  // Function line # (0 = header)
-                       &ErrorHandler,       // Ptr to error handling function (may be NULL)
-                        FALSE);             // TRUE iff we're tokenizing a Magic Function/Operator
+          Tokenize_EM (&lpMemTxtLine->C,        // The line to tokenize (not necessarily zero-terminated)
+                        uLineLen,               // NELM of lpwszLine
+                        hWndEC,                 // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                        0,                      // Function line # (0 = header)
+                       &ErrorHandler,           // Ptr to error handling function (may be NULL)
+                        lpSF_Fcns,              // Ptr to common struc (may be NULL if unused)
+                        FALSE);                 // TRUE iff we're tokenizing a Magic Function/Operator
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } // End IF
@@ -1172,6 +1340,9 @@ UBOOL SaveFunctionCom
                                        lpSF_Fcns->lptkFunc);
         goto ERROR_EXIT;
     } // End IF
+
+    // Fill in fhLocalvars
+    fhLocalVars.bAFO = lpSF_Fcns->bAFO;
 
     // Allocate virtual memory for the Variable Strand accumulator
     lclMemVirtStr[0].lpText   = "fhLocalvars.lpYYStrandStart in <SaveFunctionCom>";
@@ -1237,11 +1408,15 @@ UBOOL SaveFunctionCom
         // Get the current system (UTC) time
         GetSystemTime (&systemTime);
 
-        // Check to see if this function is already in global memory
-        lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
+        // If this is not an AFO, ...
+        if (!fhLocalVars.bAFO)
+        {
+            // Check to see if this function is already in global memory
+            lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
 
-        // Get the old Dfn global memory handle
-        hGlbOldDfn = lpSymName->stData.stGlbData;
+            // Get the old Dfn global memory handle
+            hGlbOldDfn = lpSymName->stData.stGlbData;
+        } // End IF
 
         // If it's already in memory, get its creation time
         //   and then free it
@@ -1345,6 +1520,15 @@ UBOOL SaveFunctionCom
         //   because we advanced it during the above sizing
         lpMemPTD->lptkCSNxt = lptkCSBeg;
 
+        // If we're saving an AFO, ...
+        if (lpSF_Fcns->bAFO)
+        {
+            Assert (numLocalsSTE EQ 0);
+
+            // Count in the # locals found during sizing
+            numLocalsSTE += lpSF_Fcns->numLocalsSTE;
+        } // End IF
+
         // Allocate global memory for the function header
         lpSF_Fcns->hGlbDfnHdr =
         hGlbDfnHdr =
@@ -1397,6 +1581,7 @@ UBOOL SaveFunctionCom
         lpMemDfnHdr->ListRes      = fhLocalVars.ListRes;
         lpMemDfnHdr->ListLft      = fhLocalVars.ListLft;
         lpMemDfnHdr->ListRht      = fhLocalVars.ListRht;
+        lpMemDfnHdr->bAFO         = fhLocalVars.bAFO;
         lpMemDfnHdr->RefCnt       = 1;
         lpMemDfnHdr->numFcnLines  = numFcnLines;
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr
@@ -1433,6 +1618,7 @@ UBOOL SaveFunctionCom
         // If there's a result, ...
         if (fhLocalVars.lpYYResult)
         {
+            // Save the current offset from lpMemDfnHdr
             lpMemDfnHdr->offResultSTE = uOffset;
 
             // Copy STEs to global memory
@@ -1447,6 +1633,7 @@ UBOOL SaveFunctionCom
         // If there's a left arg, ...
         if (fhLocalVars.lpYYLftArg)
         {
+            // Save the current offset from lpMemDfnHdr
             lpMemDfnHdr->offLftArgSTE = uOffset;
 
             // Copy STEs to global memory
@@ -1461,6 +1648,7 @@ UBOOL SaveFunctionCom
         // If there's a right arg, ...
         if (fhLocalVars.lpYYRhtArg)
         {
+            // Save the current offset from lpMemDfnHdr
             lpMemDfnHdr->offRhtArgSTE = uOffset;
 
             // Copy STEs to global memory
@@ -1475,6 +1663,7 @@ UBOOL SaveFunctionCom
         // If there are any locals, ...
         if (fhLocalVars.lpYYLocals)
         {
+            // Save the current offset from lpMemDfnHdr
             lpMemDfnHdr->offLocalsSTE = uOffset;
 
             // Copy STEs to global memory
@@ -1483,6 +1672,21 @@ UBOOL SaveFunctionCom
                 *lplpSymDfnHdr++ = fhLocalVars.lpYYLocals[numSTE].tkToken.tkData.tkSym;
                 uOffset += sizeof (LPSYMENTRY);
             } // End FOR
+        } else
+        if (numLocalsSTE)
+        {
+            Assert (lpSF_Fcns->bAFO);
+            Assert (lpMemDfnHdr->offLocalsSTE EQ 0);
+
+            // Save the current offset from lpMemDfnHdr
+            lpMemDfnHdr->offLocalsSTE = uOffset;
+
+            // Save a ptr to the save area for local STEs
+            lpSF_Fcns->lplpLocalSTEs = lplpSymDfnHdr;
+
+            // Make room for the AFO STEs
+            lplpSymDfnHdr += numLocalsSTE;
+            uOffset       += numLocalsSTE * sizeof (LPSYMENTRY);
         } else
             lpMemDfnHdr->offLocalsSTE = 0;
 
@@ -1572,6 +1776,9 @@ UBOOL SaveFunctionCom
             goto ERROR_EXIT;
         } // End IF
 
+        // Save flag if Ctrl Strucs in AFOs
+        lpMemDfnHdr->bAfoCtrlStruc = (lpSF_Fcns->bAFO
+                                    && csLocalVars.bMainStmt);
         // Check for line labels ([]ID, etc.)
         if (!GetLabelNums (lpMemDfnHdr, hWndEC, hWndFE NE NULL, lpSF_Fcns))
             goto ERROR_EXIT;
@@ -1583,62 +1790,110 @@ UBOOL SaveFunctionCom
             FreeResultGlobalDfn (hGlbOldDfn); hGlbOldDfn = NULL;
         } // End IF
 
-        // Save the global memory handle in the STE
-        lpSymName->stData.stGlbData = MakePtrTypeGlb (hGlbDfnHdr);
-
-        // Mark as valued and user-defined function/operator
-        lpSymName->stFlags.Value  =
-        lpSymName->stFlags.UsrDfn = TRUE;
-
-        // Copy the "Accepts Axis Operator" flag
-        lpSymName->stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
-
-        // Set the object name
-        lpSymName->stFlags.ObjName = OBJNAME_USR;
-
-        // Mark as with the proper type and valence
-
-        // Split cases based upon the function type
-        switch (lpMemDfnHdr->DfnType)
+        // If we're parsing an AFO, ...
+        if (lpSF_Fcns->bAFO)
         {
-            case DFNTYPE_OP1:   // Monadic operator
-                lpSymName->stFlags.stNameType = NAMETYPE_OP1;
+            // Save the new HTS in global memory
+            lpMemDfnHdr->htsDFN = ((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN;
 
-                break;
+            // Set the function/operator valence based upon the Set/RefAlpha bits
+            switch (lpSF_Fcns->bSetAlpha * 2 + lpSF_Fcns->bRefAlpha)
+            {
+                case 2 * 0 + 0:         // !bSetAlpha   !bRefAlpha
+                    if (lpSF_Fcns->bRefOmega)
+                    {
+                        // Monadic function/operator
+                        lpMemDfnHdr->FcnValence   = FCNVALENCE_MON;
+                        lpMemDfnHdr->numLftArgSTE = 0;
+                    } else
+                    {
+                        // Niladic function/operator
+                        lpMemDfnHdr->FcnValence   = FCNVALENCE_NIL;
+                        lpMemDfnHdr->numLftArgSTE =
+                        lpMemDfnHdr->numRhtArgSTE = 0;
+                    } // End IF/ELSE
 
-            case DFNTYPE_OP2:   // Dyadic operator
-                lpSymName->stFlags.stNameType = NAMETYPE_OP2;
+                    break;
 
-                break;
+                case 2 * 0 + 1:         // !bSetAlpha    bRefAlpha
+                    // Dyadic function/operator
+                    lpMemDfnHdr->FcnValence = FCNVALENCE_DYD;
 
-            case DFNTYPE_FCN:   // Function
-                // Split cases based upon the function valence
-                switch (lpMemDfnHdr->FcnValence)
-                {
-                    case FCNVALENCE_NIL:    // Niladic function
-                        lpSymName->stFlags.stNameType = NAMETYPE_FN0;
+                    break;
 
-                        break;
+                case 2 * 1 + 0:         //  bSetAlpha   !bRefAlpha
+                defstop
+                    // Can't happen
 
-                    case FCNVALENCE_MON:    // Monadic function
-                    case FCNVALENCE_DYD:    // Dyadic function
-                    case FCNVALENCE_AMB:    // Ambivalent function
-                        lpSymName->stFlags.stNameType = NAMETYPE_FN12;
+                    break;
 
-                        break;
+                case 2 * 1 + 1:         //  bSetAlpha    bRefAlpha
+                    // Ambivalent function/operator (already set)
+                    Assert (lpMemDfnHdr->FcnValence EQ FCNVALENCE_AMB);
 
-                    defstop
-                        break;
-                } // End SWITCH
+////////////////////lpMemDfnHdr->FcnValence = FCNVALENCE_AMB;
 
-                break;
+                    break;
+            } // End SWITCH
+        } else
+        {
+            // Save the global memory handle in the STE
+            lpSymName->stData.stGlbData = MakePtrTypeGlb (hGlbDfnHdr);
 
-            case DFNTYPE_UNK:   // Unknown
-            defstop
-                break;
-        } // End SWITCH
+            // Mark as valued and user-defined function/operator
+            lpSymName->stFlags.Value  =
+            lpSymName->stFlags.UsrDfn = TRUE;
 
-        // If the caller is the Function Editror, ...
+            // Copy the "Accepts Axis Operator" flag
+            lpSymName->stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
+
+            // Set the object name
+            lpSymName->stFlags.ObjName = OBJNAME_USR;
+
+            // Mark as with the proper type and valence
+
+            // Split cases based upon the function type
+            switch (lpMemDfnHdr->DfnType)
+            {
+                case DFNTYPE_OP1:   // Monadic operator
+                    lpSymName->stFlags.stNameType = NAMETYPE_OP1;
+
+                    break;
+
+                case DFNTYPE_OP2:   // Dyadic operator
+                    lpSymName->stFlags.stNameType = NAMETYPE_OP2;
+
+                    break;
+
+                case DFNTYPE_FCN:   // Function
+                    // Split cases based upon the function valence
+                    switch (lpMemDfnHdr->FcnValence)
+                    {
+                        case FCNVALENCE_NIL:    // Niladic function
+                            lpSymName->stFlags.stNameType = NAMETYPE_FN0;
+
+                            break;
+
+                        case FCNVALENCE_MON:    // Monadic function
+                        case FCNVALENCE_DYD:    // Dyadic function
+                        case FCNVALENCE_AMB:    // Ambivalent function
+                            lpSymName->stFlags.stNameType = NAMETYPE_FN12;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                case DFNTYPE_UNK:   // Unknown
+                defstop
+                    break;
+            } // End SWITCH
+        } // End IF/ELSE
+
+        // If the caller is the Function Editor, ...
         if (hWndFE)
         {
             // Mark as unchanged since the last save
@@ -1651,13 +1906,26 @@ UBOOL SaveFunctionCom
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-        lpSF_Fcns->bRet = TRUE;
+        lpSF_Fcns->bRet      = TRUE;
         lpSF_Fcns->lpSymName = lpSymName;
 
         goto NORMAL_EXIT;
     } else
+    {
         // Copy the error message up the line
         lstrcpyW (lpSF_Fcns->wszErrMsg, fhLocalVars.wszErrMsg);
+
+        // Copy the error line # up the line
+        lpSF_Fcns->uErrLine = 0;
+    } // End IF/ELSE
+
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lpSF_Fcns->lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (hWndFE)
         // Ensure the FE window redraws the caret
@@ -1735,7 +2003,7 @@ NORMAL_EXIT:
 #endif
 
 UINT SaveFunctionLine
-    (LPSF_FCNS      lpSF_Fcns,              // Ptr to common struc (may be NULL if Magic Function)
+    (LPSF_FCNS      lpSF_Fcns,              // Ptr to common struc (may be NULL if unused)
      LPMAGIC_FCNOPR lpMagicFcnOpr,          // Ptr to magic function/operator struc (is not NULL if Magic Functions)
      LPDFN_HEADER   lpMemDfnHdr,            // Ptr to user-defined function/operator header (may be NULL if sizing)
      UINT           uLineNum,               // Current line # in the Edit Ctrl
@@ -1754,6 +2022,7 @@ UINT SaveFunctionLine
     LPAPLCHAR      lpwszLine;               // Ptr to function line text
     WCHAR          wszTemp[1024];           // Save area for error message text
     LPPERTABDATA   lpMemPTD;                // Ptr to PerTabData global memory
+    APLU3264       uLen;                    // Temporary var
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -1766,12 +2035,16 @@ UINT SaveFunctionLine
         // Get the length of the function line
         uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1);
 
+    // Calculate extra WCHARs in case we need to surround the line with braces
+    uLen = 2 * (lpSF_Fcns && lpSF_Fcns->bAFO && !lpSF_Fcns->bMakeAFO);
+
     // Allocate global memory to hold this text
     // The "sizeof (lpMemTxtLine->U) + " is for the leading length
     //   and the "+ 1" is for the terminating zero
+    //   and the "+ uLen" is for the extra WCHARs in case we need them for AFOs
     //   as well as to handle GlobalLock's aversion to locking
     //   zero-length arrays
-    hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (APLCHAR));
+    hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1 + uLen) * sizeof (APLCHAR));
     if (!hGlbTxtLine)
     {
         if (hWndFE)
@@ -1782,10 +2055,10 @@ UINT SaveFunctionLine
                          lpwszAppName,
                          MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             SetFocus (GetParent (hWndEC));
+
+            goto ERROR_EXIT;
         } else
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lpSF_Fcns->lptkFunc);
-        goto ERROR_EXIT;
+            goto WSFULL_EXIT;
     } // End IF
 
     // If we're not sizing, ...
@@ -1810,16 +2083,54 @@ UINT SaveFunctionLine
         // Tell EM_GETLINE maximum # chars in the buffer
         lpMemTxtLine->W = (WORD) uLineLen;
 
+        // Point to the start of the line
+        lpwszLine = &lpMemTxtLine->C;
+
         // If it's a Magic Function, ...
         if (lpMagicFcnOpr)
             // Copy the line text to global memory
-            CopyMemoryW (&lpMemTxtLine->C, lpMagicFcnOpr->Body[uLineNum], uLineLen);
+            CopyMemoryW (lpwszLine, lpMagicFcnOpr->Body[uLineNum], uLineLen);
         else
+        {
             // Read in the line text
-            (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1, &lpMemTxtLine->C);
+            (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1, lpwszLine);
 
-        // Point to the start of the line
-        lpwszLine = &lpMemTxtLine->C;
+            // If we're about to tokenize an AFO and we're not called from MakeAFO, ...
+            if (lpSF_Fcns->bAFO
+             && !lpSF_Fcns->bMakeAFO)
+            {
+                // Calculate the line length
+                uLen = lstrlenW (lpwszLine);
+
+                // Make room for a leading left brace
+                MoveMemory (&lpwszLine[1], lpwszLine, (uLen + 1) * sizeof (lpwszLine[0]));
+
+                // Insert a leading left brace
+                lpwszLine[0       ] = UTF16_LEFTBRACE;
+
+                // Append a trailing right brace & EOS
+                lpwszLine[uLen + 1] = UTF16_RIGHTBRACE;
+////////////////lpwszLine[uLen + 2] = WC_EOS;       // Already zero from GHND
+
+                // Tokenize the line so as to determine function/operator valence
+                hGlbTknHdr =
+                  Tokenize_EM (lpwszLine,               // The line to tokenize (not necessarily zero-terminated)
+                               uLineLen,                // NELM of lpwszLine
+                               hWndEC,                  // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                               uLineNum + 1,            // Function line # (0 = header)
+                              &ErrorHandler,            // Ptr to error handling function (may be NULL)
+                               lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
+                               lpMagicFcnOpr NE NULL);  // TRUE iff we're tokenizing a Magic Function/Operator
+                // We no longer need this storage
+                MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+
+                // Delete the surrounding braces to bring it back to where it was
+                CopyMemory (lpwszLine, &lpwszLine[1], uLen * sizeof (lpwszLine[0]));
+
+                // Terminate the line
+                lpwszLine[uLen] = WC_EOS;
+            } // End IF
+        } // End IF/ELSE
     } else
         lpwszLine = L"";
 
@@ -1830,6 +2141,7 @@ UINT SaveFunctionLine
                    hWndEC,                  // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    uLineNum + 1,            // Function line # (0 = header)
                   &ErrorHandler,            // Ptr to error handling function (may be NULL)
+                   lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
                    lpMagicFcnOpr NE NULL);  // TRUE iff we're tokenizing a Magic Function/Operator
     // We no longer need this ptr
     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -1900,6 +2212,11 @@ UINT SaveFunctionLine
     *lpOffNextTknLine += uTknSize;
 
     return uLineLen;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lpSF_Fcns->lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     return -1;

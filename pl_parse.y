@@ -40,16 +40,14 @@ in the lexical analyser (pl_yylex).
 #define   DIRECT    FALSE           // Flags for PushFcnStrand_YY
 #define INDIRECT    TRUE            // ...
 
-#define DEF_MAX_EXEC_DEPTH      70  // Maximum execution depth
-
 ////#define YYLEX_DEBUG
 ////#define YYFPRINTF_DEBUG
 
 #ifdef DEBUG
 #define YYERROR_VERBOSE
-#define YYDEBUG 1
-#define YYFPRINTF               pl_yyfprintf
-#define fprintf                 pl_yyfprintf
+#define YYDEBUG     1
+#define YYFPRINTF   pl_yyfprintf
+#define fprintf     pl_yyfprintf
 ////#define YYPRINT                 pl_yyprint
 void pl_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const yyvaluep);
 #endif
@@ -57,9 +55,7 @@ void pl_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE con
 #define YYMALLOC    malloc
 #define YYFREE      free
 
-int  pl_yylex       (LPPL_YYSTYPE lpYYLval, LPPLLOCALVARS lpplLocalVars);
-void pl_yyerror     (LPPLLOCALVARS lpplLocalVars, LPCHAR s);
-void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
+#include "pl_parse.proto"
 
 #define    YYSTYPE     PL_YYSTYPE
 #define  LPYYSTYPE   LPPL_YYSTYPE
@@ -94,7 +90,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 %lex-param   {LPPLLOCALVARS lpplLocalVars}
 
 %token NAMEVAR NAMEUNK CONSTANT CHRSTRAND NUMSTRAND USRFN0 SYSFN0 QUAD QUOTEQUAD SYSLBL
-%token LBRACE RBRACE
+%token LBRACE RBRACE_FCN_FN0 RBRACE_FCN_FN12 RBRACE_OP1_FN12 RBRACE_OP2_FN12
 %token UNK EOL
 %token CS_ANDIF
 %token CS_ASSERT
@@ -129,7 +125,7 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
     have long left scope, so they are declared in the %right list.
  */
 %right DIAMOND
-%left  ASSIGN PRIMFCN NAMEFCN NAMETRN SYSFN12 GOTO SYSNS
+%left  ASSIGN PRIMFCN NAMEFCN NAMETRN SYSFN12 GOTO SYSNS AFOFCN AFOOP1 AFOOP2 AFOGUARD AFORETURN
 %right NAMEOP1 OP1 NAMEOP2 OP2 NAMEOP3 OP3 JOTDOT OP3ASSIGN NAMEOP3ASSIGN
 %right OP2CONSTANT OP2NAMEVAR OP2CHRSTRAND OP2NUMSTRAND
 
@@ -139,7 +135,6 @@ void pl_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
 
 /*  ToDo
     ----
-    * J/Dyalog's dynamic functions
     * Allow f{is}MonOp MonOp
     * ...   f{is}      DydOp FcnOrVar
 
@@ -208,7 +203,7 @@ StmtMult:
                                         }
       // All multiple stmt errors propagate up to this point where we ABORT -- this ensures
       //   that the call to pl_yyparse terminates wth a non-zero error code.
-    | StmtMult DIAMOND error            {DbgMsgWP (L"%%StmtMult:  error" WS_UTF16_DIAMOND L" StmtMult");
+    | StmtMult DIAMOND error            {DbgMsgWP (L"%%StmtMult:  error " WS_UTF16_DIAMOND L" StmtMult");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -779,10 +774,12 @@ StmtSing:
                                                  lpplLocalVars->bRet = FALSE;
                                              else
                                              {
+                                                 HGLOBAL hGlbDfnHdr;
+
                                                  // Get ptr to PerTabData global memory
                                                  lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-                                                 // Get the ptr to the current SIS header
+                                                 // Get a ptr to the current SIS header
                                                  lpSISCur = lpMemPTD->lpSISCur;
 
                                                  // Do not display if caller is Execute or Quad
@@ -796,6 +793,11 @@ StmtSing:
                                                      // Handle ArrExpr if caller is Execute or quad
                                                      ArrExprCheckCaller (lpplLocalVars, lpSISCur, &$1, FALSE);
                                                  else
+                                                 // Do not display if we're parsing an AFO, ...
+                                                 if (hGlbDfnHdr = SISAfo (lpMemPTD))
+                                                     lpplLocalVars->bRet =
+                                                       AfoDisplay_EM (&$1.tkToken, FALSE, lpplLocalVars, hGlbDfnHdr);
+                                                 else
                                                      lpplLocalVars->bRet =
                                                        ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
                                              } // End IF/ELSE
@@ -804,6 +806,8 @@ StmtSing:
 
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR3
+                                             if (lpplLocalVars->bStopExec)
+                                                 YYACCEPT;           // Stop executing this line
 
                                              // If the exit type is RESET_ONE_INIT, ...
                                              if (lpplLocalVars->ExitType EQ EXITTYPE_RESET_ONE_INIT)
@@ -852,6 +856,55 @@ StmtSing:
                                                  lpplLocalVars->ExitType =
                                                    $1.tkToken.tkFlags.NoDisplay ? EXITTYPE_NODISPLAY
                                                                                 : EXITTYPE_DISPLAY;
+                                         } // End IF
+                                        }
+    | error   AFOGUARD                  {DbgMsgWP (L"%%StmtSing:  AFOGUARD error");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             YYERROR3
+                                         else
+                                             YYERROR2
+                                        }
+    | ArrValu AFOGUARD                  {DbgMsgWP (L"%%StmtSing:  AFOGUARD ArrValu");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             if (!AfoGuard (lpplLocalVars, &$1.tkToken))
+                                             {
+                                                 FreeResult (&$1);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             FreeResult (&$1);
+
+                                             // No return value needed
+                                         } // End IF
+                                        }
+    | error   AFORETURN                 {DbgMsgWP (L"%%StmtSing:  AFORETURN error");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             YYERROR3
+                                         else
+                                             YYERROR2
+                                        }
+    | ArrExpr AFORETURN                 {DbgMsgWP (L"%%StmtSing:  AFORETURN ArrValu");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             AfoReturn (lpplLocalVars, (&$1));
+
+                                             YYACCEPT;              // Stop executing this line
+                                         } // End IF
+                                        }
+    | error   ASSIGN AFORETURN          {DbgMsgWP (L"%%StmtSing:  AFORETURN " WS_UTF16_LEFTARROW L"error");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             YYERROR3
+                                         else
+                                             YYERROR2
+                                        }
+    | ArrValu ASSIGN AFORETURN          {DbgMsgWP (L"%%StmtSing:  AFORETURN " WS_UTF16_LEFTARROW L"ArrValu");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             $1.tkToken.tkFlags.NoDisplay = TRUE;
+                                             AfoReturn (lpplLocalVars, (&$1));
+
+                                             YYACCEPT;              // Stop executing this line
                                          } // End IF
                                         }
     | error   GOTO                      {DbgMsgWP (L"%%StmtSing:  " WS_UTF16_RIGHTARROW L"error");
@@ -966,6 +1019,7 @@ StmtSing:
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
                                              LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+                                             HGLOBAL      hGlbDfnHdr;        // AFO DfnHdr global memory handle
 
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                              {
@@ -976,7 +1030,7 @@ StmtSing:
                                              // Get ptr to PerTabData global memory
                                              lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-                                             // Get the ptr to the current SIS header
+                                             // Get a ptr to the current SIS header
                                              lpSISCur = lpMemPTD->lpSISCur;
 
                                              // Do not free if caller is Execute or Quad
@@ -994,9 +1048,19 @@ StmtSing:
                                                  // Mark as already displayed
                                                  $1.tkToken.tkFlags.NoDisplay = TRUE;
 
+                                                 if (lpplLocalVars->bStopExec)
+                                                     YYACCEPT;           // Stop executing this line
+
                                                  // Pass on as result
                                                  $$ = $1;
                                              } else
+                                             // Do not free if we're parsing an AFO, ...
+                                             //   and the current statement is the last one on the line
+                                             if (IsLastStmt (lpplLocalVars, $1.tkToken.tkCharIndex)
+                                              && (hGlbDfnHdr = SISAfo (lpMemPTD)))
+                                                 lpplLocalVars->bRet =
+                                                   AfoDisplay_EM (&$1.tkToken, TRUE, lpplLocalVars, hGlbDfnHdr);
+                                             else
                                                  FreeResult (&$1);
 
                                              // Mark the result as already displayed
@@ -1976,6 +2040,14 @@ ArrExpr:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
+////| ArrValu error                     {DbgMsgWP (L"%%ArrExpr:  error ArrValu");
+////                                     if (!lpplLocalVars->bLookAhead)
+////                                     {
+////                                         FreeResult (&$1);
+////                                         YYERROR3
+////                                     } else
+////                                         YYERROR2
+////                                    }
     | ArrValu LeftMonOper               {DbgMsgWP (L"%%ArrExpr:  LeftMonOper ArrValu");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
@@ -2527,6 +2599,32 @@ SingVar:
                                              SetVFOArraySRCIFlag (&$$.tkToken);
                                          } // End IF
                                         }
+    | RBRACE_FCN_FN0 StmtMult LBRACE    {DbgMsgWP (L"%%SingVar:  { StmtMult }");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Gather together the tokens between the braces into an AFO
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeAfo_EM_YY (&$3, &$1, lpplLocalVars);
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+                                                 lpplLocalVars->lpYYRes = NULL;
+                                             else
+                                                 lpplLocalVars->lpYYRes =
+                                                   ExecuteFn0 (lpplLocalVars->lpYYFcn);
+
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             $$ = *lpplLocalVars->lpYYRes;
+                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
     |     CHRSTRAND                     {DbgMsgWP (L"%%SingVar:  CHRSTRAND");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -2750,11 +2848,25 @@ SimpExpr:
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+/////////////////////////////////////////////LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+/////////////////////////////////////////////HGLOBAL      hGlbDfnHdr;        // AFO DfnHdr global memory handle
+/////////////////////////////////////////////
+/////////////////////////////////////////////// Get ptr to PerTabData global memory
+/////////////////////////////////////////////lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+/////////////////////////////////////////////
                                              // Mark as NOT already displayed
                                              $1.tkToken.tkFlags.NoDisplay = FALSE;
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                                  lpplLocalVars->bRet = FALSE;
                                              else
+/////////////////////////////////////////////// If we're parsing an AFO, ... (NOT WITH ASSIGN QUAD)
+/////////////////////////////////////////////if (hGlbDfnHdr = SISAfo (lpMemPTD))
+/////////////////////////////////////////////{
+/////////////////////////////////////////////    lpplLocalVars->bRet =
+/////////////////////////////////////////////      AfoDisplay_EM (&$1.tkToken, FALSE, lpplLocalVars, hGlbDfnHdr);
+/////////////////////////////////////////////
+/////////////////////////////////////////////    YYACCEPT;           // Stop executing this line
+/////////////////////////////////////////////} else
                                                  lpplLocalVars->bRet =
                                                    ArrayDisplay_EM (&$1.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
 /////////////////////////////////////////////FreeResult (&$1);                       // DO NOT FREE:  Passed on as result
@@ -2778,11 +2890,25 @@ SimpExpr:
     | ArrValu ASSIGN       QUOTEQUAD    {DbgMsgWP (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrValu");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+/////////////////////////////////////////////LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+/////////////////////////////////////////////HGLOBAL      hGlbDfnHdr;        // AFO DfnHdr global memory handle
+/////////////////////////////////////////////
+/////////////////////////////////////////////// Get ptr to PerTabData global memory
+/////////////////////////////////////////////lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+/////////////////////////////////////////////
                                              // Mark as NOT already displayed
                                              $1.tkToken.tkFlags.NoDisplay = FALSE;
                                              if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                                                  lpplLocalVars->bRet = FALSE;
                                              else
+/////////////////////////////////////////////// If we're parsing an AFO, ... (NOT WITH ASSIGN QUOTEQUAD)
+/////////////////////////////////////////////if (hGlbDfnHdr = SISAfo (lpMemPTD))
+/////////////////////////////////////////////{
+/////////////////////////////////////////////    lpplLocalVars->bRet =
+/////////////////////////////////////////////      AfoDisplay_EM (&$1.tkToken, FALSE, lpplLocalVars, hGlbDfnHdr);
+/////////////////////////////////////////////
+/////////////////////////////////////////////    YYACCEPT;           // Stop executing this line
+/////////////////////////////////////////////} else
                                                  lpplLocalVars->bRet =
                                                    ArrayDisplay_EM (&$1.tkToken, FALSE, &lpplLocalVars->bCtrlBreak);
 /////////////////////////////////////////////FreeResult (&$1);                       // DO NOT FREE:  Passed on as result
@@ -4226,7 +4352,7 @@ Drv1Func:
     |           MonOp error             {DbgMsgWP (L"%%Drv1Func:  error MonOp");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$1);
+/////////////////////////////////////////////FreeResult (&$1);               // Don't free named fcn/opr on error
                                              YYERROR3
                                          } else
                                              YYERROR2
@@ -4798,10 +4924,24 @@ Drv4Func:
 // Right operand values
 RhtOpVal:
       StrandOp2                         {DbgMsgWP (L"%%RhtOpVal:  StrandOp2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | '^' ArrValu '('                   {DbgMsgWP (L"%%RhtOpVal:  (ArrValu)");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $2;
+                                         } // End IF
 
 /////////////////////////////////////////////// Because there's no matching DecrRefCnt to the IncrRefCnt
 ///////////////////////////////////////////////   in MakeVarStrand_EM_YY, we mark this array as skipping
@@ -4850,7 +4990,12 @@ Drv5Func:
     | Drv3Func                          {DbgMsgWP (L"%%Drv5Func:  Drv3Func");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | MonOp Drv5Func                    {DbgMsgWP (L"%%Drv5Func:  Drv5Func MonOp");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -5192,17 +5337,32 @@ LeftMonOper:
       Drv1Func                          {DbgMsgWP (L"%%LeftMonOper:  Drv1Func");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | Drv3Func                          {DbgMsgWP (L"%%LeftMonOper:  Drv3Func");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | Drv4Func                          {DbgMsgWP (L"%%LeftMonOper:  Drv4Func");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | MonOp LeftMonOper                 {DbgMsgWP (L"%%LeftMonOper:  LeftMonOper MonOp");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -5264,6 +5424,35 @@ LeftMonOper:
 
                                              YYFree (lpplLocalVars->lpYYLft); lpplLocalVars->lpYYLft = NULL;
                                              YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                         } // End IF
+                                        }
+    ;
+
+AfoFcn:
+      AFOFCN                            {DbgMsgWP (L"%%AfoFcn:  AFOFCN");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
+                                             $$ = $1;
+                                         } // End IF
+                                        }
+    | RBRACE_FCN_FN12 StmtMult LBRACE   {DbgMsgWP (L"%%AfoFcn:  { StmtMult }");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Gather together the tokens between the braces into an AFO
+                                             lpplLocalVars->lpYYFcn =
+                                               MakeAfo_EM_YY (&$3, &$1, lpplLocalVars);
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     ;
@@ -5344,6 +5533,24 @@ LeftOper:
 
                                              // Copy the system namespace level
                                              $$.tkToken.tkFlags.SysNSLvl = $2.tkToken.tkFlags.SysNSLvl;
+                                         } // End IF
+                                        }
+    |     AfoFcn                        {DbgMsgWP (L"%%LeftOper:  AfoFcn");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (&$1, 1, DIRECT);    // Function (Direct)
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResNNU (&$1);
+                                                 YYERROR3
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn;
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     |     NAMEFCN                       {DbgMsgWP (L"%%LeftOper:  NAMEFCN");
@@ -5443,7 +5650,12 @@ LeftOper:
     |     ParenFunc                     {DbgMsgWP (L"%%LeftOper:  ParenFunc");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     |     RightOper    JOTDOT           {DbgMsgWP (L"%%LeftOper:  " WS_UTF16_JOT L". RightOper");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -5965,12 +6177,22 @@ TrainFuncL:
       LeftOper                          {DbgMsgWP (L"%%TrainFuncL:  LeftOper");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | AxisFunc                          {DbgMsgWP (L"%%TrainFuncL:  AxisFunc");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     ;
 
@@ -5978,17 +6200,32 @@ TrainFuncB:
       TrainFuncL                        {DbgMsgWP (L"%%TrainFuncB:  TrainFuncL");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | Drv1Func                          {DbgMsgWP (L"%%TrainFuncB:  Drv1Func");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | Drv6Func                          {DbgMsgWP (L"%%TrainFuncB:  Drv6Func");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     ;
 
@@ -6883,6 +7120,36 @@ AmbOpX:
                                         }
     ;
 
+// Anonymous monadic operator
+AfoOp1:
+      AFOOP1                            {DbgMsgWP (L"%%AfoOp1:  AFOOP1");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
+                                             $$ = $1;
+                                         } // End IF
+                                        }
+    | RBRACE_OP1_FN12 StmtMult LBRACE   {DbgMsgWP (L"%%AfoOp1:  { StmtMult }");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Gather together the tokens between the braces into an anonymous monadic operator
+                                             lpplLocalVars->lpYYOp1 =
+                                               MakeAfo_EM_YY (&$3, &$1, lpplLocalVars);
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp1;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                         } // End IF
+                                        }
+    ;
+
 // Monadic operator
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 MonOp:
@@ -6899,6 +7166,21 @@ MonOp:
                                              lpplLocalVars->lpYYOp1 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Monadic operator (Direct)
                                              YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp1;
+                                             YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                         } // End IF
+                                        }
+    |                  AfoOp1           {DbgMsgWP (L"%%MonOp:  AfoOp1");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$1, 1, DIRECT);    // Monadic operator (Direct)
 
                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -6934,12 +7216,22 @@ MonOp:
     |              MonOpAxis            {DbgMsgWP (L"%%MonOp:  MonOpAxis");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     |              '>' MonOp '('        {DbgMsgWP (L"%%MonOp:  (MonOp)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $2;
+                                         } // End IF
                                         }
     |              '>' Op1Spec '('      {DbgMsgWP (L"%%MonOp:  (Op1Spec)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -7010,6 +7302,36 @@ MonOpAxis:
                                         }
     ;
 
+// Anonymous dyadic operator
+AfoOp2:
+      AFOOP2                            {DbgMsgWP (L"%%AfoOp2:  AFOOP2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
+                                             $$ = $1;
+                                         } // End IF
+                                        }
+    | RBRACE_OP2_FN12 StmtMult LBRACE   {DbgMsgWP (L"%%AfoOp2:  { StmtMult }");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Gather together the tokens between the braces into an anonymous dyadic operator
+                                             lpplLocalVars->lpYYOp2 =
+                                               MakeAfo_EM_YY (&$3, &$1, lpplLocalVars);
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
+    ;
+
 // Dyadic operator
 // Skip Ctrl-Break checking here so the Function Strand processing isn't interrupted
 DydOp:
@@ -7026,6 +7348,21 @@ DydOp:
                                              lpplLocalVars->lpYYOp2 =
                                                PushFcnStrand_YY (lpplLocalVars->lpYYMak, 1, DIRECT); // Dyadic operator (Direct)
                                              YYFree (lpplLocalVars->lpYYMak); lpplLocalVars->lpYYMak = NULL;
+
+                                             if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
+                                                 YYERROR3
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp2;
+                                             YYFree (lpplLocalVars->lpYYOp2); lpplLocalVars->lpYYOp2 = NULL;
+                                         } // End IF
+                                        }
+    |                  AfoOp2           {DbgMsgWP (L"%%DydOp:  AfoOp2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp2 =
+                                               PushFcnStrand_YY (&$1, 1, DIRECT);    // Dyadic operator (Direct)
 
                                              if (!lpplLocalVars->lpYYOp2)            // If not defined, free args and YYERROR
                                                  YYERROR3
@@ -7061,12 +7398,22 @@ DydOp:
     |                  DydOpAxis        {DbgMsgWP (L"%%DydOp:  DydOpAxis");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     |              '#' DydOp '('        {DbgMsgWP (L"%%DydOp:  (DydOp)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $2;
+                                         } // End IF
                                         }
     |              '#' Op2Spec '('      {DbgMsgWP (L"%%DydOp:  (Op2Spec)");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
@@ -7182,7 +7529,12 @@ IndexListBR:
     | IndexListBR ']'             '['   {DbgMsgWP (L"%%IndexListBR:  [] IndexListBR ");
                                          // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | IndexListBR ']' error       '['   {DbgMsgWP (L"%%IndexListBR:  [error] IndexListBR ");
                                          if (!lpplLocalVars->bLookAhead)
@@ -7225,12 +7577,24 @@ IndexListBR:
 // Skip Ctrl-Break checking here so the List processing isn't interrupted
 IndexListWE:
       IndexListWE1                      {DbgMsgWP (L"%%IndexListWE:  IndexListWE1");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     | IndexListWE2                      {DbgMsgWP (L"%%IndexListWE:  IndexListWE2");
+                                         // No leading check for Ctrl-Break so as not to interrupt function/variable strand processing
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Check for error
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_ERROR)
+                                                 YYERROR3
                                              $$ = $1;
+                                         } // End IF
                                         }
     ;
 
@@ -7454,10 +7818,7 @@ EXIT_TYPES ParseLine
     HWND          hWndEC;                   // Edit Ctrl window handle
     LPSIS_HEADER  lpSISCur,                 // Ptr to current SI Stack Header
                   lpSISPrv;                 // Ptr to previous ...
-
-    // If we're in too deep, ...
-    if (!bNoDepthCheck && lpMemPTD->uExecDepth >= DEF_MAX_EXEC_DEPTH)
-        goto STKFULL_EXIT;
+    LPDFN_HEADER  lpMemDfnHdr;              // Ptr to user-defined function/operator header ...
 
     // Save the previous value of dwTlsType
     oldTlsType = PtrToUlong (TlsGetValue (dwTlsType));
@@ -7514,17 +7875,31 @@ EXIT_TYPES ParseLine
     DisplayTokens (lpMemTknHdr);
 #endif
 
+    // If there's a UDFO global memory handle, ...
+    if (hGlbDfnHdr)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // Save value in LocalVars
+        plLocalVars.bAFO          = lpMemDfnHdr->bAFO;
+        plLocalVars.bAfoCtrlStruc = lpMemDfnHdr->bAfoCtrlStruc;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
+
     // Save values in the LocalVars
-    plLocalVars.lpMemPTD    = lpMemPTD;
-    plLocalVars.hWndSM      = hWndSM;
-    plLocalVars.hGlbTxtLine = hGlbTxtLine;
-    plLocalVars.lpMemTknHdr = lpMemTknHdr;
-    plLocalVars.lpwszLine   = lpwszLine;
-    plLocalVars.bLookAhead  = FALSE;
-    plLocalVars.ExitType    = EXITTYPE_NONE;
-    plLocalVars.uLineNum    = uLineNum;
-    plLocalVars.hGlbDfnHdr  = hGlbDfnHdr;
-    plLocalVars.bExec1Stmt  = bExec1Stmt;
+    plLocalVars.lpMemPTD       = lpMemPTD;
+    plLocalVars.hWndSM         = hWndSM;
+    plLocalVars.hGlbTxtLine    = hGlbTxtLine;
+    plLocalVars.lpMemTknHdr    = lpMemTknHdr;
+    plLocalVars.lpwszLine      = lpwszLine;
+    plLocalVars.bLookAhead     = FALSE;
+    plLocalVars.ExitType       = EXITTYPE_NONE;
+    plLocalVars.uLineNum       = uLineNum;
+    plLocalVars.hGlbDfnHdr     = hGlbDfnHdr;
+    plLocalVars.bExec1Stmt     = bExec1Stmt;
 
     // Get # tokens in the line
     plLocalVars.uTokenCnt = plLocalVars.lpMemTknHdr->TokenCnt;
@@ -7631,26 +8006,10 @@ EXIT_TYPES ParseLine
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
-            case EXCEPTION_STACK_FULL:
-                // Set the exit type
-                plLocalVars.ExitType = EXITTYPE_ERROR;
-
-                // Mark as in error
-                uRet = 1;
-                uError = ERRORCODE_DM;
-                ErrorMessageIndirectToken (ERRMSG_STACK_FULL APPEND_NAME,
-                                           NULL);
-                break;
-
             case EXCEPTION_STACK_OVERFLOW:
                 // Set the exit type
-                plLocalVars.ExitType = EXITTYPE_ERROR;
+                plLocalVars.ExitType = EXITTYPE_STACK_FULL;
 
-                // Mark as in error
-                uRet = 1;
-                uError = ERRORCODE_ELX;
-                ErrorMessageIndirectToken (ERRMSG_STACK_OVERFLOW APPEND_NAME,
-                                           NULL);
                 break;
 
             case EXCEPTION_WS_FULL:
@@ -7733,32 +8092,43 @@ EXIT_TYPES ParseLine
             // If it's STACK FULL, ...
             if (plLocalVars.ExitType EQ EXITTYPE_STACK_FULL)
             {
-                uError = ERRORCODE_DM;
+                // Mark as in error
+                uRet = 1;
+                uError = ERRORCODE_NONE;
                 ErrorMessageIndirectToken (ERRMSG_STACK_FULL APPEND_NAME,
                                            NULL);
+                // Set the reset flag
+                lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_STOP;
             } // End IF
 
             // Get a ptr to the current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
 
-            // If it's a permanent function (i.e. Magic Function/Operator), don't suspend at this level
-            if (lpSISCur->PermFn)
+            // If it's a permanent function (i.e. Magic Function/Operator),
+            //   or an AFO,
+            // but not STACK FULL, ...
+            if ((lpSISCur->PermFn
+              || plLocalVars.bAFO)
+             && plLocalVars.ExitType NE EXITTYPE_STACK_FULL)
             {
+                // Don't suspend at this level
+
                 // Set the exit type
                 plLocalVars.ExitType = EXITTYPE_QUADERROR_INIT;
 
                 // Set the reset flag
-                lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
+                lpSISCur->ResetFlag  = RESETFLAG_QUADERROR_INIT;
 
                 break;
             } // End IF
 
             // If this level or an adjacent preceding level is from
-            //   Execute or immediate execution mode,
+            //   Execute, immediate execution mode, or an AFO,
             //   peel back to the preceding level
             while (lpSISCur
                 && (lpSISCur->DfnType EQ DFNTYPE_EXEC
-                 || lpSISCur->DfnType EQ DFNTYPE_IMM))
+                 || lpSISCur->DfnType EQ DFNTYPE_IMM
+                 || lpSISCur->bAFO))
                 lpSISCur = lpSISCur->lpSISPrv;
 
             // If this level is a user-defined function/operator,
@@ -7809,6 +8179,7 @@ EXIT_TYPES ParseLine
              lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt;
              lpSISCur = lpSISCur->lpSISPrv)
         if (!lpSISCur->PermFn
+         && !lpSISCur->bAFO
          && (lpSISCur->DfnType EQ DFNTYPE_OP1
           || lpSISCur->DfnType EQ DFNTYPE_OP2
           || lpSISCur->DfnType EQ DFNTYPE_FCN))
@@ -7872,7 +8243,7 @@ NORMAL_EXIT:
      && bActOnErrors
      && lpMemPTD->lpSISCur->lpSISErrCtrl EQ NULL)
     {
-        EXIT_TYPES exitType;        // Return code from ImmExecStmt
+        EXIT_TYPES exitType;        // Return code from PrimFnMonUpTackJotCSPLParse
 
 #ifdef DEBUG
         // Split cases based upon the error code
@@ -7919,19 +8290,19 @@ NORMAL_EXIT:
         switch (uError)
         {
             case ERRORCODE_ALX:
-                lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ALX";
+                lpwszLine = WS_UTF16_UPTACKJOT $QUAD_ALX;
                 bNoDepthCheck = FALSE;
 
                 break;
 
             case ERRORCODE_ELX:
-                lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX";
+                lpwszLine = WS_UTF16_UPTACKJOT $QUAD_ELX;
                 bNoDepthCheck = FALSE;
 
                 break;
 
             case ERRORCODE_DM:
-                lpwszLine = WS_UTF16_QUAD L"DM";
+                lpwszLine = $QUAD_DM;
                 bNoDepthCheck = TRUE;
 
                 break;
@@ -7940,15 +8311,74 @@ NORMAL_EXIT:
                 break;
         } // End SWITCH
 
-        // Execute the statement
-        exitType =
-          PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
-                                       lpMemPTD,        // Ptr to PerTabData global memory
-                                       lpwszLine,       // Ptr to text of line to execute
-                                       lstrlenW (lpwszLine), // Length of the line to execute
-                                       TRUE,            // TRUE iff we should act on errors
-                                       bNoDepthCheck,   // TRUE iff we're to skip the depth check
-                                       NULL);           // Ptr to function token
+        // Split cases based upon the error code
+        switch (uError)
+        {
+            case ERRORCODE_ALX:
+            case ERRORCODE_ELX:
+                // Execute the statement
+                exitType =
+                  PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
+                                               lpMemPTD,        // Ptr to PerTabData global memory
+                                               lpwszLine,       // Ptr to text of line to execute
+                                               lstrlenW (lpwszLine), // Length of the line to execute
+                                               TRUE,            // TRUE iff we should act on errors
+                                               bNoDepthCheck,   // TRUE iff we're to skip the depth check
+                                               NULL);           // Ptr to function token
+                break;
+
+            case ERRORCODE_DM:
+                // Display []DM
+                DisplayGlbArr_EM (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData,   // Global memory handle to display
+                                  TRUE,                                                         // TRUE iff last line has CR
+                                 &plLocalVars.bCtrlBreak,                                       // Ptr to Ctrl-Break flag
+                                  NULL);                                                        // Ptr to function token
+                // Return code as already displayed
+                exitType = EXITTYPE_NODISPLAY;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Split cases based upon the error code
+        switch (uError)
+        {
+            case ERRORCODE_ALX:
+                // If we exited normally, ...
+                if (exitType EQ EXITTYPE_DISPLAY
+                 || exitType EQ EXITTYPE_NODISPLAY
+                 || exitType EQ EXITTYPE_NOVALUE)
+                {
+                    // Stop execution so we can display the break message
+                    plLocalVars.ExitType =
+                    exitType             = EXITTYPE_STOP;
+
+                    // Set the reset flag
+                    lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_STOP;
+
+                    // If the Execute/Quad result is present, clear it
+                    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+                    {
+                        // Free the result
+                        FreeResult (&lpMemPTD->YYResExec);
+
+                        // We no longer need these values
+                        ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+                    } // End IF
+                } // End IF
+
+                break;
+
+            case ERRORCODE_ELX:
+            case ERRORCODE_DM:
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
         // Split cases based upon the exit type
         switch (exitType)
         {
@@ -7956,6 +8386,7 @@ NORMAL_EXIT:
             case EXITTYPE_RESET_ALL:
             case EXITTYPE_RESET_ONE:
             case EXITTYPE_RESET_ONE_INIT:
+            case EXITTYPE_QUADERROR_INIT:
                 // Pass on to caller
                 plLocalVars.ExitType = exitType;
 
@@ -7966,8 +8397,16 @@ NORMAL_EXIT:
                 // If the Execute/Quad result is present, display it
                 if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
                 {
-                    // Display the array
-                    ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &plLocalVars.bCtrlBreak);
+                    HGLOBAL hGlbDfnHdr;                 // AFO DfnHdr global memory handle
+
+                    // If it's not from executing []ALX,
+                    //   and we're parsing an AFO, ...
+                    if (uError NE ERRORCODE_ALX
+                     && (hGlbDfnHdr = SISAfo (lpMemPTD)))
+                        AfoDisplay_EM (&lpMemPTD->YYResExec.tkToken, FALSE, &plLocalVars, hGlbDfnHdr);
+                    else
+                        // Display the array
+                        ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &plLocalVars.bCtrlBreak);
 
                     // Free the result
                     FreeResult (&lpMemPTD->YYResExec);
@@ -7980,14 +8419,22 @@ NORMAL_EXIT:
 
             case EXITTYPE_ERROR:        // Display the prompt unless called by Quad or User fcn/opr
             case EXITTYPE_STACK_FULL:   // ...
+            case EXITTYPE_STOP:         // ...
             case EXITTYPE_NOVALUE:      // ...
-                // Get the ptr to the current SIS header
+                // Get a ptr to the current SIS header
                 lpSISPrv =
                 lpSISCur = lpMemPTD->lpSISCur;
 
-                // If this level is Immediate Execution Mode, peel back
+                // If this level is an AFO, ...
+                while (lpSISPrv
+                    && lpSISPrv->bAFO)
+                    // Peel back
+                    lpSISPrv = lpSISPrv->lpSISPrv;
+
+                // If this level is Immediate Execution Mode, ...
                 while (lpSISPrv
                     && lpSISPrv->DfnType EQ DFNTYPE_IMM)
+                    // Peel back
                     lpSISPrv = lpSISPrv->lpSISPrv;
 
                 // If this level is Execute, skip the prompt
@@ -8039,9 +8486,6 @@ NORMAL_EXIT:
     DBGLEAVE;
 
     return plLocalVars.ExitType;
-
-STKFULL_EXIT:
-    return EXITTYPE_STACK_FULL;
 } // End ParseLine
 #undef  APPEND_NAME
 
@@ -8052,6 +8496,12 @@ STKFULL_EXIT:
 //  Lexical analyzer for Bison
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- pl_yylex"
+#else
+#define APPEND_NAME
+#endif
+
 int pl_yylex
     (LPPL_YYSTYPE  lpYYLval,        // Ptr to lval
      LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
@@ -8059,8 +8509,10 @@ int pl_yylex
 {
 #ifdef DEBUG
     static UINT YYIndex = 0;        // Unique index for each YYRes
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 #endif
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
+
     // If we're restarting from a Control Structure, ...
     if (lpplLocalVars->bRestart)
     {
@@ -8068,7 +8520,11 @@ int pl_yylex
 
         return DIAMOND;
     } // End IF
+
 PL_YYLEX_START:
+    // Clear the fields
+    ZeroMemory (lpYYLval, sizeof (lpYYLval[0]));
+
     // Because we're parsing the stmt from right to left
     lpplLocalVars->lptkNext--;
 
@@ -8077,9 +8533,6 @@ PL_YYLEX_START:
               GetTokenTypeName (lpplLocalVars->lptkNext->tkFlags.TknType),
               lpplLocalVars->lptkNext->tkCharIndex);
 #endif
-
-    // Clear the fields
-    ZeroMemory (lpYYLval, sizeof (lpYYLval[0]));
 
     // Return the current token
     lpYYLval->tkToken        = *lpplLocalVars->lptkNext;
@@ -8091,10 +8544,11 @@ PL_YYLEX_START:
 ////lpYYLval->YYCopyArray    = FALSE;       // ...
 ////lpYYLval->lpYYFcnBase    = NULL;        // ...
 ////lpYYLval->lpYYStrandBase = NULL;        // ...
-#ifdef DEBUG
+
     // Get ptr to PerTabData global memory
     lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
+#ifdef DEBUG
     lpYYLval->YYIndex        = ++YYIndex;
     lpYYLval->YYFlag         = TRUE;      // Mark as a pl_yylex Index
     lpYYLval->SILevel        = lpMemPTD->SILevel;
@@ -8253,8 +8707,139 @@ PL_YYLEX_START:
 
             return ASSIGN;
 
-        case TKT_LISTSEP:
+        case TKT_LISTSEP:           // List separator
             return ';';
+
+        case TKT_FCNAFO:            // Anonymous function
+            return AFOFCN;
+
+        case TKT_OP1AFO:            // Anonymous monadic operator
+            return AFOOP1;
+
+        case TKT_OP2AFO:            // Anonymous dyadic operator
+            return AFOOP2;
+
+        case TKT_AFOGUARD:          // AFO guard
+            return AFOGUARD;
+
+        case TKT_AFORETURN:         // AFO return
+            return AFORETURN;
+
+        case TKT_DELAFO:            // Del Anon -- either a monadic or dyadic operator, bound to its operands
+            return AFOFCN;
+
+        case TKT_DEL:               // Del -- always a function
+            // Search up the SIS chain to see what this is
+            lpSISCur = SrchSISForDfn (lpMemPTD);
+
+            // If the ptr is valid, ...
+            if (lpSISCur)
+            {
+                // Split case based upon the function type
+                switch (lpSISCur->DfnType)
+                {
+                    case DFNTYPE_FCN:
+                        // Fill in the ptr to the function header
+                        //   in both the return value and the token stream
+                               lpYYLval->tkToken.tkData.tkVoid =
+                        lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+
+                        // Change it into an anonymous function
+                        //   in both the return value and the token stream
+                               lpYYLval->tkToken.tkFlags.TknType =
+                        lpplLocalVars->lptkNext->tkFlags.TknType = TKT_FCNAFO;
+
+                        return AFOFCN;
+
+                    case DFNTYPE_OP1:
+                    case DFNTYPE_OP2:
+                        // Fill in the ptr to the function header
+                        //   in both the return value and the token stream
+                               lpYYLval->tkToken.tkData.tkVoid =
+                        lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+
+                        // Change it into an anonymous function
+                        //   in both the return value and the token stream
+                               lpYYLval->tkToken.tkFlags.TknType =
+                        lpplLocalVars->lptkNext->tkFlags.TknType = TKT_DELAFO;
+
+                        return AFOFCN;
+
+                    default:
+                        // Mark it as a SYNTAX ERROR
+                        return UNK;
+                } // End SWITCH
+            } else
+                // Mark it as a SYNTAX ERROR
+                return UNK;
+
+        case TKT_DELDEL:            // Del Del -- either a monadic or dyadic operator
+            // Search up the SIS chain to see what this is
+            lpSISCur = SrchSISForDfn (lpMemPTD);
+
+            // If the ptr is valid, ...
+            if (lpSISCur)
+            {
+                // Split case based upon the function type
+                switch (lpSISCur->DfnType)
+                {
+////////////////////case DFNTYPE_FCN:
+////////////////////    // Fill in the ptr to the function header
+////////////////////    //   in both the return value and the token stream
+////////////////////           lpYYLval->tkToken.tkData.tkVoid =
+////////////////////    lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+////////////////////
+////////////////////    // Change it into an anonymous function
+////////////////////    //   in both the return value and the token stream
+////////////////////           lpYYLval->tkToken.tkFlags.TknType =
+////////////////////    lpplLocalVars->lptkNext->tkFlags.TknType = TKT_FCNAFO;
+////////////////////
+////////////////////    return AFOFCN;
+
+                    case DFNTYPE_OP1:
+                        // Fill in the ptr to the function header
+                        //   in both the return value and the token stream
+                               lpYYLval->tkToken.tkData.tkVoid =
+                        lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+
+                        // Change it into an anonymous monadic operator
+                        //   in both the return value and the token stream
+                               lpYYLval->tkToken.tkFlags.TknType =
+                        lpplLocalVars->lptkNext->tkFlags.TknType = TKT_OP1AFO;
+
+                        return AFOOP1;
+
+                    case DFNTYPE_OP2:
+                        // Fill in the ptr to the function header
+                        //   in both the return value and the token stream
+                               lpYYLval->tkToken.tkData.tkVoid =
+                        lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+
+                        // Change it into an anonymous dyadic operator
+                        //   in both the return value and the token stream
+                               lpYYLval->tkToken.tkFlags.TknType =
+                        lpplLocalVars->lptkNext->tkFlags.TknType = TKT_OP2AFO;
+
+                        return AFOOP2;
+
+                    default:
+                        // Mark it as a SYNTAX ERROR
+                        return UNK;
+                } // End SWITCH
+            } else
+                // Mark it as a SYNTAX ERROR
+                return UNK;
+
+        case TKT_SETALPHA:          // Set {alpha}
+            Assert (lpplLocalVars->lptkNext[1].tkFlags.TknType EQ TKT_SOS);
+
+            // If {alpha} has a value, ...
+            if (lpYYLval->tkToken.tkData.tkSym->stFlags.Value)
+                // Back off to the token to the right of the EOS/EOL
+                //   so as to skip this stmt entirely
+                lpplLocalVars->lptkNext -= (lpplLocalVars->lptkNext[1].tkData.tkIndex - 2);
+
+            goto PL_YYLEX_START;    // Go around again
 
         case TKT_FCNIMMED:
             if (lpplLocalVars->lptkNext->tkData.tkIndex EQ UTF16_RIGHTARROW)
@@ -8264,6 +8849,7 @@ PL_YYLEX_START:
 
         case TKT_LINECONT:
         case TKT_SOS:
+        case TKT_NOP:               // NOP
             goto PL_YYLEX_START;    // Ignore these tokens
 
         case TKT_CHRSTRAND:
@@ -8374,7 +8960,7 @@ PL_YYLEX_OP3IMMED:
             //   an assignment arrow            (return OP3ASSIGN)
 
             // Split cases based upon the lookahead result
-            switch (LookaheadAdjacent (lpplLocalVars, FALSE, TRUE))
+            switch (LookaheadAdjacent (lpplLocalVars, FALSE, TRUE, TRUE))
             {
                 case '1':               // If the next token is a monadic operator, or
                 case 'F':               // If the next token is a function,
@@ -8508,7 +9094,7 @@ PL_YYLEX_OP3IMMED:
             //   a variable or niladic function (return ']')
 
             // Split cases based upon the lookahead result
-            switch (LookaheadAdjacent (lpplLocalVars, TRUE, FALSE))
+            switch (LookaheadAdjacent (lpplLocalVars, TRUE, FALSE, FALSE))
             {
                 case '2':               // If the next token is a dyadic operator,
                     return '?';         //   then this token is an axis operator
@@ -8548,7 +9134,7 @@ PL_YYLEX_OP3IMMED:
             // Skip to end of the current stmt
             lpplLocalVars->lptkNext = &lpplLocalVars->lptkNext[lpplLocalVars->lptkNext->tkData.tkIndex];
 
-            // Save a ptr to the token
+            // Save a ptr to the EOS/EOL token
             lpplLocalVars->lptkEOS = lpplLocalVars->lptkNext;
 
             // And again to the end of the next stmt
@@ -8566,7 +9152,51 @@ PL_YYLEX_OP3IMMED:
             return LBRACE;
 
         case TKT_RIGHTBRACE:
-            return RBRACE;
+        {
+            DFN_TYPES dfnType;
+            UBOOL     bAfoArgs;
+
+            // Point to the right brace token
+            lpYYLval->lptkRhtBrace  =  lpplLocalVars->lptkNext;
+
+            // Point to the matching left brace token
+            lpYYLval->lptkLftBrace  = &lpplLocalVars->lptkStart[lpYYLval->lptkRhtBrace->tkData.tkIndex];
+
+            // Get the DFNTYPE_xxx
+            dfnType = lpplLocalVars->lptkNext->tkData.tkDfnType;
+
+            // Get the AfoArgs flag
+            bAfoArgs = lpplLocalVars->lptkNext->tkFlags.bAfoArgs;
+
+            // Point the next token to one to the right of the matching left brace
+            //   so that the next token we process is the left brace
+            lpplLocalVars->lptkNext = &lpYYLval->lptkLftBrace[1];
+
+            // Split cases based upon the DFNTYPE_xxx
+            switch (dfnType)
+            {
+                case DFNTYPE_FCN:
+                    if (bAfoArgs)
+                        return RBRACE_FCN_FN12;
+                    else
+                        return RBRACE_FCN_FN0;
+
+                case DFNTYPE_OP1:
+////////////////////if (bAfoArgs)
+                        return RBRACE_OP1_FN12;
+////////////////////else
+////////////////////    return RBRACE_OP1_FN0;
+
+                case DFNTYPE_OP2:
+////////////////////if (bAfoArgs)
+                        return RBRACE_OP2_FN12;
+////////////////////else
+////////////////////    return RBRACE_OP2_FN0;
+
+                defstop
+                    return UNK;
+            } // End SWITCH
+        } // End TKT_RIGHTBRACE
 
         case TKT_SYS_NS:
             return SYSNS;           // System namespace
@@ -8608,15 +9238,31 @@ PL_YYLEX_OP3IMMED:
             return CS_ENDWHILE;
 
         case TKT_CS_FOR:            // Control Structure:  FOR
+            // Check for Ctrl Strucs in AFO
+            if (lpplLocalVars->bAfoCtrlStruc)  // FOR
+                goto SYNTAX_EXIT;
+
             return CS_FOR;
 
         case TKT_CS_FORLCL:         // Control Structure:  FORLCL
+            // Check for Ctrl Strucs in AFO
+            if (lpplLocalVars->bAfoCtrlStruc)  // FORLCL
+                goto SYNTAX_EXIT;
+
             return CS_FORLCL;
 
         case TKT_CS_GOTO:           // Control Structure:  GOTO
+            // Check for Ctrl Strucs in AFO
+            if (lpplLocalVars->bAfoCtrlStruc)  // GOTO
+                goto SYNTAX_EXIT;
+
             return GOTO;
 
         case TKT_CS_IF:             // Control Structure:  IF
+            // Check for Ctrl Strucs in AFO
+            if (lpplLocalVars->bAfoCtrlStruc)  // IF
+                goto SYNTAX_EXIT;
+
             return CS_IF;
 
         case TKT_CS_IN:             // Control Structure:  IN
@@ -8632,6 +9278,10 @@ PL_YYLEX_OP3IMMED:
             return CS_ORIF;
 
         case TKT_CS_RETURN:         // Control Structure:  RETURN
+            // Check for Ctrl Strucs in AFO
+            if (lpplLocalVars->bAfoCtrlStruc)   // RETURN
+                goto SYNTAX_EXIT;
+
             // If this is the first time through for this keyword,
             //   return a CONSTANT
             if (!lpplLocalVars->bReturn)
@@ -8657,6 +9307,10 @@ PL_YYLEX_OP3IMMED:
             } // End IF/ELSE
 
         case TKT_CS_SELECT:         // Control Structure:  SELECT
+            // Check for Ctrl Strucs in AFO
+            if (lpplLocalVars->bAfoCtrlStruc)  // SELECT
+                goto SYNTAX_EXIT;
+
             return CS_SELECT;
 
         case TKT_CS_SKIPCASE:       // Control Structure:  Special token
@@ -8669,16 +9323,27 @@ PL_YYLEX_OP3IMMED:
             return CS_UNTIL;
 
         case TKT_CS_WHILE:          // Control Structure:  WHILE
+            // Check for Ctrl Strucs in AFO
+            if (lpplLocalVars->bAfoCtrlStruc)  // WHILE
+                goto SYNTAX_EXIT;
+
             return CS_WHILE;
+
+        case TKT_CS_REPEAT:         // Control Structure:  REPEAT
+            // Check for Ctrl Strucs in AFO
+            if (lpplLocalVars->bAfoCtrlStruc)  // REPEAT
+                goto SYNTAX_EXIT;
+
+            // Fall through to common code
 
         case TKT_CS_ENDIF:          // Control Structure:  ENDIF
         case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
         case TKT_CS_FOR2:           // ...                 FOR2
         case TKT_CS_IF2:            // ...                 IF2
-        case TKT_CS_REPEAT:         // ...                 REPEAT
         case TKT_CS_REPEAT2:        // ...                 REPEAT2
         case TKT_CS_SELECT2:        // ...                 SELECT2
         case TKT_CS_WHILE2:         // ...                 WHILE2
+        case TKT_GLBDFN:            // Placeholder for hGlbDfnHdr
             goto PL_YYLEX_START;    // Ignore these tokens
 
         case TKT_SYNTERR:           // Syntax Error
@@ -8688,7 +9353,13 @@ PL_YYLEX_OP3IMMED:
         defstop
             return UNK;
     } // End SWITCH
+SYNTAX_EXIT:
+    // Check on Ctrl Strucs in AFOs
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lpplLocalVars->lptkNext);
+    return UNK;
 } // End pl_yylex
+#undef  APPEND_NAME
 
 
 //***************************************************************************

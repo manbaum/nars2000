@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,7 +53,8 @@ typedef struct tagSIS_HEADER
                      Restartable:1, //      00002000:  This SI level is restartable
                      Unwind:1,      //      00004000:  Unwind this level for error message level
                      ItsEC:1,       //      00008000:  TRUE iff DFNTYPE_ERRCTRL and this level is []EC (not []EA)
-                     :16;           //      FFFF0000:  Available bits
+                     bAFO:1,        //      00010000:  TRUE iff this level is an AFO
+                     :15;           //      FFFE0000:  Available bits
     EVENT_TYPES      EventType;     // 20:  Event type (Major, Minor) (see EVENT_TYPES)
     UINT             CurLineNum,    // 24:  Current line # (origin-1)
                      NxtLineNum,    // 28:  Next    ...

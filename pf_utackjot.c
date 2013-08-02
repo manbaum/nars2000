@@ -375,6 +375,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 
                 // Copy the result
                 *lpYYRes = lpMemPTD->YYResExec;
+                lpYYRes->tkToken.tkFlags.NoDisplay |= (exitType EQ EXITTYPE_NODISPLAY);
                 lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
                 ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
 
@@ -392,7 +393,6 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
         case EXITTYPE_NOVALUE:
         case EXITTYPE_QUADERROR_INIT:
         case EXITTYPE_QUADERROR_EXEC:
-        case EXITTYPE_STOP:
             // If we should return a NoValue YYRes, ...
             if (bMakeNoValue)
             {
@@ -404,6 +404,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 
             // Fall through to error code
 
+        case EXITTYPE_STOP:
         case EXITTYPE_ERROR:
         case EXITTYPE_STACK_FULL:
         case EXITTYPE_RETURNxLX:
@@ -475,6 +476,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
                    hWndEC,                      // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    1,                           // Function line # (0 = header)
                   &ErrorMessageDirect,          // Ptr to error handling function (may be NULL)
+                   NULL,                        // Ptr to common struc (may be NULL if unused)
                    FALSE);                      // TRUE iff we're tokenizing a Magic Function/Operator
     // If it's invalid, ...
     if (hGlbTknHdr EQ NULL)

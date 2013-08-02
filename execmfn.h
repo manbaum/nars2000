@@ -87,6 +87,8 @@ typedef enum tagMFO
 #define MFON_DydIotaUnderbar    L"#DydIotaUnderbar"
 
 // Magic Function/Operator Variables
+#define $ALPHA          WS_UTF16_ALPHA
+#define $AFORESULT      WS_UTF16_QUAD L"Z"
 #define $AND            WS_UTF16_UPCARET
 #define $CEILING        WS_UTF16_UPSTILE
 #define $COMMABAR       WS_UTF16_COMMABAR
@@ -96,6 +98,7 @@ typedef enum tagMFO
 #define $DIAMOND        WS_UTF16_DIAMOND
 #define $DROP           WS_UTF16_DOWNARROW
 #define $DEL            WS_UTF16_DEL
+#define $DELDEL         WS_UTF16_DELDEL
 #define $DISCLOSE       WS_UTF16_RIGHTSHOE
 #define $DIVIDE         WS_UTF16_COLONBAR
 #define $DOMINO         WS_UTF16_DOMINO
@@ -129,6 +132,7 @@ typedef enum tagMFO
 #define $LDC_LT_VERT_L  WS_UTF16_LDC_LT_VERT_L
 #define $LDC_LT_HORZ_D  WS_UTF16_LDC_LT_HORZ_D
 #define $LDC_LT_HORZ_U  WS_UTF16_LDC_LT_HORZ_U
+#define $LOPER          WS_UTF16_LFTOPER
 #define $MATCH          WS_UTF16_EQUALUNDERBAR
 #define $MAX            WS_UTF16_UPSTILE
 #define $MIN            WS_UTF16_DOWNSTILE
@@ -136,7 +140,9 @@ typedef enum tagMFO
 #define $MULTISET       WS_UTF16_DOWNSHOESTILE
 #define $NE             WS_UTF16_NOTEQUAL
 #define $NEG            WS_UTF16_OVERBAR
+#define $NOT            WS_UTF16_TILDE
 #define $NOTEQUAL       WS_UTF16_NOTEQUAL
+#define $OMEGA          WS_UTF16_OMEGA
 #define $OR             WS_UTF16_DOWNCARET
 #define $PARENT         WS_UTF16_NUMBER WS_UTF16_NUMBER
 #define $NUMBER         WS_UTF16_NUMBER
@@ -144,11 +150,14 @@ typedef enum tagMFO
 #define $PSUPERSET      WS_UTF16_RIGHTSHOE
 #define $QUAD           WS_UTF16_QUAD
 #define $QUAD_ALX       WS_UTF16_QUAD L"ALX"
+#define $QUAD_AT        WS_UTF16_QUAD L"AT"
 #define $QUAD_CT        WS_UTF16_QUAD L"CT"
+#define $QUAD_CR        WS_UTF16_QUAD L"CR"
 #define $QUAD_DM        WS_UTF16_QUAD L"DM"
 #define $QUAD_ELX       WS_UTF16_QUAD L"ELX"
 #define $QUAD_ERROR     WS_UTF16_QUAD L"ERROR"
 #define $QUAD_FEATURE   WS_UTF16_QUAD L"FEATURE"
+#define $QUAD_FMT       WS_UTF16_QUAD L"FMT"
 #define $QUAD_ID        WS_UTF16_QUAD SYSLBL_ID
 #define $QUAD_INV       WS_UTF16_QUAD SYSLBL_INV
 #define $QUAD_IO        WS_UTF16_QUAD L"IO"
@@ -156,10 +165,12 @@ typedef enum tagMFO
 #define $QUAD_NC        WS_UTF16_QUAD L"NC"
 #define $QUAD_PRO       WS_UTF16_QUAD SYSLBL_PRO
 #define $QUAD_SGL       WS_UTF16_QUAD SYSLBL_SGL
+#define $QUAD_TCNL      WS_UTF16_QUAD L"TCNL"
 #define $RANK           WS_UTF16_DIERESISJOT
 #define $REVERSE        WS_UTF16_CIRCLESTILE
-#define $ROTATE         WS_UTF16_CIRCLESTILE
 #define $RHO            WS_UTF16_RHO
+#define $ROPER          WS_UTF16_RHTOPER
+#define $ROTATE         WS_UTF16_CIRCLESTILE
 #define $SUBSET         WS_UTF16_LEFTSHOEUNDERBAR
 #define $SUPERSET       WS_UTF16_RIGHTSHOEUNDERBAR
 #define $TAKE           WS_UTF16_UPARROW

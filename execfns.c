@@ -37,42 +37,55 @@ LPPL_YYSTYPE ExecuteFn0
 {
     LPPRIMFNS lpNameFcn;
 
-    // tkData is an LPSYMENTRY
-    Assert (GetPtrTypeDir (lpYYFcn0->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+    // Split cases based upon the ptr type bits
+    switch (GetPtrTypeDir (lpYYFcn0->tkToken.tkData.tkVoid))
+    {
+        case PTRTYPE_STCONST:
+            // tkData is an LPSYMENTRY
+            lpNameFcn = lpYYFcn0->tkToken.tkData.tkSym->stData.stNameFcn;
 
-    lpNameFcn = lpYYFcn0->tkToken.tkData.tkSym->stData.stNameFcn;
+            if (lpYYFcn0->tkToken.tkData.tkSym->stFlags.FcnDir)
+                // Call the execution routine
+                return (*lpNameFcn) (NULL,                      // Ptr to left arg token (may be NULL if monadic)
+                                    &lpYYFcn0->tkToken,         // Ptr to function token
+                                     NULL,                      // Ptr to right arg token
+                                     NULL);                     // Ptr to axis token (may be NULL)
+            break;
 
-    if (lpYYFcn0->tkToken.tkData.tkSym->stFlags.FcnDir)
-        // Call the execution routine
-        return (*lpNameFcn) (NULL,                      // Ptr to left arg token (may be NULL if monadic)
-                            &lpYYFcn0->tkToken,         // Ptr to function token
-                             NULL,                      // Ptr to right arg token
-                             NULL);                     // Ptr to axis token (may be NULL)
-    else
-        // tkData is a valid HGLOBAL function array or user-defined function/operator
-        Assert (IsGlbTypeFcnDir_PTB (lpNameFcn)
-             || IsGlbTypeDfnDir_PTB (lpNameFcn));
+        case PTRTYPE_HGLOBAL:
+            // tkData is an HGLOBAL
+            lpNameFcn = lpYYFcn0->tkToken.tkData.tkGlbData;
 
-        // Split cases based upon the array signature
-        switch (GetSignatureGlb_PTB (lpNameFcn))
-        {
-            case FCNARRAY_HEADER_SIGNATURE:
-                // Execute a function array global memory handle
-                return ExecFcnGlb_EM_YY (NULL,          // Ptr to left arg token (may be NULL if monadic or niladic)
-                                         lpNameFcn,     // Function array global memory handle
-                                         NULL,          // Ptr to right arg token (may be NULL if niladic)
-                                         NULL);         // Ptr to axis token (may be NULL)
-            case DFN_HEADER_SIGNATURE:
-                // Execute a user-defined function/operator global memory handle
-                return ExecDfnGlb_EM_YY (lpNameFcn,     // User-defined function/operator global memory handle
-                                         NULL,          // Ptr to left arg token (may be NULL if monadic)
-                                         lpYYFcn0,      // Ptr to function strand
-                                         NULL,          // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                         NULL,          // Ptr to right arg token
-                                         LINENUM_ONE);  // Starting line # (see LINE_NUMS)
-            defstop
-                return NULL;
-        } // End SWITCH
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // tkData is a valid HGLOBAL function array or user-defined function/operator
+    Assert (IsGlbTypeFcnDir_PTB (lpNameFcn)
+         || IsGlbTypeDfnDir_PTB (lpNameFcn));
+
+    // Split cases based upon the array signature
+    switch (GetSignatureGlb_PTB (lpNameFcn))
+    {
+        case FCNARRAY_HEADER_SIGNATURE:
+            // Execute a function array global memory handle
+            return ExecFcnGlb_EM_YY (NULL,          // Ptr to left arg token (may be NULL if monadic or niladic)
+                                     lpNameFcn,     // Function array global memory handle
+                                     NULL,          // Ptr to right arg token (may be NULL if niladic)
+                                     NULL);         // Ptr to axis token (may be NULL)
+        case DFN_HEADER_SIGNATURE:
+            // Execute a user-defined function/operator global memory handle
+            return ExecDfnGlb_EM_YY (lpNameFcn,     // User-defined function/operator global memory handle
+                                     NULL,          // Ptr to left arg token (may be NULL if monadic)
+                                     lpYYFcn0,      // Ptr to function strand
+                                     NULL,          // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                     NULL,          // Ptr to right arg token
+                                     LINENUM_ONE);  // Starting line # (see LINE_NUMS)
+        defstop
+            return NULL;
+    } // End SWITCH
 } // End ExecuteFn0
 
 
@@ -304,6 +317,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             } // End SWITCH
 
         case TKT_FCNARRAY:
+        case TKT_FCNAFO:
             // Get the HGLOBAL
             hGlbFcn = lpYYFcnStr->tkToken.tkData.tkGlbData;
 
@@ -340,6 +354,250 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             } // End SWITCH
 
             break;
+
+        case TKT_DELAFO:
+        {
+            LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
+            LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to right operand (may be NULL if monadic operator)
+                         lpYYFcnStrRht;     // Ptr to right operand (may be NULL if monadic operator)
+
+            // Get the HGLOBAL
+            hGlbFcn = lpYYFcnStr->tkToken.tkData.tkGlbData;
+
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlbFcn);
+
+            // Allocate a new YYRes for the left operand
+            lpYYFcnStrLft = YYAlloc ();
+
+            // Split cases based upon the type of the left operand
+            switch (lpMemDfnHdr->steLftOpr->stFlags.stNameType)
+            {
+                case NAMETYPE_VAR:
+                    // If the var is immediate, ...
+                    if (lpMemDfnHdr->steLftOpr->stFlags.Imm)
+                    {
+                        // Fill in the result token
+                        lpYYFcnStrLft->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                        lpYYFcnStrLft->tkToken.tkFlags.ImmType   = lpMemDfnHdr->steLftOpr->stFlags.ImmType;
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                        lpYYFcnStrLft->tkToken.tkData.tkLongest  = lpMemDfnHdr->steLftOpr->stData.stLongest;
+////////////////////////lpYYFcnStrLft->tkToken.tkCharIndex       =     // Ignored
+                    } else
+                    {
+                        // Fill in the result token
+                        lpYYFcnStrLft->tkToken.tkFlags.TknType   = TKT_VARNAMED;
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.ImmType   =     // Filled in by YYAlloc
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                        lpYYFcnStrLft->tkToken.tkData.tkSym      = lpMemDfnHdr->steLftOpr;
+////////////////////////lpYYFcnStrLft->tkToken.tkCharIndex       =     // Ignored
+                    } // End IF/ELSE
+
+                    break;
+
+                case NAMETYPE_FN12:
+                    // If the fcn is immediate, ...
+                    if (lpMemDfnHdr->steLftOpr->stFlags.Imm)
+                    {
+                        // Fill in the result token
+                        lpYYFcnStrLft->tkToken.tkFlags.TknType   = TKT_FCNIMMED;
+                        lpYYFcnStrLft->tkToken.tkFlags.ImmType   = lpMemDfnHdr->steLftOpr->stFlags.ImmType;
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                        lpYYFcnStrLft->tkToken.tkData.tkLongest  = lpMemDfnHdr->steLftOpr->stData.stLongest;
+////////////////////////lpYYFcnStrLft->tkToken.tkCharIndex       =     // Ignored
+                    } else
+                    {
+                        // Fill in the result token
+                        lpYYFcnStrLft->tkToken.tkFlags.TknType   = TKT_FCNNAMED;
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.ImmType   =     // Filled in by YYAlloc
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                        lpYYFcnStrLft->tkToken.tkData.tkSym      = lpMemDfnHdr->steLftOpr;
+////////////////////////lpYYFcnStrLft->tkToken.tkCharIndex       =     // Ignored
+                    } // End IF/ELSE
+
+                    break;
+
+                case NAMETYPE_OP1:
+                    // If the op1 is immediate, ...
+                    if (lpMemDfnHdr->steLftOpr->stFlags.Imm)
+                    {
+                        // Fill in the result token
+                        lpYYFcnStrLft->tkToken.tkFlags.TknType   = TKT_OP1IMMED;
+                        lpYYFcnStrLft->tkToken.tkFlags.ImmType   = lpMemDfnHdr->steLftOpr->stFlags.ImmType;
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                        lpYYFcnStrLft->tkToken.tkData.tkLongest  = lpMemDfnHdr->steLftOpr->stData.stLongest;
+////////////////////////lpYYFcnStrLft->tkToken.tkCharIndex       =     // Ignored
+                    } else
+                    {
+                        // Fill in the result token
+                        lpYYFcnStrLft->tkToken.tkFlags.TknType   = TKT_OP1NAMED;
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.ImmType   =     // Filled in by YYAlloc
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                        lpYYFcnStrLft->tkToken.tkData.tkSym      = lpMemDfnHdr->steLftOpr;
+////////////////////////lpYYFcnStrLft->tkToken.tkCharIndex       =     // Ignored
+                    } // End IF/ELSE
+
+                    break;
+
+                case NAMETYPE_OP2:
+                    // If the op2 is immediate, ...
+                    if (lpMemDfnHdr->steLftOpr->stFlags.Imm)
+                    {
+                        // Fill in the result token
+                        lpYYFcnStrLft->tkToken.tkFlags.TknType   = TKT_OP2IMMED;
+                        lpYYFcnStrLft->tkToken.tkFlags.ImmType   = lpMemDfnHdr->steLftOpr->stFlags.ImmType;
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                        lpYYFcnStrLft->tkToken.tkData.tkLongest  = lpMemDfnHdr->steLftOpr->stData.stLongest;
+////////////////////////lpYYFcnStrLft->tkToken.tkCharIndex       =     // Ignored
+                    } else
+                    {
+                        // Fill in the result token
+                        lpYYFcnStrLft->tkToken.tkFlags.TknType   = TKT_OP2NAMED;
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.ImmType   =     // Filled in by YYAlloc
+////////////////////////lpYYFcnStrLft->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                        lpYYFcnStrLft->tkToken.tkData.tkSym      = lpMemDfnHdr->steLftOpr;
+////////////////////////lpYYFcnStrLft->tkToken.tkCharIndex       =     // Ignored
+                    } // End IF/ELSE
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Set the token count
+            lpYYFcnStrLft->TknCount = 1;
+
+            // If there's a right operand, ...
+            if (lpMemDfnHdr->steRhtOpr)
+            {
+                // Allocate a new YYRes for it
+                lpYYFcnStrRht = YYAlloc ();
+
+                // Split cases based upon the type of the right operand
+                switch (lpMemDfnHdr->steRhtOpr->stFlags.stNameType)
+                {
+                    case NAMETYPE_VAR:
+                        // If the var is immediate, ...
+                        if (lpMemDfnHdr->steRhtOpr->stFlags.Imm)
+                        {
+                            // Fill in the result token
+                            lpYYFcnStrRht->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                            lpYYFcnStrRht->tkToken.tkFlags.ImmType   = lpMemDfnHdr->steRhtOpr->stFlags.ImmType;
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                            lpYYFcnStrRht->tkToken.tkData.tkLongest  = lpMemDfnHdr->steRhtOpr->stData.stLongest;
+////////////////////////////lpYYFcnStrRht->tkToken.tkCharIndex       =     // Ignored
+                        } else
+                        {
+                            // Fill in the result token
+                            lpYYFcnStrRht->tkToken.tkFlags.TknType   = TKT_VARNAMED;
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.ImmType   =     // Filled in by YYAlloc
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                            lpYYFcnStrRht->tkToken.tkData.tkSym      = lpMemDfnHdr->steRhtOpr;
+////////////////////////////lpYYFcnStrRht->tkToken.tkCharIndex       =     // Ignored
+                        } // End IF/ELSE
+
+                        break;
+
+                    case NAMETYPE_FN12:
+                        // If the fcn is immediate, ...
+                        if (lpMemDfnHdr->steRhtOpr->stFlags.Imm)
+                        {
+                            // Fill in the result token
+                            lpYYFcnStrRht->tkToken.tkFlags.TknType   = TKT_FCNIMMED;
+                            lpYYFcnStrRht->tkToken.tkFlags.ImmType   = lpMemDfnHdr->steRhtOpr->stFlags.ImmType;
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                            lpYYFcnStrRht->tkToken.tkData.tkLongest  = lpMemDfnHdr->steRhtOpr->stData.stLongest;
+////////////////////////////lpYYFcnStrRht->tkToken.tkCharIndex       =     // Ignored
+                        } else
+                        {
+                            // Fill in the result token
+                            lpYYFcnStrRht->tkToken.tkFlags.TknType   = TKT_FCNNAMED;
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.ImmType   =     // Filled in by YYAlloc
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                            lpYYFcnStrRht->tkToken.tkData.tkSym      = lpMemDfnHdr->steRhtOpr;
+////////////////////////////lpYYFcnStrRht->tkToken.tkCharIndex       =     // Ignored
+                        } // End IF/ELSE
+
+                        break;
+
+                    case NAMETYPE_OP1:
+                        // If the op1 is immediate, ...
+                        if (lpMemDfnHdr->steRhtOpr->stFlags.Imm)
+                        {
+                            // Fill in the result token
+                            lpYYFcnStrRht->tkToken.tkFlags.TknType   = TKT_OP1IMMED;
+                            lpYYFcnStrRht->tkToken.tkFlags.ImmType   = lpMemDfnHdr->steRhtOpr->stFlags.ImmType;
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                            lpYYFcnStrRht->tkToken.tkData.tkLongest  = lpMemDfnHdr->steRhtOpr->stData.stLongest;
+////////////////////////////lpYYFcnStrRht->tkToken.tkCharIndex       =     // Ignored
+                        } else
+                        {
+                            // Fill in the result token
+                            lpYYFcnStrRht->tkToken.tkFlags.TknType   = TKT_OP1NAMED;
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.ImmType   =     // Filled in by YYAlloc
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                            lpYYFcnStrRht->tkToken.tkData.tkSym      = lpMemDfnHdr->steRhtOpr;
+////////////////////////////lpYYFcnStrRht->tkToken.tkCharIndex       =     // Ignored
+                        } // End IF/ELSE
+
+                        break;
+
+                    case NAMETYPE_OP2:
+                        // If the op2 is immediate, ...
+                        if (lpMemDfnHdr->steRhtOpr->stFlags.Imm)
+                        {
+                            // Fill in the result token
+                            lpYYFcnStrRht->tkToken.tkFlags.TknType   = TKT_OP2IMMED;
+                            lpYYFcnStrRht->tkToken.tkFlags.ImmType   = lpMemDfnHdr->steRhtOpr->stFlags.ImmType;
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                            lpYYFcnStrRht->tkToken.tkData.tkLongest  = lpMemDfnHdr->steRhtOpr->stData.stLongest;
+////////////////////////////lpYYFcnStrRht->tkToken.tkCharIndex       =     // Ignored
+                        } else
+                        {
+                            // Fill in the result token
+                            lpYYFcnStrRht->tkToken.tkFlags.TknType   = TKT_OP2NAMED;
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.ImmType   =     // Filled in by YYAlloc
+////////////////////////////lpYYFcnStrRht->tkToken.tkFlags.NoDisplay =     // Filled in by YYAlloc
+                            lpYYFcnStrRht->tkToken.tkData.tkSym      = lpMemDfnHdr->steRhtOpr;
+////////////////////////////lpYYFcnStrRht->tkToken.tkCharIndex       =     // Ignored
+                        } // End IF/ELSE
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Set the token count
+                lpYYFcnStrRht->TknCount = 1;
+            } else
+                // mark as unallocated
+                lpYYFcnStrRht = NULL;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
+
+            // Call common routine
+            lpYYRes =
+              ExecDfnOprGlb_EM_YY (hGlbFcn,         // User-defined function/operator global memory handle
+                                   lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                   lpYYFcnStrLft,   // Ptr to left operand function strand (may be NULL if not an operator and no axis)
+                                   lpYYFcnStr,      // Ptr to function strand (may be NULL if not an operator and no axis)
+                                   lpYYFcnStrRht,   // Ptr to right operand function strand (may be NULL if not an operator and no axis)
+                                   lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                   lptkRhtArg,      // Ptr to right arg token
+                                   LINENUM_ONE);    // Starting line # (see LINE_NUMS)
+            // Free the left operand YYRes
+            YYFree (lpYYFcnStrLft);
+
+            // If we allocated it, ...
+            if (lpYYFcnStrRht)
+                // Free the right operand YYRes
+                YYFree (lpYYFcnStrRht);
+
+            break;
+        } // End TKT_DELAFO
 
         defstop
             break;
@@ -818,6 +1076,9 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                                 lptkRhtArg,                 // Ptr to right arg token
                                 lptkAxis);                  // Ptr to axis token (may be NULL)
         case TKT_FCNARRAY:
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
                                 // 1.  User-defined operator
                                 //   e.g., Z{is}L (F FOO G) R
                                 //         +foo- 1 2

@@ -2795,11 +2795,6 @@ typedef struct tagLANGCHARS
                                            L"              L (f" WS_UTF16_DIERESISJOT L"[X] Y) R\n\n"
                                            L"Keyboard:  Alt-'J' or Alt-Shift-'j'\n\n"
                                            L"Unicode:  0x2364 or 9060"},
-        {WS_UTF16_DOWNSHOESTILE     , {0}, L"Multiset",
-                                           L"Multiset Operator:  f" WS_UTF16_DOWNSHOESTILE L" R\n"
-                                           L"                  L f" WS_UTF16_DOWNSHOESTILE L" R\n"
-                                           L"Keyboard:  Alt-'m'\n\n"
-                                           L"Unicode:  0x2366 or 9062"},
 ////////{WS_UTF16_DIERESISSTAR      , {0}, L""},       // Uncomment when implemented
 ////////{WS_UTF16_DIERESISDOT       , {0}, L""},       // ...
 ////////{WS_UTF16_DIERESISDEL       , {0}, L""},       // ...
@@ -2808,7 +2803,11 @@ typedef struct tagLANGCHARS
                                            L"Composition Operator:  L f" WS_UTF16_DIERESISCIRCLE L"g R\n\n"
                                            L"Keyboard:  Alt-'O' or Alt-shift-'o'\n\n"
                                            L"Unicode:  0x2365 or 9061"},
-////////{WS_UTF16_CIRCLESTILE       , {0}, L""},       // ...
+        {WS_UTF16_DOWNSHOESTILE     , {0}, L"Multiset",
+                                           L"Multiset Operator:  f" WS_UTF16_DOWNSHOESTILE L" R\n"
+                                           L"                  L f" WS_UTF16_DOWNSHOESTILE L" R\n"
+                                           L"Keyboard:  Alt-'m'\n\n"
+                                           L"Unicode:  0x2366 or 9062"},
         {WS_UTF16_DOT               , {0}, L"Dot",
                                            L"Inner Product Operator:  L f.g R\n"
                                            L"Outer Product Operator:  L " WS_UTF16_JOT L".g R\n"
@@ -2860,11 +2859,6 @@ typedef struct tagLANGCHARS
                                            L"expression " WS_UTF16_LAMP L" Comment which is not evaluated\n\n"
                                            L"Keyboard:  Alt-','\n\n"
                                            L"Unicode:  0x235D or 9053"},
-        {WS_UTF16_DEL               , {0}, L"Del",
-                                           L"Used to open function definition mode\n\n"
-                                           WS_UTF16_DEL L"foo\n\n"
-                                           L"Keyboard:  Alt-'g'\n\n"
-                                           L"Unicode:  0x2207 or 8711"},
         {WS_UTF16_DELTA             , {0}, L"Delta",
                                            L"Used as the first or subsequent character in names\n\n"
                                            L"Keyboard:  Alt-'h'\n\n"
@@ -2877,14 +2871,42 @@ typedef struct tagLANGCHARS
                                            L"Used as the first or subsequent character in names such as _type\n\n"
                                            L"Keyboard:  '_' or Shift-'-'\n\n"
                                            L"Unicode:  0x005F or 95"},
+        LANGCHARS_SEPARATOR
         {WS_UTF16_ALPHA             , {0}, L"Alpha",
-                                           L"Used as an identifier name\n\n"
+                                           L"Used as an identifier name outside anonymous functions/operators"
+                                           L" and as the identifier name for the (optional) left argument inside"
+                                           L" an anonymous function/operator\n\n"
                                            L"Keyboard:  Alt-'a'\n\n"
                                            L"Unicode:  0x237A or 9082"},
+        {WS_UTF16_DEL               , {0}, L"Del",
+                                           L"Used to open function definition mode in immediate execution mode"
+                                           L" and to refer to the enclosing function inside a user or"
+                                           L" anonymous function/operator\n\n"
+                                           WS_UTF16_DEL L"foo\n\n"
+                                           L"Keyboard:  Alt-'g'\n\n"
+                                           L"Unicode:  0x2207 or 8711"},
         {WS_UTF16_OMEGA             , {0}, L"Omega",
-                                           L"Used as an identifier name\n\n"
+                                           L"Used as an identifier name outside anonymous functions/operators"
+                                           L" and as the identifier name for the right argument inside"
+                                           L" an anonymous function/operator\n\n"
                                            L"Keyboard:  Alt-'w'\n\n"
                                            L"Unicode:  0x2375 or 9077"},
+        {WS_UTF16_LFTOPER           , {0}, L"Alpha Alpha",
+                                           L"Used as an identifier name for the left operand inside"
+                                           L" an anonymous operator\n\n"
+                                           L"Keyboard:  Alt-'a' Alt-'a'\n\n"
+                                           L"Unicode:  0x237A 0x237A or 9082 9082"},
+        {WS_UTF16_DELDEL            , {0}, L"Del Del",
+                                           L"Used as the identifier name for the operator inside"
+                                           L" an anonymous operator\n\n"
+                                           WS_UTF16_DEL L"foo\n\n"
+                                           L"Keyboard:  Alt-'g'\n\n"
+                                           L"Unicode:  0x2207 or 8711"},
+        {WS_UTF16_RHTOPER           , {0}, L"Omega Omega",
+                                           L"Used as an identifier name for the right operand inside\n"
+                                           L"  an anonymous operator\n\n"
+                                           L"Keyboard:  Alt-'w' Alt-'w'\n\n"
+                                           L"Unicode:  0x2375 0x2375 or 9077 9077"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_OVERBAR           , {0}, L"Overbar",
                                            L"When it immediately precedes a number, it indicates that the number is negative.  "

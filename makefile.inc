@@ -418,6 +418,7 @@ $(MS_DIR)common.h:      $(MS_DIR)msieve.h
 $(MS_DIR)mp.h:          $(MS_DIR)util.h
 
 ## NARS-specific files
+$(O)afofns.obj:         $(@B).c         $(AFOFNS_DEP)
 $(O)assign.obj:         $(@B).c         $(ASSIGN_DEP)
 $(O)axisfns.obj:        $(@B).c         $(AXISFNS_DEP)
 $(O)bjhash.obj:         $(@B).c         $(BJHASH_DEP)

@@ -40,9 +40,7 @@ void cs_yyprint     (FILE *yyoutput, unsigned short int yytoknum, CS_YYSTYPE con
 #define YYMALLOC    malloc
 #define YYFREE      free
 
-int  cs_yylex       (LPCS_YYSTYPE lpYYLval, LPCSLOCALVARS lpcsLocalVars);
-void cs_yyerror     (LPCSLOCALVARS lpcsLocalVars, LPCHAR s);
-void cs_yyfprintf   (FILE  *hfile, LPCHAR lpszFmt, ...);
+#include "cs_parse.proto"
 
 #define    YYSTYPE     CS_YYSTYPE
 #define  LPYYSTYPE   LPCS_YYSTYPE
@@ -2361,7 +2359,7 @@ UBOOL ParseCtrlStruc_EM
         {
             case EXCEPTION_STACK_OVERFLOW:
                 // Set the error message
-                lpcsLocalVars->lpwszErrMsg = L"CS " ERRMSG_STACK_OVERFLOW;
+                lpcsLocalVars->lpwszErrMsg = L"CS " ERRMSG_STACK_FULL;
 
                 break;
 
@@ -2508,21 +2506,33 @@ CS_YYLEX_START:
             return ENDWHILE;
 
         case TKT_CS_FOR:                    // ...                 FOR
+            // Mark as a main CS stmt for AFO
+            lpcsLocalVars->bMainStmt = TRUE;
+
             // Set start of stmt
             CS_LinkStmt (lpcsLocalVars, lpYYLval);
 
             return FOR;
 
         case TKT_CS_FORLCL:                 // ...                 FORLCL
+            // Mark as a main CS stmt for AFO
+            lpcsLocalVars->bMainStmt = TRUE;
+
             // Set start of stmt
             CS_LinkStmt (lpcsLocalVars, lpYYLval);
 
             return FORLCL;
 
         case TKT_CS_GOTO:                   // ...                 GOTO
+            // Mark as a main CS stmt for AFO
+            lpcsLocalVars->bMainStmt = TRUE;
+
             return GOTO;
 
         case TKT_CS_IF:                     // ...                 IF
+            // Mark as a main CS stmt for AFO
+            lpcsLocalVars->bMainStmt = TRUE;
+
             // Set start of stmt
             CS_LinkStmt (lpcsLocalVars, lpYYLval);
 
@@ -2544,15 +2554,24 @@ CS_YYLEX_START:
             return NEC;
 
         case TKT_CS_REPEAT:                 // ...                 REPEAT
+            // Mark as a main CS stmt for AFO
+            lpcsLocalVars->bMainStmt = TRUE;
+
             // Set start of stmt
             CS_LinkStmt (lpcsLocalVars, lpYYLval);
 
             return REPEAT;
 
         case TKT_CS_RETURN:                 // ...                 RETURN
+            // Mark as a main CS stmt for AFO
+            lpcsLocalVars->bMainStmt = TRUE;
+
             return RETURN;
 
         case TKT_CS_SELECT:                 // ...                 SELECT
+            // Mark as a main CS stmt for AFO
+            lpcsLocalVars->bMainStmt = TRUE;
+
             // Set start of stmt
             CS_LinkStmt (lpcsLocalVars, lpYYLval);
 
@@ -2568,6 +2587,9 @@ CS_YYLEX_START:
             return UNTIL;
 
         case TKT_CS_WHILE:                  // ...                 WHILE
+            // Mark as a main CS stmt for AFO
+            lpcsLocalVars->bMainStmt = TRUE;
+
             // Set start of stmt
             CS_LinkStmt (lpcsLocalVars, lpYYLval);
 
@@ -2628,7 +2650,7 @@ void cs_yyerror                         // Called for Bison syntax error
     uLineNum = lpcsLocalVars->tkCSErr.tkData.Orig.c.uLineNum;
 
     // If the caller wants error messages displayed, ...
-    if (lpcsLocalVars->DisplayErr)
+    if (lpcsLocalVars->bDisplayErr)
     {
         // Check for SYNTAX ERROR
 #define ERR     "syntax error"

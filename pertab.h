@@ -86,10 +86,6 @@ typedef struct tagPERTABDATA
     UINT         uCaret;                    // Position of the caret in the current line on error
     int          crIndex;                   // Tab's color index
     APLINT       uQuadMF;                   // []MF timer value (8 bytes)
-    LPSYMENTRY   steZero,                   // Ptr to STE for constant zero
-                 steOne,                    // ...                     one
-                 steBlank,                  // ...                     blank
-                 steNoValue;                // ...            no-value result
     struct tagSIS_HEADER
                 *lpSISBeg,                  // Ptr to State Indicator Stack beginning
                 *lpSISCur,                  // ...                          current (may be NULL if SI is empty)

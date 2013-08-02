@@ -113,10 +113,10 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
 //***************************************************************************
 
 static APLCHAR MonHeaderVR[] =
-  L"Z" $IS MFON_MonVR L" R";
+  L"Z" $IS MFON_MonVR L" R;L";
 
 static APLCHAR MonLineVR1[] =
-  L"Z" $IS L"1 ##." $QUAD L"CR R";
+  L"Z" $IS L"1 ##." $QUAD_CR L" R";
 
 static APLCHAR MonLineVR2[] =
   $GOTO L"(0" $NOTEQUAL $RHO L"Z)/L1 " $DIAMOND L" Z" $IS L"'' " $DIAMOND L" " $GOTO L"0";
@@ -125,14 +125,22 @@ static APLCHAR MonLineVR3[] =
   L"L1:" $GOTO L"(1=" $MATCH L"Z)/0";
 
 static APLCHAR MonLineVR4[] =
-  L"Z" $IS L"(" $EPSILON L"((" $ENCLOSE L"[1]'LO<    " $DEL L">P<[>Q<]>I6' " $QUAD L"FMT " $IOTA $RHO L"Z),"
-  $EACH L"Z)," $EACH $QUAD L"TCNL" L"),'    " $DEL L" ',(" $FORMAT L"2 ##." $QUAD L"AT R), ' (UTC)'";
+  L"L" $IS L"'" $DEL L"'" $EPSILON L"0" $DISCLOSE L"Z";
+
+static APLCHAR MonLineVR5[] =
+  L"Z" $IS L"(" $EPSILON L"((" $ENCLOSE L"[1]'LO<    " $DEL L">P<[>Q<]>I6' " $QUAD_FMT $IOTA $RHO L"Z),"
+  $EACH L"Z)," $EACH $QUAD_TCNL L"),'    " $DEL L"'";
+
+static APLCHAR MonLineVR6[] =
+  $GOTO L"L/0 " $DIAMOND L" Z" $IS L"Z,(' '," $FORMAT L"2 ##." $QUAD_AT L" R),' (UTC)'";
 
 static LPAPLCHAR MonBodyVR[] =
 {MonLineVR1,
  MonLineVR2,
  MonLineVR3,
  MonLineVR4,
+ MonLineVR5,
+ MonLineVR6,
 };
 
 MAGIC_FCNOPR MFO_MonVR =

@@ -46,9 +46,7 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 #define YYMALLOC    malloc
 #define YYFREE      free
 
-int  pn_yylex       (LPPN_YYSTYPE lpYYLval, LPPNLOCALVARS lppnLocalVars);
-void pn_yyerror     (LPPNLOCALVARS lppnLocalVars, LPCHAR s);
-void pn_yyfprintf   (FILE *hfile, LPCHAR lpszFmt, ...);
+#include "pn_parse.proto"
 
 #define    YYSTYPE     PN_YYSTYPE
 #define  LPYYSTYPE   LPPN_YYSTYPE

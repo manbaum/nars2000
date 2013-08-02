@@ -241,7 +241,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  aplRankRht;        // Right ...
     LPSYMENTRY   lpSymLftFcn = NULL,// Ptr to original tkSym in the named left operand
                  lpSymRhtFcn = NULL;// ...                                right ...
-    LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYFcnTmpLft,     // Ptr to temp left operand function strand (may be NULL if not an operator)
                  lpYYFcnTmpRht;     // Ptr to temp right operand function strand (may be NULL if monadic operator or not an operator)
     LPTOKEN      lptkLftTmp,        // Ptr to temp left arg token
@@ -257,6 +257,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     UBOOL        bOldExecuting;     // Old value of bExecuting
     HWND         hWndEC;            // Edit Ctrl window handle
     UINT         startLineNum;      // Starting line #
+    LPHSHTABSTR  lphtsPTD;          // Save area for old HshTabStr
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -269,6 +270,24 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+    // If we're executing an AFO, ...
+    if (lpMemDfnHdr->bAFO)
+    {
+        // Save the ptr to the old HshTabStr
+        lphtsPTD = lpMemPTD->lphtsPTD;
+
+        // If the source and destin are different, ...
+        if (lphtsPTD NE &lpMemDfnHdr->htsDFN)
+        {
+            // Make a copy of the current system vars so we have up-to-date values
+            CopySysVars (&lpMemDfnHdr->htsDFN, lphtsPTD);
+
+            // Put the new one into effect so that symbol table
+            //   references are made in the new tables
+            lpMemPTD->lphtsPTD = &lpMemDfnHdr->htsDFN;
+        } // End IF
+    } // End IF
 
     // If there's no left arg token and this function requires a left arg,
     //   and we're not entering at LINENUM_ID,
@@ -380,6 +399,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
     lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
     lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
+    lpMemPTD->lpSISNxt->bAFO         = lpMemDfnHdr->bAFO;
     lpMemPTD->lpSISNxt->CurLineNum   = 1;
     lpMemPTD->lpSISNxt->NxtLineNum   = 2;
     lpMemPTD->lpSISNxt->numLabels    = lpMemDfnHdr->numLblLines;
@@ -588,12 +608,6 @@ NORMAL_EXIT:
     // Restore the previous executing state
     SetExecuting (lpMemPTD, bOldExecuting);
 
-    if (hGlbDfnHdr && lpMemDfnHdr)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-    } // End IF
-
     // Restore named left operand tkSym
     if (lpSymLftFcn && bNamedLftFcn)
         lpYYFcnTmpLft->tkToken.tkData.tkSym = lpSymLftFcn;
@@ -601,6 +615,17 @@ NORMAL_EXIT:
     // Restore named right operand tkSym
     if (lpSymRhtFcn && bNamedRhtFcn)
         lpYYFcnTmpRht->tkToken.tkData.tkSym = lpSymRhtFcn;
+
+    // If we're executing an AFO, ...
+    if (lpMemDfnHdr->bAFO)
+        // Restore the original tables
+        lpMemPTD->lphtsPTD = lphtsPTD;
+
+    if (hGlbDfnHdr && lpMemDfnHdr)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
 
     return lpYYRes;
 } // End ExecDfnOprGlb_EM_YY
@@ -1011,6 +1036,7 @@ NEXTLINE:
                                NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                1,                       // Function line # (0 = header)
                                NULL,                    // Ptr to error handling function (may be NULL)
+                               NULL,                    // Ptr to common struc (may be NULL if unused)
                                FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator
                 // Lock the memory to get a ptr to it
                 lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
@@ -1119,7 +1145,10 @@ NEXTLINE:
                 } // End IF/ELSE
 
                 // Copy the non-displayable flag
-                lpYYRes->tkToken.tkFlags.NoDisplay = lpMemDfnHdr->NoDispRes;
+                lpYYRes->tkToken.tkFlags.NoDisplay = lpMemDfnHdr->NoDispRes
+                                                  || lpMemDfnHdr->bAfoNoDispRes;
+                // Restore to default value
+                lpMemDfnHdr->bAfoNoDispRes = FALSE;
             } // End IF/ELSE
 
             break;

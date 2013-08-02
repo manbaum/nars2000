@@ -765,8 +765,15 @@ LPAPLUINT AttributeExecProp
             // If it's a user-defined function/operator
             if (lpSymEntry->stFlags.UsrDfn)
             {
-                // If it's a Magic Function/Operator, ...
-                if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO)
+                LPDFN_HEADER lpMemDfnHdr;
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (lpSymEntry->stData.stGlbData);
+
+                // If it's a Magic Function/Operator,
+                //   or AFO, ...
+                if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO
+                 || lpMemDfnHdr->bAFO)
                 {
                     *lpMemDataRes++ = 0;            // [1] = Nondisplayable
                     *lpMemDataRes++ = 1;            // [2] = Nonsuspendable
@@ -779,6 +786,9 @@ LPAPLUINT AttributeExecProp
                     *lpMemDataRes++ = 0;            // [3] = Ignores weak interrupts
                     *lpMemDataRes++ = 0;            // [4] = Converts non-resource errors to DOMAIN ERRORs
                 } // End IF/ELSE
+
+                // We no longer need this ptr
+                MyGlobalUnlock (lpSymEntry->stData.stGlbData); lpMemDfnHdr = NULL;
             } else
             // If it's a direct function, ...
             if (lpSymEntry->stFlags.FcnDir)

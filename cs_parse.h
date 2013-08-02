@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,8 +55,9 @@ typedef struct tagCSLOCALVARS       // Control Structure Local Vars
                  lptkCSNxt,         // 0C:  Next  ...
                  lptkCSLink;        // 10:  Ptr to CS stack Stmt link (NULL = none)
     TOKEN        tkCSErr;           // 14:  Error token (24 bytes)
-    UINT         DisplayErr:1;      // 2C:  00000001:  TRUE iff we should display error messages
-                                    //      FFFFFFFE:  Available bits
+    UINT         bDisplayErr:1,     // 2C:  00000001:  TRUE iff we should display error messages
+                 bMainStmt:1,       //      00000002:  TRUE iff we encountered a CS main stmt (FOR, FORLCL, IF, REPEAT, SELECT, WHILE)
+                 :30;               //      FFFFFFFC:  Available bits
     HGLOBAL      hGlbDfnHdr,        // 30:  Defined function/operator global memory handle
                                     //      (NULL = hGlbImmExec is valid)
                  hGlbImmExec;       // 34:  Immediate execution tokenized line global memory habndle

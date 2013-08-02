@@ -57,6 +57,11 @@ http://portal.acm.org/citation.cfm?id=3324
   #error DEF_HSHTAB_NBLKS is not a power of two.
 #endif
 
+#define DEF_AFO_HSHTAB_NBLKS        128
+#if (DEF_AFO_HSHTAB_NBLKS & (DEF_AFO_HSHTAB_NBLKS - 1)) != 0
+  #error DEF_AFO_HSHTAB_NBLKS is not a power of two.
+#endif
+
 // # entries in each block -- can be any integer > 1
 // It can't be 1 as there needs to be at least one
 //   overflow entry in each block so we never assign
@@ -71,15 +76,24 @@ http://portal.acm.org/citation.cfm?id=3324
   #define DEF_HSHTAB_MAXNELM  (  64 * 1024 * DEF_HSHTAB_EPB)
 #endif
 
+#define DEF_AFO_HSHTAB_MAXNELM      (256 * DEF_HSHTAB_EPB)
+
 // Starting hash table size (# entries)
-#define DEF_HSHTAB_INITNELM (DEF_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
+#define DEF_HSHTAB_INITNELM      (DEF_HSHTAB_NBLKS     * DEF_HSHTAB_EPB)
+#define DEF_AFO_HSHTAB_INITNELM  (DEF_AFO_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
 
 // Amount to resize -- this value must be a divisor of DEF_HSHTAB_INITNELM
-#define DEF_HSHTAB_INCRNELM DEF_HSHTAB_INITNELM
+#define DEF_HSHTAB_INCRNELM      DEF_HSHTAB_INITNELM
+#define DEF_AFO_HSHTAB_INCRNELM  DEF_AFO_HSHTAB_INITNELM
 
 #if ((DEF_HSHTAB_INITNELM / DEF_HSHTAB_INCRNELM) * DEF_HSHTAB_INCRNELM) != \
       DEF_HSHTAB_INITNELM
   #error DEF_HSHTAB_INCRNELM not an integral divisor of DEF_HSHTAB_INITNELM.
+#endif
+
+#if ((DEF_AFO_HSHTAB_INITNELM / DEF_AFO_HSHTAB_INCRNELM) * DEF_AFO_HSHTAB_INCRNELM) != \
+      DEF_AFO_HSHTAB_INITNELM
+  #error DEF_AFO_HSHTAB_INCRNELM not an integral divisor of DEF_AFO_HSHTAB_INITNELM.
 #endif
 
 // Starting hash mask
@@ -166,14 +180,23 @@ typedef struct tagHSHTABSTR
                uHshTabNBlks;            // 28:  # blocks in this HshTab
     UINT       bGlbHshTab:1,            // 2C:  00000001:  This HTS is global
                bSysNames:1,             //      00000002:  TRUE iff system names have been appended
-               :30;                     //      FFFFFFFE:  Available bits
+               bGlbHshSymTabs:1,        //      00000004:  TRUE iff the Sym & Hsh tabs are allocated from global (not virtual) memory
+               :29;                     //      FFFFFFF8:  Available bits
     struct tagSYMENTRY
               *lpSymTab,                // 30:  Ptr to start of Symtab
               *lpSymTabNext,            // 34:  Ptr to next available STE
               *lpSymQuad[SYSVAR_LENGTH];// 38:  Ptr to array of system var STEs (15*4 bytes)
     UINT       uSymTabIncrNelm;         // 74:  # STEs by which to resize when low
     int        iSymTabTotalNelm;        // 78:  # STEs, currently
-} HSHTABSTR, *LPHSHTABSTR;              // 7C:  Length
+    struct tagSYMENTRY
+              *steZero,                 // 7C:  Ptr to STE for constant zero
+              *steOne,                  // 80:  ...                     one
+              *steBlank,                // 84:  ...                     blank
+              *steAlpha,                // 88:  ...            Alpha
+              *steDel,                  // 9C:  ...            Del
+              *steDelDel,               // 90:  ...            Del Del
+              *steNoValue;              // 94:  ...            no-value result
+} HSHTABSTR, *LPHSHTABSTR;              // 98:  Length
 
 //********************* SYMBOL TABLE ****************************************
 
@@ -184,11 +207,15 @@ typedef struct tagHSHTABSTR
   #define DEF_SYMTAB_MAXNELM  (  64*1024)
 #endif
 
+#define DEF_AFO_SYMTAB_MAXNELM          256
+
 // Starting symbol table size (# entries)
-#define DEF_SYMTAB_INITNELM (   4*1024)
+#define DEF_SYMTAB_INITNELM      (   4*1024)
+#define DEF_AFO_SYMTAB_INITNELM DEF_AFO_SYMTAB_MAXNELM
 
 // Amount to resize -- this value must be a divisor of DEF_SYMTAB_INITNELM
-#define DEF_SYMTAB_INCRNELM DEF_SYMTAB_INITNELM
+#define DEF_SYMTAB_INCRNELM      DEF_SYMTAB_INITNELM
+#define DEF_AFO_SYMTAB_INCRNELM DEF_AFO_SYMTAB_INITNELM
 
 typedef enum tagIMM_TYPES
 {
@@ -260,7 +287,7 @@ typedef enum tagOBJ_NAMES
                             // 06-07:  Available entries (3 bits)
 } OBJ_NAMES;
 
-#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MFO", L"LOD"}
+#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MFO", L"LOD", L"NoV"}
 
 // Symbol table flags
 typedef struct tagSTFLAGS
@@ -273,7 +300,7 @@ typedef struct tagSTFLAGS
                             //            (see OBJ_NAMES)
          stNameType:4,      // 00003C00:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
                             //            (see NAME_TYPES)
-         SysVarValid:5,     // 000EC000:  Index to validation routine for System Vars (see SYS_VARS)
+         SysVarValid:5,     // 0007C000:  Index to validation routine for System Vars (see SYS_VARS)
          UsrDfn:1,          // 00080000:  User-defined function/operator
          DfnLabel:1,        // 00100000:  User-defined function/operator label        (valid only if .Value is set)
          DfnSysLabel:1,     // 00200000:  User-defined function/operator system label (valid only if .Value is set)
@@ -293,10 +320,10 @@ typedef struct tagSTFLAGS
 // .Imm     = 0 implies that stGlbData is valid.
 // .Value   is valid for NAMETYPE_VAR only, however .stNameType EQ NAMETYPE_VAR
 //          should never be without a value.
-// .UsrDfn  is set for .UsrType when the function is user-defined.
-// .FcnDir  may be set for any function/operator in .SysType or .UsrType; it is a
+// .UsrDfn  is set when the function is user-defined.
+// .FcnDir  may be set for any function/operator; it is a
 //          direct pointer to the code.
-// htGlbName in HSHENTRY is set for .UsrType and .SysType when .Imm and .FcnDir are clear.
+// htGlbName in HSHENTRY is set when .Imm and .FcnDir are clear.
 
 // Immediate data or a handle to global data
 typedef union tagSYMTAB_DATA

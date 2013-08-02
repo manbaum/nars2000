@@ -181,11 +181,13 @@ char LookaheadSurround
 char LookaheadAdjacent
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
      UBOOL         bSkipBrackets,   // TRUE iff we're to skip over left/right brackets first
-     UBOOL         bCheckLeft)      // TRUE iff we're to check to the left of the current symbol
+     UBOOL         bCheckLeft,      // TRUE iff we're to check to the left of the current symbol
+     UBOOL         bJotOpr)         // TRUE iff Jot is an operator
 
 {
-    PLLOCALVARS plLocalVars;    // Local copy of outer PLLOCALVARS
-    char        cRes;           // The result char
+    PLLOCALVARS  plLocalVars;       // Local copy of outer PLLOCALVARS
+    char         cRes;              // The result char
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS
 
     if (bSkipBrackets)
     {
@@ -232,22 +234,70 @@ char LookaheadAdjacent
 
             // If the next token is a dyadic op, ...
             if (LookaheadDyadicOp (&plLocalVars, &plLocalVars.lptkNext[-1]))
-                cRes = 'F';     // Function
+                cRes = 'F';             // Function
             else
-                cRes = 'V';     // Variable
+                cRes = 'V';             // Variable
+
+            goto NORMAL_EXIT;
+
+        case TKT_DEL:                   // Del -- always a function
+        case TKT_DELAFO:                // Del Anon -- either a monadic or dyadic operator, bound to its operands
+            cRes = 'F';                 // Function
+
+            goto NORMAL_EXIT;
+
+        case TKT_DELDEL:                // Del Del  -- either a monadic or dyadic operator
+            // Search up the SIS chain to see what this is
+            lpSISCur = SrchSISForDfn (lpplLocalVars->lpMemPTD);
+
+            // If the ptr is valid, ...
+            if (lpSISCur)
+            {
+                // Split case based upon the function type
+                switch (lpSISCur->DfnType)
+                {
+////////////////////case DFNTYPE_FCN:
+////////////////////    cRes = 'F';     // Function
+////////////////////
+////////////////////    break;
+
+                    case DFNTYPE_OP1:
+                        cRes = '1';     // Monadic operator
+
+                        break;
+
+                    case DFNTYPE_OP2:
+                        cRes = '2';     // Dyadic operator
+
+                        break;
+
+                    default:
+                        cRes = '?';     // SYNTAX ERROR
+
+                        break;
+                } // End SWITCH
+            } else
+                cRes = '?';             // SYNTAX ERROR
 
             goto NORMAL_EXIT;
 
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
         case TKT_OPJOTDOT:
-            cRes = '1';             // Monadic operator
+        case TKT_OP1AFO:
+            cRes = '1';                 // Monadic operator
+
+            goto NORMAL_EXIT;
+
+        case TKT_OP2AFO:
+            cRes = '2';                 // Dyadic operator
 
             goto NORMAL_EXIT;
 
         case TKT_OP2IMMED:
             // If the OP2 is JOT, ...
-            if (plLocalVars.lptkNext->tkData.tkChar EQ UTF16_JOT)
+            if (plLocalVars.lptkNext->tkData.tkChar EQ UTF16_JOT
+             && !bJotOpr)
             {
                 // If the caller wants us to check to the left of the jot, ...
                 if (bCheckLeft)
@@ -261,7 +311,7 @@ char LookaheadAdjacent
                     else
                         cRes = 'V';     // Variable
                 } else
-                    cRes = 'J';             // Jot
+                    cRes = 'J';         // Jot
             } else
                 cRes = '2';             // Dyadic operator
 
@@ -283,7 +333,7 @@ char LookaheadAdjacent
                     else
                         cRes = 'V';     // Variable
                 } else
-                    cRes = 'J';             // Jot
+                    cRes = 'J';         // Jot
             } else
                 cRes = '2';             // Dyadic operator
 
@@ -291,14 +341,40 @@ char LookaheadAdjacent
 
         case TKT_OP3IMMED:
         case TKT_OP3NAMED:
-            cRes = '3';             // Ambiguous operator
+            cRes = '3';                 // Ambiguous operator
 
             goto NORMAL_EXIT;
 
         case TKT_FCNIMMED:
         case TKT_FCNARRAY:
         case TKT_FCNNAMED:
-            cRes = 'F';             // Function
+        case TKT_FCNAFO:
+            cRes = 'F';                 // Function
+
+            goto NORMAL_EXIT;
+
+        case TKT_RIGHTBRACE:
+            // Check to see if it's a function or operator
+            switch (plLocalVars.lptkNext->tkData.tkDfnType)
+            {
+                case DFNTYPE_FCN:
+                    cRes = 'F';         // Function
+
+                    break;
+
+                case DFNTYPE_OP1:
+                    cRes = '1';         // Monadic operator
+
+                    break;
+
+                case DFNTYPE_OP2:
+                    cRes = '2';         // Dyadic operator
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
 
             goto NORMAL_EXIT;
 
@@ -315,39 +391,44 @@ char LookaheadAdjacent
             //   grouping symbol.
             plLocalVars.lptkNext = &plLocalVars.lptkStart[plLocalVars.lptkNext->tkData.tkIndex - 1];
 
-            break;                  // Go around again
+            break;                      // Go around again
 
         case TKT_RIGHTPAREN:
             cRes = LookaheadSurround (&plLocalVars);
 
             goto NORMAL_EXIT;
 
-        case TKT_LINECONT:          // Line continuation marker
-        case TKT_SYS_NS:            // System namespace
-            plLocalVars.lptkNext--; // Ignore these tokens
+        case TKT_LINECONT:              // Line continuation marker
+        case TKT_SYS_NS:                // System namespace
+        case TKT_SETALPHA:              // Set {alpha}
+        case TKT_GLBDFN:                // Placeholder for hGlbDfnHdr
+        case TKT_NOP:                   // NOP
+        case TKT_AFOGUARD:              // AFO guard
+        case TKT_AFORETURN:             // AFO return
+            plLocalVars.lptkNext--;     // Ignore these tokens
 
-            break;                  // Go around again
+            break;                      // Go around again
 
         case TKT_EOS:
         case TKT_EOL:
-            cRes = 'E';             // EOS/EOL
+            cRes = 'E';                 // EOS/EOL
 
             goto NORMAL_EXIT;
 
-        case TKT_LEFTPAREN:         // To allow (//R)
+        case TKT_LEFTPAREN:             // To allow (//R)
             if (!bSkipBrackets)
             {
-                cRes = '(';         // Left paren
+                cRes = '(';             // Left paren
 
                 goto NORMAL_EXIT;
             } // End IF
 
-            cRes = '?';             // SYNTAX ERROR
+            cRes = '?';                 // SYNTAX ERROR
 
             goto NORMAL_EXIT;
 
-        case TKT_ASSIGN:            // To allow f{is}/[1]
-            cRes = 'A';             // Assignment arrow
+        case TKT_ASSIGN:                // To allow f{is}/[1]
+            cRes = 'A';                 // Assignment arrow
 
             goto NORMAL_EXIT;
 
@@ -364,52 +445,51 @@ char LookaheadAdjacent
         case TKT_LSTARRAY:
         case TKT_LSTMULT:
         case TKT_LEFTBRACE:
-        case TKT_RIGHTBRACE:
         case TKT_SOS:
-        case TKT_CS_ANDIF:          // Control structure:  ANDIF     (Data is Line/Stmt #)
-        case TKT_CS_ASSERT:         // ...                 ASSERT
-        case TKT_CS_CASE:           // ...                 CASE
-        case TKT_CS_CASELIST:       // ...                 CASELIST
-        case TKT_CS_CONTINUE:       // ...                 CONTINUE
-        case TKT_CS_CONTINUEIF:     // ...                 CONTINUEIF
-        case TKT_CS_ELSE:           // ...                 ELSE
-        case TKT_CS_ELSEIF:         // ...                 ELSEIF
-        case TKT_CS_END:            // ...                 END
-        case TKT_CS_ENDFOR:         // ...                 ENDFOR
-        case TKT_CS_ENDFORLCL:      // ...                 ENDFORLCL
-        case TKT_CS_ENDIF:          // ...                 ENDIF
-        case TKT_CS_ENDREPEAT:      // ...                 ENDREPEAT
-        case TKT_CS_ENDSELECT:      // ...                 ENDSELECT
-        case TKT_CS_ENDWHILE:       // ...                 ENDWHILE
-        case TKT_CS_FOR:            // ...                 FOR
-        case TKT_CS_FOR2:           // ...                 FOR2
-        case TKT_CS_FORLCL:         // ...                 FORLCL
-        case TKT_CS_GOTO:           // ...                 GOTO
-        case TKT_CS_IF:             // ...                 IF
-        case TKT_CS_IF2:            // ...                 IF2
-        case TKT_CS_IN:             // ...                 IN
-        case TKT_CS_LEAVE:          // ...                 LEAVE
-        case TKT_CS_LEAVEIF:        // ...                 LEAVEIF
-        case TKT_CS_ORIF:           // ...                 ORIF
-        case TKT_CS_REPEAT:         // ...                 REPEAT
-        case TKT_CS_REPEAT2:        // ...                 REPEAT2
-        case TKT_CS_RETURN:         // ...                 RETURN
-        case TKT_CS_SELECT:         // ...                 SELECT
-        case TKT_CS_SELECT2:        // ...                 SELECT2
-        case TKT_CS_UNTIL:          // ...                 UNTIL
-        case TKT_CS_WHILE:          // ...                 WHILE
-        case TKT_CS_WHILE2:         // ...                 WHILE2
-        case TKT_CS_SKIPCASE:       // ...                 Special token
-        case TKT_CS_SKIPEND:        // ...                 Special token
-        case TKT_CS_NEC:            // ...                 Special token
-        case TKT_CS_EOL:            // ...                 Special token
-        case TKT_SYNTERR:           // Syntax Error
-            cRes = '?';             // SYNTAX ERROR
+        case TKT_CS_ANDIF:              // Control structure:  ANDIF     (Data is Line/Stmt #)
+        case TKT_CS_ASSERT:             // ...                 ASSERT
+        case TKT_CS_CASE:               // ...                 CASE
+        case TKT_CS_CASELIST:           // ...                 CASELIST
+        case TKT_CS_CONTINUE:           // ...                 CONTINUE
+        case TKT_CS_CONTINUEIF:         // ...                 CONTINUEIF
+        case TKT_CS_ELSE:               // ...                 ELSE
+        case TKT_CS_ELSEIF:             // ...                 ELSEIF
+        case TKT_CS_END:                // ...                 END
+        case TKT_CS_ENDFOR:             // ...                 ENDFOR
+        case TKT_CS_ENDFORLCL:          // ...                 ENDFORLCL
+        case TKT_CS_ENDIF:              // ...                 ENDIF
+        case TKT_CS_ENDREPEAT:          // ...                 ENDREPEAT
+        case TKT_CS_ENDSELECT:          // ...                 ENDSELECT
+        case TKT_CS_ENDWHILE:           // ...                 ENDWHILE
+        case TKT_CS_FOR:                // ...                 FOR
+        case TKT_CS_FOR2:               // ...                 FOR2
+        case TKT_CS_FORLCL:             // ...                 FORLCL
+        case TKT_CS_GOTO:               // ...                 GOTO
+        case TKT_CS_IF:                 // ...                 IF
+        case TKT_CS_IF2:                // ...                 IF2
+        case TKT_CS_IN:                 // ...                 IN
+        case TKT_CS_LEAVE:              // ...                 LEAVE
+        case TKT_CS_LEAVEIF:            // ...                 LEAVEIF
+        case TKT_CS_ORIF:               // ...                 ORIF
+        case TKT_CS_REPEAT:             // ...                 REPEAT
+        case TKT_CS_REPEAT2:            // ...                 REPEAT2
+        case TKT_CS_RETURN:             // ...                 RETURN
+        case TKT_CS_SELECT:             // ...                 SELECT
+        case TKT_CS_SELECT2:            // ...                 SELECT2
+        case TKT_CS_UNTIL:              // ...                 UNTIL
+        case TKT_CS_WHILE:              // ...                 WHILE
+        case TKT_CS_WHILE2:             // ...                 WHILE2
+        case TKT_CS_SKIPCASE:           // ...                 Special token
+        case TKT_CS_SKIPEND:            // ...                 Special token
+        case TKT_CS_NEC:                // ...                 Special token
+        case TKT_CS_EOL:                // ...                 Special token
+        case TKT_SYNTERR:               // Syntax Error
+            cRes = '?';                 // SYNTAX ERROR
 
             goto NORMAL_EXIT;
 
         defstop
-            cRes = '?';             // SYNTAX ERROR
+            cRes = '?';                 // SYNTAX ERROR
 
             goto NORMAL_EXIT;
     } // End WHILE/SWITCH
@@ -437,7 +517,8 @@ UBOOL LookaheadDyadicOp
      LPTOKEN       lptkNext)
 
 {
-    UBOOL bRet;         // The result
+    UBOOL        bRet;          // The result
+    LPSIS_HEADER lpSISCur;      // Ptr to current SIS
 
     DbgMsgW2 (L"==Entering LookaheadDyadicOp");
 
@@ -513,7 +594,46 @@ UBOOL LookaheadDyadicOp
         case TKT_SYNTERR:           // Syntax Error
         case TKT_SYS_NS:            // System namespace
         case TKT_FILLJOT:           // Fill jot
+        case TKT_DEL:               // Del -- always a function
+        case TKT_DELAFO:                // Del Anon -- either a monadic or dyadic operator, bound to its operands
+        case TKT_FCNAFO:            // Anonymous function
+        case TKT_OP1AFO:            // Anonymous monadic operator
+        case TKT_GLBDFN:            // Placeholder for hGlbDfnHdr
+        case TKT_NOP:               // NOP
+        case TKT_AFOGUARD:          // AFO guard
+        case TKT_AFORETURN:         // AFO return
             bRet = FALSE;
+
+            goto NORMAL_EXIT;
+
+        case TKT_DELDEL:            // Del Del  -- either a monadic or dyadic operator
+            // Search up the SIS chain to see what this is
+            lpSISCur = SrchSISForDfn (lpplLocalVars->lpMemPTD);
+
+            // If the ptr is valid, ...
+            if (lpSISCur)
+            {
+                // Split case based upon the function type
+                switch (lpSISCur->DfnType)
+                {
+////////////////////case DFNTYPE_FCN:
+                    case DFNTYPE_OP1:
+                        bRet = FALSE;
+
+                        break;
+
+                    case DFNTYPE_OP2:
+                        bRet = TRUE;
+
+                        break;
+
+                    default:
+                        bRet = FALSE;
+
+                        break;
+                } // End SWITCH
+            } else
+                bRet = FALSE;
 
             goto NORMAL_EXIT;
 
@@ -533,6 +653,7 @@ UBOOL LookaheadDyadicOp
 
             goto NORMAL_EXIT;
 
+        case TKT_OP2AFO:
         case TKT_OPJOTDOT:
             bRet = TRUE;
 
@@ -545,6 +666,8 @@ UBOOL LookaheadDyadicOp
             goto NORMAL_EXIT;
 
         case TKT_RIGHTPAREN:
+        case TKT_LINECONT:
+        case TKT_SETALPHA:
             lptkNext--;             // Ignore this token
 
             break;                  // Go around again
@@ -555,11 +678,6 @@ UBOOL LookaheadDyadicOp
             // Get a ptr to the token adjacent to ("- 1") the matching left
             //   grouping symbol.
             lptkNext = &lpplLocalVars->lptkStart[lptkNext->tkData.tkIndex - 1];
-
-            break;                  // Go around again
-
-        case TKT_LINECONT:
-            lptkNext--;             // Ignore this token
 
             break;                  // Go around again
 
@@ -590,7 +708,8 @@ UBOOL LookbehindOp
      LPTOKEN       lptkPrev)
 
 {
-    UBOOL bRet;         // The result
+    UBOOL        bRet;              // The result
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS
 
     DbgMsgW2 (L"==Entering LookbehindOp");
 
@@ -665,14 +784,63 @@ UBOOL LookbehindOp
         case TKT_SYNTERR:           // Syntax Error
         case TKT_SYS_NS:            // System namespace
         case TKT_FILLJOT:           // Fill jot
+        case TKT_FCNAFO:            // Anonymous function
+        case TKT_GLBDFN:            // Placeholder for hGlbDfnHdr
+        case TKT_NOP:               // NOP
+        case TKT_AFOGUARD:          // AFO guard
+        case TKT_AFORETURN:         // AFO return
             bRet = FALSE;
+
+            goto NORMAL_EXIT;
+
+        case TKT_DEL:               // Del -- always a function
+        case TKT_DELAFO:            // Del Anon -- either a monadic or dyadic operator, bound to its operands
+////////////// Search up the SIS chain to see what this is
+////////////lpSISCur = SrchSISForDfn (lpplLocalVars->lpMemPTD);
+////////////
+////////////// If the ptr is valid, ...
+////////////if (lpSISCur)
+                bRet = FALSE;
+////////////else
+////////////    bRet = FALSE;
+
+            goto NORMAL_EXIT;
+
+        case TKT_DELDEL:            // Del Del  -- either a monadic or dyadic operator
+            // Search up the SIS chain to see what this is
+            lpSISCur = SrchSISForDfn (lpplLocalVars->lpMemPTD);
+
+            // If the ptr is valid, ...
+            if (lpSISCur)
+            {
+                // Split case based upon the function type
+                switch (lpSISCur->DfnType)
+                {
+////////////////////case DFNTYPE_FCN:
+////////////////////    bRet = FALSE;
+////////////////////
+////////////////////    break;
+
+                    case DFNTYPE_OP1:
+                    case DFNTYPE_OP2:
+                        bRet = TRUE;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } else
+                bRet = FALSE;
 
             goto NORMAL_EXIT;
 
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
+        case TKT_OP1AFO:            // Anonymous monadic operator
         case TKT_OP2IMMED:
         case TKT_OP2NAMED:
+        case TKT_OP2AFO:            // Anonymous dyadic operator
             bRet = TRUE;
 
             goto NORMAL_EXIT;
@@ -691,7 +859,8 @@ UBOOL LookbehindOp
             goto NORMAL_EXIT;
 
         case TKT_LINECONT:
-            lptkPrev++;             // Ignore this token
+        case TKT_SETALPHA:
+            lptkPrev++;             // Ignore these tokens
 
             break;                  // Go around again
 
@@ -1078,8 +1247,18 @@ void ArrExprCheckCaller
 
     // If the Execute/Quad result is present, display it
     if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
-        lpplLocalVars->bRet =
-          ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
+    {
+        HGLOBAL hGlbDfnHdr;
+
+        // If we're parsing an AFO, ...
+        if (hGlbDfnHdr = SISAfo (lpMemPTD))
+            lpplLocalVars->bStopExec =
+            lpplLocalVars->bRet =
+              AfoDisplay_EM (&lpMemPTD->YYResExec.tkToken, bNoDisplay, lpplLocalVars, hGlbDfnHdr);
+        else
+            lpplLocalVars->bRet =
+              ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
+    } // End IF
 
     // Save the Execute/Quad result
     //   unless the current line starts with a "sink"
@@ -1365,6 +1544,45 @@ UBOOL IsLastStmt
     else
         return TRUE;
 } // End IsLastStmt
+
+
+//***************************************************************************
+//  $SrchSISForDfn
+//
+//  Search up the SIS chain looking for a UDFO
+//***************************************************************************
+
+LPSIS_HEADER SrchSISForDfn
+    (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+
+{
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
+
+    // Search up the SIS chain to see what this is
+    for (lpSISCur = lpMemPTD->lpSISCur;
+         lpSISCur;
+         lpSISCur = lpSISCur->lpSISPrv)
+    // Split case based upon the function type
+    switch (lpSISCur->DfnType)
+    {
+        case DFNTYPE_FCN:
+        case DFNTYPE_OP1:
+        case DFNTYPE_OP2:
+            return lpSISCur;
+
+        case DFNTYPE_IMM:
+        case DFNTYPE_EXEC:
+        case DFNTYPE_QUAD:
+        case DFNTYPE_QQUAD:
+        case DFNTYPE_ERRCTRL:
+            break;
+
+        defstop
+            break;
+    } // End FOR/SWITCH
+
+    return NULL;
+} // End SrchSISForDfn
 
 
 //***************************************************************************

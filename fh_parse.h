@@ -65,20 +65,6 @@ typedef struct tagLBLENTRY              // Line label entries
     UINT       uLineNum1;               // 04:  Line # (origin-1)
 } LBLENTRY, *LPLBLENTRY;
 
-typedef enum tagDFN_TYPES               // User-Defined Function/Operator Types
-{
-    DFNTYPE_UNK = 0,                    // 00:  Unknown
-    DFNTYPE_OP1,                        // 01:  Monadic operator
-    DFNTYPE_OP2,                        // 02:  Dyadic operator
-    DFNTYPE_FCN,                        // 03:  Niladic/monadic/dyadic/ambivalent function
-    DFNTYPE_IMM,                        // 04:  Immediate execution
-    DFNTYPE_EXEC,                       // 05:  Execute primitive
-    DFNTYPE_QUAD,                       // 06:  Quad input
-    DFNTYPE_QQUAD,                      // 07:  Quote-Quad input
-    DFNTYPE_ERRCTRL,                    // 08:  Error control via Quad-EA/-EC
-                                        // 09-0F:  Available entries (4 bits)
-} DFN_TYPES;
-
 #ifdef DEBUG
   // N.B.:  Whenever changing the above enum
   //   be sure to make a corresponding change to
@@ -130,7 +116,10 @@ typedef struct tagDFN_HEADER            // Function header structure
                      MonOn:1,           //      00002000:  TRUE iff function line monitoring is on for this function
                      SaveSTEFlags:1,    //      00004000:  TRUE iff on free we are to save the function name STE flags
                      SkipRefCntIncr:1,  //      00008000:  Skip the next RefCnt increment
-                     :16;               //      FFFF0000:  Available bits
+                     bAFO:1,            //      00010000:  TRUE iff this is an AFO
+                     bAfoCtrlStruc:1,   //      00020000:  TRUE iff Ctrl Strucs in AFO
+                     bAfoNoDispRes:1,   //      00040000:  TRUE iff the AFO result is non-displayable
+                     :13;               //      FFF80000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
                      nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
                      nSysLblId,         // 14:  Line # of the []INV label (0 if not present)
@@ -162,15 +151,16 @@ typedef struct tagDFN_HEADER            // Function header structure
                      hGlbMonInfo;       // 80:  Function line monitor info (MONINFO)
     FILETIME         ftCreation,        // 84:  Time of creation (8 bytes)
                      ftLastMod;         // 8C:  Time of last modification (8 bytes)
-                                        // 94:  Length
-                                        // 94:  Array of function line structures (FCNLINE[nLines])
+    HSHTABSTR        htsDFN;            // 94:  Local HTS (htsDFN.lpHshTab may be NULL if none) (124 bytes)
+                                        //110:  Length
+                                        //110:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a
 //   corresponding change to
-//   <CalcSymentrySize> and <SysFnMonCR_EM_YY> in <sysfns.c>,
-//   <FEWndProc:WM_CREATE>, <SaveFunction>,
-//   <GetLabelNums> in <editfcn.c>, and
+//   <CalcSymentrySize> in <qf_at.c>,
+//   <SaveFunction> in <savefcn.c>,
+//   <FEWndProc:WM_CREATE> in <editfcn.c>, and
 //   <FreeResultGlobalDfn> in <free.c>.
 
 
@@ -211,7 +201,8 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                    ListRht:1,           //      00001000:  TRUE iff the right arg ...
                    ParseFcnName:1,      //      00002000:  TRUE iff we're parsing the function name
                    fhNameType:4,        //      0003C000:  Function name type (see NAME_TYPES)
-                   :14;                 //      FFFC0000:  Available bits
+                   bAFO:1,              //      00040000   TRUE iff we're parsing an AFO
+                   :13;                 //      FFF80000:  Available bits
     LPFH_YYSTYPE   lpYYStrandStart,     // 24:  Strand stack start (static)
                    lpYYStrandBase,      // 28:  ...          base (dynamic)
                    lpYYStrandNext,      // 2C:  ...          next token (dynamic)

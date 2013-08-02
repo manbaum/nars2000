@@ -43,13 +43,15 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
                                     //      Not valid outside the enclosing
                                     //        invocation of ParseLine
            *lpYYStrandBase;         // 24:  Ptr to this token's strand base
+    LPTOKEN lptkLftBrace,           // 28:  Ptr to the AFO's left brace token
+            lptkRhtBrace;           // 2C:  ...                                      right ...
 #ifdef DEBUG
-    UINT    SILevel;                // 28:  SI Level (needed for YYResIsEmpty)
-    LPCHAR  lpFileName;             // 2C:  Ptr to filename where allocated
-    UINT    uLineNum;               // 30:  Line # where allocated
-                                    // 34:  Length
+    UINT    SILevel;                // 30:  SI Level (needed for YYResIsEmpty)
+    LPCHAR  lpFileName;             // 34:  Ptr to filename where allocated
+    UINT    uLineNum;               // 38:  Line # where allocated
+                                    // 3C:  Length
 #else
-                                    // 28:  Length
+                                    // 30:  Length
 #endif
 } PL_YYSTYPE, *LPPL_YYSTYPE;        // Data type of yacc stack
 
@@ -67,57 +69,59 @@ typedef enum tagSTRAND_INDS
 
 typedef struct tagPLLOCALVARS       // ParseLine Local Vars
 {
-    LPTOKEN_HEADER lpMemTknHdr;     // 00:  Ptr to tokenized line header global memory
-    HGLOBAL        hGlbTxtLine;     // 04:  Text of line global memory handle
-    UINT           Filler1;         // 08:  (Filler)
-    LPTOKEN        lptkStart,       // 0C:  Ptr to first available entry after the header
-                   lptkNext,        // 10:  Ptr to next  ...
-                   lptkEnd,         // 14:  Ptr to end of token stream
-                   lptkStop;        // 18:  Ptr to stop token if LookAhead
-    LPAPLCHAR      lpwszLine;       // 1C:  Ptr to line text (zero-terminated)
-    UINT           tkErrorCharIndex,// 20:  Error char index
-                   tkLACharIndex;   // 24:  LookAhead char index
-    UINT           plNameType:4,    // 28:  0000000F:  Object name type (see NAME_TYPES)
-                   bLookAhead:1,    //      00000010:  TRUE iff looking for object type within surrounding parens
-                   ExitType:4,      //      000001E0:  Exit Type (see EXIT_TYPES)
-                   bRet:1,          //      00000200   Various function results
-                   bStopExec:1,     //      00000400   TRUE iff we're to stop executing this line
-                   bRestart:1,      //      00000800   TRUE iff we're to restart from a Control Structure
-                   bExec1Stmt:1,    //      00001000   TRUE iff we're to execute one stmt only
-                   bReturn:1,       //      00002000   TRUE iff we're faking a :return as {goto} 0
-                   bYYERROR:1,      //      00004000   TRUE iff there's been a YYERROR
-                   bSelSpec:1,      //      00008000   TRUE iff we're inside Selective Specification
-                   bIniSpec:1,      //      00010000   TRUE iff we have yet to see the first name inside Selective Specification
-                   :15;             //      FFFE0000:  Available bits
-    UBOOL          bCtrlBreak;      // 2C:  TRUE iff Ctrl-Break pressed
+    LPTOKEN_HEADER lpMemTknHdr;         // 00:  Ptr to tokenized line header global memory
+    HGLOBAL        hGlbTxtLine;         // 04:  Text of line global memory handle
+    UINT           Filler1;             // 08:  (Filler)
+    LPTOKEN        lptkStart,           // 0C:  Ptr to first available entry after the header
+                   lptkNext,            // 10:  Ptr to next  ...
+                   lptkEnd,             // 14:  Ptr to end of token stream
+                   lptkStop;            // 18:  Ptr to stop token if LookAhead
+    LPAPLCHAR      lpwszLine;           // 1C:  Ptr to line text (zero-terminated)
+    UINT           tkErrorCharIndex,    // 20:  Error char index
+                   tkLACharIndex;       // 24:  LookAhead char index
+    UINT           plNameType:4,        // 28:  0000000F:  Object name type (see NAME_TYPES)
+                   bLookAhead:1,        //      00000010:  TRUE iff looking for object type within surrounding parens
+                   ExitType:4,          //      000001E0:  Exit Type (see EXIT_TYPES)
+                   bRet:1,              //      00000200   Various function results
+                   bStopExec:1,         //      00000400   TRUE iff we're to stop executing this line
+                   bRestart:1,          //      00000800   TRUE iff we're to restart from a Control Structure
+                   bExec1Stmt:1,        //      00001000   TRUE iff we're to execute one stmt only
+                   bReturn:1,           //      00002000   TRUE iff we're faking a :return as {goto} 0
+                   bYYERROR:1,          //      00004000   TRUE iff there's been a YYERROR
+                   bSelSpec:1,          //      00008000   TRUE iff we're inside Selective Specification
+                   bIniSpec:1,          //      00010000   TRUE iff we have yet to see the first name inside Selective Specification
+                   bAFO:1,              //      00020000   TRUE iff we're parsing an AFO
+                   bAfoCtrlStruc:1,     //      00040000:  TRUE iff Ctrl Strucs in AFO
+                   :13;                 //      FFF80000:  Available bits
+    UBOOL          bCtrlBreak;          // 2C:  TRUE iff Ctrl-Break pressed
     LPPL_YYSTYPE   lpYYStrArrStart[STRAND_LEN],   // 30:  Strand stack start (static) (16 bytes)
                    lpYYStrArrBase [STRAND_LEN],   // 40:  ...          base (dynamic) ...
                    lpYYStrArrNext [STRAND_LEN];   // 50:  ...          next token (dynamic)
-    struct tagPERTABDATA *lpMemPTD; // 58:  Ptr to PerTabData global memory
-    HWND           hWndSM;          // 60:  Window handle to Session Manager
-    LPPL_YYSTYPE   lpYYStr,         // 64:  Ptr to PL_YYSTYPE strand
-                   lpYYStrL,        // 68:  ...               left strand
-                   lpYYStrR,        // 6C:  ...               right strand
-                   lpYYStrN,        // 70:  ...               name strand
-                   lpYYRes,         // 74:  ...               result
-                   lpYYFcn,         // 78:  ...               function strand
-                   lpYYLst,         // 7C:  ...               list
-                   lpYYAxis,        // 80:  ...               axis
-                   lpYYOp1,         // 84:  ...               monadic operator
-                   lpYYOp2,         // 88:  ...               dyadic  ...
-                   lpYYOp3,         // 8C:  ...               ambiguous ...
-                   lpYYLft,         // 90:  ...               left operand
-                   lpYYRht,         // 94:  ...               right operand
-                   lpYYMak;         // 98:  ...               MakeXXX function
+    struct tagPERTABDATA *lpMemPTD;     // 58:  Ptr to PerTabData global memory
+    HWND           hWndSM;              // 60:  Window handle to Session Manager
+    LPPL_YYSTYPE   lpYYStr,             // 64:  Ptr to PL_YYSTYPE strand
+                   lpYYStrL,            // 68:  ...               left strand
+                   lpYYStrR,            // 6C:  ...               right strand
+                   lpYYStrN,            // 70:  ...               name strand
+                   lpYYRes,             // 74:  ...               result
+                   lpYYFcn,             // 78:  ...               function strand
+                   lpYYLst,             // 7C:  ...               list
+                   lpYYAxis,            // 80:  ...               axis
+                   lpYYOp1,             // 84:  ...               monadic operator
+                   lpYYOp2,             // 88:  ...               dyadic  ...
+                   lpYYOp3,             // 8C:  ...               ambiguous ...
+                   lpYYLft,             // 90:  ...               left operand
+                   lpYYRht,             // 94:  ...               right operand
+                   lpYYMak;             // 98:  ...               MakeXXX function
     struct tagPLLOCALVARS
-                  *lpPLPrev;        // 9C:  Ptr to previous PLLOCALVARS struct
-                                    //      in thread creation order (NULL = none)
-    UINT           uLineNum,        // A0:  Function line # (1 for execute or immexec)
-                   uTokenCnt;       // A4:  # tokens in the function line
-    HGLOBAL        hGlbDfnHdr;      // A8:  User-defined function/operator global memory handle (NULL = execute/immexec)
-    LPTOKEN        lptkEOS;         // AC:  ...    EOS ...
-    TOKEN          tkSelSpec;       // B0:  TOKEN for Selective Specification (24 bytes)
-                                    // C8:  Length
+                  *lpPLPrev;            // 9C:  Ptr to previous PLLOCALVARS struct
+                                        //      in thread creation order (NULL = none)
+    UINT           uLineNum,            // A0:  Function line # (1 for execute or immexec)
+                   uTokenCnt;           // A4:  # tokens in the function line
+    HGLOBAL        hGlbDfnHdr;          // A8:  User-defined function/operator global memory handle (NULL = execute/immexec)
+    LPTOKEN        lptkEOS;             // AC:  ...    EOS ...
+    TOKEN          tkSelSpec;           // B0:  TOKEN for Selective Specification (24 bytes)
+                                        // C8:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

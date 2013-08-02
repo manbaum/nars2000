@@ -34,8 +34,11 @@ typedef struct tagWFSO          // Struct for WaitForSingleObject
     HWND         hWndEC;        // Edit Ctrl window handle
 } WFSO, *LPWFSO;
 
-#define EXEC_QUAD_ELX_TXT   WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX"
+#define EXEC_QUAD_ELX_TXT   WS_UTF16_UPTACKJOT $QUAD_ELX
 #define EXEC_QUAD_ELX_LEN   strcountof (EXEC_QUAD_ELX_TXT)
+
+#define DISP_QUAD_DM_TXT                       $QUAD_DM
+#define DISP_QUAD_DM_LEN    strcountof (DISP_QUAD_DM_TXT)
 
 
 //***************************************************************************
@@ -448,6 +451,7 @@ DWORD WINAPI ImmExecStmtInThread
                        hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                        1,                   // Function line # (0 = header)
                       &ErrorMessageDirect,  // Ptr to error handling function (may be NULL)
+                       NULL,                // Ptr to common struc (may be NULL if unused)
                        FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator
         // If it's invalid, ...
         if (hGlbTknHdr EQ NULL)
@@ -528,6 +532,7 @@ DWORD WINAPI ImmExecStmtInThread
         // Split cases based upon the exit type
         switch (exitType)
         {
+            case EXITTYPE_STOP:
             case EXITTYPE_QUADERROR_INIT:
                 // If there are no more SI layers, ...
                 if (lpSISPrv EQ NULL)
@@ -539,15 +544,43 @@ DWORD WINAPI ImmExecStmtInThread
                                         lpwszCompLine,                  // Ptr to the line which generated the error
                                         lpMemPTD->tkErrorCharIndex);    // Position of caret (origin-0)
                     if (bActOnErrors)
-                        // Execute []ELX
-                        exitType =
-                          PrimFnMonUpTackJotCSPLParse ((HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC), // Edit Ctrl window handle
-                                                       lpMemPTD,                                // Ptr to PerTabData global memory
-                                                       EXEC_QUAD_ELX_TXT,                       // Ptr to text of line to execute
-                                                       EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
-                                                       TRUE,                                    // TRUE iff we should act on errors
-                                                       FALSE,                                   // TRUE iff we're to skip the depth check
-                                                       NULL);                                   // Ptr to function token
+                    {
+                        HWND hWndEC;
+
+                        // Get the Edit Ctrl window handle
+                        hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
+
+                        // If it's STOP, ...
+                        if (exitType EQ EXITTYPE_STOP)
+                        {
+                            UBOOL bCtrlBreak = FALSE;               // Pseudo Ctrl-Break
+
+                            // Display []DM
+                            DisplayGlbArr_EM (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData,   // Global memory handle to display
+                                              TRUE,                                                         // TRUE iff last line has CR
+                                             &bCtrlBreak,                                                   // Ptr to Ctrl-Break flag
+                                              NULL);                                                        // Ptr to function token
+////////////////////////////// Execute the statement (display []DM)
+////////////////////////////ImmExecStmt (DISP_QUAD_DM_TXT,          // Ptr to line to execute
+////////////////////////////             DISP_QUAD_DM_LEN,          // NELM of lpwszCompLine
+////////////////////////////             FALSE,                     // TRUE iff free lpwszCompLine on completion
+////////////////////////////             TRUE,                      // TRUE iff wait until finished
+////////////////////////////             hWndEC,                    // Edit Ctrl window handle
+////////////////////////////             FALSE);                    // TRUE iff errors are acted upon
+                        } else
+                        {
+                            // Execute []ELX
+                            exitType =
+                              PrimFnMonUpTackJotCSPLParse (hWndEC,              // Edit Ctrl window handle
+                                                           lpMemPTD,            // Ptr to PerTabData global memory
+                                                           EXEC_QUAD_ELX_TXT,   // Ptr to text of line to execute
+                                                           EXEC_QUAD_ELX_LEN,   // Length of the line to execute
+                                                           TRUE,                // TRUE iff we should act on errors
+                                                           FALSE,               // TRUE iff we're to skip the depth check
+                                                           NULL);               // Ptr to function token
+                        } // End IF/ELSE
+                    } // End IF
+
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 

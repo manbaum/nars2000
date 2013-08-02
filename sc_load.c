@@ -398,6 +398,7 @@ UBOOL LoadWorkspace_EM
                     lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
                     lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
                     lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
+                    lpMemPTD->lpSISNxt->bAFO         = lpMemDfnHdr->bAFO;
                     lpMemPTD->lpSISNxt->CurLineNum   = uLineNum;
                     lpMemPTD->lpSISNxt->NxtLineNum   = uLineNum + 1;
                     lpMemPTD->lpSISNxt->numLabels    = lpMemDfnHdr->numLblLines;
@@ -1253,6 +1254,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     APLNELM           aplNELMObj;           // Object NELM
     APLRANK           aplRankObj;           // Object rank
     HGLOBAL           hGlbObj,              // Object global memory handle
+                      hGlbDfnHdr,           // AFO global memory handle
                       hGlbChk;              // Result from CheckGlobals
     APLUINT           ByteObj,              // # bytes needed for the object
                       uObj;                 // Loop counter
@@ -1276,7 +1278,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                       ftLastMod;            // ...      last modification time
     SYSTEMTIME        systemTime;           // Current system (UTC) time
     UBOOL             bUserDefined = FALSE, // TRUE iff the current function is User-Defined
-                      bPermNdx = FALSE;     // ...          var is a permenent
+                      bPermNdx     = FALSE, // ...          var is a permenent
+                      bAFO         = FALSE; // TRUE iff the current function is an AFO
     LPVOID            lpMemObj;             // Ptr to object global memory
     APLINT            aplInteger;           // Temporary integer
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
@@ -1792,6 +1795,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                  KEYNAME_USERDEFINED,   // Ptr to the key name
                                  0,                     // Default value if not found
                                  lpDict);               // Ptr to workspace dictionary
+            // Get the AFO flag
+            bAFO       =
+              ProfileGetBoolean (lpwSectName,           // Ptr to the section name
+                                 KEYNAME_AFO,           // Ptr to the key name
+                                 0,                     // Default value if not found
+                                 lpDict);               // Ptr to workspace dictionary
             // Get the current system (UTC) time
             GetSystemTime (&systemTime);
 
@@ -1821,8 +1830,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Convert the LastModTime string to time
             sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, &ftLastMod);
 
-            // If it's a user-defined function/operator, ...
-            if (bUserDefined)
+            // If it's a user-defined or AFO, ...
+            if (bUserDefined
+             || bAFO)
             {
                 SF_FCNS      SF_Fcns = {0};         // Common struc for SaveFunctionCom
                 LW_PARAMS    LW_Params = {0};       // Local  ...
@@ -1835,6 +1845,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                     lpDict);        // Ptr to workspace dictionary
                 // Fill in common values
                 SF_Fcns.bDisplayErr     = TRUE;             // Display Errors
+                SF_Fcns.bAFO            = bAFO;             // Parsing an AFO
 ////////////////SF_Fcns.bRet            =                   // Filled in by SaveFunctionCom
 ////////////////SF_Fcns.uErrLine        =                   // ...
 ////////////////SF_Fcns.lpSymName       =                   // ...
@@ -1844,7 +1855,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 SF_Fcns.SF_NumLines     = SF_NumLinesLW;    // Ptr to get # lines function
                 SF_Fcns.SF_CreationTime = SF_CreationTimeLW;// Ptr to get function creation time
                 SF_Fcns.SF_LastModTime  = SF_LastModTimeLW; // Ptr to get function last modification time
-                SF_Fcns.SF_UndoBuffer   = SF_UndoBufferLW;  // Ptr to get function last modification time
+                SF_Fcns.SF_UndoBuffer   = SF_UndoBufferLW;  // Ptr to get function Undo Buffer global memory handle
+////////////////SF_Fcns.numLocalsSTE    = 0;                // # locals in AFO (Already zero from = {0})
+////////////////SF_Fcns.lplpLocalSTEs   = NULL;             // Ptr to save area for local STEs          (Already zero from = {0})
                 SF_Fcns.LclParams       = &LW_Params;       // Ptr to local parameters
 
                 // Fill in local values
@@ -1870,6 +1883,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                     goto CORRUPTWS_EXIT;
                 } // End IF/ELSE
+
+                // Save the function/operator's global memory handle
+                hGlbDfnHdr = SF_Fcns.hGlbDfnHdr;
 
                 // Read in and process the monitor info
                 lpwszProf =
@@ -2008,8 +2024,18 @@ HGLOBAL LoadWorkspaceGlobal_EM
               SymTabLookupName (lpwFcnName, &stFlags);
             Assert (lpSymEntry NE NULL);
 
-            // Copy the HGLOBAL
-            hGlbObj = lpSymEntry->stData.stGlbData;
+            // If it's an AFO, ...
+            if (bAFO)
+            {
+                // Copy the HGLOBAL
+                hGlbObj = MakePtrTypeGlb (hGlbDfnHdr);
+
+                // Set flags
+                lpSymEntry->stFlags.Value  =
+                lpSymEntry->stFlags.UsrDfn = TRUE;
+            } else
+                // Copy the HGLOBAL
+                hGlbObj = lpSymEntry->stData.stGlbData;
 
             // If it's not a function/operator/train/, ...
             if (!IsNameTypeFnOp (lpSymEntry->stFlags.stNameType))

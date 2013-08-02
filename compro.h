@@ -23,6 +23,7 @@
 #ifndef COMPRO_INCLUDED
   #define COMPRO_INCLUDED
 
+  #include "afofns.pro"
   #include "assign.pro"
   #include "axisfns.pro"
   #include "bjhash.pro"

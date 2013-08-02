@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,22 +22,30 @@
 
 typedef struct tagSF_FCNS
 {
-    UINT       bDisplayErr:1,       // 00:  00000001  TRUE iff we should display errors
-               bRet:1;              //      00000002  TRUE iff result is valid
-                                    //      FFFFFFFC  Available bits
-    UINT       uErrLine;            // 04:  If (!bRet), the line in error (origin-0) (NEG1U = Error Message valid)
-    LPSYMENTRY lpSymName;           // 08:  If (bRet), ptr to SYMENTRY of the function name
-    LPTOKEN    lptkFunc;            // 0C:  Ptr to function token
-    LPVOID     LclParams;           // 10:  Ptr to local parameters
+    UINT        bDisplayErr:1,      // 00:  00000001:  TRUE iff we should display errors
+                bRet:1,             //      00000002:  TRUE iff result is valid
+                bAFO:1,             //      00000004:  TRUE iff we're parsing an AFO
+                bMakeAFO:1,         //      00000008:  TRUE iff we're called from <MakeAFO>
+                bSetAlpha:1,        //      00000010:  TRUE iff some stmt sets {alpha}
+                bRefAlpha:1,        //      00000020:  TRUE iff some stmt references {alpha}
+                bRefOmega:1,        //      00000040:  TRUE iff ...                  {omega}
+                :25;                //      FFFFFF80:  Available bits
+    UINT        uErrLine;           // 04:  If (!bRet), the line in error (origin-0) (NEG1U = Error Message valid)
+    LPSYMENTRY  lpSymName;          // 08:  If (bRet), ptr to SYMENTRY of the function name
+    LPTOKEN     lptkFunc;           // 0C:  Ptr to function token
+    LPVOID      LclParams;          // 10:  Ptr to local parameters
     UINT (*SF_LineLen)  (HWND, LPVOID, UINT);                   // 14:  Ptr to get line length function
     void (*SF_ReadLine) (HWND, LPVOID, UINT, LPAPLCHAR);        // 18:  Ptr to read line function
     UINT (*SF_NumLines) (HWND, LPVOID);                         // 1C:  Ptr to get # lines function
     void (*SF_CreationTime) (LPVOID, SYSTEMTIME *, FILETIME *); // 20:  Ptr to get function creation time
     void (*SF_LastModTime)  (LPVOID, SYSTEMTIME *, FILETIME *); // 24:  Ptr to get function last mod time
     HGLOBAL (*SF_UndoBuffer) (HWND, LPVOID);                    // 28:  Ptr to get function Undo Buffer global memory handle
-    HGLOBAL    hGlbDfnHdr;          // 2C:  User-defined function/operator global memory handle
-    WCHAR      wszErrMsg[256];      // 30:  Save area for error message
-                                    //230:  Length of struc
+    HGLOBAL     hGlbDfnHdr;         // 2C:  User-defined function/operator global memory handle
+    UINT        numLocalsSTE;       // 30:  # locals in AFO
+    LPSYMENTRY *lplpLocalSTEs;      // 34:  Ptr to save area for local STEs (may be NULL during sizing)
+    LPHSHTABSTR lpHTS;              // 38:  Ptr to HshTabStr (may be NULL)
+    WCHAR       wszErrMsg[256];     // 3C:  Save area for error message
+                                    //23C:  Length of struc
 } SF_FCNS, *LPSF_FCNS;
 
 
@@ -75,17 +83,20 @@ typedef struct tagFX_PARAMS
 } FX_PARAMS, *LPFX_PARAMS;
 
 
-typedef struct tagLW_PARAMS
+typedef struct tagLW_PARAMS         // LoadWorkspace & AFO struc
 {
-    LPWCHAR      lpwSectName,       // 00:  Ptr to section name [nnn.Name]
-                 lpwBuffer,         // 04:  Ptr to temporary buffer
-                 lpMemUndoTxt;      // 08:  Ptr to Undo Buffer in text format
-    LPDICTIONARY lpDict;            // 0C:  Ptr to workspace dictionary
-    UINT         uMaxSize;          // 10:  Maximum size of lpwBuffer
-    FILETIME     ftCreation,        // 14:  Function Creation Time
-                 ftLastMod;         // 18:  Function Last Modification Time
-    LPWCHAR      lpwszVersion;      // 1C:  Ptr to workspace version text
-                                    // 20:  Length
+    LPWCHAR       lpwSectName,      // 00:  Ptr to section name [nnn.Name]
+                  lpwBuffer,        // 04:  Ptr to temporary buffer
+                  lpMemUndoTxt;     // 08:  Ptr to Undo Buffer in text format
+    LPDICTIONARY  lpDict;           // 0C:  Ptr to workspace dictionary
+    UINT          uMaxSize;         // 10:  Maximum size of lpwBuffer
+    FILETIME      ftCreation,       // 14:  Function Creation Time
+                  ftLastMod;        // 18:  Function Last Modification Time
+    LPWCHAR       lpwszVersion;     // 1C:  Ptr to workspace version text
+    LPPL_YYSTYPE  lpYYRht;          // 20:  Ptr to right brace YYSTYPE
+    HSHTABSTR     htsDFN;           // 24:  Local HshTab struc for this AFO (124 bytes)
+    LPPLLOCALVARS lpplLocalVars;    // A0:  Ptr to LocalVars
+                                    // A4:  Length
 } LW_PARAMS, *LPLW_PARAMS;
 
 

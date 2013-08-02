@@ -2300,6 +2300,23 @@ APLLONGEST GetGlbPtrs_LOCK
 
             return lpToken->tkData.tkSym->stData.stLongest;
 
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+            *lphGlb = lpToken->tkData.tkGlbData;
+
+            // stData is a valid HGLOBAL function array
+            Assert (IsGlbTypeDfnDir_PTB (*lphGlb));
+
+            // Lock the memory to get a ptr to it
+            lpMem = MyGlobalLock (*lphGlb);
+
+            // Get the pseudo-type & NELM
+            aplTypeMem = ARRAY_LIST;
+            aplNELMMem = 0;
+
+            break;      // Continue with common HGLOBAL code
+
         case TKT_VARIMMED:
         case TKT_AXISIMMED:
         case TKT_LSTIMMED:
@@ -2402,16 +2419,8 @@ LPSYMENTRY GetSteZero
     (void)
 
 {
-    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
-
-    // Ensure we are where we think we are
-    Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // Get the STE
-    return lpMemPTD->steZero;
+    return GetMemPTD ()->lphtsPTD->steZero;
 } // End GetSteZero
 
 
@@ -2425,16 +2434,8 @@ LPSYMENTRY GetSteOne
     (void)
 
 {
-    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
-
-    // Ensure we are where we think we are
-    Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // Get the STE
-    return lpMemPTD->steOne;
+    return GetMemPTD ()->lphtsPTD->steOne;
 } // End GetSteOne
 
 
@@ -2448,16 +2449,8 @@ LPSYMENTRY GetSteBlank
     (void)
 
 {
-    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
-
-    // Ensure we are where we think we are
-    Assert (TLSTYPE_PL EQ TlsGetValue (dwTlsType));
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // Get the STE
-    return lpMemPTD->steBlank;
+    return GetMemPTD ()->lphtsPTD->steBlank;
 } // End GetSteBlank
 
 
@@ -2471,12 +2464,7 @@ APLFLOAT GetQuadCT
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_CT]->stData.stFloat;
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_CT]->stData.stFloat;
 } // End GetQuadCT
 
 
@@ -2490,12 +2478,7 @@ void SetQuadCT
     (APLFLOAT fQuadCT)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_CT]->stData.stFloat = fQuadCT;
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_CT]->stData.stFloat = fQuadCT;
 } // End SetQuadCT
 
 
@@ -2509,12 +2492,7 @@ APLCHAR GetQuadDT
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar;
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar;
 } // End GetQuadDT
 
 
@@ -2528,12 +2506,7 @@ void SetQuadDT
     (APLCHAR cQuadDT)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar = cQuadDT;
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar = cQuadDT;
 } // End SetQuadDT
 
 
@@ -2547,12 +2520,7 @@ APLBOOL GetQuadIO
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_IO]->stData.stBoolean;
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_IO]->stData.stBoolean;
 } // End GetQuadIO
 
 
@@ -2566,12 +2534,7 @@ void SetQuadIO
     (APLBOOL bQuadIO)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_IO]->stData.stBoolean = bQuadIO;
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_IO]->stData.stBoolean = bQuadIO;
 } // End SetQuadIO
 
 
@@ -2585,12 +2548,7 @@ APLUINT GetQuadPP
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    return min (DEF_MAX_QUADPP64, lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger);
+    return min (DEF_MAX_QUADPP64, GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger);
 } // End GetQuadPP
 
 
@@ -2604,12 +2562,7 @@ void SetQuadPP
     (APLINT uQuadPP)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger=
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger=
         min (DEF_MAX_QUADPP64, uQuadPP);
 } // End SetQuadPP
 
@@ -2624,12 +2577,7 @@ APLUINT GetQuadPPV
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
 } // End GetQuadPPV
 
 
@@ -2643,12 +2591,7 @@ APLUINT GetQuadPW
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PW]->stData.stInteger;
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PW]->stData.stInteger;
 } // End GetQuadPW
 
 
@@ -2662,13 +2605,8 @@ APLUINT GetQuadRL
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // Get the current value
-    return lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_RL]->stData.stInteger;
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_RL]->stData.stInteger;
 } // End GetQuadRL
 
 
@@ -2682,13 +2620,8 @@ void SetQuadRL
     (APLUINT uQuadRL)           // []RL
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // Set the new value
-    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
 } // End SetQuadRL
 
 
@@ -2875,6 +2808,15 @@ LPPRIMFLAGS GetPrimFlagsPtr
                     return NULL;
             } // End SWITCH
 
+            break;
+
+        case TKT_DELAFO:
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+            // Get a ptr to the prototype function for the user-defined function/operator
+            return &DfnIdentFns;
+
         defstop
             return NULL;
     } // End SWITCH
@@ -2939,6 +2881,8 @@ UINT GetSignatureGlb
 
     // Lock the memory to get a ptr to it
     lpMemLcl = MyGlobalLock (hGlbLcl);
+
+    Assert (IsValidPtr (lpMemLcl, sizeof (lpMemLcl->nature)));
 
     // Get the signature
     Sig = lpMemLcl->nature;

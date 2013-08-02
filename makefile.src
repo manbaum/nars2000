@@ -33,6 +33,7 @@ $(O)pl_parse.???        \
 $(O)pn_parse.???
 
 SRC=                    \
+$(O)afofns.???          \
 $(O)assign.???          \
 $(O)axisfns.???         \
 $(O)bjhash.???          \

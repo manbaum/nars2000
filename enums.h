@@ -40,8 +40,9 @@ typedef enum tagMENUPOS_FE      // Positions of items in FE menu
     IDMPOS_FE_HELP    ,         // 05:  Help ...
 };
 
-// If you change either of the above tagMENUPOSxx enums, be sure
-//   to change the one below so that it always has an entry for
+// N.B.:  Whenever changing either of the above tagMENUPOSxx enums,
+//   be sure to make a corresponding change to
+//   the one below so that it always has an entry for
 //   each of the menu names across all such enums, and be sure to
 //   change all <GetIDMPOS_xx> functions.
 
@@ -135,13 +136,13 @@ typedef enum tagEXCEPTION_CODES // Exception Codes
     EXCEPTION_NONCE_ERROR  ,    // 06:  Signal a NONCE ERROR
     EXCEPTION_WS_FULL      ,    // 07:  Signal a WS FULL
     EXCEPTION_CTRL_BREAK   ,    // 08:  Ctrl-Break pressed
-    EXCEPTION_STACK_FULL   ,    // 09:  Signal a STACK FULL
 } EXCEPTION_CODES;
 
-// If you change the above tagEXCEPTION_CODES enum, be sure
-//   to change <CheckException> in <except.c>,
-//             <MyGetExceptionStr> in <except.c>,
-//             <ExceptNames> in <except.c>
+// N.B.:  Whenever changing the above tagEXCEPTION_CODES enum,
+//   be sure to make a corresponding change to
+//   <CheckException> in <except.c>,
+//   <MyGetExceptionStr> in <except.c>,
+//   <ExceptNames> in <except.c>
 
 
 typedef enum tagMAKE_PROTO
@@ -181,8 +182,9 @@ typedef enum tagERROR_CODES     // Error codes
     ERRORCODE_DM      ,         // 03:  Display []DM
 } ERROR_CODES, *LPERROR_CODES;
 
-// If you change the above tagERROR_CODES enum, be sure
-//   to change SWITCH stmts in <ParseLine> in <pl_parse.y>
+// N.B.:  Whenever changing the above tagERROR_CODES enum,
+//   be sure to make a corresponding change to
+//   SWITCH stmts in <ParseLine> in <pl_parse.y>
 
 
 typedef enum tagLINE_NUMS       // Starting line #s
@@ -229,6 +231,44 @@ typedef enum tagNFNS_NERR       // Common code for []NERASE, []NRENAME, and []NR
     COM_NRENAME,                // 1:  []NRENAME
     COM_NRESIZE                 // 2:  []NRESIZE
 } NFNS_NERR;
+
+
+typedef enum tagDFN_TYPES               // User-Defined Function/Operator Types
+{
+    DFNTYPE_UNK = 0,                    // 00:  Unknown
+    DFNTYPE_OP1,                        // 01:  Monadic operator
+    DFNTYPE_OP2,                        // 02:  Dyadic operator
+    DFNTYPE_FCN,                        // 03:  Niladic/monadic/dyadic/ambivalent function
+    DFNTYPE_IMM,                        // 04:  Immediate execution
+    DFNTYPE_EXEC,                       // 05:  Execute primitive
+    DFNTYPE_QUAD,                       // 06:  Quad input
+    DFNTYPE_QQUAD,                      // 07:  Quote-Quad input
+    DFNTYPE_ERRCTRL,                    // 08:  Error control via Quad-EA/-EC
+                                        // 09-0F:  Available entries (4 bits)
+} DFN_TYPES;
+
+
+typedef enum tagPTDMEMVIRTENUM
+{
+    PTDMEMVIRT_QUADERROR = 0,           // 00:  lpszQuadErrorMsg
+    PTDMEMVIRT_UNDOBEG,                 // 01:  lpUndoBeg
+    PTDMEMVIRT_HTSPTD,                  // 02:  lphtsPTD
+    PTDMEMVIRT_HSHTAB,                  // 03:  lphtsPTD->lpHshTab
+    PTDMEMVIRT_SYMTAB,                  // 04:  lphtsPTD->lpSymTab
+    PTDMEMVIRT_SIS,                     // 05:  lpSISBeg
+    PTDMEMVIRT_CS,                      // 06:  lptkCSIni
+    PTDMEMVIRT_YYRES,                   // 07:  lpYYRes
+    PTDMEMVIRT_STRAND_VAR,              // 08:  lpStrand[STRAND_VAR]
+    PTDMEMVIRT_STRAND_FCN,              // 09:  lpStrand[STRAND_FCN]
+    PTDMEMVIRT_STRAND_LST,              // 0A:  lpStrand[STRAND_LST]
+    PTDMEMVIRT_STRAND_NAM,              // 0B:  lpStrand[STRAND_NAM]
+    PTDMEMVIRT_WSZFORMAT,               // 0C:  Temporary formatting
+    PTDMEMVIRT_WSZTEMP,                 // 0D:  Temporary save area
+    PTDMEMVIRT_FORSTMT,                 // 0E:  FOR ... IN stmts
+    PTDMEMVIRT_MFO1,                    // 0F:  Magic functions/operators
+    PTDMEMVIRT_MFO2,                    // 10:  ...
+    PTDMEMVIRT_LENGTH                   // 11:  # entries
+} PTDMEMVIRTENUM;
 
 
 //***************************************************************************

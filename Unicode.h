@@ -240,6 +240,8 @@
 #define UTF16_LOW_A_RING         0x00E5         // Lower   a w/ring
 #define UTF16_LOW_AE             0x00E6         // Lower   ae
 #define UTF16_LOW_O_STROKE       0x00F8         // Lower   o w/stroke
+#define UTF16_ALPHA2             0x03B1         // Greek small letter alpha
+#define UTF16_OMEGA2             0x03C9         // ...                omega
 #define UTF16_STILE              0x2223         // Stile
 
 #define UTF16_A_                 0xE036         // A underbar
@@ -474,6 +476,8 @@
 #define WS_UTF16_LOW_A_RING         L"\x00E5"   // Lower   A w/ring
 #define WS_UTF16_LOW_AE             L"\x00E6"   // Lower   ae
 #define WS_UTF16_LOW_O_STROKE       L"\x00F8"   // Lower   o w/stroke
+#define WS_UTF16_ALPHA2             L"\x03B1"   // Greek small letter alpha
+#define WS_UTF16_OMEGA2             L"\x03C9"   // ...                omega
 #define WS_UTF16_STILE              L"\x2223"   // Stile
 
 #define WS_UTF16_A_                 L"\xE036"   // A underbar
@@ -502,6 +506,10 @@
 #define WS_UTF16_X_                 L"\xE04D"   // X underbar
 #define WS_UTF16_Y_                 L"\xE04E"   // Y underbar
 #define WS_UTF16_Z_                 L"\xE04F"   // Z underbar
+
+#define WS_UTF16_LFTOPER    WS_UTF16_ALPHA WS_UTF16_ALPHA
+#define WS_UTF16_DELDEL     WS_UTF16_DEL   WS_UTF16_DEL
+#define WS_UTF16_RHTOPER    WS_UTF16_OMEGA WS_UTF16_OMEGA
 
 #endif
 

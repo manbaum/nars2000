@@ -184,7 +184,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     //   and the .Inuse flag
     lpSymEntry =
       SymTabLookupNameLength (lpMemRht,
-                              (APLU3264) aplNELMRht,
+                   (APLU3264) aplNELMRht,
                              &stFlags);
     // Mark the result type & rank
     aplTypeRes = ARRAY_CHAR;
@@ -258,25 +258,134 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     // Get ptr to user-defined function/operator header
                     lpMemDfnHdr = (LPDFN_HEADER) lpMemData;
 
-                    // Lock the memory to get a ptr to it
-                    lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
-
-                    // Get the length of the function header text
-                    uMaxLineLen = lpMemTxtLine->U;
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine = NULL;
-
-                    // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-                    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
-
-                    // Get # function lines
-                    uNumLines = lpMemDfnHdr->numFcnLines;
-
-                    // If the result is a matrix, ...
-                    if (IsMatrix (aplRankRes))
+                    // If this is an AFO, ...
+                    if (lpMemDfnHdr->bAFO)
                     {
-                        // Run through the function lines looking for the longest
+                        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+                        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+                        // Get the line text global memory handle
+                        hGlbTxtLine = lpFcnLines->hGlbTxtLine;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+
+                        // Get the length of the line text
+                        aplNELMRes = lpMemTxtLine->U;
+
+                        // Start with a leading left brace
+                        lpwszTemp[0] = UTF16_LEFTBRACE;
+
+                        // Copy the function line text to global memory
+                        CopyMemoryW (&lpwszTemp[1], &lpMemTxtLine->C, (APLU3264) aplNELMRes);
+
+                        // End with a trailing right brace
+                        lpwszTemp[1 + aplNELMRes] = UTF16_RIGHTBRACE;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+
+                        // Finish the job via subroutine
+                        hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes + 2, aplRankRes, lpwszTemp, lptkFunc);
+                    } else
+                    {
+                        // Lock the memory to get a ptr to it
+                        lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+
+                        // Get the length of the function header text
+                        uMaxLineLen = lpMemTxtLine->U;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine = NULL;
+
+                        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+                        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+                        // Get # function lines
+                        uNumLines = lpMemDfnHdr->numFcnLines;
+
+                        // If the result is a matrix, ...
+                        if (IsMatrix (aplRankRes))
+                        {
+                            // Run through the function lines looking for the longest
+                            for (uLine = 0; uLine < uNumLines; uLine++)
+                            {
+                                // Get the line text global memory handle
+                                hGlbTxtLine = lpFcnLines->hGlbTxtLine;
+
+                                if (hGlbTxtLine)
+                                {
+                                    // Lock the memory to get a ptr to it
+                                    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+
+                                    // Find the length of the longest line
+                                    uMaxLineLen = max (uMaxLineLen, lpMemTxtLine->U);
+
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+                                } // End IF
+
+                                // Skip to the next struct
+                                lpFcnLines++;
+                            } // End FOR
+                        } else
+                            aplTypeRes = ARRAY_NESTED;
+
+                        // Calculate the result NELM ("1 +" includes the header)
+                        aplNELMRes = 1 + uNumLines;
+                        if (IsMatrix (aplRankRes))
+                            aplNELMRes *= uMaxLineLen;
+
+                        // Calculate space needed for the result
+                        ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
+
+                        // Check for overflow
+                        if (ByteRes NE (APLU3264) ByteRes)
+                            goto WSFULL_EXIT;
+
+                        // Allocate space for the result
+                        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                        if (!hGlbRes)
+                            goto WSFULL_EXIT;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+                        // Fill in the header
+                        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                        lpHeader->ArrType    = aplTypeRes;
+////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+                        lpHeader->RefCnt     = 1;
+                        lpHeader->NELM       = aplNELMRes;
+                        lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
+
+                        // Save the dimensions in the result ("1 +" includes the header)
+                        (VarArrayBaseToDim (lpMemRes))[0] = 1 + uNumLines;
+                        if (IsMatrix (aplRankRes))
+                            (VarArrayBaseToDim (lpMemRes))[1] = uMaxLineLen;
+
+#define lpMemResChar    ((LPAPLCHAR) lpMemRes)
+                        // Skip over the header and dimensions to the data
+                        lpMemResChar = VarArrayDataFmBase (lpMemRes);
+
+                        // If this is a nested result, fill it in PTR_REUSED
+                        //   in case we fail along the way
+                        if (IsVector (aplRankRes))
+                        for (uRes = 0; uRes < aplNELMRes; uRes++)
+                            ((LPAPLNESTED) lpMemResChar)[uRes] = PTR_REUSED;
+
+                        // Copy the header to the result as either a row or as an allocated HGLOBAL
+                        lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, lpMemDfnHdr->hGlbTxtHdr, uMaxLineLen, lptkFunc);
+                        if (lpMemResChar EQ NULL)
+                            goto ERROR_EXIT;
+
+                        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+                        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+                        // Run through the function lines copying each line text to the result
                         for (uLine = 0; uLine < uNumLines; uLine++)
                         {
                             // Get the line text global memory handle
@@ -284,93 +393,16 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                             if (hGlbTxtLine)
                             {
-                                // Lock the memory to get a ptr to it
-                                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
-
-                                // Find the length of the longest line
-                                uMaxLineLen = max (uMaxLineLen, lpMemTxtLine->U);
-
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+                                // Copy the line text to the result as either a row or as an allocated HGLOBAL
+                                lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, hGlbTxtLine, uMaxLineLen, lptkFunc);
+                                if (lpMemResChar EQ NULL)
+                                    goto ERROR_EXIT;
                             } // End IF
-
+#undef  lpMemResChar
                             // Skip to the next struct
                             lpFcnLines++;
                         } // End FOR
-                    } else
-                        aplTypeRes = ARRAY_NESTED;
-
-                    // Calculate the result NELM ("1 +" includes the header)
-                    aplNELMRes = 1 + uNumLines;
-                    if (IsMatrix (aplRankRes))
-                        aplNELMRes *= uMaxLineLen;
-
-                    // Calculate space needed for the result
-                    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
-
-                    // Check for overflow
-                    if (ByteRes NE (APLU3264) ByteRes)
-                        goto WSFULL_EXIT;
-
-                    // Allocate space for the result
-                    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                    if (!hGlbRes)
-                        goto WSFULL_EXIT;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemRes = MyGlobalLock (hGlbRes);
-
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-                    // Fill in the header
-                    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                    lpHeader->ArrType    = aplTypeRes;
-////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-                    lpHeader->RefCnt     = 1;
-                    lpHeader->NELM       = aplNELMRes;
-                    lpHeader->Rank       = aplRankRes;
-#undef  lpHeader
-
-                    // Save the dimensions in the result ("1 +" includes the header)
-                    (VarArrayBaseToDim (lpMemRes))[0] = 1 + uNumLines;
-                    if (IsMatrix (aplRankRes))
-                        (VarArrayBaseToDim (lpMemRes))[1] = uMaxLineLen;
-
-#define lpMemResChar    ((LPAPLCHAR) lpMemRes)
-                    // Skip over the header and dimensions to the data
-                    lpMemResChar = VarArrayDataFmBase (lpMemRes);
-
-                    // If this is a nested result, fill it in PTR_REUSED
-                    //   in case we fail along the way
-                    if (IsVector (aplRankRes))
-                    for (uRes = 0; uRes < aplNELMRes; uRes++)
-                        ((LPAPLNESTED) lpMemResChar)[uRes] = PTR_REUSED;
-
-                    // Copy the header to the result as either a row or as an allocated HGLOBAL
-                    lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, lpMemDfnHdr->hGlbTxtHdr, uMaxLineLen, lptkFunc);
-                    if (lpMemResChar EQ NULL)
-                        goto ERROR_EXIT;
-
-                    // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-                    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
-
-                    // Run through the function lines copying each line text to the result
-                    for (uLine = 0; uLine < uNumLines; uLine++)
-                    {
-                        // Get the line text global memory handle
-                        hGlbTxtLine = lpFcnLines->hGlbTxtLine;
-
-                        if (hGlbTxtLine)
-                        {
-                            // Copy the header to the result as either a row or as an allocated HGLOBAL
-                            lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, hGlbTxtLine, uMaxLineLen, lptkFunc);
-                            if (lpMemResChar EQ NULL)
-                                goto ERROR_EXIT;
-                        } // End IF
-#undef  lpMemResChar
-                        // Skip to the next struct
-                        lpFcnLines++;
-                    } // End FOR
+                    } // End IF/ELSE
 
                     break;
                 } // End DFN_HEADER_SIGNATURE
@@ -532,10 +564,10 @@ LPVOID SysFnCR_Copy_EM
         *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbCpy);
     } else
     {
-        // Get the length of the function header text
+        // Get the length of the function header/line text
         uLineLen = lpMemTxtLine->U;
 #define lpMemResChar        ((LPAPLCHAR) lpMemRes)
-        // Copy the function header text to the result
+        // Copy the function header/line text to the result
         CopyMemoryW (lpMemResChar, &lpMemTxtLine->C, uLineLen);
 
         // Fill the remainder of the line with blanks

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ GLBSYM GetIdentityElement_EM
         // Setup a token with the {rho} function
         tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
         tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
-////////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from tkZero
+////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from tkZero
         tkFcn.tkData.tkIndex    = UTF16_RHO;
         tkFcn.tkCharIndex       = lpYYFcnStrRht->tkToken.tkCharIndex;
 
@@ -355,10 +355,10 @@ UBOOL FillIdentityElement_EM
                         // If the identity element is numeric, ...
                         if (IsImmNum (hGlbSym.lpSym->stFlags.ImmType))
                             // Save the prototype of the identity element in the result
-                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->steZero;
+                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->lphtsPTD->steZero;
                         else
                             // Save the prototype of the identity element in the result
-                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->steBlank;
+                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->lphtsPTD->steBlank;
                     } else
                     {
                         // Save the identity element in the result

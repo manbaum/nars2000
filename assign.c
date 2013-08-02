@@ -42,11 +42,12 @@ UBOOL AssignName_EM
      LPTOKEN lptkSrc)               // Ptr to source token
 
 {
-    STFLAGS stSrcFlags = {0},   // Copy of the source's STE flags
-            stNamFlags;         // ...         name's   ...
-    HGLOBAL hGlbSrc;            // Source's global memory handle
-    UBOOL   bFcnOpr,            // TRUE iff source is a function/operator
-            bRet = TRUE;        // TRUE iff result is valid
+    STFLAGS      stSrcFlags = {0},  // Copy of the source's STE flags
+                 stNamFlags;        // ...         name's   ...
+    HGLOBAL      hGlbSrc;           // Source's global memory handle
+    UBOOL        bFcnOpr,           // TRUE iff source is a function/operator
+                 bRet = TRUE;       // TRUE iff result is valid
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to UDFO header
 
     DBGENTER;
 
@@ -83,6 +84,47 @@ UBOOL AssignName_EM
     // Split cases based upon the source token type
     switch (lptkSrc->tkFlags.TknType)
     {
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+            // Get the source global memory handle
+            hGlbSrc = lptkSrc->tkData.tkGlbData;
+
+            // tkData is a user-defined function/operator
+            Assert (IsGlbTypeDfnDir_PTB (hGlbSrc));
+
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlbSrc);
+
+            // Free the old value for this name
+            FreeResultName (lptkNam);
+
+            // Clear the name's STE flags
+            ZeroMemory (&lptkNam->tkData.tkSym->stFlags, sizeof (lptkNam->tkData.tkSym->stFlags));
+
+            // Set STE flags
+            lptkNam->tkData.tkSym->stFlags.Imm         = FALSE;
+            lptkNam->tkData.tkSym->stFlags.ImmType     = IMMTYPE_ERROR;
+            lptkNam->tkData.tkSym->stFlags.Inuse       =
+            lptkNam->tkData.tkSym->stFlags.Value       = TRUE;
+            lptkNam->tkData.tkSym->stFlags.ObjName     = OBJNAME_USR;
+            lptkNam->tkData.tkSym->stFlags.stNameType  = GetNameType (lptkSrc);
+////////////lptkNam->tkData.tkSym->stFlags.SysVarValid = 0          // Already zero from ZeroMemory
+            lptkNam->tkData.tkSym->stFlags.UsrDfn      = TRUE;
+////////////lptkNam->tkData.tkSym->stFlags.DfnLabel    = FALSE;     // Already zero from ZeroMemory
+////////////lptkNam->tkData.tkSym->stFlags.DfnSysLabel = FALSE;     // Already zero from ZeroMemory
+            lptkNam->tkData.tkSym->stFlags.DfnAxis     = lpMemDfnHdr->DfnAxis;
+////////////lptkNam->tkData.tkSym->stFlags.FcnDir      = FALSE;     // Already zero from ZeroMemory
+
+            // Copy the source global memory handle
+            //   and save it as the new global memory ptr
+            lptkNam->tkData.tkSym->stData.stGlbData    = CopySymGlbDir_PTB (hGlbSrc);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbSrc); lpMemDfnHdr = NULL;
+
+            break;
+
         case TKT_VARNAMED:
         case TKT_FCNNAMED:
         case TKT_OP1NAMED:
@@ -302,7 +344,7 @@ UBOOL AssignName_EM
             || lptkSrc->tkFlags.TknType EQ TKT_OP3IMMED);
     if (bFcnOpr)
     {
-        // Set the object type
+        // Set the name type
         lptkNam->tkData.tkSym->stFlags.stNameType = GetNameType (lptkSrc);
 
         // Split cases based upon the underlying NAMETYPE_xxx
@@ -457,25 +499,36 @@ NAME_TYPES GetNameType
 
         case TKT_FCNIMMED:
         case TKT_OPJOTDOT:
+        case TKT_FCNAFO:
             return NAMETYPE_FN12;
 
         case TKT_OP1NAMED:
         case TKT_OP1IMMED:
+        case TKT_OP1AFO:
             return NAMETYPE_OP1;
 
         case TKT_OP2NAMED:
         case TKT_OP2IMMED:
+        case TKT_OP2AFO:
             return NAMETYPE_OP2;
 
         case TKT_OP3NAMED:
         case TKT_OP3IMMED:
             return NAMETYPE_OP3;
 
+        case TKT_DEL:       // Del      -- always a function
+        case TKT_DELDEL:    // Del Del  -- either a monadic of dyadic operator
+            hGlbData = lptkFunc->tkData.tkSym->stData.stGlbData;
+
+            break;          // Continue with common hGlbData code
+
         case TKT_FCNARRAY:
+        case TKT_DELAFO:    // Del Anon -- either a monadic of dyadic operator, bound to its operands
             hGlbData = lptkFunc->tkData.tkGlbData;
 
-            break;      // Continue with common hGlbData code
+            break;          // Continue with common hGlbData code
 
+        case TKT_SETALPHA:  // Set {alpha}
         defstop
             return -1;
     } // End SWITCH

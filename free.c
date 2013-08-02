@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ void FreeResultTkn
 //  $FreeResNNU
 //
 //  Free the HGLOBALs and LPSYMENTRYs in a result
-//    only if it's not a named UDFO
+//    only if it's not a named UDFO and not an AFO
 //***************************************************************************
 
 #ifdef DEBUG
@@ -126,7 +126,8 @@ void FreeResNNU
 {
     DBGENTER;
 
-    if (!IsTknTypeNamedFcnOpr (lpYYRes->tkToken.tkFlags.TknType))
+    if (!IsTknTypeNamedFcnOpr (lpYYRes->tkToken.tkFlags.TknType)
+     && !IsTknTypeAFO         (lpYYRes->tkToken.tkFlags.TknType))
     {
 #ifdef DEBUG
         // If the arg was YYCopyArray'ed, ...
@@ -294,6 +295,10 @@ void FreeResultSub
         case TKT_NUMSCALAR: // ...
         case TKT_LSTARRAY:  // tkData contains an HGLOBAL of an array of LPTOKENs
         case TKT_LSTMULT:   // ...
+        case TKT_FCNAFO:    // ...                           UDFO header
+        case TKT_OP1AFO:    // ...                           ...
+        case TKT_OP2AFO:    // ...                           ...
+        case TKT_DELAFO:    // ...                           ...
             // Get the global memory ptr
             hGlbData = lptkRes->tkData.tkGlbData;
 
@@ -726,6 +731,9 @@ UBOOL FreeResultGlobalFcn
                 break;
 
             case TKT_FCNARRAY:      // Free the function array
+            case TKT_FCNAFO:
+            case TKT_OP1AFO:
+            case TKT_OP2AFO:
                 // Get the global memory handle
                 hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
 
@@ -865,22 +873,31 @@ UBOOL FreeResultGlobalDfn
         // Decrement
         RefCnt =
           DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
-
-        // If the RefCnt is zero, free the globals
-        if (RefCnt EQ 0)
-            // Free the globals in the struc
-            FreeResultGlobalDfnStruc (lpMemDfnHdr);
     } else
         RefCnt = 1;     // Any non-zero value to prevent erasure
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
 
     // If the RefCnt is zero, free the global
     bRet = (RefCnt EQ 0);
 
     if (bRet)
     {
+        // Free the globals in the struc
+        FreeResultGlobalDfnStruc (lpMemDfnHdr);
+
+        // Free the HshTab & SymTab
+        FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
+    } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+
+    if (bRet)
+    {
+#ifdef DEBUG_ZAP
+        dprintfWL0 (L"**Freeing in FreeResultGlobalDfn: %p (%S#%d)",
+                  ClrPtrTypeDir (hGlbData),
+                  FNLN);
+#endif
         // We no longer need this storage
         DbgGlobalFree (hGlbData); hGlbData = NULL;
     } // End IF

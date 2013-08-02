@@ -855,15 +855,8 @@ LRESULT APIENTRY FEWndProc
 
                 // Loop through the entries
                 for (uCnt = 0; uCnt < FCNMEMVIRT_LENGTH; uCnt++)
-                // If we allocated virtual storage, ...
-                if (lpLclMemVirtStr[uCnt].IniAddr)
-                {
-                    // Free the virtual storage
-                    MyVirtualFree (lpLclMemVirtStr[uCnt].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[uCnt].IniAddr = NULL;
-
-                    // Unlink this entry from the chain
-                    UnlinkMVS (&lpLclMemVirtStr[uCnt]);
-                } // End FOR/IF
+                    // Free the virtual memory and unlink it
+                    FreeVirtUnlink (uCnt, lpLclMemVirtStr);
 
                 // Free the virtual storage
                 MyVirtualFree (lpLclMemVirtStr, 0, MEM_RELEASE); lpLclMemVirtStr = NULL;
@@ -1013,6 +1006,7 @@ UBOOL SyntaxColor
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     HGLOBAL      hSyntClr = NULL;   // Syntax Color global memory handle
     LPSCINDICES  lpSyntClr = NULL;  // Ptr to Syntax Color entries
+    SF_FCNS      SF_Fcns = {0};     // Temp value in case lpSF_Fcns is null
 
 ////LCLODS ("Entering <SyntaxColor>\r\n");
 
@@ -1042,8 +1036,9 @@ UBOOL SyntaxColor
     tkLocalVars.NameInit         = NO_PREVIOUS_NAME;
     tkLocalVars.hWndEC           = hWndEC;
     tkLocalVars.uSyntClrLen      = uLen;            // # Syntax Color entries
-    tkLocalVars.lpMemPTD         = lpMemPTD;        // Ptr to PerTabData global memory
 ////tkLocalVars.bMFO             = FALSE;           // Not a Magic Function/Operator (already zero from = {0})
+    tkLocalVars.lpMemPTD         = lpMemPTD;        // Ptr to PerTabData global memory
+    tkLocalVars.lpSF_Fcns        = &SF_Fcns;        // Ptr to common struc (may be NULL if unused)
 
     // Set initial limit for hGlbNum
     tkLocalVars.iNumLim = DEF_NUM_INITNELM;
@@ -4954,6 +4949,7 @@ LPSYMENTRY ParseFunctionName
                    NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    0,                       // Function line # (0 = header)
                    NULL,                    // Ptr to error handling function (may be NULL)
+                   NULL,                    // Ptr to common struc (may be NULL if unused)
                    FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator
     if (!hGlbTknHdr)
         goto ERROR_EXIT;

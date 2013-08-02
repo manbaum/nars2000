@@ -906,7 +906,8 @@ void FreeGlobalStorage
     } // End IF
 
     // Free global storage if the SymTab is valid
-    if (lpMemPTD->lphtsPTD->lpSymTab)
+    if (lpMemPTD->lphtsPTD
+     && lpMemPTD->lphtsPTD->lpSymTab)
     {
         // If there's something suspended, ...
         if (lpMemPTD->lpSISCur)

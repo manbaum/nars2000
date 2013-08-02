@@ -91,7 +91,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , NULL        , fnParDone   , NULL        , scParDone   },     // Right ...
   {TKROW_INIT    , NULL        , fnBrkInit   , NULL        , scBrkInit   },     // Left bracket
   {TKROW_INIT    , NULL        , fnBrkDone   , NULL        , scBrkDone   },     // Right ...
-  {TKROW_INIT    , NULL        , fnBrcInit   , NULL        , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, NULL        , fnLbrInit   , NULL        , scLbrInit   },     // Left brace
   {TKROW_INIT    , NULL        , fnBrcDone   , NULL        , scBrcDone   },     // Right ...
   {TKROW_INIT    , NULL        , fnSyntWhite , NULL        , scSyntWhite },     // White space
   {TKROW_QUOTE1A , NULL        , fnQuo1Init  , NULL        , scQuo1Init  },     // Single quote
@@ -99,6 +99,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , NULL        , fnDiaDone   , NULL        , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , NULL        , fnComDone   , NULL        , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , NULL        , fnSysNSInit , NULL        , scSysNSInit },     // System namespace
+  {TKROW_INIT    , NULL        , fnDelDone   , NULL        , scDelDone   },     // Del
   {TKROW_EXIT    , NULL        , NULL        , NULL        , NULL        },     // EOL
   {TKROW_INIT    , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
  },
@@ -124,7 +125,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , NULL        , fnParDone   , NULL        , scParDone   },     // Right ...
   {TKROW_INIT    , NULL        , fnBrkInit   , NULL        , scBrkInit   },     // Left bracket
   {TKROW_INIT    , NULL        , fnBrkDone   , NULL        , scBrkDone   },     // Right ...
-  {TKROW_INIT    , NULL        , fnBrcInit   , NULL        , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, NULL        , fnLbrInit   , NULL        , scLbrInit   },     // Left brace
   {TKROW_INIT    , NULL        , fnBrcDone   , NULL        , scBrcDone   },     // Right ...
   {TKROW_INIT    , NULL        , fnSyntWhite , NULL        , scSyntWhite },     // White space
   {TKROW_QUOTE1A , NULL        , fnQuo1Init  , NULL        , scQuo1Init  },     // Single quote
@@ -132,6 +133,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , NULL        , fnDiaDone   , NULL        , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , NULL        , fnComDone   , NULL        , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , NULL        , fnSysNSInit , NULL        , scSysNSInit },     // System namespace
+  {TKROW_INIT    , NULL        , fnDelDone   , NULL        , scDelDone   },     // Del
   {TKROW_EXIT    , NULL        , NULL        , NULL        , NULL        },     // EOL
   {TKROW_INIT    , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
  },
@@ -157,7 +159,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnPointDone , fnParDone   , scPointDone , scParDone   },     // Right ...
   {TKROW_INIT    , fnPointDone , fnBrkInit   , scPointDone , scBrkInit   },     // Left bracket
   {TKROW_INIT    , fnPointDone , fnBrkDone   , scPointDone , scBrkDone   },     // Right ...
-  {TKROW_INIT    , fnPointDone , fnBrcInit   , scPointDone , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, fnPointDone , fnLbrInit   , scPointDone , scLbrInit   },     // Left brace
   {TKROW_INIT    , fnPointDone , fnBrcDone   , scPointDone , scBrcDone   },     // Right ...
   {TKROW_INIT    , fnPointDone , fnSyntWhite , scPointDone , scSyntWhite },     // White space
   {TKROW_QUOTE1A , fnPointDone , fnQuo1Init  , scPointDone , scQuo1Init  },     // Single quote
@@ -165,6 +167,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , fnPointDone , fnDiaDone   , scPointDone , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , fnPointDone , fnComDone   , scPointDone , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , fnPointDone , fnSysNSInit , scPointDone , scSysNSInit },     // System namespace
+  {TKROW_INIT    , fnPointDone , fnDelDone   , scPointDone , scDelDone   },     // Del
   {TKROW_EXIT    , fnPointDone , NULL        , scPointDone , NULL        },     // EOL
   {TKROW_INIT    , fnPointDone , fnUnkDone   , scPointDone , scUnkDone   },     // Unknown symbols
  },
@@ -190,7 +193,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnAlpDone   , fnParDone   , scAlpDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnAlpDone   , fnBrkInit   , scAlpDone   , scBrkInit   },     // Left bracket
   {TKROW_INIT    , fnAlpDone   , fnBrkDone   , scAlpDone   , scBrkDone   },     // Right ...
-  {TKROW_INIT    , fnAlpDone   , fnBrcInit   , scAlpDone   , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, fnAlpDone   , fnLbrInit   , scAlpDone   , scLbrInit   },     // Left brace
   {TKROW_INIT    , fnAlpDone   , fnBrcDone   , scAlpDone   , scBrcDone   },     // Right ...
   {TKROW_INIT    , fnAlpDone   , fnSyntWhite , scAlpDone   , scSyntWhite },     // White space
   {TKROW_QUOTE1A , fnAlpDone   , fnQuo1Init  , scAlpDone   , scQuo1Init  },     // Single quote
@@ -198,6 +201,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , fnAlpDone   , fnDiaDone   , scAlpDone   , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , fnAlpDone   , fnComDone   , scAlpDone   , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , fnAlpDone   , fnSysNSInit , scAlpDone   , scSysNSInit },     // System namespace
+  {TKROW_INIT    , fnAlpDone   , fnDelDone   , scAlpDone   , scDelDone   },     // Del
   {TKROW_EXIT    , fnAlpDone   , NULL        , scAlpDone   , NULL        },     // EOL
   {TKROW_INIT    , fnAlpDone   , fnUnkDone   , scAlpDone   , scUnkDone   },     // Unknown symbols
  },
@@ -223,7 +227,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnSysDone   , fnParDone   , scSysDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnSysDone   , fnBrkInit   , scSysDone   , scBrkInit   },     // Left bracket
   {TKROW_INIT    , fnSysDone   , fnBrkDone   , scSysDone   , scBrkDone   },     // Right ...
-  {TKROW_INIT    , fnSysDone   , fnBrcInit   , scSysDone   , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, fnSysDone   , fnLbrInit   , scSysDone   , scLbrInit   },     // Left brace
   {TKROW_INIT    , fnSysDone   , fnBrcDone   , scSysDone   , scBrcDone   },     // Right ...
   {TKROW_INIT    , fnSysDone   , fnSyntWhite , scSysDone   , scSyntWhite },     // White space
   {TKROW_QUOTE1A , fnSysDone   , fnQuo1Init  , scSysDone   , scQuo1Init  },     // Single quote
@@ -231,6 +235,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , fnSysDone   , fnDiaDone   , scSysDone   , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , fnSysDone   , fnComDone   , scSysDone   , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , fnSysDone   , fnSysNSInit , scSysDone   , scSysNSInit },     // System namespace
+  {TKROW_INIT    , fnSysDone   , fnDelDone   , scSysDone   , scDelDone   },     // Del
   {TKROW_EXIT    , fnSysDone   , NULL        , scSysDone   , NULL        },     // EOL
   {TKROW_INIT    , fnSysDone   , fnUnkDone   , scSysDone   , scUnkDone   },     // Unknown symbols
  },
@@ -264,6 +269,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_QUOTE1A , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Diamond symbol
   {TKROW_QUOTE1A , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Comment symbol
   {TKROW_QUOTE1A , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // System namespace
+  {TKROW_QUOTE1A , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Del
   {TKROW_EXIT    , fnQuo1Exit  , fnUnkDone   , scQuo1Exit  , scUnkDone   },     // EOL
   {TKROW_QUOTE1A , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Unknown symbols
  },
@@ -289,7 +295,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnQuo1Done  , fnParDone   , scQuo1Done  , scParDone   },     // Right ...
   {TKROW_INIT    , fnQuo1Done  , fnBrkInit   , scQuo1Done  , scBrkInit   },     // Left bracket
   {TKROW_INIT    , fnQuo1Done  , fnBrkDone   , scQuo1Done  , scBrkDone   },     // Right ...
-  {TKROW_INIT    , fnQuo1Done  , fnBrcInit   , scQuo1Done  , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, fnQuo1Done  , fnLbrInit   , scQuo1Done  , scLbrInit   },     // Left brace
   {TKROW_INIT    , fnQuo1Done  , fnBrcDone   , scQuo1Done  , scBrcDone   },     // Right ...
   {TKROW_INIT    , fnQuo1Done  , fnSyntWhite , scQuo1Done  , scSyntWhite },     // White space
   {TKROW_QUOTE1A , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Single quote
@@ -297,6 +303,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , fnQuo1Done  , fnDiaDone   , scQuo1Done  , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , fnQuo1Done  , fnComDone   , scQuo1Done  , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , fnQuo1Done  , fnSysNSInit , scQuo1Done  , scSysNSInit },     // System namespace
+  {TKROW_INIT    , fnQuo1Done  , fnDelDone   , scQuo1Done  , scDelDone   },     // Del
   {TKROW_EXIT    , fnQuo1Done  , NULL        , scQuo1Done  , NULL        },     // EOL
   {TKROW_INIT    , fnQuo1Done  , fnUnkDone   , scQuo1Done  , scUnkDone   },     // Unknown symbols
  },
@@ -330,6 +337,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_QUOTE2A , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Diamond symbol
   {TKROW_QUOTE2A , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Comment symbol
   {TKROW_QUOTE2A , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // System namespace
+  {TKROW_QUOTE2A , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Del
   {TKROW_EXIT    , fnQuo2Exit  , fnUnkDone   , scQuo2Exit  , scUnkDone   },     // EOL
   {TKROW_QUOTE2A , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Unknown symbols
  },
@@ -355,7 +363,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnQuo2Done  , fnParDone   , scQuo2Done  , scParDone   },     // Right ...
   {TKROW_INIT    , fnQuo2Done  , fnBrkInit   , scQuo2Done  , scBrkInit   },     // Left bracket
   {TKROW_INIT    , fnQuo2Done  , fnBrkDone   , scQuo2Done  , scBrkDone   },     // Right ...
-  {TKROW_INIT    , fnQuo2Done  , fnBrcInit   , scQuo2Done  , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, fnQuo2Done  , fnLbrInit   , scQuo2Done  , scLbrInit   },     // Left brace
   {TKROW_INIT    , fnQuo2Done  , fnBrcDone   , scQuo2Done  , scBrcDone   },     // Right ...
   {TKROW_INIT    , fnQuo2Done  , fnSyntWhite , scQuo2Done  , scSyntWhite },     // White space
   {TKROW_QUOTE1A , fnQuo2Done  , fnQuo1Init  , scQuo2Done  , scQuo1Init  },     // Single quote
@@ -363,6 +371,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , fnQuo2Done  , fnDiaDone   , scQuo2Done  , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , fnQuo2Done  , fnComDone   , scQuo2Done  , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , fnQuo2Done  , fnSysNSInit , scQuo2Done  , scSysNSInit },     // System namespace
+  {TKROW_INIT    , fnQuo2Done  , fnDelDone   , scQuo2Done  , scDelDone   },     // Del
   {TKROW_EXIT    , fnQuo2Done  , NULL        , scQuo2Done  , NULL        },     // EOL
   {TKROW_INIT    , fnQuo2Done  , fnUnkDone   , scQuo2Done  , scUnkDone   },     // Unknown symbols
  },
@@ -388,7 +397,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnDotDone   , fnParDone   , scDotDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnDotDone   , fnBrkInit   , scDotDone   , scBrkInit   },     // Left bracket
   {TKROW_INIT    , fnDotDone   , fnBrkDone   , scDotDone   , scBrkDone   },     // Right ...
-  {TKROW_INIT    , fnDotDone   , fnBrcInit   , scDotDone   , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, fnDotDone   , fnLbrInit   , scDotDone   , scLbrInit   },     // Left brace
   {TKROW_INIT    , fnDotDone   , fnBrcDone   , scDotDone   , scBrcDone   },     // Right ...
   {TKROW_INIT    , fnDotDone   , fnSyntWhite , scDotDone   , scSyntWhite },     // White space
   {TKROW_QUOTE1A , fnDotDone   , fnQuo1Init  , scDotDone   , scQuo1Init  },     // Single quote
@@ -396,6 +405,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , fnDotDone   , fnDiaDone   , scDotDone   , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , fnDotDone   , fnComDone   , scDotDone   , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , fnDotDone   , fnSysNSInit , scDotDone   , scSysNSInit },     // System namespace
+  {TKROW_INIT    , fnDotDone   , fnDelDone   , scDotDone   , scDelDone   },     // Del
   {TKROW_EXIT    , fnDotDone   , NULL        , scDotDone   , NULL        },     // EOL
   {TKROW_INIT    , fnDotDone   , fnUnkDone   , scDotDone   , scUnkDone   },     // Unknown symbols
  },
@@ -421,7 +431,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnJotDone   , fnParDone   , scJotDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnJotDone   , fnBrkInit   , scJotDone   , scBrkInit   },     // Left bracket
   {TKROW_INIT    , fnJotDone   , fnBrkDone   , scJotDone   , scBrkDone   },     // Right ...
-  {TKROW_INIT    , fnJotDone   , fnBrcInit   , scJotDone   , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, fnJotDone   , fnLbrInit   , scJotDone   , scLbrInit   },     // Left brace
   {TKROW_INIT    , fnJotDone   , fnBrcDone   , scJotDone   , scBrcDone   },     // Right ...
   {TKROW_JOTAMBIG, NULL        , fnSyntWhite , NULL        , scSyntWhite },     // White space
   {TKROW_QUOTE1A , fnJotDone   , fnQuo1Init  , scJotDone   , scQuo1Init  },     // Single quote
@@ -429,6 +439,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , fnJotDone   , fnDiaDone   , scJotDone   , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , fnJotDone   , fnComDone   , scJotDone   , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , fnJotDone   , fnSysNSInit , scJotDone   , scSysNSInit },     // System namespace
+  {TKROW_INIT    , fnJotDone   , fnDelDone   , scJotDone   , scDelDone   },     // Del
   {TKROW_EXIT    , fnJotDone   , NULL        , scJotDone   , NULL        },     // EOL
   {TKROW_INIT    , fnJotDone   , fnUnkDone   , scJotDone   , scUnkDone   },     // Unknown symbols
  },
@@ -454,7 +465,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnOutDone   , fnParDone   , scOutDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnOutDone   , fnBrkInit   , scOutDone   , scBrkInit   },     // Left bracket
   {TKROW_INIT    , fnOutDone   , fnBrkDone   , scOutDone   , scBrkDone   },     // Right ...
-  {TKROW_INIT    , fnOutDone   , fnBrcInit   , scOutDone   , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, fnOutDone   , fnLbrInit   , scOutDone   , scLbrInit   },     // Left brace
   {TKROW_INIT    , fnOutDone   , fnBrcDone   , scOutDone   , scBrcDone   },     // Right ...
   {TKROW_OUTAMBIG, NULL        , fnSyntWhite , NULL        , scSyntWhite },     // White space
   {TKROW_QUOTE1A , fnOutDone   , fnQuo1Init  , scOutDone   , scQuo1Init  },     // Single quote
@@ -462,6 +473,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , fnOutDone   , fnDiaDone   , scOutDone   , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , fnOutDone   , fnComDone   , scOutDone   , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , fnOutDone   , fnSysNSInit , scOutDone   , scSysNSInit },     // System namespace
+  {TKROW_INIT    , fnOutDone   , fnDelDone   , scOutDone   , scDelDone   },     // Del
   {TKROW_EXIT    , fnOutDone   , NULL        , scOutDone   , NULL        },     // EOL
   {TKROW_INIT    , fnOutDone   , fnUnkDone   , scOutDone   , scUnkDone   },     // Unknown symbols
  },
@@ -487,7 +499,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , NULL        , fnParDone   , NULL        , scParDone   },     // Right ...
   {TKROW_INIT    , NULL        , fnBrkInit   , NULL        , scBrkInit   },     // Left bracket
   {TKROW_INIT    , NULL        , fnBrkDone   , NULL        , scBrkDone   },     // Right ...
-  {TKROW_INIT    , NULL        , fnBrcInit   , NULL        , scBrcInit   },     // Left brace
+  {TKROW_LBR_INIT, NULL        , fnLbrInit   , NULL        , scLbrInit   },     // Left brace
   {TKROW_INIT    , NULL        , fnBrcDone   , NULL        , scBrcDone   },     // Right ...
   {TKROW_SYS_NS  , NULL        , fnSyntWhite , NULL        , scSyntWhite },     // White space
   {TKROW_QUOTE1A , NULL        , fnQuo1Init  , NULL        , scQuo1Init  },     // Single quote
@@ -495,8 +507,111 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_SOS     , NULL        , fnDiaDone   , NULL        , scDiaDone   },     // Diamond symbol
   {TKROW_INIT    , NULL        , fnComDone   , NULL        , scComDone   },     // Comment symbol
   {TKROW_SYS_NS  , NULL        , fnSysNSIncr , NULL        , scSysNSIncr },     // System namespace
+  {TKROW_INIT    , NULL        , fnDelDone   , NULL        , scDelDone   },     // Del
   {TKROW_EXIT    , NULL        , NULL        , NULL        , NULL        },     // EOL
   {TKROW_INIT    , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Unknown symbols
+ },
+    // TKROW_LBR_INIT Left brace initial state
+ {{TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // '0123456789'
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // '.'
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // 'a..zA..Z'
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Overbar
+  {TKROW_LBR_INIT, NULL        , fnLbrAlpha  , NULL        , scLbrAlpha  },     // Alpha or Omega
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Quad
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Underbar
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Infinity
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Assignment symbol
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Semicolon  ...
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Colon  ...
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Control Structure
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Primitive monadic or dyadic function
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // ...       niladic           ...
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // ...       monadic operator
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // ...       dyadic  ...
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Jot
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Left paren
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Right ...
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Left bracket
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Right ...
+  {TKROW_LBR_INIT, NULL        , fnLbrInit   , NULL        , scLbrInit   },     // Left brace
+  {TKROW_LBR_INIT, NULL        , fnRbrInit   , NULL        , scRbrInit   },     // Right ...
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // White space
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Single quote
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Double ...
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Diamond symbol
+  {TKROW_EXIT    , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Comment symbol
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // System namespace
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Del
+  {TKROW_EXIT    , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // EOL
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Unknown symbols
+ },
+    // TKROW_LBR_Q1   Left brace single quote
+ {{TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // '0123456789'
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // '.'
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // 'a..zA..Z'
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Overbar
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Alpha or Omega
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Quad
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Underbar
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Infinity
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Assignment symbol
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Semicolon  ...
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Colon  ...
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Control Structure
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Primitive monadic or dyadic function
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // ...       niladic           ...
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // ...       monadic operator
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // ...       dyadic  ...
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Jot
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Left paren
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Right ...
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Left bracket
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Right ...
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Left brace
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Right ...
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // White space
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Single quote
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Double ...
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Diamond symbol
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Comment symbol
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // System namespace
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Del
+  {TKROW_EXIT    , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // EOL
+  {TKROW_LBR_Q1  , NULL        , NULL        , NULL        , NULL        },     // Unknown symbols
+ },
+    // TKROW_LBR_Q2   Left brace double quote
+ {{TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // '0123456789'
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // '.'
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // 'a..zA..Z'
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Overbar
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Alpha or Omega
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Quad
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Underbar
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Infinity
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Assignment symbol
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Semicolon  ...
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Colon  ...
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Control Structure
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Primitive monadic or dyadic function
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // ...       niladic           ...
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // ...       monadic operator
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // ...       dyadic  ...
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Jot
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Left paren
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Right ...
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Left bracket
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Right ...
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Left brace
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Right ...
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // White space
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Single quote
+  {TKROW_LBR_INIT, NULL        , NULL        , NULL        , NULL        },     // Double ...
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Diamond symbol
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Comment symbol
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // System namespace
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Del
+  {TKROW_EXIT    , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // EOL
+  {TKROW_LBR_Q2  , NULL        , NULL        , NULL        , NULL        },     // Unknown symbols
  },
 }
 #endif
@@ -1270,37 +1385,56 @@ UBOOL fnAlpDone
         } else
             CharLowerBuffW (lpwszStr, lptkLocalVars->iStrLen);
 
-        // Lookup in the symbol table
-        lpSymEntry = SymTabLookupNameLength (lpwszStr,
-                                             lptkLocalVars->iStrLen,
-                                            &stFlags);
-        // If it's not found, ...
-        if (!lpSymEntry)
-            lpSymEntry = lpMemPTD->steNoValue;
-        // If it's []Z and we're not fixing a function via []TF, ...
-        if (lpSymEntry EQ lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_Z]
-         && !lpMemPTD->bInTF)
-            lpSymEntry = lpMemPTD->steNoValue;
+        // If it's []Z, ...
+        if (lstrcmpiW (lpwszStr, WS_UTF16_QUAD L"z") EQ 0)
+        {
+            // Get the SYMENTRY for []Z
+            lpSymEntry = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_Z];
+
+            // If we're not fixing a function via []TF,
+            //   and we're not tokenizing an AFO, ...
+            if (!lpMemPTD->bInTF
+             && !lptkLocalVars->lpSF_Fcns->bAFO)
+                lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
+        } else
+        {
+            // Lookup in the symbol table
+            lpSymEntry =
+              _SymTabLookupNameLength (lpwszStr,                // Ptr to the name to lookup
+                                       lptkLocalVars->iStrLen,  // Length of the name
+                                      &stFlags,                 // Ptr to flags filter
+                                       FALSE,                   // TRUE iff the name is to be local to the given HTS
+                                       lptkLocalVars->lpHTS);   // Ptr to HshTab struc (may be NULL)
+            // If it's not found, ...
+            if (!lpSymEntry)
+                lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
+        } // End IF
     } else
         // Lookup in or append to the symbol table
-        lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
+        lpSymEntry =
+          _SymTabAppendName_EM (lpwszStr,               // Ptr to name
+                                NULL,                   // Ptr to incoming stFlags (may be NULL)
+                                FALSE,                  // TRUE iff the name is to be local to the given HTS
+                                lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
     // If it's not found, ...
     if (!lpSymEntry)
-        lpSymEntry = lpMemPTD->steNoValue;
+        bRet = FALSE;
+    else
+    {
+        // Mark the data as a symbol table entry
+        tkFlags.TknType = TKT_VARNAMED;
+////////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
 
-    // Mark the data as a symbol table entry
-    tkFlags.TknType = TKT_VARNAMED;
-////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
+        // Copy to local var so we may pass its address
+        tkData.tkVoid = MakePtrTypeSym (lpSymEntry);
 
-    // Copy to local var so we may pass its address
-    tkData.tkVoid = MakePtrTypeSym (lpSymEntry);
-
-    // Attempt to append as new token, check for TOKEN TABLE FULL,
-    //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
-                             &tkFlags,
-                             &tkData,
-                              -lptkLocalVars->iStrLen);
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                 &tkData,
+                                  -lptkLocalVars->iStrLen);
+    } // End IF/ELSE
 NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
     InitAccumVars (lptkLocalVars);
@@ -1349,7 +1483,8 @@ UBOOL fnDirIdent
 
 {
     LPSYMENTRY   lpSymEntry;            // Ptr to the SYMENTRY for the name
-    UBOOL        bRet;                  // TRUE iff the result is valid
+    UBOOL        bRet = TRUE,           // TRUE iff the result is valid
+                 bAFO;                  // TRUE iff we're tokenizing an AFO
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
@@ -1370,31 +1505,70 @@ UBOOL fnDirIdent
 
     // Save the current character in the string
     lpwszStr[0] = lptkLocalVars->lpwszCur[0];
+    lpwszStr[1] = lptkLocalVars->lpwszCur[1];
 
-    // Save the string length
-    lptkLocalVars->iStrLen = 1;
+    // Handle aliases of {alpha} and {omega}
+    ConvertAfoAlias (&lpwszStr[0]);
+    ConvertAfoAlias (&lpwszStr[1]);
+
+    // If the next char is the same as this one (alpha or omega), ...
+    if (lpwszStr[0] EQ lpwszStr[1])
+    {
+        // Save the string length
+        lptkLocalVars->iStrLen = 2;
+
+        // Skip over the next char
+        lptkLocalVars->uChar++;
+    } else
+        // Save the string length
+        lptkLocalVars->iStrLen = 1;
 
     // Ensure properly terminated
     lpwszStr[lptkLocalVars->iStrLen] = WC_EOS;
 
+    // Set flag iff we're tokenizing an AFO
+    bAFO = lptkLocalVars->lpSF_Fcns->bAFO;
+
+    // If we're tokenizing an AFO
+    //   and not the function header, ...
+    if (bAFO
+     && lptkLocalVars->Orig.d.uLineNum NE 0)
+    {
+        // Is this name {alpha}?
+        if (lstrcmpW (lpwszStr, WS_UTF16_ALPHA) EQ 0)
+            lptkLocalVars->lpSF_Fcns->bRefAlpha = TRUE;
+        else
+        // Is this name {omega}?
+        if (lstrcmpW (lpwszStr, WS_UTF16_OMEGA) EQ 0)
+            lptkLocalVars->lpSF_Fcns->bRefOmega = TRUE;
+    } // End IF
+
     // Lookup in or append to the symbol table
-    lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
+    lpSymEntry =
+      _SymTabAppendName_EM (lpwszStr,               // Ptr to name
+                            NULL,                   // Ptr to incoming stFlags (may be NULL)
+                            bAFO,                   // TRUE iff the name is to be local to the given HTS
+                            lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
+    // If it's not found, ...
     if (!lpSymEntry)
-        lpSymEntry = lpMemPTD->steNoValue;
+        bRet = FALSE;
+    else
+    {
+        // Mark the data as a symbol table entry
+        tkFlags.TknType = TKT_VARNAMED;
+////////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
 
-    // Mark the data as a symbol table entry
-    tkFlags.TknType = TKT_VARNAMED;
-////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
+        // Copy to local var so we may pass its address
+        tkData.tkVoid = MakePtrTypeSym (lpSymEntry);
 
-    // Copy to local var so we may pass its address
-    tkData.tkVoid = MakePtrTypeSym (lpSymEntry);
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                 &tkData,
+                                  0);
+    } // End IF/ELSE
 
-    // Attempt to append as new token, check for TOKEN TABLE FULL,
-    //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
-                             &tkFlags,
-                             &tkData,
-                              -lptkLocalVars->iStrLen);
     // We no longer need this ptr
     MyGlobalUnlock (lptkLocalVars->hGlbStr); lpwszStr = NULL;
 
@@ -1456,6 +1630,75 @@ UBOOL fnAsnDone
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
+
+    // If we're in an AFO,
+    //   and not the function header, ...
+    // This code may be called from <savefcn.c> as well as <sc_load.c>.
+    if (lptkLocalVars->lpSF_Fcns->bAFO
+     && lptkLocalVars->Orig.d.uLineNum NE 0)
+    {
+        LPTOKEN lptkCur;            // Loop counter
+        UBOOL   bInStrand = FALSE;  // TRUE iff inside a strand of names, e.g. (A B C){is}...
+
+        // Loop backwards through the tokens
+        for (lptkCur = &lptkLocalVars->lptkNext[-1];
+             lptkCur >= lptkLocalVars->lptkStart;
+             lptkCur--)
+        if (IsTknTypeNamed (lptkCur->tkFlags.TknType))
+        {
+            HGLOBAL hGlbName;
+            LPWCHAR lpwszName;
+
+            Assert (GetPtrTypeDir (lptkCur->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // Get the name's global memory handle
+            hGlbName = lptkCur->tkData.tkSym->stHshEntry->htGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpwszName = MyGlobalLock (hGlbName);
+
+            // Allow assignment into {alpha}, but none of the other special names
+            if (IsAfoName (lpwszName, lstrlenW (lpwszName))
+             && lstrcmpW (lpwszName, WS_UTF16_ALPHA) NE 0)
+                // Mark the stmt as a SYNTAX ERROR
+                lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
+            else
+            {
+                if (lstrcmpW (lpwszName, WS_UTF16_ALPHA) EQ 0)
+                {
+                    // Mark the stmt as assignment into {alpha}
+                    lptkLocalVars->lptkLastEOS->tkFlags.bSetAlpha = TRUE;
+                    if (lptkLocalVars->lpSF_Fcns->bAFO)
+                        lptkLocalVars->lpSF_Fcns->bSetAlpha = TRUE;
+                } // End IF
+
+                // Ensure that the SymEntry is local to lptkLocalVars->lpHTS
+                lptkCur->tkData.tkSym =
+                  _SymTabAppendName_EM (lpwszName,              // Ptr to name
+                                        NULL,                   // Ptr to incoming stFlags (may be NULL)
+                                        TRUE,                   // TRUE iff the name is to be local to the given HTS
+                                        lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
+                if (lptkLocalVars->lpSF_Fcns->lplpLocalSTEs)
+                    // Save the LPSYMENTRY
+                    *lptkLocalVars->lpSF_Fcns->lplpLocalSTEs++ = lptkCur->tkData.tkSym;
+                else
+                    // Count in another name
+                    lptkLocalVars->lpSF_Fcns->numLocalsSTE++;
+            } // End IF
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpwszName = NULL;
+        } else
+        if (lptkCur->tkFlags.TknType EQ TKT_RIGHTPAREN
+         && !bInStrand)
+        {
+            // Mark as inside a strand of names (or selective assignment???)
+            bInStrand = TRUE;
+
+            // ***FIXME*** -- Should we localize a name in selective assignment???
+        } else
+            break;
+    } // End IF
 
     // Copy current WCHAR
     tkData.tkChar = *lptkLocalVars->lpwszCur;
@@ -1612,6 +1855,36 @@ UBOOL fnClnDone
         // Skip over leading blanks
         while (IsWhiteW (lptkLocalVars->lpwszOrig[lptkLocalVars->uCharIni]))
             lptkLocalVars->uCharIni++;
+    } else
+    // If we're in an AFO, ...
+    if (lptkLocalVars->lpSF_Fcns->bAFO)
+    {
+        UBOOL bSyntErr;
+
+        // If the previous stmt is a guard stmt, ...
+        bSyntErr = lptkLocalVars->lptkLastEOS->tkFlags.bGuardStmt;
+
+        if (lptkLocalVars->lptkLastEOS[1].tkFlags.TknType EQ TKT_NOP)
+            // Change the token type from NOP to AFOGUARD
+            lptkLocalVars->lptkLastEOS[1].tkFlags.TknType = TKT_AFOGUARD;
+
+        // End the stmt
+        if (!fnDiaDone (lptkLocalVars))
+            return FALSE;
+        Assert (lptkLocalVars->lptkLastEOS[1].tkFlags.TknType EQ TKT_NOP);
+
+        // Change the token type to AFORETURN
+        lptkLocalVars->lptkLastEOS[1].tkFlags.TknType = TKT_AFORETURN;
+
+        // Mark as the previous stmt is a guard stmt
+        lptkLocalVars->lptkLastEOS->tkFlags.bGuardStmt = TRUE;
+
+        // If it's a SYNTAX ERROR, ...
+        if (bSyntErr)
+            // Pass it on
+            lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
+
+        return TRUE;
     } else
         // Mark the data as a colon
         tkFlags.TknType = TKT_COLON;
@@ -1919,12 +2192,18 @@ UBOOL fnPrmDone
         tkFlags.TknType   = TKT_VARARRAY;
 ////////tkFlags.ImmType   = IMMTYPE_ERROR;  // Already zero from {0}
 ////////tkFlags.NoDisplay = FALSE;          // Already zero from {0}
-        tkData.tkVoid = MakePtrTypeGlb (hGlbZilde);
+        tkData.tkVoid     = MakePtrTypeGlb (hGlbZilde);
     } else
     {
+        // If {goto} of any form in AFO, ...
+        if (tkData.tkChar EQ UTF16_RIGHTARROW
+         && lptkLocalVars->lpSF_Fcns->bAFO)
+            // Mark the stmt as a SYNTAX ERROR
+            lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
+
         // Mark the data as a primitive function
-        tkFlags.TknType = TKT_FCNIMMED;
-        tkFlags.ImmType = GetImmTypeFcn (*lptkLocalVars->lpwszCur);
+        tkFlags.TknType  = TKT_FCNIMMED;
+        tkFlags.ImmType  = GetImmTypeFcn (*lptkLocalVars->lpwszCur);
     } // End IF/ELSE
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
@@ -2452,6 +2731,116 @@ UBOOL scOp2Done
     // Mark as successful
     return TRUE;
 } // End scOp2Done
+
+
+//***************************************************************************
+//  $fnDelDone
+//
+//  End of a del
+//***************************************************************************
+
+UBOOL fnDelDone
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    UBOOL        bRet;                  // TRUE iff result is valid
+    TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
+    TOKEN_DATA   tkData = {0};          // Token data  ...
+
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"fnDelDone");
+#endif
+
+    // Check for Syntax Coloring
+    if (lptkLocalVars->lpMemClrNxt)
+    {
+        // Save the column index
+        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_DEL;
+
+        // Save the color
+        lptkLocalVars->lpMemClrNxt++->syntClr =
+          gSyntaxColorName[SC_PRIMFCN].syntClr;
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+    // Is this del del?
+    if (lptkLocalVars->lpwszCur[0] EQ lptkLocalVars->lpwszCur[1])
+    {
+        // Mark the data as a del del
+        tkFlags.TknType = TKT_DELDEL;           // Either a monadic or dyadic operator
+////////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
+
+        // Copy to local var so we may pass its address
+        tkData.tkVoid = MakePtrTypeSym (lpMemPTD->lphtsPTD->steDelDel);
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                 &tkData,
+                                  0);
+        // Skip over the next char
+        lptkLocalVars->uChar++;
+    } else
+    {
+        if (!fnGroupInitSub (lptkLocalVars, TKT_LEFTPAREN))
+            return FALSE;
+
+        // Mark the data as a del
+        tkFlags.TknType = TKT_DEL;              // Always a function
+////////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
+
+        // Copy to local var so we may pass its address
+        tkData.tkVoid = MakePtrTypeSym (lpMemPTD->lphtsPTD->steDel);
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        if (!AppendNewToken_EM (lptkLocalVars,
+                               &tkFlags,
+                               &tkData,
+                                0))
+            return FALSE;
+
+        bRet = fnGroupDoneSub (lptkLocalVars, TKT_RIGHTPAREN, TKT_LEFTPAREN);
+    } // End IF/ELSE
+
+    return bRet;
+} // End fnDelDone
+
+
+//***************************************************************************
+//  $scDelDone
+//
+//  End of a del
+//***************************************************************************
+
+UBOOL scDelDone
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"scDelDone");
+#endif
+
+    // Check for Syntax Coloring
+    Assert (lptkLocalVars->lpMemClrNxt NE NULL);
+
+    // Save the column index
+    lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_DEL;
+
+    // Save the color
+    lptkLocalVars->lpMemClrNxt++->syntClr =
+      gSyntaxColorName[SC_PRIMFCN].syntClr;
+
+    // Mark as successful
+    return TRUE;
+} // End scDelDone
 
 
 //***************************************************************************
@@ -4645,6 +5034,261 @@ UBOOL scSyntWhite
 
 
 //***************************************************************************
+//  $fnLbrInit
+//
+//  We encountered another left brace
+//***************************************************************************
+
+UBOOL fnLbrInit
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+    UBOOL      bRet;                    // The result
+    TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
+    TOKEN_DATA tkData = {0};            // Token data  ...
+
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"fnLbrInit");
+#endif
+
+    // Check for Syntax Coloring
+    Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
+
+    // Check for tokenizing the function header
+    if (lptkLocalVars->Orig.d.uLineNum EQ 0)
+    {
+        // Set new state
+        lptkLocalVars->State[0] = TKROW_INIT;
+
+        return fnGroupInitSub (lptkLocalVars, TKT_LEFTBRACE);
+    } // End IF
+
+    // Use common code to start the AFO
+    bRet = fnGroupInitSub (lptkLocalVars, TKT_LEFTBRACE);
+
+    // If it succeeded, ...
+    if (bRet)
+    {
+        // If this is a top level left brace, ...
+        if (lptkLocalVars->lbrCount EQ 0)
+            // Initialize the defined function type
+            lptkLocalVars->AfoDfnType = DFNTYPE_FCN;
+
+        // Count in another
+        lptkLocalVars->lbrCount++;
+
+        // Mark the type as a left brace holder for the hGlbDfnHdr
+        tkFlags.TknType = TKT_GLBDFN;
+
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        bRet = AppendNewToken_EM (lptkLocalVars,
+                                 &tkFlags,
+                                 &tkData,
+                                  0);
+    } // End IF
+
+    return bRet;
+} // End fnLbrInit
+
+
+//***************************************************************************
+//  $scLbrInit
+//
+//  We encountered another left brace
+//***************************************************************************
+
+UBOOL scLbrInit
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"scLbrInit");
+#endif
+
+    // Check for Syntax Coloring
+    Assert (lptkLocalVars->lpMemClrNxt NE NULL);
+
+    // Check for tokenizing the function header
+    if (lptkLocalVars->Orig.d.uLineNum EQ 0)
+    {
+        // Set new state
+        lptkLocalVars->State[0] = TKROW_INIT;
+
+        return scGroupInitSub (lptkLocalVars, TKT_LEFTBRACE);
+    } // End IF
+
+    // Mark as successful
+    return TRUE;
+} // End scLbrInit
+
+
+//***************************************************************************
+//  $fnRbrInit
+//
+//  We encountered a right brace
+//***************************************************************************
+
+UBOOL fnRbrInit
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+    UBOOL bRet;                         // The result
+
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"fnRbrInit");
+#endif
+
+    // Check for Syntax Coloring
+    Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
+
+    // Check for tokenizing the function header
+    if (lptkLocalVars->Orig.d.uLineNum EQ 0)
+    {
+        // Set new state
+        lptkLocalVars->State[0] = TKROW_INIT;
+
+        return fnGroupDoneSub (lptkLocalVars, TKT_RIGHTBRACE, TKT_LEFTBRACE);
+    } // End IF
+
+    // Use common code to end the AFO
+    bRet = fnGroupDoneSub (lptkLocalVars, TKT_RIGHTBRACE, TKT_LEFTBRACE);
+
+    // If it succeeded, ...
+    if (bRet)
+    {
+        // Count out another
+        lptkLocalVars->lbrCount--;
+
+        // If we're back to zero, ...
+        if (lptkLocalVars->lbrCount EQ 0)
+        {
+            // Set new state
+            lptkLocalVars->State[0] = TKROW_INIT;
+
+            // Save the DFNTYPE_xxx
+            lptkLocalVars->lptkNext[-1].tkData.tkDfnType = lptkLocalVars->AfoDfnType;
+
+            // Save the {alpha}/{omega} flag
+            lptkLocalVars->lptkNext[-1].tkFlags.bAfoArgs = lptkLocalVars->bAfoArgs;
+        } // End IF
+    } // End IF
+
+    return bRet;
+} // End fnRbrInit
+
+
+//***************************************************************************
+//  $scRbrInit
+//
+//  We encountered a right brace
+//***************************************************************************
+
+UBOOL scRbrInit
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"scRbrInit");
+#endif
+
+    // Check for Syntax Coloring
+    Assert (lptkLocalVars->lpMemClrNxt NE NULL);
+
+    // Check for tokenizing the function header
+    if (lptkLocalVars->Orig.d.uLineNum EQ 0)
+    {
+        // Set new state
+        lptkLocalVars->State[0] = TKROW_INIT;
+
+        return scGroupDoneSub (lptkLocalVars, TKT_RIGHTBRACE, TKT_LEFTBRACE);
+    } // End IF
+
+    // Mark as successful
+    return TRUE;
+} // End scRbrInit
+
+
+//***************************************************************************
+//  $fnLbrAlpha
+//
+//  We encountered an Alpha or Omega while parsing an AFO
+//***************************************************************************
+
+UBOOL fnLbrAlpha
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+    WCHAR wszStr[3];                // Temp var
+
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"fnLbrAlpha");
+#endif
+
+    // If we're inside the top level, ...
+    if (lptkLocalVars->lbrCount EQ 1)
+    {
+        // Save the current character in the string
+        wszStr[0] = lptkLocalVars->lpwszCur[0];
+
+        // Handle aliases of {alpha} and {omega}
+        ConvertAfoAlias (&wszStr[0]);
+
+        // If the next char is the same as this one (alpha or omega), ...
+        if (lptkLocalVars->lpwszCur[0] EQ lptkLocalVars->lpwszCur[1])
+        {
+            // Save the next character in the string
+            wszStr[1] = wszStr[0];
+
+            // Ensure properly terminated
+            wszStr[2] = WC_EOS;
+
+            // Skip over the next char
+            lptkLocalVars->uChar++;
+        } else
+            // Ensure properly terminated
+            wszStr[1] = WC_EOS;
+
+        // Izit {omega} {omega}?
+        if (lstrcmpW (wszStr, WS_UTF16_RHTOPER) EQ 0)
+            lptkLocalVars->AfoDfnType = DFNTYPE_OP2;
+        else
+        // Izit {alpha} {alpha}?
+        if (lstrcmpW (wszStr, WS_UTF16_LFTOPER) EQ 0
+         && lptkLocalVars->AfoDfnType NE DFNTYPE_OP2)
+            lptkLocalVars->AfoDfnType = DFNTYPE_OP1;
+        else
+        // Is this name {alpha} or {omega}?
+        if (lstrcmpW (wszStr, WS_UTF16_ALPHA) EQ 0
+         || lstrcmpW (wszStr, WS_UTF16_OMEGA) EQ 0)
+            lptkLocalVars->bAfoArgs = TRUE;
+    } // End IF
+
+    // Mark as succesful
+    return TRUE;
+} // End fnLbrAlpha
+
+
+//***************************************************************************
+//  $scLbrAlpha
+//
+//  We encountered an Alpha or Omega while parsing an AFO
+//***************************************************************************
+
+UBOOL scLbrAlpha
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"scLbrAlpha");
+#endif
+
+    // Mark as successful
+    return TRUE;
+} // End scLbrAlpha
+
+
+//***************************************************************************
 //  $fnUnkDone
 //
 //  Accumulate an unknown character
@@ -4751,6 +5395,34 @@ a series of tokens.
 
 The format of a token is defined in tokens.h
 
+A single stmt line is coded as
+
+EOL ... SOS
+
+A multi stmt line is coded as
+
+EOS ... SOS  EOS ... SOS  EOL ... SOS
+
+where EOS is End-Of-Stmt
+      EOL is End-Of-Line
+      SOS is Start-Of-Stmt
+      ... is a series of zero or more tokens none of which are EOS, EOL, nor SOS.
+
+An AFO is coded as
+
+without a guard
+
+EOS/EOL NOP ...       SOS EOS NOP ...        SOS
+
+with a guard as in Cond:Stmt
+
+        Guard Cond            Guard Stmt
+EOS/EOL AFOGUARD ... SOS EOS AFORETURN ... SOS
+
+with a Set Alpha
+
+EOS/EOL NOP ... SETALPHA SOS
+
 */
 
 #ifdef DEBUG
@@ -4765,6 +5437,7 @@ HGLOBAL Tokenize_EM
      HWND        hWndEC,            // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
      UINT        uLineNum,          // Function line # (0 = header)
      LPERRHANDFN lpErrHandFn,       // Ptr to error handling function (may be NULL)
+     LPSF_FCNS   lpSF_Fcns,         // Ptr to common struc (may be NULL if unused)
      UBOOL       bMFO)              // TRUE iff we're tokenizing a Magic Function/Operator
 
 {
@@ -4776,6 +5449,9 @@ HGLOBAL Tokenize_EM
     TKLOCALVARS  tkLocalVars = {0}; // Local vars
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPTOKEN      lptkCSNxt;         // Ptr to next token on the CS stack
+    SF_FCNS      SF_Fcns;           // Temp value in case lpSF_Fcns is NULL
+
+////LCLODS ("About to enter <Tokenize_EM>\r\n");
 
     // Avoid re-entrant code
     EnterCriticalSection (&CSOTokenize);
@@ -4789,6 +5465,19 @@ HGLOBAL Tokenize_EM
     else
         gInUse++;
 #endif
+
+__try
+{
+    // Check for lpSF_Fcns NULL
+    if (lpSF_Fcns EQ NULL)
+    {
+        // Point to local (empty) copy
+        lpSF_Fcns = &SF_Fcns;
+
+        // Zero it
+        ZeroMemory (lpSF_Fcns, sizeof (lpSF_Fcns[0]));
+    } // End IF
+
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
@@ -4798,8 +5487,9 @@ HGLOBAL Tokenize_EM
     tkLocalVars.State[0]        = TKROW_SOS;
     tkLocalVars.Orig.d.uLineNum = uLineNum;
     tkLocalVars.Orig.d.uStmtNum = 0;
-    tkLocalVars.bMFO            = bMFO;             // TRUE iff this is a Magic Function/Operator
+    tkLocalVars.bMFO            = bMFO;             // TRUE iff we're tokenizing a Magic Function/Operator
     tkLocalVars.lpMemPTD        = lpMemPTD;         // Ptr to PerTabData global memory
+    tkLocalVars.lpSF_Fcns       = lpSF_Fcns;        // Ptr to common struc
 
     // If this is the function header (uLineNum EQ 0)
     //   save and restore the ptr to the next token
@@ -4863,6 +5553,12 @@ HGLOBAL Tokenize_EM
     DbgMsgW (L"*** Tokenize_EM Start");
     DisplayTokens (tkLocalVars.hGlbToken);
 #endif
+
+    // Set the HTS
+    if (lpSF_Fcns->lpHTS)
+        tkLocalVars.lpHTS = lpSF_Fcns->lpHTS;
+    else
+        tkLocalVars.lpHTS = lpMemPTD->lphtsPTD;
 
     // Initialize the accumulation variables for the next constant
     InitAccumVars (&tkLocalVars);
@@ -5007,12 +5703,16 @@ HGLOBAL Tokenize_EM
 
                 uNext = (UINT) (tkLocalVars.lptkNext - tkLocalVars.lptkStart);
 
-                // We no longer need this ptr
-                MyGlobalUnlock (tkLocalVars.hGlbToken);
-                tkLocalVars.lpHeader    = NULL;
-                tkLocalVars.lptkStart   = NULL;
-                tkLocalVars.lptkNext    = NULL;
-                tkLocalVars.lptkLastEOS = NULL;
+                if (tkLocalVars.lpHeader)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (tkLocalVars.hGlbToken);
+
+                    tkLocalVars.lpHeader    = NULL;
+                    tkLocalVars.lptkStart   =
+                    tkLocalVars.lptkNext    =
+                    tkLocalVars.lptkLastEOS = NULL;
+                } // End IF
 
                 // Reallocate the tokenized line to the actual size
                 tkLocalVars.hGlbToken =
@@ -5052,12 +5752,16 @@ ERROR_EXIT:
 
     if (tkLocalVars.hGlbToken)
     {
-        // We no longer need this ptr
-        MyGlobalUnlock (tkLocalVars.hGlbToken);
-        tkLocalVars.lpHeader    = NULL;
-        tkLocalVars.lptkStart   = NULL;
-        tkLocalVars.lptkNext    = NULL;
-        tkLocalVars.lptkLastEOS = NULL;
+        if (tkLocalVars.lpHeader)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (tkLocalVars.hGlbToken);
+
+            tkLocalVars.lpHeader    = NULL;
+            tkLocalVars.lptkStart   =
+            tkLocalVars.lptkNext    =
+            tkLocalVars.lptkLastEOS = NULL;
+        } // End IF
 
         // Free the handle
         MyGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
@@ -5091,6 +5795,45 @@ FREED_EXIT:
     if (uLineNum EQ 0)
         // Restore the ptr to the next token on the CS stack
         lpMemPTD->lptkCSNxt = lptkCSNxt;
+} __except (CheckException (GetExceptionInformation (), L"Tokenize_EM"))
+{
+    if (tkLocalVars.hGlbToken)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (tkLocalVars.hGlbToken);
+        tkLocalVars.lpHeader    = NULL;
+        tkLocalVars.lptkStart   =
+        tkLocalVars.lptkNext    =
+        tkLocalVars.lptkLastEOS = NULL;
+
+        // Free the handle
+        MyGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
+    } // End IF
+
+    // Free the global memory:  hGlbNum
+    if (tkLocalVars.hGlbNum)
+    {
+        MyGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
+    } // End IF
+
+    // Free the global memory:  hGlbStr
+    if (tkLocalVars.hGlbStr)
+    {
+        MyGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
+    } // End IF
+#ifdef DEBUG
+    // Mark as no longer in use
+    gInUse--;
+#endif
+////LCLODS ("Exiting  <Tokenize_EM>\r\n");
+
+    // Release the Critical Section
+    LeaveCriticalSection (&CSOTokenize);
+
+    // Pass on the exception
+    RaiseException (MyGetExceptionCode (), 0, 0, NULL);
+} // End __try/__except
+
 #ifdef DEBUG
     // Ensure numeric length has been reset
     if (tkLocalVars.iNumLen NE 0)
@@ -5176,6 +5919,21 @@ void Untokenize
             // Don't free a name's contents
             break;
 
+        case TKT_GLBDFN:            // Placeholder for hGlbDfnHdr
+            // Free the AFO
+            if (lpToken->tkData.tkGlbData
+             && FreeResultGlobalDfn (lpToken->tkData.tkGlbData))
+            {
+#ifdef DEBUG_ZAP
+                dprintfWL0 (L"**Zapping in Untokenize: %p (%S#%d)",
+                          ClrPtrTypeDir (lpToken->tkData.tkGlbData),
+                          FNLN);
+#endif
+                lpToken->tkData.tkGlbData = NULL;
+            } // End IF
+
+            break;
+
         case TKT_CHRSTRAND:         // Character strand  (data is HGLOBAL)
         case TKT_NUMSTRAND:         // Numeric   ...
         case TKT_NUMSCALAR:         // Numeric   ...
@@ -5184,7 +5942,7 @@ void Untokenize
             if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
             {
 #ifdef DEBUG_ZAP
-                dprintfWL9 (L"**Zapping in Untokenize: %p (%d) (%S#%d)",
+                dprintfWL9 (L"**Zapping in Untokenize: %p (%S#%d)",
                           ClrPtrTypeDir (lpToken->tkData.tkGlbData),
                           FNLN);
 #endif
@@ -5251,7 +6009,17 @@ void Untokenize
         case TKT_CS_SKIPEND:        // ...                 Special token
         case TKT_SYS_NS:            // System namespace
         case TKT_SYNTERR:           // Syntax Error
+        case TKT_SETALPHA:          // Set {alpha}
         case TKT_FILLJOT:           // Fill jot
+        case TKT_DEL:               // Del      -- always a function
+        case TKT_DELDEL:            // Del Del  -- either a monadic or dyadic operator
+        case TKT_DELAFO:            // Del Anon -- either a monadic/dyadic operator, bound to its operands
+        case TKT_FCNAFO:            // Anonymous function
+        case TKT_OP1AFO:            // Anonymous monadic operator
+        case TKT_OP2AFO:            // Anonymous dyadic operator
+        case TKT_NOP:               // NOP
+        case TKT_AFOGUARD:          // AFO guard
+        case TKT_AFORETURN:         // AFO return
             break;                  // Nothing to do
 
         case TKT_CS_NEC:            // ...                 Special token
@@ -5314,12 +6082,35 @@ UBOOL AppendEOSToken_EM
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
-        return AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &tkData,
-                                  0);
-    } else
-        return TRUE;
+        if (!AppendNewToken_EM (lptkLocalVars,
+                               &tkFlags,
+                               &tkData,
+                                0))
+            return FALSE;
+
+        // If this is an AFO,
+        //   and not the header, ...
+        if (lptkLocalVars->lpSF_Fcns->bAFO
+         && lptkLocalVars->Orig.d.uLineNum NE 0)
+        {
+            // Clear the fields
+            ZeroMemory (&tkFlags, sizeof (tkFlags));
+            ZeroMemory (&tkData , sizeof (tkData ));
+
+            // Mark as a NOP
+            tkFlags.TknType = TKT_NOP;
+
+            // Attempt to append as new token, check for TOKEN TABLE FULL,
+            //   and resize as necessary.
+            if (!AppendNewToken_EM (lptkLocalVars,
+                                   &tkFlags,
+                                   &tkData,
+                                    0))
+                return FALSE;
+        } // End IF
+    } // End IF
+
+    return TRUE;
 } // End AppendEOSToken_EM
 
 
@@ -5352,6 +6143,32 @@ UBOOL AppendNewToken_EM
         TKFLAGS    tkFlags = {0};       // Token flags for AppendNewToken_EM
         TOKEN_DATA tkData = {0};        // Token data  ...
 
+        // If the last EOS token is assignment into {alpha}, ...
+        if (lptkLocalVars->lptkLastEOS->tkFlags.bSetAlpha)
+        {
+            // If the previous stmt is a guard stmt, ...
+            if (lptkLocalVars->lptkLastEOS->tkFlags.bGuardStmt)
+                // Mark as a SYNTAX ERROR as we don't allow an assignment into {alpha} in a guard stmt
+                lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
+            else
+            {
+                // Append a SET ALPHA token
+                tkFlags.TknType = TKT_SETALPHA;
+////////////////tkFlags.ImmType = IMMTYPE_ERROR;
+
+                // Ensure that the SymEntry is local to lptkLocalVars->lpHTS
+                tkData.tkSym = lptkLocalVars->lpHTS->steAlpha;
+
+                // Attempt to append as new token, check for TOKEN TABLE FULL,
+                //   and resize as necessary.
+                if (!AppendNewToken_EM (lptkLocalVars,
+                                       &tkFlags,
+                                       &tkData,
+                                        0))
+                    return FALSE;
+            } // End IF/ELSE
+        } // End IF/ELSE/...
+
         // If the last EOS token is a SYNTAX ERROR, ...
         if (lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr)
         {
@@ -5374,20 +6191,25 @@ UBOOL AppendNewToken_EM
     if (((lptkLocalVars->lpHeader->TokenCnt + 1) * sizeof (TOKEN) + sizeof (TOKEN_HEADER))
       > (int) MyGlobalSize (lptkLocalVars->hGlbToken))
     {
-        HGLOBAL hGlbToken;
+        HGLOBAL  hGlbToken;
+        APLU3264 uDiff;
 
         // Resize the token stream
 
+        // Save the difference between lptkLastEOS and the old start ptr so we can relocate lptkLastEOS in case it moves
+        uDiff = (lptkLocalVars->lptkLastEOS - lptkLocalVars->lptkStart);
+
         // Unlock the global handle so we can resize it
         MyGlobalUnlock (lptkLocalVars->hGlbToken);
-        lptkLocalVars->lpHeader  = NULL;
-        lptkLocalVars->lptkStart = NULL;
-        lptkLocalVars->lptkNext  = NULL;
+        lptkLocalVars->lpHeader    = NULL;
+        lptkLocalVars->lptkStart   =
+        lptkLocalVars->lptkNext    =
+        lptkLocalVars->lptkLastEOS = NULL;
 
         // Increase the size by DEF_TOKEN_RESIZE
-            hGlbToken = MyGlobalReAlloc (lptkLocalVars->hGlbToken,
+        hGlbToken = MyGlobalReAlloc (lptkLocalVars->hGlbToken,
                                      MyGlobalSize (lptkLocalVars->hGlbToken) + DEF_TOKEN_RESIZE,
-                                         GMEM_ZEROINIT);
+                                     GMEM_ZEROINIT);
         if (hGlbToken EQ NULL)
         {
             // We ran into TOKEN TABLE FULL and couldn't resize
@@ -5399,6 +6221,7 @@ UBOOL AppendNewToken_EM
 
         lptkLocalVars->hGlbToken = hGlbToken;
         UTRelockAndSet (hGlbToken, lptkLocalVars);
+        lptkLocalVars->lptkLastEOS = &lptkLocalVars->lptkStart[uDiff];
     } // End IF
 
     // Insert this token into the stream:
@@ -5410,6 +6233,13 @@ UBOOL AppendNewToken_EM
 
     // Save index in input line of this token
     lptkLocalVars->lptkNext->tkCharIndex = iCharOffset + (UINT) (lptkLocalVars->lpwszCur - lptkLocalVars->lpwszOrig);
+
+    // If this token is an SOS, and
+    //    the last EOS token is assignment into {alpha}, ...
+    if (lptkFlags->TknType EQ TKT_SOS
+     && lptkLocalVars->lptkLastEOS->tkFlags.bSetAlpha)
+        // Save the offset backwards to the LastEOS/EOL
+        lptkLocalVars->lptkNext->tkData.tkIndex = (UINT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkLastEOS);
 
     // Count in another token
     lptkLocalVars->lpHeader->TokenCnt++;
@@ -5446,6 +6276,10 @@ UBOOL AppendNewToken_EM
         case TKT_VARARRAY      :
         case TKT_SYS_NS        :
         case TKT_FILLJOT       :
+        case TKT_DEL           :    // Del      -- always a function
+        case TKT_DELDEL        :    // Del Del  -- either a monadic or dyadic operator
+        case TKT_DELAFO        :    // Del Anon -- either a monadic or dyadic operator, bound to its operands
+        case TKT_GLBDFN        :
             // Append the NEC token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
             AppendNewCSToken_EM (TKT_CS_NEC,
@@ -5458,6 +6292,7 @@ UBOOL AppendNewToken_EM
             break;
 
         case TKT_SYNTERR       :
+        case TKT_SETALPHA      :
             break;
 
         case TKT_LABELSEP      :
@@ -5523,6 +6358,8 @@ UBOOL AppendNewToken_EM
         case TKT_CS_ASSERT     :    // Ignore these tokens
         case TKT_CS_GOTO       :
         case TKT_CS_RETURN     :
+        case TKT_NOP           :
+        case TKT_AFOGUARD      :
             break;
 
         case TKT_CS_NEC        :
@@ -5774,7 +6611,12 @@ TKCOLINDICES CharTransTK
 
         case UTF16_ALPHA:               // Alt-'a' - alpha
         case UTF16_OMEGA:               // Alt-'w' - omega
+        case UTF16_ALPHA2:              // Greek small letter alpha
+        case UTF16_OMEGA2:              // ...                omega
             return TKCOL_DIRIDENT;
+
+        case UTF16_DEL:                 // Alt-'g' - del
+            return TKCOL_DEL;
 
 ////////case UTF16_ALPHA:               // Alt-'a' - alpha (TKCOL_DIRIDENT)
         case UTF16_UPTACK:              // Alt-'b' - up tack
@@ -5782,7 +6624,7 @@ TKCOLINDICES CharTransTK
         case UTF16_DOWNSTILE:           // Alt-'d' - down stile
         case UTF16_EPSILON:             // Alt-'e' - epsilon
 ////////case UTF16_INFINITY:            // Alt-'f' - infinity (TKCOL_INFINITY)
-////////case UTF16_DEL:                 // Alt-'g' - del (TKCOL_UNK)
+////////case UTF16_DEL:                 // Alt-'g' - del (TKCOL_DEL)
 ////////case UTF16_DELTA:               // Alt-'h' - delta (TKCOL_ALPHA)
         case UTF16_IOTA:                // Alt-'i' - iota
 ////////case UTF16_JOT:                 // Alt-'j' - compose (jot) (TKCOL_JOT)
@@ -5818,6 +6660,7 @@ TKCOLINDICES CharTransTK
         case UTF16_TIMES:               // Alt-'-' - times
 ////////case UTF16_SLOPEBAR:            // Alt-'.' - slope-bar (TKCOL_PRIM_OP1)
 ////////case UTF16_SLASHBAR:            // Alt-'/' - slash-bar (TKCOL_PRIM_OP1)
+
         case UTF16_UPCARET:             // Alt-'0' - and (94??)
 ////////case UTF16_DIERESIS:            // Alt-'1' - dieresis (TKCOL_PRIM_OP1)
 ////////case UTF16_OVERBAR:             // Alt-'2' - overbar (TKCOL_OVERBAR)
@@ -5828,6 +6671,7 @@ TKCOLINDICES CharTransTK
         case UTF16_RIGHTCARET:          // Alt-'7' - more
         case UTF16_NOTEQUAL:            // Alt-'8' - not equal
         case UTF16_DOWNCARET:           // Alt-'9' - or
+
 ////////case UTF16_                     // Alt-':' - (none)
         case UTF16_DOWNTACKJOT:         // Alt-';' - format
 ////////case UTF16_                     // Alt-'<' - (none)
@@ -5835,6 +6679,7 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_                     // Alt-'>' - (none)
 ////////case UTF16_CIRCLEMIDDLEDOT:     // Alt-'?' - circle-middle-dot (TKCOL_PRIM_OP1)
         case UTF16_NOTEQUALUNDERBAR:    // Alt-'@' - mismatch
+
 ////////case UTF16_                     // Alt-'A' - (none)
 ////////case UTF16_                     // Alt-'B' - (none)
 ////////case UTF16_                     // Alt-'C' - (none)
@@ -5861,6 +6706,7 @@ TKCOLINDICES CharTransTK
         case UTF16_RIGHTSHOEUNDERBAR:   // Alt-'X' - right-shoe-underbar
 ////////case UTF16_                     // Alt-'Y' - (none)
         case UTF16_LEFTSHOEUNDERBAR:    // Alt-'Z' - left-shoe-underbar
+
 ////////case UTF16_LEFTARROW:           // Alt-'[' - left arrow (TKCOL_ASSIGN)
         case UTF16_LEFTTACK:            // Alt-'\' - left tack
         case UTF16_RIGHTARROW:          // Alt-']' - right arrow
@@ -6015,7 +6861,6 @@ TKCOLINDICES CharTransTK
             else
                 return TKCOL_UNK;
 
-        case UTF16_DEL:                 // Alt-'g' - del
         case L'`':
         case L'@':
         case L'$':
@@ -6129,8 +6974,9 @@ static COLNAMES colNames[] =
  {L"DIAMOND"     , TKCOL_DIAMOND     }, // 1A: Diamond symbol
  {L"LAMP"        , TKCOL_LAMP        }, // 1B: Comment symbol
  {L"SYS_NS"      , TKCOL_SYS_NS      }, // 1C: System namespace
- {L"EOL"         , TKCOL_EOL         }, // 1D: End-Of-Line
- {L"UNK"         , TKCOL_UNK         }, // 1E: Unknown symbols
+ {L"DEL"         , TKCOL_DEL         }, // 1D: Del
+ {L"EOL"         , TKCOL_EOL         }, // 1E: End-Of-Line
+ {L"UNK"         , TKCOL_UNK         }, // 1F: Unknown symbols
 };
     if (TKCOL_LENGTH > colIndex)
         return colNames[colIndex].lpwsz;

@@ -81,25 +81,17 @@ SYSNAME aSystemNames[] =
 
 // Monadic or dyadic system functions
     {WS_UTF16_QUAD L"at"       ,      1,      FALSE, SysFnAT_EM_YY       , 0              },    // Attributes
-////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM_YY     , 0              },    // Call Assembler Code
     {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM_YY       , 0              },    // Canonical Representation
-////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM_YY      , 0              },    // Canonical Representation, Line
-////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, SysFnCRLPC_EM_YY    , 0              },    // Canonical Representation, Public Comment
-////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, SysFnDEF_EM_YY      , 0              },    // Define Function
-////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, SysFnDEFL_EM_YY     , 0              },    // Define Function Line
     {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM_YY       , 0              },    // Delay Execution
     {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM_YY       , 0              },    // Data Representation
     {WS_UTF16_QUAD L"ea"       ,      1,      FALSE, SysFnEA_EM_YY       , 0              },    // Execute Alternate
     {WS_UTF16_QUAD L"ec"       ,      1,      FALSE, SysFnEC_EM_YY       , 0              },    // Execute Controlled
-////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, SysFnERASE_EM_YY    , 0              },    // Erase Names
     {WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM_YY    , 0              },    // Signal Error
     {WS_UTF16_QUAD L"es"       ,      1,      FALSE, SysFnES_EM_YY       , 0              },    // Event Simulate
     {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM_YY       , 0              },    // Expunge Names
 ////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM_YY       , 0              },    // Format Items
     {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM_YY      , 0              },    // Format
     {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY       , 0              },    // Function Fix
-////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM_YY   , 0              },    // Identifier List
-////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM_YY    , 0              },    // Identifier Localization
     {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY       , 0              },    // Monitor Function
     {WS_UTF16_QUAD L"nappend"  ,      1,      FALSE, SysFnNAPPEND_EM_YY  , 0              },    // Append Data To An Open Native File
     {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM_YY       , 0              },    // Name Classification
@@ -114,7 +106,6 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"nsize"    ,      1,      FALSE, SysFnNSIZE_EM_YY    , 0              },    // Get The Size Of An Open Native File
     {WS_UTF16_QUAD L"ntie"     ,      1,      FALSE, SysFnNTIE_EM_YY     , 0              },    // Open A Native File
     {WS_UTF16_QUAD L"nuntie"   ,      1,      FALSE, SysFnNUNTIE_EM_YY   , 0              },    // Close A Native File
-////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, SysFnSS_EM_YY       , 0              },    // Search String
 ////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM_YY     , 0              },    // Manage Stop Points
     {WS_UTF16_QUAD L"tf"       ,      1,      FALSE, SysFnTF_EM_YY       , 0              },    // Transfer Form
 ////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, SysFnTRACE_EM_YY    , 0              },    // Manage Trace Points
@@ -182,7 +173,7 @@ void MakePermVars
     CopyMemoryW (lpHeader, ALPHABET, ALPHANELM);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbQuadA); lpHeader = NULL;
+     MyGlobalUnlock (hGlbQuadA); lpHeader = NULL;
 
     //***************************************************************
     // Create zilde
@@ -404,7 +395,8 @@ HGLOBAL MakePermVectorCom
 
 UBOOL SymTabAppendOneSysName_EM
     (LPSYSNAME   lpSysName,
-     LPSYMENTRY *lplpSymEntry)
+     LPSYMENTRY *lplpSymEntry,
+     LPHSHTABSTR lpHTS)                 // Ptr to HshTabStr
 
 {
     STFLAGS    stFlags = {0};
@@ -417,6 +409,8 @@ UBOOL SymTabAppendOneSysName_EM
         stFlags.DfnSysLabel = (lpSysName->uValence EQ SYSLBL);
     } else
     {
+        Assert (IsBooleanValue (lpSysName->uValence));
+
         if (lpSysName->uValence EQ 0)
             stFlags.stNameType = NAMETYPE_FN0;
         else
@@ -430,7 +424,7 @@ UBOOL SymTabAppendOneSysName_EM
 
     // Append the name as new
     lpSymEntry =
-      SymTabAppendNewName_EM (lpSysName->lpwszName, &stFlags);
+      _SymTabAppendNewName_EM (lpSysName->lpwszName, &stFlags, lpHTS);
 
     // Check for error
     if (!lpSymEntry)
@@ -461,7 +455,8 @@ UBOOL SymTabAppendAllSysNames_EM
 
     for (i = 0; i < ASYSTEMNAMES_NROWS; i++)
     if (!SymTabAppendOneSysName_EM (&aSystemNames[i],
-                                    &lpHTS->lpSymQuad[aSystemNames[i].sysVarIndex]))
+                                    &lpHTS->lpSymQuad[aSystemNames[i].sysVarIndex],
+                                     lpHTS))
         return FALSE;
 
     return TRUE;
@@ -492,6 +487,8 @@ UBOOL InitSystemNames_EM
 
     // Append all system names
     bRet = SymTabAppendAllSysNames_EM (lphtsPTD);
+    if (bRet)
+        lphtsPTD->bSysNames = TRUE;
 
     Assert (HshTabFrisk (lphtsPTD));
 
@@ -505,7 +502,7 @@ UBOOL InitSystemNames_EM
 //  Assign a global to a name
 //***************************************************************************
 
-UBOOL AssignGlobalCWS
+void AssignGlobalCWS
     (HGLOBAL    hGlbVal_CWS,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -520,8 +517,6 @@ UBOOL AssignGlobalCWS
 
     // Mark as having a value
     lpSymEntryDest->stFlags.Value = TRUE;
-
-    return TRUE;
 } // End AssignGlobalCWS
 
 
@@ -531,7 +526,7 @@ UBOOL AssignGlobalCWS
 //  Assign an Boolean scalar to a name
 //***************************************************************************
 
-UBOOL AssignBoolScalarCWS
+void AssignBoolScalarCWS
     (APLBOOL    aplBoolean,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -550,8 +545,6 @@ UBOOL AssignBoolScalarCWS
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
     *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
-
-    return TRUE;
 } // End AssignBoolScalarCWS
 
 
@@ -561,7 +554,7 @@ UBOOL AssignBoolScalarCWS
 //  Assign an integer scalar to a name
 //***************************************************************************
 
-UBOOL AssignIntScalarCWS
+void AssignIntScalarCWS
     (APLINT     aplInteger,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -580,8 +573,6 @@ UBOOL AssignIntScalarCWS
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
     *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
-
-    return TRUE;
 } // End AssignIntScalarCWS
 
 
@@ -591,7 +582,7 @@ UBOOL AssignIntScalarCWS
 //  Assign a real number scalar to a name
 //***************************************************************************
 
-UBOOL AssignRealScalarCWS
+void AssignRealScalarCWS
     (APLFLOAT   fFloat,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -610,8 +601,6 @@ UBOOL AssignRealScalarCWS
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
     *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
-
-    return TRUE;
 } // End AssignRealScalarCWS
 
 
@@ -621,7 +610,7 @@ UBOOL AssignRealScalarCWS
 //  Assign a character scalar to a name
 //***************************************************************************
 
-UBOOL AssignCharScalarCWS
+void AssignCharScalarCWS
     (APLCHAR    aplChar,
      UINT       SysVarValid,
      LPSYMENTRY lpSymEntryDest)
@@ -640,8 +629,6 @@ UBOOL AssignCharScalarCWS
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
     *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
-
-    return TRUE;
 } // End AssignCharScalarCWS
 
 
@@ -4027,39 +4014,124 @@ void ValidPostNone
 //  Assign default values to the system vars
 //***************************************************************************
 
-UBOOL AssignDefaultSysVars
-    (LPSYMENTRY lpSymQuad[SYSVAR_LENGTH])
+void AssignDefaultSysVars
+    (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    if (!AssignGlobalCWS     (hGlbQuadALX_CWS     , SYSVAR_ALX     , lpSymQuad[SYSVAR_ALX     ])) return FALSE;   // Attention Latent Expression
-    if (!AssignRealScalarCWS (fQuadCT_CWS         , SYSVAR_CT      , lpSymQuad[SYSVAR_CT      ])) return FALSE;   // Comparison Tolerance
-    if (!AssignGlobalCWS     (hGlbV0Char          , SYSVAR_DM      , lpSymQuad[SYSVAR_DM      ])) return FALSE;   // Diagnostic Message
-    if (!AssignCharScalarCWS (cQuadDT_CWS         , SYSVAR_DT      , lpSymQuad[SYSVAR_DT      ])) return FALSE;   // Distribution Type
-    if (!AssignGlobalCWS     (hGlbQuadELX_CWS     , SYSVAR_ELX     , lpSymQuad[SYSVAR_ELX     ])) return FALSE;   // Error Latent Expression
-    if (!AssignGlobalCWS     (hGlbQuadFC_CWS      , SYSVAR_FC      , lpSymQuad[SYSVAR_FC      ])) return FALSE;   // Format Control
-    if (!AssignGlobalCWS     (hGlbQuadFEATURE_CWS , SYSVAR_FEATURE , lpSymQuad[SYSVAR_FEATURE ])) return FALSE;   // Feature Control
-    if (!AssignIntScalarCWS  (uQuadFPC_CWS        , SYSVAR_FPC     , lpSymQuad[SYSVAR_FPC     ])) return FALSE;   // Floating Point Control
-    if (!AssignGlobalCWS     (hGlbQuadIC_CWS      , SYSVAR_IC      , lpSymQuad[SYSVAR_IC      ])) return FALSE;   // Indeterminate Control
-    if (!AssignBoolScalarCWS (bQuadIO_CWS         , SYSVAR_IO      , lpSymQuad[SYSVAR_IO      ])) return FALSE;   // Index Origin
-    if (!AssignGlobalCWS     (hGlbQuadLX_CWS      , SYSVAR_LX      , lpSymQuad[SYSVAR_LX      ])) return FALSE;   // Latent Expression
-    if (!AssignIntScalarCWS  (uQuadPP_CWS         , SYSVAR_PP      , lpSymQuad[SYSVAR_PP      ])) return FALSE;   // Print Precision
+    _AssignDefaultSysVars (lpMemPTD, NULL);
+} // End AssignDefaultSysvars
+
+
+//***************************************************************************
+//  $_AssignDefaultSysVars
+//
+//  Assign default values to the system vars using a specific HTS
+//***************************************************************************
+
+void _AssignDefaultSysVars
+    (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
+     LPHSHTABSTR  lphtsPTD)             // Ptr to HshTabStr (may be NULL)
+
+{
+    LPSYMENTRY *lpSymQuad;
+
+    // If we're to supply our own HTS, ...
+    if (lphtsPTD EQ NULL)
+        // Get a ptr to the HshTab & SymTab strucs
+        lphtsPTD = lpMemPTD->lphtsPTD;
+
+    lpSymQuad = lphtsPTD->lpSymQuad;
+
+    AssignGlobalCWS     (hGlbQuadALX_CWS     , SYSVAR_ALX     , lpSymQuad[SYSVAR_ALX     ]);    // Attention Latent Expression
+    AssignRealScalarCWS (fQuadCT_CWS         , SYSVAR_CT      , lpSymQuad[SYSVAR_CT      ]);    // Comparison Tolerance
+    AssignGlobalCWS     (hGlbV0Char          , SYSVAR_DM      , lpSymQuad[SYSVAR_DM      ]);    // Diagnostic Message
+    AssignCharScalarCWS (cQuadDT_CWS         , SYSVAR_DT      , lpSymQuad[SYSVAR_DT      ]);    // Distribution Type
+    AssignGlobalCWS     (hGlbQuadELX_CWS     , SYSVAR_ELX     , lpSymQuad[SYSVAR_ELX     ]);    // Error Latent Expression
+    AssignGlobalCWS     (hGlbQuadFC_CWS      , SYSVAR_FC      , lpSymQuad[SYSVAR_FC      ]);    // Format Control
+    AssignGlobalCWS     (hGlbQuadFEATURE_CWS , SYSVAR_FEATURE , lpSymQuad[SYSVAR_FEATURE ]);    // Feature Control
+    AssignIntScalarCWS  (uQuadFPC_CWS        , SYSVAR_FPC     , lpSymQuad[SYSVAR_FPC     ]);    // Floating Point Control
+    AssignGlobalCWS     (hGlbQuadIC_CWS      , SYSVAR_IC      , lpSymQuad[SYSVAR_IC      ]);    // Indeterminate Control
+    AssignBoolScalarCWS (bQuadIO_CWS         , SYSVAR_IO      , lpSymQuad[SYSVAR_IO      ]);    // Index Origin
+    AssignGlobalCWS     (hGlbQuadLX_CWS      , SYSVAR_LX      , lpSymQuad[SYSVAR_LX      ]);    // Latent Expression
+    AssignIntScalarCWS  (uQuadPP_CWS         , SYSVAR_PP      , lpSymQuad[SYSVAR_PP      ]);    // Print Precision
     if (cQuadPR_CWS EQ CQUADPR_MT)
-    {
-        if (!AssignGlobalCWS (hGlbQuadPR_CWS      , SYSVAR_PR      , lpSymQuad[SYSVAR_PR      ])) return FALSE;   // Prompt Replacement
-    } else
-    {
-        if (!AssignCharScalarCWS (cQuadPR_CWS     , SYSVAR_PR      , lpSymQuad[SYSVAR_PR      ])) return FALSE;   // Prompt Replacement
-    } // End IF
-    if (!AssignIntScalarCWS  (uQuadPW_CWS         , SYSVAR_PW      , lpSymQuad[SYSVAR_PW      ])) return FALSE;   // Print Width
-    if (!AssignIntScalarCWS  (uQuadRL_CWS         , SYSVAR_RL      , lpSymQuad[SYSVAR_RL      ])) return FALSE;   // Random Link
-    if (!AssignGlobalCWS     (hGlbQuadSA_CWS      , SYSVAR_SA      , lpSymQuad[SYSVAR_SA      ])) return FALSE;   // Stop Action
-    if (!AssignGlobalCWS     (hGlbQuadWSID_CWS    , SYSVAR_WSID    , lpSymQuad[SYSVAR_WSID    ])) return FALSE;   // Workspace Identifier
+        AssignGlobalCWS (hGlbQuadPR_CWS      , SYSVAR_PR      , lpSymQuad[SYSVAR_PR      ]);    // Prompt Replacement
+    else
+        AssignCharScalarCWS (cQuadPR_CWS     , SYSVAR_PR      , lpSymQuad[SYSVAR_PR      ]);    // Prompt Replacement
+    AssignIntScalarCWS  (uQuadPW_CWS         , SYSVAR_PW      , lpSymQuad[SYSVAR_PW      ]);    // Print Width
+    AssignIntScalarCWS  (uQuadRL_CWS         , SYSVAR_RL      , lpSymQuad[SYSVAR_RL      ]);    // Random Link
+    AssignGlobalCWS     (hGlbQuadSA_CWS      , SYSVAR_SA      , lpSymQuad[SYSVAR_SA      ]);    // Stop Action
+    AssignGlobalCWS     (hGlbQuadWSID_CWS    , SYSVAR_WSID    , lpSymQuad[SYSVAR_WSID    ]);    // Workspace Identifier
 
     // Set the values for []Z
+    lpSymQuad[SYSVAR_Z]->stFlags = lphtsPTD->steNoValue->stFlags;
+    lpSymQuad[SYSVAR_Z]->stFlags.Inuse       = TRUE;
     lpSymQuad[SYSVAR_Z]->stFlags.SysVarValid = SYSVAR_Z;
+} // End _AssignDefaultSysVars
 
-    return TRUE;
-} // End AssignDefaultSysVars
+
+//***************************************************************************
+//  $CopySysVars
+//
+//  Make a copy of the current system vars so we have up-to-date values
+//***************************************************************************
+
+void CopySysVars
+    (LPHSHTABSTR lphtsDst,          // Destination HSHTABSTR
+     LPHSHTABSTR lphtsSrc)          // Source      ...
+
+{
+
+    // Copy scalar values
+    lphtsDst->lpSymQuad[SYSVAR_CT      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_CT      ]->stData.stLongest;
+    lphtsDst->lpSymQuad[SYSVAR_DT      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_DT      ]->stData.stLongest;
+    lphtsDst->lpSymQuad[SYSVAR_FPC     ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_FPC     ]->stData.stLongest;
+    lphtsDst->lpSymQuad[SYSVAR_IO      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_IO      ]->stData.stLongest;
+    lphtsDst->lpSymQuad[SYSVAR_PP      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_PP      ]->stData.stLongest;
+    lphtsDst->lpSymQuad[SYSVAR_PW      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_PW      ]->stData.stLongest;
+    lphtsDst->lpSymQuad[SYSVAR_RL      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_RL      ]->stData.stLongest;
+
+    // Delete existing destination HGLOBAL values in case they are not permanents
+    DeleSysVars (lphtsDst);
+
+    // Copy HGLOBAL values
+////lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);    // Not used in {}
+////lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);    // ...
+////lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);    // Not used in {}
+    lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = TRUE;
+    lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = TRUE;
+    lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = TRUE;
+////lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);    // Not used in {}
+////lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);    // Not used in {}
+////lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);    // Not used in {}
+////lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);    // Not used in {}
+////lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);    // Local to {}
+} // End CopySysVars
+
+
+//***************************************************************************
+//  $DeleSysVars
+//
+//  Delete HGLOBAL system vars
+//***************************************************************************
+
+void DeleSysVars
+    (LPHSHTABSTR lphtsDst)          // Destination HSHTABSTR
+
+{
+    // Delete HGLOBAL values
+////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);   // Not used in {}
+////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);   // Not used in {}
+////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);   // Not used in {}
+    FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = FALSE;
+    FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = FALSE;
+    FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = FALSE;
+////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);   // Not used in {}
+////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);   // Not used in {}
+////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);   // Not used in {}
+////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);   // Not used in {}
+////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);   // Not used in {}
+} // End DeleSysVars
 
 
 //***************************************************************************
@@ -4068,7 +4140,7 @@ UBOOL AssignDefaultSysVars
 //  Initialize all system vars
 //***************************************************************************
 
-UBOOL InitSystemVars
+void InitSystemVars
     (void)
 
 {
@@ -4144,13 +4216,10 @@ UBOOL InitSystemVars
     aSysVarValidPost[SYSVAR_Z       ] = ValidPostNone       ;
 
     // Assign default values to the system vars
-    if (!AssignDefaultSysVars (lpMemPTD->lphtsPTD->lpSymQuad))
-        return FALSE;
+    AssignDefaultSysVars (lpMemPTD);
 
     // Save the index value
     lpMemPTD->cQuadxSA = cQuadxSA_CWS;
-
-    return TRUE;
 } // End InitSystemVars
 
 

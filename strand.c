@@ -94,7 +94,7 @@ LPPL_YYSTYPE PushVarStrand_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRAND;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = lpYYArg->tkToken.tkFlags.NoDisplay;
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U;         // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
     lpYYRes->TknCount                  = 0;
@@ -581,6 +581,17 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             case TKT_CS_NEC:            // ...                 Special token
             case TKT_CS_EOL:            // ...                 Special token
             case TKT_FILLJOT:           // Fill jot
+            case TKT_SETALPHA:          // Set {alpha}
+            case TKT_DEL:               // Del -- always a function
+            case TKT_DELAFO:            // Del Anon -- either a monadic or dyadic operator, bound to its operands
+            case TKT_DELDEL:            // Del Del -- either a monadic or dyadic operator
+            case TKT_FCNAFO:            // Anonymous function
+            case TKT_OP1AFO:            // ...       monadic operator
+            case TKT_OP2AFO:            // ...       dyadic  ...
+            case TKT_GLBDFN:            // Placeholder for hGlbDfnHdr
+            case TKT_NOP:               // NOP
+            case TKT_AFOGUARD:          // AFO guard
+            case TKT_AFORETURN:         // AFO return
             defstop
                 goto ERROR_EXIT;
         } // End SWITCH
@@ -646,7 +657,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Fill in the result token
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                        lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -687,7 +698,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Fill in the result token
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                        lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -703,7 +714,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                 lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
                 lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -721,7 +732,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Fill in the result token
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                        lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkSym->stData.stGlbData);
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -736,7 +747,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Fill in the result token
                         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                        lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
@@ -3177,6 +3188,18 @@ LPTOKEN CopyToken_EM
 
             break;
 
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+        case TKT_DELAFO:        // Del Anon -- either a monadic or dyadic operator, bound to its operands
+            // tkData is a valid HGLOBAL UDFO
+            Assert (IsGlbTypeDfnDir_PTB (lpToken->tkData.tkGlbData));
+
+            // Increment the reference count in global memory
+            DbgIncrRefCntDir_PTB (lpToken->tkData.tkGlbData);
+
+            break;
+
         case TKT_FCNARRAY:      // tkData is HGLOBAL
             // tkData is a valid HGLOBAL function array
             Assert (IsGlbTypeFcnDir_PTB (lpToken->tkData.tkGlbData));
@@ -3194,12 +3217,17 @@ LPTOKEN CopyToken_EM
         case TKT_OP3IMMED:      // ...
         case TKT_OPJOTDOT:      // ...
         case TKT_FILLJOT:       // ...
+        case TKT_SETALPHA:      // ...
             break;              // Ignore immediates
 
         case TKT_LISTPAR:       // tkData is HGLOBAL
         case TKT_LSTIMMED:      // tkData is immediate
         case TKT_LSTARRAY:      // tkData is HGLOBAL
         case TKT_LSTMULT:       // tkData is HGLOBAL
+        case TKT_GLBDFN:        // ...
+        case TKT_NOP:           // NOP
+        case TKT_AFOGUARD:      // AFO guard
+        case TKT_AFORETURN:     // AFO return
         defstop
             break;
     } // End SWITCH

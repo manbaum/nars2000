@@ -863,14 +863,37 @@ LPAPLCHAR SavedWsFormGlbFcn
             wsprintfW (lpwszFcnTypeName,
                        L"F %d.",
                        uGlbCnt);
-            // Skip over the leading part
-            lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
+            // If this is an AFO, ...
+            if (lpMemDfnHdr->bAFO)
+            {
+                LPWCHAR p;
 
-            // Copy and convert the function name from the STE
-            lpwszFcnName =
-              ConvSteName (lpwszFcnName,            // Ptr to output area
-                           lpMemDfnHdr->steFcnName, // Ptr to function STE
-                           NULL);                   // Ptr to name length (may be NULL)
+                // Find the '=' separator
+                p = SkipToCharW (lpwszFcnName, '=');
+
+                // Zap it
+                *p = WC_EOS;
+
+                // Append the function name
+                lstrcpyW (&lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)], lpwszFcnName);
+
+                // Restore the zapped char
+                *p = '=';
+
+                // Return the pointer to the next char in the buffer
+                lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
+            } else
+            {
+                // Skip over the leading part
+                lpwszFcnName = &lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)];
+
+                // Copy and convert the function name from the STE
+                lpwszFcnName =
+                  ConvSteName (lpwszFcnName,            // Ptr to output area
+                               lpMemDfnHdr->steFcnName, // Ptr to function STE
+                               NULL);                   // Ptr to name length (may be NULL)
+            } // End IF/ELSE
+
             // Append separator
             *lpaplChar++ = L'=';
 
@@ -923,6 +946,13 @@ LPAPLCHAR SavedWsFormGlbFcn
                                         KEYNAME_USERDEFINED,// Ptr to the key name
                                         L"1",               // Ptr to the key value
                                         lpMemSaveWSID);     // Ptr to the file name
+            // If it's an AFO, ...
+            if (lpMemDfnHdr->bAFO)
+                // Write out the bAFO key value
+                WritePrivateProfileStringW (lpwszSectName,      // Ptr to the section name
+                                            KEYNAME_AFO,        // Ptr to the key name
+                                            L"1",               // Ptr to the key value
+                                            lpMemSaveWSID);     // Ptr to the file name
 #define lpUndoIni       lpaplChar       // Start of output save area
 
             // Write out the Undo buffer

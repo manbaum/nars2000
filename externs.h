@@ -389,7 +389,8 @@ CRITICAL_SECTION CSO0,                  // Critical Section Object #0
                  CSORsrc,               // ...                     for _SaveObj/_DeleObj
 #endif
                  CSOPL,                 // ...                     for ParseLine
-                 CSOTokenize;           // ...                     for tokenization
+                 CSOTokenize,           // ...                     for tokenization
+                 CSOHshTab;             // ...                     for HshTab access
 
 LRESULT WINAPI EditWndProcA (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT WINAPI EditWndProcW (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -455,7 +456,7 @@ LPPRIMSPEC PrimSpecTab[PRIMTAB_LEN];    // The table of corresponding LPPRIMSPEC
                                         //   for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
-    APLU3264  Index    :5,              // 00:  00000010:  Function index (see FBFN_INDS)
+    UINT      Index    :5,              // 00:  00000010:  Function index (see FBFN_INDS)
               IdentElem:1,              //      00000020:  TRUE iff this function has an identity element
               bLftIdent:1,              //      00000040:  TRUE iff the identity function is a left identity
               bRhtIdent:1,              //      00000080:  ...                                 right ...
@@ -604,14 +605,14 @@ typedef union tagGLBSYM
 EXTERN
 const TOKEN tkZero
 #ifdef DEFINE_VALUES
-= {{TKT_VARIMMED, IMMTYPE_BOOL}}
+= {{TKT_VARIMMED, FALSE, IMMTYPE_BOOL}}
 #endif
 ;
 
 EXTERN
 const TOKEN tkBlank
 #ifdef DEFINE_VALUES
-= {{TKT_VARIMMED, IMMTYPE_CHAR}, (LPSYMENTRY) L' '}
+= {{TKT_VARIMMED, FALSE, IMMTYPE_CHAR}, (LPSYMENTRY) L' '}
 #endif
 ;
 

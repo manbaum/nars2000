@@ -1441,12 +1441,12 @@ NORMAL_EXIT:
                 lpMemPTD->bExecLX = FALSE;
 
                 // Execute the statement in immediate execution mode
-                ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"LX",    // Ptr to line to execute
-                             4,                                         // NELM of line to execute
-                             FALSE,                                     // TRUE iff free the line on completion
-                             FALSE,                                     // TRUE iff wait until finished
-                             hWndEC,                                    // Edit Ctrl window handle
-                             TRUE);                                     // TRUE iff errors are acted upon
+                ImmExecStmt (WS_UTF16_UPTACKJOT $QUAD_LX,   // Ptr to line to execute
+                             4,                             // NELM of line to execute
+                             FALSE,                         // TRUE iff free the line on completion
+                             FALSE,                         // TRUE iff wait until finished
+                             hWndEC,                        // Edit Ctrl window handle
+                             TRUE);                         // TRUE iff errors are acted upon
             } else
             {
                 // If the SI level is for Quad Input

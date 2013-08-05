@@ -1,6 +1,33 @@
 Version 0.4.1.xx consists of the following Builds:
 
 
+Build #1138 -- Version 0.4.1.xx
+-------------------------------
+
+* Use Consistent Names For Literal []Names
+
+Directory trunk:
+
+DISPDBG.C:
+DISPLAY.C:
+ERRMSG.C:
+EXECDFN.C:
+QF_EX.C:
+SC_IN.C:
+SC_LOAD.C:
+SC_OUT.C:
+SESSMAN.C:
+SYSVARS.C:
+SYSVARS.H:
+  Use consistent names for literal []names.
+
+EXECMFN.H:
+  Define shorthands for more []names.
+
+HEADERS.H:
+  Re-order headers to handle dependencies.
+
+
 Build #1137 -- Version 0.4.1.xx
 -------------------------------
 

@@ -582,7 +582,7 @@ void DisplayGlobals
                               FormatImmed (lpwsz,
                                            immType,
                                           &lpHeader->NELM);
-                            lstrcpyW (lpwsz, WS_UTF16_QUAD L"IO" WS_UTF16_LEFTARROW L"0");
+                            lstrcpyW (lpwsz, $QUAD_IO WS_UTF16_LEFTARROW L"0");
 
                             break;
                         } // End ARRAY_APA

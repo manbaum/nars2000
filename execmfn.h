@@ -155,17 +155,22 @@ typedef enum tagMFO
 #define $QUAD_CR        WS_UTF16_QUAD L"CR"
 #define $QUAD_DM        WS_UTF16_QUAD L"DM"
 #define $QUAD_ELX       WS_UTF16_QUAD L"ELX"
+#define $QUAD_EM        WS_UTF16_QUAD L"EM"
 #define $QUAD_ERROR     WS_UTF16_QUAD L"ERROR"
 #define $QUAD_FEATURE   WS_UTF16_QUAD L"FEATURE"
 #define $QUAD_FMT       WS_UTF16_QUAD L"FMT"
+#define $QUAD_FPC       WS_UTF16_QUAD L"FPC"
+#define $QUAD_FX        WS_UTF16_QUAD L"FX"
 #define $QUAD_ID        WS_UTF16_QUAD SYSLBL_ID
 #define $QUAD_INV       WS_UTF16_QUAD SYSLBL_INV
 #define $QUAD_IO        WS_UTF16_QUAD L"IO"
+#define $QUAD_LX        WS_UTF16_QUAD L"LX"
 #define $QUAD_MS        WS_UTF16_QUAD SYSLBL_MS
 #define $QUAD_NC        WS_UTF16_QUAD L"NC"
 #define $QUAD_PRO       WS_UTF16_QUAD SYSLBL_PRO
 #define $QUAD_SGL       WS_UTF16_QUAD SYSLBL_SGL
 #define $QUAD_TCNL      WS_UTF16_QUAD L"TCNL"
+#define $QUAD_WSID      WS_UTF16_QUAD L"WSID"
 #define $RANK           WS_UTF16_DIERESISJOT
 #define $REVERSE        WS_UTF16_CIRCLESTILE
 #define $RHO            WS_UTF16_RHO
@@ -191,8 +196,10 @@ typedef struct tagMAGIC_FCNOPR
 
 typedef struct tagINIT_MFO
 {
-    LPHSHTABSTR  lphtsMFO;          // 00:  Ptr to HSHTABSTR struc
-    LPMEMVIRTSTR lpLclMemVirtStr;   // 04:  Ptr to local MemVirtStr
+    struct tagHSHTABSTR
+                *lphtsMFO;          // 00:  Ptr to HSHTABSTR struc
+    struct tagMEMVIRTSTR
+                *lpLclMemVirtStr;   // 04:  Ptr to local MemVirtStr
     UINT         uPtdMemVirtStart,  // 08:  Starting offset into lpLclMemVirtStr
                  uPtdMemVirtEnd;    // 0C:  Ending   ...
                                     // 10:  Length

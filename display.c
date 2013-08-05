@@ -2459,7 +2459,7 @@ LPWCHAR DisplayTransferGlb2
                                   UTF16_OVERBAR);       // Char to use as overbar
 #undef  lpAPA
                 // Append {times}[]IO-{iota}, zapping the trailing blank
-                lstrcpyW (&lpwszTemp[-1], WS_UTF16_TIMES WS_UTF16_QUAD L"IO-" WS_UTF16_IOTA);
+                lstrcpyW (&lpwszTemp[-1], WS_UTF16_TIMES $QUAD_IO L"-" WS_UTF16_IOTA);
                 lpwszTemp = &lpwszTemp[lstrlenW (lpwszTemp)];
 
                 // Format the length
@@ -2578,7 +2578,7 @@ LPWCHAR DisplayTransferFcn2
     if (lpSymEntry->stFlags.UsrDfn)
     {
         // Append "[]FX "
-        lstrcpyW (lpwszTemp, WS_UTF16_QUAD L"FX ");
+        lstrcpyW (lpwszTemp, $QUAD_FX L" ");
         lpwszTemp = &lpwszTemp[lstrlenW (lpwszTemp)];
 
         // Get the user-defined function/operator global memory handle

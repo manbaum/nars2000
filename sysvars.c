@@ -270,7 +270,7 @@ void MakePermVars
     //***************************************************************
     // Create various permanent vectors
     //***************************************************************
-    hGlbQuadxLX         = MakePermCharVector (WS_QUADDM           , PERMNDX_QUADxLX                      );
+    hGlbQuadxLX         = MakePermCharVector ($QUAD_DM            , PERMNDX_QUADxLX                      );
     hGlbV0Char          = MakePermCharVector (V0Char              , PERMNDX_V0CHAR                       );
     hGlbSAEmpty         = hGlbV0Char;
     hGlbSAClear         = MakePermCharVector (SAClear             , PERMNDX_SACLEAR                      );

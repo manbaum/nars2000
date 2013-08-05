@@ -1565,7 +1565,7 @@ void UnlocalizeSTEs
 
             // If this var is []FPC, set the VFP constants and PTD vars
             if (lpSymEntryCur->stFlags.ObjName EQ OBJNAME_SYS
-             && IsThisSysName (lpSymEntryCur, WS_UTF16_QUAD L"fpc"))
+             && IsThisSysName (lpSymEntryCur, $QUAD_FPC))
             {
                 // Initialize the precision-specific VFP constants
                 InitVfpPrecision (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);

@@ -396,7 +396,7 @@ UBOOL TransferInverseArr2_EM
         lpSymEntry = lpSymEntry->stPrvEntry;
 
     // If this isn't []DM, ...
-    if (lstrcmpiW (lpwName, WS_QUADDM) NE 0)
+    if (lstrcmpiW (lpwName, $QUAD_DM) NE 0)
     {
         // Restore the zapped char
         *lpwNameEnd = wch;

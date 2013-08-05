@@ -128,7 +128,7 @@ void BreakMessage
 
 WSFULL_EXIT:
     MessageBoxW (hWndSM,
-                 L"Unable to allocate space for " WS_QUADDM,
+                 L"Unable to allocate space for " $QUAD_DM,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
     return;
@@ -494,7 +494,7 @@ void ErrorMessageDirect
 
 WSFULL_DM_EXIT:
     MessageBoxW (hWndMF,
-                 L"Unable to allocate space for " WS_QUADDM,
+                 L"Unable to allocate space for " $QUAD_DM,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
     return;
@@ -503,7 +503,7 @@ WSFULL_EM_EXIT:
     *lphGlbQuadEM = hGlbQuadEM_DEF;
 
     MessageBoxW (hWndMF,
-                 L"Unable to allocate space for " WS_QUADEM,
+                 L"Unable to allocate space for " $QUAD_EM,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
     return;

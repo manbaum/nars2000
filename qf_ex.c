@@ -518,10 +518,10 @@ APLBOOL EraseableName
             if (bRet)
             {
                 // Save flag of whether or not the name is []DM
-                *lpbQuadDM = lstrcmpiW (lpMemName, WS_QUADDM) EQ 0;
+                *lpbQuadDM = lstrcmpiW (lpMemName, $QUAD_DM) EQ 0;
 
                 // Save flag of whether or not the name is []EM
-                *lpbQuadEM = lstrcmpiW (lpMemName, WS_QUADEM) EQ 0;
+                *lpbQuadEM = lstrcmpiW (lpMemName, $QUAD_EM) EQ 0;
 
                 // Not if it's a system name
                 //   but []DM and []EM are ok

@@ -162,8 +162,8 @@ UBOOL CmdOut_EM
                         lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 
                         // Compare the names
-                        uCnt = lstrcmpiW (lpwGlbName, WS_UTF16_QUAD L"wsid") EQ 0
-                            || lstrcmpiW (lpwGlbName, WS_QUADDM            ) EQ 0;
+                        uCnt = lstrcmpiW (lpwGlbName, $QUAD_WSID) EQ 0
+                            || lstrcmpiW (lpwGlbName, $QUAD_DM  ) EQ 0;
 
                         // We no longer need this ptr
                         MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;

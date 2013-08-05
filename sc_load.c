@@ -579,7 +579,7 @@ UBOOL LoadWorkspace_EM
 
                         // If this var is []FPC, set the VFP constants and PTD vars
                         if (lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
-                         && IsThisSysName (lpSymEntry, WS_UTF16_QUAD L"fpc"))
+                         && IsThisSysName (lpSymEntry, $QUAD_FPC))
                         {
                             // Initialize the precision-specific VFP constants
                             InitVfpPrecision (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);

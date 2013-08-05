@@ -1637,7 +1637,7 @@ UBOOL ArrayIndexValidZilde_EM
 
         defstop
             break;
-    } // End FOR
+    } // End FOR/SWITCH
 
     return TRUE;
 
@@ -2222,7 +2222,8 @@ UBOOL ArrayIndexSetNamImmed_EM
                lpMemRht = NULL,     // Ptr to right arg global memory
                lpMemRes = NULL;     // Ptr to result        ...
     UBOOL      bRet = TRUE;         // TRUE iff the result is valid
-    APLSTYPE   aplTypeRht;          // Right arg storage type
+    APLSTYPE   aplTypeRht,          // Right arg storage type
+               aplTypeLst;          // List  ...
     APLNELM    aplNELMLst,          // List arg NELM
                aplNELMRht;          // Right arg NELM
     APLRANK    aplRankNam,          // Name arg rank
@@ -2278,6 +2279,9 @@ UBOOL ArrayIndexSetNamImmed_EM
         // Lock the memory to get a ptr to it
         lpMemLst = MyGlobalLock (hGlbLst);
 
+        // Get the storage type
+        aplTypeLst = ((LPVARARRAY_HEADER) lpMemLst)->ArrType;
+
         // Check for LENGTH ERROR
         if (!IsSingleton (aplNELMLst) || !IsSingleton (aplNELMRht))
         {
@@ -2297,6 +2301,9 @@ UBOOL ArrayIndexSetNamImmed_EM
             lpMemLst = VarArrayDataFmBase (lpMemLst);
         } // End IF/ELSE
 
+        // If the left arg is not nested, ...
+        if (!IsNested (aplTypeLst))
+            goto RANK_EXIT;
         // Confirm that the list of indices is an array of {zilde}s
         if (!ArrayIndexValidZilde_EM (lpMemLst, aplNELMLst, lptkFunc))
             goto ERROR_EXIT;

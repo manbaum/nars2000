@@ -184,6 +184,7 @@ Welcome to NARS2000</h1>
           and (<span class="APL">L{pi}R</span>) (Number Theoretic)</li>
         <li>Primitive dyadic function (<span class="APL">L..R</span>) (Sequence)</li>
         <li>Primitive dyadic operator quad colon (<span class="APL">f{variant}b R</span> and <span class="APL">L f{variant}b R</span>) (Variant)</li>
+        <li>Anonymous Functions/Operators:  one-line grouping of one or more statements all enclosed in braces such as <span class="APL">{(+{slashbar}{omega}){divide}{mismatch}{omega}}</span></li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}DT</span> (Distribution Type)</li>
@@ -282,8 +283,6 @@ Welcome to NARS2000</h1>
   <ul>
     <li>User-defined function/operator inverse entry point
       (<span class="APL">{quad}INV:</span>)</li>
-    <li>Dynamic functions (e.g.,
-      <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
     <li>Primitive functions and operators user extensible via user-defined APL functions</li>
     <li>Primitive dyadic function down tack (<span class="APL">L{downtackjot}R</span>) with character left argument
       (Format By Example)</li>

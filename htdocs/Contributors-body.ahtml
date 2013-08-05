@@ -112,10 +112,12 @@ Contributors</h1>
     <li>The idea for <a class="linkleft" href="http://wiki.nars2000.org/index.php/Trains">Trains</a>
       was taken from the designers of <a class="linkleft" href="http://www.jsoftware.com/help/dictionary/dictf.htm">J</a>.</li>
 
+    <li>The idea for grouping of rows in width-limited output came from Larry Breed in a private communication sometime in the early 1980s.</li>
+
     <li>This project benefited greatly by discussions (across several decades) with some
       of the many great APL implementors and designers who went
-      before me.  To name but a few:  Larry Breed, Gene McDonnell,
-      Jim Brown, Bob Bernecky, Jim Ryan, etc.
+      before me.  To name but a few:  Ken Iverson, Larry Breed, Gene McDonnell,
+      Jim Brown, Bob Bernecky, Jim Ryan, John Scholes, etc.
     </li>
   </ul>
 </div>
@@ -135,6 +137,7 @@ Contributors</h1>
   <ul>
     <li>Dave Durgee was especially helpful in testing the early beta release of NARS,
       particularly with PC/3270 translations.</li>
+    <li>Paul Robinson greatly improved the Wiki with numerous excellent design ideas.</li>
   </ul>
 
   <hr />

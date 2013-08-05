@@ -2107,6 +2107,7 @@ UBOOL InitFcnSTEs
                     break;
 
                 case TKT_FCNARRAY:
+                case TKT_FCNAFO:
                 {
                     HGLOBAL      hGlbDfnHdr;
                     LPDFN_HEADER lpMemDfnHdr;
@@ -2136,7 +2137,7 @@ UBOOL InitFcnSTEs
                     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
                     break;
-                } // End TKT_FCNARRAY
+                } // End TKT_FCNARRAY/TKT_FCNAFO
 
                 defstop
                     DbgStop ();     // We should never get here

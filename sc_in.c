@@ -56,6 +56,7 @@ UBOOL CmdIn_EM
                   hAtfView = NULL;          // Handle from MapViewOfFile
     LPUCHAR       lpAtfView;                // Ptr to file contents
     LPWCHAR       lpwszTemp,                // Ptr to temporary storage
+                  lpwszOrigTemp,            // Original lpMemPTD->lpwszTemp
                   lpwszFormat;              // Ptr to format area
     DWORD         dwAtfFileSize;            // Byte size of .atf file
     WCHAR         wszTemp[1024];            // Temporary storage for message strings
@@ -75,11 +76,11 @@ UBOOL CmdIn_EM
     lpMemPTD = GetMemPTD ();
 
     // Get ptr to temporary storage & maximum size
-    lpwszTemp   = lpMemPTD->lpwszTemp;
-    CHECK_TEMP_OPEN
-    uMaxSize    = lpMemPTD->uTempMaxSize;
-    hWndSM      = lpMemPTD->hWndSM;
-    lpwszFormat = lpMemPTD->lpwszFormat;
+    lpwszOrigTemp =
+    lpwszTemp     = lpMemPTD->lpwszTemp;
+    uMaxSize      = lpMemPTD->uTempMaxSize;
+    hWndSM        = lpMemPTD->hWndSM;
+    lpwszFormat   = lpMemPTD->lpwszFormat;
 
     // Get the Edit Ctrl window handle
     hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
@@ -197,8 +198,17 @@ UBOOL CmdIn_EM
         // Save the starting record #
         uOldRecNo = uRecNo + 1;
 
-        // Copy and translate the next record
+        // Restore the original ptr
+        lpMemPTD->lpwszTemp = lpwszOrigTemp;
+        CHECK_TEMP_OPEN
+
+        // Copy and translate the next record into lpwszTemp
         lpAtfView = CmdInCopyAndTranslate_EM (lpAtfView, &dwAtfFileSize, lpwszTemp, uMaxSize, &uLen, &ftCreation, &uRecNo, bIsEBCDIC);
+
+        // Protect the text
+        lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);
+        EXIT_TEMP_OPEN
+
         if (!lpAtfView)
             goto ERROR_EXIT;
 
@@ -284,7 +294,8 @@ NORMAL_EXIT:
         CloseHandle (hAtfFile); hAtfFile = NULL;
     } // End IF
 
-    EXIT_TEMP_OPEN
+    // Restore the original ptr
+    lpMemPTD->lpwszTemp = lpwszOrigTemp;
 
     return bRet;
 } // End CmdIn_EM

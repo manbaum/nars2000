@@ -377,11 +377,12 @@ HGLOBAL SISAfo
     lpSISCur = lpMemPTD->lpSISCur;
 
     // Peel back to the first non-Exec layer
-    while (lpSISCur->DfnType EQ DFNTYPE_EXEC)
+    while (lpSISCur && lpSISCur->DfnType EQ DFNTYPE_EXEC)
        lpSISCur = lpSISCur->lpSISPrv;
 
     // If it's a FCN/OP1/OP2, ...
-    if ((lpSISCur->DfnType EQ DFNTYPE_OP1
+    if (lpSISCur
+     && (lpSISCur->DfnType EQ DFNTYPE_OP1
       || lpSISCur->DfnType EQ DFNTYPE_OP2
       || lpSISCur->DfnType EQ DFNTYPE_FCN)
      && lpSISCur->bAFO)

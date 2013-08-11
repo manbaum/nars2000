@@ -284,6 +284,7 @@ void FormatSTE
      {0x00200000,  L" DfnSysLabel"},
      {0x00400000,  L" DfnAxis"    },
      {0x00800000,  L" FcnDir"     },
+     {0x01000000,  L" StdSysName" },
     };
 
 // The # rows in the above table

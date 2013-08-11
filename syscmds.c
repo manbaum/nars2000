@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -94,6 +94,27 @@ void IncorrectCommand
 {
     ReplaceLastLineCRPmt (ERRMSG_INCORRECT_COMMAND APPEND_NAME);
 } // End IncorrectCommand
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $IncorrectCommandSwitch
+//
+//  Signal an incorrect command switch
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- IncorrectCommandSwitch"
+#else
+#define APPEND_NAME
+#endif
+
+void IncorrectCommandSwitch
+    (void)
+
+{
+    ReplaceLastLineCRPmt (ERRMSG_INCORRECT_COMMAND_SWITCH APPEND_NAME);
+} // End IncorrectCommandSwitch
 #undef  APPEND_NAME
 
 

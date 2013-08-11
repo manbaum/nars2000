@@ -554,5 +554,56 @@ UBOOL CheckCommandLine
 
 
 //***************************************************************************
+//  $SplitSwitches
+//
+//  Split out switches of the form -name=value
+//***************************************************************************
+
+LPWCHAR SplitSwitches
+    (LPWCHAR lpwszTail,         // Ptr to tail of the command line
+                                //   (everything after the command name)
+     LPUINT  lpuInt)            // Ptr to # switches on the command line
+
+{
+    LPWCHAR lpwszCmd = NULL,    // Ptr to 1st switch (if any)
+            lpwszNxt;           // Temporary ptr
+    WCHAR   wcTmp;              // ...       char
+
+    // Initialize the switch count
+    *lpuInt = 0;
+
+    // Skip over the Drive:\Path\filename.ext
+    lpwszCmd = SkipToCharDQW (lpwszTail, L' ');
+    wcTmp = *lpwszCmd; *lpwszCmd++ = WC_EOS; lpwszNxt = lpwszCmd;
+
+    if (wcTmp)
+    while (TRUE)
+    {
+        // Move the switches down over any leading blanks
+        while (IsWhiteW (lpwszNxt[0]))
+            MoveMemory (lpwszNxt, &lpwszNxt[1], (1 + lstrlenW (lpwszNxt)) * sizeof (lpwszNxt[0]));
+
+        // Count the # switches
+        if (lpwszNxt[0] EQ L'-'
+         || lpwszNxt[0] EQ L'/')
+            // Count in another switch
+            (*lpuInt)++;
+        else
+            break;
+
+        // Skip over the switch
+        lpwszNxt = SkipToCharDQW (lpwszNxt, L' ');
+
+        // Terminate the switch and skip over it
+        wcTmp = *lpwszNxt; *lpwszNxt++ = WC_EOS;
+        if (wcTmp EQ WC_EOS)
+            break;
+    } // End IF/WHILE
+
+    return lpwszCmd;
+} // End SplitSwitches
+
+
+//***************************************************************************
 //  End of File: sc_common.c
 //***************************************************************************

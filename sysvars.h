@@ -148,7 +148,8 @@ typedef struct tagSYSNAME
 {
     LPWCHAR     lpwszName;      // Ptr to the name
     UINT        uValence;       // For system functions, Niladic(0), All others (1)
-    UBOOL       bSysVar;        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
+    UBOOL       bSysVar,        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
+                bStdSysName;    // TRUE iff this name is in the Extended APL Standard
     LPPRIMFNS   lpNameFcn;      // Ptr to execution routine
     SYS_VARS    sysVarIndex;    // Value of each System Var (0 = Unknown)
 } SYSNAME, *LPSYSNAME;

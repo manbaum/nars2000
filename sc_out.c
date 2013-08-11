@@ -75,17 +75,20 @@ UBOOL CmdOut_EM
                  wszExt  [_MAX_EXT];
     LPWCHAR      lpwszTemp,                 // Ptr to temporary storage
                  lpwTemp,                   // Ptr to temporary
+                 lpwszSwitch,               // Ptr to list of switches
                  lpwGlbName;                // Ptr to SymEntry's name's global memory
     char         szTemp[REC_LEN + EOL_LEN]; // Save area for line output
     UINT         uLen;                      // Current length of szTemp
     FILE        *fStream;                   // Ptr to file stream
-    UBOOL        bRet = FALSE;              // TRUE iff the result is valid
+    UBOOL        bRet = FALSE,              // TRUE iff the result is valid
+                 bStdSysName = FALSE;       // TRUE iff we should save APL Standard names only
     LPSYMENTRY   lpSymEntry,                // Ptr to STE
                  lpSymTabNext;              // ...
     APLNELM      aplNELMRes;                // Length of each transfer form
     FILETIME     ftCreation;                // Save area for function timestamp
     SYSTEMTIME   systemTime;                // Current system (UTC) time
-    UINT         uCnt;                      // Loop counter
+    UINT         uCnt,                      // Loop counter
+                 uSwitchCnt;                // # switches on the command line
     LPCHAR       lpTrees;                   // Ptr to Trees poem
     VARS_TEMP_OPEN
 
@@ -99,6 +102,28 @@ UBOOL CmdOut_EM
     // Check for empty string
     if (lpwszTail[0] EQ WC_EOS)
         goto INCORRECT_COMMAND_EXIT;
+
+    // Split off the filename from (optional) switches
+    lpwszSwitch = SplitSwitches (lpwszTail, &uSwitchCnt);
+
+    // If there are any switches, ...
+    while (uSwitchCnt--)
+    {
+        // Validate the switches
+#define SWITCH      L"-std"
+        if (lstrcmpW (lpwszSwitch, SWITCH) EQ 0)
+        {
+            bStdSysName = TRUE;
+            lpwszSwitch += strcountof (SWITCH);
+#undef  SWITCH
+            if (*lpwszSwitch++ EQ WC_EOS)
+                continue;
+        } else
+        {
+        } // End IF/ELSE
+
+        goto INCORRECT_COMMAND_SWITCH_EXIT;
+    } // End WHILE
 
     // Split out the drive and path from the module filename
     _wsplitpath (lpwszTail, wszDrive, wszDir, wszFname, wszExt);
@@ -141,10 +166,13 @@ UBOOL CmdOut_EM
             while (lpSymEntry->stPrvEntry)
                 lpSymEntry = lpSymEntry->stPrvEntry;
 
-            if (lpSymEntry->stHshEntry->htGlbName           // Must have a name (not steZero, etc.),
-             && lpSymEntry->stFlags.Value                   // and have a value,
-             && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO  // and not be a Magic Function/Operator,
-             && lpSymEntry->stFlags.ObjName NE OBJNAME_LOD) // and not be a )LOAD HGLOBAL
+            if (lpSymEntry->stHshEntry->htGlbName                   // Must have a name (not steZero, etc.),
+             && lpSymEntry->stFlags.Value                           // and have a value,
+             && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO          // and not be a Magic Function/Operator,
+             && lpSymEntry->stFlags.ObjName NE OBJNAME_LOD          // and not be a )LOAD HGLOBAL
+             && (!bStdSysName                                       // If bStdSysName
+              || (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)       // and it's a SysName
+              || lpSymEntry->stFlags.StdSysName))                   //     it must be a StdSysName
             {
                 // Copy ptr to increment
                 lpwTemp = lpwszTemp;
@@ -291,6 +319,11 @@ UBOOL CmdOut_EM
 
 INCORRECT_COMMAND_EXIT:
     IncorrectCommand ();
+
+    goto ERROR_EXIT;
+
+INCORRECT_COMMAND_SWITCH_EXIT:
+    IncorrectCommandSwitch ();
 
     goto ERROR_EXIT;
 

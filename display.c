@@ -2228,11 +2228,18 @@ LPWCHAR DisplayTransferVar2
      LPSYMENTRY lpSymEntry)                 // Ptr to SYMENTRY of the var to display
 
 {
+    LPWCHAR lpwszOrig = lpwszTemp;          // Save the original ptr
+
     // Copy the var's name
     lpwszTemp =
       CopySteName (lpwszTemp,               // Ptr to result global memory
                    lpSymEntry,              // Ptr to function symbol table entry
                    NULL);                   // Ptr to name length (may be NULL)
+    // If it's a System Var, ...
+    if (lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
+        // Convert to upper case as some .atf interpreters don't handle lowercase well
+        CharUpperBuffW (lpwszOrig, (DWORD) (lpwszTemp - lpwszOrig));
+
     // Append a left arrow
     *lpwszTemp++ = UTF16_LEFTARROW;
 

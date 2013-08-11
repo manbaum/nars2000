@@ -28,6 +28,7 @@
 #define ERRMSG_FORMAT_ERROR                     L"FORMAT ERROR"
 #define ERRMSG_HASH_TABLE_FULL                  L"HASH TABLE FULL"
 #define ERRMSG_INCORRECT_COMMAND                L"INCORRECT COMMAND"
+#define ERRMSG_INCORRECT_COMMAND_SWITCH         L"INCORRECT COMMAND SWITCH"
 #define ERRMSG_INDEX_ERROR                      L"INDEX ERROR"
 #define ERRMSG_LENGTH_ERROR                     L"LENGTH ERROR"
 #define ERRMSG_LIMIT_ERROR                      L"LIMIT ERROR"

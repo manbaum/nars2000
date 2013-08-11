@@ -306,7 +306,8 @@ typedef struct tagSTFLAGS
          DfnSysLabel:1,     // 00200000:  User-defined function/operator system label (valid only if .Value is set)
          DfnAxis:1,         // 00400000:  User-defined function/operator accepts axis value
          FcnDir:1,          // 00800000:  Direct function/operator               (stNameFcn is valid)
-         :8;                // FF000000:  Available bits
+         StdSysName:1,      // 01000000:  Is a standard System Name
+         :7;                // FE000000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
 // N.B.:  Whenever changing the above struct (STFLAGS),

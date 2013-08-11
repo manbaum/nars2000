@@ -30,88 +30,88 @@
 #define SYSVAR      9
 
 SYSNAME aSystemNames[] =
-{ // Name                       Valence       Var?   Exec Routine          SYS_VARS
-    {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , NULL                , SYSVAR_ALX     },    // Attention Latent Expression
-    {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , NULL                , SYSVAR_CT      },    // Comparison Tolerance
-    {WS_UTF16_QUAD L"dm"       , SYSVAR,      TRUE , NULL                , SYSVAR_DM      },    // Diagnostic Message (Read-only)
-    {WS_UTF16_QUAD L"dt"       , SYSVAR,      TRUE , NULL                , SYSVAR_DT      },    // Distribution Type
-    {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , NULL                , SYSVAR_ELX     },    // Error Latent Expression
-    {WS_UTF16_QUAD L"fc"       , SYSVAR,      TRUE , NULL                , SYSVAR_FC      },    // Format Control
-    {WS_UTF16_QUAD L"feature"  , SYSVAR,      TRUE , NULL                , SYSVAR_FEATURE },    // Feature Control
-    {WS_UTF16_QUAD L"fpc"      , SYSVAR,      TRUE , NULL                , SYSVAR_FPC     },    // Floating Point Control
-    {WS_UTF16_QUAD L"ic"       , SYSVAR,      TRUE , NULL                , SYSVAR_IC      },    // Indeterminate Control
-    {WS_UTF16_QUAD L"io"       , SYSVAR,      TRUE , NULL                , SYSVAR_IO      },    // Index Origin
-    {WS_UTF16_QUAD L"lx"       , SYSVAR,      TRUE , NULL                , SYSVAR_LX      },    // Latent Expression
-    {WS_UTF16_QUAD L"pp"       , SYSVAR,      TRUE , NULL                , SYSVAR_PP      },    // Print Precision
-    {WS_UTF16_QUAD L"pr"       , SYSVAR,      TRUE , NULL                , SYSVAR_PR      },    // Prompt Replacement
-    {WS_UTF16_QUAD L"pw"       , SYSVAR,      TRUE , NULL                , SYSVAR_PW      },    // Print Width
-    {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , NULL                , SYSVAR_RL      },    // Random Link
-    {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL                , SYSVAR_SA      },    // Stop Action
-    {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL                , SYSVAR_WSID    },    // Workspace Identifier
-    {WS_UTF16_QUAD L"z"        , SYSVAR,      TRUE , NULL                , SYSVAR_Z       },    // Temporary result used in 2 []TF
-    {WS_UTF16_QUAD SYSLBL_ID   , SYSLBL,      TRUE , NULL                , 0              },    // User-defined function/operator entry point for []ID  = identity
-    {WS_UTF16_QUAD SYSLBL_INV  , SYSLBL,      TRUE , NULL                , 0              },    // ...                                            []INV = inverse
-    {WS_UTF16_QUAD SYSLBL_MS   , SYSLBL,      TRUE , NULL                , 0              },    // ...                                            []MS  = multiset
-    {WS_UTF16_QUAD SYSLBL_PRO  , SYSLBL,      TRUE , NULL                , 0              },    // ...                                            []PRO = prototype
-    {WS_UTF16_QUAD SYSLBL_SGL  , SYSLBL,      TRUE , NULL                , 0              },    // ...                                            []SGL = singleton
+{ // Name                       Valence       Var?   Std?   Exec Routine          SYS_VARS
+    {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_ALX     },    // Attention Latent Expression
+    {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , TRUE , NULL                , SYSVAR_CT      },    // Comparison Tolerance
+    {WS_UTF16_QUAD L"dm"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_DM      },    // Diagnostic Message (Read-only)
+    {WS_UTF16_QUAD L"dt"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_DT      },    // Distribution Type
+    {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_ELX     },    // Error Latent Expression
+    {WS_UTF16_QUAD L"fc"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_FC      },    // Format Control
+    {WS_UTF16_QUAD L"feature"  , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_FEATURE },    // Feature Control
+    {WS_UTF16_QUAD L"fpc"      , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_FPC     },    // Floating Point Control
+    {WS_UTF16_QUAD L"ic"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_IC      },    // Indeterminate Control
+    {WS_UTF16_QUAD L"io"       , SYSVAR,      TRUE , TRUE , NULL                , SYSVAR_IO      },    // Index Origin
+    {WS_UTF16_QUAD L"lx"       , SYSVAR,      TRUE , TRUE , NULL                , SYSVAR_LX      },    // Latent Expression
+    {WS_UTF16_QUAD L"pp"       , SYSVAR,      TRUE , TRUE , NULL                , SYSVAR_PP      },    // Print Precision
+    {WS_UTF16_QUAD L"pr"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_PR      },    // Prompt Replacement
+    {WS_UTF16_QUAD L"pw"       , SYSVAR,      TRUE , TRUE , NULL                , SYSVAR_PW      },    // Print Width
+    {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , TRUE , NULL                , SYSVAR_RL      },    // Random Link
+    {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_SA      },    // Stop Action
+    {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , TRUE , NULL                , SYSVAR_WSID    },    // Workspace Identifier
+    {WS_UTF16_QUAD L"z"        , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_Z       },    // Temporary result used in 2 []TF
+    {WS_UTF16_QUAD SYSLBL_ID   , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // User-defined function/operator entry point for []ID  = identity
+    {WS_UTF16_QUAD SYSLBL_INV  , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []INV = inverse
+    {WS_UTF16_QUAD SYSLBL_MS   , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []MS  = multiset
+    {WS_UTF16_QUAD SYSLBL_PRO  , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []PRO = prototype
+    {WS_UTF16_QUAD SYSLBL_SGL  , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []SGL = singleton
 
 // Niladic system functions
-    {WS_UTF16_QUAD L"a"        ,      0,      FALSE, SysFnA_EM_YY        , 0              },    // Alphabet
-    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM_YY       , 0              },    // Atomic Vector
-    {WS_UTF16_QUAD L"em"       ,      0,      FALSE, SysFnEM_EM_YY       , 0              },    // Event Message
-    {WS_UTF16_QUAD L"et"       ,      0,      FALSE, SysFnET_EM_YY       , 0              },    // Event Type
-    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM_YY       , 0              },    // Line Counter
-    {WS_UTF16_QUAD L"nnames"   ,      0,      FALSE, SysFnNNAMES_EM_YY   , 0              },    // Names of Open Native Files
-    {WS_UTF16_QUAD L"nnums"    ,      0,      FALSE, SysFnNNUMS_EM_YY    , 0              },    // Tie Numbers of Open Native Files
-////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM_YY       , 0              },    // State Indicator
-////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, SysFnSINL_EM_YY     , 0              },    // State Indicator w/Name List
-    {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM_YY    , 0              },    // System Identifier
-    {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, SysFnSYSVER_EM_YY   , 0              },    // System Version
-    {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM_YY       , 0              },    // Terminal Control Characters
-    {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, SysFnTCBEL_EM_YY    , 0              },    // Terminal Control Character, Bell
-    {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, SysFnTCBS_EM_YY     , 0              },    // Terminal Control Character, Backspace
-    {WS_UTF16_QUAD L"tcesc"    ,      0,      FALSE, SysFnTCESC_EM_YY    , 0              },    // Terminal Control Character, Escape
-    {WS_UTF16_QUAD L"tcff"     ,      0,      FALSE, SysFnTCFF_EM_YY     , 0              },    // Terminal Control Character, Form Feed
-    {WS_UTF16_QUAD L"tcht"     ,      0,      FALSE, SysFnTCHT_EM_YY     , 0              },    // Terminal Control Character, Horizontal Tab
-    {WS_UTF16_QUAD L"tclf"     ,      0,      FALSE, SysFnTCLF_EM_YY     , 0              },    // Terminal Control Character, Line Feed
-    {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM_YY     , 0              },    // Terminal Control Character, New Line
-    {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM_YY    , 0              },    // Terminal Control Character, Null
-    {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM_YY       , 0              },    // Time Stamp
-    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY       , 0              },    // Workspace Available
+    {WS_UTF16_QUAD L"a"        ,      0,      FALSE, FALSE, SysFnA_EM_YY        , 0              },    // Alphabet
+    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, TRUE , SysFnAV_EM_YY       , 0              },    // Atomic Vector
+    {WS_UTF16_QUAD L"em"       ,      0,      FALSE, TRUE , SysFnEM_EM_YY       , 0              },    // Event Message
+    {WS_UTF16_QUAD L"et"       ,      0,      FALSE, TRUE , SysFnET_EM_YY       , 0              },    // Event Type
+    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, TRUE , SysFnLC_EM_YY       , 0              },    // Line Counter
+    {WS_UTF16_QUAD L"nnames"   ,      0,      FALSE, FALSE, SysFnNNAMES_EM_YY   , 0              },    // Names of Open Native Files
+    {WS_UTF16_QUAD L"nnums"    ,      0,      FALSE, FALSE, SysFnNNUMS_EM_YY    , 0              },    // Tie Numbers of Open Native Files
+////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, FALSE, SysFnSI_EM_YY       , 0              },    // State Indicator
+////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, FALSE, SysFnSINL_EM_YY     , 0              },    // State Indicator w/Name List
+    {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, FALSE, SysFnSYSID_EM_YY    , 0              },    // System Identifier
+    {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, FALSE, SysFnSYSVER_EM_YY   , 0              },    // System Version
+    {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, TRUE , SysFnTC_EM_YY       , 0              },    // Terminal Control Characters
+    {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, FALSE, SysFnTCBEL_EM_YY    , 0              },    // Terminal Control Character, Bell
+    {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, FALSE, SysFnTCBS_EM_YY     , 0              },    // Terminal Control Character, Backspace
+    {WS_UTF16_QUAD L"tcesc"    ,      0,      FALSE, FALSE, SysFnTCESC_EM_YY    , 0              },    // Terminal Control Character, Escape
+    {WS_UTF16_QUAD L"tcff"     ,      0,      FALSE, FALSE, SysFnTCFF_EM_YY     , 0              },    // Terminal Control Character, Form Feed
+    {WS_UTF16_QUAD L"tcht"     ,      0,      FALSE, FALSE, SysFnTCHT_EM_YY     , 0              },    // Terminal Control Character, Horizontal Tab
+    {WS_UTF16_QUAD L"tclf"     ,      0,      FALSE, FALSE, SysFnTCLF_EM_YY     , 0              },    // Terminal Control Character, Line Feed
+    {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, FALSE, SysFnTCNL_EM_YY     , 0              },    // Terminal Control Character, New Line
+    {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, FALSE, SysFnTCNUL_EM_YY    , 0              },    // Terminal Control Character, Null
+    {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, TRUE , SysFnTS_EM_YY       , 0              },    // Time Stamp
+    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, TRUE , SysFnWA_EM_YY       , 0              },    // Workspace Available
 
 // Monadic or dyadic system functions
-    {WS_UTF16_QUAD L"at"       ,      1,      FALSE, SysFnAT_EM_YY       , 0              },    // Attributes
-    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM_YY       , 0              },    // Canonical Representation
-    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM_YY       , 0              },    // Delay Execution
-    {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM_YY       , 0              },    // Data Representation
-    {WS_UTF16_QUAD L"ea"       ,      1,      FALSE, SysFnEA_EM_YY       , 0              },    // Execute Alternate
-    {WS_UTF16_QUAD L"ec"       ,      1,      FALSE, SysFnEC_EM_YY       , 0              },    // Execute Controlled
-    {WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM_YY    , 0              },    // Signal Error
-    {WS_UTF16_QUAD L"es"       ,      1,      FALSE, SysFnES_EM_YY       , 0              },    // Event Simulate
-    {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM_YY       , 0              },    // Expunge Names
-////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM_YY       , 0              },    // Format Items
-    {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM_YY      , 0              },    // Format
-    {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY       , 0              },    // Function Fix
-    {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY       , 0              },    // Monitor Function
-    {WS_UTF16_QUAD L"nappend"  ,      1,      FALSE, SysFnNAPPEND_EM_YY  , 0              },    // Append Data To An Open Native File
-    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM_YY       , 0              },    // Name Classification
-    {WS_UTF16_QUAD L"ncreate"  ,      1,      FALSE, SysFnNCREATE_EM_YY  , 0              },    // Create And Open A Native File
-    {WS_UTF16_QUAD L"nerase"   ,      1,      FALSE, SysFnNERASE_EM_YY   , 0              },    // Erase An Open Native File
-    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM_YY       , 0              },    // Name List
-    {WS_UTF16_QUAD L"nlock"    ,      1,      FALSE, SysFnNLOCK_EM_YY    , 0              },    // Lock An Open Native File
-    {WS_UTF16_QUAD L"nread"    ,      1,      FALSE, SysFnNREAD_EM_YY    , 0              },    // Read Data From An Open Native File
-    {WS_UTF16_QUAD L"nrename"  ,      1,      FALSE, SysFnNRENAME_EM_YY  , 0              },    // Rename An Open Native File
-    {WS_UTF16_QUAD L"nreplace" ,      1,      FALSE, SysFnNREPLACE_EM_YY , 0              },    // Replace Data In An Open Native File
-    {WS_UTF16_QUAD L"nresize"  ,      1,      FALSE, SysFnNRESIZE_EM_YY  , 0              },    // Resize An Open Native File
-    {WS_UTF16_QUAD L"nsize"    ,      1,      FALSE, SysFnNSIZE_EM_YY    , 0              },    // Get The Size Of An Open Native File
-    {WS_UTF16_QUAD L"ntie"     ,      1,      FALSE, SysFnNTIE_EM_YY     , 0              },    // Open A Native File
-    {WS_UTF16_QUAD L"nuntie"   ,      1,      FALSE, SysFnNUNTIE_EM_YY   , 0              },    // Close A Native File
-////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM_YY     , 0              },    // Manage Stop Points
-    {WS_UTF16_QUAD L"tf"       ,      1,      FALSE, SysFnTF_EM_YY       , 0              },    // Transfer Form
-////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, SysFnTRACE_EM_YY    , 0              },    // Manage Trace Points
-    {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, SysFnUCS_EM_YY      , 0              },    // Universal Character Set
-////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, SysFnVI_EM          , 0              },    // Verify Items
-    {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM_YY       , 0              },    // Vector Representation of a Function
+    {WS_UTF16_QUAD L"at"       ,      1,      FALSE, FALSE, SysFnAT_EM_YY       , 0              },    // Attributes
+    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, TRUE , SysFnCR_EM_YY       , 0              },    // Canonical Representation
+    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, TRUE , SysFnDL_EM_YY       , 0              },    // Delay Execution
+    {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, FALSE, SysFnDR_EM_YY       , 0              },    // Data Representation
+    {WS_UTF16_QUAD L"ea"       ,      1,      FALSE, TRUE , SysFnEA_EM_YY       , 0              },    // Execute Alternate
+    {WS_UTF16_QUAD L"ec"       ,      1,      FALSE, TRUE , SysFnEC_EM_YY       , 0              },    // Execute Controlled
+    {WS_UTF16_QUAD L"error"    ,      1,      FALSE, FALSE, SysFnERROR_EM_YY    , 0              },    // Signal Error
+    {WS_UTF16_QUAD L"es"       ,      1,      FALSE, TRUE , SysFnES_EM_YY       , 0              },    // Event Simulate
+    {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, TRUE , SysFnEX_EM_YY       , 0              },    // Expunge Names
+////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, FALSE, SysFnFI_EM_YY       , 0              },    // Format Items
+    {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, FALSE, SysFnFMT_EM_YY      , 0              },    // Format
+    {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, TRUE , SysFnFX_EM_YY       , 0              },    // Function Fix
+    {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, FALSE, SysFnMF_EM_YY       , 0              },    // Monitor Function
+    {WS_UTF16_QUAD L"nappend"  ,      1,      FALSE, FALSE, SysFnNAPPEND_EM_YY  , 0              },    // Append Data To An Open Native File
+    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, TRUE , SysFnNC_EM_YY       , 0              },    // Name Classification
+    {WS_UTF16_QUAD L"ncreate"  ,      1,      FALSE, FALSE, SysFnNCREATE_EM_YY  , 0              },    // Create And Open A Native File
+    {WS_UTF16_QUAD L"nerase"   ,      1,      FALSE, FALSE, SysFnNERASE_EM_YY   , 0              },    // Erase An Open Native File
+    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, TRUE , SysFnNL_EM_YY       , 0              },    // Name List
+    {WS_UTF16_QUAD L"nlock"    ,      1,      FALSE, FALSE, SysFnNLOCK_EM_YY    , 0              },    // Lock An Open Native File
+    {WS_UTF16_QUAD L"nread"    ,      1,      FALSE, FALSE, SysFnNREAD_EM_YY    , 0              },    // Read Data From An Open Native File
+    {WS_UTF16_QUAD L"nrename"  ,      1,      FALSE, FALSE, SysFnNRENAME_EM_YY  , 0              },    // Rename An Open Native File
+    {WS_UTF16_QUAD L"nreplace" ,      1,      FALSE, FALSE, SysFnNREPLACE_EM_YY , 0              },    // Replace Data In An Open Native File
+    {WS_UTF16_QUAD L"nresize"  ,      1,      FALSE, FALSE, SysFnNRESIZE_EM_YY  , 0              },    // Resize An Open Native File
+    {WS_UTF16_QUAD L"nsize"    ,      1,      FALSE, FALSE, SysFnNSIZE_EM_YY    , 0              },    // Get The Size Of An Open Native File
+    {WS_UTF16_QUAD L"ntie"     ,      1,      FALSE, FALSE, SysFnNTIE_EM_YY     , 0              },    // Open A Native File
+    {WS_UTF16_QUAD L"nuntie"   ,      1,      FALSE, FALSE, SysFnNUNTIE_EM_YY   , 0              },    // Close A Native File
+////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, TRUE , SysFnSTOP_EM_YY     , 0              },    // Manage Stop Points
+    {WS_UTF16_QUAD L"tf"       ,      1,      FALSE, TRUE , SysFnTF_EM_YY       , 0              },    // Transfer Form
+////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, TRUE , SysFnTRACE_EM_YY    , 0              },    // Manage Trace Points
+    {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, FALSE, SysFnUCS_EM_YY      , 0              },    // Universal Character Set
+////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, FALSE, SysFnVI_EM          , 0              },    // Verify Items
+    {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, FALSE, SysFnVR_EM_YY       , 0              },    // Vector Representation of a Function
 };
 
 // The # rows in the above table
@@ -407,6 +407,7 @@ UBOOL SymTabAppendOneSysName_EM
     {
         stFlags.stNameType  = NAMETYPE_VAR;
         stFlags.DfnSysLabel = (lpSysName->uValence EQ SYSLBL);
+        stFlags.StdSysName  = lpSysName->bStdSysName;
     } else
     {
         Assert (IsBooleanValue (lpSysName->uValence));

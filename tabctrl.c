@@ -1467,7 +1467,9 @@ LPAPLCHAR PointToWsName
     lstrcpyW (lpwszGlbTemp, L"  CLEAR WS");
 
     // If the []WSID STE has been setup, ...
-    if (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID])
+    if (lpMemPTD->lphtsPTD
+     && lpMemPTD->lphtsPTD->lpSymQuad
+     && lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID])
     {
         APLNELM aplNELMWSID;    // []WSID NELM
         APLRANK aplRankWSID;    // []WSID rank

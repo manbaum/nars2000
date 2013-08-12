@@ -1,6 +1,18 @@
 Version 0.4.1.xx consists of the following Builds:
 
 
+Build #1142 -- Version 0.4.1.xx
+-------------------------------
+
+* Fix Timing Bug When Loading A Workspace
+
+Directory trunk:
+
+TABCTRL.C:
+  In <PointToWsName>, check for validity of all parts of <lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]>
+    before referencing it.
+
+
 Build #1141 -- Version 0.4.1.xx
 -------------------------------
 

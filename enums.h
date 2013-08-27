@@ -225,6 +225,26 @@ typedef enum tagTABSTATE        // Table State for Nth and Number of Primes
 } TABSTATE, *LPTABSTATE;
 
 
+typedef enum tagNUMTHEORY       // Number theory values (left arg to dyadic Pi)
+{
+    NUMTHEORY_ISPRIME   =  0  ,     // 00:  TRUE iff the given # is prime
+    NUMTHEORY_NEXTPRIME =  1  ,     // 01:  Next prime after a given #
+    NUMTHEORY_PREVPRIME = -1  ,     //-01:  Prev prime before a given #
+    NUMTHEORY_NUMPRIMES =  2  ,     // 02:  # primes <= a given #
+    NUMTHEORY_NTHPRIME  = -2  ,     //-02:  Nth prime
+
+    NUMTHEORY_DIVCNT    = 10  ,     // 0A:  Divisor count function
+    NUMTHEORY_DIVSUM    = 11  ,     // 0B:  Divisor sum function
+    NUMTHEORY_MOBIUS    = 12  ,     // 0C:  Mobius function
+    NUMTHEORY_TOTIENT   = 13  ,     // 0D:  Totient function
+
+    NUMTHEORY_FACTOR    = 20  ,     // 14:  Factor function (the # is arbitrary and may be changed)
+} NUMTHEORY, *LPNUMTHEORY;
+
+#define NUMTHEORY_MIN       -2      // Minimum valid index
+#define NUMTHEORY_MAX       13      // Maximum ...
+
+
 typedef enum tagNFNS_NERR       // Common code for []NERASE, []NRENAME, and []NRESIZE
 {
     COM_NERASE = 0,             // 0:  []NERASE

@@ -27,25 +27,6 @@
 #include <ecm.h>
 
 
-typedef enum tagNUMTHEORY
-{
-    NUMTHEORY_ISPRIME   =  0  ,     // 00:  TRUE iff the given # is prime
-    NUMTHEORY_NEXTPRIME =  1  ,     // 01:  Next prime after a given #
-    NUMTHEORY_PREVPRIME = -1  ,     //-01:  Prev prime before a given #
-    NUMTHEORY_NUMPRIMES =  2  ,     // 02:  # primes <= a given #
-    NUMTHEORY_NTHPRIME  = -2  ,     //-02:  Nth prime
-
-    NUMTHEORY_DIVCNT    = 10  ,     // 0A:  Divisor count function
-    NUMTHEORY_DIVSUM    = 11  ,     // 0B:  Divisor sum function
-    NUMTHEORY_MOBIUS    = 12  ,     // 0C:  Mobius function
-    NUMTHEORY_TOTIENT   = 13  ,     // 0D:  Totient function
-
-    NUMTHEORY_FACTOR    = 20  ,     // 14:  Factor function (the # is arbitrary and may be changed)
-} NUMTHEORY, *LPNUMTHEORY;
-
-#define NUMTHEORY_MIN       -2      // Minimum valid index
-#define NUMTHEORY_MAX       13      // Maximum ...
-
 #define INIT_FACTOR_CNT     100
 #define INIT_FACTOR_INC     100
 
@@ -505,11 +486,11 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    APLRAT        mpqRes = {0};         // The result
+    APLRAT        mpqRes = {0},         // The result
+                  mpqTmp = {0};         // Temporary
     APLLONGEST    aplLongestLft,        // Left arg integer value
                   aplLongestRht;        // Right ...
-    APLINT        aplIntegerLft,        // Left arg as an integer
-                  aplIntegerRht;        // Right ...
+    NUMTHEORY     fcnType;              // Left arg as an integer
     APLUINT       uCnt,                 // Loop counter
                   ByteRes;              // # bytes in the result
     UBOOL         bRet;                 // TRUE iff the result is valid
@@ -576,13 +557,13 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
         case ARRAY_INT:
         case ARRAY_APA:
             // Get the left arg as an integer
-            aplIntegerLft = (APLINT) aplLongestLft;
+            fcnType = (APLINT) aplLongestLft;
 
             break;
 
         case ARRAY_FLOAT:
             // Attempt to convert the float to an integer using System []CT
-            aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+            fcnType = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
             break;
@@ -594,7 +575,7 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
 
         case ARRAY_RAT:
             // Get the left arg as an integer
-            aplIntegerLft = mpq_get_sx ((LPAPLRAT) lpMemLft, &bRet);
+            fcnType = mpq_get_sx ((LPAPLRAT) lpMemLft, &bRet);
 
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
@@ -602,7 +583,7 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
 
         case ARRAY_VFP:
             // Get the left arg as an integer
-            aplIntegerLft = mpfr_get_sx ((LPAPLVFP) lpMemLft, &bRet);
+            fcnType = mpfr_get_sx ((LPAPLVFP) lpMemLft, &bRet);
 
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
@@ -637,6 +618,11 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
         defstop
             break;
     } // End SWITCH
+
+    // Initialize the temps
+    mpz_init (&aplMPIRht);
+    mpq_init (&mpqRes);
+    mpq_init (&mpqTmp);
 RESTART_RAT:
     //***************************************************************
     // Calculate space needed for the result
@@ -679,10 +665,6 @@ RESTART_RAT:
 
     // lpMemRes now points to the data
 
-    // Initialize the temps
-    mpz_init (&aplMPIRht);
-    mpq_init (&mpqRes);
-
     __try
     {
     // Loop through the elements of the right arg
@@ -700,82 +682,41 @@ RESTART_RAT:
                 break;
 
             case ARRAY_FLOAT:
-                // Allow Next Prime/Prev Prime/Num Primes right arg to be fractional
-                if (aplIntegerLft EQ NUMTHEORY_NEXTPRIME
-                 || aplIntegerLft EQ NUMTHEORY_PREVPRIME
-                 || aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
-                {
-                    mpq_set_d (&mpqRes, ((LPAPLFLOAT) lpMemRht)[uCnt]);
-                    if (aplIntegerLft EQ NUMTHEORY_PREVPRIME)
-                        mpq_ceil (&mpqRes, &mpqRes);
-                    else
-                        mpq_floor (&mpqRes, &mpqRes);
-                    mpz_set   (&aplMPIRht, mpq_numref (&mpqRes));
+                // Convert from FLOAT to RAT
+                mpq_set_d (&mpqTmp, ((LPAPLFLOAT) lpMemRht)[uCnt]);
 
-                    break;
-                } // End IF
+                // Call common code to test for integer tolerance
+                if (!PrimFnPiIntegerTolerance (&mpqRes, fcnType, &mpqTmp))
+                    goto RIGHT_DOMAIN_EXIT;
 
-                // Attempt to convert the float to an integer using System []CT
-                aplIntegerRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
-
-                // If it's not an integer, ...
-                if (!bRet)
-                    goto LEFT_DOMAIN_EXIT;
-
-                // Copy the right arg as an integer
-                mpz_set_sx (&aplMPIRht, aplIntegerRht);
+                // Copy the integer as an MPI
+                mpz_set (&aplMPIRht, mpq_numref (&mpqRes));
 
                 break;
 
             case ARRAY_RAT:
-                // Allow Next Prime/Prev Prime/Num Primes right arg to be fractional
-                if (aplIntegerLft EQ NUMTHEORY_NEXTPRIME
-                 || aplIntegerLft EQ NUMTHEORY_PREVPRIME
-                 || aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
-                {
-                    // Convert the RAT to an integer
-                    mpq_set   (&mpqRes, &((LPAPLRAT) lpMemRht)[uCnt]);
-                    if (aplIntegerLft EQ NUMTHEORY_PREVPRIME)
-                        mpq_ceil (&mpqRes, &mpqRes);
-                    else
-                        mpq_floor (&mpqRes, &mpqRes);
-                    mpz_set   (&aplMPIRht, mpq_numref (&mpqRes));
+                // Copy the RAT
+                mpq_set   (&mpqTmp, &((LPAPLRAT) lpMemRht)[uCnt]);
 
-                    break;
-                } // End IF
+                // Call common code to test for integer tolerance
+                if (!PrimFnPiIntegerTolerance (&mpqRes, fcnType, &mpqTmp))
+                    goto RIGHT_DOMAIN_EXIT;
 
-                // If it's not an integer, ...
-                if (!mpq_integer_p ((LPAPLRAT) lpMemRht))
-                    goto LEFT_DOMAIN_EXIT;
-
-                // Get the next element as a MPI
-                mpz_set (&aplMPIRht, mpq_numref (&((LPAPLRAT) lpMemRht)[uCnt]));
+                // Copy the integer as an MPI
+                mpz_set (&aplMPIRht, mpq_numref (&mpqRes));
 
                 break;
 
             case ARRAY_VFP:
-                // Allow Next Prime/Prev Prime/Num Primes right arg to be fractional
-                if (aplIntegerLft EQ NUMTHEORY_NEXTPRIME
-                 || aplIntegerLft EQ NUMTHEORY_PREVPRIME
-                 || aplIntegerLft EQ NUMTHEORY_NUMPRIMES)
-                {
-                    // Convert the VFP to an integer
-                    mpq_set_fr (&mpqRes, &((LPAPLVFP) lpMemRht)[uCnt]);
-                    if (aplIntegerLft EQ NUMTHEORY_PREVPRIME)
-                        mpq_ceil (&mpqRes, &mpqRes);
-                    else
-                        mpq_floor (&mpqRes, &mpqRes);
-                    mpz_set   (&aplMPIRht, mpq_numref (&mpqRes));
+                // Convert from VFP to RAT
+                mpq_set_fr (&mpqTmp, &((LPAPLVFP) lpMemRht)[uCnt]);
 
-                    break;
-                } // End IF
+                // Call common code to test for integer tolerance
+                if (!PrimFnPiIntegerTolerance (&mpqRes, fcnType, &mpqTmp))
+                    goto RIGHT_DOMAIN_EXIT;
 
-                // If it's not an integer, ...
-                if (!mpfr_integer_p ((LPAPLVFP) lpMemRht))
-                    goto LEFT_DOMAIN_EXIT;
-
-                // Get the next element as a MPI
-                mpz_set_fr (&aplMPIRht, &((LPAPLVFP) lpMemRht)[uCnt], MPFR_RNDN);
+                // Copy the integer as an MPI
+                mpz_set (&aplMPIRht, mpq_numref (&mpqRes));
 
                 break;
 
@@ -784,7 +725,7 @@ RESTART_RAT:
         } // End SWITCH
 
         // Split cases based upon the left arg
-        switch (aplIntegerLft)
+        switch (fcnType)
         {
             case NUMTHEORY_DIVCNT:          //  0A:  Divisor function (count of divisors of N)
             case NUMTHEORY_DIVSUM:          //  0B:  Divisor function (sum of divisors of N)
@@ -797,7 +738,7 @@ RESTART_RAT:
                 // Call common routine
                 aplMPIRes =
                   PrimFnPiCommon (NULL,             // Ptr to factor struc (may be NULL)
-                                  aplIntegerLft,    // Function index
+                                  fcnType,          // Function index
                                  &aplMPIRht,        // Value to factor
                                   lpbCtrlBreak,     // Ptr to Ctrl-Break flag
                                  &bRet);            // Ptr to TRUE iff the result is valid
@@ -998,6 +939,7 @@ NORMAL_EXIT:
     } // End IF
 
     // We no longer need this storage
+    Myq_clear (&mpqTmp);
     Myq_clear (&mpqRes);
     Myz_clear (&aplMPIRes);
     Myz_clear (&aplMPIRht);
@@ -1005,6 +947,51 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnDydPi_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnPiIntegerTolerance
+//
+//  Determine if a RAT is within SYS_CT of an integer
+//***************************************************************************
+
+UBOOL PrimFnPiIntegerTolerance
+    (LPAPLRAT  mpqRes,                  // Ptr to result
+     NUMTHEORY fcnType,                 // Number theory function type
+     LPAPLRAT  mpqTmp)                  // Ptr to incoming value
+
+{
+    // Allow Next Prime/Prev Prime/Num Primes right arg to be fractional
+    if (fcnType EQ NUMTHEORY_NEXTPRIME
+     || fcnType EQ NUMTHEORY_PREVPRIME
+     || fcnType EQ NUMTHEORY_NUMPRIMES)
+    {
+        // Convert the RAT to an integer
+        if (fcnType EQ NUMTHEORY_PREVPRIME)
+            mpq_ceil  (mpqRes, mpqTmp);
+        else
+            mpq_floor (mpqRes, mpqTmp);
+    } else
+    {
+        // See if this number is within SYS_CT of a rational integer
+
+        // Get the ceiling
+        mpq_ceil  (mpqRes, mpqTmp);
+
+        // Compare against the original value
+        if (mpq_cmp_ct (*mpqRes, *mpqTmp, SYS_CT) NE 0)
+        {
+            // Get the floor
+            mpq_floor (mpqRes, mpqTmp);
+
+            // Compare against the original value
+            if (mpq_cmp_ct (*mpqRes, *mpqTmp, SYS_CT) NE 0)
+                return FALSE;
+        } // End IF/ELSE
+    } // End IF/ELSE
+
+    return TRUE;
+} // End PrimFnPiIntegerTolerance
 
 
 //***************************************************************************

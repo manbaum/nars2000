@@ -1,6 +1,17 @@
 Version 0.4.1.xx consists of the following Builds:
 
 
+Build #1144 -- Version 0.4.1.xx
+-------------------------------
+
+* Miscellaneous Build Changes
+
+Directory trunk:
+
+MAKEFILE.INC:
+  Include /Oy- in compile flags.
+
+
 Build #1143 -- Version 0.4.1.xx
 -------------------------------
 

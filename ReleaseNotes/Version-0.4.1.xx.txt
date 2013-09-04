@@ -1,6 +1,17 @@
 Version 0.4.1.xx consists of the following Builds:
 
 
+Build #1145 -- Version 0.4.1.xx
+-------------------------------
+
+* Fix Bug In Base Value
+
+Directory trunk:
+
+PF_UTACK.C:
+  Fix bug:  '' {basevalue}3  crashes.
+
+
 Build #1144 -- Version 0.4.1.xx
 -------------------------------
 

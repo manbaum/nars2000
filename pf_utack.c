@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -223,19 +223,33 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     if (!IsSimpleGlbNum (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
-    if (!IsNumeric (aplTypeLft)
-     && !IsEmpty (aplColsLft)
-     && !IsScalar (aplRankLft))
-        goto LEFT_DOMAIN_EXIT;
+    // If the left arg is not numeric, ...
+    if (!IsNumeric (aplTypeLft))
+    {
+        // If it's empty and simple, ...
+        if (IsEmpty (aplNELMLft)
+         && IsSimple (aplTypeLft))
+            // Convert to Boolean
+            aplTypeLft = ARRAY_BOOL;
+        else
+            goto LEFT_DOMAIN_EXIT;
+    } // End IF
 
     // Check for RIGHT DOMAIN ERROR
     if (!IsSimpleGlbNum (aplTypeRht))
         goto RIGHT_DOMAIN_EXIT;
 
-    if (!IsNumeric (aplTypeRht)
-     && !IsEmpty (aplFrstRht)
-     && !IsScalar (aplRankRht))
-        goto RIGHT_DOMAIN_EXIT;
+    // If the right arg is not numeric, ...
+    if (!IsNumeric (aplTypeRht))
+    {
+        // If it's empty and simple, ...
+        if (IsEmpty (aplNELMRht)
+         && IsSimple (aplTypeRht))
+            // Convert to Boolean
+            aplTypeRht = ARRAY_BOOL;
+        else
+            goto RIGHT_DOMAIN_EXIT;
+    } // End IF
 
     // If both are scalars, and one is not numeric, ...
     if (IsScalar (aplRankLft)

@@ -86,7 +86,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , NULL        , fnOp1Done   , NULL        , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT    , NULL        , fnOp2Done   , NULL        , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, NULL        , NULL        , NULL        , NULL        },     // Jot
+  {TKROW_JOTAMBIG, NULL        , NULL        , NULL        , scOp2DoneX  },     // Jot
   {TKROW_INIT    , NULL        , fnParInit   , NULL        , scParInit   },     // Left paren
   {TKROW_INIT    , NULL        , fnParDone   , NULL        , scParDone   },     // Right ...
   {TKROW_INIT    , NULL        , fnBrkInit   , NULL        , scBrkInit   },     // Left bracket
@@ -120,7 +120,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , NULL        , fnOp1Done   , NULL        , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT    , NULL        , fnOp2Done   , NULL        , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, NULL        , NULL        , NULL        , NULL        },     // Jot
+  {TKROW_JOTAMBIG, NULL        , NULL        , NULL        , scOp2DoneX  },     // Jot
   {TKROW_INIT    , NULL        , fnParInit   , NULL        , scParInit   },     // Left paren
   {TKROW_INIT    , NULL        , fnParDone   , NULL        , scParDone   },     // Right ...
   {TKROW_INIT    , NULL        , fnBrkInit   , NULL        , scBrkInit   },     // Left bracket
@@ -154,7 +154,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , fnPointDone , fnOp1Done   , scPointDone , scOp1Done   },     // ...       monadic operator
   {TKROW_INIT    , fnPointDone , fnOp2Done   , scPointDone , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, fnPointDone , NULL        , scPointDone , NULL        },     // Jot
+  {TKROW_JOTAMBIG, fnPointDone , NULL        , scPointDone , scOp2DoneX  },     // Jot
   {TKROW_INIT    , fnPointDone , fnParInit   , scPointDone , scParInit   },     // Left paren
   {TKROW_INIT    , fnPointDone , fnParDone   , scPointDone , scParDone   },     // Right ...
   {TKROW_INIT    , fnPointDone , fnBrkInit   , scPointDone , scBrkInit   },     // Left bracket
@@ -188,7 +188,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnAlpDone   , fnPrmDone   , scAlpDone   , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , fnAlpDone   , fnOp1Done   , scAlpDone   , scOp1Done   },     // ...       monadic operator
   {TKROW_INIT    , fnAlpDone   , fnOp2Done   , scAlpDone   , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, fnAlpDone   , NULL        , scAlpDone   , NULL        },     // Jot
+  {TKROW_JOTAMBIG, fnAlpDone   , NULL        , scAlpDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT    , fnAlpDone   , fnParInit   , scAlpDone   , scParInit   },     // Left paren
   {TKROW_INIT    , fnAlpDone   , fnParDone   , scAlpDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnAlpDone   , fnBrkInit   , scAlpDone   , scBrkInit   },     // Left bracket
@@ -222,7 +222,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnSysDone   , fnPrmDone   , scSysDone   , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , fnSysDone   , fnOp1Done   , scSysDone   , scOp1Done   },     // ...       monadic operator
   {TKROW_INIT    , fnSysDone   , fnOp2Done   , scSysDone   , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, fnSysDone   , NULL        , scSysDone   , NULL        },     // Jot
+  {TKROW_JOTAMBIG, fnSysDone   , NULL        , scSysDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT    , fnSysDone   , fnParInit   , scSysDone   , scParInit   },     // Left paren
   {TKROW_INIT    , fnSysDone   , fnParDone   , scSysDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnSysDone   , fnBrkInit   , scSysDone   , scBrkInit   },     // Left bracket
@@ -290,7 +290,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnQuo1Done  , fnPrmDone   , scQuo1Done  , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , fnQuo1Done  , fnOp1Done   , scQuo1Done  , scOp1Done   },     // ...       monadic operator
   {TKROW_INIT    , fnQuo1Done  , fnOp2Done   , scQuo1Done  , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, fnQuo1Done  , NULL        , scQuo1Done  , NULL        },     // Jot
+  {TKROW_JOTAMBIG, fnQuo1Done  , NULL        , scQuo1Done  , scOp2DoneX  },     // Jot
   {TKROW_INIT    , fnQuo1Done  , fnParInit   , scQuo1Done  , scParInit   },     // Left paren
   {TKROW_INIT    , fnQuo1Done  , fnParDone   , scQuo1Done  , scParDone   },     // Right ...
   {TKROW_INIT    , fnQuo1Done  , fnBrkInit   , scQuo1Done  , scBrkInit   },     // Left bracket
@@ -358,7 +358,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnQuo2Done  , fnPrmDone   , scQuo2Done  , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , fnQuo2Done  , fnOp1Done   , scQuo2Done  , scOp1Done   },     // ...       monadic operator
   {TKROW_INIT    , fnQuo2Done  , fnOp2Done   , scQuo2Done  , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, fnQuo2Done  , NULL        , scQuo2Done  , NULL        },     // Jot
+  {TKROW_JOTAMBIG, fnQuo2Done  , NULL        , scQuo2Done  , scOp2DoneX  },     // Jot
   {TKROW_INIT    , fnQuo2Done  , fnParInit   , scQuo2Done  , scParInit   },     // Left paren
   {TKROW_INIT    , fnQuo2Done  , fnParDone   , scQuo2Done  , scParDone   },     // Right ...
   {TKROW_INIT    , fnQuo2Done  , fnBrkInit   , scQuo2Done  , scBrkInit   },     // Left bracket
@@ -392,7 +392,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnDotDone   , fnPrmDone   , scDotDone   , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , fnDotDone   , fnOp1Done   , scDotDone   , scOp1Done   },     // ...       monadic operator
   {TKROW_INIT    , fnDotDone   , fnOp2Done   , scDotDone   , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, fnDotDone   , NULL        , scDotDone   , NULL        },     // Jot
+  {TKROW_JOTAMBIG, fnDotDone   , NULL        , scDotDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT    , fnDotDone   , fnParInit   , scDotDone   , scParInit   },     // Left paren
   {TKROW_INIT    , fnDotDone   , fnParDone   , scDotDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnDotDone   , fnBrkInit   , scDotDone   , scBrkInit   },     // Left bracket
@@ -426,7 +426,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnJotDone   , fnPrmDone   , scJotDone   , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , fnJotDone   , fnOp1Done   , scJotDone   , scOp1Done   },     // ...       monadic operator
   {TKROW_INIT    , fnJotDone   , fnOp2Done   , scJotDone   , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, fnJotDone   , NULL        , scJotDone   , NULL        },     // Jot
+  {TKROW_JOTAMBIG, fnJotDone   , NULL        , scJotDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT    , fnJotDone   , fnParInit   , scJotDone   , scParInit   },     // Left paren
   {TKROW_INIT    , fnJotDone   , fnParDone   , scJotDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnJotDone   , fnBrkInit   , scJotDone   , scBrkInit   },     // Left bracket
@@ -460,7 +460,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT    , fnOutDone   , fnPrmDone   , scOutDone   , scPrmDone   },     // ...       niladic           ...
   {TKROW_INIT    , fnOutDone   , fnOp1Done   , scOutDone   , scOp1Done   },     // ...       monadic operator
   {TKROW_INIT    , fnOutDone   , fnOp2Done   , scOutDone   , scOp2Done   },     // ...       dyadic  ...
-  {TKROW_JOTAMBIG, fnOutDone   , NULL        , scOutDone   , NULL        },     // Jot
+  {TKROW_JOTAMBIG, fnOutDone   , NULL        , scOutDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT    , fnOutDone   , fnParInit   , scOutDone   , scParInit   },     // Left paren
   {TKROW_INIT    , fnOutDone   , fnParDone   , scOutDone   , scParDone   },     // Right ...
   {TKROW_INIT    , fnOutDone   , fnBrkInit   , scOutDone   , scBrkInit   },     // Left bracket
@@ -2731,6 +2731,27 @@ UBOOL scOp2Done
     // Mark as successful
     return TRUE;
 } // End scOp2Done
+
+
+//***************************************************************************
+//  $scOp2DoneX
+//
+//  End of a dyadic primitive operator
+//***************************************************************************
+
+UBOOL scOp2DoneX
+    (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
+
+{
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsgW (L"scOp2DoneX");
+#endif
+
+    // Back to initial state
+    SetTokenStatesTK (lptkLocalVars, TKROW_INIT);
+
+    return scOp2Done (lptkLocalVars);
+} // End scOp2DoneX
 
 
 //***************************************************************************

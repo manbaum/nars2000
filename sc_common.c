@@ -36,7 +36,7 @@
 void MakeWorkspaceNameCanonical
     (LPWCHAR wszOut,            // Output workspace name
      LPWCHAR wszInp,            // Input  ...
-     LPWCHAR wszDefDir)         // Default drive and directory if no drive letter
+     LPWCHAR wszDefDir)         // Default drive and directory if no drive letter (may be NULL)
 
 {
     UINT uLen;
@@ -55,7 +55,8 @@ void MakeWorkspaceNameCanonical
     // If the name doesn't begin with a drive letter and
     //   doesn't start at the root or a dot, prepend the
     //   default dir
-    if (wszInp[0] NE WC_EOS     // Non-empty,
+    if (wszDefDir               // Not NULL
+     && wszInp[0] NE WC_EOS     // Non-empty,
      && ((wszInp[0] EQ L'.'
        && wszInp[1] EQ L'.')    // and up one dir
       || wszInp[0] NE L'.')     // or not current dir,

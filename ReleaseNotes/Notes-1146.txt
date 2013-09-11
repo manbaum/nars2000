@@ -1,4 +1,4 @@
-Build #1146 -- Version 0.4.1.xx
+Build #1146 -- Version 0.4.2.xx
 -------------------------------
 
 * Fix Bug When Syntax Coloring Jots Followed By White Space

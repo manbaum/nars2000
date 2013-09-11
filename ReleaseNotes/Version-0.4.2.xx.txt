@@ -1,7 +1,21 @@
 Version 0.4.2.xx consists of the following Builds:
 
 
-Build #1146 -- Version 0.4.1.xx
+Build #1147 -- Version 0.4.2.xx
+-------------------------------
+
+* Fix Bug In )LIB Command
+
+Directory trunk:
+
+SC_COMMON.C:
+  In <MakeWorkspaceNameCanonical>, allow the default dir to be NULL.
+
+SC_LIB.C:
+  Fix bug in <CmdLibCom> when using a directory that has a drive letter or starts in the root.
+
+
+Build #1146 -- Version 0.4.2.xx
 -------------------------------
 
 * Fix Bug When Syntax Coloring Jots Followed By White Space

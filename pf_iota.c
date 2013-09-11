@@ -3057,18 +3057,30 @@ ERROR_EXIT:
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydIota L" R;" $QUAD_IO L";O";
+  L"Z" $IS L"L " MFON_DydIota L" R;" $QUAD_IO L";O;A";
 
 static APLCHAR DydLine1[] =
-  L"O" $IS $QUAD_IO
-  $DIAMOND $QUAD_IO $IS L"0";
+  L"O" $IS $QUAD_IO L" "
+  $DIAMOND L" " $QUAD_IO $IS L"0";
 
 static APLCHAR DydLine2[] =
-  L"Z" $IS $ENCLOSE L"[0]O+(1+" $RHO L"L)" $ENCODE L"(" $NEG L"1" $DROP L",(1+" $RHO L"L)" $TAKE L"L)" $IOTA L"R";
+  L"Z" $IS L"(0," $RHO L"L)" $ENCODE L"(,L)" $IOTA L"R";
+
+static APLCHAR DydLine3[] =
+  L"A" $IS $IOTAUND L"1=0" $SQUAD L"[0] Z";
+
+static APLCHAR DydLine4[] =
+  L"Z[(" $IOTA L"1+" $RHO $RHO L"L)" $JOT L".,A]" $IS $DISCLOSE L"[0] (" $RHO L"A)" $RHO $ENCLOSE L"0," $RHO L"L";
+
+static APLCHAR DydLine5[] =
+  L"Z" $IS $ENCLOSE L"[0] O+1" $DROP L"[0] Z";
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,
  DydLine2,
+ DydLine3,
+ DydLine4,
+ DydLine5,
 };
 
 MAGIC_FCNOPR MFO_DydIota =

@@ -142,10 +142,11 @@ typedef enum tagMFO
 #define $NEG            WS_UTF16_OVERBAR
 #define $NOT            WS_UTF16_TILDE
 #define $NOTEQUAL       WS_UTF16_NOTEQUAL
+#define $NUMBER         WS_UTF16_NUMBER
 #define $OMEGA          WS_UTF16_OMEGA
 #define $OR             WS_UTF16_DOWNCARET
 #define $PARENT         WS_UTF16_NUMBER WS_UTF16_NUMBER
-#define $NUMBER         WS_UTF16_NUMBER
+#define $PICK           WS_UTF16_RIGHTSHOE
 #define $PSUBSET        WS_UTF16_LEFTSHOE
 #define $PSUPERSET      WS_UTF16_RIGHTSHOE
 #define $QUAD           WS_UTF16_QUAD
@@ -176,6 +177,7 @@ typedef enum tagMFO
 #define $RHO            WS_UTF16_RHO
 #define $ROPER          WS_UTF16_RHTOPER
 #define $ROTATE         WS_UTF16_CIRCLESTILE
+#define $SQUAD          WS_UTF16_SQUAD
 #define $SUBSET         WS_UTF16_LEFTSHOEUNDERBAR
 #define $SUPERSET       WS_UTF16_RIGHTSHOEUNDERBAR
 #define $TAKE           WS_UTF16_UPARROW

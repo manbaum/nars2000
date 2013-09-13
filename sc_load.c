@@ -85,18 +85,28 @@ UBOOL CmdXload_EM
 #endif
 
 UBOOL CmdLoadCom_EM
-    (LPWCHAR lpwszTail,                 // Ptr to command line tail
-     UBOOL   bExecLX)                   // TRUE iff execute []LX after successful load
+    (LPWCHAR lpwszTail,                     // Ptr to command line tail
+     UBOOL   bExecLX)                       // TRUE iff execute []LX after successful load
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    WCHAR        wszTailDPFE[_MAX_PATH];// Save area for canonical form of given ws name
-    LPWCHAR      lpw;                   // Temporary ptr
-    int          iTabIndex;             // Tab index
-    FILE        *fStream;               // Ptr to file stream for the plain text workspace file
+    LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
+    WCHAR         wszTailDPFE[_MAX_PATH];   // Save area for canonical form of given ws name
+    LPWCHAR       lpw,                      // Temporary ptr
+                  lpwszFormat;                  // Ptr to temporary storage
+    int           iTabIndex;                // Tab index
+    UBOOL         bRet = FALSE;             // TRUE iff the result is valid
+    UINT          uCnt;                     // Loop counter
+    LPWSZLIBDIRS  lpwszLibDirs = NULL;      // Ptr to LibDirs
+    WCHAR         wszDrive[_MAX_DRIVE],     // Save area for "D:"
+                  wszDir  [_MAX_DIR];       // ...           "\path\to\dir"
+//////////////////wszFname[_MAX_FNAME],     // ...           "filename"
+//////////////////wszExt  [_MAX_EXT];       // ...           ".ext"
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
+
+    // Get ptr to temporary storage
+    lpwszFormat = lpMemPTD->lpwszFormat;
 
     // Check for "1 CLEANSPACE"
     if (lstrcmpiW (lpwszTail, L"1 CLEANSPACE") NE 0)
@@ -115,22 +125,35 @@ UBOOL CmdLoadCom_EM
             return FALSE;
         } // End IF
 
-        // Convert the given workspace name into a canonical form (without WS_WKSEXT)
-        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
+        // Split out the drive and path from the module filename
+        _wsplitpath (lpwszTail, wszDrive, wszDir, NULL, NULL);
 
-        // Append the common workspace extension
-        lstrcatW (wszTailDPFE, WS_WKSEXT);
+        // Lock the memory to get a ptr to it
+        lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
 
-        // Handle WS NOT FOUND messages here
-        // Attempt to open the workspace
-        fStream = fopenW (wszTailDPFE, L"r");
+        // If the command tail starts with a drive letter, or a backslash, ...
+        if (wszDrive[0]
+         || wszDir[0] EQ WC_SLOPE)
+        {
+            // Process this directory
+            bRet =
+              CmdLoadProcess (&wszTailDPFE[0],      // Ptr to save area for canonical form of given ws name
+                               lpwszTail,           // Ptr to command line tail
+                               L"");                // Ptr to directory
+        } else
+        // Loop through the search dirs
+        for (uCnt = 0; !bRet && uCnt < uNumLibDirs; uCnt++)
+        {
+            // Process this directory
+            bRet =
+              CmdLoadProcess (&wszTailDPFE[0],      // Ptr to save area for canonical form of given ws name
+                               lpwszTail,           // Ptr to command line tail
+                               lpwszLibDirs[uCnt]); // Ptr to directory
+        } // End FOR
 
-        // If the workspace doesn't exist, ...
-        if (fStream EQ NULL)
+        // If we failed, ...
+        if (!bRet)
             goto WSNOTFOUND_EXIT;
-
-        // We no longer need this resource
-        fclose (fStream); fStream = NULL;
     } else
         // Copy the name to the expected var
         lstrcpyW (wszTailDPFE, lpwszTail);
@@ -138,17 +161,60 @@ UBOOL CmdLoadCom_EM
     // Get the tab index from which this command was issued
     iTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
 
-    return
+    bRet =
       CreateNewTab (hWndMF,             // Parent window handle
                     wszTailDPFE,        // Drive, Path, Filename, Ext of the workspace
                     iTabIndex + 1,      // Insert new tab to the left of this one
                     bExecLX);           // TRUE iff execute []LX after successful load
 WSNOTFOUND_EXIT:
-    ReplaceLastLineCRPmt (ERRMSG_WS_NOT_FOUND APPEND_NAME);
+    // If we locked it, ...
+    if (lpwszLibDirs)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLibDirs); lpwszLibDirs = NULL;
+    } // End IF
+
+    if (!bRet)
+        ReplaceLastLineCRPmt (ERRMSG_WS_NOT_FOUND APPEND_NAME);
 
     return FALSE;
 } // End CmdLoadCom_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CmdLoadProcess
+//
+//  Process a )LOAD command
+//***************************************************************************
+
+UBOOL CmdLoadProcess
+    (LPWCHAR lpwszTailDPFE,                 // Ptr to save area for canonical form of given ws name
+     LPWCHAR lpwszTail,                     // Ptr to command line tail
+     LPWCHAR lpwszDir)                      // Ptr to directory
+
+{
+    FILE *fStream;                          // Ptr to file stream for the plain text workspace file
+
+    // Convert the given workspace name into a canonical form (without WS_WKSEXT)
+    MakeWorkspaceNameCanonical (lpwszTailDPFE, lpwszTail, lpwszDir);
+
+    // Append the common workspace extension
+    lstrcatW (lpwszTailDPFE, WS_WKSEXT);
+
+    // Handle WS NOT FOUND messages here
+    // Attempt to open the workspace
+    fStream = fopenW (lpwszTailDPFE, L"r");
+
+    // If the workspace doesn't exist, ...
+    if (fStream EQ NULL)
+        return FALSE;
+
+    // We no longer need this resource
+    fclose (fStream); fStream = NULL;
+
+    return TRUE;
+} // End CmdLoadProcess
 
 
 //***************************************************************************

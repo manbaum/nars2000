@@ -143,7 +143,7 @@ UBOOL CmdLibCom_EM
                       &lpwszLibDirs[uCnt],      // Ptr to LibDirs (may be NULL)
                        uArgCnt,                 // # args after the system command
                        bUniqWs);                // TRUE iff listing unique workspaces only
-     } // End FOR
+    } // End FOR
 
     // Mark as successful
     bRet = TRUE;
@@ -309,7 +309,7 @@ LPWCHAR CmdLibFiles
                      uExtLen;           // Length of workspace extension
     UBOOL            bEndDQ;            // TRUE iff the string ends with a Double Quote
 
-    // Append a backslash to the icoming filename if not already there
+    // Append a backslash to the incoming filename if not already there
     AppendBackslash (wszFileName);
 
     // Get the length to append trailing extension (wszExt)

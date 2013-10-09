@@ -528,7 +528,8 @@ HGLOBAL *GetPtrQuadEM
     lpSISCur = lpMemPTD->lpSISCur;
 
     // If there's a []EA/[]EC parent in control, ...
-    if (lpSISCur->lpSISErrCtrl NE NULL)
+    if (lpSISCur
+     && lpSISCur->lpSISErrCtrl NE NULL)
         // Get ptr to current []EA/[]EC parent of the current SI stack
         lpSISCur = lpSISCur->lpSISErrCtrl;
     else

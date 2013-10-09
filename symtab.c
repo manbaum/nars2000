@@ -448,7 +448,7 @@ UBOOL HshTabResize_EM
     LPHSHENTRY   lpHshTabNew;           // Ptr to new HshTab
     int          iResize,               // Resize value (in # HTEs)
                  i,                     // Loop counter
-                 iHshTabNewSize;        // New # HTEs in the HshTab
+                 iHshTabNewNelm;        // New # HTEs in the HshTab
     UBOOL        bRet = FALSE;          // TRUE iff result is valid
     APLI3264     iBaseDiff;             // Difference in new and old bases
 
@@ -457,46 +457,45 @@ UBOOL HshTabResize_EM
 
     Assert (HshTabFrisk (lpHTS));
 
+#ifdef DEBUG
     if (TlsGetValue (dwTlsPerTabData))
-    {
         dprintfWL0 (L"||| Resizing the hash table from %u to %u (%S#%d)",
                   lpHTS->iHshTabTotalNelm,
                   lpHTS->iHshTabTotalNelm + iResize,
                   FNLN);
-    } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
-
+#endif
     // We need more entries
-    iHshTabNewSize = lpHTS->iHshTabTotalNelm + iResize;
+    iHshTabNewNelm = lpHTS->iHshTabTotalNelm + iResize;
 
     // If the Hsh & Sym tabs are from global (not virtual) memory, ...
     if (lpHTS->bGlbHshSymTabs)
     {
         // First, attempt to reallocate in place
         lpHshTabNew =
-          MyGlobalReAlloc (lpHTS->lpHshTab,
-                           iHshTabNewSize * sizeof (lpHTS->lpHshTab[0]),
+          MyGlobalReAlloc (lpHTS->lpHshTab,         // At this address
+                           iHshTabNewNelm * sizeof (lpHTS->lpHshTab[0]),
                            GMEM_MOVEABLE | GMEM_ZEROINIT);
         // If it didn't succeed, ...
         if (!lpHshTabNew)
             // Allocate anew
             lpHshTabNew =
-              MyGlobalAlloc (GHND,
-                             iHshTabNewSize * sizeof (lpHTS->lpHshTab[0]));
+              MyGlobalAlloc (GHND,                  // At any address
+                             iHshTabNewNelm * sizeof (lpHTS->lpHshTab[0]));
     } else
     {
         // First, attempt to reallocate in place
         lpHshTabNew =
-          GuardAlloc (lpHTS->lpHshTab,      // At this address
-                      iHshTabNewSize * sizeof (lpHTS->lpHshTab[0]),
-                      MEM_COMMIT,
-                      PAGE_READWRITE);
+          MyVirtualAlloc (lpHTS->lpHshTab,          // At this address
+                          iHshTabNewNelm * sizeof (lpHTS->lpHshTab[0]),
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
         // If it didn't succeed, ...
         if (!lpHshTabNew)
             // Allocate anew
             lpHshTabNew =
-              GuardAlloc (NULL,             // Any address
-                          iHshTabNewSize * sizeof (lpHTS->lpHshTab[0]),
-                          MEM_COMMIT | MEM_RESERVE,
+              GuardAlloc (NULL,                     // Any address
+                          iHshTabNewNelm * sizeof (lpHTS->lpHshTab[0]),
+                          MEM_COMMIT,
                           PAGE_READWRITE);
     } // End IF/ELSE
 
@@ -565,11 +564,11 @@ UBOOL HshTabResize_EM
     } // End IF
 
     // Initialize the principal hash entry (1st one in each block).
-    for (i = lpHTS->iHshTabTotalNelm; i < iHshTabNewSize; i += lpHTS->iHshTabEPB)
+    for (i = lpHTS->iHshTabTotalNelm; i < iHshTabNewNelm; i += lpHTS->iHshTabEPB)
         lpHTS->lpHshTab[i].htFlags.PrinHash = TRUE;
 
     // Initialize the next & prev same hash STE values
-    for (i = lpHTS->iHshTabTotalNelm; i < iHshTabNewSize; i++)
+    for (i = lpHTS->iHshTabTotalNelm; i < iHshTabNewNelm; i++)
     {
         lpHTS->lpHshTab[i].NextSameHash =
         lpHTS->lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
@@ -579,7 +578,7 @@ UBOOL HshTabResize_EM
     lpHTS->iHshTabIncrFree = DEF_HSHTAB_PRIME % (UINT) lpHTS->iHshTabTotalNelm;
 
     // Set new hash table size
-    lpHTS->iHshTabTotalNelm = iHshTabNewSize;
+    lpHTS->iHshTabTotalNelm = iHshTabNewNelm;
 
     Assert (1 EQ gcdAplInt (lpHTS->iHshTabIncrFree, lpHTS->iHshTabTotalNelm, NULL));
 
@@ -623,23 +622,50 @@ UBOOL SymTabResize_EM
                  i,                     // Loop counter
                  iSymTabNewNelm;        // New # STEs in SymTab
     UBOOL        bRet = FALSE;          // TRUE iff result is valid
+////WCHAR wszTemp[1024];                // ***DEBUG***
 
     // Get the resize value
     iResize = lpHTS->uSymTabIncrNelm;
 
     Assert (HshTabFrisk (lpHTS));
+
 #ifdef DEBUG
     if (TlsGetValue (dwTlsPerTabData))
-        DbgMsgW (L"||| Resizing the symbol table");
+        dprintfWL0 (L"||| Resizing the symbol table from %u to %u (%S#%d)",
+                  lpHTS->iSymTabTotalNelm,
+                  lpHTS->iSymTabTotalNelm + iResize,
+                  FNLN);
 #endif
     // We need more entries
     iSymTabNewNelm = lpHTS->iSymTabTotalNelm + iResize;
-    lpSymTabNew =
-      MyVirtualAlloc (lpHTS->lpSymTab,
-                      iSymTabNewNelm * sizeof (lpHTS->lpSymTab[0]),
-                      MEM_COMMIT | MEM_RESERVE,
-                      PAGE_READWRITE);
+
+    // If the Hsh & Sym tabs are from global (not virtual) memory, ...
+    if (lpHTS->bGlbHshSymTabs)
+        // Attempt to reallocate in place
+        lpSymTabNew =
+          MyGlobalReAlloc (lpHTS->lpSymTab,     // At this address
+                           iSymTabNewNelm * sizeof (lpHTS->lpSymTab[0]),
+                           GMEM_MOVEABLE | GMEM_ZEROINIT);
+    else
+        // Attempt to reallocate in place
+        lpSymTabNew =
+          MyVirtualAlloc (lpHTS->lpSymTab,          // At this address
+                          iSymTabNewNelm * sizeof (lpHTS->lpSymTab[0]),
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+////// ***DEBUG***
+////wsprintfW (wszTemp,
+////           L"SYMBOL TABLE REALLOCATE (%p to %p):  GlbHshSymTabs (%d) from %u to %u",
+////           lpHTS->lpSymTab,
+////                  lpSymTabNew,
+////           lpHTS->bGlbHshSymTabs,
+////           lpHTS->iSymTabTotalNelm,
+////           lpHTS->iSymTabTotalNelm + iResize);
+////MBW (wszTemp);
+
+    // If it didn't succeed, ...
     if (!lpSymTabNew)
+        // Quit as we can't change the base address of the SymTab
         goto SYMTAB_FULL_EXIT;
 
     Assert (lpSymTabNew EQ lpHTS->lpSymTab);
@@ -2943,6 +2969,7 @@ UBOOL AllocSymTab
 
 {
     UBOOL bRet = TRUE;              // TRUE iff the result is valid
+////WCHAR wszTemp[1024];            // ***DEBUG***
 
     // Validate the incoming constants
 
@@ -2989,6 +3016,16 @@ UBOOL AllocSymTab
                         MEM_COMMIT,
                         PAGE_READWRITE);
     } // End IF/ELSE
+
+////// ***DEBUG***
+////wsprintfW (wszTemp,
+////           L"NEW SYMBOL TABLE (%p):  GlbHshSymTabs (%d) Init (%u) Incr (%u) Max (%u)",
+////           lpHTS->lpSymTab,
+////           lpHTS->bGlbHshSymTabs,
+////                  uSymTabInitNelm,
+////                  uSymTabIncrNelm,
+////                  uSymTabMaxNelm);
+////MBW (wszTemp);
 
     // Initialize next available entry
     lpHTS->lpSymTabNext = lpHTS->lpSymTab;

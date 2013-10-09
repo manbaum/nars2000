@@ -6213,7 +6213,8 @@ UBOOL AppendNewToken_EM
       > (int) MyGlobalSize (lptkLocalVars->hGlbToken))
     {
         HGLOBAL  hGlbToken;
-        APLU3264 uDiff;
+        APLU3264 uDiff,
+                 uOldSize;
 
         // Resize the token stream
 
@@ -6227,17 +6228,40 @@ UBOOL AppendNewToken_EM
         lptkLocalVars->lptkNext    =
         lptkLocalVars->lptkLastEOS = NULL;
 
+        // Get the old size
+        uOldSize = MyGlobalSize (lptkLocalVars->hGlbToken);
+
         // Increase the size by DEF_TOKEN_RESIZE
         hGlbToken = MyGlobalReAlloc (lptkLocalVars->hGlbToken,
-                                     MyGlobalSize (lptkLocalVars->hGlbToken) + DEF_TOKEN_RESIZE,
+                                     uOldSize + DEF_TOKEN_RESIZE,
                                      GMEM_ZEROINIT);
         if (hGlbToken EQ NULL)
         {
-            // We ran into TOKEN TABLE FULL and couldn't resize
-            // Save the error message
-            ErrorMessageIndirect (ERRMSG_TOKEN_TABLE_FULL APPEND_NAME);
+            LPVOID lpMemOld,        // Temp ptrs
+                   lpMemNew;        // ...
 
-            return FALSE;
+            // Increase the size by DEF_TOKEN_RESIZE
+            hGlbToken = MyGlobalAlloc (GHND, uOldSize + DEF_TOKEN_RESIZE);
+
+            if (hGlbToken EQ NULL)
+            {
+                // We ran into TOKEN TABLE FULL and couldn't resize
+                // Save the error message
+                ErrorMessageIndirect (ERRMSG_TOKEN_TABLE_FULL APPEND_NAME);
+
+                return FALSE;
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpMemOld = MyGlobalLock (lptkLocalVars->hGlbToken);
+            lpMemNew = MyGlobalLock (hGlbToken);
+
+            // Copy the old data to the new location
+            CopyMemory (lpMemNew, lpMemOld, uOldSize);
+
+            // We no longer need these ptrs
+            MyGlobalUnlock (hGlbToken); lpMemNew = NULL;
+            MyGlobalUnlock (lptkLocalVars->hGlbToken); lpMemOld = NULL;
         } // End IF
 
         lptkLocalVars->hGlbToken = hGlbToken;

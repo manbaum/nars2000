@@ -1,6 +1,3 @@
-Version 0.4.3.xx consists of the following Builds:
-
-
 Build #1151 -- Version 0.4.3.xx
 -------------------------------
 
@@ -25,17 +22,3 @@ SYMTAB.C:
 
 TOKENIZE.C:
   In <AppendNewToken_EM>, if the reallocate fails on a token stream, try with a new allocate and copy old memory values to the new location.
-
-
-Build #1150 -- Version 0.4.3.xx
--------------------------------
-
-* Fix Bug When Saving []EM
-
-Directory trunk:
-
-ERRMSG.C:
-  Fix bug when saving []EM because a ptr may be NULL.
-
-VER.RC:
-  Increment version # to 0.4.3.xx.

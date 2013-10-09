@@ -1335,9 +1335,8 @@ UBOOL SaveFunctionCom
                         lpwszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             SetFocus (GetParent (hWndEC));
-        } else
-            ErrorMessageIndirectToken (ERRMSG_NOT_SAVED_FILE_ERROR APPEND_NAME,
-                                       lpSF_Fcns->lptkFunc);
+        } // End IF
+
         goto ERROR_EXIT;
     } // End IF
 
@@ -2172,9 +2171,8 @@ UINT SaveFunctionLine
                         lpwszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             SetFocus (GetParent (hWndEC));
-        } else
-            ErrorMessageIndirectToken (ERRMSG_NOT_SAVED_FILE_ERROR APPEND_NAME,
-                                       lpSF_Fcns->lptkFunc);
+        } // End IF
+
         goto ERROR_EXIT;
     } // End IF
 
@@ -2453,7 +2451,11 @@ UBOOL GetLabelNums
         // Loop through the LPSYMENTRYs looking for duplicates
         for (uCnt = 0; uCnt < (lpMemDfnHdr->numLblLines - 1); uCnt++)
         if (CmpLPLBLENTRY (lplpLblEntry[uCnt], lplpLblEntry[uCnt + 1]) EQ 0)
-            goto LBLDUP_EXIT;
+            // Call common error function
+            ErrLabelNums (lplpLblEntry[uCnt]->lpSymEntry->stHshEntry->htGlbName,
+                          lplpLblEntry[uCnt]->uLineNum1,
+                          lpMemDfnHdr,
+                          bDispErrMsg);
     } // End IF
 
     // Mark as successful
@@ -2470,23 +2472,12 @@ WSFULL_EXIT:
                      MB_OK | MB_ICONWARNING | MB_APPLMODAL);
     goto ERROR_EXIT;
 
-LBLDUP_EXIT:
-    if (bDispErrMsg)
-        // Call common error function
-        ErrLabelNums (lplpLblEntry[uCnt]->lpSymEntry->stHshEntry->htGlbName,
-                      lplpLblEntry[uCnt]->uLineNum1);
-    // If we can pass on the line # in error, ...
-    if (lpSF_Fcns)
-        // Save the line # (origin-0)
-        lpSF_Fcns->uErrLine = lplpLblEntry[uCnt]->uLineNum1 - 1;
-
-    goto ERROR_EXIT;
-
 SYSDUP_EXIT:
-    if (bDispErrMsg)
-        // Call common error function
-        ErrLabelNums (hGlbName,
-                      uDupLineNum1);
+    // Call common error function
+    ErrLabelNums (hGlbName,
+                  uDupLineNum1,
+                  lpMemDfnHdr,
+                  bDispErrMsg);
     // If we can pass on the line # in error, ...
     if (lpSF_Fcns)
         // Save the line # (origin-0)
@@ -2518,29 +2509,42 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void ErrLabelNums
-    (HGLOBAL hGlbName,              // Line label name's global memory handle
-     UINT    uLineNum1)             // Line # in error (origin-1)
+    (HGLOBAL      hGlbName,         // Line label name's global memory handle
+     UINT         uLineNum1,        // Line # in error (origin-1)
+     LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header
+     UBOOL        bDispErrMsg)      // TRUE iff we may display error messages
 
 {
     WCHAR     wszTemp[1024];        // Save area for error message text
-    LPAPLCHAR lpMem;                // Ptr to LPSYMENTRY global memory name
+    LPAPLCHAR lpMem,                // Ptr to LPSYMENTRY global memory name
+              lpMemName;            // Ptr to function name
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbName);
 
+    // Lock the memory to get a ptr to it
+    lpMemName = MyGlobalLock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName);
+
     // Format the error message
     wsprintfW (wszTemp,
-               L"Duplicate label <%s> on line # %d -- function not saved",
+               L"Duplicate label <%s> in <%s> on line # %d",
                lpMem,
+               lpMemName,
                uLineNum1);
-    // We no longer need this ptr
+    // We no longer need these ptrs
+    MyGlobalUnlock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName); lpMemName = NULL;
     MyGlobalUnlock (hGlbName); lpMem = NULL;
 
-    // Display the error message
-    MessageBoxW (hWndMF,
-                 wszTemp,
-                 lpwszAppName,
-                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+    // If we may display error messages, ...
+    if (bDispErrMsg)
+        // Display the error message
+        MessageBoxW (hWndMF,
+                     wszTemp,
+                     lpwszAppName,
+                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+    else
+        // Display the message in the session
+        AppendLine (wszTemp, FALSE, TRUE);
 } // ErrLabelNums
 
 

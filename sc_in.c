@@ -260,6 +260,16 @@ UBOOL CmdIn_EM
             defstop
                 break;
         } // End SWITCH
+
+        // If there's an undisplayed result, ...
+        if (lpMemPTD->YYResExec.YYInuse)
+        {
+            // Free it
+            FreeResult (&lpMemPTD->YYResExec);
+
+            // We no longer need these values
+            ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+        } // End IF
     } // End WHILE
 
     // Mark as sucessful
@@ -596,11 +606,11 @@ UBOOL TransferInverseFcn2_EM
                            lpwName);
             else
                 wsprintfW (lpwszFormat,
-                           L"  Error in .atf file, lines %u-%u (origin-1), type-2 function:  %s[%d].",
+                           L"  Error in .atf file, lines %u-%u (origin-1), type-2 function:  %s, line # %d.",
                            uOldRecNo,
                            uRecNo,
                            lpwName,
-                           lpMemPTD->uErrLine);
+                           lpMemPTD->uErrLine + 1);
             // Display the trailing part of the error message
             AppendLine (lpwszFormat, TRUE, TRUE);
         } // End IF

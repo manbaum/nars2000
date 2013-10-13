@@ -890,21 +890,15 @@ NORMAL_EXIT:
 //  On scalar or vector right args, return the unique values
 //***************************************************************************
 
-static APLCHAR MonHeader[] =
-  L"Z" $IS MFON_MonDnShoe L" R";
+//***************************************************************************
+//  Magic function for dyadic DownShoe
+//
+//  Dyadic Down Shoe -- Union
+//
+//  Return the elements in L or in R.
+//***************************************************************************
 
-static APLCHAR MonLine1[] =
-  L"Z" $IS L"((R" $IOTA L"R)=" $IOTA $RHO L"R)/R" $IS L",R";
-
-static LPAPLCHAR MonBody[] =
-{MonLine1,
-};
-
-MAGIC_FCNOPR MFO_MonDnShoe =
-{MonHeader,
- MonBody,
- countof (MonBody),
-};
+#include "mf_dshoe.h"
 
 
 //***************************************************************************
@@ -993,31 +987,6 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnDydDownShoe_EM_YY
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  Magic function for dyadic DownShoe
-//
-//  Dyadic Down Shoe -- Union
-//
-//  Return the elements in L or in R.
-//***************************************************************************
-
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydDnShoe L" R";
-
-static APLCHAR DydLine1[] =
-  L"Z" $IS L"L,R~L";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
-};
-
-MAGIC_FCNOPR MFO_DydDnShoe =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
 
 
 //***************************************************************************

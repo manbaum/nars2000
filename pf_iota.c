@@ -552,21 +552,16 @@ NORMAL_EXIT:
 //  I believe this algorithm was first created by Carl M. Cheney.
 //***************************************************************************
 
-static APLCHAR MonHeader[] =
-  L"Z" $IS MFON_MonIota L" R";
+//***************************************************************************
+//  Magic function/operator for extended dyadic iota
+//
+//  Extended dyadic iota
+//
+//  On rank > 1 left args, return an array of vector indices
+//    such that A[A iota R] is R, assuming that all of R is in A.
+//***************************************************************************
 
-static APLCHAR MonLine1[] =
-  L"Z" $IS $DISCLOSE $JOT L".,/" $IOTA $EACH L"R";
-
-static LPAPLCHAR MonBody[] =
-{MonLine1,
-};
-
-MAGIC_FCNOPR MFO_MonIota =
-{MonHeader,
- MonBody,
- countof (MonBody),
-};
+#include "mf_iota.h"
 
 
 //***************************************************************************
@@ -3045,49 +3040,6 @@ SET_RESULT_VALUE:
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydIotaOther
-
-
-//***************************************************************************
-//  Magic function/operator for extended dyadic iota
-//
-//  Extended dyadic iota
-//
-//  On rank > 1 left args, return an array of vector indices
-//    such that A[A iota R] is R, assuming that all of R is in A.
-//***************************************************************************
-
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydIota L" R;" $QUAD_IO L";O;A";
-
-static APLCHAR DydLine1[] =
-  L"O" $IS $QUAD_IO L" "
-  $DIAMOND L" " $QUAD_IO $IS L"0";
-
-static APLCHAR DydLine2[] =
-  L"Z" $IS L"(0," $RHO L"L)" $ENCODE L"(,L)" $IOTA L"R";
-
-static APLCHAR DydLine3[] =
-  L"A" $IS $IOTAUND L"1=0" $SQUAD L"[0] Z";
-
-static APLCHAR DydLine4[] =
-  L"Z[(" $IOTA L"1+" $RHO $RHO L"L)" $JOT L".,A]" $IS $DISCLOSE L"[0] (" $RHO L"A)" $RHO $ENCLOSE L"0," $RHO L"L";
-
-static APLCHAR DydLine5[] =
-  L"Z" $IS $ENCLOSE L"[0] O+1" $DROP L"[0] Z";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
- DydLine2,
- DydLine3,
- DydLine4,
- DydLine5,
-};
-
-MAGIC_FCNOPR MFO_DydIota =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
 
 
 //***************************************************************************

@@ -705,37 +705,7 @@ LPPL_YYSTYPE PrimFnDydDotDotNested_EM_YY
 //  This algorithm is a generalization of 2..5 proposed by John Scholes.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydDotDot L" R;" $QUAD_IO L";" $QUAD_CT;
-
-static APLCHAR DydLine1[] =
-  $QUAD_IO $IS L"0" $DIAMOND $QUAD_CT $IS L"3E" $NEG L"15";
-
-static APLCHAR DydLine2[] =
-  L"L" $IS L"2" $TAKE L"L,1";
-
-static APLCHAR DydLine3[] =
-  L"Z" $IS L"((" $DISCLOSE L"R)-0" $DISCLOSE L"L)" $DIVIDE L"|1" $DISCLOSE L"L";
-
-static APLCHAR DydLine4[] =
-  L"L[1]" $IS $ENCLOSE L"(|1" $DISCLOSE L"L)" $TIMES $TIMES L"Z";
-
-static APLCHAR DydLine5[] =
-  L"Z" $IS L"L[0]+L[1]" $TIMES $IOTA L"1+" $DISCLOSE $FLOOR L"|Z";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
- DydLine2,
- DydLine3,
- DydLine4,
- DydLine5,
-};
-
-MAGIC_FCNOPR MFO_DydDotDot =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
+#include "mf_dotdot.h"
 
 
 //***************************************************************************

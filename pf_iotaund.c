@@ -837,29 +837,7 @@ LPPL_YYSTYPE PrimFnDydIotaUnderbar_EM_YY
 //    vector of trailing subarrays from the left arg.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydIotaUnderbar L" R";
-
-static APLCHAR DydLine1[] =
-  L"Z" $IS L"(" $ENCLOSE $RANK      $NEG L"1 L)" $IOTA
-                $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) R "
-   $DIAMOND L" " $GOTO L"0";
-
-static APLCHAR DydLine2[] =
-  $QUAD_MS L":"
-  L"Z" $IS L"(" $ENCLOSE $RANK      $NEG L"1 L)" $IOTA
-                $ENCLOSE $RANK L"(" $NEG L"1+" $RHO $RHO L"L) R";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
- DydLine2,
-};
-
-MAGIC_FCNOPR MFO_DydIotaUnderbar =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
+#include "mf_iotaund.h"
 
 
 //***************************************************************************

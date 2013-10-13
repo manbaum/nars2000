@@ -1007,22 +1007,13 @@ NORMAL_EXIT:
 //
 //  Return the pseudo-inverse of an array of global numerics.
 //***************************************************************************
+//***************************************************************************
+//  Magic function/operator for Dyadic Domino for Global Numerics
+//
+//  Return the pseudo-inverse of an array of global numerics.
+//***************************************************************************
 
-static APLCHAR MonHeader[] =
-  L"Z" $IS MFON_MonDomino L" R";
-
-static APLCHAR MonLine1[] =
-  L"Z" $IS L"(" $REVERSE $RHO L"R)" $RHO L"(" $DOMINO L"(" $TRANSPOSE L"Z)+." $TIMES L"Z)+." $TIMES $TRANSPOSE L"Z" $IS $COMMABAR L"R";
-
-static LPAPLCHAR MonBody[] =
-{MonLine1,
-};
-
-MAGIC_FCNOPR MFO_MonDomino =
-{MonHeader,
- MonBody,
- countof (MonBody),
-};
+#include "mf_domino.h"
 
 
 //***************************************************************************
@@ -1836,29 +1827,6 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnDydDomino_EM_YY
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  Magic function/operator for Dyadic Domino for Global Numerics
-//
-//  Return the pseudo-inverse of an array of global numerics.
-//***************************************************************************
-
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydDomino L" R";
-
-static APLCHAR DydLine1[] =
-  L"Z" $IS L"(" $DOMINO L"R)+." $TIMES L"L";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
-};
-
-MAGIC_FCNOPR MFO_DydDomino =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
 
 
 //***************************************************************************

@@ -30,7 +30,7 @@ typedef enum tagMFO
     MFOE_DydRank         ,      // 04:  Dyadic  ...
     MFOE_Conform         ,      // 05:  Conform  (for Rank Operator)
     MFOE_MonFMT          ,      // 06:  Monadic []FMT
-    MFOE_Box             ,      // 07:  Box (for monadic []FMT)
+    MFOE_BoxFMT          ,      // 07:  Box (for monadic []FMT)
     MFOE_MonVR           ,      // 08:  Monadic []VR
     MFOE_IdnDot          ,      // 09:  Identity function for Inner Product
     MFOE_IdnJotDot       ,      // 0A:  Identity function for Outer Product
@@ -63,7 +63,7 @@ typedef enum tagMFO
 #define MFON_DydRank            L"#DydRank"
 #define MFON_Conform            L"#Conform"
 #define MFON_MonFMT             L"#MonFMT"
-#define MFON_Box                L"#Box"
+#define MFON_BoxFMT             L"#BoxFMT"
 #define MFON_MonVR              L"#MonVR"
 #define MFON_IdnDot             L"#IdnDot"
 #define MFON_IdnJotDot          L"#IdnJotDot"

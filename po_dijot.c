@@ -438,45 +438,6 @@ NORMAL_EXIT:
 //    definition of the Rank operator in the ISO-IEC 13751 Extended APL Standard.
 //***************************************************************************
 
-static APLCHAR MonHeader[] =
-  L"Z" $IS L"(LO " MFON_MonRank L" Y) R;YR";
-
-static APLCHAR MonLine1[] =
-  L"YR" $IS L"(1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN $RHO $RHO L"R";
-
-static APLCHAR MonLine2[] =
-  L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
-
-static APLCHAR MonLine3[] =
-  L"Z" $IS L"LO" $EACH $ENCLOSE L"[(-YR)" $TAKE $IOTA $RHO $RHO L"R] R "
-  $DIAMOND L" " $GOTO L"0";
-
-static APLCHAR MonLine4[] =
-  $QUAD_PRO L":"
-  L"YR" $IS L"(1" $TAKE $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN $RHO $RHO L"R";
-
-static APLCHAR MonLine5[] =
-  L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
-
-static APLCHAR MonLine6[] =
-  L"Z" $IS $DISCLOSE L"LO" $EACH $EACH $ENCLOSE L"[(-YR)" $TAKE $IOTA $RHO $RHO L"R]" $EACH L"0" $RHO $ENCLOSE L"R";
-
-static LPAPLCHAR MonBody[] =
-{MonLine1,
- MonLine2,
- MonLine3,
- MonLine4,
- MonLine5,
- MonLine6,
-};
-
-MAGIC_FCNOPR MFO_MonRank =
-{MonHeader,
- MonBody,
- countof (MonBody),
-};
-
-
 //***************************************************************************
 //  Magic function/operator for the Conform step for monadic/dyadic derived
 //    function from the rank dyadic operator
@@ -486,21 +447,17 @@ MAGIC_FCNOPR MFO_MonRank =
 //    v.21 n.4, p.20-38, Aug. 1991.
 //***************************************************************************
 
-static APLCHAR ConHeader[] =
-  L"Z" $IS L"L " MFON_Conform L" R";
+//***************************************************************************
+//  Magic function/operator for dyadic derived function from the rank dyadic operator
+//
+//  This operator was originally based upon code found in the paper by J. Philip Benkhard,
+//    "Extending structure, type, and expression in APL2", ACM SIGAPL APL Quote Quad,
+//    v.21 n.4, p.20-38, Aug. 1991, but later was modified to reflect the
+//    definition of the Rank operator in the ISO-IEC 13751 Extended APL Standard.
+//***************************************************************************
 
-static APLCHAR ConLine1[] =
-  L"Z" $IS L"(((L-" $EPSILON $RHO $JOT $RHO $EACH L"R)" $RHO $EACH L"1)," $EACH $RHO $EACH L"R)" $RHO $EACH L"R";
+#include "mf_dijot.h"
 
-static LPAPLCHAR ConBody[] =
-{ConLine1,
-};
-
-MAGIC_FCNOPR MFO_Conform =
-{ConHeader,
- ConBody,
- countof (ConBody),
-};
 
 
 //***************************************************************************
@@ -551,64 +508,6 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
                                      lptkRhtArg,        // Ptr to right arg token
                                      bPrototyping);     // TRUE iff protoyping
 } // End PrimOpDydDieresisJotCommon_EM_YY
-
-
-//***************************************************************************
-//  Magic function/operator for dyadic derived function from the rank dyadic operator
-//
-//  This operator was originally based upon code found in the paper by J. Philip Benkhard,
-//    "Extending structure, type, and expression in APL2", ACM SIGAPL APL Quote Quad,
-//    v.21 n.4, p.20-38, Aug. 1991, but later was modified to reflect the
-//    definition of the Rank operator in the ISO-IEC 13751 Extended APL Standard.
-//***************************************************************************
-
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L (LO " MFON_DydRank L" Y) R;YL;YR";
-
-static APLCHAR DydLine1[] =
-  L"(YL YR)" $IS L"(1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
-
-static APLCHAR DydLine2[] =
-  L":if 0>YL " $DIAMOND L" YL" $IS L"0" $MAX L"YL+" $RHO $RHO L"L " $DIAMOND L" :end";
-
-static APLCHAR DydLine3[] =
-  L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
-
-static APLCHAR DydLine4[] =
-  L"Z" $IS L"(" $ENCLOSE L"[(-YL)" $TAKE $IOTA $RHO $RHO L"L] L) LO" $EACH
-                $ENCLOSE L"[(-YR)" $TAKE $IOTA $RHO $RHO L"R] R "
-  $DIAMOND L" " $GOTO L"0";
-
-static APLCHAR DydLine5[] =
-  $QUAD_PRO L":"
-  L"(YL YR)" $IS L"(1" $DROP $REVERSE L"3" $RHO $REVERSE L"Y)" $MIN L"(" $RHO $RHO L"L)," $RHO $RHO L"R";
-
-static APLCHAR DydLine6[] =
-  L":if 0>YL " $DIAMOND L" YL" $IS L"0" $MAX L"YL+" $RHO $RHO L"L " $DIAMOND L" :end";
-
-static APLCHAR DydLine7[] =
-  L":if 0>YR " $DIAMOND L" YR" $IS L"0" $MAX L"YR+" $RHO $RHO L"R " $DIAMOND L" :end";
-
-static APLCHAR DydLine8[] =
-  L"Z" $IS $DISCLOSE L"(" $ENCLOSE L"[(-YL)" $TAKE $IOTA $RHO $RHO L"L]" $EACH L"0" $RHO $ENCLOSE L"L) LO" $EACH $EACH
-                          $ENCLOSE L"[(-YR)" $TAKE $IOTA $RHO $RHO L"R]" $EACH L"0" $RHO $ENCLOSE L"R";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
- DydLine2,
- DydLine3,
- DydLine4,
- DydLine5,
- DydLine6,
- DydLine7,
- DydLine8,
-};
-
-MAGIC_FCNOPR MFO_DydRank =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
 
 
 //***************************************************************************

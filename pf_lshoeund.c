@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -215,21 +215,7 @@ NORMAL_EXIT:
 //         or R iff L is a superset of R (RightShoeUnderbar).
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydLRShoeUnd L" R";
-
-static APLCHAR DydLine1[] =
-  L"Z" $IS $AND L"/L" $EPSILON L"R";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
-};
-
-MAGIC_FCNOPR MFO_DydLRShoeUnd =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
+#include "mf_lshoeund.h"
 
 
 //***************************************************************************

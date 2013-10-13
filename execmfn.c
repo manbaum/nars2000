@@ -32,7 +32,7 @@ extern MAGIC_FCNOPR MFO_MonRank;
 extern MAGIC_FCNOPR MFO_DydRank;
 extern MAGIC_FCNOPR MFO_Conform;
 extern MAGIC_FCNOPR MFO_MonFMT;
-extern MAGIC_FCNOPR MFO_Box;
+extern MAGIC_FCNOPR MFO_BoxFMT;
 extern MAGIC_FCNOPR MFO_MonVR;
 extern MAGIC_FCNOPR MFO_IdnDot;
 extern MAGIC_FCNOPR MFO_IdnJotDot;
@@ -729,7 +729,7 @@ UBOOL InitMagicFunctions
     lpMemPTD->hGlbMFO[MFOE_DydRank          ]  = Init1MagicFunction (MFON_DydRank          , &MFO_DydRank          , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_Conform          ]  = Init1MagicFunction (MFON_Conform          , &MFO_Conform          , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_MonFMT           ]  = Init1MagicFunction (MFON_MonFMT           , &MFO_MonFMT           , lpMemPTD, hWndEC, NULL);
-    lpMemPTD->hGlbMFO[MFOE_Box              ]  = Init1MagicFunction (MFON_Box              , &MFO_Box              , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_BoxFMT           ]  = Init1MagicFunction (MFON_BoxFMT           , &MFO_BoxFMT           , lpMemPTD, hWndEC, NULL);
     initMFO.lphtsMFO = &lpMemPTD->htsMFO_MonVR;
     lpMemPTD->hGlbMFO[MFOE_MonVR            ]  = Init1MagicFunction (MFON_MonVR            , &MFO_MonVR            , lpMemPTD, hWndEC, &initMFO);
 ////initMFO.lphtsMFO = NULL;

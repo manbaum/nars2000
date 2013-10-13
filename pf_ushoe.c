@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -223,21 +223,7 @@ NORMAL_EXIT:
 //  Return the elements in L and in R.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_DydUpShoe L" R";
-
-static APLCHAR DydLine1[] =
-  L"Z" $IS L"(L" $EPSILON L"R)/L";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
-};
-
-MAGIC_FCNOPR MFO_DydUpShoe =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
+#include "mf_ushoe.h"
 
 
 //***************************************************************************

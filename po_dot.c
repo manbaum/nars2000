@@ -295,22 +295,7 @@ ERROR_EXIT:
 //    inner product operator
 //***************************************************************************
 
-static APLCHAR IdnHeader[] =
-  L"Z" $IS MFON_IdnDot L" R";
-
-static APLCHAR IdnLine1[] =
-  $QUAD_ID L":"
-  L"Z" $IS $JOT L".=" $DUPLICATE $IOTA $NEG L"1" $TAKE L"1," $RHO L"R";
-
-static LPAPLCHAR IdnBody[] =
-{IdnLine1,
-};
-
-MAGIC_FCNOPR MFO_IdnDot =
-{IdnHeader,
- IdnBody,
- countof (IdnBody),
-};
+#include "mf_dot.h"
 
 
 //***************************************************************************

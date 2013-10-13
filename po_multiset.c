@@ -2150,30 +2150,6 @@ ERROR_EXIT:
 //  On scalar or vector args, return the elements in L~R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMAD[] =
-  L"Z" $IS L"L " MFON_MAD L" R";
-
-static APLCHAR DydLineMAD1[] =
-  $QUAD_MS L":"
-  L"Z" $IS L"(~L" $EPSILON $MULTISET L"R)/L"
-  $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMAD2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MAD L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMAD[] =
-{DydLineMAD1,
- DydLineMAD2,
-};
-
-MAGIC_FCNOPR MFO_MAD =
-{DydHeaderMAD,
- DydBodyMAD,
- countof (DydBodyMAD),
-};
-
-
 //***************************************************************************
 //  Magic function for Multiset Symmetric Difference
 //
@@ -2181,30 +2157,6 @@ MAGIC_FCNOPR MFO_MAD =
 //
 //  On scalar or vector args, return the elements in (L~$R),R~$L.
 //***************************************************************************
-
-static APLCHAR DydHeaderMSD[] =
-  L"Z" $IS L"L " MFON_MSD L" R";
-
-static APLCHAR DydLineMSD1[] =
-  $QUAD_MS L":"
-  L"Z" $IS L"(L " MFON_MAD L" R),R " MFON_MAD L" L"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMSD2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MSD L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMSD[] =
-{DydLineMSD1,
- DydLineMSD2,
-};
-
-MAGIC_FCNOPR MFO_MSD =
-{DydHeaderMSD,
- DydBodyMSD,
- countof (DydBodyMSD),
-};
-
 
 //***************************************************************************
 //  Magic function for Multiset Union
@@ -2214,30 +2166,6 @@ MAGIC_FCNOPR MFO_MSD =
 //  On scalar or vector args, return the multiset union of the two args
 //***************************************************************************
 
-static APLCHAR DydHeaderMU[] =
-  L"Z" $IS L"L " MFON_MU L" R";
-
-static APLCHAR DydLineMU1[] =
-  $QUAD_MS L":"
-  L"Z" $IS L"L,R " MFON_MAD L" L"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMU2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MU L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMU[] =
-{DydLineMU1,
- DydLineMU2,
-};
-
-MAGIC_FCNOPR MFO_MU =
-{DydHeaderMU,
- DydBodyMU,
- countof (DydBodyMU),
-};
-
-
 //***************************************************************************
 //  Magic function for Multiset Intersection
 //
@@ -2245,30 +2173,6 @@ MAGIC_FCNOPR MFO_MU =
 //
 //  On scalar or vector args, return the multiset intersection of the two args
 //***************************************************************************
-
-static APLCHAR DydHeaderMI[] =
-  L"Z" $IS L"L " MFON_MI L" R";
-
-static APLCHAR DydLineMI1[] =
-  $QUAD_MS L":"
-  L"Z" $IS L"(L" $EPSILON $MULTISET L"R)/L"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMI2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MI L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMI[] =
-{DydLineMI1,
- DydLineMI2,
-};
-
-MAGIC_FCNOPR MFO_MI =
-{DydHeaderMI,
- DydBodyMI,
- countof (DydBodyMI),
-};
-
 
 //***************************************************************************
 //  Magic function for Multiset Proper Subset
@@ -2278,30 +2182,6 @@ MAGIC_FCNOPR MFO_MI =
 //  On scalar or vector args, return TRUE iff L is a proper multisubset of R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMLRS[] =
-  L"Z" $IS L"L " MFON_MLRS L" R";
-
-static APLCHAR DydLineMLRS1[] =
-  $QUAD_MS L":"
-  L"Z" $IS L"(L " MFON_MLRSU L" R)^L" $MISMATCH $MULTISET L"R"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMLRS2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MLRS L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMLRS[] =
-{DydLineMLRS1,
- DydLineMLRS2,
-};
-
-MAGIC_FCNOPR MFO_MLRS =
-{DydHeaderMLRS,
- DydBodyMLRS,
- countof (DydBodyMLRS),
-};
-
-
 //***************************************************************************
 //  Magic function for Multiset Subset
 //
@@ -2309,30 +2189,6 @@ MAGIC_FCNOPR MFO_MLRS =
 //
 //  On scalar or vector args, return TRUE iff L is a multisubset of R.
 //***************************************************************************
-
-static APLCHAR DydHeaderMLRSU[] =
-  L"Z" $IS L"L " MFON_MLRSU L" R";
-
-static APLCHAR DydLineMLRSU1[] =
-  $QUAD_MS L":"
-  L"Z" $IS L"~0" $EPSILON L"L " MFON_MEO L" R"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMLRSU2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MLRSU L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMLRSU[] =
-{DydLineMLRSU1,
- DydLineMLRSU2,
-};
-
-MAGIC_FCNOPR MFO_MLRSU =
-{DydHeaderMLRSU,
- DydBodyMLRSU,
- countof (DydBodyMLRSU),
-};
-
 
 //***************************************************************************
 //  Magic function for Multiset Index Of
@@ -2342,32 +2198,6 @@ MAGIC_FCNOPR MFO_MLRSU =
 //  On scalar or vector args, return the elements in L{iota}$R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMIO[] =
-  L"Z" $IS L"L " MFON_MIO L" R";
-
-static APLCHAR DydLineMIO1[] =
-  $QUAD_MS L":L" $IS L"1/L"
-       $DIAMOND
-  L"Z" $IS L"((" $RHO L"L)" $RHO $GRADEUP $GRADEUP L"L" $IOTA L"L,R)" $IOTA
-            L"(" $RHO L"R)" $RHO $GRADEUP $GRADEUP L"L" $IOTA L"R,L"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMIO2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MIO L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMIO[] =
-{DydLineMIO1,
- DydLineMIO2,
-};
-
-MAGIC_FCNOPR MFO_MIO =
-{DydHeaderMIO,
- DydBodyMIO,
- countof (DydBodyMIO),
-};
-
-
 //***************************************************************************
 //  Magic function for Multiset Element Of
 //
@@ -2376,32 +2206,6 @@ MAGIC_FCNOPR MFO_MIO =
 //  On scalar or vector args, return the elements in L{epsilon}$R.
 //***************************************************************************
 
-static APLCHAR DydHeaderMEO[] =
-  L"Z" $IS L"L " MFON_MEO L" R";
-
-static APLCHAR DydLineMEO1[] =
-  $QUAD_MS L":L" $IS L"1/L"
-       $DIAMOND
-  L"Z" $IS L"((" $RHO L"L)" $RHO $GRADEUP $GRADEUP L"L" $IOTA L"L,R)" $EPSILON
-            L"(" $RHO L"R)" $RHO $GRADEUP $GRADEUP L"L" $IOTA L"R,L"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMEO2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MEO L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMEO[] =
-{DydLineMEO1,
- DydLineMEO2,
-};
-
-MAGIC_FCNOPR MFO_MEO =
-{DydHeaderMEO,
- DydBodyMEO,
- countof (DydBodyMEO),
-};
-
-
 //***************************************************************************
 //  Magic function for Multiset Match
 //
@@ -2409,35 +2213,6 @@ MAGIC_FCNOPR MFO_MEO =
 //
 //  On scalar or vector args, return the elements in L{match}$R.
 //***************************************************************************
-
-static APLCHAR DydHeaderMM[] =
-  L"Z" $IS L"L " MFON_MM L" R";
-
-static APLCHAR DydLineMM1[] =
-  $QUAD_MS L":"
-  L"Z" $IS L"(" $RHO L"1/L)" $MATCH $RHO L"1/R"
-       $DIAMOND $GOTO L"Z" $DROP L"0";
-
-static APLCHAR DydLineMM2[] =
-  L"Z" $IS $AND L"/L" $EPSILON $MULTISET L"R"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMM3[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L"(" $TYPE L"L) " MFON_MM L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMM[] =
-{DydLineMM1,
- DydLineMM2,
- DydLineMM3,
-};
-
-MAGIC_FCNOPR MFO_MM =
-{DydHeaderMM,
- DydBodyMM,
- countof (DydBodyMM),
-};
-
 
 //***************************************************************************
 //  Magic function for Multiset Multiplicities
@@ -2448,28 +2223,7 @@ MAGIC_FCNOPR MFO_MM =
 //    in the same order as the unique elements.
 //***************************************************************************
 
-static APLCHAR DydHeaderMMUL[] =
-  L"Z" $IS MFON_MMUL L" R";
-
-static APLCHAR DydLineMMUL1[] =
-  $QUAD_MS L":"
-  L"Z" $IS $NEG L"2-/" $IOTAUND L"1,(2" $NE L"/R[" $GUP L"(1/R)" $IOTA L"R]),1"
-       $DIAMOND $GOTO L"0";
-
-static APLCHAR DydLineMMUL2[] =
-  $QUAD_PRO L":"
-  L"Z" $IS $TYPE L" " MFON_MMUL L" " $TYPE L"R";
-
-static LPAPLCHAR DydBodyMMUL[] =
-{DydLineMMUL1,
- DydLineMMUL2,
-};
-
-MAGIC_FCNOPR MFO_MMUL =
-{DydHeaderMMUL,
- DydBodyMMUL,
- countof (DydBodyMMUL),
-};
+#include "mf_multiset.h"
 
 
 //***************************************************************************

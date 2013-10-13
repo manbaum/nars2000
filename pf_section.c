@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -268,21 +268,7 @@ RIGHT_RANK_EXIT:
 //  Return the elements in (L~R),R~L.
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z" $IS L"L " MFON_SD L" R";
-
-static APLCHAR DydLine1[] =
-  L"Z" $IS L"(L~R),R~L";
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
-};
-
-MAGIC_FCNOPR MFO_SD =
-{DydHeader,
- DydBody,
- countof (DydBody),
-};
+#include "mf_section.h"
 
 
 //***************************************************************************

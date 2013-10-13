@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -183,22 +183,7 @@ RIGHT_OPERAND_SYNTAX_EXIT:
 //   f/0{rho} R.
 //***************************************************************************
 
-static APLCHAR IdnHeader[] =
-  L"Z" $IS L"(LO " MFON_IdnJotDot L") R";
-
-static APLCHAR IdnLine1[] =
-  $QUAD_ID L":"
-  L"Z" $IS L"LO/0" $RHO L"R";
-
-static LPAPLCHAR IdnBody[] =
-{IdnLine1,
-};
-
-MAGIC_FCNOPR MFO_IdnJotDot =
-{IdnHeader,
- IdnBody,
- countof (IdnBody),
-};
+#include "mf_jotdot.h"
 
 
 //***************************************************************************

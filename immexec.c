@@ -809,6 +809,9 @@ EXIT_TYPES ActOnError
                 // Display the result
                 ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &bFALSE);
 
+                // Free it
+                FreeResult (&lpMemPTD->YYResExec);
+
                 // Zap the token type
                 lpMemPTD->YYResExec.tkToken.tkFlags.TknType = 0;
             } // End IF

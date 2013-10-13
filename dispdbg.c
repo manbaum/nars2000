@@ -435,7 +435,7 @@ void DisplayGlobals
     LPVOID       lpMem;             // Ptr to current global memory (static header)
     APLDIM       aplDim;            // Dimension
     LPVOID       lpData;            // Ptr to global memory data (dynamic data)
-    APLCHAR      aplArrChar[1024];
+    APLCHAR      aplArrChar[10024];
     LPAPLCHAR    lpaplChar,         // Ptr to output save area
                  lpwsz;
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -472,8 +472,10 @@ void DisplayGlobals
         switch (lpHeader->Sig.nature)
 #undef  lpHeader
         {
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
             case VARARRAY_HEADER_SIGNATURE:
+            {
+                LPVARARRAY_HEADER lpHeader = lpMem;
+
                 // Calc the immediate type
                 immType = TranslateArrayTypeToImmType (lpHeader->ArrType);
 
@@ -606,12 +608,21 @@ void DisplayGlobals
                             break;
 
                         case ARRAY_RAT:
-                            lstrcpyW (aplArrChar, L"?r?");
+                            lpwsz =
+                              FormatAplRat (aplArrChar,             // Ptr to output save area
+                                           *(LPAPLRAT) lpData);     // The value to format
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
 
                             break;
 
                         case ARRAY_VFP:
-                            lstrcpyW (aplArrChar, L"?f?");
+                            lpwsz =
+                              FormatAplVfp (aplArrChar,             // Ptr to output save area
+                                          *(LPAPLVFP) lpData,       // The value to format
+                                            0);                     // Use this many significant digits for VFP
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
 
                             break;
 
@@ -645,10 +656,12 @@ void DisplayGlobals
                 } // End IF
 
                 break;
-#undef  lpHeader
+            } // End VARARRAY_HEADER_SIGNATURE
 
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
             case FCNARRAY_HEADER_SIGNATURE:
+            {
+                LPFCNARRAY_HEADER lpHeader = lpMem;
+
                 // It's a valid HGLOBAL function array
                 Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlb)));
 
@@ -696,26 +709,20 @@ void DisplayGlobals
                 DbgMsgW (wszTemp);
 
                 break;
-#undef  lpHeader
+            } // End FCNARRAY_HEADER_SIGNATURE
 
-#define lpHeader    ((LPDFN_HEADER) lpMem)
             case DFN_HEADER_SIGNATURE:
             {
-                LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
+                LPDFN_HEADER lpHeader = lpMem;      // Ptr to user-defined function/operator header
                 APLUINT      uNameLen;              // User-defined function/operator name length
 
                 // It's a valid HGLOBAL user-defined function/operator
                 Assert (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlb)));
 
-                // Lock to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (hGlb);
-
                 // Copy the user-defined function/operator name
                 CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
-                             lpMemDfnHdr->steFcnName,   // Ptr to function symbol table entry
+                             lpHeader->steFcnName,      // Ptr to function symbol table entry
                             &uNameLen);                 // Ptr to name length (may be NULL)
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlb); lpMemDfnHdr = NULL;
 
                 // If we're to display all globals or
                 //   this one is not a Magic Function/Operator, ...
@@ -742,7 +749,6 @@ void DisplayGlobals
 
                 break;
             } // End DFN_HEADER_SIGNATURE
-#undef  lpHeader
 
             default:
                 if (uDispGlb EQ 2)

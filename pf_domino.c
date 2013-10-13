@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -204,7 +204,7 @@ LPPL_YYSTYPE PrimIdentFnDomino_EM_YY
         goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
-    if (!IsSimpleGlbNum (aplTypeRht))
+    if (!IsNumeric (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // If the right arg is a scalar, the result is an immediate
@@ -458,7 +458,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
-    if (!IsSimpleGlbNum (aplTypeRht))
+    if (!IsNumeric (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // Calculate the result storage type
@@ -467,7 +467,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     else
         aplTypeRes = aplTypeRht;
 
-    // If the right arg is a scalar, the result is an immediate
+    // If the right arg is a scalar, the result is an immediate or scalar global numeric, ...
     if (IsScalar (aplRankRht))
     {
         IMM_TYPES immTypeRes;
@@ -642,8 +642,8 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     } // End IF/ELSE
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     //***************************************************************
     // lpMemRes and lpMemRht now point to their data
@@ -1184,8 +1184,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
-    if (!IsSimpleGlbNum (aplTypeLft)
-     || !IsSimpleGlbNum (aplTypeRht))
+    if (!IsNumeric (aplTypeLft)
+     || !IsNumeric (aplTypeRht))
         goto DOMAIN_EXIT;
 
     // Save the # rows & cols in the result
@@ -1277,11 +1277,11 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
         // Skip over the header and dimensions to the data
         if (!IsScalar (aplRankLft))
-            lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+            lpMemLft = VarArrayDataFmBase (lpMemLft);
         if (!IsScalar (aplRankRht))
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
         if (!IsScalar (aplRankRes) || IsGlbNum (aplTypeRes))
-            lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+            lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Check for no rows as gsl_linalg_SV_decomp doesn't handle it well
         if (uNumRowsRht EQ 0)
@@ -1374,14 +1374,14 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                                 Assert (sizeof (double) EQ sizeof (APLFLOAT));
                                 CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
-    ////////////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
-    ////////////////////////////{
-    ////////////////////////////    // Check for Ctrl-Break
-    ////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
-    ////////////////////////////        goto ERROR_EXIT;
-    ////////////////////////////
-    ////////////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
-    ////////////////////////////} // End FOR
+////////////////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
+////////////////////////////////{
+////////////////////////////////    // Check for Ctrl-Break
+////////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////////        goto ERROR_EXIT;
+////////////////////////////////
+////////////////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
+////////////////////////////////} // End FOR
 
                                 break;
 

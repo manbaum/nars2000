@@ -52,7 +52,8 @@ typedef enum tagMFO
     MFOE_DydDomino       ,      // 1A:  Dyadic  ...
     MFOE_DydDotDot       ,      // 1B:  Dyadic DotDot
     MFOE_DydIotaUnderbar ,      // 1C:  Dyadic Iota Underbar
-    MFOE_LENGTH                 // 1D:  # entries in this enum
+    MFOE_MonDot          ,      // 1D:  Monadic derived function from f.g for determinant
+    MFOE_LENGTH                 // 1E:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -85,6 +86,7 @@ typedef enum tagMFO
 #define MFON_DydDomino          L"#DydDomino"
 #define MFON_DydDotDot          L"#DydDotDot"
 #define MFON_DydIotaUnderbar    L"#DydIotaUnderbar"
+#define MFON_MonDot             L"#MonDot"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

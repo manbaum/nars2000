@@ -48,6 +48,49 @@ MAGIC_FCNOPR MFO_IdnDot =
  countof (IdnBody),
 };
 
+//***************************************************************************
+//  Magic function/operator for determinant function from the
+//    inner product operator
+//***************************************************************************
+
+static APLCHAR MonHeader[] =
+  L"Z←(LO " MFON_MonDot L" RO) R";
+
+//L"⍝ Generalized determinant operator";
+
+static APLCHAR MonLine1[] = 
+  L"⎕ERROR (2≠⍴⍴R)/'RANK ERROR'";
+
+static APLCHAR MonLine2[] = 
+  L"⎕ERROR (≠/⍴R)/'LENGTH ERROR'";
+
+static APLCHAR MonLine3[] = 
+  L":if ∨/0 1∊⍴R ⋄ Z←⍬⍴R ⋄ →0 ⋄ :end";
+
+static APLCHAR MonLine4[] = 
+  L"Z←⊃LO/((1⍴⍴R)⍴R) RO¨∇¨(⊂[1+⎕IO] (⍴R)⍴~(1+1⍴⍴R)↑1)/¨⊂1 0↓R";
+
+static APLCHAR MonLine5[] = 
+  L"→0";
+
+static APLCHAR MonLine6[] =
+  L"⎕PRO:Z←⊃LO/⍬";
+
+static LPAPLCHAR MonBody[] =
+{MonLine1,
+ MonLine2,
+ MonLine3,
+ MonLine4,
+ MonLine5,
+ MonLine6,
+};
+
+MAGIC_FCNOPR MFO_MonDot =
+{MonHeader,
+ MonBody,
+ countof (MonBody),
+};
+
 
 //***************************************************************************
 //  End of File: mf_dot.h

@@ -23,13 +23,16 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include "gsl/gsl_matrix_double.h"
+#include "gsl/gsl_permutation.h"
+#include "gsl/gsl_linalg.h"
 
 
 //***************************************************************************
 //  $PrimOpDot_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    dyadic operator Dot ("ERROR" and "inner product")
+//    dyadic operator Dot ("determinant" and "inner product")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpDot_EM_YY
@@ -55,7 +58,7 @@ LPPL_YYSTYPE PrimOpDot_EM_YY
 //  $PrimProtoOpDot_EM_YY
 //
 //  Generate a prototype for the derived functions from
-//    monadic operator Dot ("ERROR" and "inner product")
+//    monadic operator Dot ("determinant" and "inner product")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimProtoOpDot_EM_YY
@@ -248,7 +251,7 @@ IDENT1:
         aplRankRes = ((LPVARARRAY_HEADER) lpMemRes)->Rank;
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Round up the NELM (in bits) to bytes to use as a loop counter
         aplNELMBytes = RoundUpBitsToBytes (aplNELMRes);
@@ -301,7 +304,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $PrimOpMonDot_EM_YY
 //
-//  Primitive operator for monadic derived function from Dot ("ERROR")
+//  Primitive operator for monadic derived function from Dot ("determinant")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpMonDot_EM_YY
@@ -318,7 +321,7 @@ LPPL_YYSTYPE PrimOpMonDot_EM_YY
 //***************************************************************************
 //  $PrimOpMonDotCommon_EM_YY
 //
-//  Primitive operator for monadic derived function from Dot ("ERROR")
+//  Primitive operator for monadic derived function from Dot ("determinant")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -333,9 +336,734 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
      UBOOL        bPrototyping)             // TRUE iff prototyping
 
 {
-    return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
+    LPPLLOCALVARS    lpplLocalVars;         // Ptr to re-entrant vars
+    LPUBOOL          lpbCtrlBreak;          // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE     lpYYFcnStrLft,         // Ptr to left operand function strand
+                     lpYYFcnStrRht;         // Ptr to right ...
+    LPTOKEN          lptkAxis,              // Ptr to axis token (may be NULL)
+                     lptkFunc;              // ...    function token
+    APLSTYPE         aplTypeRht,            // Right arg storage type
+                     aplTypeRes;            // Result    ...
+    APLNELM          aplNELMRht;            // Right arg NELM
+    APLRANK          aplRankRht;            // Right arg rank
+    HGLOBAL          hGlbRht = NULL,        // Right arg global memory handle
+                     lpSymGlbRht,           // Ptr to right arg global numeric
+                     hGlbTmp = NULL;        // Temp global memory handle
+    LPVOID           lpMemRht = NULL,       // Ptr to right arg global memory
+                     lpMemRes;              // ...    result    ...
+    LPAPLRAT         lpMemTmp;              // Ptr to temp global memory
+    LPPL_YYSTYPE     lpYYRes = NULL;        // Ptr to the result
+    APLUINT          ByteRes;               // # bytes in the result
+    APLINT           apaOffRht,             // Right arg APA offset
+                     apaMulRht;             // ...           multiplier
+    APLFLOAT         aplFloatRht;           // Right arg temporary float
+    APLDIM           aplDimRows,            // # rows in the right arg
+                     aplDimCols,            // # cols ...
+                     uRow,                  // Loop counter
+                     uCol;                  // ...
+    UINT             uBitMask;              // Bit mask for marching through Booleans
+    IMM_TYPES        immTypeRes;            // Immediate result storage type
+    APLRAT           aplRatRes = {0};       // Temp result if RAT
+    APLVFP           aplVfpRes = {0};       // ...            VFP
+    gsl_matrix      *lpGslMatrixU = NULL;   // GSL temporary
+    gsl_permutation *lpGslPermP = NULL;     // ...
+    int              ErrCode,               // Error code from gsl_* functions
+                     signum;                // Sign of the LU permutation
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // Check for axis operator
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+
+    //***************************************************************
+    // The derived functions from this operator are not sensitive to
+    //   the axis operator, so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // Set ptr to left & right operands,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+     || IsTknFillJot (&lpYYFcnStrLft->tkToken))
+        goto LEFT_OPERAND_SYNTAX_EXIT;
+
+    // Ensure the right operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
+     || IsTknFillJot (&lpYYFcnStrRht->tkToken))
+        goto RIGHT_OPERAND_SYNTAX_EXIT;
+
+    // Set the function token ptr
+    lptkFunc = &lpYYFcnStrOpr->tkToken;
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Get right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Check for RANK ERROR
+    if (IsRank3P (aplRankRht))
+        goto RIGHT_RANK_EXIT;
+
+    // Calculate the # rows & cols in the result
+    switch (aplRankRht)
+    {
+        case 0:
+            aplDimRows =
+            aplDimCols = 1;
+
+            break;
+
+        case 1:
+            aplDimRows = (VarArrayBaseToDim (lpMemRht))[0];
+            aplDimCols = 1;
+
+            break;
+
+        case 2:
+            aplDimRows = (VarArrayBaseToDim (lpMemRht))[0];
+            aplDimCols = (VarArrayBaseToDim (lpMemRht))[1];
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Check for LENGTH ERROR
+    if (aplDimRows NE aplDimCols)
+        goto RIGHT_LENGTH_EXIT;
+
+    // Check for DOMAIN ERROR
+    if (!IsNumeric (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
+
+    // Calculate the result storage type
+    if (IsSimpleNum (aplTypeRht))
+        aplTypeRes = ARRAY_FLOAT;
+    else
+        aplTypeRes = aplTypeRht;
+
+    // If the left operand is NOT the immediate function (-), ...
+    if (!IsTknImmed (&lpYYFcnStrLft->tkToken)
+     || lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR)
+        // Handle as a generalized determinant
+        goto GENERAL_DET;
+
+    // If the right operand is NOT the immediate function (x), ...
+    if (!IsTknImmed (&lpYYFcnStrRht->tkToken)
+     || lpYYFcnStrRht->tkToken.tkData.tkChar NE UTF16_TIMES)
+        // Handle as a generalized determinant
+        goto GENERAL_DET;
+
+    // If the right arg is a scalar or one-element vector, the result is an immediate or scalar global numeric
+    if (IsScalar (aplRankRht)
+     || (IsVector (aplRankRht)
+      && IsSingleton (aplDimRows)))
+    {
+        IMM_TYPES immTypeRes;
+        APLRAT    aplRatRht = {0};
+        APLVFP    aplVfpRht = {0};
+
+        // Get the first value from a token into aplFloatRht or lpSymGlbRht
+        GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                            NULL,           // Ptr to integer result
+                           &aplFloatRht,    // Ptr to float ...
+                            NULL,           // Ptr to WCHAR ...
+                            NULL,           // Ptr to longest ...
+                           &lpSymGlbRht,    // Ptr to lpSym/Glb ...
+                            NULL,           // Ptr to ...immediate type ...
+                            NULL);          // Ptr to array type ...
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+////////lpYYRes->tkToken.tkFlags.TknType   =            // Filled in below
+////////lpYYRes->tkToken.tkFlags.ImmType   =            // Filled in below
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkData.tkFloat    =            // Filled in below
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_APA:
+            case ARRAY_FLOAT:
+                // Set the immediate type
+                immTypeRes = IMMTYPE_FLOAT;
+
+                // If the right arg is zero, the result is zero
+                //   as per SVD
+                if (aplFloatRht NE 0)
+                    // Invert it
+                    aplFloatRht = 1.0 / aplFloatRht;
+
+                // Save in the result
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYRes->tkToken.tkData.tkFloat    = aplFloatRht;
+
+                break;
+
+            case ARRAY_RAT:
+                // Set the immediate type
+                immTypeRes = IMMTYPE_RAT;
+
+                // Copy the value
+                mpq_init_set (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
+
+                // If the right arg is zero, the result is zero
+                //   as per SVD ***CHECKME***
+                if (!IsMpq0 (&aplRatRht))
+                    // Invert it
+                    mpq_inv (&aplRatRht, &aplRatRht);
+
+                // Save in the result
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                lpYYRes->tkToken.tkData.tkGlbData  =
+                  MakeGlbEntry_EM (aplTypeRes,
+                                  &aplRatRht,
+                                   FALSE,
+                                   lptkFunc);
+                // Check for errors
+                if (!lpYYRes->tkToken.tkData.tkGlbData)
+                    goto WSFULL_EXIT;
+                break;
+
+            case ARRAY_VFP:
+                // Set the immediate type
+                immTypeRes = IMMTYPE_VFP;
+
+                // Copy the value
+                mpfr_init_copy (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
+
+                // If the right arg is zero, the result is zero
+                //   as per SVD ***CHECKME***
+                if (!IsMpf0 (&aplVfpRht))
+                    // Invert it
+                    mpfr_inv (&aplVfpRht, &aplVfpRht, MPFR_RNDN);
+
+                // Save in the result
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                lpYYRes->tkToken.tkData.tkGlbData  =
+                  MakeGlbEntry_EM (aplTypeRes,
+                                  &aplVfpRht,
+                                   FALSE,
+                                   lptkFunc);
+                // Check for errors
+                if (!lpYYRes->tkToken.tkData.tkGlbData)
+                    goto WSFULL_EXIT;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        goto NORMAL_EXIT;
+    } // End IF
+
+    //***************************************************************
+    // From here on, the right arg is a one-element vector or
+    //   a square matrix
+    //***************************************************************
+
+    // Skip over the header and dimensions to the data
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+
+    Assert (aplDimRows EQ (APLU3264) aplDimRows);
+    Assert (aplDimCols EQ (APLU3264) aplDimCols);
+
+    // Copy the right arg to the GSL matrix U
+    // The scalar case is handled above, and the vector
+    //   and matrix cases are handled the same
+
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_FLOAT:
+            // No aborting on error!
+            gsl_set_error_handler_off ();
+
+            // Allocate space for the GSL matrices
+            lpGslMatrixU = gsl_matrix_alloc      ((APLU3264) aplDimRows, (APLU3264) aplDimCols);    // M x N
+            lpGslPermP   = gsl_permutation_alloc ((APLU3264) aplDimRows);
+
+            // Check the return codes for the above allocations
+            if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
+             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslPermP)
+                goto WSFULL_EXIT;
+
+            // Copy the right arg to the GSL matrix U
+            // Split cases based upon the right arg's rank
+            switch (aplRankRht)
+            {
+////////////////case 0:         // Scalar
+////////////////    lpGslMatrixU->data[0] = aplFloatRht;
+////////////////
+////////////////    break;
+////////////////
+                case 1:         // Vector
+                case 2:         // Matrix
+                    // Split cases based upon the right arg storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_BOOL:
+                            uBitMask = BIT0;
+
+                            for (uCol = 0; uCol < aplNELMRht; uCol++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
+
+                                // Shift over the bit mask
+                                uBitMask <<= 1;
+
+                                // Check for end-of-byte
+                                if (uBitMask EQ END_OF_BYTE)
+                                {
+                                    uBitMask = BIT0;            // Start over
+                                    ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_INT:
+                            for (uCol = 0; uCol < aplNELMRht; uCol++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+                            } // End FOR
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Calculate space needed for the result
+                            ByteRes = 1 * sizeof (APLFLOAT);
+
+////////////////////////////// Check for overflow
+////////////////////////////if (ByteRes NE (APLU3264) ByteRes)
+////////////////////////////    goto WSFULL_EXIT;
+
+                            Assert (sizeof (double) EQ sizeof (APLFLOAT));
+                            CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
+////////////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
+////////////////////////////{
+////////////////////////////    // Check for Ctrl-Break
+////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////        goto ERROR_EXIT;
+////////////////////////////
+////////////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
+////////////////////////////} // End FOR
+
+                            break;
+
+                        case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                            // Get the APA parameters
+                            apaOffRht = lpAPA->Off;
+                            apaMulRht = lpAPA->Mul;
+#undef  lpAPA
+                            for (uCol = 0; uCol < aplNELMRht; uCol++)
+                            {
+                                // Check for Ctrl-Break
+                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                    goto ERROR_EXIT;
+
+                                lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Calculate the LU (Lower/Upper) Decomposition of the square matrix U
+            //   with the result in U and P (P is a temporary used by LU decomp only)
+            ErrCode =
+              gsl_linalg_LU_decomp (lpGslMatrixU,       // N x N
+                                    lpGslPermP,         // N
+                                   &signum);            // Ptr to sign of the perm
+            // Check the error code
+            if (ErrCode NE GSL_SUCCESS)
+                goto RIGHT_DOMAIN_EXIT;
+
+            // Calculate the determinant
+            aplFloatRht =
+              gsl_linalg_LU_det (lpGslMatrixU,          // N x N
+                                 signum);               // Sign of the perm
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+            lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkFloat    = aplFloatRht;
+            lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
+            break;
+
+        case ARRAY_RAT:
+            // Allocate temporary space for a copy of the right arg
+            hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) aplNELMRht * sizeof (APLRAT));
+            if (!hGlbTmp)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemTmp = MyGlobalLock (hGlbTmp);
+
+            // Loop through the rows and cols
+            for (uRow = 0; uRow < aplDimRows; uRow++)
+            for (uCol = 0; uCol < aplDimCols; uCol++)
+                // Initialize the matrix
+                mpq_init_set (&            lpMemTmp [uRow * aplDimCols + uCol],
+                              &((LPAPLRAT) lpMemRht)[uRow * aplDimCols + uCol]);
+
+            // Use Gauss-Jordan elimination to calculate the determinant (into aplRatRes)
+            if (!GaussJordanDet (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
+                goto RIGHT_DOMAIN_EXIT;
+
+            // Point to the result
+            lpMemRes = &aplRatRes;
+
+            // Set the immediate type
+            immTypeRes = IMMTYPE_RAT;
+
+            goto YYALLOC_EXIT;
+
+        case ARRAY_VFP:
+            // Allocate a temp array to hold the VFPs when converted to RATs
+            hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) (aplDimRows * aplDimCols * sizeof (APLRAT)));
+            if (!hGlbTmp)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemTmp = MyGlobalLock (hGlbTmp);
+
+            // Loop through the rows and cols
+            for (uRow = 0; uRow < aplDimRows; uRow++)
+            for (uCol = 0; uCol < aplDimCols; uCol++)
+            {
+                // Initialize the entry
+                mpq_init   (&lpMemTmp[uRow * aplDimRows + uCol]);
+
+                // Copy and convert the entry
+                mpq_set_fr (&            lpMemTmp [uRow * aplDimRows + uCol],
+                            &((LPAPLVFP) lpMemRht)[uRow * aplDimCols + uCol]);
+            } // End FOR/FOR
+
+            // Use Gauss-Jordan elimination to calculate the determinant (into aplRatRes)
+            if (!GaussJordanDet (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
+                goto RIGHT_DOMAIN_EXIT;
+
+            // Initialize the temp result
+            mpfr_init (&aplVfpRes);
+
+            // Convert the result (in lpMemTmp) back to VFP
+            mpfr_set_q (&aplVfpRes,
+                        &aplRatRes,
+                         MPFR_RNDN);
+            // We no longer need this resource
+            Myq_clear (&aplRatRes);
+
+            // Point to the result
+            lpMemRes = &aplVfpRes;
+
+            // Set the immediate type
+            immTypeRes = IMMTYPE_VFP;
+
+            goto YYALLOC_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    goto NORMAL_EXIT;
+
+YYALLOC_EXIT:
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkData.tkFloat    =            // Filled in below
+    lpYYRes->tkToken.tkData.tkGlbData  =
+      MakeGlbEntry_EM (aplTypeRes,
+                       lpMemRes,
+                       FALSE,
+                       lptkFunc);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // Check for errors
+    if (!lpYYRes->tkToken.tkData.tkGlbData)
+        goto WSFULL_EXIT;
+
+    goto NORMAL_EXIT;
+
+GENERAL_DET:
+    {
+        LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+        HGLOBAL      hGlbMFO;               // Magic function/operator global memory handle
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // Get the magic function/operator global memory handles
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonDot];
+
+        lpYYRes =
+          ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token (may be NULL)
+                                     &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                      lpYYFcnStrLft,            // Ptr to left operand function strand
+                                      lpYYFcnStrOpr,            // Ptr to function strand
+                                      lpYYFcnStrRht,            // Ptr to right operand function strand (may be NULL)
+                                      lptkRhtArg,               // Ptr to right arg token
+                                      NULL,                     // Ptr to axis token
+                                      hGlbMFO,                  // Magic function/operator global memory handle
+                                      NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                      bPrototyping
+                                    ? LINENUM_PRO
+                                    : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+        goto NORMAL_EXIT;
+    } // End GENERAL_DET
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+LEFT_OPERAND_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+RIGHT_OPERAND_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+RIGHT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (lpGslPermP)
+    {
+        gsl_permutation_free (lpGslPermP); lpGslPermP = NULL;
+    } // End IF
+
+    if (lpGslMatrixU)
+    {
+        gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
+    } // End IF
+
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (hGlbTmp)
+    {
+        if (lpMemTmp)
+        {
+            // Loop through the rows and cols
+            for (uRow = 0; uRow < aplDimRows; uRow++)
+            for (uCol = 0; uCol < aplDimCols; uCol++)
+                Myq_clear (&lpMemTmp[uRow * aplDimRows + uCol]);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
+    } // End IF
+
+    return lpYYRes;
 } // End PrimOpMonDotCommon_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $GaussJordanDet
+//
+//  Perform Gauss-Jordan elimination on a square rational matrix
+//   or between left and right matrices.
+//***************************************************************************
+
+UBOOL GaussJordanDet
+    (LPAPLRAT lpMemRht,             // Ptr to copy of right arg as APLRAT matrix
+     APLDIM   aplDimRows,           // # rows/cols in the right arg
+     LPAPLRAT lpMemRes,             // Ptr to result as a single APLRAT (uninitialized)
+     LPUBOOL  lpbCtrlBreak)         // Ptr to Ctrl-Break flag
+
+{
+    APLRAT   aplRatTmp = {0},       // Temporary RAT
+             aplRatXch,             // ...
+             aplRatScale = {0};     // Scale factor
+    LPAPLRAT lpaplRatDiv;           // Divisor
+    APLDIM   uRow,                  // Loop counter
+             uCol,                  // ...
+             uTmp;                  // ...
+    int      sign = 1;              // Sign of the result
+    UBOOL    bRet = FALSE;          // TRUE iff the result is valid
+
+    // Initialize the temps
+    mpq_init (&aplRatTmp);
+    mpq_init (&aplRatScale);
+
+    // Loop through the rows in a copy of the right arg
+    for (uRow = 0; uRow < aplDimRows; uRow++)
+    {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
+
+        // Get the diagonal element to be used as a divisor
+        lpaplRatDiv = &lpMemRht[uRow * aplDimRows + uRow];
+
+        // If it's zero,
+        if (mpq_sgn (lpaplRatDiv) EQ 0)
+        {
+            // Loop through subsequent rows in the same column
+            //   looking for a non-zero divisor for scaling
+            for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Get the diagonal element to be used as a divisor (if non-zero)
+                lpaplRatDiv = &lpMemRht[uTmp * aplDimRows + uRow];
+
+                if (mpq_sgn (lpaplRatDiv) NE 0)
+                    break;
+            } // End FOR
+
+            // If the divisor is still zero, ...
+            if (mpq_sgn (lpaplRatDiv) EQ 0)
+            {
+                // The result is 0/1
+                mpq_init_set_ui (lpMemRes, 0, 1);
+
+                goto NORMAL_EXIT;
+            } // End IF
+
+            // Loop through the cols in rows <uTmp> and <uRow>
+            for (uCol = 0; uCol < aplDimRows; uCol++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Exchange the two rows <uTmp> and <uRow>
+                aplRatXch = lpMemRht[uTmp * aplDimRows + uCol];
+                            lpMemRht[uTmp * aplDimRows + uCol] = lpMemRht[uRow * aplDimRows + uCol];
+                                                                 lpMemRht[uRow * aplDimRows + uCol] = aplRatXch;
+            } // End FOR
+
+            // Get the diagonal element to be used as a divisor
+            lpaplRatDiv = &lpMemRht[uRow * aplDimRows + uRow];
+
+            // Reverse the sign after an exchange
+            sign = -sign;
+        } // End IF
+
+        // Loop through the remaining rows
+        for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)
+        {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (*lpbCtrlBreak))
+                goto ERROR_EXIT;
+
+            // Divide the lpMemRht[uTmp][uRow] by the divisor
+            //   to get the scalar factor
+            mpq_div (&aplRatScale, &lpMemRht[uTmp * aplDimRows + uRow], lpaplRatDiv);
+
+            // Subtract row <uRow> scaled by <aplRatScale> from row <uTmp>
+            for (uCol = 0; uCol < aplDimRows; uCol++)
+            {
+                // Scale the next value from row <uRow>
+                mpq_mul (&aplRatTmp, &aplRatScale, &lpMemRht[uRow * aplDimRows + uCol]);
+
+                // Subtract it from the corresponding value from row <uTmp>
+                mpq_sub (&lpMemRht[uTmp * aplDimRows + uCol],
+                         &lpMemRht[uTmp * aplDimRows + uCol],
+                         &aplRatTmp);
+            } // End FOR
+        } // End FOR
+    } // End FOR
+
+    // Initialize to the first element
+    mpq_init_set (lpMemRes, lpMemRht);
+
+    // Loop through the diagonal elements in a copy of the right arg
+    for (uRow = 1; uRow < aplDimRows; uRow++)
+        // Evaluate the determinant by multiplying the diagonal elements
+        mpq_mul (lpMemRes, lpMemRes, &lpMemRht[uRow * aplDimRows + uRow]);
+
+    // If we had a odd # exchanges, ...
+    if (sign < 0)
+        // Negate the result
+        mpq_neg (lpMemRes, lpMemRes);
+NORMAL_EXIT:
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    // Free the temps
+    Myq_clear (&aplRatScale);
+    Myq_clear (&aplRatTmp);
+
+    return bRet;
+} // End GaussJordanDet
 
 
 //***************************************************************************
@@ -1002,13 +1730,13 @@ RESTART_INNERPROD_RES:
 
     // If the left arg is not immediate, ...
     if (lpMemLft)
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
     else
         lpMemLft = &aplLongestLft;
 
     // If the right arg is not immediate, ...
     if (lpMemRht)
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
         lpMemRht = &aplLongestRht;
 
@@ -1360,7 +2088,7 @@ RESTART_INNERPROD_RES:
                         Assert (hGlb NE NULL);
 
                         // Skip over the header and dimensions to the data
-                        lpMem = VarArrayBaseToData (lpMem, 0);
+                        lpMem = VarArrayDataFmBase (lpMem);
 
                         switch (aplType)
                         {
@@ -1529,7 +2257,7 @@ RESTART_INNERPROD_RES:
                     Assert (hGlb NE NULL);
 
                     // Skip over the header and dimensions to the data
-                    lpMem = VarArrayBaseToData (lpMem, 0);
+                    lpMem = VarArrayDataFmBase (lpMem);
 
                     switch (aplType)
                     {

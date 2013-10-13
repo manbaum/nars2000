@@ -734,6 +734,7 @@ UBOOL FreeResultGlobalFcn
             case TKT_FCNAFO:
             case TKT_OP1AFO:
             case TKT_OP2AFO:
+            case TKT_DELAFO:
                 // Get the global memory handle
                 hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
 

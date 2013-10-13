@@ -8725,50 +8725,24 @@ PL_YYLEX_START:
         case TKT_AFORETURN:         // AFO return
             return AFORETURN;
 
-        case TKT_DELAFO:            // Del Anon -- either a monadic or dyadic operator, bound to its operands
+        case TKT_DELAFO:            // Del Anon -- either a function, or a monadic or dyadic operator bound to its operands
             return AFOFCN;
 
-        case TKT_DEL:               // Del -- always a function
+        case TKT_DEL:               // Del -- always a function, possibly derived from an operator
             // Search up the SIS chain to see what this is
             lpSISCur = SrchSISForDfn (lpMemPTD);
 
             // If the ptr is valid, ...
             if (lpSISCur)
             {
-                // Split case based upon the function type
-                switch (lpSISCur->DfnType)
-                {
-                    case DFNTYPE_FCN:
-                        // Fill in the ptr to the function header
-                        //   in both the return value and the token stream
-                               lpYYLval->tkToken.tkData.tkVoid =
-                        lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+                // Fill in the ptr to the function header
+                //   in both the return value and the token stream
+                       lpYYLval->tkToken.tkData.tkVoid =
+                lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+                       lpYYLval->tkToken.tkFlags.TknType =
+                lpplLocalVars->lptkNext->tkFlags.TknType = TKT_DELAFO;
 
-                        // Change it into an anonymous function
-                        //   in both the return value and the token stream
-                               lpYYLval->tkToken.tkFlags.TknType =
-                        lpplLocalVars->lptkNext->tkFlags.TknType = TKT_FCNAFO;
-
-                        return AFOFCN;
-
-                    case DFNTYPE_OP1:
-                    case DFNTYPE_OP2:
-                        // Fill in the ptr to the function header
-                        //   in both the return value and the token stream
-                               lpYYLval->tkToken.tkData.tkVoid =
-                        lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
-
-                        // Change it into an anonymous function
-                        //   in both the return value and the token stream
-                               lpYYLval->tkToken.tkFlags.TknType =
-                        lpplLocalVars->lptkNext->tkFlags.TknType = TKT_DELAFO;
-
-                        return AFOFCN;
-
-                    default:
-                        // Mark it as a SYNTAX ERROR
-                        return UNK;
-                } // End SWITCH
+                return AFOFCN;
             } else
                 // Mark it as a SYNTAX ERROR
                 return UNK;

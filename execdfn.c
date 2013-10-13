@@ -169,8 +169,10 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      LINE_NUMS    startLineType)    // Starting line type (see LINE_NUMS)
 
 {
-    LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
+    LPPL_YYSTYPE lpYYRes,           // Ptr to the result
+                 lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
                  lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
+    UBOOL        bTknDel;           // TRUE iff the function strand token is a Del
 
     // If there's no axis and a function strand, ...
     if (lptkAxis EQ NULL
@@ -178,6 +180,14 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
         // Check for axis operator
         lptkAxis = CheckAxisOper (lpYYFcnStr);
 
+    // Determine if the token is a Del
+    bTknDel = (lpYYFcnStr
+            && lpYYFcnStr->tkToken.tkFlags.TknType EQ TKT_DELAFO);
+    // If the token is a Del, ...
+    if (bTknDel)
+        // Setup left and right operands (if present)
+        GetOperands (lpYYFcnStr->tkToken.tkData.tkGlbData, &lpYYFcnStrLft, &lpYYFcnStrRht);
+    else
     // If there's room for a left operand, ...
     if (lpYYFcnStr
      && lpYYFcnStr->TknCount > (APLU3264) (1 + (lptkAxis NE NULL)))
@@ -195,7 +205,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
         lpYYFcnStrLft = lpYYFcnStrRht = NULL;
 
     // Call common routine
-    return
+    lpYYRes =
       ExecDfnOprGlb_EM_YY (hGlbDfnHdr,      // User-defined function/operator global memory handle
                            lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
                            lpYYFcnStrLft,   // Ptr to left operand function strand (may be NULL if not an operator and no axis)
@@ -204,6 +214,21 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
                            lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                            lptkRhtArg,      // Ptr to right arg token
                            startLineType);  // Starting line type (see LINE_NUMS)
+    // If the token is a Del, ...
+    if (bTknDel)
+    {
+        // If we allocated it, ...
+        if (lpYYFcnStrLft)
+            // Free the left operand YYRes
+            YYFree (lpYYFcnStrLft);
+
+        // If we allocated it, ...
+        if (lpYYFcnStrRht)
+            // Free the right operand YYRes
+            YYFree (lpYYFcnStrRht);
+    } // End IF
+
+    return lpYYRes;
 } // End ExecDfnGlb_EM_YY
 #undef  APPEND_NAME
 

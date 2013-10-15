@@ -31,6 +31,21 @@
 // **FIXME*** -- Distinguish between blocks (buckets) and entries
 // as well as size vs. blocks
 
+#ifdef DEBUG_CS
+  int gCSOHshTab = 0;
+
+  #define MyEnterCriticalSection(a)     {gCSOHshTab++;                                          \
+                                         dprintfWL0 (L"ECS:  %d (#%d)", gCSOHshTab, __LINE__);  \
+                                         EnterCriticalSection (a);}
+  #define MyLeaveCriticalSection(a)     {gCSOHshTab--;                                          \
+                                         if (gCSOHshTab < 0) DbgBrk ();                         \
+                                         dprintfWL0 (L"LCS:  %d (#%d)", gCSOHshTab, __LINE__);  \
+                                         LeaveCriticalSection (a);}
+#else
+  #define MyEnterCriticalSection(a)     EnterCriticalSection (a)
+  #define MyLeaveCriticalSection(a)     LeaveCriticalSection (a)
+#endif
+
 
 //***************************************************************************
 //  $MaskTheHash
@@ -1268,7 +1283,7 @@ UBOOL AppendSymbolValue
     // Get a ptr to the global HshTab struc
     lpHTS = &htsGLB;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Hash the char
     uHash = hashlittle
@@ -1318,7 +1333,7 @@ UBOOL AppendSymbolValue
 ERROR_EXIT:
     Assert (HshTabFrisk (lpHTS));
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return bRet;
 } // End AppendSymbolValue
@@ -1344,7 +1359,7 @@ UBOOL AppendSymbolName
     // Get a ptr to the global HshTab struc
     lpHTS = &htsGLB;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Hash the name
     uHash = hashlittle
@@ -1394,7 +1409,7 @@ UBOOL AppendSymbolName
 ERROR_EXIT:
     Assert (HshTabFrisk (lpHTS));
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return bRet;
 } // End AppendSymbolName
@@ -1444,7 +1459,7 @@ LPWCHAR CharToSymbolName
     UINT       uHash;               // The hash of the char
     LPHSHENTRY lpHshEntryDest;      // Ptr to the matching hash table entry
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Hash the char
     uHash = hashlittle
@@ -1454,7 +1469,7 @@ LPWCHAR CharToSymbolName
     // Look up the char
     lpHshEntryDest = HshTabLookupCharHash (aplChar, uHash);
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     if (lpHshEntryDest NE LPHSHENTRY_NONE)
         return lpHshEntryDest->lpwCharName;
@@ -1525,7 +1540,7 @@ WCHAR SymbolNameToChar
 
         Assert (lpwCharEnd NE NULL);
 
-        EnterCriticalSection (&CSOHshTab);
+        MyEnterCriticalSection (&CSOHshTab);
 
         // Hash the name
         uHash = hashlittle
@@ -1538,7 +1553,7 @@ WCHAR SymbolNameToChar
             wcRes = lpHshEntryDest->htFlags.htChar;
         else
             wcRes = WC_EOS;
-        LeaveCriticalSection (&CSOHshTab);
+        MyLeaveCriticalSection (&CSOHshTab);
     } // End IF/ELSE
 
     return wcRes;
@@ -1594,7 +1609,7 @@ LPSYMENTRY _SymTabLookupChar
     stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Save common value
     uHashMasked = MaskTheHash (uHash, lphtsPTD);
@@ -1633,7 +1648,7 @@ LPSYMENTRY _SymTabLookupChar
         lphtsPTD = lphtsPTD->lphtsPrvSrch;
     } // End WHILE
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
 } // End _SymTabLookupChar
@@ -1688,7 +1703,7 @@ LPSYMENTRY _SymTabLookupNumber
     stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Save common value
     uHashMasked = MaskTheHash (uHash, lphtsPTD);
@@ -1730,7 +1745,7 @@ LPSYMENTRY _SymTabLookupNumber
         lphtsPTD = lphtsPTD->lphtsPrvSrch;
     } // End WHILE
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
 } // End _SymTabLookupNumber
@@ -1785,7 +1800,7 @@ LPSYMENTRY _SymTabLookupFloat
     stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Save common value
     uHashMasked = MaskTheHash (uHash, lphtsPTD);
@@ -1824,7 +1839,7 @@ LPSYMENTRY _SymTabLookupFloat
         lphtsPTD = lphtsPTD->lphtsPrvSrch;
     } // End WHILE
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
 } // End _SymTabLookupFloat
@@ -2001,7 +2016,7 @@ LPSYMENTRY _SymTabLookupNameLength
     } else
         lpwName = lpwString;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Hash the name
     uHash = hashlittleConv
@@ -2089,7 +2104,7 @@ LPSYMENTRY _SymTabLookupNameLength
         lphtsPTD = lphtsPTD->lphtsPrvSrch;
     } // End WHILE
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 ERROR_EXIT:
     return lpSymEntry;
 } // End _SymTabLookupNameLength
@@ -2246,7 +2261,7 @@ LPSYMENTRY _SymTabAppendInteger_EM
         // Get a ptr to the HshTab & SymTab strucs
         lphtsPTD = lpMemPTD->lphtsPTD;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Use common cases?
     if (bUseCommon)
@@ -2349,7 +2364,7 @@ ERROR_EXIT:
 NORMAL_EXIT:
     Assert (HshTabFrisk (lphtsPTD));
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntryDest;
 } // End _SymTabAppendInteger_EM
@@ -2392,7 +2407,7 @@ LPSYMENTRY _SymTabAppendFloat_EM
         // Get a ptr to the HshTab & SymTab strucs
         lphtsPTD = GetMemPTD ()->lphtsPTD;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Hash the float
     uHash = hashlittle
@@ -2465,7 +2480,7 @@ LPSYMENTRY _SymTabAppendFloat_EM
 ERROR_EXIT:
     Assert (HshTabFrisk (lphtsPTD));
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntryDest;
 } // End _SymTabAppendFloat_EM
@@ -2507,6 +2522,8 @@ LPSYMENTRY _SymTabAppendChar_EM
     STFLAGS      stNeedFlags = {0}; // The flags we require
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
+    MyEnterCriticalSection (&CSOHshTab);
+
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
@@ -2526,8 +2543,6 @@ LPSYMENTRY _SymTabAppendChar_EM
             goto NORMAL_EXIT;
         } // End IF
     } // End IF
-
-    EnterCriticalSection (&CSOHshTab);
 
     // Hash the char
     uHash = hashlittle
@@ -2607,7 +2622,7 @@ ERROR_EXIT:
 NORMAL_EXIT:
     Assert (HshTabFrisk (lphtsPTD));
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntryDest;
 } // End _SymTabAppendChar_EM
@@ -2663,7 +2678,7 @@ LPSYMENTRY _SymTabAppendName_EM
     if (lpstFlags EQ NULL)
         lpstFlags = &stFlags;
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // Lookup the name in the symbol table
     // SymTabLookupName sets the .ObjName enum,
@@ -2693,7 +2708,7 @@ SYNTAX_EXIT:
     ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 ERROR_EXIT:
 NORMAL_EXIT:
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
 } // End _SymTabAppendName_EM
@@ -2759,7 +2774,7 @@ LPSYMENTRY _SymTabAppendNewName_EM
             lphtsPTD = lphtsPTD->lphtsPrvMFO;
     } // End IF
 
-    EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     Assert (HshTabFrisk (lphtsPTD));
 
@@ -2848,7 +2863,7 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntryDest;
 } // End _SymTabAppendNewName_EM
@@ -3077,7 +3092,7 @@ void FreeHshSymTabs
     LPHSHENTRY   lp,                    // Ptr to temporary HSHENTRY
                  lpEnd;                 // ...
 
-   EnterCriticalSection (&CSOHshTab);
+    MyEnterCriticalSection (&CSOHshTab);
 
     // If we allocated the HshTab, ...
     if (lpHTS->lpHshTab)
@@ -3146,7 +3161,7 @@ void FreeHshSymTabs
         lpHTS = NULL;
     } // End IF
 
-    LeaveCriticalSection (&CSOHshTab);
+    MyLeaveCriticalSection (&CSOHshTab);
 } // End FreeHshSymTabs
 
 

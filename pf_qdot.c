@@ -710,9 +710,14 @@ APLFLOAT PrimFnDydQuoteDotFisFvF
     } else
     {
         // Z = (!R) / (!L) * !R-L
-        return  PrimFnMonQuoteDotFisF (RF, NULL)
+        aplFloatRes =
+                PrimFnMonQuoteDotFisF (RF, NULL)
              / (PrimFnMonQuoteDotFisF (LF, NULL)
               * PrimFnMonQuoteDotFisF (RF - LF, NULL));
+        // Convert {neg}0 to 0
+        if (aplFloatRes EQ 0)
+            aplFloatRes = 0;
+        return aplFloatRes;
     } // End IF/ELSE
 
 #undef  IF

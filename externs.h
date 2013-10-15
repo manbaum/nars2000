@@ -112,7 +112,7 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
 #ifdef DEFINE_VALUES
  = {ICVAL_POS_INFINITY ,    // 00:    {div} 0
     ICVAL_NEG_INFINITY ,    // 01:    {log} 0
-    ICVAL_DOMAIN_ERROR ,    // 02:      ! {neg}1
+    ICVAL_POS_INFINITY ,    // 02:      !N for integer N < 0
     ICVAL_DOMAIN_ERROR ,    // 03:  0 {times} _
     ICVAL_DOMAIN_ERROR ,    // 04:  0 {times} {neg}_
     ICVAL_ONE          ,    // 05:  0 {div} 0

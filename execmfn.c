@@ -55,6 +55,7 @@ extern MAGIC_FCNOPR MFO_DydDomino;
 extern MAGIC_FCNOPR MFO_DydDotDot;
 extern MAGIC_FCNOPR MFO_DydIotaUnderbar;
 extern MAGIC_FCNOPR MFO_MonDot;
+extern MAGIC_FCNOPR MFO_MonDotInit;
 
 
 //***************************************************************************
@@ -492,6 +493,7 @@ HGLOBAL Init1MagicFunction
                                   : NULL;
         lpMemDfnHdr->hGlbTxtHdr   = hGlbTxtHdr;
         lpMemDfnHdr->hGlbTknHdr   = hGlbTknHdr;
+        lpMemDfnHdr->bMFO         = TRUE;
 ////////lpMemDfnHdr->hGlbUndoBuff = NULL;       // Already zero from GHND
 ////////lpMemDfnHdr->hGlbMonInfo  = NULL;       // Already zero from GHND
 
@@ -714,7 +716,7 @@ UBOOL InitMagicFunctions
      UINT         uPtdMemVirtEnd)       // Ending   ...
 
 {
-    INIT_MFO initMFO;                   // Temporary struc for passing multiple args
+    INIT_MFO       initMFO;             // Temporary struc for passing multiple args
 
     // Initialize the temp struc
 ////initMFO.lphtsMFO         = NULL;             // Set below
@@ -754,6 +756,13 @@ UBOOL InitMagicFunctions
     lpMemPTD->hGlbMFO[MFOE_DydDomino        ]  = Init1MagicFunction (MFON_DydDomino        , &MFO_DydDomino        , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_DydDotDot        ]  = Init1MagicFunction (MFON_DydDotDot        , &MFO_DydDotDot        , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_DydIotaUnderbar  ]  = Init1MagicFunction (MFON_DydIotaUnderbar  , &MFO_DydIotaUnderbar  , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_MonDotInit       ]  = Init1MagicFunction (MFON_MonDotInit       , &MFO_MonDotInit       , lpMemPTD, hWndEC, NULL);
+
+    // Run MFON_MonDotInit to initialize the Determinant Operator magic function subroutines
+    // Note we must run this function AFTER MonDotInit is initialized and BEFORE MonDot is initialized
+    //   so as to get the reference counts balanced.
+    ExecNilMFO (lpMemPTD, hWndEC);
+
     lpMemPTD->hGlbMFO[MFOE_MonDot           ]  = Init1MagicFunction (MFON_MonDot           , &MFO_MonDot           , lpMemPTD, hWndEC, NULL);
 
     // Set []IO to zero in the symbol table for []VR
@@ -761,6 +770,53 @@ UBOOL InitMagicFunctions
 
     return TRUE;
 } // InitMagicFunctions
+
+
+//***************************************************************************
+//  $ExecNilMFO
+//
+//  Execute a niladic MFO (MFON_MonDotInit)
+//***************************************************************************
+
+void ExecNilMFO
+    (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
+     HWND         hWndEC)               // Session Manager window handle
+
+{
+    HGLOBAL        hGlbTknHdr;          // Handle of tokenized line header
+    LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+
+    // Tokenize the line
+    hGlbTknHdr =
+      Tokenize_EM (MFON_MonDotInit,             // The line to tokenize (not necessarily zero-terminated)
+                   lstrlenW (MFON_MonDotInit),  // NELM of lpwszLine
+                   hWndEC,                      // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                   1,                           // Function line # (0 = header)
+                   NULL,                        // Ptr to error handling function (may be NULL)
+                   NULL,                        // Ptr to common struc (may be NULL if unused)
+                   TRUE);                       // TRUE iff we're tokenizing a Magic Function/Operator
+    // Lock the memory to get a ptr to it
+    lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+
+    // Execute the line
+////exitType =
+      ParseLine (GetParent (hWndEC),    // Session Manager window handle
+                 lpMemTknHdr,           // Ptr to tokenized line header global memory
+                 NULL,                  // Text of tokenized line global mamory handle
+                 MFON_MonDotInit,       // Ptr to the complete line
+                 lpMemPTD,              // Ptr to PerTabData global memory
+                 1,                     // Function line #  (1 for execute or immexec)
+                 0,                     // Starting token # in the above function line
+                 NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
+                 FALSE,                 // TRUE iff errors are acted upon
+                 FALSE,                 // TRUE iff executing only one stmt
+                 FALSE);                // TRUE iff we're to skip the depth check
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
+
+    // We no longer need this resource
+    DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+} // End ExecNilMFO
 
 
 //***************************************************************************

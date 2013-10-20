@@ -440,9 +440,9 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             break;
     } // End SWITCH
 
-    // Check for LENGTH ERROR
+    // Check for non-square matrix
     if (aplDimRows NE aplDimCols)
-        goto RIGHT_LENGTH_EXIT;
+        goto GENERAL_DET;
 
     // Check for DOMAIN ERROR
     if (!IsNumeric (aplTypeRht))
@@ -874,11 +874,6 @@ RIGHT_OPERAND_SYNTAX_EXIT:
 
 RIGHT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkRhtArg);
-    goto ERROR_EXIT;
-
-RIGHT_LENGTH_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkRhtArg);
     goto ERROR_EXIT;
 

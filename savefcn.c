@@ -2119,7 +2119,11 @@ UINT SaveFunctionLine
                                uLineNum + 1,            // Function line # (0 = header)
                               &ErrorHandler,            // Ptr to error handling function (may be NULL)
                                lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
-                               lpMagicFcnOpr NE NULL);  // TRUE iff we're tokenizing a Magic Function/Operator
+                               lpMagicFcnOpr
+                            || (lpSF_Fcns
+                             && lpSF_Fcns->bMFO)
+                            || (lpMemDfnHdr
+                             && lpMemDfnHdr->bMFO));    // TRUE iff we're tokenizing a Magic Function/Operator
                 // We no longer need this storage
                 MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 
@@ -2141,7 +2145,11 @@ UINT SaveFunctionLine
                    uLineNum + 1,            // Function line # (0 = header)
                   &ErrorHandler,            // Ptr to error handling function (may be NULL)
                    lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
-                   lpMagicFcnOpr NE NULL);  // TRUE iff we're tokenizing a Magic Function/Operator
+                   lpMagicFcnOpr
+                || (lpSF_Fcns
+                 && lpSF_Fcns->bMFO)
+                || (lpMemDfnHdr
+                 && lpMemDfnHdr->bMFO));    // TRUE iff we're tokenizing a Magic Function/Operator
     // We no longer need this ptr
     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 

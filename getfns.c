@@ -2270,6 +2270,9 @@ APLLONGEST GetGlbPtrs_LOCK
             return lpToken->tkData.tkSym->stData.stLongest;
 
         case TKT_FCNNAMED:
+        case TKT_OP1NAMED:
+        case TKT_OP2NAMED:
+        case TKT_OP3NAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 

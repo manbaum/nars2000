@@ -107,7 +107,7 @@ UBOOL AssignName_EM
             lptkNam->tkData.tkSym->stFlags.ImmType     = IMMTYPE_ERROR;
             lptkNam->tkData.tkSym->stFlags.Inuse       =
             lptkNam->tkData.tkSym->stFlags.Value       = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ObjName     = OBJNAME_USR;
+            lptkNam->tkData.tkSym->stFlags.ObjName     = IsMFOName (lptkNam->tkData.tkSym->stHshEntry->lpwCharName) ? OBJNAME_MFO : OBJNAME_USR;
             lptkNam->tkData.tkSym->stFlags.stNameType  = GetNameType (lptkSrc);
 ////////////lptkNam->tkData.tkSym->stFlags.SysVarValid = 0          // Already zero from ZeroMemory
             lptkNam->tkData.tkSym->stFlags.UsrDfn      = TRUE;

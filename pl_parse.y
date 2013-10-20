@@ -785,6 +785,7 @@ StmtSing:
                                                  // Do not display if caller is Execute or Quad
                                                  //   and the current statement is the last one on the line
                                                  if (IsLastStmt (lpplLocalVars, $1.tkToken.tkCharIndex)
+                                                  && lpSISCur
                                                   && (lpSISCur->DfnType EQ DFNTYPE_EXEC
                                                    || (lpSISCur->DfnType EQ DFNTYPE_IMM
                                                     && lpSISCur->lpSISPrv NE NULL
@@ -844,7 +845,8 @@ StmtSing:
                                              } // End IF
 
                                              // If we're resetting all levels, ...
-                                             if (lpSISCur->ResetFlag EQ RESETFLAG_ALL)
+                                             if (lpSISCur
+                                              && lpSISCur->ResetFlag EQ RESETFLAG_ALL)
                                                  lpplLocalVars->ExitType = EXITTYPE_RESET_ALL;
                                              else
                                              // If the result is NoValue, mark the exit type as such
@@ -1036,6 +1038,7 @@ StmtSing:
                                              // Do not free if caller is Execute or Quad
                                              //   and the current statement is the last one on the line
                                              if (IsLastStmt (lpplLocalVars, $1.tkToken.tkCharIndex)
+                                              && lpSISCur
                                               && (lpSISCur->DfnType EQ DFNTYPE_EXEC
                                                || (lpSISCur->DfnType EQ DFNTYPE_IMM
                                                 && lpSISCur->lpSISPrv NE NULL
@@ -7884,6 +7887,7 @@ EXIT_TYPES ParseLine
         // Save value in LocalVars
         plLocalVars.bAFO          = lpMemDfnHdr->bAFO;
         plLocalVars.bAfoCtrlStruc = lpMemDfnHdr->bAfoCtrlStruc;
+        plLocalVars.bMFO          = lpMemDfnHdr->bMFO;
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;

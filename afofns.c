@@ -206,6 +206,7 @@ LPPL_YYSTYPE MakeAfo_EM_YY
 ////SF_Fcns.bSetAlpha       = FALSE;                // AFO assigns {alpha}
 ////SF_Fcns.bRefAlpha       = FALSE;                // AFO references {alpha}
 ////SF_Fcns.bRefOmega       = FALSE;                // AFO references {omega}
+    SF_Fcns.bMFO            = lpplLocalVars->bMFO;  // TRUE iff this is an MFO
 ////SF_Fcns.bRet            =                       // Filled in by SaveFunctionCom
 ////SF_Fcns.uErrLine        =                       // ...
 ////SF_Fcns.lpSymName       =                       // ...

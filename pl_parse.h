@@ -92,7 +92,8 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                    bIniSpec:1,          //      00010000   TRUE iff we have yet to see the first name inside Selective Specification
                    bAFO:1,              //      00020000   TRUE iff we're parsing an AFO
                    bAfoCtrlStruc:1,     //      00040000:  TRUE iff Ctrl Strucs in AFO
-                   :13;                 //      FFF80000:  Available bits
+                   bMFO:1,              //      00080000:  TRUE iff this is an MFO
+                   :12;                 //      FFF00000:  Available bits
     UBOOL          bCtrlBreak;          // 2C:  TRUE iff Ctrl-Break pressed
     LPPL_YYSTYPE   lpYYStrArrStart[STRAND_LEN],   // 30:  Strand stack start (static) (16 bytes)
                    lpYYStrArrBase [STRAND_LEN],   // 40:  ...          base (dynamic) ...

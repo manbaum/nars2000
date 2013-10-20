@@ -29,7 +29,8 @@ typedef struct tagSF_FCNS
                 bSetAlpha:1,        //      00000010:  TRUE iff some stmt sets {alpha}
                 bRefAlpha:1,        //      00000020:  TRUE iff some stmt references {alpha}
                 bRefOmega:1,        //      00000040:  TRUE iff ...                  {omega}
-                :25;                //      FFFFFF80:  Available bits
+                bMFO:1,             //      00000080:  TRUE iff this is an MFO
+                :24;                //      FFFFFF00:  Available bits
     UINT        uErrLine;           // 04:  If (!bRet), the line in error (origin-0) (NEG1U = Error Message valid)
     LPSYMENTRY  lpSymName;          // 08:  If (bRet), ptr to SYMENTRY of the function name
     LPTOKEN     lptkFunc;           // 0C:  Ptr to function token

@@ -49,8 +49,51 @@ MAGIC_FCNOPR MFO_IdnDot =
 };
 
 //***************************************************************************
-//  Magic function/operator for determinant function from the
-//    inner product operator
+//  Magic function/operator for initialization of the determinant operator's
+//    subroutines.
+//
+//	This algorithm was taken from SATN-42 (Sharp APL Technical Notes),
+//	  1982-04-01, "Determinant-Like Functions Produced by the Dot Operator",
+//	  by K.E. Iverson (http://www.jsoftware.com/papers/satn42.htm),
+//	  with minor changes.
+//***************************************************************************
+
+static APLCHAR IniHeader[] =
+  MFON_MonDotInit;
+
+static APLCHAR IniLine1[] = 
+  MFON_MonDotAll L"←{⎕IO←1 ⋄ y←" MFON_MonDotPerm L"⍴⍵ ⋄ k←⍴⍴y ⋄ ((⍳k),k)⍉⍵[y;]}";
+
+static APLCHAR IniLine2[] = 
+  MFON_MonDotPerm L"←{s←(⌊/⍵)↑⌽⍳1↑⍵ ⋄ (s,⍴s)⍴⍉" MFON_MonDotMf L" 1+s⊤¯1+⍳×/s}";
+
+static APLCHAR IniLine3[] = 
+  MFON_MonDotMf L"←{0=1↑⍴⍵:⍵ ⋄ x←∇ 1 0↓⍵ ⋄ ⍵[1;]⍪x+⍵[(1↑⍴x)⍴1;]≤x}";
+
+static APLCHAR IniLine4[] = 
+  MFON_MonDotCr L"←{0=⍴⍴⍵:⍵ ⋄ ∇ ⍺⍺/⍵}";
+
+static LPAPLCHAR IniBody[] =
+{IniLine1,
+ IniLine2,
+ IniLine3,
+ IniLine4,
+};
+
+MAGIC_FCNOPR MFO_MonDotInit =
+{IniHeader,
+ IniBody,
+ countof (IniBody),
+};
+
+//***************************************************************************
+//  Magic function/operator for determinant operator from the
+//    inner product operator.
+//
+//	This algorithm was taken from SATN-42 (Sharp APL Technical Notes),
+//	  1982-04-01, "Determinant-Like Functions Produced by the Dot Operator",
+//	  by K.E. Iverson (http://www.jsoftware.com/papers/satn42.htm), 
+//	  with minor changes.
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
@@ -58,31 +101,15 @@ static APLCHAR MonHeader[] =
 
 //L"⍝ Generalized determinant operator";
 
-static APLCHAR MonLine1[] = 
-  L"⎕ERROR (2≠⍴⍴R)/'RANK ERROR'";
+static APLCHAR MonLine1[] =
+  L"Z←⊃LO " MFON_MonDotCr L" RO/" MFON_MonDotAll L" R ⋄ →0";
 
 static APLCHAR MonLine2[] = 
-  L"⎕ERROR (≠/⍴R)/'LENGTH ERROR'";
-
-static APLCHAR MonLine3[] = 
-  L":if ∨/0 1∊⍴R ⋄ Z←⍬⍴R ⋄ →0 ⋄ :end";
-
-static APLCHAR MonLine4[] = 
-  L"Z←⊃LO/((1⍴⍴R)⍴R) RO¨∇¨(⊂[1+⎕IO] (⍴R)⍴~(1+1⍴⍴R)↑1)/¨⊂1 0↓R";
-
-static APLCHAR MonLine5[] = 
-  L"→0";
-
-static APLCHAR MonLine6[] =
   L"⎕PRO:Z←⊃LO/⍬";
 
 static LPAPLCHAR MonBody[] =
 {MonLine1,
  MonLine2,
- MonLine3,
- MonLine4,
- MonLine5,
- MonLine6,
 };
 
 MAGIC_FCNOPR MFO_MonDot =

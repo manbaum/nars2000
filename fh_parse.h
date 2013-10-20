@@ -119,7 +119,8 @@ typedef struct tagDFN_HEADER            // Function header structure
                      bAFO:1,            //      00010000:  TRUE iff this is an AFO
                      bAfoCtrlStruc:1,   //      00020000:  TRUE iff Ctrl Strucs in AFO
                      bAfoNoDispRes:1,   //      00040000:  TRUE iff the AFO result is non-displayable
-                     :13;               //      FFF80000:  Available bits
+                     bMFO:1,            //      00080000:  TRUE iff this is an MFO
+                     :12;               //      FFF00000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
                      nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
                      nSysLblId,         // 14:  Line # of the []INV label (0 if not present)

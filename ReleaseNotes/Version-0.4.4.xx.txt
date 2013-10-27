@@ -1,6 +1,21 @@
 Version 0.4.4.xx consists of the following Builds:
 
 
+Build #1163 -- Version 0.4.4.xx
+-------------------------------
+
+* Fix Bug When Loading An AFO From A Workspace
+
+Directory trunk:
+
+SAVEFCN.C:
+  Improve comments.
+  When loading an AFO from a workspace and tokenizing the line so as to
+    determine operator valence (if it's an operator), and whether or not
+    it's a niladic (derived) function, include the surrounding braces in
+    the line length.
+
+
 Build #1162 -- Version 0.4.4.xx
 -------------------------------
 

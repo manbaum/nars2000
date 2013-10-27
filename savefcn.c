@@ -1305,7 +1305,7 @@ UBOOL SaveFunctionCom
         // Read in the line text
         (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, 0, &lpMemTxtLine->C);
 
-        // Tokenize the line
+        // Tokenize the function header
         hGlbTknHdr =
           Tokenize_EM (&lpMemTxtLine->C,        // The line to tokenize (not necessarily zero-terminated)
                         uLineLen,               // NELM of lpwszLine
@@ -2098,23 +2098,21 @@ UINT SaveFunctionLine
             if (lpSF_Fcns->bAFO
              && !lpSF_Fcns->bMakeAFO)
             {
-                // Calculate the line length
-                uLen = lstrlenW (lpwszLine);
-
                 // Make room for a leading left brace
-                MoveMemory (&lpwszLine[1], lpwszLine, (uLen + 1) * sizeof (lpwszLine[0]));
+                MoveMemory (&lpwszLine[1], lpwszLine, (uLineLen + 1) * sizeof (lpwszLine[0]));
 
                 // Insert a leading left brace
-                lpwszLine[0       ] = UTF16_LEFTBRACE;
+                lpwszLine[0           ] = UTF16_LEFTBRACE;
 
                 // Append a trailing right brace & EOS
-                lpwszLine[uLen + 1] = UTF16_RIGHTBRACE;
-////////////////lpwszLine[uLen + 2] = WC_EOS;       // Already zero from GHND
+                lpwszLine[uLineLen + 1] = UTF16_RIGHTBRACE;
+////////////////lpwszLine[uLineLen + 2] = WC_EOS;       // Already zero from GHND
 
-                // Tokenize the line so as to determine function/operator valence
+                // Tokenize the line so as to determine operator valence (if it's an operator)
+                //   and whether or not the (derived) function is niladic
                 hGlbTknHdr =
                   Tokenize_EM (lpwszLine,               // The line to tokenize (not necessarily zero-terminated)
-                               uLineLen,                // NELM of lpwszLine
+                               uLineLen + 2,            // NELM of lpwszLine (including surrounding braces)
                                hWndEC,                  // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                uLineNum + 1,            // Function line # (0 = header)
                               &ErrorHandler,            // Ptr to error handling function (may be NULL)
@@ -2128,10 +2126,10 @@ UINT SaveFunctionLine
                 MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 
                 // Delete the surrounding braces to bring it back to where it was
-                CopyMemory (lpwszLine, &lpwszLine[1], uLen * sizeof (lpwszLine[0]));
+                CopyMemory (lpwszLine, &lpwszLine[1], uLineLen * sizeof (lpwszLine[0]));
 
                 // Terminate the line
-                lpwszLine[uLen] = WC_EOS;
+                lpwszLine[uLineLen] = WC_EOS;
             } // End IF
         } // End IF/ELSE
     } else

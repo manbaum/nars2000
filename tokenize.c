@@ -1364,8 +1364,6 @@ UBOOL fnAlpDone
     //   case-insensitive
     if (IsSysName (lpwszStr))
     {
-        STFLAGS stFlags = {0};              // STE flags
-
         // Handle Quad and QuoteQuad alone via a separate token
         if (lptkLocalVars->iStrLen EQ 1)
         {
@@ -1398,6 +1396,8 @@ UBOOL fnAlpDone
                 lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
         } else
         {
+            STFLAGS stFlags = {0};              // STE flags
+
             // Lookup in the symbol table
             lpSymEntry =
               _SymTabLookupNameLength (lpwszStr,                // Ptr to the name to lookup
@@ -1409,6 +1409,52 @@ UBOOL fnAlpDone
             if (!lpSymEntry)
                 lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
         } // End IF
+    } else
+    if (lptkLocalVars->lpSF_Fcns->bAFO)
+    {
+        STFLAGS     stFlags = {0};                  // STE flags
+        LPHSHTABSTR lpHTS = lptkLocalVars->lpHTS,   // Ptr to current HTS
+                    lpLastHTS;                      // Ptr to last non-NULL HTS
+
+        while (lpHTS)
+        {
+            // Because we're in an AFO, first lookup this name (but don't append it) in the local HTS
+
+            // Lookup in the symbol table
+            lpSymEntry =
+              _SymTabLookupNameLength (lpwszStr,                // Ptr to the name to lookup
+                                       lptkLocalVars->iStrLen,  // Length of the name
+                                      &stFlags,                 // Ptr to flags filter
+                                       FALSE,                   // TRUE iff the name is to be local to the given HTS
+                                       lpHTS);                  // Ptr to HshTab struc (may be NULL)
+            // If it's not found, ...
+            if (!lpSymEntry)
+            {
+                // Save the last non-NULL HTS
+                lpLastHTS = lpHTS;
+
+                // Try the previous HTS
+                lpHTS = lpHTS->lphtsPrvSrch;
+            } else
+            {
+                // Lookup in or append to the symbol table
+                lpSymEntry =
+                  _SymTabAppendName_EM (lpwszStr,               // Ptr to name
+                                        NULL,                   // Ptr to incoming stFlags (may be NULL)
+                                        FALSE,                  // TRUE iff the name is to be local to the given HTS
+                                        lpHTS);                 // Ptr to HshTab struc (may be NULL)
+                break;
+            } // End IF/ELSE
+        } // End WHILE
+
+        // If we failed to find the name, ...
+        if (lpHTS EQ NULL)
+            // Lookup in or append to the symbol table
+            lpSymEntry =
+              _SymTabAppendName_EM (lpwszStr,               // Ptr to name
+                                    NULL,                   // Ptr to incoming stFlags (may be NULL)
+                                    FALSE,                  // TRUE iff the name is to be local to the given HTS
+                                    lpLastHTS);             // Ptr to HshTab struc (may be NULL)
     } else
         // Lookup in or append to the symbol table
         lpSymEntry =
@@ -1664,6 +1710,8 @@ UBOOL fnAsnDone
                 lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
             else
             {
+                LPTOKEN lptkCur2;           // Loop counter
+
                 if (lstrcmpW (lpwszName, WS_UTF16_ALPHA) EQ 0)
                 {
                     // Mark the stmt as assignment into {alpha}
@@ -1684,6 +1732,34 @@ UBOOL fnAsnDone
                 else
                     // Count in another name
                     lptkLocalVars->lpSF_Fcns->numLocalsSTE++;
+
+                // In case this assignment is to the right of a reference to the same name
+                //   in the same stmt, we need to change that STE to the local name
+                // Loop backwards through the tokens
+                for (lptkCur2 = &lptkLocalVars->lptkNext[-1];
+                     lptkCur2 >= lptkLocalVars->lptkStart;
+                     lptkCur2--)
+                if (IsTknTypeNamed (lptkCur2->tkFlags.TknType))
+                {
+                    HGLOBAL hGlbName2;
+                    LPWCHAR lpwszName2;
+
+                    Assert (GetPtrTypeDir (lptkCur2->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                    // Get the name's global memory handle
+                    hGlbName2 = lptkCur2->tkData.tkSym->stHshEntry->htGlbName;
+
+                    // Lock the memory to get a ptr to it
+                    lpwszName2 = MyGlobalLock (hGlbName2);
+
+                    // If it's the same name, ...
+                    if (lstrcmpW (lpwszName, lpwszName2) EQ 0)
+                        // Ensure that the SymEntry is local to lptkLocalVars->lpHTS
+                        lptkCur2->tkData.tkSym = lptkCur->tkData.tkSym;
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbName2); lpwszName2 = NULL;
+                } // End IF
             } // End IF
 
             // We no longer need this ptr

@@ -32,7 +32,7 @@ Contributors</h1>
     <li><a class="linkleft" href="http://www.gnu.org/software/gsl/">GNU
       Scientific Library</a> for the factorial/binomial functions
       as well as matrix inverse/matrix divide functions
-      (using Singular Value Decomposition).</li>
+      (using Singular Value Decomposition) and the Determinant Operator (<span class="APL">-.�</span>).</li>
 
     <li>Bob Jenkins' <a class="linkleft" href="http://www.burtleburtle.net/bob/c/lookup3.c">Hash</a>
       routines were used in the Hash table.</li>
@@ -63,6 +63,9 @@ Contributors</h1>
 
     <li>The GMP ECM team contributed their <a class="linkleft" href="http://ecm.gforge.inria.fr/">Elliptic
       Curve Method for Integer Factorization</a> code.</li>
+
+    <li>Mattias Andrée contributed his implementation of <a class="linkleft" href="https://raw.github.com/maandree/hungarian-algorithm-n3/master/hungarian.c">Kuhn's
+      Hungarian Algorithm</a>.</li>
   </ul>
 </div>
 

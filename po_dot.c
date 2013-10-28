@@ -365,6 +365,8 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     IMM_TYPES        immTypeRes;            // Immediate result storage type
     APLRAT           aplRatRes = {0};       // Temp result if RAT
     APLVFP           aplVfpRes = {0};       // ...            VFP
+    UBOOL            bMaxFcn,               // TRUE iff the left operand is max in ??.+
+                     bMinMaxAfo = FALSE;    // TRUE iff the left operand is a min/max AFO
     gsl_matrix      *lpGslMatrixU = NULL;   // GSL temporary
     gsl_permutation *lpGslPermP = NULL;     // ...
     int              ErrCode,               // Error code from gsl_* functions
@@ -453,6 +455,31 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
         aplTypeRes = ARRAY_FLOAT;
     else
         aplTypeRes = aplTypeRht;
+
+    // Skip over the header and dimensions to the data
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
+
+    // If this is Min.Plus  or  Max.Plus, ...
+    if (IsTknImmed (&lpYYFcnStrRht->tkToken)
+     && lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_PLUS
+     && IsTknImmed (&lpYYFcnStrLft->tkToken))
+    {
+        // Determine if the left immediate operand is Max
+        bMaxFcn = (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_UPSTILE);
+
+        // If it's either Max or Min, ...
+        if (bMaxFcn
+         || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_DOWNSTILE)
+            // Handle specially
+            goto MINDOTPLUS;
+    } // End IF
+
+    // If this is MinMaxAfo.Comma, ...
+    if (IsTknImmed (&lpYYFcnStrRht->tkToken)
+     && lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_COMMA
+     && (bMinMaxAfo = IzitMinMaxAfo (lpYYFcnStrLft, &bMaxFcn)))
+        // Handle specially
+        goto MINDOTPLUS;
 
     // If the left operand is NOT the immediate function (-), ...
     if (!IsTknImmed (&lpYYFcnStrLft->tkToken)
@@ -580,9 +607,6 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     // From here on, the right arg is a one-element vector or
     //   a square matrix
     //***************************************************************
-
-    // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     Assert (aplDimRows EQ (APLU3264) aplDimRows);
     Assert (aplDimCols EQ (APLU3264) aplDimCols);
@@ -808,6 +832,337 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 
     goto NORMAL_EXIT;
 
+MINDOTPLUS:
+{
+    LPROWCOL resLong;
+    APLUINT  uRes;                      // Loop counter
+    APLUINT  ByteRes;                   // # bytes in the result
+    HGLOBAL  hGlbRes;                   // result global memory handle
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_APA:
+        case ARRAY_INT:
+            // Set the result type
+            aplTypeRes = ARRAY_INT;
+
+            resLong =
+              kuhn_start_int  (lpMemRht, (long) aplDimRows, (long) aplDimCols, bMaxFcn, aplTypeRht);
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // If it's MinMaxAfo, ...
+            if (bMinMaxAfo)
+            {
+                LPAPLINT lpMemRes;
+
+                // Calculate space needed for the result
+                ByteRes = CalcArraySize (aplTypeRes, aplDimRows, 1);
+
+////////////////// Check for overflow
+////////////////if (ByteRes NE (APLU3264) ByteRes)
+////////////////    goto WSFULL_EXIT;
+
+                hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                if (!hGlbRes)
+                    goto WSFULL_EXIT;
+
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = aplTypeRes;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = aplDimRows;
+                lpHeader->Rank       = 1;
+#undef  lpHeader
+                // Fill in the dimension
+                (VarArrayBaseToDim (lpMemRes))[0] = aplDimRows;
+
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayDataFmBase (lpMemRes);
+
+                // Copy the data to the result
+                for (uRes = 0; uRes < aplDimRows; uRes++)
+                    lpMemRes[resLong[uRes].col] = GetNextInteger (lpMemRht, aplTypeRht, resLong[uRes].row * aplDimCols + resLong[uRes].col);
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            } else
+            {
+                APLINT sumI = 0;
+
+                for (uRes = 0; uRes < aplDimRows; uRes++)
+                    sumI += GetNextInteger (lpMemRht, aplTypeRht, resLong[uRes].row * aplDimCols + resLong[uRes].col);
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkInteger  = sumI;
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            } // End IF/ELSE
+
+            // We no longer need this resource
+            MyGlobalFree (resLong); resLong = NULL;
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Set the result type
+            aplTypeRes = ARRAY_FLOAT;
+
+            resLong =
+              kuhn_start_dbl (lpMemRht, (long) aplDimRows, (long) aplDimCols, bMaxFcn);
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // If it's MinMaxAfo, ...
+            if (bMinMaxAfo)
+            {
+                LPAPLFLOAT lpMemRes;
+
+                // Calculate space needed for the result
+                ByteRes = CalcArraySize (aplTypeRes, aplDimRows, 1);
+
+////////////////// Check for overflow
+////////////////if (ByteRes NE (APLU3264) ByteRes)
+////////////////    goto WSFULL_EXIT;
+
+                hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                if (!hGlbRes)
+                    goto WSFULL_EXIT;
+
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = aplTypeRes;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = aplDimRows;
+                lpHeader->Rank       = 1;
+#undef  lpHeader
+                // Fill in the dimension
+                (VarArrayBaseToDim (lpMemRes))[0] = aplDimRows;
+
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayDataFmBase (lpMemRes);
+
+                // Copy the data to the result
+                for (uRes = 0; uRes < aplDimRows; uRes++)
+                    lpMemRes[resLong[uRes].col] = ((LPAPLFLOAT) lpMemRht)[resLong[uRes].row * aplDimCols + resLong[uRes].col];
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            } else
+            {
+                APLFLOAT sumF = 0;
+
+                for (uRes = 0; uRes < aplDimRows; uRes++)
+                    sumF += ((LPAPLFLOAT) lpMemRht)[resLong[uRes].row * aplDimCols + resLong[uRes].col];
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkFloat    = sumF;
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            } // End IF/ELSE
+
+            // We no longer need this resource
+            MyGlobalFree (resLong); resLong = NULL;
+
+            break;
+
+        case ARRAY_RAT:
+            // Set the result type
+            aplTypeRes = ARRAY_RAT;
+
+            resLong =
+              kuhn_start_rat (lpMemRht, (long) aplDimRows, (long) aplDimCols, bMaxFcn);
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // If it's MinMaxAfo, ...
+            if (bMinMaxAfo)
+            {
+                LPAPLRAT lpMemRes;
+
+                // Calculate space needed for the result
+                ByteRes = CalcArraySize (aplTypeRes, aplDimRows, 1);
+
+////////////////// Check for overflow
+////////////////if (ByteRes NE (APLU3264) ByteRes)
+////////////////    goto WSFULL_EXIT;
+
+                hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                if (!hGlbRes)
+                    goto WSFULL_EXIT;
+
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = aplTypeRes;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = aplDimRows;
+                lpHeader->Rank       = 1;
+#undef  lpHeader
+                // Fill in the dimension
+                (VarArrayBaseToDim (lpMemRes))[0] = aplDimRows;
+
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayDataFmBase (lpMemRes);
+
+                // Copy the data to the result
+                for (uRes = 0; uRes < aplDimRows; uRes++)
+                    mpq_init_set (&lpMemRes[resLong[uRes].col], &((LPAPLRAT) lpMemRht)[resLong[uRes].row * aplDimCols + resLong[uRes].col]);
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            } else
+            {
+                APLRAT sumR = {0};
+
+                // Initialize to 0/1
+                mpq_init (&sumR);
+
+                for (uRes = 0; uRes < aplDimRows; uRes++)
+                    mpq_add (&sumR, &sumR, &((LPAPLRAT) lpMemRht)[resLong[uRes].row * aplDimCols + resLong[uRes].col]);
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_RAT;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbEntry_EM (aplTypeRes,
+                                                                     &sumR,
+                                                                      FALSE,
+                                                                     &lpYYFcnStrLft->tkToken);
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            } // End IF/ELSE
+
+            // We no longer need this resource
+            MyGlobalFree (resLong); resLong = NULL;
+
+            break;
+
+        case ARRAY_VFP:
+            // Set the result type
+            aplTypeRes = ARRAY_VFP;
+
+            resLong =
+              kuhn_start_vfp (lpMemRht, (long) aplDimRows, (long) aplDimCols, bMaxFcn);
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // If it's MinMaxAfo, ...
+            if (bMinMaxAfo)
+            {
+                LPAPLVFP lpMemRes;
+
+                // Calculate space needed for the result
+                ByteRes = CalcArraySize (aplTypeRes, aplDimRows, 1);
+
+////////////////// Check for overflow
+////////////////if (ByteRes NE (APLU3264) ByteRes)
+////////////////    goto WSFULL_EXIT;
+
+                hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                if (!hGlbRes)
+                    goto WSFULL_EXIT;
+
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = aplTypeRes;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = aplDimRows;
+                lpHeader->Rank       = 1;
+#undef  lpHeader
+                // Fill in the dimension
+                (VarArrayBaseToDim (lpMemRes))[0] = aplDimRows;
+
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayDataFmBase (lpMemRes);
+
+                // Copy the data to the result
+                for (uRes = 0; uRes < aplDimRows; uRes++)
+                    mpfr_init_set (&lpMemRes[resLong[uRes].col], &((LPAPLVFP) lpMemRht)[resLong[uRes].row * aplDimCols + resLong[uRes].col], MPFR_RNDN);
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            } else
+            {
+                APLVFP sumV = {0};
+
+                // Initialize to 0
+                mpfr_init0 (&sumV);
+
+                for (uRes = 0; uRes < aplDimRows; uRes++)
+                    mpfr_add (&sumV, &sumV, &((LPAPLVFP) lpMemRht)[resLong[uRes].row * aplDimCols + resLong[uRes].col], MPFR_RNDN);
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_VFP;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbEntry_EM (aplTypeRes,
+                                                                     &sumV,
+                                                                      FALSE,
+                                                                     &lpYYFcnStrLft->tkToken);
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            } // End IF/ELSE
+
+            // We no longer need this resource
+            MyGlobalFree (resLong); resLong = NULL;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    goto NORMAL_EXIT;
+}
+
 YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -925,6 +1280,151 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimOpMonDotCommon_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $IzitMinMaxAfo
+//
+//  Determine whether or not the left perand is a MinMaxAfo
+//***************************************************************************
+
+UBOOL IzitMinMaxAfo
+    (LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand
+     LPUBOOL      lpbMaxFcn)            // Ptr to TRUE iff the Afo is for Max
+
+{
+    UBOOL bRet = FALSE;                 // TRUE iff the result is valid
+
+    // Ensure it's a proper AFO
+    if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_GLBDFN
+     || lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNAFO
+     || lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+    {
+        HGLOBAL        hGlbDfnHdr;
+        LPDFN_HEADER   lpMemDfnHdr;
+        LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
+        LPTOKEN_HEADER lpMemTknHdr;     // Ptr to header of tokenized line
+        LPTOKEN        lpMemTknLine;    // Ptr to tokenized line
+        UINT           uTokenCnt,       // # tokens in the function line
+                       uCnt;            // Loop counter
+ static TOKEN tkMinMaxAfo[] =
+ //        tkFlags            tkData
+        {{{TKT_EOS       , }, },                    // 00:
+         {{TKT_AFOGUARD  , }, },                    // 01:
+         {{TKT_LEFTPAREN , }, },                    // 02:
+         {{TKT_FCNIMMED  , }, (LPSYMENTRY) L'+'},   // 03:
+         {{TKT_OP3IMMED  , }, (LPSYMENTRY) L'/'},   // 04:
+         {{TKT_VARNAMED  , }, },                    // 05:  Alpha
+         {{TKT_RIGHTPAREN, }, },                    // 06:
+         {{TKT_FCNIMMED  , }, (LPSYMENTRY) L'<'},   // 07:  <  <=  >  >=
+         {{TKT_FCNIMMED  , }, (LPSYMENTRY) L'+'},   // 08:
+         {{TKT_OP3IMMED  , }, (LPSYMENTRY) L'/'},   // 09:
+         {{TKT_VARNAMED  , }, },                    // 0A:  Omega
+         {{TKT_SOS       , }, },                    // 0B:
+         {{TKT_EOS       , }, },                    // 0C:
+         {{TKT_AFORETURN , }, },                    // 0D:
+         {{TKT_VARNAMED  , }, },                    // 0E:  Alpha
+         {{TKT_SOS       , }, },                    // 0F:
+         {{TKT_EOL       , }, },                    // 10:
+         {{TKT_NOP       , }, },                    // 11:
+         {{TKT_VARNAMED  , }, },                    // 12:  Omega
+         {{TKT_SOS       , }, },                    // 13:
+        };
+
+        // Initialize the bMaxFcn flag
+        *lpbMaxFcn = FALSE;
+
+        // Get the global memory handle
+        hGlbDfnHdr = lpYYFcnStrLft->tkToken.tkData.tkGlbData;
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // If it's an AFO, ...
+        if (lpMemDfnHdr->bAFO)
+        {
+            // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+            lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+            // Get ptr to the starting line's tokens
+            lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[0].offTknLine);
+
+            // Get the token count of this line
+            uTokenCnt = lpMemTknHdr->TokenCnt;
+
+            // If we have the same # tokens, ...
+            if (uTokenCnt EQ countof (tkMinMaxAfo))
+            {
+                // Skip over the header to the token start
+                lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
+
+                // Loop through the tokens verifying the token type
+                for (uCnt = 0; uCnt < uTokenCnt; uCnt++)
+                if (tkMinMaxAfo[uCnt].tkFlags.TknType NE lpMemTknLine[uCnt].tkFlags.TknType)
+                    goto ERROR_EXIT;
+
+                // Check the immediate functions/operators
+                if (tkMinMaxAfo[0x03].tkData.tkChar NE lpMemTknLine[0x03].tkData.tkChar
+                 || tkMinMaxAfo[0x04].tkData.tkChar NE lpMemTknLine[0x04].tkData.tkChar
+                 || tkMinMaxAfo[0x08].tkData.tkChar NE lpMemTknLine[0x08].tkData.tkChar
+                 || tkMinMaxAfo[0x09].tkData.tkChar NE lpMemTknLine[0x09].tkData.tkChar)
+                    goto ERROR_EXIT;
+
+                // Check the 1st name (s.b. Alpha)
+                if (!lpMemTknLine[0x05].tkData.tkSym->stFlags.bIsAlpha)
+                {
+                    // Check the 1st name (m.b. Omega)
+                    if (!lpMemTknLine[0x05].tkData.tkSym->stFlags.bIsOmega
+                    // Check the 2nd name (m.b. Alpha)
+                     || !lpMemTknLine[0x0A].tkData.tkSym->stFlags.bIsAlpha)
+                        goto ERROR_EXIT;
+
+                    // Flip the bit
+                    *lpbMaxFcn = 1 - *lpbMaxFcn;
+                } else
+                // Check the 2nd name (m.b. Omega)
+                if (!lpMemTknLine[0x0A].tkData.tkSym->stFlags.bIsOmega)
+                    goto ERROR_EXIT;
+
+                // Check the 3rd name (s.b. Alpha)
+                if (!lpMemTknLine[0x0E].tkData.tkSym->stFlags.bIsAlpha)
+                {
+                    // Check the 3rd name (m.b. Omega)
+                    if (!lpMemTknLine[0x0E].tkData.tkSym->stFlags.bIsOmega
+                    // Check the 4th name (m.b. Alpha)
+                     || !lpMemTknLine[0x12].tkData.tkSym->stFlags.bIsAlpha)
+                        goto ERROR_EXIT;
+
+                    // Flip the bit
+                    *lpbMaxFcn = 1 - *lpbMaxFcn;
+                } else
+                // Check the 4th name (m.b. Omega)
+                if (!lpMemTknLine[0x12].tkData.tkSym->stFlags.bIsOmega)
+                    goto ERROR_EXIT;
+
+                // Check the immediate comparison function (s.b. < or <=)
+                if (lpMemTknLine[0x07].tkData.tkChar NE UTF16_LEFTCARET
+                 && lpMemTknLine[0x07].tkData.tkChar NE UTF16_LEFTCARETUNDERBAR)
+                {
+                    // The immediate comparison function must be > or >=
+                    if (lpMemTknLine[0x07].tkData.tkChar NE UTF16_RIGHTCARET
+                     && lpMemTknLine[0x07].tkData.tkChar NE UTF16_RIGHTCARETUNDERBAR)
+                        goto ERROR_EXIT;
+                    // Flip the bit
+                    *lpbMaxFcn = 1 - *lpbMaxFcn;
+                } // End IF
+
+                // Mark as successful
+                bRet = TRUE;
+            } // End IF
+        } // End IF
+ERROR_EXIT:
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
+
+    return bRet;
+} // End IzitMinMaxAfo
 
 
 //***************************************************************************

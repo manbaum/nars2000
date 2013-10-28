@@ -185,6 +185,7 @@ Welcome to NARS2000</h1>
         <li>Primitive dyadic function (<span class="APL">L..R</span>) (Sequence)</li>
         <li>Primitive dyadic operator quad colon (<span class="APL">f{variant}b R</span> and <span class="APL">L f{variant}b R</span>) (Variant)</li>
         <li>Anonymous Functions/Operators:  one-line grouping of one or more statements all enclosed in braces such as <span class="APL">{(+{slashbar}{omega}){divide}{mismatch}{omega}}</span></li>
+        <li>Primitive dyadic operator <span class="APL">f.g R</span> as a monadic derived function (Determinant Operator)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}DT</span> (Distribution Type)</li>

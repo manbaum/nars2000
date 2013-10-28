@@ -78,6 +78,7 @@
 #include "mpifns.h"
 #include "malloc.h"
 #include "qf_dr.h"
+#include "hungarian.h"
 
 #pragma pack(pop)
 

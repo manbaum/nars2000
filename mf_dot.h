@@ -102,7 +102,7 @@ static APLCHAR MonHeader[] =
 //L"⍝ Generalized determinant operator";
 
 static APLCHAR MonLine1[] =
-  L"Z←⊃LO " MFON_MonDotCr L" RO/" MFON_MonDotAll L" R ⋄ →0";
+  L"Z←⊃LO " MFON_MonDotCr L" RO/" MFON_MonDotAll L"⍪R ⋄ →0";
 
 static APLCHAR MonLine2[] = 
   L"⎕PRO:Z←⊃LO/⍬";

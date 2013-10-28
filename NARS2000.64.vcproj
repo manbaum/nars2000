@@ -453,6 +453,22 @@
                 >
             </File>
             <File
+                RelativePath=".\hungarian_dbl.c"
+                >
+            </File>
+            <File
+                RelativePath=".\hungarian_int.c"
+                >
+            </File>
+            <File
+                RelativePath=".\hungarian_rat.c"
+                >
+            </File>
+            <File
+                RelativePath=".\hungarian_vfp.c"
+                >
+            </File>
+            <File
                 RelativePath=".\identfns.c"
                 >
             </File>
@@ -1168,6 +1184,10 @@
             </File>
             <File
                 RelativePath=".\headers.h"
+                >
+            </File>
+            <File
+                RelativePath=".\hungarian_src.h"
                 >
             </File>
             <File

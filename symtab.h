@@ -193,10 +193,13 @@ typedef struct tagHSHTABSTR
               *steOne,                  // 80:  ...                     one
               *steBlank,                // 84:  ...                     blank
               *steAlpha,                // 88:  ...            Alpha
-              *steDel,                  // 9C:  ...            Del
-              *steDelDel,               // 90:  ...            Del Del
-              *steNoValue;              // 94:  ...            no-value result
-} HSHTABSTR, *LPHSHTABSTR;              // 98:  Length
+              *steDel,                  // 8C:  ...            Del
+              *steOmega,                // 90:  ...            Omega
+              *steLftOper,              // 94:  ...            Alpha Alpha
+              *steDelDel,               // 98:  ...            Del Del
+              *steRhtOper,              // 9C:  ...            Omega Omega
+              *steNoValue;              // A0:  ...            no-value result
+} HSHTABSTR, *LPHSHTABSTR;              // A4:  Length
 
 //********************* SYMBOL TABLE ****************************************
 
@@ -307,7 +310,9 @@ typedef struct tagSTFLAGS
          DfnAxis:1,         // 00400000:  User-defined function/operator accepts axis value
          FcnDir:1,          // 00800000:  Direct function/operator               (stNameFcn is valid)
          StdSysName:1,      // 01000000:  Is a standard System Name
-         :7;                // FE000000:  Available bits
+         bIsAlpha:1,        // 02000000:  Is Alpha
+         bIsOmega:1,        // 04000000:  Is Omega
+         :5;                // F8000000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
 // N.B.:  Whenever changing the above struct (STFLAGS),

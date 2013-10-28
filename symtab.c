@@ -2983,7 +2983,6 @@ UBOOL AllocSymTab
      UINT         uSymTabMaxNelm)   // Maximum # STEs
 
 {
-    UBOOL bRet = TRUE;              // TRUE iff the result is valid
 ////WCHAR wszTemp[1024];            // ***DEBUG***
 
     // Validate the incoming constants
@@ -3046,35 +3045,45 @@ UBOOL AllocSymTab
     lpHTS->lpSymTabNext = lpHTS->lpSymTab;
 
     // Initialize the Symbol Table Entry for the special constants and names
-    lpHTS->steZero    = _SymTabAppendInteger_EM (0               , FALSE, lpHTS);
-    lpHTS->steOne     = _SymTabAppendInteger_EM (1               , FALSE, lpHTS);
-    lpHTS->steBlank   = _SymTabAppendChar_EM    (L' '            , FALSE, lpHTS);
-    lpHTS->steAlpha   = _SymTabAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE, lpHTS);
-    lpHTS->steDel     = _SymTabAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE, lpHTS);
-    lpHTS->steDelDel  = _SymTabAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE, lpHTS);
-    lpHTS->steNoValue = lpHTS->lpSymTabNext++;
+    lpHTS->steZero      = _SymTabAppendInteger_EM (0                      , FALSE, lpHTS);
+    lpHTS->steOne       = _SymTabAppendInteger_EM (1                      , FALSE, lpHTS);
+    lpHTS->steBlank     = _SymTabAppendChar_EM    (L' '                   , FALSE, lpHTS);
+    lpHTS->steAlpha     = _SymTabAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE , lpHTS);
+    lpHTS->steDel       = _SymTabAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE , lpHTS);
+    lpHTS->steOmega     = _SymTabAppendName_EM    (WS_UTF16_OMEGA  , NULL , TRUE , lpHTS);
+    lpHTS->steLftOper   = _SymTabAppendName_EM    (WS_UTF16_LFTOPER, NULL , TRUE , lpHTS);
+    lpHTS->steDelDel    = _SymTabAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE , lpHTS);
+    lpHTS->steRhtOper   = _SymTabAppendName_EM    (WS_UTF16_RHTOPER, NULL , TRUE , lpHTS);
+    lpHTS->steNoValue   = lpHTS->lpSymTabNext++;
 
     if (lpHTS->steZero    EQ NULL
      || lpHTS->steOne     EQ NULL
      || lpHTS->steBlank   EQ NULL
      || lpHTS->steAlpha   EQ NULL
+     || lpHTS->steOmega   EQ NULL
      || lpHTS->steDel     EQ NULL
+     || lpHTS->steLftOper EQ NULL
      || lpHTS->steDelDel  EQ NULL
+     || lpHTS->steRhtOper EQ NULL
      || lpHTS->steNoValue EQ NULL
        )
-        bRet = FALSE;
-
-    // If the result is valid, ...
-    if (bRet)
+        return FALSE;
+    else
     {
+        // Set the flag for {alpha}
+        lpHTS->steAlpha->stFlags.bIsAlpha = TRUE;
+
+        // Set the flag for {omega}
+        lpHTS->steOmega->stFlags.bIsOmega = TRUE;
+
         // Set the flags for the NoValue entry
         lpHTS->steNoValue->stFlags.ObjName    = OBJNAME_NOVALUE;
         lpHTS->steNoValue->stFlags.stNameType = NAMETYPE_UNK;
 
         Assert (IsSymNoValue (lpHTS->steNoValue));
-    } // End IF
 
-    return bRet;
+        return TRUE;
+    } // End IF
 } // End AllocSymTab
 
 

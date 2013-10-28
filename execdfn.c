@@ -2074,7 +2074,7 @@ WSFULL_EXIT:
 //***************************************************************************
 //  $InitFcnSTEs
 //
-//  Initialize function arg STEs
+//  Initialize function operand STEs
 //***************************************************************************
 
 #ifdef DEBUG

@@ -775,7 +775,7 @@ UBOOL InitMagicFunctions
 //***************************************************************************
 //  $ExecNilMFO
 //
-//  Execute a niladic MFO (MFON_MonDotInit)
+//  Execute and erase a niladic MFO (MFON_MonDotInit)
 //***************************************************************************
 
 void ExecNilMFO
@@ -784,7 +784,9 @@ void ExecNilMFO
 
 {
     HGLOBAL        hGlbTknHdr;          // Handle of tokenized line header
+    LPSYMENTRY     lpSymEntry;          // Ptr to function STE
     LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
+    STFLAGS        stFlags = {0};       // SymTab flags
 
     // Tokenize the line
     hGlbTknHdr =
@@ -816,6 +818,18 @@ void ExecNilMFO
 
     // We no longer need this resource
     DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+
+    // Tell 'em we're looking for MFO objects
+////ZeroMemory (&stFlags, sizeof (stFlags));
+    stFlags.Inuse   = TRUE;
+    stFlags.ObjName = OBJNAME_MFO;
+
+    // Lookup the function name
+    lpSymEntry =
+      SymTabLookupName (MFON_MonDotInit, &stFlags);
+
+    // Free the niladic function
+    FreeResultGlobalDfn (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
 } // End ExecNilMFO
 
 

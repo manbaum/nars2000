@@ -2171,14 +2171,6 @@ HGLOBAL CheckGlobals
 
 {
     // Compare the incoming handle against the permanent globals
-    if (CompareGlobals (hGlbObj, hGlbQuadIC_SYS))
-        // Copy the global memory handle
-        return CopySymGlbDirAsGlb (hGlbQuadIC_SYS);
-    else
-    if (CompareGlobals (hGlbObj, hGlbQuadIC_CWS))
-        // Copy the global memory handle
-        return CopySymGlbDirAsGlb (hGlbQuadIC_CWS);
-    else
     if (CompareGlobals (hGlbObj, hGlbQuadFC_SYS))
         // Copy the global memory handle
         return CopySymGlbDirAsGlb (hGlbQuadFC_SYS);
@@ -2186,6 +2178,22 @@ HGLOBAL CheckGlobals
     if (CompareGlobals (hGlbObj, hGlbQuadFC_CWS))
         // Copy the global memory handle
         return CopySymGlbDirAsGlb (hGlbQuadFC_CWS);
+    else
+    if (CompareGlobals (hGlbObj, hGlbQuadFEATURE_SYS))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadFEATURE_SYS);
+    else
+    if (CompareGlobals (hGlbObj, hGlbQuadFEATURE_CWS))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadFEATURE_CWS);
+    else
+    if (CompareGlobals (hGlbObj, hGlbQuadIC_SYS))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadIC_SYS);
+    else
+    if (CompareGlobals (hGlbObj, hGlbQuadIC_CWS))
+        // Copy the global memory handle
+        return CopySymGlbDirAsGlb (hGlbQuadIC_CWS);
     else
     if (CompareGlobals (hGlbObj, hGlbQuadxLX))
         // Copy the global memory handle

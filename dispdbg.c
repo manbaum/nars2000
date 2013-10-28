@@ -277,7 +277,7 @@ void FormatSTE
      {0x00000020,  L" Inuse"      },
      {0x00000040,  L" Value"      },
 /////{0x00000380,  L" ObjName"    },
-//// {0x00003C00,  L" NameType"   },
+//// {0x00003C00,  L" stNameType" },
 //// {0x0007C000,  L" SysVarValid"},
      {0x00080000,  L" UsrDfn"     },
      {0x00100000,  L" DfnLabel"   },
@@ -1019,7 +1019,7 @@ static TOKENNAMES tokenNames[] =
  {"SETALPHA"      , TKT_SETALPHA      },    // 40: Set {alpha}
  {"DEL"           , TKT_DEL           },    // 41: Del -- always a function
  {"DELDEL"        , TKT_DELDEL        },    // 42: Del Del -- either a monadic or dyadic operator
- {"DELAFO"        , TKT_DELAFO        },    // 43: Anonymous monadic/dyadic operator, bound to its operands
+ {"DELAFO"        , TKT_DELAFO        },    // 43: Anonymous function or monadic/dyadic operator, bound to its operands
  {"FCNAFO"        , TKT_FCNAFO        },    // 44: Anonymous function
  {"OP1AFO"        , TKT_OP1AFO        },    // 45: ...       monadic operator
  {"OP2AFO"        , TKT_OP2AFO        },    // 46: ...       dyadic  ...
@@ -1921,6 +1921,16 @@ LPWCHAR DisplayFcnSub
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+
+            break;
+
+        case TKT_DELDEL:
+            *lpaplChar++ = UTF16_DEL;
+
+            // Fall through to common code
+
+        case TKT_DELAFO:
+            *lpaplChar++ = UTF16_DEL;
 
             break;
 

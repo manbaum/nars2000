@@ -4136,12 +4136,12 @@ void DeleSysVars
 
 
 //***************************************************************************
-//  $InitSystemVars
+//  $InitSysVars
 //
 //  Initialize all system vars
 //***************************************************************************
 
-void InitSystemVars
+void InitSysVars
     (void)
 
 {
@@ -4221,7 +4221,7 @@ void InitSystemVars
 
     // Save the index value
     lpMemPTD->cQuadxSA = cQuadxSA_CWS;
-} // End InitSystemVars
+} // End InitSysVars
 
 
 //***************************************************************************

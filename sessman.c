@@ -1211,7 +1211,7 @@ WM_NCCREATE_FAIL:
             // *************** System Vars *****************************
 
             // Initialize all system vars
-            InitSystemVars ();
+            InitSysVars ();
 
             // *************** Edit Ctrl ****************************
             // Create an Edit Ctrl within which we can enter expressions
@@ -1952,6 +1952,10 @@ NORMAL_EXIT:
             return FALSE;           // We handled the msg
 
         case WM_DESTROY:
+            // Delete all system vars
+            DeleSysVars (lpMemPTD->lphtsPTD);
+            DeleSysVars (&lpMemPTD->htsMFO_MonVR);
+
             // Free global storage
             FreeGlobalStorage (lpMemPTD);
 

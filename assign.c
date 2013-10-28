@@ -523,7 +523,7 @@ NAME_TYPES GetNameType
             break;          // Continue with common hGlbData code
 
         case TKT_FCNARRAY:
-        case TKT_DELAFO:    // Del Anon -- either a monadic of dyadic operator, bound to its operands
+        case TKT_DELAFO:    // Del Anon -- either a function or a monadic or dyadic operator, bound to its operands
             hGlbData = lptkFunc->tkData.tkGlbData;
 
             break;          // Continue with common hGlbData code

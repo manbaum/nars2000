@@ -862,20 +862,15 @@ UBOOL FreeResultGlobalDfn
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbData);
 
-    // If the function is not permanent (i.e. Magic Function/Operator), ...
-    if (!lpMemDfnHdr->PermFn)
-    {
-        // Get the reference count
-        RefCnt = lpMemDfnHdr->RefCnt;
+    // Get the reference count
+    RefCnt = lpMemDfnHdr->RefCnt;
 
-        // Ensure non-zero
-        Assert (RefCnt > 0);
+    // Ensure non-zero
+    Assert (RefCnt > 0);
 
-        // Decrement
-        RefCnt =
-          DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
-    } else
-        RefCnt = 1;     // Any non-zero value to prevent erasure
+    // Decrement
+    RefCnt =
+      DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
 
     // If the RefCnt is zero, free the global
     bRet = (RefCnt EQ 0);

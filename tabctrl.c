@@ -965,6 +965,9 @@ void FreeGlobalStorage
                 // Free the globals in the struc
                 FreeResultGlobalDfnStruc (lpMemDfnHdr);
 
+                // Free the HshTab & SymTab
+                FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
+
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
 
@@ -988,6 +991,13 @@ void FreeGlobalStorage
 
         // Zap the SymTab ptr so we don't re-execute this code
         lpMemPTD->lphtsPTD->lpSymTab = NULL;
+    } // End IF
+
+    // If it's valid, ...
+    if (lpMemPTD->hGlbQuadEM)
+    {
+        // Free the old value of []EM
+        FreeResultGlobalVar (lpMemPTD->hGlbQuadEM); lpMemPTD->hGlbQuadEM = NULL;
     } // End IF
 } // End FreeGlobalStorage
 #undef  APPEND_NAME

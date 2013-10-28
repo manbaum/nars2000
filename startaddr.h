@@ -1056,7 +1056,7 @@ typedef struct tagSTART_ADDRESSES
     "_AssignDefaultSysVars"     , (LPUCHAR) &_AssignDefaultSysVars      ,
     "CopySysVars"               , (LPUCHAR) &CopySysVars                ,
     "DeleSysVars"               , (LPUCHAR) &DeleSysVars                ,
-    "InitSystemVars"            , (LPUCHAR) &InitSystemVars             ,
+    "InitSysVars"               , (LPUCHAR) &InitSysVars                ,
 
     // tabctrl.c
     "EnumCallbackShowHide"      , (LPUCHAR) &EnumCallbackShowHide       ,

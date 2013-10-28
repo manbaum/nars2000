@@ -2304,6 +2304,8 @@ APLLONGEST GetGlbPtrs_LOCK
             return lpToken->tkData.tkSym->stData.stLongest;
 
         case TKT_FCNAFO:
+        case TKT_DELAFO:
+        case TKT_DELDEL:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
             *lphGlb = lpToken->tkData.tkGlbData;

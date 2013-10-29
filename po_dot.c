@@ -346,6 +346,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                      aplTypeRes;            // Result    ...
     APLNELM          aplNELMRht;            // Right arg NELM
     APLRANK          aplRankRht;            // Right arg rank
+    APLLONGEST       aplLongestRht;         // Immediate right arg
     HGLOBAL          hGlbRht = NULL,        // Right arg global memory handle
                      lpSymGlbRht,           // Ptr to right arg global numeric
                      hGlbTmp = NULL;        // Temp global memory handle
@@ -411,7 +412,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for RANK ERROR
     if (IsRank3P (aplRankRht))
@@ -456,8 +457,13 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     else
         aplTypeRes = aplTypeRht;
 
-    // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    // If the right arg is not immediate, ...
+    if (lpMemRht)
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
+    else
+        // Point to the data
+        lpMemRht = &aplLongestRht;
 
     // If this is Min.Plus  or  Max.Plus, ...
     if (IsTknImmed (&lpYYFcnStrRht->tkToken)

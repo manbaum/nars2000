@@ -1,6 +1,17 @@
 Version 0.4.4.xx consists of the following Builds:
 
 
+Build #1168 -- Version 0.4.4.xx
+-------------------------------
+
+* Fix Bug In Determinant Operator On Immediate Scalars
+
+Directory trunk:
+
+PO_DOT.C:
+  Handle immediate scalars.
+
+
 Build #1167 -- Version 0.4.4.xx
 -------------------------------
 

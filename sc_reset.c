@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2010 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,7 +57,8 @@ UBOOL CmdReset_EM
 
         // Signal the next layer to begin resetting
         MyReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
-    } // End IF
+    } else
+        DisplayPrompt (GetThreadSMEC (), 3);
 
     return TRUE;
 } // End CmdReset_EM

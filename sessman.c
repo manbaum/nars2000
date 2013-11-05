@@ -1359,15 +1359,16 @@ NORMAL_EXIT:
                                             // xPos = LOSHORT(lParam);  // horizontal position of cursor
                                             // yPos = HISHORT(lParam);  // vertical position of cursor
                 {
-                    UINT uCharPos;              // Character position
+                    LONG lCharPos,              // Character position
+                         lLineNum;              // Line #
 
                     // Ask the Edit Ctrl what char is under the mouse cursor
-                    uCharPos = (UINT) SendMessageW (hWndEC, EM_CHARFROMPOS, 0, lParam);
+                    CharFromPos (hWndEC, SendMessageW (hWndEC, EM_CHARFROMPOS, 0, lParam), &lLineNum, &lCharPos);
 
                     // If it's valid, ...
-                    if (uCharPos NE NEG1U)
+                    if (lCharPos NE -1)
                         // Move to that line
-                        MoveToLine (HIWORD (uCharPos),
+                        MoveToLine (lLineNum,
                                     lpMemPTD,
                                     hWndEC);
                     break;

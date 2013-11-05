@@ -71,7 +71,6 @@ typedef enum tagFCNMEMVIRTENUM
 } FCNMEMVIRTENUM;
 
 
-
 //***************************************************************************
 //  $CreateFcnWindow
 //
@@ -1717,7 +1716,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                  uCharPos,                  // ...    a character position
                  uLinePos,                  // Char position of start of line
                  uLineNum,                  // Line #
-                 uLineLen,                  // Line length
                  uSpaces,                   // # spaces to insert
                  uTmp,                      // Temporary var
                  uGroupIndex;               // Group index
@@ -2015,6 +2013,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // yPos = (UINT) lParam
         {
             POINT pt;
+            LONG  lCharPos,
+                  lLinePos,
+                  lLineLen;
             VARS_TEMP_OPEN
 
             // This message is sent whenever the user right clicks
@@ -2026,53 +2027,49 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             // Translate the xPos & yPos mouse screen coordinates into
             //   client coordinates in the Edit Ctrl window
-            pt.x = (UINT) wParam;
-            pt.y = (UINT) lParam;
+            pt.x = (LONG) wParam;
+            pt.y = (LONG) lParam;
             ScreenToClient (hWnd, &pt);
 
             // Translate the xPos & yPos client coordinates into
             //   char positions in the text
-            uCharPos = (UINT) SendMessageW (hWnd, EM_CHARFROMPOS, 0, MAKELPARAM (pt.x, pt.y));
-
-            // Split out the number of the line with this char
-            //   and the char position
-            uLineNum = HIWORD (uCharPos);
-            uCharPos = LOWORD (uCharPos);
+            CharFromPos (hWnd, SendMessageW (hWnd, EM_CHARFROMPOS, 0, MAKELPARAM (pt.x, pt.y)), &uLineNum, &lCharPos);
 
             // Get the length of the line with this char
-            uLineLen = (UINT) SendMessageW (hWnd, EM_LINELENGTH, uCharPos, 0);
+            lLineLen = (LONG) SendMessageW (hWnd, EM_LINELENGTH, lCharPos, 0);
 
             // Get the index of the first character in the line
-            uLinePos = (DWORD) SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
+            lLinePos = (LONG) SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
 
-            // Convert uCharPos from origin-0 to origin-Line
-            uCharPos -= uLinePos;
+            // Convert lCharPos from origin-0 to origin-Line
+            lCharPos -= lLinePos;
 
             // Tell EM_GETLINE maximum # chars in the buffer
             // The output array is a temporary so we don't have to
             //   worry about overwriting outside the allocated buffer
             CHECK_TEMP_OPEN
-            ((LPWORD) lpwszTemp)[0] = (WORD) uLineLen;
+            ((LPWORD) lpwszTemp)[0] = (WORD) lLineLen;
 
             // Get the contents of the line
             SendMessageW (hWnd, EM_GETLINE, uLineNum, (LPARAM) lpwszTemp);
 
             // Ensure the name is properly terminated
-            lpwszTemp[uLineLen] = WC_EOS;
+            lpwszTemp[lLineLen] = WC_EOS;
 
             // Check the chars at and to the right of the specified char pos
-            uCharPosEnd = uCharPos;
-            while (IzitNameChar (lpwszTemp[uCharPosEnd]))
-                uCharPosEnd++;
+            for (uCharPosEnd = lCharPos;
+                IzitNameChar (lpwszTemp[uCharPosEnd]);
+                uCharPosEnd++)
+                ;
 
             // Ensure the name is properly terminated
             lpwszTemp[uCharPosEnd] = WC_EOS;
 
-            // Check the chars to the left
-            for (uCharPosBeg = uCharPos;
+            // Check the chars to the left of the specified char pos
+            for (uCharPosBeg = lCharPos;
                  uCharPosBeg && IzitNameChar (lpwszTemp[uCharPosBeg - 1]);
                  uCharPosBeg--)
-            ;
+                ;
 
             // The name spans [uCharPosBeg, uCharPosEnd)
             // Check the whole name now
@@ -3658,7 +3655,7 @@ void RespecifyNewQuadPW
     // If we are requested to do so, ...
     if (OptionFlags.bAdjustPW)
     {
-        // If the incoming width is to be calcualted here, ...
+        // If the incoming width is to be calculated here, ...
         if (nWidth EQ 0)
         {
             RECT rc;
@@ -4389,9 +4386,7 @@ WCHAR GetCharValue
 
         // Get the position of the char under the caret
         //   and the line #
-        uCharPos = (UINT) SendMessageW (hWndEC, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y));
-        uLineNum = HIWORD (uCharPos);
-        uCharPos = LOWORD (uCharPos);
+        CharFromPos (hWndEC, SendMessageW (hWndEC, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y)), &uLineNum, &uCharPos);
     } else
         // Get the line # of the char position
         uLineNum = (DWORD) SendMessageW (hWndEC, EM_LINEFROMCHAR, uCharPos, 0);

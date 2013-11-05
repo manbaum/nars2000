@@ -746,5 +746,46 @@ APLINT GetDlgItemInt64
 
 
 //***************************************************************************
+//  $CharFromPos
+//
+//  Handle EM_CHARFROMPOS result, taking into account 16-bit integer overflow
+//***************************************************************************
+
+void CharFromPos
+    (HWND    hWndEC,            // Edit Ctrl window handle
+     LRESULT lResult,           // The result from SendMessage
+     LPLONG  lplLineNum,        // Ptr to Line #
+     LPLONG  lplCharPos)        // Ptr to Char Position
+
+{
+    LONG lLineNum,              // The line #
+         lCharPos;              // The char position
+
+    // Split out the values
+    lLineNum = HIWORD (lResult);
+    lCharPos = LOWORD (lResult);
+
+    // If the result is valid, ...
+    if (lResult != -1)
+    {
+        LONG lLineVis,          // The # of the first visible line
+             lLinePos;          // The char position of the start of the line
+
+        lLineVis = (LONG) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+        while (lLineNum < lLineVis)
+            lLineNum += 65536;
+
+        lLinePos = (LONG) SendMessageW (hWndEC, EM_LINEINDEX, lLineNum, 0);
+        while (lCharPos < lLinePos)
+            lCharPos += 65536;
+    } // End IF
+
+    // Return the values
+    *lplLineNum = lLineNum;
+    *lplCharPos = lCharPos;
+} // End CharFromPos
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

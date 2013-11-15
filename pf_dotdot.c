@@ -157,17 +157,9 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
                  aplRankRht;        // Right ...
     APLLONGEST   aplLongestLft,     // left arg immediate value
                  aplLongestRht;     // Right ...
-    APLINT       aplIntLft,         // Left arg start
-                 aplIntStep;        // Left arg step as integer
     APLUINT      uCnt;              // Loop counter
-    APLFLOAT     aplFltLft,         // Left arg as float
-                 aplFltStep;        // Left arg step as float
-    APLRAT       aplRatLft = {0},   // Left arg as RAT
-                 aplRatStep = {0},  // Left arg step as RAT
-                 aplRatTmp = {0};   // Temporary RAT
-    APLVFP       aplVfpLft = {0},   // Left arg as VFP
-                 aplVfpStep = {0},  // Left arg step as VFP
-                 aplVfpTmp = {0};   // Temporary VFP
+    APLRAT       aplRatTmp = {0};   // Temporary RAT
+    APLVFP       aplVfpTmp = {0};   // Temporary VFP
     APLUINT      ByteRes;           // # bytes in the result
     HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
                  hGlbRht = NULL,    // Right ...
@@ -177,7 +169,9 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
                  lpMemRes = NULL;   // ...    result ...
     UBOOL        bRet = TRUE;       // TRUE iff the result is valid
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    ALLTYPES     atRht = {0};       // Right arg as ALLTYPES
+    ALLTYPES     atLft = {0},       // Left arg as ALLTYPES
+                 atStp = {0},       // Step  ...
+                 atRht = {0};       // Right ...
 
     // 2..7   == 2 3 4 5 6 7
     // 2 2..7 == 2 4 6
@@ -235,123 +229,81 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     } else
         lpMemRht = &aplLongestRht;
 
-    // Split cases based upon the left arg storage type
-    switch (aplTypeLft)
+    // Save as result storage type
+    aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
+
+    // Initialize temps if necessary
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
     {
         case ARRAY_BOOL:
         case ARRAY_INT:
         case ARRAY_APA:
-            // Save as signed integer
-            aplIntLft = aplLongestLft;
-
-            // Save as result storage type
             aplTypeRes = ARRAY_APA;
 
             break;
 
         case ARRAY_FLOAT:
-            // Save as float
-            aplFltLft = *(LPAPLFLOAT) &aplLongestLft;
-
-            // Save as result storage type
-            aplTypeRes = ARRAY_FLOAT;
-
             break;
 
         case ARRAY_RAT:
             // Initialize temp vars
-            mpq_init (&aplRatLft);
-            mpq_init (&aplRatStep);
+            mpq_init (&atLft.aplRat);
+            mpq_init (&atStp.aplRat);
+            mpq_init (&atRht.aplRat);
             mpq_init (&aplRatTmp);
-
-            // Save as RAT
-            mpq_set (&aplRatLft, (LPAPLRAT) lpMemLft);
-
-            // Save as result storage type
-            aplTypeRes = ARRAY_RAT;
 
             break;
 
         case ARRAY_VFP:
             // Initialize temp vars
-            mpfr_init0 (&aplVfpLft);
-            mpfr_init0 (&aplVfpStep);
+            mpfr_init0 (&atLft.aplVfp);
+            mpfr_init0 (&atStp.aplVfp);
+            mpfr_init0 (&atRht.aplVfp);
             mpfr_init0 (&aplVfpTmp);
-
-            // Save as VFP
-            mpfr_set (&aplVfpLft, (LPAPLVFP) lpMemLft, MPFR_RNDN);
-
-            // Save as result storage type
-            aplTypeRes = ARRAY_VFP;
 
             break;
 
         case ARRAY_CHAR:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
+        case ARRAY_ERROR:
             goto LEFT_DOMAIN_EXIT;
 
         defstop
             break;
     } // End SWITCH
 
+    // Promote the left arg to the result type
+    (*aTypeActConvert[aplTypeLft][(aplTypeRes EQ ARRAY_APA) ? ARRAY_INT : aplTypeRes])(lpMemLft, 0, &atLft);
+
     // If there's a step, ...
-    if (!IsSingleton (aplNELMLft))
-        // Split cases based upon the left arg storage type
-        switch (aplTypeLft)
-        {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
-            case ARRAY_APA:
-                aplIntStep =
-                  GetNextInteger (lpMemLft,     // Ptr to global memory
-                                  aplTypeLft,   // Storage type
-                                  1);           // Index
-                break;
-
-            case ARRAY_FLOAT:
-                aplFltStep =
-                  GetNextFloat (lpMemLft,       // Ptr to global memory
-                                aplTypeLft,     // Storage type
-                                1);             // Index
-                break;
-
-            case ARRAY_RAT:
-                mpq_set (&aplRatStep, &((LPAPLRAT) lpMemLft)[1]);
-
-                break;
-
-            case ARRAY_VFP:
-                mpfr_set (&aplVfpStep, &((LPAPLVFP) lpMemLft)[1], MPFR_RNDN);
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
+    if (aplNELMLft EQ 2)
+        // Promote the step (in the left arg) to the result type
+        (*aTypeActConvert[aplTypeLft][(aplTypeRes EQ ARRAY_APA) ? ARRAY_INT : aplTypeRes])(lpMemLft, 1, &atStp);
     else
-        // Split cases based upon the left arg storage type
-        switch (aplTypeLft)
+        // Split cases based upon the result storage type
+        switch (aplTypeRes)
         {
             case ARRAY_BOOL:
             case ARRAY_INT:
             case ARRAY_APA:
-                aplIntStep = 1;
+                atStp.aplInteger = 1;
 
                 break;
 
             case ARRAY_FLOAT:
-                aplFltStep = 1;
+                atStp.aplFloat = 1;
 
                 break;
 
             case ARRAY_RAT:
-                mpq_set_ui (&aplRatStep, 1, 1);
+                mpq_set_ui (&atStp.aplRat, 1, 1);
 
                 break;
 
             case ARRAY_VFP:
-                mpfr_set_ui (&aplVfpStep, 1, MPFR_RNDN);
+                mpfr_set_ui (&atStp.aplVfp, 1, MPFR_RNDN);
 
                 break;
 
@@ -387,63 +339,63 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     {
         case ARRAY_APA:
             // Check for step 0
-            if (aplIntStep EQ 0)
+            if (atStp.aplInteger EQ 0)
             {
-                if (aplIntLft NE atRht.aplInteger)
+                if (atLft.aplInteger NE atRht.aplInteger)
                     goto LEFT_DOMAIN_EXIT;
-                aplIntStep = 1;
+                atStp.aplInteger = 1;
             } // End IF
 
             // Set the sign of the step
-            if (aplIntLft <= atRht.aplInteger)
-                aplIntStep =  abs64 (aplIntStep);
+            if (atLft.aplInteger <= atRht.aplInteger)
+                atStp.aplInteger =  abs64 (atStp.aplInteger);
             else
-                aplIntStep = -abs64 (aplIntStep);
+                atStp.aplInteger = -abs64 (atStp.aplInteger);
             // The NELM of the result is
-            aplNELMRes = 1 + abs64 ((atRht.aplInteger - aplIntLft) / aplIntStep);
+            aplNELMRes = 1 + abs64 ((atRht.aplInteger - atLft.aplInteger) / atStp.aplInteger);
 
             break;
 
         case ARRAY_FLOAT:
             // Check for step 0
-            if (aplFltStep EQ 0)
+            if (atStp.aplFloat EQ 0)
             {
-                if (aplFltLft NE atRht.aplFloat)
+                if (atLft.aplFloat NE atRht.aplFloat)
                     goto LEFT_DOMAIN_EXIT;
-                aplFltStep = 1;
+                atStp.aplFloat = 1;
             } // End IF
 
             // Set the sign of the step
-            if (aplFltLft <= atRht.aplFloat)
-                aplFltStep =  fabs (aplFltStep);
+            if (atLft.aplFloat <= atRht.aplFloat)
+                atStp.aplFloat =  fabs (atStp.aplFloat);
             else
-                aplFltStep = -fabs (aplFltStep);
+                atStp.aplFloat = -fabs (atStp.aplFloat);
             // The NELM of the result is
-            aplNELMRes = 1 + (APLINT) fabs ((atRht.aplFloat - aplFltLft) / aplFltStep);
+            aplNELMRes = 1 + (APLINT) fabs ((atRht.aplFloat - atLft.aplFloat) / atStp.aplFloat);
 
             break;
 
         case ARRAY_RAT:
             // Check for step 0
-            if (mpq_cmp_ui (&aplRatStep, 0, 1) EQ 0)
+            if (mpq_cmp_ui (&atStp.aplRat, 0, 1) EQ 0)
             {
-                if (mpq_cmp (&aplRatLft, &atRht.aplRat) NE 0)
+                if (mpq_cmp (&atLft.aplRat, &atRht.aplRat) NE 0)
                     goto LEFT_DOMAIN_EXIT;
-                mpq_set_ui (&aplRatStep, 1, 1);
+                mpq_set_ui (&atStp.aplRat, 1, 1);
             } // End IF
 
             // Set the sign of the step
-            if (mpq_cmp (&aplRatLft, &atRht.aplRat) <= 0)
-                mpq_abs (&aplRatStep, &aplRatStep);
+            if (mpq_cmp (&atLft.aplRat, &atRht.aplRat) <= 0)
+                mpq_abs (&atStp.aplRat, &atStp.aplRat);
             else
             {
-                mpq_abs (&aplRatStep, &aplRatStep);
-                mpq_neg (&aplRatStep, &aplRatStep);
+                mpq_abs (&atStp.aplRat, &atStp.aplRat);
+                mpq_neg (&atStp.aplRat, &atStp.aplRat);
             } // End IF/ELSE
 
             // The NELM of the result is
-            mpq_sub (&aplRatTmp, &atRht.aplRat, &aplRatLft);
-            mpq_div (&aplRatTmp, &aplRatTmp, &aplRatStep);
+            mpq_sub (&aplRatTmp, &atRht.aplRat, &atLft.aplRat);
+            mpq_div (&aplRatTmp, &aplRatTmp, &atStp.aplRat);
             mpq_abs (&aplRatTmp, &aplRatTmp);
             aplNELMRes = 1 + mpq_get_sctsx (&aplRatTmp, NULL);      // Rounding to nearest integer within SysCT
 
@@ -451,25 +403,25 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
 
         case ARRAY_VFP:
             // Check for step 0
-            if (mpfr_cmp_ui (&aplVfpStep, 0) EQ 0)
+            if (mpfr_cmp_ui (&atStp.aplVfp, 0) EQ 0)
             {
-                if (mpfr_cmp (&aplVfpLft, &atRht.aplVfp) NE 0)
+                if (mpfr_cmp (&atLft.aplVfp, &atRht.aplVfp) NE 0)
                     goto LEFT_DOMAIN_EXIT;
-                mpfr_set_ui (&aplVfpStep, 1, MPFR_RNDN);
+                mpfr_set_ui (&atStp.aplVfp, 1, MPFR_RNDN);
             } // End IF
 
             // Set the sign of the step
-            if (mpfr_cmp (&aplVfpLft, &atRht.aplVfp) <= 0)
-                mpfr_abs (&aplVfpStep, &aplVfpStep, MPFR_RNDN);
+            if (mpfr_cmp (&atLft.aplVfp, &atRht.aplVfp) <= 0)
+                mpfr_abs (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
             else
             {
-                mpfr_abs (&aplVfpStep, &aplVfpStep, MPFR_RNDN);
-                mpfr_neg (&aplVfpStep, &aplVfpStep, MPFR_RNDN);
+                mpfr_abs (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
+                mpfr_neg (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
             } // End IF/ELSE
 
             // The NELM of the result is
-            mpfr_sub (&aplVfpTmp, &atRht.aplVfp, &aplVfpLft, MPFR_RNDN);
-            mpfr_div (&aplVfpTmp, &aplVfpTmp, &aplVfpStep, MPFR_RNDN);
+            mpfr_sub (&aplVfpTmp, &atRht.aplVfp, &atLft.aplVfp, MPFR_RNDN);
+            mpfr_div (&aplVfpTmp, &aplVfpTmp, &atStp.aplVfp, MPFR_RNDN);
             mpfr_abs (&aplVfpTmp, &aplVfpTmp, MPFR_RNDN);
             aplNELMRes = 1 + mpfr_get_sctsx (&aplVfpTmp, NULL);     // Rounding to nearest integer within SysCT
 
@@ -516,15 +468,15 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     {
         case ARRAY_APA:
             // Save the APA offset and multiplier
-            ((LPAPLAPA) lpMemRes)->Off = aplIntLft;
-            ((LPAPLAPA) lpMemRes)->Mul = aplIntStep;
+            ((LPAPLAPA) lpMemRes)->Off = atLft.aplInteger;
+            ((LPAPLAPA) lpMemRes)->Mul = atStp.aplInteger;
 
             break;
 
         case ARRAY_FLOAT:
             // Loop through the result items
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
-                *((LPAPLFLOAT) lpMemRes)++ = aplFltLft + uCnt * aplFltStep;
+                *((LPAPLFLOAT) lpMemRes)++ = atLft.aplFloat + uCnt * atStp.aplFloat;
 
             break;
 
@@ -532,8 +484,8 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             // Loop through the result items
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
-                mpq_init_set (((LPAPLRAT) lpMemRes)++, &aplRatLft);
-                mpq_add (&aplRatLft, &aplRatLft, &aplRatStep);
+                mpq_init_set (((LPAPLRAT) lpMemRes)++, &atLft.aplRat);
+                mpq_add (&atLft.aplRat, &atLft.aplRat, &atStp.aplRat);
             } // End FOR
 
             break;
@@ -542,8 +494,8 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             // Loop through the result items
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
-                mpfr_init_set (((LPAPLVFP) lpMemRes)++, &aplVfpLft, MPFR_RNDN);
-                mpfr_add (&aplVfpLft, &aplVfpLft, &aplVfpStep, MPFR_RNDN);
+                mpfr_init_set (((LPAPLVFP) lpMemRes)++, &atLft.aplVfp, MPFR_RNDN);
+                mpfr_add (&atLft.aplVfp, &atLft.aplVfp, &atStp.aplVfp, MPFR_RNDN);
             } // End FOR
 
             break;
@@ -630,27 +582,37 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht  = NULL;
     } // End IF
 
-    // We no longer need these vars
-    Myq_clear (&aplRatTmp);
-    Myq_clear (&aplRatStep);
-    Myq_clear (&aplRatLft);
-
-    // We no longer need these vars
-    Myf_clear (&aplVfpTmp);
-    Myf_clear (&aplVfpStep);
-    Myf_clear (&aplVfpLft);
-
-    // If the result is a global numeric, ...
-    if (IsGlbNum (aplTypeRes))
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
     {
-        if (IsRat (aplTypeRes))
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+        case ARRAY_CHAR:            // Error condition
+        case ARRAY_HETERO:          // ...
+        case ARRAY_NESTED:          // ...
+            break;
+
+        case ARRAY_RAT:
+            // We no longer need these vars
+            Myq_clear (&aplRatTmp);
             Myq_clear (&atRht.aplRat);
-        else
-        if (IsVfp (aplTypeRes))
+            Myq_clear (&atStp.aplRat);
+            Myq_clear (&atLft.aplRat);
+
+            break;
+
+        case ARRAY_VFP:
+            // We no longer need these vars
+            Myf_clear (&aplVfpTmp);
             Myf_clear (&atRht.aplVfp);
-        else
-            DbgStop ();
-    } // End IF
+            Myf_clear (&atStp.aplVfp);
+            Myf_clear (&atLft.aplVfp);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     return lpYYRes;
 } // End PrimFnDydDotDot_YY

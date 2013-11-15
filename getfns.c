@@ -2558,18 +2558,18 @@ APLUINT GetQuadPP
 
 
 //***************************************************************************
-//  $SetQuadPP
+//  $SetQuadPPV
 //
-//  Set the current value of []PP
+//  Set the current value of []PP for VFPs
 //***************************************************************************
 
-void SetQuadPP
-    (APLINT uQuadPP)
+void SetQuadPPV
+    (APLINT uQuadPPV)
 
 {
     GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger=
-        min (DEF_MAX_QUADPP64, uQuadPP);
-} // End SetQuadPP
+      min (DEF_MAX_QUADPPVFP, uQuadPPV);
+} // End SetQuadPPV
 
 
 //***************************************************************************

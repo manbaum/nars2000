@@ -305,7 +305,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     APLFLOAT      fQuadCT;              // []CT
     APLCHAR       cQuadDT;              // []DT
     APLBOOL       bQuadIO;              // []IO
-    APLINT        uQuadPP;              // []PP
+    APLINT        uQuadPPV;             // []PP for VFPs
     TOKEN         tkFcn = {0},          // Function token
                   tkRht = {0};          // Right arg token
     HGLOBAL       hGlbRhtOpr;           // Right operand global memory handle
@@ -502,15 +502,15 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             // Validate the value
             if (!ValidateIntegerTest (&aplIntegerRhtOpr,
                                        DEF_MIN_QUADPP,      // Minimum value
-                                       DEF_MAX_QUADPP64,    // Maximum ...
+                                       DEF_MAX_QUADPPVFP,   // Maximum ...   for VFPs
                                        bRangeLimit.PP))     // TRUE iff range limiting
                 goto RIGHT_OPERAND_DOMAIN_EXIT;
 
-            // Save the current values for []PP
-            uQuadPP = GetQuadPP ();
+            // Save the current values for []PP for VFPs
+            uQuadPPV = GetQuadPPV ();
 
             // Put the new value into effect
-            SetQuadPP (aplIntegerRhtOpr);
+            SetQuadPPV (aplIntegerRhtOpr);
 
             // ***TESTME*** -- At some point we'll need to worry about multiple threads in the same workspace.
 
@@ -521,8 +521,8 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                               lptkRhtArg,           // Ptr to right arg token
                               FALSE,                // TRUE iff we should free the left arg on exit
                               FALSE);               // ...                         right ...
-            // Restore the original values
-            SetQuadPP (uQuadPP);
+            // Restore the original value for VFPs
+            SetQuadPPV (uQuadPPV);
 
             break;
 

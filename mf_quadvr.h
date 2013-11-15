@@ -36,10 +36,10 @@
 //***************************************************************************
 
 static APLCHAR MonHeaderVR[] =
-  L"Z←" MFON_MonVR L" R;L";
+  L"Z←" MFON_MonVR L" R;L;⎕IO";
 
 static APLCHAR MonLineVR1[] =  
-  L"Z←1 ##.⎕CR R";
+  L"⎕IO←0 ⋄ Z←1 ##.⎕CR R";
   
 static APLCHAR MonLineVR2[] =  
   L"→(0≠⍴Z)/L1 ⋄ Z←'' ⋄ →0";

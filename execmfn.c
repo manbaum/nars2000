@@ -221,68 +221,70 @@ HGLOBAL Init1MagicFunction
     LPSYMENTRY     lpSymEntry;              // Ptr to SYMENTRY for the MFO
     MEMVIRTSTR     lclMemVirtStr[1] = {0};  // Room for one GuardAlloc
     LPTOKEN        lptkCSBeg;               // Ptr to next token on the CS stack
-    LPHSHTABSTR    lphtsOld;                // Ptr to old copy of HshTab struc
+////LPHSHTABSTR    lphtsOld;                // Ptr to old copy of HshTab struc
 
-    // If lpInitMFO is valid, ...
-    if (lpInitMFO)
-    {
-        // If the HshTab has not been allocated as yet, ...
-        if (lpInitMFO->lphtsMFO->lpHshTab EQ NULL)
-        {
-            // Check on Start < End
-            Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
+    Assert (lpInitMFO EQ NULL);
 
-            lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpHshTab in <Init1MagicFunction>";
-
-            // Allocate virtual memory for the hash table
-            if (!AllocHshTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
-                               lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
-                               128,                                                         // Initial # blocks in HshTab (@ EPB HTEs per block)
-                               16,                                                          // # HTEs by which to resize when low
-                               1024))                                                       // Maximum # HTEs
-                DbgStop ();
-        } // End IF
-
-        // If the SymTab has not been allocated as yet, ...
-        if (lpInitMFO->lphtsMFO->lpSymTab EQ NULL)
-        {
-            // Check on Start < End
-            Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
-
-            lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpSymTab in <Init1MagicFunction>";
-
-            // Allocate virtual memory for the symbol table
-            if (!AllocSymTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
-                               lpMemPTD,                                                    // PerTabData global memory handle
-                               lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
-                               256,                                                         // Initial # STEs in SymTab
-                               16,                                                          // # STEs by which to resize when low
-                               1024))                                                       // Maximum # STEs
-                DbgStop ();
-        } // End IF
-
-        // Save the old HshTab struc
-        lphtsOld = lpMemPTD->lphtsPTD;
-
-        // Save address of previous struc
-        lpInitMFO->lphtsMFO->lphtsPrvMFO = lphtsOld;
-
-        // Put the HshTab and SymTab into effect
-        lpMemPTD->lphtsPTD = lpInitMFO->lphtsMFO;
-
-        // If the system names have not been appended as yet, ...
-        if (!lpInitMFO->lphtsMFO->bSysNames)
-        {
-            // Append all system names to the local SymTab
-            SymTabAppendAllSysNames_EM (lpInitMFO->lphtsMFO);
-
-            // Assign default values to the system vars
-            _AssignDefaultSysVars (lpMemPTD, lpInitMFO->lphtsMFO);
-
-            // Mark as appended so as to avoid doing this the next time
-            lpInitMFO->lphtsMFO->bSysNames = TRUE;
-        } // End IF
-    } // End IF
+////// If lpInitMFO is valid, ...
+////if (lpInitMFO)
+////{
+////    // If the HshTab has not been allocated as yet, ...
+////    if (lpInitMFO->lphtsMFO->lpHshTab EQ NULL)
+////    {
+////        // Check on Start < End
+////        Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
+////
+////        lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpHshTab in <Init1MagicFunction>";
+////
+////        // Allocate virtual memory for the hash table
+////        if (!AllocHshTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
+////                           lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
+////                           128,                                                         // Initial # blocks in HshTab (@ EPB HTEs per block)
+////                           16,                                                          // # HTEs by which to resize when low
+////                           1024))                                                       // Maximum # HTEs
+////            DbgStop ();
+////    } // End IF
+////
+////    // If the SymTab has not been allocated as yet, ...
+////    if (lpInitMFO->lphtsMFO->lpSymTab EQ NULL)
+////    {
+////        // Check on Start < End
+////        Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
+////
+////        lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpSymTab in <Init1MagicFunction>";
+////
+////        // Allocate virtual memory for the symbol table
+////        if (!AllocSymTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
+////                           lpMemPTD,                                                    // PerTabData global memory handle
+////                           lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
+////                           256,                                                         // Initial # STEs in SymTab
+////                           16,                                                          // # STEs by which to resize when low
+////                           1024))                                                       // Maximum # STEs
+////            DbgStop ();
+////    } // End IF
+////
+////    // Save the old HshTab struc
+////    lphtsOld = lpMemPTD->lphtsPTD;
+////
+////    // Save address of previous struc
+////    lpInitMFO->lphtsMFO->lphtsPrvMFO = lphtsOld;
+////
+////    // Put the HshTab and SymTab into effect
+////    lpMemPTD->lphtsPTD = lpInitMFO->lphtsMFO;
+////
+////    // If the system names have not been appended as yet, ...
+////    if (!lpInitMFO->lphtsMFO->bSysNames)
+////    {
+////        // Append all system names to the local SymTab
+////        SymTabAppendAllSysNames_EM (lpInitMFO->lphtsMFO);
+////
+////        // Assign default values to the system vars
+////        _AssignDefaultSysVars (lpMemPTD, lpInitMFO->lphtsMFO);
+////
+////        // Mark as appended so as to avoid doing this the next time
+////        lpInitMFO->lphtsMFO->bSysNames = TRUE;
+////    } // End IF
+////} // End IF
 
     // Save the ptr to the next token on the CS stack
     //   as our beginning
@@ -677,15 +679,15 @@ NORMAL_EXIT:
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;
 
-    // If lpInitMFO is valid, ...
-    if (lpInitMFO)
-    {
-        // Restore the old HTS
-        lpMemPTD->lphtsPTD = lphtsOld;
-
-        // Delete address of previous struc
-        lpInitMFO->lphtsMFO->lphtsPrvMFO = NULL;
-    } // End IF
+////// If lpInitMFO is valid, ...
+////if (lpInitMFO)
+////{
+////    // Restore the old HTS
+////    lpMemPTD->lphtsPTD = lphtsOld;
+////
+////    // Delete address of previous struc
+////    lpInitMFO->lphtsMFO->lphtsPrvMFO = NULL;
+////} // End IF
 
     // If we allocated virtual storage, ...
     if (lclMemVirtStr[0].IniAddr)
@@ -716,14 +718,6 @@ UBOOL InitMagicFunctions
      UINT         uPtdMemVirtEnd)       // Ending   ...
 
 {
-    INIT_MFO       initMFO;             // Temporary struc for passing multiple args
-
-    // Initialize the temp struc
-////initMFO.lphtsMFO         = NULL;             // Set below
-    initMFO.lpLclMemVirtStr  = lpLclMemVirtStr;
-    initMFO.uPtdMemVirtStart = uPtdMemVirtStart;
-    initMFO.uPtdMemVirtEnd   = uPtdMemVirtEnd;
-
     // Define the magic functions/operators
     lpMemPTD->hGlbMFO[MFOE_MonIota          ]  = Init1MagicFunction (MFON_MonIota          , &MFO_MonIota          , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_DydIota          ]  = Init1MagicFunction (MFON_DydIota          , &MFO_DydIota          , lpMemPTD, hWndEC, NULL);
@@ -733,9 +727,7 @@ UBOOL InitMagicFunctions
     lpMemPTD->hGlbMFO[MFOE_Conform          ]  = Init1MagicFunction (MFON_Conform          , &MFO_Conform          , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_MonFMT           ]  = Init1MagicFunction (MFON_MonFMT           , &MFO_MonFMT           , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_BoxFMT           ]  = Init1MagicFunction (MFON_BoxFMT           , &MFO_BoxFMT           , lpMemPTD, hWndEC, NULL);
-    initMFO.lphtsMFO = &lpMemPTD->htsMFO_MonVR;
-    lpMemPTD->hGlbMFO[MFOE_MonVR            ]  = Init1MagicFunction (MFON_MonVR            , &MFO_MonVR            , lpMemPTD, hWndEC, &initMFO);
-////initMFO.lphtsMFO = NULL;
+    lpMemPTD->hGlbMFO[MFOE_MonVR            ]  = Init1MagicFunction (MFON_MonVR            , &MFO_MonVR            , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_IdnDot           ]  = Init1MagicFunction (MFON_IdnDot           , &MFO_IdnDot           , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_IdnJotDot        ]  = Init1MagicFunction (MFON_IdnJotDot        , &MFO_IdnJotDot        , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_MAD              ]  = Init1MagicFunction (MFON_MAD              , &MFO_MAD              , lpMemPTD, hWndEC, NULL);
@@ -764,9 +756,6 @@ UBOOL InitMagicFunctions
     ExecNilMFO (lpMemPTD, hWndEC);
 
     lpMemPTD->hGlbMFO[MFOE_MonDot           ]  = Init1MagicFunction (MFON_MonDot           , &MFO_MonDot           , lpMemPTD, hWndEC, NULL);
-
-    // Set []IO to zero in the symbol table for []VR
-    lpMemPTD->htsMFO_MonVR.lpSymQuad[SYSVAR_IO]->stData.stBoolean = 0;
 
     return TRUE;
 } // InitMagicFunctions

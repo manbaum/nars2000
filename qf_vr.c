@@ -99,7 +99,7 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
                                   hGlbMFO,      // Magic function/operator global memory handle
-                                 &lpMemPTD->htsMFO_MonVR, // Ptr to HSHTAB struc (may be NULL)
+                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End SysFnMonVR_EM_YY
 

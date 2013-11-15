@@ -97,7 +97,6 @@ typedef struct tagPERTABDATA
 
     // Magic function/operator handles and strucs
     HGLOBAL      hGlbMFO[MFOE_LENGTH];      // Magic function/operator global memory handles
-    HSHTABSTR    htsMFO_MonVR;              // HTS for monadic []VR
 
     UINT         SILevel,                   // Current State Indicator level
                  CurTabID,                  // ID of the corresponding tab

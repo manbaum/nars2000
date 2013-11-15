@@ -280,7 +280,7 @@ UINT YYCountFcnStr
             tknType = lpToken->tkFlags.TknType;
 
             // If it's named and not immediate and not an internal function, ...
-            if (IsTknTypeNamedFcnOpr (tknType)
+            if (IsTknNamedFcnOpr (lpToken)
              && !lpToken->tkData.tkSym->stFlags.Imm     // not an immediate, and
              && !lpToken->tkData.tkSym->stFlags.UsrDfn  // not a user-defined function/operator, and
              && !lpToken->tkData.tkSym->stFlags.FcnDir) // not an internal function
@@ -970,7 +970,7 @@ void YYFreeGlbFcn
             {
                 // If the token is named, ...
                 //   and it's a direct function, ...
-                if (IsTknTypeNamed (lpMemFcn->tkToken.tkFlags.TknType)
+                if (IsTknNamed (&lpMemFcn->tkToken)
                  && lpMemFcn->tkToken.tkData.tkSym->stFlags.FcnDir)
                     continue;
 

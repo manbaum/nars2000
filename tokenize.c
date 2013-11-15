@@ -1690,7 +1690,7 @@ UBOOL fnAsnDone
         for (lptkCur = &lptkLocalVars->lptkNext[-1];
              lptkCur >= lptkLocalVars->lptkStart;
              lptkCur--)
-        if (IsTknTypeNamed (lptkCur->tkFlags.TknType))
+        if (IsTknNamed (lptkCur))
         {
             HGLOBAL hGlbName;
             LPWCHAR lpwszName;
@@ -1739,7 +1739,7 @@ UBOOL fnAsnDone
                 for (lptkCur2 = &lptkLocalVars->lptkNext[-1];
                      lptkCur2 >= lptkLocalVars->lptkStart;
                      lptkCur2--)
-                if (IsTknTypeNamed (lptkCur2->tkFlags.TknType))
+                if (IsTknNamed (lptkCur2))
                 {
                     HGLOBAL hGlbName2;
                     LPWCHAR lpwszName2;

@@ -175,7 +175,7 @@ typedef enum tagTOKEN_TYPES
 //   <MakeVarStrand_EM_YY> and <CopyToken_EM> in <strand.c>,
 //   <GetTokenTypeName> in <dispdbg.c>,
 //   <GetNameType> in <assign.c>,
-//   and <TokenTypeFV>, <IsTknTypeNamed>, <IsTknTypeNamedVar>, and <IsTknImmed> in <primfns.c>.
+//   and <TokenTypeFV>, <IsTknNamed>, <IsTknNamedVar>, and <IsTknImmed> in <primfns.c>.
 
 
 typedef struct tagTKFLAGS

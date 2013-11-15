@@ -126,8 +126,8 @@ void FreeResNNU
 {
     DBGENTER;
 
-    if (!IsTknTypeNamedFcnOpr (lpYYRes->tkToken.tkFlags.TknType)
-     && !IsTknTypeAFO         (lpYYRes->tkToken.tkFlags.TknType))
+    if (!IsTknNamedFcnOpr (&lpYYRes->tkToken)
+     && !IsTknTypeAFO     ( lpYYRes->tkToken.tkFlags.TknType))
     {
 #ifdef DEBUG
         // If the arg was YYCopyArray'ed, ...

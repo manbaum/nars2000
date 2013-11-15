@@ -177,8 +177,8 @@ LPPL_YYSTYPE PrimFnValueError_EM
     lstrcatW (wszTemp, APPEND_NAME);
 
     // If there's a name attached to this error, ...
-    if ((IsTknTypeNamed (lptkFunc->tkFlags.TknType)
-      || IsTknTypeAFO   (lptkFunc->tkFlags.TknType))
+    if ((IsTknNamed   (lptkFunc)
+      || IsTknTypeAFO (lptkFunc->tkFlags.TknType))
      && GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST
      && lptkFunc->tkData.tkSym->stHshEntry)
     {

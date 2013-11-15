@@ -2188,7 +2188,7 @@ HGLOBAL GetGlbHandle
         return NULL;
     else
     // If it's a named object, ...
-    if (IsTknTypeNamed (lpToken->tkFlags.TknType))
+    if (IsTknNamed (lpToken))
         return lpToken->tkData.tkSym->stData.stGlbData;
     else
         return lpToken->tkData.tkGlbData;
@@ -2838,7 +2838,7 @@ IMM_TYPES GetImmedType
     (LPTOKEN lptkArg)               // Ptr to token
 
 {
-    if (IsTknTypeNamed (lptkArg->tkFlags.TknType))
+    if (IsTknNamed (lptkArg))
         return lptkArg->tkData.tkSym->stFlags.ImmType;
     else
         return lptkArg->tkFlags.ImmType;

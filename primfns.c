@@ -3157,17 +3157,17 @@ LPSIS_HEADER PassSigaphore
 
 
 //***************************************************************************
-//  $IsTknTypeNamed
+//  $IsTknNamed
 //
-//  Return TRUE iff the given token type is named
+//  Return TRUE iff the given token is named
 //***************************************************************************
 
-UBOOL IsTknTypeNamed
-    (TOKEN_TYPES tknType)
+UBOOL IsTknNamed
+    (LPTOKEN lpToken)
 
 {
     // Split cases based upon the token type
-    switch (tknType)
+    switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:
         case TKT_FCNNAMED:
@@ -3176,24 +3176,42 @@ UBOOL IsTknTypeNamed
         case TKT_OP3NAMED:
             return TRUE;
 
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+            // Split cases based upon the ptr type bits
+            switch (GetPtrTypeDir (lpToken->tkData.tkVoid))
+            {
+                case PTRTYPE_STCONST:
+                    return TRUE;
+
+                case PTRTYPE_HGLOBAL:
+                    return FALSE;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            return FALSE;
+
         default:
             return FALSE;
     } // End SWITCH
-} // End IsTknTypeNamed
+} // End IsTknNamed
 
 
 //***************************************************************************
-//  $IsTknTypeNamedFcnOpr
+//  $IsTknNamedFcnOpr
 //
-//  Return TRUE iff the given token type is a named fcn/opr
+//  Return TRUE iff the given token is a named fcn/opr
 //***************************************************************************
 
-UBOOL IsTknTypeNamedFcnOpr
-    (TOKEN_TYPES tknType)
+UBOOL IsTknNamedFcnOpr
+    (LPTOKEN lpToken)
 
 {
     // Split cases based upon the token type
-    switch (tknType)
+    switch (lpToken->tkFlags.TknType)
     {
         case TKT_FCNNAMED:
         case TKT_OP1NAMED:
@@ -3201,10 +3219,28 @@ UBOOL IsTknTypeNamedFcnOpr
         case TKT_OP3NAMED:
             return TRUE;
 
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+            // Split cases based upon the ptr type bits
+            switch (GetPtrTypeDir (lpToken->tkData.tkVoid))
+            {
+                case PTRTYPE_STCONST:
+                    return TRUE;
+
+                case PTRTYPE_HGLOBAL:
+                    return FALSE;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            return FALSE;
+
         default:
             return FALSE;
     } // End SWITCH
-} // End IsTknTypeNamedFcnOpr
+} // End IsTknNamedFcnOpr
 
 
 //***************************************************************************
@@ -3294,17 +3330,17 @@ UBOOL IsTknTypeVar
 
 
 //***************************************************************************
-//  $IsTknTypeNamedVar
+//  $IsTknNamedVar
 //
-//  Return TRUE iff the given token type is a named var
+//  Return TRUE iff the given token is a named var
 //***************************************************************************
 
-UBOOL IsTknTypeNamedVar
-    (TOKEN_TYPES tknType)
+UBOOL IsTknNamedVar
+    (LPTOKEN lpToken)
 
 {
     // Split cases based upon the token type
-    switch (tknType)
+    switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:
             return TRUE;
@@ -3312,7 +3348,7 @@ UBOOL IsTknTypeNamedVar
         default:
             return FALSE;
     } // End SWITCH
-} // End IsTknTypeNamedVar
+} // End IsTknNamedVar
 
 
 //***************************************************************************
@@ -3400,7 +3436,7 @@ void SetVFOArraySRCIFlag
     VFOHDRPTRS vfoHdrPtrs;
 
     // If the token is named and has no value, ...
-    if (IsTknTypeNamed (lptkVFO->tkFlags.TknType)
+    if (IsTknNamed   (lptkVFO)
      && IsSymNoValue (lptkVFO->tkData.tkSym))
         return;
 
@@ -3462,7 +3498,7 @@ UBOOL GetVFOArraySRCIFlag
     UBOOL      bRet = FALSE;        // Return value
 
     // If the token is named and has no value, ...
-    if (IsTknTypeNamed (lptkVFO->tkFlags.TknType)
+    if (IsTknNamed   (lptkVFO)
      && IsSymNoValue (lptkVFO->tkData.tkSym))
         return FALSE;
 
@@ -3520,7 +3556,7 @@ void ClrVFOArraySRCIFlag
     VFOHDRPTRS vfoHdrPtrs;
 
     // If the token is named and has no value, ...
-    if (IsTknTypeNamed (lptkVFO->tkFlags.TknType)
+    if (IsTknNamed   (lptkVFO)
      && IsSymNoValue (lptkVFO->tkData.tkSym))
         return;
 

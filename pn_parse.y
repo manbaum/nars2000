@@ -275,207 +275,207 @@ VfpConstants:
     ;
 
 // Complex Point
-Hc2Point:
-      DecPoint 'i' DecPoint         {DbgMsgWP (L"%%Hc2Point:  DecPoint 'i' DecPoint");
-                                     // If the real part is integer, ...
-                                     if (IsIntegerType ($1.chType))
-                                         // Convert it to float
-                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
-                                     // If the imaginary part is integer, ...
-                                     if (IsIntegerType ($3.chType))
-                                         // Convert it to float
-                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
-
-                                     // Save the real & imaginary parts
-                                     $1.at.aplHC2.Real = $1.at.aplFloat;
-                                     $1.at.aplHC2.Imag = $3.at.aplFloat;
-
-                                     // Mark the result as Complex
-                                     $1.chType = PN_NUMTYPE_HC2;
-
-                                     $$ = $1;
-                                    }
-    | DecPoint 'J' DecPoint         {DbgMsgWP (L"%%Hc2Point:  DecPoint 'J' DecPoint");
-                                     // If the real part is integer, ...
-                                     if (IsIntegerType ($1.chType))
-                                         // Convert it to float
-                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
-                                     // If the imaginary part is integer, ...
-                                     if (IsIntegerType ($3.chType))
-                                         // Convert it to float
-                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
-
-                                     // Save the real & imaginary parts
-                                     $1.at.aplHC2.Real = $1.at.aplFloat;
-                                     $1.at.aplHC2.Imag = $3.at.aplFloat;
-
-                                     // Mark the result as Complex
-                                     $1.chType = PN_NUMTYPE_HC2;
-
-                                     $$ = $1;
-                                    }
-    | DecPoint 'a' 'd' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'd' DecPoint");
-                                     // If the real part is integer, ...
-                                     if (IsIntegerType ($1.chType))
-                                         // Convert it to float
-                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
-                                     // If the imaginary part is integer, ...
-                                     if (IsIntegerType ($4.chType))
-                                         // Convert it to float
-                                         $4.at.aplFloat = (APLFLOAT) $4.at.aplInteger;
-
-                                     // Convert from degrees to radians
-                                     $4.at.aplFloat = FloatPi * $4.at.aplFloat / 180;
-
-                                     // Save the real & imaginary parts
-                                     // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
-                                     $1.at.aplHC2.Real = $1.at.aplFloat * cos ($4.at.aplFloat);
-                                     $1.at.aplHC2.Imag = $1.at.aplFloat * sin ($4.at.aplFloat);
-
-                                     // Mark the result as Complex
-                                     $1.chType = PN_NUMTYPE_HC2;
-
-                                     $$ = $1;
-                                    }
-    | DecPoint 'a' 'r' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'r' DecPoint");
-                                     // If the real part is integer, ...
-                                     if (IsIntegerType ($1.chType))
-                                         // Convert it to float
-                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
-                                     // If the imaginary part is integer, ...
-                                     if (IsIntegerType ($4.chType))
-                                         // Convert it to float
-                                         $4.at.aplFloat = (APLFLOAT) $4.at.aplInteger;
-
-                                     // Save the real & imaginary parts
-                                     // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
-                                     $1.at.aplHC2.Real = $1.at.aplFloat * cos ($4.at.aplFloat);
-                                     $1.at.aplHC2.Imag = $1.at.aplFloat * sin ($4.at.aplFloat);
-
-                                     // Mark the result as Complex
-                                     $1.chType = PN_NUMTYPE_HC2;
-
-                                     $$ = $1;
-                                    }
-    ;
-
-// Quaternion Point
-Hc4Point:
-      DecPoint 'i' DecPoint 'j' DecPoint 'i' 'j' DecPoint
-                                    {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'i' 'j' DecPoint");
-                                     // If the real part is integer, ...
-                                     if (IsIntegerType ($1.chType))
-                                         // Convert it to float
-                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
-                                     // If the imaginary part #1 is integer, ...
-                                     if (IsIntegerType ($3.chType))
-                                         // Convert it to float
-                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
-                                     // If the imaginary part #2 is integer, ...
-                                     if (IsIntegerType ($5.chType))
-                                         // Convert it to float
-                                         $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
-                                     // If the imaginary part #3 is integer, ...
-                                     if (IsIntegerType ($8.chType))
-                                         // Convert it to float
-                                         $8.at.aplFloat = (APLFLOAT) $8.at.aplInteger;
-
-                                     // Save the real & imaginary parts
-                                     $1.at.aplHC4.Real  = $1.at.aplFloat;
-                                     $1.at.aplHC4.Imag1 = $3.at.aplFloat;
-                                     $1.at.aplHC4.Imag2 = $5.at.aplFloat;
-                                     $1.at.aplHC4.Imag3 = $8.at.aplFloat;
-
-                                     // Mark the result as Quaternion
-                                     $1.chType = PN_NUMTYPE_HC4;
-
-                                     $$ = $1;
-                                    }
-    | DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint
-                                    {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint");
-                                     // If the real part is integer, ...
-                                     if (IsIntegerType ($1.chType))
-                                         // Convert it to float
-                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
-                                     // If the imaginary part #1 is integer, ...
-                                     if (IsIntegerType ($3.chType))
-                                         // Convert it to float
-                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
-                                     // If the imaginary part #2 is integer, ...
-                                     if (IsIntegerType ($5.chType))
-                                         // Convert it to float
-                                         $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
-                                     // If the imaginary part #3 is integer, ...
-                                     if (IsIntegerType ($7.chType))
-                                         // Convert it to float
-                                         $7.at.aplFloat = (APLFLOAT) $7.at.aplInteger;
-
-                                     // Save the real & imaginary parts
-                                     $1.at.aplHC4.Real  = $1.at.aplFloat;
-                                     $1.at.aplHC4.Imag1 = $3.at.aplFloat;
-                                     $1.at.aplHC4.Imag2 = $5.at.aplFloat;
-                                     $1.at.aplHC4.Imag3 = $7.at.aplFloat;
-
-                                     // Mark the result as Quaternion
-                                     $1.chType = PN_NUMTYPE_HC4;
-
-                                     $$ = $1;
-                                    }
-    ;
-
-// Octonion Point
-Hc8Point:
-      DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint 'l' DecPoint 'i' 'j' DecPoint 'i' 'k' DecPoint 'i' 'l' DecPoint
-                                    {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint 'l' DecPoint 'i' 'j' DecPoint 'i' 'k' DecPoint 'i' 'l' DecPoint");
-                                     // If the real part is integer, ...
-                                     if (IsIntegerType ($1.chType))
-                                         // Convert it to float
-                                         $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
-                                     // If the imaginary part #1 is integer, ...
-                                     if (IsIntegerType ($3.chType))
-                                         // Convert it to float
-                                         $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
-                                     // If the imaginary part #2 is integer, ...
-                                     if (IsIntegerType ($5.chType))
-                                         // Convert it to float
-                                         $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
-                                     // If the imaginary part #3 is integer, ...
-                                     if (IsIntegerType ($7.chType))
-                                         // Convert it to float
-                                         $7.at.aplFloat = (APLFLOAT) $7.at.aplInteger;
-                                     // If the imaginary part #4 is integer, ...
-                                     if (IsIntegerType ($9.chType))
-                                         // Convert it to float
-                                         $9.at.aplFloat = (APLFLOAT) $9.at.aplInteger;
-                                     // If the imaginary part #5 is integer, ...
-                                     if (IsIntegerType ($12.chType))
-                                         // Convert it to float
-                                         $12.at.aplFloat = (APLFLOAT) $12.at.aplInteger;
-                                     // If the imaginary part #6 is integer, ...
-                                     if (IsIntegerType ($15.chType))
-                                         // Convert it to float
-                                         $15.at.aplFloat = (APLFLOAT) $15.at.aplInteger;
-                                     // If the imaginary part #7 is integer, ...
-                                     if (IsIntegerType ($18.chType))
-                                         // Convert it to float
-                                         $18.at.aplFloat = (APLFLOAT) $18.at.aplInteger;
-
-                                     // Save the real & imaginary parts
-                                     $1.at.aplHC8.Real  = $1.at.aplFloat;
-                                     $1.at.aplHC8.Imag1 = $3.at.aplFloat;
-                                     $1.at.aplHC8.Imag2 = $5.at.aplFloat;
-                                     $1.at.aplHC8.Imag3 = $7.at.aplFloat;
-                                     $1.at.aplHC8.Imag4 = $9.at.aplFloat;
-                                     $1.at.aplHC8.Imag5 = $12.at.aplFloat;
-                                     $1.at.aplHC8.Imag6 = $15.at.aplFloat;
-                                     $1.at.aplHC8.Imag7 = $18.at.aplFloat;
-
-                                     // Mark the result as Octonion
-                                     $1.chType = PN_NUMTYPE_HC8;
-
-                                     $$ = $1;
-                                    }
-    ;
+/// Hc2Point:
+///       DecPoint 'i' DecPoint         {DbgMsgWP (L"%%Hc2Point:  DecPoint 'i' DecPoint");
+///                                      // If the real part is integer, ...
+///                                      if (IsIntegerType ($1.chType))
+///                                          // Convert it to float
+///                                          $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
+///                                      // If the imaginary part is integer, ...
+///                                      if (IsIntegerType ($3.chType))
+///                                          // Convert it to float
+///                                          $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
+///
+///                                      // Save the real & imaginary parts
+///                                      $1.at.aplHC2.Real = $1.at.aplFloat;
+///                                      $1.at.aplHC2.Imag = $3.at.aplFloat;
+///
+///                                      // Mark the result as Complex
+///                                      $1.chType = PN_NUMTYPE_HC2;
+///
+///                                      $$ = $1;
+///                                     }
+///     | DecPoint 'J' DecPoint         {DbgMsgWP (L"%%Hc2Point:  DecPoint 'J' DecPoint");
+///                                      // If the real part is integer, ...
+///                                      if (IsIntegerType ($1.chType))
+///                                          // Convert it to float
+///                                          $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
+///                                      // If the imaginary part is integer, ...
+///                                      if (IsIntegerType ($3.chType))
+///                                          // Convert it to float
+///                                          $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
+///
+///                                      // Save the real & imaginary parts
+///                                      $1.at.aplHC2.Real = $1.at.aplFloat;
+///                                      $1.at.aplHC2.Imag = $3.at.aplFloat;
+///
+///                                      // Mark the result as Complex
+///                                      $1.chType = PN_NUMTYPE_HC2;
+///
+///                                      $$ = $1;
+///                                     }
+///     | DecPoint 'a' 'd' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'd' DecPoint");
+///                                      // If the real part is integer, ...
+///                                      if (IsIntegerType ($1.chType))
+///                                          // Convert it to float
+///                                          $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
+///                                      // If the imaginary part is integer, ...
+///                                      if (IsIntegerType ($4.chType))
+///                                          // Convert it to float
+///                                          $4.at.aplFloat = (APLFLOAT) $4.at.aplInteger;
+///
+///                                      // Convert from degrees to radians
+///                                      $4.at.aplFloat = FloatPi * $4.at.aplFloat / 180;
+///
+///                                      // Save the real & imaginary parts
+///                                      // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
+///                                      $1.at.aplHC2.Real = $1.at.aplFloat * cos ($4.at.aplFloat);
+///                                      $1.at.aplHC2.Imag = $1.at.aplFloat * sin ($4.at.aplFloat);
+///
+///                                      // Mark the result as Complex
+///                                      $1.chType = PN_NUMTYPE_HC2;
+///
+///                                      $$ = $1;
+///                                     }
+///     | DecPoint 'a' 'r' DecPoint     {DbgMsgWP (L"%%Hc2Point:  DecPoint 'a' 'r' DecPoint");
+///                                      // If the real part is integer, ...
+///                                      if (IsIntegerType ($1.chType))
+///                                          // Convert it to float
+///                                          $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
+///                                      // If the imaginary part is integer, ...
+///                                      if (IsIntegerType ($4.chType))
+///                                          // Convert it to float
+///                                          $4.at.aplFloat = (APLFLOAT) $4.at.aplInteger;
+///
+///                                      // Save the real & imaginary parts
+///                                      // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
+///                                      $1.at.aplHC2.Real = $1.at.aplFloat * cos ($4.at.aplFloat);
+///                                      $1.at.aplHC2.Imag = $1.at.aplFloat * sin ($4.at.aplFloat);
+///
+///                                      // Mark the result as Complex
+///                                      $1.chType = PN_NUMTYPE_HC2;
+///
+///                                      $$ = $1;
+///                                     }
+///     ;
+///
+/// // Quaternion Point
+/// Hc4Point:
+///       DecPoint 'i' DecPoint 'j' DecPoint 'i' 'j' DecPoint
+///                                     {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'i' 'j' DecPoint");
+///                                      // If the real part is integer, ...
+///                                      if (IsIntegerType ($1.chType))
+///                                          // Convert it to float
+///                                          $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
+///                                      // If the imaginary part #1 is integer, ...
+///                                      if (IsIntegerType ($3.chType))
+///                                          // Convert it to float
+///                                          $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
+///                                      // If the imaginary part #2 is integer, ...
+///                                      if (IsIntegerType ($5.chType))
+///                                          // Convert it to float
+///                                          $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
+///                                      // If the imaginary part #3 is integer, ...
+///                                      if (IsIntegerType ($8.chType))
+///                                          // Convert it to float
+///                                          $8.at.aplFloat = (APLFLOAT) $8.at.aplInteger;
+///
+///                                      // Save the real & imaginary parts
+///                                      $1.at.aplHC4.Real  = $1.at.aplFloat;
+///                                      $1.at.aplHC4.Imag1 = $3.at.aplFloat;
+///                                      $1.at.aplHC4.Imag2 = $5.at.aplFloat;
+///                                      $1.at.aplHC4.Imag3 = $8.at.aplFloat;
+///
+///                                      // Mark the result as Quaternion
+///                                      $1.chType = PN_NUMTYPE_HC4;
+///
+///                                      $$ = $1;
+///                                     }
+///     | DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint
+///                                     {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint");
+///                                      // If the real part is integer, ...
+///                                      if (IsIntegerType ($1.chType))
+///                                          // Convert it to float
+///                                          $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
+///                                      // If the imaginary part #1 is integer, ...
+///                                      if (IsIntegerType ($3.chType))
+///                                          // Convert it to float
+///                                          $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
+///                                      // If the imaginary part #2 is integer, ...
+///                                      if (IsIntegerType ($5.chType))
+///                                          // Convert it to float
+///                                          $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
+///                                      // If the imaginary part #3 is integer, ...
+///                                      if (IsIntegerType ($7.chType))
+///                                          // Convert it to float
+///                                          $7.at.aplFloat = (APLFLOAT) $7.at.aplInteger;
+///
+///                                      // Save the real & imaginary parts
+///                                      $1.at.aplHC4.Real  = $1.at.aplFloat;
+///                                      $1.at.aplHC4.Imag1 = $3.at.aplFloat;
+///                                      $1.at.aplHC4.Imag2 = $5.at.aplFloat;
+///                                      $1.at.aplHC4.Imag3 = $7.at.aplFloat;
+///
+///                                      // Mark the result as Quaternion
+///                                      $1.chType = PN_NUMTYPE_HC4;
+///
+///                                      $$ = $1;
+///                                     }
+///     ;
+///
+/// // Octonion Point
+/// Hc8Point:
+///       DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint 'l' DecPoint 'i' 'j' DecPoint 'i' 'k' DecPoint 'i' 'l' DecPoint
+///                                     {DbgMsgWP (L"%%Hc4Point:  DecPoint 'i' DecPoint 'j' DecPoint 'k' DecPoint 'l' DecPoint 'i' 'j' DecPoint 'i' 'k' DecPoint 'i' 'l' DecPoint");
+///                                      // If the real part is integer, ...
+///                                      if (IsIntegerType ($1.chType))
+///                                          // Convert it to float
+///                                          $1.at.aplFloat = (APLFLOAT) $1.at.aplInteger;
+///                                      // If the imaginary part #1 is integer, ...
+///                                      if (IsIntegerType ($3.chType))
+///                                          // Convert it to float
+///                                          $3.at.aplFloat = (APLFLOAT) $3.at.aplInteger;
+///                                      // If the imaginary part #2 is integer, ...
+///                                      if (IsIntegerType ($5.chType))
+///                                          // Convert it to float
+///                                          $5.at.aplFloat = (APLFLOAT) $5.at.aplInteger;
+///                                      // If the imaginary part #3 is integer, ...
+///                                      if (IsIntegerType ($7.chType))
+///                                          // Convert it to float
+///                                          $7.at.aplFloat = (APLFLOAT) $7.at.aplInteger;
+///                                      // If the imaginary part #4 is integer, ...
+///                                      if (IsIntegerType ($9.chType))
+///                                          // Convert it to float
+///                                          $9.at.aplFloat = (APLFLOAT) $9.at.aplInteger;
+///                                      // If the imaginary part #5 is integer, ...
+///                                      if (IsIntegerType ($12.chType))
+///                                          // Convert it to float
+///                                          $12.at.aplFloat = (APLFLOAT) $12.at.aplInteger;
+///                                      // If the imaginary part #6 is integer, ...
+///                                      if (IsIntegerType ($15.chType))
+///                                          // Convert it to float
+///                                          $15.at.aplFloat = (APLFLOAT) $15.at.aplInteger;
+///                                      // If the imaginary part #7 is integer, ...
+///                                      if (IsIntegerType ($18.chType))
+///                                          // Convert it to float
+///                                          $18.at.aplFloat = (APLFLOAT) $18.at.aplInteger;
+///
+///                                      // Save the real & imaginary parts
+///                                      $1.at.aplHC8.Real  = $1.at.aplFloat;
+///                                      $1.at.aplHC8.Imag1 = $3.at.aplFloat;
+///                                      $1.at.aplHC8.Imag2 = $5.at.aplFloat;
+///                                      $1.at.aplHC8.Imag3 = $7.at.aplFloat;
+///                                      $1.at.aplHC8.Imag4 = $9.at.aplFloat;
+///                                      $1.at.aplHC8.Imag5 = $12.at.aplFloat;
+///                                      $1.at.aplHC8.Imag6 = $15.at.aplFloat;
+///                                      $1.at.aplHC8.Imag7 = $18.at.aplFloat;
+///
+///                                      // Mark the result as Octonion
+///                                      $1.chType = PN_NUMTYPE_HC8;
+///
+///                                      $$ = $1;
+///                                     }
+///     ;
 
 Rational:
       Integer  DEF_RATSEP Digit     {DbgMsgWP (L"%%Rational:  Integer 'r' Digit");
@@ -622,12 +622,12 @@ EPArgs:
                                     }
     | ExpPoint                      {DbgMsgWP (L"%%EPArgs:  ExpPoint");
                                     }
-    | Hc2Point                      {DbgMsgWP (L"%%EPArgs:  Hc2Point");
-                                    }
-    | Hc4Point                      {DbgMsgWP (L"%%EPArgs:  Hc4Point");
-                                    }
-    | Hc8Point                      {DbgMsgWP (L"%%EPArgs:  Hc8Point");
-                                    }
+////| Hc2Point                      {DbgMsgWP (L"%%EPArgs:  Hc2Point");
+////                                }
+////| Hc4Point                      {DbgMsgWP (L"%%EPArgs:  Hc4Point");
+////                                }
+////| Hc8Point                      {DbgMsgWP (L"%%EPArgs:  Hc8Point");
+////                                }
     | RatPoint                      {DbgMsgWP (L"%%EPArgs:  RatPoint");
                                     }
     | VfpPoint                      {DbgMsgWP (L"%%EPArgs:  VfpPoint");
@@ -697,15 +697,15 @@ BasePoint:
     | RatPoint   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  RatPoint 'b' AlphaInt");
                                      $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
                                     }
-    | Hc2Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc2Point 'b' AlphaInt");
-                                     $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
-                                    }
-    | Hc4Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc4Point 'b' AlphaInt");
-                                     $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
-                                    }
-    | Hc8Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc8Point 'b' AlphaInt");
-                                     $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
-                                    }
+////| Hc2Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc2Point 'b' AlphaInt");
+////                                 $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
+////                                }
+////| Hc4Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc4Point 'b' AlphaInt");
+////                                 $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
+////                                }
+////| Hc8Point   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  Hc8Point 'b' AlphaInt");
+////                                 $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
+////                                }
     | VfpPoint   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  VfpPoint 'b' AlphaInt");
                                      $$ = *PN_MakeBasePoint (lppnLocalVars, &$1, &$3);
                                     }
@@ -740,18 +740,18 @@ Number:
                                      lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;
                                     }
-    | Hc2Point                      {DbgMsgWP (L"%%Number:  Hc2Point");
-                                     lppnLocalVars->at             = $1.at;
-                                     lppnLocalVars->chType         = $1.chType;
-                                    }
-    | Hc4Point                      {DbgMsgWP (L"%%Number:  Hc4Point");
-                                     lppnLocalVars->at             = $1.at;
-                                     lppnLocalVars->chType         = $1.chType;
-                                    }
-    | Hc8Point                      {DbgMsgWP (L"%%Number:  Hc8Point");
-                                     lppnLocalVars->at             = $1.at;
-                                     lppnLocalVars->chType         = $1.chType;
-                                    }
+////| Hc2Point                      {DbgMsgWP (L"%%Number:  Hc2Point");
+////                                 lppnLocalVars->at             = $1.at;
+////                                 lppnLocalVars->chType         = $1.chType;
+////                                }
+////| Hc4Point                      {DbgMsgWP (L"%%Number:  Hc4Point");
+////                                 lppnLocalVars->at             = $1.at;
+////                                 lppnLocalVars->chType         = $1.chType;
+////                                }
+////| Hc8Point                      {DbgMsgWP (L"%%Number:  Hc8Point");
+////                                 lppnLocalVars->at             = $1.at;
+////                                 lppnLocalVars->chType         = $1.chType;
+////                                }
     | VfpPoint                      {DbgMsgWP (L"%%Number:  VfpPoint");
                                      lppnLocalVars->at             = $1.at;
                                      lppnLocalVars->chType         = $1.chType;

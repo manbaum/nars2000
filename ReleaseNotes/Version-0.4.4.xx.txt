@@ -1,6 +1,21 @@
 Version 0.4.4.xx consists of the following Builds:
 
 
+Build #1170 -- Version 0.4.4.xx
+-------------------------------
+
+* Fix Bug When Parsing A HyperComplex Number In A Strand (1 0J1)
+
+Directory trunk:
+
+PN_PARSE.Y:
+  Omit all HyperComplex numbers from parsing.
+
+TOKENIZE.C:
+  In <fnPointDone>, when encountering a SYNTAX ERROR, return TRUE so the function
+    definition with the error doesn't fail.
+
+
 Build #1169 -- Version 0.4.4.xx
 -------------------------------
 

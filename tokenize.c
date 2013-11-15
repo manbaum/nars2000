@@ -2575,6 +2575,7 @@ UBOOL fnPointDone
         } // End IF
     } else
         // Mark as a SYNTAX ERROR
+        bRet =
         lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
 
     goto NORMAL_EXIT;

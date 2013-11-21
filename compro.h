@@ -132,6 +132,7 @@
   #include "pn_proc.pro"
   #include "po_cmiddot.pro"
   #include "po_dicircle.pro"
+  #include "po_didtack.pro"
   #include "po_dieresis.pro"
   #include "po_dijot.pro"
   #include "po_ditilde.pro"

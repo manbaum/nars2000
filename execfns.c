@@ -1396,17 +1396,9 @@ LPPL_YYSTYPE ExecOp2_EM_YY
                                             lpYYFcnStrOpr,  // Ptr to operator function strand
                                             lptkRhtArg);    // Ptr to right arg token
         case UTF16_DIERESISDOWNTACK:// Convolution
-            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
-
-            DbgBrk ();              // ***FINISHME*** -- UTF16_DIERESISDOWNTACK
-
-
-
-
-
-
-            return NULL;
-
+            return PrimOpDieresisDownTack_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
+                                                 lpYYFcnStrOpr, // Ptr to operator function strand
+                                                 lptkRhtArg);   // Ptr to right arg token
         case UTF16_DIERESISSTAR:    // Power
             return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 

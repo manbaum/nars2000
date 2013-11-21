@@ -57,9 +57,7 @@ extern PRIMSPEC PrimSpecUpStile;
 
 // Dyadic  Operators TO DO                             Monadic          Dyadic
 /////// PrimOpDieresisDel_EM_YY                     // ERROR            Dual (*)
-/////// PrimOpDieresisDowntack_EM_YY                // ERROR            Convolution (*)
 /////// PrimOpDieresisStar_EM_YY                    // ERROR            Power (*)
-/////// PrimOpDot_EM_YY                             // Determinant (*)  Inner product
 
 // (*) = Unfinished
 
@@ -419,7 +417,6 @@ LPPL_YYSTYPE PrimFn_EM
 
 // Dyadic operators TO DO
 #define PrimProtoOpDieresisDel_EM_YY            PrimProtoOp_EM
-#define PrimProtoOpDieresisDownTack_EM_YY       PrimProtoOp_EM
 #define PrimProtoOpDieresisStar_EM_YY           PrimProtoOp_EM
 
 
@@ -792,7 +789,7 @@ void InitPrimFlags
     Init1PrimFlag (UTF16_DIERESIS          , 0                                                                                          ,             PrimIdentOpDieresis_EM_YY         );
     Init1PrimFlag (UTF16_DIERESISCIRCLE    , 0                                                                                          ,             NULL ); // PrimIdentOpDieresisCircle_EM_YY   );
     Init1PrimFlag (UTF16_DIERESISDEL       , 0                                                                                          ,             NULL ); // PrimIdentOpDieresisDel_EM_YY      );
-    Init1PrimFlag (UTF16_DIERESISDOWNTACK  , 0                                                                                          ,             NULL ); // PrimIdentOpDieresisDownTack_EM_YY );
+    Init1PrimFlag (UTF16_DIERESISDOWNTACK  , 0                                             | PF_ID | PF_LI | PF_RI                      , (LPPRIMOPS) PrimIdentOpDieresisDownTack_EM_YY );
     Init1PrimFlag (UTF16_DIERESISJOT       , 0                                                                                          ,             NULL ); // PrimIdentOpDieresisJot_EM_YY      );
     Init1PrimFlag (UTF16_DIERESISSTAR      , 0                                                                                          ,             NULL ); // PrimIdentOpDieresisStar_EM_YY     );
     Init1PrimFlag (UTF16_DIERESISTILDE     , 0                                                                                          ,             PrimIdentOpDieresisTilde_EM_YY    );

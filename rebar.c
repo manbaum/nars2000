@@ -2798,7 +2798,10 @@ typedef struct tagLANGCHARS
 ////////{WS_UTF16_DIERESISSTAR      , {0}, L""},       // Uncomment when implemented
 ////////{WS_UTF16_DIERESISDOT       , {0}, L""},       // ...
 ////////{WS_UTF16_DIERESISDEL       , {0}, L""},       // ...
-////////{WS_UTF16_DIERESISDOWNTACK  , {0}, L""},       // ...
+        {WS_UTF16_DIERESISDOWNTACK  , {0}, L"DieresisDownTack",
+                                           L"Convolution Operator:  L f" WS_UTF16_DIERESISDOWNTACK L"g R\n\n"
+                                           L"Keyboard:  Alt-'N' or Alt-shift-'n'\n\n"
+                                           L"Unicode:  0x2361 or 9057"},
         {WS_UTF16_DIERESISCIRCLE    , {0}, L"DieresisCircle",
                                            L"Composition Operator:  L f" WS_UTF16_DIERESISCIRCLE L"g R\n\n"
                                            L"Keyboard:  Alt-'O' or Alt-shift-'o'\n\n"
@@ -2810,6 +2813,7 @@ typedef struct tagLANGCHARS
                                            L"Unicode:  0x2366 or 9062"},
         {WS_UTF16_DOT               , {0}, L"Dot",
                                            L"Inner Product Operator:  L f.g R\n"
+                                           L"Determinant Operator:      f.g R\n"
                                            L"Outer Product Operator:  L " WS_UTF16_JOT L".g R\n"
                                            L"Sequence:  L..R\n"
                                            L"Decimal notation separator:  1.23\n\n"

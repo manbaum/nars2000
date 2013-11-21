@@ -58,8 +58,10 @@ typedef enum tagMFO
     MFOE_MonDotPerm      ,      // 20:  ...
     MFOE_MonDotMf        ,      // 21:  ...
     MFOE_MonDotCr        ,      // 22:  ...
-    MFOE_DydEpsUnderbar  ,      // 23:  Dyadic Epsilon Underbar on empry args
-    MFOE_LENGTH                 // 24:  # entries in this enum
+    MFOE_DydEpsUnderbar  ,      // 23:  Dyadic Epsilon Underbar on empty args
+    MFOE_DydConv         ,      // 24:  Dyadic derived function from Convolution
+    MFOE_IdnConv         ,      // 25:  Identity function for Convolution
+    MFOE_LENGTH                 // 26:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -99,6 +101,8 @@ typedef enum tagMFO
 #define MFON_MonDotMf           L"#MonDotMf"
 #define MFON_MonDotCr           L"#MonDotCr"
 #define MFON_DydEpsUnderbar     L"#DydEpsUnderbar"
+#define MFON_DydConv            L"#DydConv"
+#define MFON_IdnConv            L"#IdnConv"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

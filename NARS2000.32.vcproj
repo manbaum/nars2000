@@ -809,6 +809,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\po_didtack.c"
+				>
+			</File>
+			<File
 				RelativePath=".\po_dieresis.c"
 				>
 			</File>

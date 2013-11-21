@@ -57,6 +57,8 @@ extern MAGIC_FCNOPR MFO_DydIotaUnderbar;
 extern MAGIC_FCNOPR MFO_MonDot;
 extern MAGIC_FCNOPR MFO_MonDotInit;
 extern MAGIC_FCNOPR MFO_DydEpsUnderbar;
+extern MAGIC_FCNOPR MFO_DydConv;
+extern MAGIC_FCNOPR MFO_IdnConv;
 
 
 //***************************************************************************
@@ -758,6 +760,8 @@ UBOOL InitMagicFunctions
 
     lpMemPTD->hGlbMFO[MFOE_MonDot           ]  = Init1MagicFunction (MFON_MonDot           , &MFO_MonDot           , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_DydEpsUnderbar   ]  = Init1MagicFunction (MFON_DydEpsUnderbar   , &MFO_DydEpsUnderbar   , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_DydConv          ]  = Init1MagicFunction (MFON_DydConv          , &MFO_DydConv          , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_IdnConv          ]  = Init1MagicFunction (MFON_IdnConv          , &MFO_IdnConv          , lpMemPTD, hWndEC, NULL);
 
     return TRUE;
 } // InitMagicFunctions

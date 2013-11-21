@@ -496,10 +496,11 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                 } // End IF/ELSE
             } // End IF
 
+            // Compare ordered values
             aplIntegerRes =
-              PrimFnDydEqualUnderbarSimple (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
-                                            bHeader, lpbCtrlBreak);
+              PrimFnDydEqualUnderbarSimpleOrd (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
+                                               lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
+                                               bHeader, lpbCtrlBreak);
             break;
 
         case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
@@ -558,12 +559,12 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnDydEqualUnderbarSimple
+//  $PrimFnDydEqualUnderbarSimpleOrd
 //
-//  Subroutine to compare two simple arrays
+//  Subroutine to compare two ordered simple arrays
 //***************************************************************************
 
-UBOOL PrimFnDydEqualUnderbarSimple
+UBOOL PrimFnDydEqualUnderbarSimpleOrd
     (LPVOID   lpMemLft,         // Ptr to left arg header
      APLSTYPE aplTypeLft,       // Left arg storage type
      APLNELM  aplNELMLft,       // ...      NELM
@@ -1560,7 +1561,43 @@ NORMAL_EXIT:
     Myf_clear (&aplVfpRht);
 
     return bRet;
-} // End PrimFnDydEqualUnderbarSimple
+} // End PrimFnDydEqualUnderbarSimpleOrd
+
+
+//***************************************************************************
+//  $PrimFnDydEqualUnderbarSimpleUnord
+//
+//  Subroutine to compare two unordered simple arrays
+//***************************************************************************
+
+UBOOL PrimFnDydEqualUnderbarSimpleUnord
+    (LPVOID   lpMemLft,         // Ptr to left arg header
+     APLSTYPE aplTypeLft,       // Left arg storage type
+     APLNELM  aplNELMLft,       // ...      NELM
+     APLRANK  aplRankLft,       // ...      rank
+     LPVOID   lpMemRht,         // Ptr to right arg header
+     APLSTYPE aplTypeRht,       // Right arg storage type
+     APLNELM  aplNELMRht,       // ...       NELM
+     APLRANK  aplRankRht,       // ...       rank
+     UBOOL    bHeader,          // TRUE iff lpMemLft/Rht point to header
+                                //   otherwise they point to data
+     LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
+
+{
+    // Because this function is commutative, we can switch
+    //    the two args without loss of generality.
+    // Switch the args so that the left arg is the "simpler"
+    //    of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
+    //    and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
+    if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
+        return PrimFnDydEqualUnderbarSimpleOrd (lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
+                                                lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
+                                                bHeader, lpbCtrlBreak);
+    else
+        return PrimFnDydEqualUnderbarSimpleOrd (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
+                                                lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
+                                                bHeader, lpbCtrlBreak);
+} // End PrimFnDydEqualUnderbarSimpleUnord
 
 
 //***************************************************************************
@@ -1671,9 +1708,9 @@ UBOOL PrimFnDydEqualUnderbarNested
                 lpMemOth = &(*(LPAPLHETERO) lpMemRht)->stData.stLongest;
 
                 bRet =
-                  PrimFnDydEqualUnderbarSimple (lpMemOth, TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType), 1, 0,
-                                                lpMemLft, aplTypeSub,                                                            1, 0,
-                                                FALSE, lpbCtrlBreak);
+                  PrimFnDydEqualUnderbarSimpleUnord (lpMemOth, TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType), 1, 0,
+                                                     lpMemLft, aplTypeSub,                                                               1, 0,
+                                                     FALSE, lpbCtrlBreak);
             } else
             {
                 // Get the attributes (Type, NELM, and Rank)
@@ -1697,9 +1734,9 @@ UBOOL PrimFnDydEqualUnderbarNested
                 lpMemOth = &(*(LPAPLHETERO) lpMemLft)->stData.stLongest;
 
                 bRet =
-                  PrimFnDydEqualUnderbarSimple (lpMemOth, TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemLft)->stFlags.ImmType), 1, 0,
-                                                lpMemRht, aplTypeSub,                                                            1, 0,
-                                                FALSE, lpbCtrlBreak);
+                  PrimFnDydEqualUnderbarSimpleUnord (lpMemOth, TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemLft)->stFlags.ImmType), 1, 0,
+                                                     lpMemRht, aplTypeSub,                                                               1, 0,
+                                                     FALSE, lpbCtrlBreak);
             } // End IF/ELSE
 
             // We no longer need this ptr
@@ -1768,19 +1805,9 @@ UBOOL PrimFnDydEqualUnderbarNested
                       + 1 * IsNested (aplTypeRht))
                 {
                     case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
-                        // Because this function is commutative, we can switch
-                        //    the two args without loss of generality.
-                        // Switch the args so that the left arg is the "simpler"
-                        //    of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
-                        //    and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
-                        if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
-                            bRet = PrimFnDydEqualUnderbarSimple (lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
-                                                                 lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
-                                                                 TRUE, lpbCtrlBreak);
-                        else
-                            bRet = PrimFnDydEqualUnderbarSimple (lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
-                                                                 lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
-                                                                 TRUE, lpbCtrlBreak);
+                        bRet = PrimFnDydEqualUnderbarSimpleUnord (lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
+                                                                  lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
+                                                                  TRUE, lpbCtrlBreak);
                         break;
 
                     case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested

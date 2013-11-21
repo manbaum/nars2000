@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -136,7 +136,8 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
 
 {
     APLSTYPE          aplTypeLft,           // Left arg storage type
-                      aplTypeRht;           // Right ...
+                      aplTypeRht,           // Right ...
+                      aplTypeRes;           // Result ...
     APLNELM           aplNELMLft,           // Left arg NELM
                       aplNELMRht;           // Right ...
     APLRANK           aplRankLft,           // Left arg rank
@@ -175,6 +176,8 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLFLOAT          fQuadCT;              // []CT
+    UBOOL             bSome1s = FALSE,      // TRUE iff in empty case fill with some 1s
+                      bEmpty;               // TRUE iff either arg is empty
 
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
@@ -215,44 +218,46 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    //***************************************************************
-    // Calculate space needed for the result
-    //***************************************************************
-    ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMRht, aplRankRht);
-
-    //***************************************************************
-    // Check for overflow
-    //***************************************************************
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
-
-    //***************************************************************
-    // Now we can allocate the storage for the result
-    //***************************************************************
-    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
-        goto WSFULL_EXIT;
-
-    // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
-
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-    // Fill in the header
-    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_BOOL;
-////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-    lpHeader->RefCnt     = 1;
-    lpHeader->NELM       = aplNELMRht;
-    lpHeader->Rank       = aplRankRht;
-#undef  lpHeader
-
-    // Skip over the header to the dimensions
-    lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemRes);
-
-    // Fill in the result's dimension
+    // If the right arg is not an immediate, ...
     if (lpMemRht)
     {
+        //***************************************************************
+        // Calculate space needed for the result
+        //***************************************************************
+        ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMRht, aplRankRht);
+
+        //***************************************************************
+        // Check for overflow
+        //***************************************************************
+        if (ByteRes NE (APLU3264) ByteRes)
+            goto WSFULL_EXIT;
+
+        //***************************************************************
+        // Now we can allocate the storage for the result
+        //***************************************************************
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+        if (!hGlbRes)
+            goto WSFULL_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+        // Fill in the header
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_BOOL;
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplNELMRht;
+        lpHeader->Rank       = aplRankRht;
+#undef  lpHeader
+
+        // Fill in the result's dimension
+
+        // Skip over the header to the dimensions
+        lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemRes);
+
         // Skip over the header to the dimensions
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
@@ -264,8 +269,23 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         lpMemRht = VarArrayDimToData (lpMemDimRht, aplRankRht);
     } else
     {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkBoolean  =                // Filled in below
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // Fill in the result's dimension
+
         // Point to the right arg dimension
         lpMemDimRht = &Dim1;
+
+        // Point to the result immediate value
+        lpMemRes = &lpYYRes->tkToken.tkData.tkBoolean;
 
         // Point to the right arg immediate value
         lpMemRht = &aplLongestRht;
@@ -287,16 +307,21 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         lpMemLft = &aplLongestLft;
     } // End IF
 
-    // If the left arg is empty, or
-    //    the right arg is empty, or
-    //    the left arg rank is > right arg rank, or
-    //    the left and right args are different types (numeric vs. char), ...
-    if (IsEmpty (aplNELMLft)
-     || IsEmpty (aplNELMRht)
-     || aplRankLft > aplRankRht
-     || (IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
-     || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))
+    // Is either arg empty?
+    bEmpty = (IsEmpty (aplNELMLft)
+           || IsEmpty (aplNELMRht));
+
+    // If the left arg rank is > right arg rank, or
+    //    the left and right args are non-empty and different types (numeric vs. char), ...
+    if (aplRankLft > aplRankRht
+     || (IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht) && !bEmpty)
+     || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft) && !bEmpty))
         goto NOMATCH;
+
+    // If the left  arg is empty, or
+    //    the right arg is empty, or
+    if (bEmpty)
+        goto SOME1s;
 
     // If the left arg rank is < the right arg rank, ...
     if (aplRankLft < aplRankRht)
@@ -667,19 +692,134 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
                                           lptkFunc))        // Ptr to function token
             goto ERROR_EXIT;
     } // End IF/ELSE/...
-NOMATCH:
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
+    // If the right arg is not immediate, ...
+    if (lpMemRht)
+    {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
 
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    } // End IF
+
+    goto NORMAL_EXIT;
+
+SOME1s:
+    // Some of the elements in the result are 1s
+    bSome1s = TRUE;
+NOMATCH:
+    // If the right arg is a global, ...
+    if (lpMemRht)
+    {
+        // If the result is a global, ...
+        if (hGlbRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+            // We no longer need this resource
+            DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+        } // End IF
+
+        // If there was a YYAlloc, ...
+        if (lpYYRes)
+        {
+            // YYFree it
+            YYFree (lpYYRes); lpYYRes = NULL;
+        } // End IF
+
+        // If the result has some 1s, ...
+        if (bSome1s)
+        {
+            HGLOBAL hGlbMFO;                // Magic function/operator global memory handle
+
+            // Get the magic function/operator global memory handle
+            hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydEpsUnderbar];
+
+            //  Use an internal magic function/operator.
+            return
+              ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
+                                          lptkFunc,     // Ptr to function token
+                                          NULL,         // Ptr to function strand
+                                          lptkRhtArg,   // Ptr to right arg token
+                                          NULL,         // Ptr to axis token
+                                          hGlbMFO,      // Magic function/operator global memory handle
+                                          NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                          LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+        } else
+        {
+            // Fill in result storage type
+            aplTypeRes = ARRAY_APA;
+
+            //***************************************************************
+            // Calculate space needed for the result
+            //***************************************************************
+            ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
+
+            //***************************************************************
+            // Check for overflow
+            //***************************************************************
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
+
+            //***************************************************************
+            // Now we can allocate the storage for the result
+            //***************************************************************
+            hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+            if (!hGlbRes)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+            // Fill in the header
+            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+            lpHeader->ArrType    = aplTypeRes;
+////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+            lpHeader->RefCnt     = 1;
+            lpHeader->NELM       = aplNELMRht;
+            lpHeader->Rank       = aplRankRht;
+#undef  lpHeader
+
+            // Skip over the header to the dimensions
+            lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemRes);
+
+            // Copy the right arg dimensions to the result
+            CopyMemory (lpMemRes, lpMemDimRht, (APLU3264) aplRankRht * sizeof (APLDIM));
+
+            // Skip over the dimensions to the data
+            lpMemRes = VarArrayDimToData (lpMemRes, aplRankRht);
+
+            // Fill in the APA parms
+////////////((LPAPLAPA) lpMemRes)->Off = 0;     // Already zero from GHND
+////////////((LPAPLAPA) lpMemRes)->Mul = 0;     // ...
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        } // End IF/ELSE
+    } else
+        // Fill in the immediate result
+        *((LPAPLBOOL) lpMemRes) = bSome1s;
 
     goto NORMAL_EXIT;
 
@@ -814,6 +954,14 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  Magic function/operator for dyadic helper function for the find function
+//    on empty arguments
+//***************************************************************************
+
+#include "mf_epsund.h"
+
+
+//***************************************************************************
 //  Define macro for all routines
 //***************************************************************************
 
@@ -830,7 +978,7 @@ NORMAL_EXIT:
 #endif
 #define CompareVFP(Lft,typeLft,Rht,typeRht) (mpfr_cmp_ct ( Lft,  Rht, fQuadCT) EQ 0)
 #define Compare
-//  ***FXME*** -- What to do about fuzzy comparisons not being transitive???
+//  ***FIXME*** -- What to do about fuzzy comparisons not being transitive???
 
 #define FINDMAC(preKmp,aplTypeKmp,GetNextValLft,aplTypeLft,GetNextValRht,aplTypeRht,CompareVal,LblSuf)  \
     APLINT    i,                        /* Loop counter             */                                  \
@@ -1534,9 +1682,9 @@ UBOOL CompareNested
         if (GetPtrTypeDir (y) NE PTRTYPE_STCONST)
             return FALSE;
         return
-          PrimFnDydEqualUnderbarSimple (&x,                   typeX,                                            1, 0,
-                                        &y->stData.stLongest, TranslateImmTypeToArrayType (y->stFlags.ImmType), 1, 0,
-                                         FALSE, lpbCtrlBreak);
+          PrimFnDydEqualUnderbarSimpleUnord (&x,                   typeX,                                            1, 0,
+                                             &y->stData.stLongest, TranslateImmTypeToArrayType (y->stFlags.ImmType), 1, 0,
+                                              FALSE, lpbCtrlBreak);
     } // End IF
 
     // If the right arg is simple non-hetero and the left arg is hetero/nested, ...
@@ -1546,9 +1694,9 @@ UBOOL CompareNested
         if (GetPtrTypeDir (x) NE PTRTYPE_STCONST)
             return FALSE;
         return
-          PrimFnDydEqualUnderbarSimple (&y,                   typeY,                                            1, 0,
-                                        &x->stData.stLongest, TranslateImmTypeToArrayType (x->stFlags.ImmType), 1, 0,
-                                         FALSE, lpbCtrlBreak);
+          PrimFnDydEqualUnderbarSimpleUnord (&y,                   typeY,                                            1, 0,
+                                             &x->stData.stLongest, TranslateImmTypeToArrayType (x->stFlags.ImmType), 1, 0,
+                                              FALSE, lpbCtrlBreak);
     } // End IF
 
     return
@@ -1587,9 +1735,9 @@ UBOOL CompareSNvSN
         if (GetPtrTypeDir ((APLHETERO) y) NE PTRTYPE_STCONST)
             return FALSE;
         return
-          PrimFnDydEqualUnderbarSimple (&x,                                  typeX,                                                         1, 0,
-                                        &((APLHETERO) y)->stData.stLongest, TranslateImmTypeToArrayType (((APLHETERO) y)->stFlags.ImmType), 1, 0,
-                                         FALSE, lpbCtrlBreak);
+          PrimFnDydEqualUnderbarSimpleUnord (&x,                                 typeX,                                                          1, 0,
+                                             &((APLHETERO) y)->stData.stLongest, TranslateImmTypeToArrayType (((APLHETERO) y)->stFlags.ImmType), 1, 0,
+                                              FALSE, lpbCtrlBreak);
     } // End IF
 
     // If the right arg is simple non-hetero and the left arg is hetero/nested, ...
@@ -1599,9 +1747,9 @@ UBOOL CompareSNvSN
         if (GetPtrTypeDir ((APLHETERO) x) NE PTRTYPE_STCONST)
             return FALSE;
         return
-          PrimFnDydEqualUnderbarSimple (&y,                                 typeY,                                                          1, 0,
-                                        &((APLHETERO) x)->stData.stLongest, TranslateImmTypeToArrayType (((APLHETERO) x)->stFlags.ImmType), 1, 0,
-                                         FALSE, lpbCtrlBreak);
+          PrimFnDydEqualUnderbarSimpleUnord (&y,                                 typeY,                                                          1, 0,
+                                             &((APLHETERO) x)->stData.stLongest, TranslateImmTypeToArrayType (((APLHETERO) x)->stFlags.ImmType), 1, 0,
+                                              FALSE, lpbCtrlBreak);
     } // End IF
 
     return
@@ -1835,7 +1983,7 @@ UBOOL CompareRATvVFP
     Myf_clear (&mpfLft);
 
     return bRet;
-} // End ComapreRATvVFP
+} // End CompareRATvVFP
 
 
 //***************************************************************************
@@ -1870,15 +2018,15 @@ UBOOL CompareRATvSN
     //   expected by EqualUnderbar.
     if (IsSimpleGlbNum (typeRht))
         return
-          PrimFnDydEqualUnderbarSimple (&aplRht, typeRht, 1, 0,
-                                        &aplLft, typeLft, 1, 0,
-                                         FALSE,  lpbCtrlBreak);
+          PrimFnDydEqualUnderbarSimpleUnord (&aplRht, typeRht, 1, 0,
+                                             &aplLft, typeLft, 1, 0,
+                                              FALSE,  lpbCtrlBreak);
     else
         return
           PrimFnDydEqualUnderbarNested (&aplRht, typeRht     , 1, 0,
                                         &aplLft, typeLft     , 1, 0,
                                          FALSE,  lpbCtrlBreak);
-} // End ComapreRATvSN
+} // End CompareRATvSN
 
 
 //***************************************************************************
@@ -1907,7 +2055,7 @@ UBOOL CompareVFPvRAT
     Myf_clear (&mpfRht);
 
     return bRet;
-} // End ComapreVFPvRAT
+} // End CompareVFPvRAT
 
 
 //***************************************************************************
@@ -1942,15 +2090,15 @@ UBOOL CompareVFPvSN
     //   expected by EqualUnderbar.
     if (IsSimpleGlbNum (typeRht))
         return
-          PrimFnDydEqualUnderbarSimple (&aplRht, typeRht, 1, 0,
-                                        &aplLft, typeLft, 1, 0,
-                                         FALSE,  lpbCtrlBreak);
+          PrimFnDydEqualUnderbarSimpleUnord (&aplRht, typeRht, 1, 0,
+                                             &aplLft, typeLft, 1, 0,
+                                              FALSE,  lpbCtrlBreak);
     else
         return
           PrimFnDydEqualUnderbarNested (&aplRht, typeRht     , 1, 0,
                                         &aplLft, typeLft     , 1, 0,
                                          FALSE, lpbCtrlBreak);
-} // End ComapreVFPvSN
+} // End CompareVFPvSN
 
 
 //***************************************************************************
@@ -1985,15 +2133,15 @@ UBOOL CompareSNvRAT
     //   expected by EqualUnderbar.
     if (IsSimpleGlbNum (typeLft))
         return
-          PrimFnDydEqualUnderbarSimple (&aplRht, typeRht, 1, 0,
-                                        &aplLft, typeLft, 1, 0,
-                                         FALSE,  lpbCtrlBreak);
+          PrimFnDydEqualUnderbarSimpleUnord (&aplRht, typeRht, 1, 0,
+                                             &aplLft, typeLft, 1, 0,
+                                              FALSE,  lpbCtrlBreak);
     else
         return
           PrimFnDydEqualUnderbarNested (&aplRht, typeRht     , 1, 0,
                                         &aplLft, typeLft     , 1, 0,
                                          FALSE, lpbCtrlBreak);
-} // End ComapreSNvRAT
+} // End CompareSNvRAT
 
 
 //***************************************************************************
@@ -2028,15 +2176,15 @@ UBOOL CompareSNvVFP
     //   expected by EqualUnderbar.
     if (IsSimpleGlbNum (typeLft))
         return
-          PrimFnDydEqualUnderbarSimple (&aplRht, typeRht, 1, 0,
-                                        &aplLft, typeLft, 1, 0,
-                                         FALSE,  lpbCtrlBreak);
+          PrimFnDydEqualUnderbarSimpleUnord (&aplRht, typeRht, 1, 0,
+                                             &aplLft, typeLft, 1, 0,
+                                              FALSE,  lpbCtrlBreak);
     else
         return
           PrimFnDydEqualUnderbarNested (&aplRht, typeRht     , 1, 0,
                                         &aplLft, typeLft     , 1, 0,
                                          FALSE, lpbCtrlBreak);
-} // End ComapreSNvVFP
+} // End CompareSNvVFP
 
 
 //***************************************************************************

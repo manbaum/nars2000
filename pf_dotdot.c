@@ -181,6 +181,9 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
+    // Save as result storage type (must do before any errors)
+    aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
+
     // Check for RANK ERROR
     if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
@@ -228,9 +231,6 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
         lpMemRht = VarArrayDataFmBase (lpMemRht);
     } else
         lpMemRht = &aplLongestRht;
-
-    // Save as result storage type
-    aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
 
     // Initialize temps if necessary
     // Split cases based upon the result storage type
@@ -585,6 +585,8 @@ NORMAL_EXIT:
     // Split cases based upon the result storage type
     switch (aplTypeRes)
     {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
         case ARRAY_APA:
         case ARRAY_FLOAT:
         case ARRAY_CHAR:            // Error condition

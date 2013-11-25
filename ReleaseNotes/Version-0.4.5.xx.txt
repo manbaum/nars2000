@@ -1,6 +1,17 @@
 Version 0.4.5.xx consists of the following Builds:
 
 
+Build #1178 -- Version 0.4.5.xx
+-------------------------------
+
+* Fix Bug In Tokenize On Line Drawing Char
+
+Directory trunk:
+
+TOKENIZE.C:
+  In <scUnkDone>, include the cross line drawing char, mistakenly omitted.
+
+
 Build #1177 -- Version 0.4.5.xx
 -------------------------------
 

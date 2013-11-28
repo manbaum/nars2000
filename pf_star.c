@@ -256,7 +256,7 @@ APLVFP PrimFnMonStarVisV
     // Times m
     mpfr_mul_ui (&mpfTmp1, &mpfLn2, abs ((int) log2x), MPFR_RNDN);
     if (log2x < 0)
-        mpfr_neg (&mpfTmp1, &mpfTmp1, MPFR_RNDN);
+        mpfr_neg0 (&mpfTmp1, &mpfTmp1, MPFR_RNDN);
     // Subtract from V to yield V - m * log (2)
     mpfr_sub (&mpfRes, &mpfRes, &mpfTmp1, MPFR_RNDN);
 

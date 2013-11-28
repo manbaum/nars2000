@@ -65,7 +65,7 @@ LPROWCOL kuhn_start_vfp (LPAPLVFP oldTable, long n, long m, UBOOL bMaxFcn)
         // If this is MaxFcn, ...
         if (bMaxFcn)
             // Negate to do MaxFcn
-            mpfr_neg (&table[i], &table[i], MPFR_RNDN);
+            mpfr_neg0 (&table[i], &table[i], MPFR_RNDN);
     } // End FOR
 
     resLong = kuhn_match_vfp (table, n, m);

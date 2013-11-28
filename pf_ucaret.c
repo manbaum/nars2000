@@ -290,7 +290,7 @@ APLVFP lcmAplVfp
 
         // The sign of the result is the sign of the left argument
         if (mpfr_sgn (&aplVfpLft) < 0)
-            mpfr_neg (&aplTmp, &aplTmp, MPFR_RNDN);
+            mpfr_neg0 (&aplTmp, &aplTmp, MPFR_RNDN);
     } // End IF
 
     return aplTmp;

@@ -1,6 +1,27 @@
 Version 0.4.5.xx consists of the following Builds:
 
 
+Build #1182 -- Version 0.4.5.xx
+-------------------------------
+
+* Handle Negative Zero VFP
+
+Directory trunk:
+
+HUNGARIAN_VFP.C:
+MACROS.H:
+MPFNS.C:
+MPIFNS.C:
+PF_BAR.C:
+PF_CSTAR.C:
+PF_DCARET.C:
+PF_DOTDOT.C:
+PF_STAR.C:
+PF_UCARET.C:
+PF_USTILE.C:
+  Define and use <mpfr_neg0> instead of <mpfr_neg> to check for negative zero.
+
+
 Build #1181 -- Version 0.4.5.xx
 -------------------------------
 

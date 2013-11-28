@@ -416,7 +416,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             else
             {
                 mpfr_abs (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
-                mpfr_neg (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
+                mpfr_neg0 (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
             } // End IF/ELSE
 
             // The NELM of the result is

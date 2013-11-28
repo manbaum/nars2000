@@ -442,8 +442,10 @@
 #define IsMpfInfinity(a)    (mpfr_inf_p (a))
 
 // Define macro for inverting VFP numbers
-#define mpfr_inv(rop,op,rnd) mpfr_ui_div (rop, 1, op, rnd)
+#define mpfr_inv(rop,op,rnd)    mpfr_ui_div (rop, 1, op, rnd)
 
+// Define macro for negating VFP numbers
+#define mpfr_neg0(rop,op,rnd)  {mpfr_neg (rop, op, rnd); if (IsMpf0 (rop)) mpfr_set_ui (rop, 0, rnd);}
 
 //***************************************************************************
 //  End of File: macros.h

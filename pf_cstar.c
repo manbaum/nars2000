@@ -324,7 +324,7 @@ APLVFP PrimFnMonCircleStarVisV
     // Finally, convert the result back to normal
     mpfr_mul_ui (&mpfTmp, &mpfLn2, log2x);
     if (log2xSign < 0)
-        mpfr_neg (&mpfTmp, &mpfTmp);
+        mpfr_neg0 (&mpfTmp, &mpfTmp);
     mpfr_add    (&mpfRes, &mpfRes, &mpfTmp, MPFR_RNDN);
 
     // We no longer need this storage
@@ -582,13 +582,25 @@ APLVFP PrimFnDydCircleStarVisVvV
     {
         APLVFP mpfLft,
                mpfRht;
+#ifdef DEBUG
+////    WCHAR  wszTemp[512];
+#endif
 
         // Calculate log (aplVfpRht) / log (aplVfpLft)
         // Note that the MPFR code correctly handles infinite results
         //   such as 5{log}0  and  0.5{log}0
         mpfLft = PrimFnMonCircleStarVisV (aplVfpLft, lpPrimSpec);
+#ifdef DEBUG
+////    lstrcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
         mpfRht = PrimFnMonCircleStarVisV (aplVfpRht, lpPrimSpec);
+#ifdef DEBUG
+////    lstrcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
         mpfr_div (&mpfRes, &mpfRht, &mpfLft, MPFR_RNDN);
+#ifdef DEBUG
+////    lstrcpyW (wszTemp, L"Res: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRes, 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
 
         // We no longer need this storage
         Myf_clear (&mpfRht);

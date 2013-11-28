@@ -276,13 +276,13 @@ APLVFP PrimFnMonUpStileVisV
     mpfr_init0 (&mpfTmp);
 
     // Negate the temp to use with DownStile
-    mpfr_neg (&mpfTmp, &aplVfpRht, MPFR_RNDN);
+    mpfr_neg0 (&mpfTmp, &aplVfpRht, MPFR_RNDN);
 
     // Use the code in DownStile
     mpfRes = PrimFnMonDownStileVisV (mpfTmp, NULL);
 
     // Negate the result after calling VisV
-    mpfr_neg (&mpfRes, &mpfRes, MPFR_RNDN);
+    mpfr_neg0 (&mpfRes, &mpfRes, MPFR_RNDN);
 
     // We no longer need this storage
     Myf_clear (&mpfTmp);

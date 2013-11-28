@@ -191,6 +191,11 @@ APLFLOAT PrimFnMonBarFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // If the arg is zero, ...
+    if (aplFloatRht EQ 0)
+        // Avoid returning negative zero
+        return 0;
+
     return -aplFloatRht;
 } // End PrimFnMonBarFisF
 
@@ -235,7 +240,7 @@ APLVFP PrimFnMonBarVisV
     mpfr_init0 (&mpfRes);
 
     // Negate the Variable FP
-    mpfr_neg (&mpfRes, &aplVfpRht, MPFR_RNDN);
+    mpfr_neg0 (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonBarVisV

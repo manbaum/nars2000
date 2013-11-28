@@ -300,7 +300,7 @@ APLVFP gcdAplVfp
 
     // The sign of the result is the sign of the left argument
     if (mpfr_sgn (&aplVfpLft) < 0)
-        mpfr_neg (&aplRht, &aplRht, MPFR_RNDN);
+        mpfr_neg0 (&aplRht, &aplRht, MPFR_RNDN);
 
     // We no longer need this storage
     Myf_clear (&aplTmp);

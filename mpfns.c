@@ -984,7 +984,7 @@ int mpq_integer_p
     (mpq_t op)                  // Source
 
 {
-    return mpz_divisible_p (mpq_numref (op), mpq_denref (op));
+        return mpz_divisible_p (mpq_numref (op), mpq_denref (op));
 } // mpq_integer_p
 
 
@@ -1229,7 +1229,7 @@ void mpfr_set_sx
 
     // Adjust the sign
     if (signum (val) < 0)
-        mpfr_neg (dest, dest, MPFR_RNDN);
+        mpfr_neg0 (dest, dest, MPFR_RNDN);
 } // End mpfr_set_sx
 
 
@@ -1420,9 +1420,9 @@ void mpfr_mod
     mpfr_init_copy (mpfrMod, aplMod);
 
     if (mpfr_sgn (mpfrOpr) < 0)
-        mpfr_neg (mpfrOpr, mpfrOpr, MPFR_RNDZ);
+        mpfr_neg0 (mpfrOpr, mpfrOpr, MPFR_RNDZ);
     if (mpfr_sgn (mpfrMod) < 0)
-        mpfr_neg (mpfrMod, mpfrMod, MPFR_RNDZ);
+        mpfr_neg0 (mpfrMod, mpfrMod, MPFR_RNDZ);
 
     // Compute the modulus
     mpfr_fmod (dest, mpfrOpr, mpfrMod, MPFR_RNDZ);
@@ -1437,7 +1437,7 @@ void mpfr_mod
 
     // The sign of the result is the sign of the left arg
     if (mpfr_sgn (aplMod) < 0)
-        mpfr_neg (dest, dest, MPFR_RNDZ);
+        mpfr_neg0 (dest, dest, MPFR_RNDZ);
 #else
     // Due to precision limitations, the result of <mpfr_mod_sub>
     //   might not be less than the modulus, so we iterate until it is

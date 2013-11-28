@@ -219,13 +219,9 @@ APLFLOAT PrimFnMonDownStileFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLFLOAT     aplFloor,
-                 aplCeil,
-                 aplNear;
-    APLFLOAT     fQuadCT;       // []CT
-
-    // Get the current value of []CT
-    fQuadCT = GetQuadCT ();
+    APLFLOAT aplFloor,
+             aplCeil,
+             aplNear;
 
     // Check for PoM infinity
     if (IsInfinity (aplFloatRht))
@@ -282,9 +278,9 @@ APLFLOAT PrimFnMonDownStileFisF
     // aplNear is zero
 
     // If Rht is between (-[]CT) and 0 (inclusive),
-    //   return 0; othewise, return -1
-    if ((-fQuadCT) <= aplFloatRht
-     &&               aplFloatRht <= 0)
+    //   return 0; otherwise, return -1
+    if ((-GetQuadCT ()) <= aplFloatRht
+     &&                    aplFloatRht <= 0)
         return 0;
     else
         return -1;
@@ -379,11 +375,11 @@ APLRAT PrimFnMonDownStileRisR
             {
                 // mpfNear is zero
 
-                // Get []CT as a VFP
-                mpq_set_d (&mpqTmp1, GetQuadCT ());
+                // Get -[]CT as a VFP
+                mpq_set_d (&mpqTmp1, -GetQuadCT ());
 
                 // If Rht is between (-[]CT) and 0 (inclusive),
-                //   return 0; othewise, return -1
+                //   return 0; otherwise, return -1
                 if (mpq_cmp (&mpqTmp1, &aplRatRht) <= 0
                  && mpq_sgn (&aplRatRht)           <= 0)
                     mpq_set_si (&mpqRes,  0, 1);
@@ -428,6 +424,9 @@ APLVFP PrimFnMonDownStileVisV
         mpfr_init_copy (&mpfRes, &aplVfpRht);
     else
     {
+#ifdef DEBUG
+////    WCHAR wszTemp[512];
+#endif
         // Initialize the temps
         mpfr_init0 (&mpfRes);
         mpfr_init0 (&mpfFloor);
@@ -474,6 +473,12 @@ APLVFP PrimFnMonDownStileVisV
                 break;
         } // End SWITCH
 
+#ifdef DEBUG
+////    lstrcpyW (wszTemp, L"Floor: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfFloor, 0) = WC_EOS; DbgMsgW (wszTemp);
+////    lstrcpyW (wszTemp, L"Near:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfNear , 0) = WC_EOS; DbgMsgW (wszTemp);
+////    lstrcpyW (wszTemp, L"Ceil:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfCeil , 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
+
         // If Near is < Rht, return Near
         if (mpfr_cmp (&mpfNear, &aplVfpRht) < 0)
             mpfr_set (&mpfRes, &mpfNear, MPFR_RNDN);
@@ -494,11 +499,11 @@ APLVFP PrimFnMonDownStileVisV
             {
                 // aplNear is zero
 
-                // Get []CT as a VFP
-                mpfr_set_d (&mpfTmp1, GetQuadCT (), MPFR_RNDN);
+                // Get -[]CT as a VFP
+                mpfr_set_d (&mpfTmp1, -GetQuadCT (), MPFR_RNDN);
 
                 // If Rht is between (-[]CT) and 0 (inclusive),
-                //   return 0; othewise, return -1
+                //   return 0; otherwise, return -1
                 if (mpfr_cmp (&mpfTmp1, &aplVfpRht) <= 0
                  && mpfr_sgn (&aplVfpRht)           <= 0)
                     mpfr_set_si (&mpfRes,  0, MPFR_RNDN);

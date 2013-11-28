@@ -255,6 +255,9 @@ DecConstants:
 
 VfpConstants:
           INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  INF 'v'");
+                                     // Initialize the VFP
+                                     mpfr_init (&$1.at.aplVfp);
+
                                      // Mark as positive infinity
                                      mpfr_set_inf (&$1.at.aplVfp, 1);
 
@@ -264,6 +267,9 @@ VfpConstants:
                                      $$ = $1;
                                     }
     | OVR INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
+                                     // Initialize the VFP
+                                     mpfr_init (&$1.at.aplVfp);
+
                                      // Mark as negative infinity
                                      mpfr_set_inf (&$1.at.aplVfp, -1);
 

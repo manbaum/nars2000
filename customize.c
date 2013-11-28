@@ -55,8 +55,9 @@ WCHAR wszCancelMessage[] = L"You have made changes to the Customize settings.  S
 //  []IC-specific Information
 //***************************************************************************
 
+#define NEG     WS_UTF16_OVERBAR
 #define INF     WS_UTF16_INFINITY
-#define NINF    WS_UTF16_OVERBAR WS_UTF16_INFINITY
+#define NINF    NEG INF
 #define R_NE_FLOOR_R    L"R" WS_UTF16_NOTEQUAL WS_UTF16_DOWNSTILE L"R"
 #define PoM     WS_UTF16_PLUS_OR_MINUS
 
@@ -71,14 +72,14 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
    INF WS_UTF16_COLONBAR INF L" (same sign)"                                          , // 06:  _ {div} _   (same sign)
    INF WS_UTF16_COLONBAR INF L" (diff sign)"                                          , // 07:  _ {div} _   (different sign)
    INF L"-"              INF L" (and related)"                                        , // 08:  _ - _ or _ + -_ or ...
-   L"L|"   INF L"  for L>0"                                                            , // 09:  L   |    _  for L > 0
+   L"L|"   INF L"  for L>0"                                                           , // 09:  L   |    _  for L > 0
    L"L|"  NINF L" for L>0"                                                            , // 0A:  L   |   -_  for L > 0
-   L"L|"   INF L"  for L<0"                                                            , // 0B:  L   |    _  for L < 0
+   L"L|"   INF L"  for L<0"                                                           , // 0B:  L   |    _  for L < 0
    L"L|"  NINF L" for L<0"                                                            , // 0C:  L   |   -_  for L < 0
    NINF L"|R"                                                                         , // 0D:  -_  |   R   for R > 0
     INF L"|R"                                                                         , // 0E:   _  |   R   for R < 0
    L"0*0"                                                                             , // 0F:  0   *   0
-   L"L*" INF L"for L" WS_UTF16_LEFTCARETUNDERBAR WS_UTF16_OVERBAR L"1"                , // 10:  L   *   _   for L <= -1
+   L"L*" INF L" for L" WS_UTF16_LEFTCARETUNDERBAR WS_UTF16_OVERBAR L"1"               , // 10:  L   *   _   for L <= -1
    L"0*"  INF                                                                         , // 11:  0   *   +_
    L"0*" NINF                                                                         , // 12:  0   *   -_
    PoM INF L"*0"                                                                      , // 13:  PoM_  *   0
@@ -90,6 +91,7 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
    L"0" WS_UTF16_DOWNCARET PoM INF L"  or  " PoM INF WS_UTF16_DOWNCARET L"0"          , // 19:  0 {gcd} PoM_  or  PoM_ {gcd} 0
    L"0" WS_UTF16_UPCARET   PoM INF L"  or  " PoM INF WS_UTF16_UPCARET   L"0"          , // 1A:  0 {lcm} PoM_  or  PoM_ {lcm} 0
    L"0" WS_UTF16_CIRCLESTAR L"R (R" WS_UTF16_NOTEQUAL L"0 or 1)"                      , // 1B:  0 {log} N (N NE 0 or 1)
+   L"L*" NINF L" for " NEG L"1 " WS_UTF16_LEFTCARETUNDERBAR L" L < 0"                 , // 1C:  L   *  -_   for -1 <= L < 0
   };
 
 // []IC Index Values -- these must be in the same order as the IC_VALUES enum.

@@ -99,7 +99,8 @@ typedef enum tagIC_INDICES
     ICNDX_0GCDInf   ,       // 19:  0 {gcd} PoM_  or  PoM_ {gcd} 0
     ICNDX_0LCMInf   ,       // 1A:  0 {lcm} PoM_  or  PoM_ {lcm} 0
     ICNDX_0LOGN     ,       // 1B:  0 {log} N  (N NE 0 or 1)
-    ICNDX_LENGTH            // 1C:  # entries in this enum
+    ICNDX_N1to0EXPNi,       // 1C:  L   *  -_   for -1 <= L < 0
+    ICNDX_LENGTH            // 1D:  # entries in this enum
 } IC_INDICES;
 
 // N.B.:  Whenever changing the above enum (IC_INDICES),
@@ -138,6 +139,7 @@ APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
     ICVAL_LEFT         ,    // 19:  0 {gcd} PoM_  or  PoM_ {gcd} 0
     ICVAL_DOMAIN_ERROR ,    // 1A:  0 {lcm} PoM_  or  PoM_ {lcm} 0
     ICVAL_DOMAIN_ERROR ,    // 1B:  0 {log} N  (N NE 0 or 1)
+    ICVAL_DOMAIN_ERROR ,    // 1C:  L   *  -_   for -1 <= L < 0
    }
 #endif
 ;

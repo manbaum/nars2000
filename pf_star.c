@@ -669,6 +669,13 @@ APLFLOAT PrimFnDydStarFisFvF
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_NEXPPi,
                                      aplFloatRht);
+    // Check for indeterminates:  L * -_ for -1 <= L < 0
+    if (aplFloatRht EQ NegInfinity
+     && aplFloatLft >= -1
+     && aplFloatLft <   0)
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_N1to0EXPNi,
+                                     aplFloatRht);
 ////// Check for indeterminates:  L * R for L < 0 and R not an integer
 ////if (aplFloatLft < 0
 //// && aplFloatRht NE floor (aplFloatRht))
@@ -739,6 +746,14 @@ APLRAT PrimFnDydStarRisRvR
      && mpq_cmp (&aplRatRht, &mpqPosInfinity) EQ 0)
         return mpq_QuadICValue (aplRatLft,
                                 ICNDX_NEXPPi,
+                                aplRatRht,
+                                mpqRes);
+    // Check for indeterminates:  L * -_ for -1 <= L < 0
+    if (mpq_cmp    (&aplRatRht, &mpqNegInfinity) EQ 0
+     && mpq_cmp_si (&aplRatLft, -1, 1) >= 0
+     && mpq_cmp_si (&aplRatLft,  0, 1) <  0)
+        return mpq_QuadICValue (aplRatLft,
+                                ICNDX_N1to0EXPNi,
                                 aplRatRht,
                                 mpqRes);
 ////// Check for indeterminates:  L * R for L < 0 and R not an integer
@@ -853,6 +868,14 @@ APLVFP PrimFnDydStarVisVvV
      && mpfr_cmp (&aplVfpRht, &mpfPosInfinity) EQ 0)
         return mpfr_QuadICValue (aplVfpLft,
                                  ICNDX_NEXPPi,
+                                 aplVfpRht,
+                                 mpfRes);
+    // Check for indeterminates:  L * -_ for -1 <= L < 0
+    if (mpfr_cmp    (&aplVfpRht, &mpfNegInfinity) EQ 0
+     && mpfr_cmp_si (&aplVfpLft, -1) >= 0
+     && mpfr_cmp_si (&aplVfpLft,  0) <  0)
+        return mpfr_QuadICValue (aplVfpLft,
+                                 ICNDX_N1to0EXPNi,
                                  aplVfpRht,
                                  mpfRes);
     // Check for indeterminates:  L * R for L < 0 and R not an integer

@@ -984,6 +984,9 @@ int mpq_integer_p
     (mpq_t op)                  // Source
 
 {
+    if (mpq_inf_p (op))
+        return TRUE;
+    else
         return mpz_divisible_p (mpq_numref (op), mpq_denref (op));
 } // mpq_integer_p
 

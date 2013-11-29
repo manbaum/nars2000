@@ -950,32 +950,37 @@ void FreeGlobalStorage
          && lpSymEntry->stFlags.Value
          && lpSymEntry->stFlags.Imm  EQ FALSE)
         {
+            HGLOBAL hGlbData;               // User-defined function/operator global memory handle
+
+            // Get the global memory handle
+            hGlbData = lpSymEntry->stData.stGlbData;
+
             // If it's a Magic Function/Operator, ...
             if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO)
             {
-                HGLOBAL      hGlbData;          // User-defined function/operator global memory handle
                 LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator struc
 
-                // Get the DFN_HEADER global memory ptr
-                hGlbData = lpSymEntry->stData.stGlbData;
+                // If the handle is valid, ...
+                if (hGlbData)
+                {
+                    // Lock the memory to get a ptr to it
+                    lpMemDfnHdr = MyGlobalLock (hGlbData);
 
-                // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (hGlbData);
+                    // Free the globals in the struc
+                    FreeResultGlobalDfnStruc (lpMemDfnHdr);
 
-                // Free the globals in the struc
-                FreeResultGlobalDfnStruc (lpMemDfnHdr);
+                    // Free the HshTab & SymTab
+                    FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
 
-                // Free the HshTab & SymTab
-                FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
 
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
-
-                // We no longer need this storage
-                DbgGlobalFree (hGlbData); hGlbData = NULL;
+                    // We no longer need this storage
+                    DbgGlobalFree (hGlbData); hGlbData = NULL;
+                }// End IF
             } else
             // Free all global fns and vars in the workspace
-            if (FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData))
+            if (hGlbData || FreeResultGlobalDFLV (hGlbData))
                 // Erase the Symbol Table Entry
                 //   even if it's a []var
                 EraseSTE (lpSymEntry, TRUE);

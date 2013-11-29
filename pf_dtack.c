@@ -407,7 +407,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
 
         // Check for exceptions
         if ((IsAll2s ((LPVARARRAY_HEADER) lpMemLft) && IsSimpleInt (aplTypeRht))
-         || (lpMemLft EQ NULL && aplLongestLft EQ 2))
+         || (lpMemLft EQ NULL && aplLongestLft EQ 2 && !IsGlbNum (aplTypeRht)))
             aplTypeRes = ARRAY_BOOL;
     } // End IF/ELSE
 

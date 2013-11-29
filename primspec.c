@@ -9929,6 +9929,7 @@ HGLOBAL PrimFnDydSiScSiSc_EM
                                   aplFloatRht,
                                   aplCharRht,
                                   NULL,
+                                 &aplTypeRes,
                                   lpPrimSpec))
         // Convert the immediate type and value in tkRes
         //   into an LPSYMENTRY
@@ -9973,6 +9974,7 @@ UBOOL PrimFnDydSiScSiScSub_EM
      APLFLOAT   aplFloatRht,        // ...             float
      APLCHAR    aplCharRht,         // ...             char
      HGLOBAL    lpSymGlbRht,        // ...             lpSym/Glb
+     APLSTYPE  *lpaplTypeRes,       // Ptr to result storage type
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
@@ -9985,7 +9987,7 @@ UBOOL PrimFnDydSiScSiScSub_EM
     APLVFP    aplVfpLft = {0},      // Left arg as VFP
               aplVfpRht = {0};      // Right ...
     APLSTYPE  aplTypeCom;           // Common storage type
-    HGLOBAL   hGlbTmp;              // Temporary hGlbRes
+    HGLOBAL   hGlbTmp = NULL;       // Temporary hGlbRes
 
 RESTART_EXCEPTION_IMMED:
     // If the result is simple, ...
@@ -10694,6 +10696,9 @@ NORMAL_EXIT:
     Myf_clear (&aplVfpRht);
     Myf_clear (&aplVfpLft);
 
+    // Return as (possibly new) storage type
+    *lpaplTypeRes = aplTypeRes;
+
     return bRet;
 } // End PrimFnDydSiScSiScSub_EM
 #undef  APPEND_NAME
@@ -10789,6 +10794,7 @@ UBOOL PrimFnDydSimpSimp_EM
                       aplVfpRht = {0};  // Right ...
     APLSTYPE          aplTypeHetLft,    // Left hetero types
                       aplTypeHetRht,    // Right ...
+                      aplTypeNew,       // New result
                       aplTypeCom;       // Common storage type
 
     // Get the thread's ptr to local vars
@@ -10855,7 +10861,12 @@ UBOOL PrimFnDydSimpSimp_EM
                                         aplFloatRht,
                                         aplCharRht,
                                         lpSymGlbRht,
+                                       &aplTypeNew,
                                         lpPrimSpec);
+#ifdef DEBUG
+            if (bRet && aplTypeRes NE aplTypeNew)
+                DbgStop ();
+#endif
         } else
         // It's a singleton array
         {

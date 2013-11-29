@@ -138,6 +138,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     APLSTYPE          aplTypeRht,           // Right arg storage type
                       aplTypeRht2,          // Right arg secondary storage type
                       aplTypeTmp,           // Temp right arg ...
+                      aplTypeNew,           // New result
                       aplTypeRes;           // Result    ...
     APLNELM           aplNELMRht,           // Right arg NELM
                       aplNELMRes;           // Result    ...
@@ -1046,11 +1047,28 @@ RESTART_EXCEPTION:
                                                    aplFloatRht,
                                                    aplCharRht,
                                                    lpSymGlbRht,
+                                                  &aplTypeNew,               // New storage type
                                                    lpPrimSpecLft))
                         goto ERROR_EXIT;
 
                     Assert (tkRhtArg.tkFlags.TknType EQ TKT_VARIMMED
                          || IsGlbNum (aplTypeRes));
+
+                    // If we blew up from RAT to VFP, ...
+                    if (aplTypeRes NE aplTypeNew)
+                    {
+                        // Initialize the temp
+                        mpfr_init0 (&aplVfpRht);
+
+                        // Copy the RAT value
+                        mpfr_set_q (&aplVfpRht, &aplRatRht, MPFR_RNDN);
+
+                        // Free the temp
+                        Myq_clear (&aplRatRht);
+
+                        // Tell the header about it
+                        lpMemHdrRes->ArrType = aplTypeRes = aplTypeNew;
+                    } // End IF
 
                     // Copy the result type as the temporary right arg type
                     aplTypeTmp = aplTypeRes;

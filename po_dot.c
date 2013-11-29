@@ -2327,7 +2327,7 @@ RESTART_INNERPROD_RES:
                  lpSymGlbRht = NULL,    // ...    right ...
                  lpSymGlbCmpLft = NULL, // ...    Left  comparison arg global numeric
                  lpSymGlbCmpRht = NULL; // ...    right ...
-        APLSTYPE aplType;
+        APLSTYPE aplTypeNew;            // New storage type
 
         // Initialize the temps
         mpq_init (&aplRatLft);
@@ -2469,85 +2469,41 @@ RESTART_INNERPROD_RES:
                                               aplFloatRht,                  // ...      Float
                                               aplCharRht,                   // ...      Char
                                               lpSymGlbRht,                  // ...      lpSym/Glb
+                                             &aplTypeNew,                   // New storage type
                                               lpPrimSpecRht))               // Ptr to comparison function PRIMSPEC
                 {
-                    // If the token type is an immediate, ...
-                    if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
+                    // Check for type promotion
+                    if (aplTypeCmp NE aplTypeNew)
                     {
-                        // Check for type promotion
-                        if (aplTypeCmp NE TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType))
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                        // We no longer need this resource
+                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                        if (hGlbLft && lpMemLft)
                         {
                             // We no longer need this ptr
-                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                            MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 
-                            // We no longer need this resource
-                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-
-                            if (hGlbLft && lpMemLft)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-
-                                // Lock the memory to get a ptr to it
-                                lpMemLft = MyGlobalLock (hGlbLft);
-                            } // End IF
-
-                            if (hGlbRht && lpMemRht)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-
-                                // Lock the memory to get a ptr to it
-                                lpMemRht = MyGlobalLock (hGlbRht);
-                            } // End IF
-
-                            // Save as the new storage type
-                            aplTypeCmp = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
-
-                            goto RESTART_INNERPROD_CMP;
+                            // Lock the memory to get a ptr to it
+                            lpMemLft = MyGlobalLock (hGlbLft);
                         } // End IF
-                    } else
-                    // If the token type is an array, ...
-                    if (tkRes.tkFlags.TknType EQ TKT_VARARRAY)
-                    {
-                        // Get the attributes (Type,NELM, and Rank)
-                        //   of the comparison result
-                        AttrsOfToken (&tkRes, &aplType, NULL, NULL, NULL);
 
-                        // Check for type promotion
-                        if (aplTypeCmp NE aplType)
+                        if (hGlbRht && lpMemRht)
                         {
                             // We no longer need this ptr
-                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
-                            // We no longer need this resource
-                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-
-                            if (hGlbLft && lpMemLft)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-
-                                // Lock the memory to get a ptr to it
-                                lpMemLft = MyGlobalLock (hGlbLft);
-                            } // End IF
-
-                            if (hGlbRht && lpMemRht)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-
-                                // Lock the memory to get a ptr to it
-                                lpMemRht = MyGlobalLock (hGlbRht);
-                            } // End IF
-
-                            // Save as the new storage type
-                            aplTypeCmp = aplType;
-
-                            goto RESTART_INNERPROD_CMP;
+                            // Lock the memory to get a ptr to it
+                            lpMemRht = MyGlobalLock (hGlbRht);
                         } // End IF
-                    } else
-                        DbgStop ();     // We should never get here
+
+                        // Save as the new storage type
+                        aplTypeCmp = aplTypeNew;
+
+                        goto RESTART_INNERPROD_CMP;
+                    } // End IF
                 } else
                     goto ERROR_EXIT;
 
@@ -2591,7 +2547,7 @@ RESTART_INNERPROD_RES:
                         // Skip over the header and dimensions to the data
                         lpMem = VarArrayDataFmBase (lpMem);
 
-                        switch (aplType)
+                        switch (aplTypeCmp)
                         {
                             case ARRAY_RAT:
 ////////////////////////////////Myq_clear (&aplRatLft);
@@ -2634,87 +2590,41 @@ RESTART_INNERPROD_RES:
                                                   aplFloatCmpRht,           // ...                  Float
                                                   0,                        // No primitive scalar dyadic function returns a char
                                                   lpSymGlbCmpRht,           // ...                 lpSym/Glb
+                                                 &aplTypeNew,               // New storage type
                                                   lpPrimSpecLft))           // Ptr to reduction function PRIMSPEC
                     {
-                        // If the token type is an immediate, ...
-                        if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
+                        // Check for type promotion
+                        if (aplTypeRes NE aplTypeNew)
                         {
-                            // Check for type promotion
-                            if (aplTypeRes NE TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType))
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                            // We no longer need this resource
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                            if (hGlbLft && lpMemLft)
                             {
                                 // We no longer need this ptr
-                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 
-                                // We no longer need this resource
-                                FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-
-                                if (hGlbLft && lpMemLft)
-                                {
-                                    // We no longer need this ptr
-                                    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-
-                                    // Lock the memory to get a ptr to it
-                                    lpMemLft = MyGlobalLock (hGlbLft);
-                                } // End IF
-
-                                if (hGlbRht && lpMemRht)
-                                {
-                                    // We no longer need this ptr
-                                    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-
-                                    // Lock the memory to get a ptr to it
-                                    lpMemRht = MyGlobalLock (hGlbRht);
-                                } // End IF
-
-                                // Save as the new storage type
-                                aplTypeRes = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
-
-                                goto RESTART_INNERPROD_RES;
+                                // Lock the memory to get a ptr to it
+                                lpMemLft = MyGlobalLock (hGlbLft);
                             } // End IF
-                        } else
-                        // If the token type is a global numeric, ...
-                        if (tkRes.tkFlags.TknType EQ TKT_VARARRAY)
-                        {
-                            APLSTYPE aplType;
 
-                            // Get the attributes (Type,NELM, and Rank)
-                            //   of the comparison result
-                            AttrsOfToken (&tkRes, &aplType, NULL, NULL, NULL);
-
-                            // Check for type promotion
-                            if (aplTypeRes NE aplType)
+                            if (hGlbRht && lpMemRht)
                             {
                                 // We no longer need this ptr
-                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
-                                // We no longer need this resource
-                                FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-
-                                if (hGlbLft && lpMemLft)
-                                {
-                                    // We no longer need this ptr
-                                    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-
-                                    // Lock the memory to get a ptr to it
-                                    lpMemLft = MyGlobalLock (hGlbLft);
-                                } // End IF
-
-                                if (hGlbRht && lpMemRht)
-                                {
-                                    // We no longer need this ptr
-                                    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-
-                                    // Lock the memory to get a ptr to it
-                                    lpMemRht = MyGlobalLock (hGlbRht);
-                                } // End IF
-
-                                // Save as the new storage type
-                                aplTypeRes = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
-
-                                goto RESTART_INNERPROD_RES;
+                                // Lock the memory to get a ptr to it
+                                lpMemRht = MyGlobalLock (hGlbRht);
                             } // End IF
-                        } else
-                            DbgStop ();         // We should never get here
+
+                            // Save as the new storage type
+                            aplTypeRes = aplTypeNew;
+
+                            goto RESTART_INNERPROD_RES;
+                        } // End IF
                     } else
                         goto ERROR_EXIT;
                 } // End IF
@@ -2760,7 +2670,7 @@ RESTART_INNERPROD_RES:
                     // Skip over the header and dimensions to the data
                     lpMem = VarArrayDataFmBase (lpMem);
 
-                    switch (aplType)
+                    switch (aplTypeCmp)
                     {
                         case ARRAY_RAT:
 ////                        Myq_clear (&aplRatLft);

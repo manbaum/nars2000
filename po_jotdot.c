@@ -266,6 +266,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
 {
     APLSTYPE      aplTypeLft,           // Left arg storage type
                   aplTypeRht,           // Right ...
+                  aplTypeNew,           // New result   ...
                   aplTypeRes;           // Result   ...
     APLNELM       aplNELMLft,           // Left arg NELM
                   aplNELMRht,           // Right ...
@@ -657,83 +658,36 @@ RESTART_JOTDOT:
                                               aplFloatRht,
                                               aplCharRht,
                                               lpSymGlbRht,
+                                             &aplTypeNew,               // New storage type
                                               lpPrimSpec))
                 {
-                    // If the token type is an immediate, ...
-                    if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
+                    // Check for type promotion
+                    if (aplTypeRes NE aplTypeNew)
                     {
-                        // Check for type promotion
-                        if (immTypeRes NE (IMM_TYPES) tkRes.tkFlags.ImmType)
-                        {
-                            // We no longer need this ptr
-                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-                            // We no longer need this resource
-                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-
-                            if (hGlbLft && lpMemLft)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-                            } // End IF
-
-                            if (hGlbRht && lpMemRht)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-                            } // End IF
-
-                            // Save as the new immediate & storage types
-                            immTypeRes = (IMM_TYPES) tkRes.tkFlags.ImmType;
-                            aplTypeRes = TranslateImmTypeToArrayType (immTypeRes);
-
-                            goto RESTART_JOTDOT;
-                        } // End IF
-                    } else
-                    // If the token type is an array, ...
-                    if (tkRes.tkFlags.TknType EQ TKT_VARARRAY)
-                    {
-                        LPVARARRAY_HEADER lpMemCmp;
-                        APLSTYPE          aplTypeCmp;
-
-                        // Lock the memory to get a ptr to it
-                        lpMemCmp = MyGlobalLock (tkRes.tkData.tkGlbData);
-
-                        // Get the array type
-                        aplTypeCmp = lpMemCmp->ArrType;
-
                         // We no longer need this ptr
-                        MyGlobalUnlock (tkRes.tkData.tkGlbData); lpMemCmp = NULL;
+                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-                        // Check for type promotion
-                        if (aplTypeRes NE aplTypeCmp)
+                        // We no longer need this resource
+                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                        if (hGlbLft && lpMemLft)
                         {
                             // We no longer need this ptr
-                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-                            // We no longer need this resource
-                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-
-                            if (hGlbLft && lpMemLft)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-                            } // End IF
-
-                            if (hGlbRht && lpMemRht)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-                            } // End IF
-
-                            // Save as the new immediate & storage types
-                            aplTypeRes = aplTypeCmp;
-                            immTypeRes = TranslateArrayTypeToImmType (aplTypeRes);
-
-                            goto RESTART_JOTDOT;
+                            MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
                         } // End IF
-                    } else
-                        DbgStop ();         // We should never get here
+
+                        if (hGlbRht && lpMemRht)
+                        {
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+                        } // End IF
+
+                        // Save as the new immediate & storage types
+                        immTypeRes = (IMM_TYPES) tkRes.tkFlags.ImmType;
+                        aplTypeRes = aplTypeNew;
+
+                        goto RESTART_JOTDOT;
+                    } // End IF
 
                     // Split cases based upon the result storage type
                     switch (aplTypeRes)

@@ -2159,12 +2159,12 @@ APLMPI mpzMinInt                // Minimum signed integer -2*63
 #endif
 ,      mpzPosInfinity           // Positive infinity
 #ifdef DEFINE_VALUES
-= {0, 0x7FFFFFFF, NULL}
+= {0, INT_MAX, NULL}
 #endif
 ,
        mpzNegInfinity           // Negative fininity
 #ifdef DEFINE_VALUES
-= {0, 0x80000000, NULL}
+= {0, INT_MIN, NULL}
 #endif
 ;
 
@@ -2187,14 +2187,14 @@ APLRAT mpqMinInt                // Minimum signed integer -2*63
 #endif
 ,      mpqPosInfinity           // Positive infniity
 #ifdef DEFINE_VALUES
-= {{0, 0x7FFFFFFF, NULL},
-   {0, 0         , NULL}}
+= {{0, INT_MAX, NULL},
+   {0, 0      , NULL}}
 #endif
 ,
        mpqNegInfinity           // Negative infinity
 #ifdef DEFINE_VALUES
-= {{0, 0x80000000, NULL},
-   {0, 0         , NULL}}
+= {{0, INT_MIN, NULL},
+   {0, 0      , NULL}}
 #endif
 ;
 

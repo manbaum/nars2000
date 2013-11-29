@@ -209,8 +209,8 @@ int mpz_inf_p
     (mpz_t op)                  // Source
 
 {
-    return ((op->_mp_size EQ (mp_size_t) 0x7FFFFFFF
-          || op->_mp_size EQ (mp_size_t) 0x80000000)
+    return ((op->_mp_size EQ (mp_size_t) INT_MAX
+          || op->_mp_size EQ (mp_size_t) INT_MIN)
          && op->_mp_alloc EQ 0
          && op->_mp_d     EQ NULL);
 } // End mpz_inf_p
@@ -249,8 +249,8 @@ void mpz_set_inf
         mpz_clear (rop);
 
     // Set the numerator to a special format, properly signed
-    rop->_mp_size  = (sgn >= 0) ? (mp_size_t) 0x7FFFFFFF
-                                : (mp_size_t) 0x80000000;
+    rop->_mp_size  = (sgn >= 0) ? (mp_size_t) INT_MAX
+                                : (mp_size_t) INT_MIN;
     rop->_mp_alloc = 0;
     rop->_mp_d     = NULL;
 } // mpz_set_inf
@@ -2554,7 +2554,7 @@ int mpq_inf_p
 
 {
     return (mpz_inf_p (mpq_numref (op))
-         && IsMpzNULL     (mpq_denref (op)));
+         && IsMpzNULL (mpq_denref (op)));
 } // End mpq_inf_p
 
 
@@ -2615,8 +2615,8 @@ void mpq_set_infsub
 
 {
     // Set the numerator to a special format, properly signed
-    rop->_mp_num._mp_size  = (sgn >= 0) ? (mp_size_t) 0x7FFFFFFF
-                                        : (mp_size_t) 0x80000000;
+    rop->_mp_num._mp_size  = (sgn >= 0) ? (mp_size_t) INT_MAX
+                                        : (mp_size_t) INT_MIN;
     rop->_mp_num._mp_alloc = 0;
     rop->_mp_num._mp_d     = NULL;
 
@@ -3973,7 +3973,7 @@ void mpifr_neg
     if (mpfr_inf_p (op))
         mpfr_set_inf (rop, -mpfr_sgn (op));
     else
-        mpfr_neg (mpfr_clr_inf (rop), op, rnd);
+        mpfr_neg0 (mpfr_clr_inf (rop), op, rnd);
 } // End mpifr_neg
 
 

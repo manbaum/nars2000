@@ -221,6 +221,7 @@
 #undef  mpfr_get_si
 #undef  mpfr_get_ui
 #undef  mpfr_get_str
+#undef  mpfr_get_z
 
 #undef  mpfr_add
 #undef  mpfr_add_ui
@@ -238,6 +239,7 @@
 
 #undef  mpfr_sqrt
 #undef  mpfr_pow_ui
+#undef  mpfr_pow_z
 #undef  mpfr_neg
 #undef  mpfr_abs
 #undef  mpfr_mul_2exp
@@ -464,6 +466,7 @@
 #define mpfr_get_si             mpifr_get_si
 #define mpfr_get_ui             mpifr_get_ui
 #define mpfr_get_str            mpifr_get_str
+#define mpfr_get_z              mpifr_get_z
 
 #define mpfr_add                mpifr_add
 #define mpfr_add_ui             mpifr_add_ui
@@ -481,6 +484,7 @@
 
 #define mpfr_sqrt               mpifr_sqrt
 #define mpfr_pow_ui             mpifr_pow_ui
+#define mpfr_pow_z              mpifr_pow_z
 #define mpfr_neg                mpifr_neg
 #define mpfr_abs                mpifr_abs
 #define mpfr_mul_2exp           mpifr_mul_2exp

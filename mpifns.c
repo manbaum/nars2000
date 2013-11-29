@@ -3632,6 +3632,28 @@ char *mpifr_get_str
 
 
 //***************************************************************************
+//  $mpifr_get_z
+//
+//  Return the arg as an MPINT
+//***************************************************************************
+
+int mpifr_get_z
+    (mpz_t      rop,            // Destination
+     mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
+
+{
+    if (mpfr_inf_p (op))
+    {
+        mpz_set_inf (rop, mpfr_sgn (op));
+
+        return 0;
+    } else
+        return mpfr_get_z (mpz_clr_inf (rop), op, rnd);
+} // End mpifr_get_z
+
+
+//***************************************************************************
 //  $mpifr_add
 //
 //  Add two MPFs
@@ -4418,6 +4440,62 @@ void mpifr_pow_ui
     else
         mpfr_pow_ui (mpfr_clr_inf (rop), op1, op2, rnd);
 } // End mpifr_pow_ui
+
+
+//***************************************************************************
+//  $mpifr_pow_z
+//
+//  Set rop to op1^op2
+//***************************************************************************
+
+void mpifr_pow_z
+    (mpfr_t            rop,     // Destination
+     mpfr_t            op1,     // Left arg
+     mpz_t             op2,     // Right arg
+     mpfr_rnd_t        rnd)     // Rounding mode
+
+{
+    if (mpfr_inf_p (op1))
+    {
+        // If op2 is -infinity, ...
+        if (IsMpzInfinity (op2) && mpz_sgn (op2) < 0)
+            mpfr_set_ui (mpfr_clr_inf (rop), 0, MPFR_RNDN);
+        else
+            mpfr_set_inf (rop, mpz_odd_p (op2) ? mpfr_sgn (op1) : 1);
+    } else
+    // If op2 is infinity, ...
+    if (IsMpzInfinity (op2))
+    {
+        // The caller has already handled
+        //    0   *   R   for any R
+        //    L   *   _   for  L <= -1
+        //    L   *  -_   for -1 <=  L < 0
+
+        // Split cases based upon the range of op1
+
+        // If op2 is +{infinity}, ...
+        if (mpz_sgn (op2) > 0)
+        {
+            // Izit in (-1, 1) , ...
+            if (mpfr_cmp_si (op1,  1) < 0
+             && mpfr_cmp_si (op1, -1) > 0)
+                // Result is 0
+                mpfr_set_ui (mpfr_clr_inf (rop), 0, MPFR_RNDN);
+            else
+                // Result is {infinity}
+                mpfr_set_inf (mpfr_clr_inf (rop), 1);
+        } else
+            // Izit < -1 or > 1, ...
+            if (mpfr_cmp_si (op1, -1) < 0
+             || mpfr_cmp_si (op1,  1) > 0)
+                // Result is 0
+                mpfr_set_ui (mpfr_clr_inf (rop), 0, MPFR_RNDN);
+            else
+                // Result is {infinity}
+                mpfr_set_inf (mpfr_clr_inf (rop), 1);
+    } else
+        mpfr_pow_z (mpfr_clr_inf (rop), op1, op2, rnd);
+} // End mpifr_pow_z
 
 
 //***************************************************************************

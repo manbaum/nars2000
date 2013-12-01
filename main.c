@@ -1393,7 +1393,7 @@ LRESULT APIENTRY MFWndProc
                 if (gstUpdChk.wYear EQ 0
                  || aplCur >= (aplUpdChk + updFrq[guUpdFrq].aplElap))
                     // Post a message to do the check
-                    PostMessageW (hWnd, WM_TIMER, TIMER_UPDCHK, 0);
+                    PostMessageW (hWnd, WM_TIMER, ID_TIMER_UPDCHK, 0);
                 else
                     // Start the timer
                     SetUpdChkTimer ();
@@ -1403,7 +1403,7 @@ LRESULT APIENTRY MFWndProc
 
         case WM_TIMER:                      // wTimerID = wParam            // Timer identifier
                                             // tmpc = (TIMERPROC *) lParam  // Ptr to timer callback
-            if (wParam EQ TIMER_UPDCHK)
+            if (wParam EQ ID_TIMER_UPDCHK)
                 // Check for updates, but don't display the dialog unless there's a new version
                 CheckForUpdates (FALSE, FALSE);
 

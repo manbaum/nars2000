@@ -395,6 +395,34 @@ void SetStatusTimer
 
 
 //***************************************************************************
+//  $UpdateStatusTimer
+//
+//  Update the status timer
+//***************************************************************************
+
+void UpdateStatusTimer
+    (LPPERTABDATA lpMemPTD)     // Ptr to PerTabData global memory
+
+{
+    LARGE_INTEGER liTickCnt,            // Current tick count
+                  liTicksPerSec;        // # ticks per second
+    APLFLOAT      aplScale;             // Scale factor
+
+    // Get current tick count
+    QueryPerformanceCounter (&liTickCnt);
+
+    // Get # ticks per second
+    QueryPerformanceFrequency (&liTicksPerSec);
+
+    // Calculate the scale factor for milliseconds
+    aplScale = 1000.0 / (APLFLOAT) (APLINT) liTicksPerSec.QuadPart;
+
+    // Convert the tick count into milliseconds
+    SetStatusTimer ((APLINT) floor (aplScale * (APLFLOAT) (liTickCnt.QuadPart - lpMemPTD->liTickCnt.QuadPart)));
+} // End UpdateStatusTimer
+
+
+//***************************************************************************
 //  $SetStatusMsg
 //
 //  Set the Status Window message
@@ -420,10 +448,6 @@ void SetExecuting
      UBOOL        bExecuting)   // TRUE iff we're executing
 
 {
-    LARGE_INTEGER liTickCnt,            // Current tick count
-                  liTicksPerSec;        // # ticks per second
-    APLFLOAT      aplScale;             // Scale factor
-
     // If old & new the states are different, ...
     if (lpMemPTD->bExecuting NE bExecuting)
     {
@@ -435,18 +459,16 @@ void SetExecuting
 
             // Get current tick count
             QueryPerformanceCounter (&lpMemPTD->liTickCnt);
+
+            // Start a timer for once per second
+            SetTimer (lpMemPTD->hWndSM, ID_TIMER_EXEC, 1000, NULL);
         } else
         {
-            // Get current tick count
-            QueryPerformanceCounter (&liTickCnt);
+            // Update the status timer
+            UpdateStatusTimer (lpMemPTD);
 
-            // Get # ticks per second
-            QueryPerformanceFrequency (&liTicksPerSec);
-
-            aplScale = 1000.0 / (APLFLOAT) (APLINT) liTicksPerSec.QuadPart;
-
-            // Convert the tick count into milliseconds
-            SetStatusTimer ((APLINT) floor (aplScale * (APLFLOAT) (liTickCnt.QuadPart - lpMemPTD->liTickCnt.QuadPart)));
+            // Clear the timer
+            KillTimer (lpMemPTD->hWndSM, ID_TIMER_EXEC);
         } // End IF/ELSE
 
         // Set the current state

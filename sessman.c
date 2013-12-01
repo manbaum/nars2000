@@ -1945,6 +1945,14 @@ NORMAL_EXIT:
 #undef  wID
 #undef  wNotifyCode
 
+        case WM_TIMER:                      // wTimerID = wParam            // Timer identifier
+                                            // tmpc = (TIMERPROC *) lParam  // Ptr to timer callback
+            if (wParam EQ ID_TIMER_EXEC)
+                // Update the status timer
+                UpdateStatusTimer (lpMemPTD);
+
+            return FALSE;           // We handled the msg
+
         case WM_CLOSE:
             // Because the SM window doesn't close unless the
             //   MF window is closing, we ignore this message.

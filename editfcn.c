@@ -1829,12 +1829,11 @@ LRESULT WINAPI LclEditCtrlWndProc
         //   tick count at the end of WM_RBUTTONDBLCLK.  If WM_RBUTTONUP
         //   occurs too soon, we ignore that message.
 
-#define ID_TIMER        1729
         case WM_CONTEXTMENU:                // hwnd = (HWND) wParam;
                                             // xPos = LOSHORT (lParam); // horizontal position of cursor in Screen coords
                                             // yPos = HISHORT (lParam); // vertical   ...
             // Set a timer waiting for WM_RBUTTONDBLCLK or expiration
-            SetTimer (hWnd, ID_TIMER, GetDoubleClickTime () / 2, NULL);
+            SetTimer (hWnd, ID_TIMER_EDIT, GetDoubleClickTime () / 2, NULL);
 
             // Save the context menu's wParam & lParam so we
             //   can retrieve them in WM_TIMER.  The values
@@ -1848,10 +1847,10 @@ LRESULT WINAPI LclEditCtrlWndProc
 
         case WM_TIMER:              // wTimerID = wParam            // Timer identifier
                                     // tmpc = (TIMERPROC *) lParam  // Ptr to timer callback
-            if (wParam EQ ID_TIMER)
+            if (wParam EQ ID_TIMER_EDIT)
             {
                 // The timer expired, so it's a real WM_CONTEXTMENU
-                KillTimer (hWnd, ID_TIMER);
+                KillTimer (hWnd, ID_TIMER_EDIT);
 
                 return CallWindowProcW (lpfnOldEditCtrlWndProc,
                                         hWnd,
@@ -1889,7 +1888,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // xPos = LOSHORT(lParam);  // horizontal position of cursor
                                     // yPos = HISHORT(lParam);  // vertical position of cursor
             // It's a right double click, so cancel the timer
-            KillTimer (hWnd, ID_TIMER);
+            KillTimer (hWnd, ID_TIMER_EDIT);
 
             // If we're reversing left- and right-double-click, ...
             if (OptionFlags.bRevDblClk)
@@ -1994,7 +1993,6 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
         } // End WM_RBUTTONDBLCLK
-#undef  ID_TIMER
 
         case WM_RBUTTONUP:          // fwKeys = wParam;         // key flags
                                     // xPos = LOSHORT(lParam);  // horizontal position of cursor

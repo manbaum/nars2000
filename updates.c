@@ -94,7 +94,7 @@ void CheckForUpdates
     // Get the file "nars2000.ver" from http://www.NARS2000.ORG/download/binaries/
 
     // Stop the timer
-    KillTimer (hWndMF, TIMER_UPDCHK);
+    KillTimer (hWndMF, ID_TIMER_UPDCHK);
 
     // Make the connection
     hNetOpen =
@@ -1091,7 +1091,7 @@ void SetUpdChkTimer
         // If the elapsed time is within a UINT (maximum size for SetTimer), ...
         if (aplElap EQ (UINT) aplElap)
             // Set a timer event to send a WM_TIMER message
-            SetTimer (hWndMF, TIMER_UPDCHK, (UINT) aplElap, NULL);
+            SetTimer (hWndMF, ID_TIMER_UPDCHK, (UINT) aplElap, NULL);
     } // End IF
 } // End SetUpdChkTimer
 

@@ -2037,8 +2037,6 @@ HWND ghDlgUpdates               // Window handle for Updates dialog (NULL = not 
 #endif
 ;
 
-#define TIMER_UPDCHK        1
-
 #define UPDFRQ_NEVER        L"Never"
 #define UPDFRQ_DAILY        L"Daily"
 #define UPDFRQ_WEEKLY       L"Weekly"

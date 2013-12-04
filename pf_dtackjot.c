@@ -187,7 +187,10 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
-    LPWCHAR       lpwszFormat;          // Ptr to formatting save area
+    LPWCHAR       lpwszFormat,          // Ptr to formatting save area
+                  lpwszFormat2;         // ...
+    HGLOBAL       hGlbFormat = NULL,    // New lpwszFormat global memory handle
+                  hGlbFormat2;          // ...
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -229,6 +232,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     // Skip over the header and dimensions to the data
     if (lpMemRht)
         lpMemRht = VarArrayDataFmBase (lpMemRht);
+
+RESTART_FORMAT:
 
 __try
 {
@@ -442,7 +447,56 @@ __try
     // Split cases based upon the exception code
     switch (MyGetExceptionCode ())
     {
+        APLU3264 uNewSize;
+
         case EXCEPTION_LIMIT_ERROR:
+            // If this is our first time through, ...
+            if (hGlbFormat EQ NULL)
+            {
+                LPMEMVIRTSTR lpLclMemVirtStr;       // Ptr to local MemVirtStr
+
+                // Get a ptr to the PTDMEMVIRT_STR
+                (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_LPMVS);
+
+                uNewSize = lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].MaxSize;
+            } else
+                uNewSize = MyGlobalSize (hGlbFormat);
+
+            // Attempt to allocate more space in global memory rather than using lpMemPTD->lpwszFormat
+            hGlbFormat2 =
+              DbgGlobalAlloc (GHND, 2 * uNewSize);
+            if (hGlbFormat2)
+            {
+                // Lock the memory to get a ptr to it
+                lpwszFormat2 = MyGlobalLock (hGlbFormat2);
+
+                // If there's an old save area, ...
+                if (hGlbFormat)
+                {
+////////////////////// Lock the memory to get a ptr to it
+////////////////////lpwszFormat = MyGlobalLock (hGlbFormat);
+////////////////////
+////////////////////// Copy the old data to the new memory
+////////////////////CopyMemory (lpwszFormat2, lpwszFormat, uNewSize);
+////////////////////
+////////////////////// We no longer need this ptr
+////////////////////MyGlobalUnlock (hGbFormat); lpwszFormat = NULL;
+
+                    // We no longer need this resource
+                    MyGlobalFree (hGlbFormat); hGlbFormat = NULL;
+////////////////} else
+////////////////{
+////////////////    // Copy the old data to the new memory
+////////////////    CopyMemory (lpwszFormat2, lpwszFormat, uNewSize);
+                } // End IF/ELSE
+
+                // Save the new handle & ptr
+                hGlbFormat  = hGlbFormat2;
+                lpwszFormat = lpwszFormat2;
+
+                goto RESTART_FORMAT;
+            } // End IF
+
             goto LIMIT_EXIT;
 
         defstop
@@ -637,6 +691,15 @@ QUICK_EXIT:
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (hGlbFormat && lpwszFormat)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbFormat); lpwszFormat = NULL;
+
+        // We no longer need this resource
+        MyGlobalFree (hGlbFormat); hGlbFormat = NULL;
     } // End IF
 
     return lpYYRes;

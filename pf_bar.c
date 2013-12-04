@@ -448,10 +448,10 @@ APLRAT PrimFnDydBarRisRvR
     if (mpq_inf_p (&aplRatLft)
      && mpq_inf_p (&aplRatRht)
      && mpq_sgn (&aplRatLft) EQ mpq_sgn (&aplRatRht))
-        return mpq_QuadICValue (aplRatRht,          // No left arg
-                                ICNDX_InfSUBInf,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatRht,        // No left arg
+                                  ICNDX_InfSUBInf,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Initialize the result
     mpq_init (&mpqRes);
 
@@ -482,10 +482,10 @@ APLVFP PrimFnDydBarVisVvV
     if (mpfr_inf_p (&aplVfpLft)
      && mpfr_inf_p (&aplVfpRht)
      && mpfr_sgn (&aplVfpLft) EQ mpfr_sgn (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpRht,         // No left arg
-                                ICNDX_InfSUBInf,
-                                aplVfpRht,
-                                mpfRes);
+        return *mpfr_QuadICValue (&aplVfpRht,       // No left arg
+                                   ICNDX_InfSUBInf,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Initialize the result
     mpfr_init0 (&mpfRes);
 

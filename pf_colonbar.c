@@ -211,10 +211,10 @@ APLRAT PrimFnMonColonBarRisR
 
     // Check for indeterminates:  {div} 0
     if (IsMpq0 (&aplRatRht))
-        return mpq_QuadICValue (aplRatRht,          // No left arg
-                                ICNDX_DIV0,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatRht,        // No left arg
+                                  ICNDX_DIV0,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Initialize the result
     mpq_init (&mpqRes);
 
@@ -240,10 +240,10 @@ APLVFP PrimFnMonColonBarVisV
 
     // Check for indeterminates:  {div} 0
     if (IsMpf0 (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpRht,         // No left arg
-                                ICNDX_DIV0,
-                                aplVfpRht,
-                                mpfRes);
+        return *mpfr_QuadICValue (&aplVfpRht,       // No left arg
+                                   ICNDX_DIV0,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Initialize the result
     mpfr_init0 (&mpfRes);
 
@@ -401,24 +401,24 @@ APLRAT PrimFnDydColonBarRisRvR
     // Check for indeterminates:  0 {div} 0
     if (IsMpq0 (&aplRatLft)
      && IsMpq0 (&aplRatRht))
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_0DIV0,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_0DIV0,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (mpq_inf_p (&aplRatLft)
      && mpq_inf_p (&aplRatRht))
     {
         if (mpq_sgn (&aplRatLft) EQ mpq_sgn (&aplRatRht))
-            return mpq_QuadICValue (aplRatLft,
-                                    ICNDX_PiDIVPi,
-                                    aplRatRht,
-                                    mpqRes);
+            return *mpq_QuadICValue (&aplRatLft,
+                                      ICNDX_PiDIVPi,
+                                     &aplRatRht,
+                                     &mpqRes);
         else
-            return mpq_QuadICValue (aplRatLft,
-                                    ICNDX_NiDIVPi,
-                                    aplRatRht,
-                                    mpqRes);
+            return *mpq_QuadICValue (&aplRatLft,
+                                      ICNDX_NiDIVPi,
+                                     &aplRatRht,
+                                     &mpqRes);
     } // End IF
 
     // Initialize the result
@@ -448,24 +448,24 @@ APLVFP PrimFnDydColonBarVisVvV
     // Check for indeterminates:  0 {div} 0
     if (IsMpf0 (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpLft,
-                                ICNDX_0DIV0,
-                                aplVfpRht,
-                                mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0DIV0,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (mpfr_inf_p (&aplVfpLft)
      && mpfr_inf_p (&aplVfpRht))
     {
         if (mpfr_sgn (&aplVfpLft) EQ mpfr_sgn (&aplVfpRht))
-            return mpfr_QuadICValue (aplVfpLft,
-                                    ICNDX_PiDIVPi,
-                                    aplVfpRht,
-                                    mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_PiDIVPi,
+                                      &aplVfpRht,
+                                      &mpfRes);
         else
-            return mpfr_QuadICValue (aplVfpLft,
-                                    ICNDX_NiDIVPi,
-                                    aplVfpRht,
-                                    mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_NiDIVPi,
+                                      &aplVfpRht,
+                                      &mpfRes);
     } // End IF
 
     // Initialize the result

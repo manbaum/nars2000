@@ -247,10 +247,10 @@ APLVFP PrimFnMonCircleStarVisV
 #endif
     // Check for indeterminates:  {log} 0
     if (IsMpf0 (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpRht,         // No left arg
-                                 ICNDX_LOG0,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpRht,       // No left arg
+                                   ICNDX_LOG0,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for special cases:  {log} _
     if (IsMpfPosInfinity (&aplVfpRht))
         return mpfPosInfinity;
@@ -558,16 +558,16 @@ APLVFP PrimFnDydCircleStarVisVvV
     // Check for indeterminates:  B {log} B
     if (IsBooleanVfp (&aplVfpLft)
      && IsBooleanVfp (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpLft,
-                                icndxLog[IsMpf1 (&aplVfpLft)][IsMpf1(&aplVfpRht)],
-                                aplVfpRht,
-                                mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   icndxLog[IsMpf1 (&aplVfpLft)][IsMpf1(&aplVfpRht)],
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for indeterminates:  0 {log} N  (N != 0 or 1)
     if (mpfr_zero_p (&aplVfpLft))
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_0LOGN,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0LOGN,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for Complex result
     if (mpfr_sgn (&aplVfpLft) < 0)
         RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);

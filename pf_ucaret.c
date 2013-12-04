@@ -453,10 +453,10 @@ APLRAT PrimFnDydUpCaretRisRvR
     // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
     if ((mpq_inf_p (&aplRatLft) && IsMpq0 (&aplRatRht))
      || (mpq_inf_p (&aplRatRht) && IsMpq0 (&aplRatLft)))
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_0LCMInf,
-                                aplRatRht,
-                                aplTmp);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_0LCMInf,
+                                 &aplRatRht,
+                                 &aplTmp);
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (mpq_inf_p (&aplRatLft)
      || mpq_inf_p (&aplRatRht))
@@ -504,10 +504,10 @@ APLVFP PrimFnDydUpCaretVisVvV
     // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
     if ((mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
      || (mpfr_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_0LCMInf,
-                                 aplVfpRht,
-                                 aplTmp);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0LCMInf,
+                                  &aplVfpRht,
+                                  &aplTmp);
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (mpfr_inf_p (&aplVfpLft)
      || mpfr_inf_p (&aplVfpRht))

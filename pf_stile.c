@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -461,42 +461,42 @@ APLRAT PrimFnDydStileRisRvR
     {
         // If the left arg is positive, ...
         if (mpq_sgn (&aplRatLft) > 0)
-            return mpq_QuadICValue (aplRatLft,
-                                    ICNDX_PosMODNi,
-                                    aplRatRht,
-                                    mpqRes);
+            return *mpq_QuadICValue (&aplRatLft,
+                                      ICNDX_PosMODNi,
+                                     &aplRatRht,
+                                     &mpqRes);
         // If the left arg is negative, ...
         if (mpq_sgn (&aplRatLft) < 0)
-            return mpq_QuadICValue (aplRatLft,
-                                    ICNDX_NegMODNi,
-                                    aplRatRht,
-                                    mpqRes);
+            return *mpq_QuadICValue (&aplRatLft,
+                                      ICNDX_NegMODNi,
+                                     &aplRatRht,
+                                     &mpqRes);
     } else
     // If the right arg is positive infinity, ...
     if (IsMpqPosInfinity (&aplRatRht))
     {
         // If the left arg is positive, ...
         if (mpq_sgn (&aplRatLft) > 0)
-            return mpq_QuadICValue (aplRatLft,
-                                    ICNDX_PosMODPi,
-                                    aplRatRht,
-                                    mpqRes);
+            return *mpq_QuadICValue (&aplRatLft,
+                                      ICNDX_PosMODPi,
+                                     &aplRatRht,
+                                     &mpqRes);
         // If the left arg is negative, ...
         if (mpq_sgn (&aplRatLft) < 0)
-            return mpq_QuadICValue (aplRatLft,
-                                    ICNDX_NegMODPi,
-                                    aplRatRht,
-                                    mpqRes);
+            return *mpq_QuadICValue (&aplRatLft,
+                                      ICNDX_NegMODPi,
+                                     &aplRatRht,
+                                     &mpqRes);
     } else
     // If the left arg is negative infinity, ...
     if (IsMpqNegInfinity (&aplRatLft))
     {
         // If the right arg is positive, ...
         if (mpq_sgn (&aplRatRht) > 0)
-            return mpq_QuadICValue (aplRatLft,
-                                    ICNDX_NiMODPos,
-                                    aplRatRht,
-                                    mpqRes);
+            return *mpq_QuadICValue (&aplRatLft,
+                                      ICNDX_NiMODPos,
+                                     &aplRatRht,
+                                     &mpqRes);
         // Initialize the result with the right arg
         mpq_init_set (&mpqRes, &aplRatRht);
     } else
@@ -505,10 +505,10 @@ APLRAT PrimFnDydStileRisRvR
     {
         // If the right arg is negative, ...
         if (mpq_sgn (&aplRatRht) < 0)
-            return mpq_QuadICValue (aplRatLft,
-                                    ICNDX_PiMODNeg,
-                                    aplRatRht,
-                                    mpqRes);
+            return *mpq_QuadICValue (&aplRatLft,
+                                      ICNDX_PiMODNeg,
+                                     &aplRatRht,
+                                     &mpqRes);
         // Initialize the result with the right arg
         mpq_init_set (&mpqRes, &aplRatRht);
     } else
@@ -586,42 +586,42 @@ APLVFP PrimFnDydStileVisVvV
     {
         // If the left arg is positive, ...
         if (mpfr_sgn (&aplVfpLft) > 0)
-            return mpfr_QuadICValue (aplVfpLft,
-                                     ICNDX_PosMODNi,
-                                     aplVfpRht,
-                                     mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_PosMODNi,
+                                      &aplVfpRht,
+                                      &mpfRes);
         // If the left arg is negative, ...
         if (mpfr_sgn (&aplVfpLft) < 0)
-            return mpfr_QuadICValue (aplVfpLft,
-                                     ICNDX_NegMODNi,
-                                     aplVfpRht,
-                                     mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_NegMODNi,
+                                      &aplVfpRht,
+                                      &mpfRes);
     } else
     // If the right arg is positive infinity, ...
     if (IsMpfPosInfinity (&aplVfpRht))
     {
         // If the left arg is positive, ...
         if (mpfr_sgn (&aplVfpLft) > 0)
-            return mpfr_QuadICValue (aplVfpLft,
-                                     ICNDX_PosMODPi,
-                                     aplVfpRht,
-                                     mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_PosMODPi,
+                                      &aplVfpRht,
+                                      &mpfRes);
         // If the left arg is negative, ...
         if (mpfr_sgn (&aplVfpLft) < 0)
-            return mpfr_QuadICValue (aplVfpLft,
-                                     ICNDX_NegMODPi,
-                                     aplVfpRht,
-                                     mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_NegMODPi,
+                                      &aplVfpRht,
+                                      &mpfRes);
     } else
     // If the left arg is negative infinity, ...
     if (IsMpfNegInfinity (&aplVfpLft))
     {
         // If the right arg is positive, ...
         if (mpfr_sgn (&aplVfpRht) > 0)
-            return mpfr_QuadICValue (aplVfpLft,
-                                     ICNDX_NiMODPos,
-                                     aplVfpRht,
-                                     mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_NiMODPos,
+                                      &aplVfpRht,
+                                      &mpfRes);
         // Initialize the result with the right arg
         mpfr_init_copy (&mpfRes, &aplVfpRht);
     } else
@@ -630,10 +630,10 @@ APLVFP PrimFnDydStileVisVvV
     {
         // If the right arg is negative, ...
         if (mpfr_sgn (&aplVfpRht) < 0)
-            return mpfr_QuadICValue (aplVfpLft,
-                                     ICNDX_PiMODNeg,
-                                     aplVfpRht,
-                                     mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_PiMODNeg,
+                                      &aplVfpRht,
+                                      &mpfRes);
         // Initialize the result with the right arg
         mpfr_init_copy (&mpfRes, &aplVfpRht);
     } else

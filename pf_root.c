@@ -534,10 +534,10 @@ APLVFP PrimFnDydRootVisVvV
     // Check for indeterminates:  0 * _
     if (IsMpf0 (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpLft,
-                                ICNDX_0EXPPi,
-                                aplVfpRht,
-                                mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0EXPPi,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for special case:  1 {root} R <==> R * 1 <==> R
     if (IsMpf1 (&aplVfpLft))
     {
@@ -550,10 +550,10 @@ APLVFP PrimFnDydRootVisVvV
     {
         // Check for indeterminate:  0 {root} R where R <= -1
         if (mpfr_cmp_si (&aplVfpRht, -1) <= 0)  // R <= -1
-            return mpfr_QuadICValue (aplVfpLft,
-                                    ICNDX_NEXPPi,
-                                    aplVfpRht,
-                                    mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_NEXPPi,
+                                      &aplVfpRht,
+                                      &mpfRes);
         // Check for special case:  0 {root} R where -1 < R < 0 <==> 0
         if (mpfr_si_cmp (-1, &aplVfpRht   ) < 0 // -1 < R
          && mpfr_cmp_si (    &aplVfpRht, 0) < 0)    //      R < 0)
@@ -564,10 +564,10 @@ APLVFP PrimFnDydRootVisVvV
 
         // Check for indeterminate:  0 {root} 0 <==> 0 * _
         if (IsMpf0 (&aplVfpRht))
-            return mpfr_QuadICValue (aplVfpLft,
-                                    ICNDX_0EXPPi,
-                                    aplVfpRht,
-                                    mpfRes);
+            return *mpfr_QuadICValue (&aplVfpLft,
+                                       ICNDX_0EXPPi,
+                                      &aplVfpRht,
+                                      &mpfRes);
         // Check for special case:  0 {root} R where 0 < R < 1
         if (mpfr_ui_cmp (0, &aplVfpRht   ) < 0  // 0 < R
          && mpfr_cmp_ui (   &aplVfpRht, 1) < 0) //     R < 1
@@ -584,10 +584,10 @@ APLVFP PrimFnDydRootVisVvV
     // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
     if (mpfr_inf_p (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpLft,
-                                ICNDX_0EXP0,
-                                aplVfpRht,
-                                mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0EXP0,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for Complex result
     if (mpfr_cmp_ui (&aplVfpRht, 0) < 0)        // R < 0
         RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);

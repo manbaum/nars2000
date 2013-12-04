@@ -184,11 +184,78 @@ mpir_ui mpz_invalid
      mpir_ui b)
 
 {
-    DbgBrk ();
+    UBOOL bSameSign;            // TRUE iff the infinities are the same sign
 
+    // Split cases based upon the MP_ENUM value
+    switch (mp_enum)
+    {
+        case MP_ADD:        // op1 and op2 are infinity of opposite signs
+        case MP_SUB:        // op1 and op2 are infinite of the same sign
+            mpz_QuadICValue (op1,
+                             ICNDX_InfSUBInf,
+                             op2,
+                             rop);
+            break;
 
+        case MP_DIV:        // op1 and op2 are infinite
+            bSameSign = (mpz_sgn (op1) EQ mpz_sgn (op2));
 
+            mpz_QuadICValue (op1,
+                             bSameSign ? ICNDX_PiDIVPi
+                                       : ICNDX_NiDIVPi,
+                             op2,
+                             rop);
+            break;
 
+        case MP_MUL             :
+        case MP_CDIV_Q          :
+        case MP_CDIV_R          :
+        case MP_CDIV_QR         :
+        case MP_CDIV_R_UI       :
+        case MP_CDIV_QR_UI      :
+        case MP_CDIV_R_2EXP     :
+        case MP_FDIV_Q          :
+        case MP_FDIV_R          :
+        case MP_FDIV_QR         :
+        case MP_FDIV_R_UI       :
+        case MP_FDIV_QR_UI      :
+        case MP_FDIV_R_2EXP     :
+        case MP_TDIV_Q          :
+        case MP_TDIV_R          :
+        case MP_TDIV_QR         :
+        case MP_TDIV_R_UI       :
+        case MP_TDIV_QR_UI      :
+        case MP_TDIV_R_2EXP     :
+        case MP_SQRT            :
+        case MP_RELDIFF         :
+        case MP_AND             :
+        case MP_IOR             :
+        case MP_XOR             :
+        case MP_COM             :
+        case MP_GCD             :
+        case MP_LCM             :
+        case MP_POW_UI          :
+        case MP_UI_POW_UI       :
+        case MP_PosMODNi        :
+        case MP_NegMODNi        :
+        case MP_PosMODPi        :
+        case MP_NegMODPi        :
+        case MP_NiMODPos        :
+        case MP_NiMODNeg        :
+        case MP_PiMODPos        :
+        case MP_PiMODNeg        :
+        case MP_MODUINi         :
+        case MP_MODUIPi         :
+        case MP_DIVISIBLE_P     :
+        case MP_DIVISIBLE_UI_P  :
+        case MP_DIVISIBLE_2EXP_P:
+            DbgBrk ();              // ***FIXME***
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     return 0;       // To keep the compiler happy
 } // End mpz_invalid
@@ -207,11 +274,32 @@ mpir_ui mpq_invalid
      mpir_ui d)
 
 {
-    DbgBrk ();
+    UBOOL bSameSign;            // TRUE iff the infinities are the same sign
 
+    // Split cases based upon the MP_ENUM value
+    switch (mp_enum)
+    {
+        case MP_ADD:        // op1 and op2 are infinity of opposite signs
+        case MP_SUB:        // op1 and op2 are infinite of the same sign
+            mpq_QuadICValue (op1,
+                             ICNDX_InfSUBInf,
+                             op2,
+                             rop);
+            break;
 
+        case MP_DIV:        // op1 and op2 are infinite
+            bSameSign = (mpq_sgn (op1) EQ mpq_sgn (op2));
 
+            mpq_QuadICValue (op1,
+                             bSameSign ? ICNDX_PiDIVPi
+                                       : ICNDX_NiDIVPi,
+                             op2,
+                             rop);
+            break;
 
+        defstop
+            break;
+    } // End SWITCH
 
     return 0;       // To keep the compiler happy
 } // End mpq_invalid
@@ -230,11 +318,43 @@ mpir_ui mpfr_invalid
      mpir_ui d)
 
 {
-    DbgBrk ();
+    UBOOL bSameSign;            // TRUE iff the infinities are the same sign
 
+    // Split cases based upon the MP_ENUM value
+    switch (mp_enum)
+    {
+        case MP_ADD:        // op1 and op2 are infinity of opposite signs
+        case MP_SUB:        // op1 and op2 are infinite of the same sign
+            mpfr_QuadICValue (op1,
+                              ICNDX_InfSUBInf,
+                              op2,
+                              rop);
+            break;
 
+        case MP_DIV:        // op1 and op2 are infinite
+            bSameSign = (mpfr_sgn (op1) EQ mpfr_sgn (op2));
 
+            mpfr_QuadICValue (op1,
+                              bSameSign ? ICNDX_PiDIVPi
+                                        : ICNDX_NiDIVPi,
+                              op2,
+                              rop);
+            break;
 
+        case MP_RELDIFF:    // op1 is infinite and op2 might be, too
+                            // Returns (abs (op1 - op2)) / op1
+            mpfr_sub (rop, op1, op2, MPFR_RNDN);
+            mpfr_abs (rop, rop,      MPFR_RNDN);
+            mpfr_div (rop, rop, op1, MPFR_RNDN);
+
+            break;
+
+        case MP_SQRT:       // op1 is negative infinity
+                            // Handled in <PrimFnMonRootVisV> and
+                            //            <PrimFnMonRootVisVvV>
+        defstop
+            break;
+    } // End SWITCH
 
     return 0;       // To keep the compiler happy
 } // End mpfr_invalid
@@ -250,28 +370,30 @@ mpir_ui mpfr_invalid
 //  Return the appropriate []IC value
 //***************************************************************************
 
-APLMPI mpz_QuadICValue
-    (IC_INDICES icNdx,
-     APLMPI     mpzRes)
+LPAPLMPI mpz_QuadICValue
+    (LPAPLMPI   aplMpiLft,
+     IC_INDICES icNdx,
+     LPAPLMPI   aplMpiRht,
+     LPAPLMPI   mpzRes)
 
 {
     switch (GetQuadICValue (icNdx))
     {
         case ICVAL_NEG1:
             // Initialize the result to -1
-            mpz_init_set_si (&mpzRes, -1);
+            mpz_init_set_si (mpzRes, -1);
 
             return mpzRes;
 
         case ICVAL_ZERO:
             // Initialize the result to 0
-            mpz_init (&mpzRes);
+            mpz_init (mpzRes);
 
             return mpzRes;
 
         case ICVAL_ONE:
             // Initialize the result to 1
-            mpz_init_set_si (&mpzRes,  1);
+            mpz_init_set_si (mpzRes,  1);
 
             return mpzRes;
 
@@ -279,10 +401,20 @@ APLMPI mpz_QuadICValue
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
-            return mpzPosInfinity;
+            return &mpzPosInfinity;
 
         case ICVAL_NEG_INFINITY:
-            return mpzNegInfinity;
+            return &mpzNegInfinity;
+
+        case ICVAL_LEFT:
+            mpz_init_set (mpzRes, aplMpiLft);
+
+            return mpzRes;
+
+        case ICVAL_RIGHT:
+            mpz_init_set (mpzRes, aplMpiRht);
+
+            return mpzRes;
 
         defstop
             return mpzRes;
@@ -482,30 +614,30 @@ void Myz_clear
 //  Return the appropriate []IC value
 //***************************************************************************
 
-APLRAT mpq_QuadICValue
-    (APLRAT     aplRatLft,
+LPAPLRAT mpq_QuadICValue
+    (LPAPLRAT   aplRatLft,
      IC_INDICES icNdx,
-     APLRAT     aplRatRht,
-     APLRAT     mpqRes)
+     LPAPLRAT   aplRatRht,
+     LPAPLRAT   mpqRes)
 
 {
     switch (GetQuadICValue (icNdx))
     {
         case ICVAL_NEG1:
             // Initialize the result to -1
-            mpq_init_set_si (&mpqRes, -1, 1);
+            mpq_init_set_si (mpqRes, -1, 1);
 
             return mpqRes;
 
         case ICVAL_ZERO:
             // Initialize the result to 0
-            mpq_init (&mpqRes);
+            mpq_init (mpqRes);
 
             return mpqRes;
 
         case ICVAL_ONE:
             // Initialize the result to 1
-            mpq_init_set_si (&mpqRes,  1, 1);
+            mpq_init_set_si (mpqRes,  1, 1);
 
             return mpqRes;
 
@@ -513,18 +645,18 @@ APLRAT mpq_QuadICValue
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
-            return mpqPosInfinity;
+            return &mpqPosInfinity;
 
         case ICVAL_NEG_INFINITY:
-            return mpqNegInfinity;
+            return &mpqNegInfinity;
 
         case ICVAL_LEFT:
-            mpq_init_set (&mpqRes, &aplRatLft);
+            mpq_init_set (mpqRes, aplRatLft);
 
             return mpqRes;
 
         case ICVAL_RIGHT:
-            mpq_init_set (&mpqRes, &aplRatRht);
+            mpq_init_set (mpqRes, aplRatRht);
 
             return mpqRes;
 
@@ -1001,30 +1133,30 @@ int mpq_integer_p
 //  Return the appropriate []IC value
 //***************************************************************************
 
-APLVFP mpfr_QuadICValue
-    (APLVFP     aplVfpLft,
+LPAPLVFP mpfr_QuadICValue
+    (LPAPLVFP   aplVfpLft,
      IC_INDICES icNdx,
-     APLVFP     aplVfpRht,
-     APLVFP     mpfRes)
+     LPAPLVFP   aplVfpRht,
+     LPAPLVFP   mpfRes)
 
 {
     switch (GetQuadICValue (icNdx))
     {
         case ICVAL_NEG1:
             // Initialize the result to -1
-            mpfr_init_set_si (&mpfRes, -1, MPFR_RNDN);
+            mpfr_init_set_si (mpfRes, -1, MPFR_RNDN);
 
             return mpfRes;
 
         case ICVAL_ZERO:
             // Initialize the result to 0
-            mpfr_init0 (&mpfRes);
+            mpfr_init0 (mpfRes);
 
             return mpfRes;
 
         case ICVAL_ONE:
             // Initialize the result to 1
-            mpfr_init_set_si (&mpfRes,  1, MPFR_RNDN);
+            mpfr_init_set_si (mpfRes,  1, MPFR_RNDN);
 
             return mpfRes;
 
@@ -1032,18 +1164,18 @@ APLVFP mpfr_QuadICValue
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
-            return mpfPosInfinity;
+            return &mpfPosInfinity;
 
         case ICVAL_NEG_INFINITY:
-            return mpfNegInfinity;
+            return &mpfNegInfinity;
 
         case ICVAL_LEFT:
-            mpfr_init_copy (&mpfRes, &aplVfpLft);
+            mpfr_init_copy (mpfRes, aplVfpLft);
 
             return mpfRes;
 
         case ICVAL_RIGHT:
-            mpfr_init_copy (&mpfRes, &aplVfpRht);
+            mpfr_init_copy (mpfRes, aplVfpRht);
 
             return mpfRes;
 

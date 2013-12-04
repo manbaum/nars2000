@@ -320,10 +320,10 @@ APLRAT PrimFnMonQuoteDotRisR
     // Check for indeterminates:  !N for integer N < 0
     if (mpq_integer_p (&aplRatRht)
      && mpq_cmp_ui (&aplRatRht, 0, 1) < 0)
-        return mpq_QuadICValue (aplRatRht,          // No left arg
-                                ICNDX_QDOTn,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatRht,        // No left arg
+                                  ICNDX_QDOTn,
+                                 &aplRatRht,
+                                 &mpqRes);
     // If the denominator is 1,
     //   and the numerator fts in a UINT, ...
     if (mpq_integer_p (&aplRatRht)
@@ -361,10 +361,10 @@ APLVFP PrimFnMonQuoteDotVisV
     // Check for indeterminates:  !N for integer N < 0
     if (mpfr_integer_p (&aplVfpRht)
      && mpfr_cmp_ui (&aplVfpRht, 0) < 0)
-        return mpfr_QuadICValue (aplVfpRht,         // No left arg
-                                ICNDX_QDOTn,
-                                aplVfpRht,
-                                mpfRes);
+        return *mpfr_QuadICValue (&aplVfpRht,       // No left arg
+                                   ICNDX_QDOTn,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // If the arg is an integer,
     //   and it fits in a ULONG, ...
     if (mpfr_integer_p (&aplVfpRht)
@@ -746,19 +746,33 @@ APLRAT PrimFnDydQuoteDotRisRvR
     // Initialize the result to 0/1
     mpq_init (&mpqRes);
 
+    // Using the identity A!B <=> (B-A)!B and because the function
+    //   mpz_bin_ui requires that the left argument must fit in a
+    //   UINT, we calculate the alternate left argument in case it
+    //   fits in a UINT.
+    mpq_sub (&mpqRes, &aplRatRht, &aplRatLft);
+
+    // Use the smaller of the two for the left arg
+    if (mpq_cmp (&mpqRes, &aplRatLft) > 0)
+        mpq_set (&mpqRes, &aplRatLft);
+
     // If both denominators are 1,
     //   and the left numerator fits in a UINT, ...
     if (mpq_integer_p (&aplRatLft)
      && mpq_integer_p (&aplRatRht)
-     && mpz_fits_slong_p (mpq_numref (&aplRatLft)) NE 0)
+     && mpz_fits_slong_p (mpq_numref (&mpqRes)) NE 0)
     {
-        // Extract the numerator
-        uLft = (UINT) mpz_get_si (mpq_numref (&aplRatLft));
+        // Extract the numerator of the left argument
+        uLft = (UINT) mpz_get_si (mpq_numref (&mpqRes));
 
         // Compute the binomial coefficient
         mpz_bin_ui (mpq_numref (&mpqRes), mpq_numref (&aplRatRht), uLft);
     } else
+    {
+        Myq_clear (&mpqRes);
+
         RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+    } // End IF/ELSE
 
     return mpqRes;
 } // End PrimFnDydQuoteDotRisRvR

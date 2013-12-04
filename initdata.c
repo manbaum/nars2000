@@ -106,13 +106,6 @@ void InitConstants
 {
     APLINT aplInteger;          // Temporary value
 
-#define POS_INFINITY            (0x7FF0000000000000)
-#define NEG_INFINITY            (0xFFF0000000000000)
-#define QUIET_NAN               (0xFFF8000000000000)
-#define FLOAT2POW53             (0x4340000000000000)
-#define FLOATPI                 (0x400921FB54442D18)
-#define FLOATE                  (0x4005BF0A8B145769)
-
     // Create various floating point constants
     aplInteger = POS_INFINITY; PosInfinity = *(LPAPLFLOAT) &aplInteger;
                                __infinity  = PosInfinity;
@@ -120,13 +113,6 @@ void InitConstants
     aplInteger = FLOAT2POW53;  Float2Pow53 = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATPI;      FloatPi     = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATE;       FloatE      = *(LPAPLFLOAT) &aplInteger;
-
-#undef  FLOATE
-#undef  FLOATPI
-#undef  FLOAT2POW53
-#undef  QUIET_NAN
-#undef  NEG_INFINITY
-#undef  POS_INFINITY
 } // End InitConstants
 
 

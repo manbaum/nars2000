@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -370,19 +370,19 @@ APLRAT PrimFnDydTimesRisRvR
       && IsMpqPosInfinity (&aplRatRht))
      || (IsMpqPosInfinity (&aplRatLft)
       && IsMpq0 (&aplRatRht)))
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_0MULPi,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_0MULPi,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpq0 (&aplRatLft)
       && IsMpqNegInfinity (&aplRatRht))
      || (IsMpqNegInfinity (&aplRatLft)
       && IsMpq0 (&aplRatRht)))
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_0MULNi,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_0MULNi,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Initalize the result
     mpq_init (&mpqRes);
 
@@ -412,20 +412,19 @@ APLVFP PrimFnDydTimesVisVvV
       && IsMpfPosInfinity (&aplVfpRht))
      || (IsMpfPosInfinity (&aplVfpLft)
       && IsMpf0 (&aplVfpRht)))
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_0MULPi,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0MULPi,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpf0 (&aplVfpLft)
       && IsMpfNegInfinity (&aplVfpRht))
      || (IsMpfNegInfinity (&aplVfpLft)
       && IsMpf0 (&aplVfpRht)))
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_0MULNi,
-                                 aplVfpRht,
-                                 mpfRes);
-
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0MULNi,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Initalize the result
     mpfr_init0 (&mpfRes);
 

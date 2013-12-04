@@ -723,46 +723,46 @@ APLRAT PrimFnDydStarRisRvR
     // Check for indeterminates:  0 * 0
     if (IsMpq0 (&aplRatLft)
      && IsMpq0 (&aplRatRht))
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_0EXP0,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_0EXP0,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Check for indeterminates:  0 * +_
     if (IsMpq0 (&aplRatLft)
      && mpq_cmp (&aplRatRht, &mpqPosInfinity) EQ 0)
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_0EXPPi,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_0EXPPi,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Check for indeterminates:  0 * -_
     if (IsMpq0 (&aplRatLft)
      && mpq_cmp (&aplRatRht, &mpqNegInfinity) EQ 0)
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_0EXPNi,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_0EXPNi,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Check for indeterminates:  L * _ for L <= -1
     if (mpq_cmp_si (&aplRatLft, -1, 1) <= 0
      && mpq_cmp (&aplRatRht, &mpqPosInfinity) EQ 0)
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_NEXPPi,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_NEXPPi,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Check for indeterminates:  L * -_ for -1 <= L < 0
     if (mpq_cmp    (&aplRatRht, &mpqNegInfinity) EQ 0
      && mpq_cmp_si (&aplRatLft, -1, 1) >= 0
      && mpq_cmp_si (&aplRatLft,  0, 1) <  0)
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_N1to0EXPNi,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_N1to0EXPNi,
+                                 &aplRatRht,
+                                 &mpqRes);
 ////// Check for indeterminates:  L * R for L < 0 and R not an integer
 ////if (mpq_sgn (&aplRatLft) < 0
 //// && !mpq_integer_p (&aplRatRht))
-////    return mpq_QuadICValue (aplRatLft,
-////                            ICNDX_NegEXPFrc,
-////                            aplRatRht,
-////                            mpqRes);
+////    return *mpq_QuadICValue (&aplRatLft,
+////                              ICNDX_NegEXPFrc,
+////                             &aplRatRht,
+////                             &mpqRes);
     // Check for complex result
     if (mpq_sgn (&aplRatLft) < 0
      && !mpq_integer_p (&aplRatRht))
@@ -771,10 +771,10 @@ APLRAT PrimFnDydStarRisRvR
     // Check for special cases:  _ * 0 and -_ * 0
     if (mpq_inf_p (&aplRatLft)
      && IsMpq0 (&aplRatRht))
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_InfEXP0,
-                                aplRatRht,
-                                mpqRes);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_InfEXP0,
+                                 &aplRatRht,
+                                 &mpqRes);
     // Check for special cases:  1 * _ and 1 * -_
     if (IsMpq1 (&aplRatLft)
      && mpq_inf_p (&aplRatRht))
@@ -845,46 +845,46 @@ APLVFP PrimFnDydStarVisVvV
     // Check for indeterminates:  0 * 0
     if (IsMpf0 (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_0EXP0,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0EXP0,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for indeterminates:  0 * +_
     if (IsMpf0 (&aplVfpLft)
      && mpfr_cmp (&aplVfpRht, &mpfPosInfinity) EQ 0)
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_0EXPPi,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0EXPPi,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for indeterminates:  0 * -_
     if (IsMpf0 (&aplVfpLft)
      && mpfr_cmp (&aplVfpRht, &mpfNegInfinity) EQ 0)
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_0EXPNi,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0EXPNi,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for indeterminates:  L * _ for L <= -1
     if (mpfr_cmp_si (&aplVfpLft, -1) <= 0
      && mpfr_cmp (&aplVfpRht, &mpfPosInfinity) EQ 0)
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_NEXPPi,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_NEXPPi,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for indeterminates:  L * -_ for -1 <= L < 0
     if (mpfr_cmp    (&aplVfpRht, &mpfNegInfinity) EQ 0
      && mpfr_cmp_si (&aplVfpLft, -1) >= 0
      && mpfr_cmp_si (&aplVfpLft,  0) <  0)
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_N1to0EXPNi,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_N1to0EXPNi,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for indeterminates:  L * R for L < 0 and R not an integer
 ////if (mpfr_sgn (&aplVfpLft) < 0
 //// && !mpfr_integer_p (&aplVfpRht))
-////    return mpfr_QuadICValue (aplVfpLft,
-////                             ICNDX_NegEXPFrc,
-////                             aplVfpRht,
-////                             mpfRes);
+////    return *mpfr_QuadICValue (&aplVfpLft,
+////                               ICNDX_NegEXPFrc,
+////                              &aplVfpRht,
+////                              &mpfRes);
     // Check for complex result
     if (mpfr_sgn (&aplVfpLft) < 0
      && !mpfr_integer_p (&aplVfpRht))
@@ -893,10 +893,10 @@ APLVFP PrimFnDydStarVisVvV
     // Check for special cases:  _ * 0 and -_ * 0
     if (mpfr_inf_p (&aplVfpLft)
      && IsMpf0 (&aplVfpRht))
-        return mpfr_QuadICValue (aplVfpLft,
-                                 ICNDX_InfEXP0,
-                                 aplVfpRht,
-                                 mpfRes);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_InfEXP0,
+                                  &aplVfpRht,
+                                  &mpfRes);
     // Check for special cases:  1 * _ and 1 * -_
     if (IsMpf1 (&aplVfpLft)
      && mpfr_inf_p (&aplVfpRht))

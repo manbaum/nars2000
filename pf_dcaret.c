@@ -466,10 +466,10 @@ APLRAT PrimFnDydDownCaretRisRvR
     // Check for indeterminates:  gcd (PoM_, 0)  or  gcd (0, PoM_)
     if ((mpq_inf_p (&aplRatLft) && IsMpq0 (&aplRatRht))
      || (mpq_inf_p (&aplRatRht) && IsMpq0 (&aplRatLft)))
-        return mpq_QuadICValue (aplRatLft,
-                                ICNDX_0GCDInf,
-                                aplRatRht,
-                                aplTmp);
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_0GCDInf,
+                                 &aplRatRht,
+                                 &aplTmp);
     // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
     if (mpq_inf_p (&aplRatLft)
      || mpq_inf_p (&aplRatRht))
@@ -518,10 +518,10 @@ APLVFP PrimFnDydDownCaretVisVvV
     // Check for indeterminates:  gcd (PoM_, 0)  or  gcd (0, PoM_)
     if ((mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
      || (mpfr_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
-        return mpfr_QuadICValue (aplVfpLft,
-                                ICNDX_0GCDInf,
-                                aplVfpRht,
-                                aplTmp);
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_0GCDInf,
+                                  &aplVfpRht,
+                                  &aplTmp);
     // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
     if (mpfr_inf_p (&aplVfpLft)
      || mpfr_inf_p (&aplVfpRht))

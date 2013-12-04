@@ -291,6 +291,56 @@ typedef enum tagPTDMEMVIRTENUM
 } PTDMEMVIRTENUM;
 
 
+enum tagMP_ENUM         // Multi-precision mpX_invalid arguments
+{
+    MP_ADD              ,   // 00:  rop = op1 + op2
+    MP_SUB              ,   // 01:  rop = op1 - op2
+    MP_MUL              ,   // 02:  rop = op1 * op2
+    MP_CDIV_Q           ,   // 03:  rop = quotient  (op1 / op2)
+    MP_CDIV_R           ,   // 04:  rop = remainder (op1 / op2)
+    MP_CDIV_QR          ,   // 05:  rop = quotient  (op1 / op2), op3 = remainder (op1/op2)
+    MP_CDIV_R_UI        ,   // 06:  rop = remainder (op1 / op2)
+    MP_CDIV_QR_UI       ,   // 07:  rop = quotient  (op1 / op2), op3 = remainder (op1/op2)
+    MP_CDIV_R_2EXP      ,   // 08:  rop = remainder (op1 / op2)
+    MP_FDIV_Q           ,   // 09:  rop = quotient  (op1 / op2)
+    MP_FDIV_R           ,   // 0A:  rop = remainder (op1 / op2)
+    MP_FDIV_QR          ,   // 0B:  rop = quotient  (op1 / op2), op3 = remainder (op1/op2)
+    MP_FDIV_R_UI        ,   // 0C:  rop = remainder (op1 / op2)
+    MP_FDIV_QR_UI       ,   // 0D:  rop = quotient  (op1 / op2), op3 = remainder (op1/op2)
+    MP_FDIV_R_2EXP      ,   // 0E:  rop = remainder (op1 / op2)
+    MP_TDIV_Q           ,   // 0F:  rop = quotient  (op1 / op2)
+    MP_TDIV_R           ,   // 10:  rop = remainder (op1 / op2)
+    MP_TDIV_QR          ,   // 11:  rop = quotient  (op1 / op2), op3 = remainder (op1/op2)
+    MP_TDIV_R_UI        ,   // 12:  rop = remainder (op1 / op2)
+    MP_TDIV_QR_UI       ,   // 13:  rop = quotient  (op1 / op2), op3 = remainder (op1/op2)
+    MP_TDIV_R_2EXP      ,   // 14:  rop = remainder (op1 / op2)
+    MP_DIV              ,   // 15:  rop = op1 / op2
+    MP_SQRT             ,   // 16:  rop = sqrt (op)
+    MP_RELDIFF          ,   // 17:  rop = (abs (op1 - op2)) / op1
+    MP_AND              ,   // 18:  rop = op1 & op2
+    MP_IOR              ,   // 19:  rop = op1 inclusive-or op2
+    MP_XOR              ,   // 1A:  rop = op1 exclusive-or op2
+    MP_COM              ,   // 1B:  rop = one's complement of op1
+    MP_GCD              ,   // 1C:  rop = gcd (op1, op2)
+    MP_LCM              ,   // 1D:  rop = lcm (op1, op2)
+    MP_POW_UI           ,   // 1E:  rop = base ^ exp
+    MP_UI_POW_UI        ,   // 1F:  rop = base ^ exp
+    MP_PosMODNi         ,   // 20:  rop = N mod D
+    MP_NegMODNi         ,   // 21:  rop = N mod D
+    MP_PosMODPi         ,   // 22:  rop = N mod D
+    MP_NegMODPi         ,   // 23:  rop = N mod D
+    MP_NiMODPos         ,   // 24:  rop = N mod D
+    MP_NiMODNeg         ,   // 25:  rop = N mod D
+    MP_PiMODPos         ,   // 26:  rop = N mod D
+    MP_PiMODNeg         ,   // 27:  rop = N mod D
+    MP_MODUINi          ,   // 28:  rop = N mod D
+    MP_MODUIPi          ,   // 29:  rop = N mod D
+    MP_DIVISIBLE_P      ,   // 2A:  rop = non-zero if N is evenly divisible by D
+    MP_DIVISIBLE_UI_P   ,   // 2B:  rop = non-zero if N is evenly divisible by D
+    MP_DIVISIBLE_2EXP_P ,   // 2C:  rop = non-zero if N is evenly divisible by 2^D
+} MP_ENUM;
+
+
 //***************************************************************************
 //  End of File: enums.h
 //***************************************************************************

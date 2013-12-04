@@ -9990,6 +9990,13 @@ UBOOL PrimFnDydSiScSiScSub_EM
     HGLOBAL   hGlbTmp = NULL;       // Temporary hGlbRes
 
 RESTART_EXCEPTION_IMMED:
+    // In case we restart, ...
+    if (lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+    } // End IF
+
     // If the result is simple, ...
     if (IsSimple (aplTypeRes))
     {
@@ -10863,10 +10870,8 @@ UBOOL PrimFnDydSimpSimp_EM
                                         lpSymGlbRht,
                                        &aplTypeNew,
                                         lpPrimSpec);
-#ifdef DEBUG
-            if (bRet && aplTypeRes NE aplTypeNew)
-                DbgStop ();
-#endif
+            // Because the result is contained entirely within lpYYRes->tkToken, we don't
+            //   need to do anything special in the case where aplTypeRes NE aplTypeNew.
         } else
         // It's a singleton array
         {

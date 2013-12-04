@@ -1,6 +1,17 @@
 Version 0.4.5.xx consists of the following Builds:
 
 
+Build #1192 -- Version 0.4.5.xx
+-------------------------------
+
+* Fix Bug In Undo Accumulation
+
+Directory trunk:
+
+EDITFCN.C:
+  In <AppendUndo>, handle <LIMIT ERROR> by deleting the first Undo entry and restarting.
+
+
 Build #1191 -- Version 0.4.5.xx
 -------------------------------
 

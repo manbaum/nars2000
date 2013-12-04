@@ -4437,12 +4437,39 @@ void AppendUndo
     // Get the ptr to the next available slot in our Undo Buffer
     lpUndoNxt = (LPUNDO_BUF) GetWindowLongPtrW (hWnd, GWLxx_UNDO_NXT);
 
-    // Save the undo entry
-    lpUndoNxt->Action     = Action;
-    lpUndoNxt->CharPosBeg = (UINT) CharPosBeg;
-    lpUndoNxt->CharPosEnd = (UINT) CharPosEnd;
-    lpUndoNxt->Group      = (UINT) Group;
-    lpUndoNxt->Char       = Char;
+RESTART_UNDO:
+
+    __try
+    {
+        // Save the undo entry
+        lpUndoNxt->Action     = Action;
+        lpUndoNxt->CharPosBeg = (UINT) CharPosBeg;
+        lpUndoNxt->CharPosEnd = (UINT) CharPosEnd;
+        lpUndoNxt->Group      = (UINT) Group;
+        lpUndoNxt->Char       = Char;
+    } __except (CheckVirtAlloc (GetExceptionInformation (),
+                                L"AppendUndo"))
+    {
+        // Split cases based upon the exception code
+        switch (MyGetExceptionCode ())
+        {
+            LPUNDO_BUF lpUndoBeg;           // Ptr to start of Undo Buffer
+
+            case EXCEPTION_LIMIT_ERROR:
+                lpUndoBeg = (LPUNDO_BUF) GetWindowLongPtrW (hWnd, GWLSF_UNDO_BEG);
+
+                // Delete the first entry
+                MoveMemory (lpUndoBeg, &lpUndoBeg[1], (lpUndoNxt - lpUndoBeg - 1) * sizeof (UNDO_BUF));
+
+                goto RESTART_UNDO;
+
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+
+                break;
+        } // End SWITCH
+    } // End __try/__except
 
     // Skip over this entry
     lpUndoNxt++;

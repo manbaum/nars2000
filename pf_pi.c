@@ -27,8 +27,8 @@
 #include <ecm.h>
 
 
-#define INIT_FACTOR_CNT     100
-#define INIT_FACTOR_INC     100
+#define INIT_FACTOR_CNT     1000
+#define INIT_FACTOR_INC     1000
 
 typedef struct tagB1B2TABLE
 {
@@ -1219,37 +1219,64 @@ UBOOL ResizeFactorStruc
 
 {
     HGLOBAL  hGlbMem;
-    APLU3264 uFactors;
+    APLU3264 uLen;
+    LPAPLMPI lpMemNew;
 
     // If we're at the current maximum, ...
     if (lpMemTmp->uNumEntry EQ lpMemTmp->uMaxEntry)
     {
-        // Compute the # factors
-        uFactors = (lpMemTmp->lpMemNxt - lpMemTmp->lpMemOrg);
-
         // Unlock so we may reallocate it
-        MyGlobalUnlock (lpMemTmp->lpMemOrg); lpMemTmp->lpMemOrg = lpMemTmp->lpMemNxt = NULL;
+        MyGlobalUnlock (lpMemTmp->hGlbMem); lpMemTmp->lpMemOrg = lpMemTmp->lpMemNxt = NULL;
+
+        // Calculate the new length
+        uLen = (lpMemTmp->uMaxEntry + INIT_FACTOR_INC) * sizeof (APLMPI);
 
         hGlbMem =
           MyGlobalReAlloc (lpMemTmp->hGlbMem,
-                           (lpMemTmp->uMaxEntry + INIT_FACTOR_INC) * sizeof (APLMPI),
+                           uLen,
                            GMEM_MOVEABLE | GMEM_ZEROINIT);
         if (hGlbMem)
-        {
-            // Save the (possibly new) global memory handle
-            lpMemTmp->hGlbMem = hGlbMem;
-
             // Lock the memory to get a ptr to it
-            lpMemTmp->lpMemOrg = MyGlobalLock (lpMemTmp->hGlbMem);
+            lpMemNew = MyGlobalLock (hGlbMem);
+        else
+        {
+            // Attempt to allocate a new struc
+            hGlbMem =
+              DbgGlobalAlloc (GHND, uLen);
+            if (hGlbMem)
+            {
+                // Lock the old memory to get a ptr to it
+                lpMemTmp->lpMemOrg = MyGlobalLock (lpMemTmp->hGlbMem);
 
-            // Point to the current entry
-            lpMemTmp->lpMemNxt = lpMemTmp->lpMemOrg + uFactors;
+                // Lock the new memory to get a ptr to it
+                lpMemNew = MyGlobalLock (hGlbMem);
 
-            // Count in the new maximum
-            lpMemTmp->uMaxEntry += INIT_FACTOR_INC;
-        } else
-            return FALSE;
-    } // End IF
+                // Copy the factors in the old memory to the new memory
+                CopyMemory (lpMemNew,
+                            lpMemTmp->lpMemOrg,
+                            lpMemTmp->uMaxEntry * sizeof (APLMPI));
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemTmp->hGlbMem); lpMemTmp->lpMemOrg = NULL;
+
+                // We no longer need this storage
+                DbgGlobalFree (lpMemTmp->hGlbMem); lpMemTmp->hGlbMem = NULL;
+            } else
+                return FALSE;
+        } // End IF/ELSE
+    } else
+        return TRUE;
+
+    // Save the (possibly new) global memory handle
+    lpMemTmp->hGlbMem = hGlbMem;
+
+    // Point to the (possibly new) starting entry
+    lpMemTmp->lpMemOrg = lpMemNew;
+
+    // Point to the current entry
+    lpMemTmp->lpMemNxt = lpMemTmp->lpMemOrg + lpMemTmp->uNumEntry;
+
+    // Count in the new maximum
+    lpMemTmp->uMaxEntry += INIT_FACTOR_INC;
 
     return TRUE;
 } // End ResizeFactorStruc

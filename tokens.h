@@ -93,7 +93,7 @@ typedef enum tagTOKEN_TYPES
  TKT_EOL           ,        // 16: End-of-Line  ...
  TKT_SOS           ,        // 17: Start-of-Stmt                           (data is NULL)
  TKT_LINECONT      ,        // 18: Line continuation                       (data is NULL)
- TKT_INPOUT        ,        // 19: Input/Output                            (data is UTF16_QUAD or UTF16_QUOTEQUAD symbol)
+ TKT_INPOUT        ,        // 19: Input/Output                            (data is UTF16_QUAD or UTf16_QUAD2 or UTF16_QUOTEQUAD symbol)
  TKT_VARARRAY      ,        // 1A: Array of data                           (data is HGLOBAL)
  TKT_CS_ANDIF      ,        // 1B: Control Structure:  ANDIF               (data is Line/Stmt/Token #)
  TKT_CS_ASSERT     ,        // 1C: ...                 ASSERT     ...

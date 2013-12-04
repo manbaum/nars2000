@@ -407,7 +407,8 @@ UBOOL LoadWorkspace_EM
 
                 // Check for Quad suspension first
                 if ((lpwFcnName[0] NE WC_EOS)
-                 && (lstrcmpW (lpwFcnName, WS_UTF16_QUAD) EQ 0))
+                 && ((lstrcmpW (lpwFcnName, WS_UTF16_QUAD ) EQ 0)
+                  || (lstrcmpW (lpwFcnName, WS_UTF16_QUAD2) EQ 0)))
                 {
                     // Fill in the SIS header for Quad Input Mode
                     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory

@@ -37,7 +37,7 @@
                               && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
                               && IsSymNoValue ((a)->tkData.tkSym))
 #define IsMFOName(a)            ((a)[0] EQ L'#')
-#define IsSysName(a)            ((a)[0] EQ UTF16_QUAD  || (a)[0] EQ UTF16_QUOTEQUAD)
+#define IsSysName(a)            ((a)[0] EQ UTF16_QUAD  || (a)[0] EQ UTF16_QUAD2 || (a)[0] EQ UTF16_QUOTEQUAD)
 #define IsDirectName(a)         ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA)
 
 #define ByteAddr(a,b)           (&(((LPBYTE) (a))[b]))

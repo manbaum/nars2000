@@ -296,6 +296,9 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_STILE2               , L"{stile2}"             },  // 007C:  Stile (a.k.a. 0x2223)
   {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 007D:  Right brace
   {UTF16_TILDE2               , L"{tilde2}"             },  // 007E:  Tilde (a.k.a. 0x223C)
+  {UTF16_BAR2                 , L"{bar2}"               },  // 2212:  Bar   (a.k.a. 0x002D)
+  {UTF16_QUAD2                , L"{quad2}"              },  // 25AF:  Quad  (a.k.a. 0x2395)
+  {UTF16_STAR2                , L"{star2}"              },  // 22C6:  Star  (a.k.a. 0x002A)
 }
 #endif
 ;

@@ -557,8 +557,14 @@ UBOOL TransferInverseFcn2_EM
 
     if (!lptkFunc)
     {
+        LPWCHAR lpwQ1,
+                lpwQ2;
+
+        lpwQ1 = SkipToCharW (lpwName, UTF16_QUAD);
+        lpwQ2 = SkipToCharW (lpwName, UTF16_QUAD2);
+
         // Point to the leading Quad of []FX
-        lpwData = SkipToCharW (lpwName, UTF16_QUAD);
+        lpwData = min (lpwQ1, lpwQ2);
 
         // Preceded with a left arrow so the result is not displayed
         *--lpwData = UTF16_LEFTARROW;

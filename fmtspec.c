@@ -542,6 +542,7 @@ UINT SaveText
         case WC_SQ:
         case WC_DQ:
         case UTF16_QUAD:
+        case UTF16_QUAD2:
         case UTF16_QUOTEQUAD:
         case UTF16_DIERESIS:
             break;
@@ -1292,6 +1293,7 @@ UBOOL fnSetQual
         case WC_SQ:
         case WC_DQ:
         case UTF16_QUAD:
+        case UTF16_QUAD2:
         case UTF16_QUOTEQUAD:
         case UTF16_DIERESIS:
         case UTF16_LEFTCARET:
@@ -1555,6 +1557,7 @@ FSCOLINDICES CharTransFS
         case WC_SQ:
         case WC_DQ:
         case UTF16_QUAD:
+        case UTF16_QUAD2:
         case UTF16_QUOTEQUAD:
         case UTF16_DIERESIS:
         case UTF16_LEFTCARET:

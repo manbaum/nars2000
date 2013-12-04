@@ -46,17 +46,49 @@
 #define UTF16_EURO               0x20AC         // Euro
 #define UTF16_LEFTRIGHTARROWS    0x2194         // Left-right arrows
 #define UTF16_UPDOWNARROWS       0x2195         // Up-down arrows
+#define UTF16_CIRCLESLASH        0x2205         //
+#define UTF16_CHECKMARK          0x221A         // Check mark
 #define UTF16_DIERESISDOT        0x2235         //
 #define UTF16_IBEAM              0x2336         //
+#define UTF16_QUADEQUAL          0x2338         //
+#define UTF16_QUADDIVIDE         0x2339         //
+#define UTF16_QUADDIAMOND        0x233A         //
 #define UTF16_QUADJOT            0x233B         //
+#define UTF16_QUADCIRCLE         0x233C         //
+#define UTF16_CIRCLEJOT          0x233E         //
+#define UTF16_QUADSLASH          0x2341         //
 #define UTF16_QUADSLOPE          0x2342         //
+#define UTF16_QUADLEFTCARET      0x2343         //
+#define UTF16_QUADRIGHTCARET     0x2344         //
+#define UTF16_QUADLEFTVANE       0x2345         //
+#define UTF16_QUADRIGHTVANE      0x2346         //
 #define UTF16_QUADLEFTARROW      0x2347         //
 #define UTF16_QUADRIGHTARROW     0x2348         //
+#define UTF16_UPTACKUNDERBAR     0x234A         //
+#define UTF16_QUADDOWNCARET      0x234C         //
+#define UTF16_QUADDELTA          0x234D         //
+#define UTF16_UPVANE             0x234F         //
 #define UTF16_QUADUPARROW        0x2350         //
+#define UTF16_DOWNTACKOVERBAR    0x2351         //
+#define UTF16_QUADUPCARET        0x2353         //
+#define UTF16_QUADDEL            0x2354         //
+#define UTF16_DOWNVANE           0x2356         //
 #define UTF16_QUADDOWNARROW      0x2357         //
+#define UTF16_QUOTEUNDERBAR      0x2358         //
+#define UTF16_DIAMONDUNDERBAR    0x235A         //
+#define UTF16_JOTUNDERBAR        0x235B         //
+#define UTF16_CIRCLEUNDERBAR     0x235C         //
 #define UTF16_QUADCOLON          0x2360         // Variant operator
+#define UTF16_LEFTSHOESTILE      0x2367         //
+#define UTF16_DIERESISRIGHTCARET 0x2369         //
 #define UTF16_DELTILDE           0x236B         // Del-tilde
-#define UTF16_CHECKMARK          0x221A         // Check mark
+#define UTF16_SEMICOLONUNDERBAR  0x236E         //
+#define UTF16_QUADNOTEQUAL       0x236F         //
+#define UTF16_QUADQUERY          0x2370         //
+#define UTF16_ALPHAUNDERBAR      0x2376         //
+#define UTF16_EPSILONUNDERBAR    0x2377         //
+#define UTF16_IOTAUNDERBAR       0x2378         //
+#define UTF16_OMEGAUNDERBAR      0x2379         //
 #define UTF16_LDC_LT_HORZ        0x2500         // LDC light horizontal
 #define UTF16_LDC_LT_VERT        0x2502         // LDC light vertical
 #define UTF16_LDC_LT_UL          0x250C         // LDC light upper left
@@ -79,6 +111,7 @@
 #define UTF16_LDC_DB_HORZ_D      0x2566         // LDC double horizontal and down
 #define UTF16_LDC_DB_HORZ_U      0x2569         // LDC double horizontal and up
 #define UTF16_LDC_DB_CROSS       0x256C         // LDC double horizontal and vertical
+#define UTF16_QUAD2              0x25AF         // Quad (a.k.a. 0x2395)
 #define UTF16_REPLACEMENTCHAR    0xFFFD         // Replacement char for unknown
 
 // The alphabet, unshifted
@@ -222,7 +255,6 @@
 #define UTF16_UNDERBAR           0x005F         // Underbar
 #define UTF16_BACKTICK           0x0060         // Backtick
 #define UTF16_LEFTBRACE          0x007B         // Left brace
-#define UTF16_STILE              0x2223         // Stile
 #define UTF16_STILE2             0x007C         // Stile (a.k.a. 0x2223)
 #define UTF16_RIGHTBRACE         0x007D         // Right brace
 #define UTF16_TILDE2             0x007E         // Tilde (a.k.a. 0x223C)
@@ -242,7 +274,9 @@
 #define UTF16_LOW_O_STROKE       0x00F8         // Lower   o w/stroke
 #define UTF16_ALPHA2             0x03B1         // Greek small letter alpha
 #define UTF16_OMEGA2             0x03C9         // ...                omega
+#define UTF16_BAR2               0x2212         // Bar (a.k.a. 0x002D)
 #define UTF16_STILE              0x2223         // Stile
+#define UTF16_STAR2              0x22C6         // Star (a.k.a. 002A)
 
 #define UTF16_A_                 0xE036         // A underbar
 #define UTF16_B_                 0xE037         // B underbar
@@ -282,17 +316,49 @@
 #define WS_UTF16_EURO               L"\x20AC"   // Euro
 #define WS_UTF16_LEFTRIGHTARROWS    L"\x2194"   // Left-right arrows
 #define WS_UTF16_UPDOWNARROWS       L"\x2195"   // Up-down arrows
+#define WS_UTF16_CIRCLESLASH        L"\x2205"   //
+#define WS_UTF16_CHECKMARK          L"\x221A"   // Check mark
 #define WS_UTF16_DIERESISDOT        L"\x2235"   //
 #define WS_UTF16_IBEAM              L"\x2336"   //
+#define WS_UTF16_QUADEQUAL          L"\x2338"   //
+#define WS_UTF16_QUADDIVIDE         L"\x2339"   //
+#define WS_UTF16_QUADDIAMOND        L"\x233A"   //
 #define WS_UTF16_QUADJOT            L"\x233B"   //
+#define WS_UTF16_QUADCIRCLE         L"\x233C"   //
+#define WS_UTF16_CIRCLEJOT          L"\x233E"   //
+#define WS_UTF16_QUADSLASH          L"\x2341"   //
 #define WS_UTF16_QUADSLOPE          L"\x2342"   //
+#define WS_UTF16_QUADLEFTCARET      L"\x2343"   //
+#define WS_UTF16_QUADRIGHTCARET     L"\x2344"   //
+#define WS_UTF16_QUADLEFTVANE       L"\x2345"   //
+#define WS_UTF16_QUADRIGHTVANE      L"\x2346"   //
 #define WS_UTF16_QUADLEFTARROW      L"\x2347"   //
 #define WS_UTF16_QUADRIGHTARROW     L"\x2348"   //
+#define WS_UTF16_UPTACKUNDERBAR     L"\x234A"   //
+#define WS_UTF16_QUADDOWNCARET      L"\x234C"   //
+#define WS_UTF16_QUADDELTA          L"\x234D"   //
+#define WS_UTF16_UPVANE             L"\x234F"   //
 #define WS_UTF16_QUADUPARROW        L"\x2350"   //
+#define WS_UTF16_DOWNTACKOVERBAR    L"\x2351"   //
+#define WS_UTF16_QUADUPCARET        L"\x2353"   //
+#define WS_UTF16_QUADDEL            L"\x2354"   //
+#define WS_UTF16_DOWNVANE           L"\x2356"   //
 #define WS_UTF16_QUADDOWNARROW      L"\x2357"   //
+#define WS_UTF16_QUOTEUNDERBAR      L"\x2358"   //
+#define WS_UTF16_DIAMONDUNDERBAR    L"\x235A"   //
+#define WS_UTF16_JOTUNDERBAR        L"\x235B"   //
+#define WS_UTF16_CIRCLEUNDERBAR     L"\x235C"   //
 #define WS_UTF16_QUADCOLON          L"\x2360"   // Variant operator
+#define WS_UTF16_LEFTSHOESTILE      L"\x2367"   //
+#define WS_UTF16_DIERESISRIGHTCARET L"\x2369"   //
 #define WS_UTF16_DELTILDE           L"\x236B"   // Del-tilde
-#define WS_UTF16_CHECKMARK          L"\x221A"   // Check mark
+#define WS_UTF16_SEMICOLONUNDERBAR  L"\x236E"   //
+#define WS_UTF16_QUADNOTEQUAL       L"\x236F"   //
+#define WS_UTF16_QUADQUERY          L"\x2370"   //
+#define WS_UTF16_ALPHAUNDERBAR      L"\x2376"   //
+#define WS_UTF16_EPSILONUNDERBAR    L"\x2377"   //
+#define WS_UTF16_IOTAUNDERBAR       L"\x2378"   //
+#define WS_UTF16_OMEGAUNDERBAR      L"\x2379"   //
 #define WS_UTF16_LDC_LT_HORZ        L"\x2500"   // LDC light horizontal
 #define WS_UTF16_LDC_LT_VERT        L"\x2502"   // LDC light vertical
 #define WS_UTF16_LDC_LT_UL          L"\x250C"   // LDC light upper left
@@ -315,6 +381,7 @@
 #define WS_UTF16_LDC_DB_HORZ_D      L"\x2566"   // LDC double horizontal and down
 #define WS_UTF16_LDC_DB_HORZ_U      L"\x2569"   // LDC double horizontal and up
 #define WS_UTF16_LDC_DB_CROSS       L"\x256C"   // LDC double horizontal and vertical
+#define WS_UTF16_QUAD2              L"\x25AF"   // Quad (a.k.a. 0x2395)
 #define WS_UTF16_REPLACEMENTCHAR    L"\xFFFD"   // Replacement char for unknown
 
 // The alphabet, unshifted
@@ -458,7 +525,6 @@
 #define WS_UTF16_UNDERBAR           L"\x005F"   // Underbar
 #define WS_UTF16_BACKTICK           L"\x0060"   // Backtick
 #define WS_UTF16_LEFTBRACE          L"\x007B"   // Left brace
-#define WS_UTF16_STILE              L"\x2223"   // Stile
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. \x2223)
 #define WS_UTF16_RIGHTBRACE         L"\x007D"   // Right brace
 #define WS_UTF16_TILDE2             L"\x007E"   // Tilde (a.k.a. \x223C)
@@ -478,7 +544,9 @@
 #define WS_UTF16_LOW_O_STROKE       L"\x00F8"   // Lower   o w/stroke
 #define WS_UTF16_ALPHA2             L"\x03B1"   // Greek small letter alpha
 #define WS_UTF16_OMEGA2             L"\x03C9"   // ...                omega
+#define WS_UTF16_BAR2               L"\x2212"   // Bar (a.k.a. 0x002D)
 #define WS_UTF16_STILE              L"\x2223"   // Stile
+#define WS_UTF16_STAR2              L"\x22C6"   // Star (a.k.a. 002A)
 
 #define WS_UTF16_A_                 L"\xE036"   // A underbar
 #define WS_UTF16_B_                 L"\xE037"   // B underbar

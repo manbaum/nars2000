@@ -769,8 +769,11 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////// Rising and falling factorial:
 ////////// See http://en.wikipedia.org/wiki/Pochhammer_symbol
 ////////case UTF16_STAR:                    // Dyadic only
+////////case UTF16_STAR2:                   // Dyadic only
 ////////    // Ensure there's a left arg
-////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR && !lptkLftArg)
+////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR
+////////     && lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR2
+////////     && !lptkLftArg)
 ////////        goto LEFT_SYNTAX_EXIT;
 ////////
 ////////    // Validate the right operand as
@@ -810,9 +813,12 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////// []RA:  Residue arithmetic:  Operand | L f R
 ////////case UTF16_PLUS:                    // Dyadic only
 ////////case UTF16_BAR:                     // Monadic or dyadic
+////////case UTF16_BAR2:                    // Monadic or dyadic
 ////////case UTF16_TIMES:                   // Dyadic only
 ////////    // Ensure there's a left arg
-////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR && !lptkLftArg)
+////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR
+////////     && lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR2
+////////     && !lptkLftArg)
 ////////        goto LEFT_SYNTAX_EXIT;
 ////////
 ////////    // Validate the right operand as

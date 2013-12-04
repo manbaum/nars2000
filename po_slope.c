@@ -960,6 +960,7 @@ RESTART_EXCEPTION:
                         switch (YYFcnStrLft.tkToken.tkData.tkChar)
                         {
                             case UTF16_BAR:
+                            case UTF16_BAR2:
                                 YYFcnStrLft.tkToken.tkData.tkChar = UTF16_PLUS;
 
                                 break;

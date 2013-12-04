@@ -6844,7 +6844,9 @@ TKCOLINDICES CharTransTK
         case UTF16_QUOTEDOT:            //     '!' - shriek
         case UTF16_CIRCUMFLEX:          //     '^' - up caret
         case UTF16_STAR:                //     '*' - star
+        case UTF16_STAR2:               //     '*' - star
         case UTF16_BAR:                 //     '-' - bar
+        case UTF16_BAR2:                //     '-' - bar
 ////////case UTF16_EQUAL:               //     '=' - equal
         case UTF16_PLUS:                //     '+' - plus
         case UTF16_STILE:               //     '|' - stile
@@ -6884,6 +6886,7 @@ TKCOLINDICES CharTransTK
             return TKCOL_QUOTE2;
 
         case UTF16_QUAD:                // Alt-'l' - quad
+        case UTF16_QUAD2:               // Quad (a.k.a. 0x2395)
         case UTF16_QUOTEQUAD:           // Alt-'{' - quote-quad
             return TKCOL_Q_QQ;
 

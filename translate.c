@@ -709,6 +709,14 @@ void TranslateNARSToAPL2
         if (*lpMemRht EQ UTF16_STILE)
             *lpMemRht++ = L'|';
         else
+        // If the char is Bar2, ...
+        if (*lpMemRht EQ UTF16_BAR2)
+            *lpMemRht++ = L'-';
+        else
+        // If the char is Quad2, ...
+        if (*lpMemRht EQ UTF16_QUAD2)
+            *lpMemRht++ = UTF16_QUAD;
+        else
             *lpMemRht++ = L'\xFF';
     } // End WHILE
 } // End TranslateNARSToAPL2

@@ -979,7 +979,7 @@ static TOKENNAMES tokenNames[] =
  {"EOL"           , TKT_EOL           },    // 16: End-of-Line  ...
  {"SOS"           , TKT_SOS           },    // 17: Start-of-Stmt (data is NULL)
  {"LINECONT"      , TKT_LINECONT      },    // 18: Line continuation (data is NULL)
- {"INPOUT"        , TKT_INPOUT        },    // 19: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+ {"INPOUT"        , TKT_INPOUT        },    // 19: Input/Output (data is UTF16_QUAD or UTF16_QUAD2 or UTF16_QUOTEQUAD)
  {"VARARRAY"      , TKT_VARARRAY      },    // 1A: Array of data (data is HGLOBAL)
  {"CS_ANDIF"      , TKT_CS_ANDIF      },    // 1B: Control Structure:  ANDIF     (Data is Line/Stmt #)
  {"CS_ASSERT"     , TKT_CS_ASSERT     },    // 1C: ...                 ASSERT     ...

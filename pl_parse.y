@@ -8572,7 +8572,8 @@ PL_YYLEX_START:
                 return CONSTANT;
 
         case TKT_INPOUT:
-            if (lpplLocalVars->lptkNext->tkData.tkChar EQ UTF16_QUAD)
+            if (lpplLocalVars->lptkNext->tkData.tkChar EQ UTF16_QUAD
+             || lpplLocalVars->lptkNext->tkData.tkChar EQ UTF16_QUAD2)
                 return QUAD;
             else
                 return QUOTEQUAD;

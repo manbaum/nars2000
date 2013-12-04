@@ -1,6 +1,18 @@
 Version 0.4.5.xx consists of the following Builds:
 
 
+Build #1191 -- Version 0.4.5.xx
+-------------------------------
+
+* Fix Bug In Rational Number Formating
+
+Directory trunk:
+
+DISPLAY.C:
+  In <FormatAplRatFC>, calculate the entire size of the needed space and
+    touch it in sequential order so as to trigger a guard page fault instead of a crash.
+
+
 Build #1190 -- Version 0.4.5.xx
 -------------------------------
 

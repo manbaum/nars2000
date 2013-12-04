@@ -1205,6 +1205,7 @@ LPAPLCHAR FormatAplRatFC
     LPAPLCHAR lpw;                  // Ptr to string
     UBOOL     bNeg;                 // TRUE iff the number is negative
     LPCHAR    lpRawFmt;             // Ptr to raw formatted #
+    APLUINT   uTotSize;             // Total size of formatted #
 
     lpRawFmt = (LPCHAR) lpaplChar;
 
@@ -1212,6 +1213,20 @@ LPAPLCHAR FormatAplRatFC
     if (mpz_cmp_ui (mpq_denref (&aplRat), 1) NE 0)
         // Canonicalize the arg
         mpq_canonicalize (&aplRat);
+
+    // Calculate the needed size, where both "1 +"s include the sign,
+    //   the first "+ 1" includes the 'r' separator and the second
+    //   one the terminating zero
+    uTotSize = 1 + mpz_sizeinbase (mpq_numref (&aplRat), 10) + 1 +
+               1 + mpz_sizeinbase (mpq_denref (&aplRat), 10) + 1;
+    // Double as we convert in place
+    uTotSize = 2 * uTotSize;
+
+    if (uTotSize NE (APLU3264) uTotSize)
+        uTotSize = UINT_MAX;
+
+    // Test the output save area limits
+    ZeroMemory (lpRawFmt, (APLU3264) uTotSize);
 
     // Format the num/den
     mpq_get_str (lpRawFmt, 10, &aplRat);

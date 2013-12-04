@@ -25,6 +25,7 @@
 #include <windows.h>
 #include "headers.h"
 
+#define DEBUG_HEAP
 
 #define OBJ_GLBLOCK     15
 #define OBJ_GLBALLOC    16
@@ -1406,6 +1407,7 @@ LPVOID _MyHeapAlloc
      UINT   uLine)          // Line #
 
 {
+#ifdef DEBUG_HEAP
     LPVOID lpMem;
 
     HeapValidate (hHeap, 0, NULL);
@@ -1414,7 +1416,7 @@ LPVOID _MyHeapAlloc
     {
 ////////lpMem = HeapAlloc (hHeap, dwFlags, dwBytes);
         lpMem = dlmalloc (dwBytes);
-    } __except (CheckException (GetExceptionInformation (), L"HeapAlloc"))
+    } __except (CheckException (GetExceptionInformation (), L"_MyHeapAlloc"))
     {
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
@@ -1440,6 +1442,9 @@ LPVOID _MyHeapAlloc
     } // End IF
 
     return lpMem;
+#else
+    return dlmalloc (dwBytes);
+#endif
 } // End _MyHeapAlloc
 #undef  APPEND_NAME
 
@@ -1464,6 +1469,7 @@ HGLOBAL _MyHeapReAlloc
      UINT   uLine)          // Line #
 
 {
+#ifdef DEBUG_HEAP
     HGLOBAL hGlb;
 
     HeapValidate (hHeap, 0, NULL);
@@ -1501,6 +1507,9 @@ HGLOBAL _MyHeapReAlloc
     } // End IF/ELSE
 
     return hGlb;
+#else
+    return dlrealloc (lpMem, dwBytes);
+#endif
 } // End _MyHeapReAlloc
 #undef  APPEND_NAME
 
@@ -1518,14 +1527,17 @@ UBOOL _MyHeapFree
      UINT   uLine)          // Line #
 
 {
+#ifdef DEBUG_HEAP
     if (gbResDebug)
     {
         HeapValidate (hHeap, 0, NULL);
         _DeleObj (OBJ_HEAPALLOC, lpMem);
     } // End IF
+#endif
 
 ////return HeapFree (hHeap, dwFlags, lpMem);
     dlfree (lpMem);
+
     return TRUE;
 } // _MyHeapFree
 
@@ -1653,8 +1665,10 @@ void _CheckMemStat
 ////if (memStat.dwMemoryLoad EQ 100)
 ////    DbgBrk ();
 ////
+#ifdef DEBUG_HEAP
     if (!HeapValidate (GetProcessHeap (), 0, NULL))
         DbgBrk ();
+#endif
 } // End _CheckMemStat
 #endif
 #endif

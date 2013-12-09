@@ -1490,6 +1490,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     APLLONGEST   aplLongestLft,     // Left arg immediate value
                  aplLongestLast;    // Previous left arg immediate value
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
     UBOOL        bRet = FALSE,      // TRUE iff the result is valid
                  bLastValid;        // TRUE iff aplLongestLast is valid
     APLUINT      ByteRes;           // # bytes in the result
@@ -1537,11 +1538,11 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     lpMemRht = MyGlobalLock (hGlbRht);
 
     // Skip over the header to the dimension
-    lpMemRht = VarArrayBaseToDim (lpMemRht);
+    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Check for LENGTH ERROR
     if (!IsScalar (aplRankLft)
-     && aplNELMLft NE ((LPAPLDIM) lpMemRht)[aplAxis])
+     && aplNELMLft NE lpMemDimRht[aplAxis])
         goto LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
@@ -1551,12 +1552,12 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     // Calculate the product of the right arg's dimensions below the axis dimension
     uDimLo = 1;
     for (uDim = 0; uDim < aplAxis; uDim++)
-        uDimLo *= ((LPAPLDIM) lpMemRht)[uDim];
+        uDimLo *= lpMemDimRht[uDim];
 
     // Calculate the product of the right arg's dimensions above the axis dimension
     uDimHi = 1;
     for (uDim++; uDim < aplRankRht; uDim++)
-        uDimHi *= ((LPAPLDIM) lpMemRht)[uDim];
+        uDimHi *= lpMemDimRht[uDim];
 
     // Get left arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -1705,7 +1706,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         //   is replicated ({rho}R)[X] times.  This yields one element in the
         //   result along the axis if L and ({rho}R)[X] are both non-zero, and
         //   zero elements if either is zero.
-        aplNELMAxis = (aplLongestLft NE 0) && (((LPAPLDIM) lpMemRht)[aplAxis] NE 0);
+        aplNELMAxis = (aplLongestLft NE 0) && (lpMemDimRht[aplAxis] NE 0);
     } // End IF/ELSE
 
     // Calculate the result NELM
@@ -1714,7 +1715,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     else
     for (uCnt = 0, aplNELMRes = aplNELMAxis; uCnt < aplRankRht; uCnt++)
     if (uCnt NE aplAxis)            // Not the function axis
-        aplNELMRes *= ((LPAPLDIM) lpMemRht)[uCnt];
+        aplNELMRes *= lpMemDimRht[uCnt];
 
     // Fill in the result storage type & rank
     aplTypeRes = ARRAY_NESTED;
@@ -1752,15 +1753,15 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     // Fill in the dimensions
     for (uCnt = 0; uCnt < aplRankRes; uCnt++)
     if (uCnt NE aplAxis)            // Not the function axis
-        *((LPAPLDIM) lpMemRes)++ = ((LPAPLDIM) lpMemRht)[uCnt];
+        *((LPAPLDIM) lpMemRes)++ = lpMemDimRht[uCnt];
     else
         *((LPAPLDIM) lpMemRes)++ = aplNELMAxis;
 
     // Save the right arg axis length
-    uDimAxRht = ((LPAPLDIM) lpMemRht)[aplAxis];
+    uDimAxRht = lpMemDimRht[aplAxis];
 
     // Skip over the dimensions to the data
-    lpMemRht = VarArrayDimToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDimToData (lpMemDimRht, aplRankRht);
 
     // lpMemRes and lpMemRht now point to their data
 
@@ -1886,64 +1887,59 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     // The result is non-empty
     //***************************************************************
 
-    // If the left arg is a singleton, ...
-    if (IsSingleton (aplNELMLft))
-    {
-        // Save the entire right arg as the item in the result
-        *((LPAPLNESTED) lpMemRes) = CopySymGlbDirAsGlb (hGlbRht);
-
-        goto YYALLOC_EXIT;
-    } // End IF
-
     // Run through the left arg again
     for (uCnt = 0,
            uAxis = 0,
            bLastValid = FALSE;
-         uCnt < aplNELMLft;
+         uCnt < uDimAxRht;
          uCnt++)
     {
-        // Get the next value from memory
-        GetNextValueMem (lpMemLft,          // Ptr to item global memory data
-                         aplTypeLft,        // Item storage type
-                         uCnt,              // Index into item
-                        &lpSymGlbLft,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                        &aplLongestLft,     // Ptr to result immediate value (may be NULL)
-                         NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-        // Split cases based upon the left arg storage type
-        switch (aplTypeLft)
+        // In case the left arg is a singleton, do this only once
+        if (uCnt < aplNELMLft)
         {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
-            case ARRAY_APA:
-                break;
+            // Get the next value from memory
+            GetNextValueMem (lpMemLft,          // Ptr to item global memory data
+                             aplTypeLft,        // Item storage type
+                             uCnt,              // Index into item
+                            &lpSymGlbLft,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestLft,     // Ptr to result immediate value (may be NULL)
+                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+            // Split cases based upon the left arg storage type
+            switch (aplTypeLft)
+            {
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                case ARRAY_APA:
+                    break;
 
-            case ARRAY_FLOAT:
-                // Attempt to convert the FLOAT to an INT
-                aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-                if (!bRet)
-                    goto LEFT_DOMAIN_EXIT;
-                break;
+                case ARRAY_FLOAT:
+                    // Attempt to convert the FLOAT to an INT
+                    aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+                    if (!bRet)
+                        goto LEFT_DOMAIN_EXIT;
+                    break;
 
-            case ARRAY_RAT:
-                // Attempt to convert the RAT to an INT
-                aplLongestLft = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLft, &bRet);
-                if (!bRet)
-                    goto LEFT_DOMAIN_EXIT;
-                break;
+                case ARRAY_RAT:
+                    // Attempt to convert the RAT to an INT
+                    aplLongestLft = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLft, &bRet);
+                    if (!bRet)
+                        goto LEFT_DOMAIN_EXIT;
+                    break;
 
-            case ARRAY_VFP:
-                // Attempt to convert the RAT to an INT
-                aplLongestLft = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLft, &bRet);
-                if (!bRet)
-                    goto LEFT_DOMAIN_EXIT;
-                break;
+                case ARRAY_VFP:
+                    // Attempt to convert the RAT to an INT
+                    aplLongestLft = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLft, &bRet);
+                    if (!bRet)
+                        goto LEFT_DOMAIN_EXIT;
+                    break;
 
-            case ARRAY_CHAR:
-            case ARRAY_HETERO:
-            case ARRAY_NESTED:
-            defstop
-                break;
-        } // End SWITCH
+                case ARRAY_CHAR:
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
+                defstop
+                    break;
+            } // End SWITCH
+        } // End IF
 
         // If the value is non-zero, ...
         if (aplLongestLft)

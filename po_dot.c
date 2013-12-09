@@ -162,12 +162,6 @@ LPPL_YYSTYPE PrimIdentOpDot_EM_YY
         aplCharLft = lpYYFcnStrLft->tkToken.tkData.tkChar;
         aplCharRht = lpYYFcnStrRht->tkToken.tkData.tkChar;
 
-        // Substitute UPCARET for CIRCUMFLEX to simplify the comparisons
-        if (aplCharLft EQ UTF16_CIRCUMFLEX)
-            aplCharLft = UTF16_UPCARET;
-        if (aplCharRht EQ UTF16_CIRCUMFLEX)
-            aplCharRht = UTF16_UPCARET;
-
         // Check for +.{times}
         if (aplCharLft EQ UTF16_PLUS
          && aplCharRht EQ UTF16_TIMES)
@@ -175,31 +169,31 @@ LPPL_YYSTYPE PrimIdentOpDot_EM_YY
 
         // Check for {or}.^
         if (aplCharLft EQ UTF16_DOWNCARET
-         && aplCharRht EQ UTF16_UPCARET)
+         && IsAPLCharUpCaret (aplCharRht))
             goto IDENT1;
 
         // Check for ^.{ge}
-        if (aplCharLft EQ UTF16_UPCARET
-         && aplCharRht EQ UTF16_RIGHTCARETUNDERBAR)
+        if (IsAPLCharUpCaret (aplCharLft)
+         && IsAPLCharNotLess (aplCharRht))
             goto IDENT1;
 
         // Check for =.{ge}
         if (aplCharLft EQ UTF16_EQUAL
-         && aplCharRht EQ UTF16_RIGHTCARETUNDERBAR)
+         && IsAPLCharNotLess (aplCharRht))
             goto IDENT1;
 
         // Check for {ne}.^
         if (aplCharLft EQ UTF16_NOTEQUAL
-         && aplCharRht EQ UTF16_UPCARET)
+         && IsAPLCharUpCaret (aplCharRht))
             goto IDENT1;
 
         // Check for ^.>
-        if (aplCharLft EQ UTF16_UPCARET
+        if (IsAPLCharUpCaret (aplCharLft)
          && aplCharRht EQ UTF16_RIGHTCARET)
             goto IDENT2;
 
         // Check for ^.{or}
-        if (aplCharLft EQ UTF16_UPCARET
+        if (IsAPLCharUpCaret (aplCharLft)
          && aplCharRht EQ UTF16_DOWNCARET)
             goto IDENT2;
 
@@ -1411,11 +1405,11 @@ UBOOL IzitMinMaxAfo
 
                 // Check the immediate comparison function (s.b. < or <=)
                 if (lpMemTknLine[0x07].tkData.tkChar NE UTF16_LEFTCARET
-                 && lpMemTknLine[0x07].tkData.tkChar NE UTF16_LEFTCARETUNDERBAR)
+                 && !IsAPLCharNotMore (lpMemTknLine[0x07].tkData.tkChar))
                 {
                     // The immediate comparison function must be > or >=
                     if (lpMemTknLine[0x07].tkData.tkChar NE UTF16_RIGHTCARET
-                     && lpMemTknLine[0x07].tkData.tkChar NE UTF16_RIGHTCARETUNDERBAR)
+                     && !IsAPLCharNotLess (lpMemTknLine[0x07].tkData.tkChar))
                         goto ERROR_EXIT;
                     // Flip the bit
                     *lpbMaxFcn = 1 - *lpbMaxFcn;

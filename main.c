@@ -1802,6 +1802,10 @@ LRESULT APIENTRY MFWndProc
                                                  L"Copy APL&2");        // Text
                                     AppendMenuW (hMenu,                 // Handle
                                                  mfState,               // Flags
+                                                 IDM_COPY_DYALOG,       // ID
+                                                 L"Copy &Dyalog");      // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
                                                  IDM_COPY_ISO,          // ID
                                                  L"Copy &ISO");         // Text
                                     AppendMenuW (hMenu,                 // Handle
@@ -1838,6 +1842,10 @@ LRESULT APIENTRY MFWndProc
                                                  mfState,               // Flags
                                                  IDM_PASTE_APL2,        // ID
                                                  L"Paste APL&2");       // Text
+                                    AppendMenuW (hMenu,                 // Handle
+                                                 mfState,               // Flags
+                                                 IDM_PASTE_DYALOG,      // ID
+                                                 L"Paste &Dyalog");     // Text
                                     AppendMenuW (hMenu,                 // Handle
                                                  mfState,               // Flags
                                                  IDM_PASTE_ISO,         // ID
@@ -2198,6 +2206,11 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;       // We handled the msg
 
+                case IDM_COPY_DYALOG:
+                    SendMessageW (hWndActive, MYWM_COPY_APL, UNITRANS_DYALOG, 0);
+
+                    return FALSE;       // We handled the msg
+
                 case IDM_COPY_ISO:
                     SendMessageW (hWndActive, MYWM_COPY_APL, UNITRANS_ISO, 0);
 
@@ -2225,6 +2238,11 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_PASTE_APL2:
                     SendMessageW (hWndActive, MYWM_PASTE_APL, UNITRANS_APL2, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_PASTE_DYALOG:
+                    SendMessageW (hWndActive, MYWM_PASTE_APL, UNITRANS_DYALOG, 0);
 
                     return FALSE;       // We handled the msg
 

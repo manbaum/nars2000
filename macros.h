@@ -174,6 +174,22 @@
 #define SIGN_APLLONGEST(a)  ((a) >> 63)     // ...            APLLONGEST
 #define SIGN_APLFLOAT(a)    (((LPAPLFLOATSTR) &a)->bSign) // ... APLFLOAT
 
+// Define macros for detecting characters and their alternates
+#define IsAPLCharAlpha(a)           ((a) EQ UTF16_ALPHA              || (a) EQ UTF16_ALPHA2              )
+#define IsAPLCharOmega(a)           ((a) EQ UTF16_OMEGA              || (a) EQ UTF16_OMEGA2              )
+#define IsAPLCharBar(a)             ((a) EQ UTF16_BAR                || (a) EQ UTF16_BAR2                )
+#define IsAPLCharStile(a)           ((a) EQ UTF16_STILE              || (a) EQ UTF16_STILE2              )
+#define IsAPLCharTilde(a)           ((a) EQ UTF16_TILDE              || (a) EQ UTF16_TILDE2              )
+#define IsAPLCharCircle(a)          ((a) EQ UTF16_CIRCLE             || (a) EQ UTF16_CIRCLE2             )
+#define IsAPLCharDiamond(a)         ((a) EQ UTF16_DIAMOND            || (a) EQ UTF16_DIAMOND2            )
+#define IsAPLCharStar(a)            ((a) EQ UTF16_STAR               || (a) EQ UTF16_STAR2               )
+#define IsAPLCharJot(a)             ((a) EQ UTF16_JOT                || (a) EQ UTF16_JOT2                )
+#define IsAPLCharQuad(a)            ((a) EQ UTF16_QUAD               || (a) EQ UTF16_QUAD2               )
+#define IsAPLCharNotMore(a)         ((a) EQ UTF16_LEFTCARETUNDERBAR  || (a) EQ UTF16_LEFTCARETUNDERBAR2  )
+#define IsAPLCharNotLess(a)         ((a) EQ UTF16_RIGHTCARETUNDERBAR || (a) EQ UTF16_RIGHTCARETUNDERBAR2 )
+#define IsAPLCharUpCaretTilde(a)    ((a) EQ UTF16_UPCARETTILDE       || (a) EQ UTF16_NAND                )
+#define IsAPLCharDownCaretTilde(a)  ((a) EQ UTF16_DOWNCARETTILDE     || (a) EQ UTF16_NOR                 )
+#define IsAPLCharUpCaret(a)         ((a) EQ UTF16_UPCARET            || (a) EQ UTF16_CIRCUMFLEX          )
 
 // Define macro for detecting error array type
 #define IsErrorType(ArrType)            (ArrType EQ ARRAY_ERROR)

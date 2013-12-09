@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,22 +25,24 @@
         MENUITEM SEPARATOR
         MENUITEM "Cu&t\tShft-Del",              IDM_CUT
         MENUITEM "&Copy\tCtrl-Ins",             IDM_COPY
-        POPUP "Cop&y APL"
+        POPUP "Cop&y to ..."
         BEGIN
-            MENUITEM "Copy APL+&Win",           IDM_COPY_APLWIN
-            MENUITEM "Copy APL&2",              IDM_COPY_APL2
-            MENUITEM "Copy &ISO",               IDM_COPY_ISO
-            MENUITEM "Copy &PC3270"             IDM_COPY_PC3270
-            MENUITEM "Copy &Braces"             IDM_COPY_BRACES
+            MENUITEM "APL+&Win",                IDM_COPY_APLWIN
+            MENUITEM "APL&2",                   IDM_COPY_APL2
+            MENUITEM "&Dyalog",                 IDM_COPY_DYALOG
+            MENUITEM "&ISO",                    IDM_COPY_ISO
+            MENUITEM "&PC3270"                  IDM_COPY_PC3270
+            MENUITEM "&Braces"                  IDM_COPY_BRACES
         END
         MENUITEM "&Paste\tShift-Ins",           IDM_PASTE
-        POPUP "Past&e APL"
+        POPUP "Past&e from ..."
         BEGIN
-            MENUITEM "Paste APL+&Win",          IDM_PASTE_APLWIN
-            MENUITEM "Paste APL&2",             IDM_PASTE_APL2
-            MENUITEM "Paste &ISO",              IDM_PASTE_ISO
-            MENUITEM "Paste &PC3270"            IDM_PASTE_PC3270
-            MENUITEM "Paste &Braces"            IDM_PASTE_BRACES
+            MENUITEM "APL+&Win",                IDM_PASTE_APLWIN
+            MENUITEM "APL&2",                   IDM_PASTE_APL2
+            MENUITEM "&Dyalog",                 IDM_PASTE_DYALOG
+            MENUITEM "&ISO",                    IDM_PASTE_ISO
+            MENUITEM "&PC3270"                  IDM_PASTE_PC3270
+            MENUITEM "&Braces"                  IDM_PASTE_BRACES
         END
         MENUITEM "&Delete",                     IDM_DELETE
         MENUITEM SEPARATOR

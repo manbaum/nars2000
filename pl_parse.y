@@ -8572,8 +8572,7 @@ PL_YYLEX_START:
                 return CONSTANT;
 
         case TKT_INPOUT:
-            if (lpplLocalVars->lptkNext->tkData.tkChar EQ UTF16_QUAD
-             || lpplLocalVars->lptkNext->tkData.tkChar EQ UTF16_QUAD2)
+            if (IsAPLCharQuad (lpplLocalVars->lptkNext->tkData.tkChar))
                 return QUAD;
             else
                 return QUOTEQUAD;
@@ -8889,6 +8888,7 @@ PL_YYLEX_NAMEOP3:
             switch (lpYYLval->tkToken.tkData.tkChar)
             {
                 case UTF16_JOT:
+                case UTF16_JOT2:
                     // If either the next or previous token is OP2NAMED,
                     //   or the previous token is OP1NAMED, ...
                     if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_OP2NAMED
@@ -8909,12 +8909,12 @@ PL_YYLEX_NAMEOP3:
 
                     // If the previous token is OP2IMMED and the value is not JOT, ...
                     if (lpplLocalVars->lptkNext[ 1].tkFlags.TknType EQ TKT_OP2IMMED
-                     && lpplLocalVars->lptkNext[ 1].tkData.tkChar NE UTF16_JOT)
+                     && !IsAPLCharJot (lpplLocalVars->lptkNext[ 1].tkData.tkChar))
                         return FILLJOT;
 
                     // If the next     token is OP2IMMED and the value is not JOT, ...
                     if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_OP2IMMED
-                     && lpplLocalVars->lptkNext[-1].tkData.tkChar NE UTF16_JOT)
+                     && !IsAPLCharJot (lpplLocalVars->lptkNext[-1].tkData.tkChar))
                         return FILLJOT;
 
                     // If the previous token is OP1IMMED, ...

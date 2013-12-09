@@ -131,16 +131,18 @@
 #define IDM_COPY                                 710
 #define IDM_COPY_APLWIN                          711
 #define IDM_COPY_APL2                            712
-#define IDM_COPY_ISO                             713
-#define IDM_COPY_PC3270                          714
-#define IDM_COPY_BRACES                          715
+#define IDM_COPY_DYALOG                          713
+#define IDM_COPY_ISO                             714
+#define IDM_COPY_PC3270                          715
+#define IDM_COPY_BRACES                          716
 
 #define IDM_PASTE                                720
 #define IDM_PASTE_APLWIN                         721
 #define IDM_PASTE_APL2                           722
-#define IDM_PASTE_ISO                            723
-#define IDM_PASTE_PC3270                         724
-#define IDM_PASTE_BRACES                         725
+#define IDM_PASTE_DYALOG                         723
+#define IDM_PASTE_ISO                            724
+#define IDM_PASTE_PC3270                         725
+#define IDM_PASTE_BRACES                         726
 
 #define IDM_LOCALIZE                             730
 #define IDM_UNLOCALIZE                           731

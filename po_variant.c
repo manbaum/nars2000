@@ -529,9 +529,11 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
         // []CT:  Comparison Tolerance
         case UTF16_LEFTCARET:               // Dyadic only  (Less than)
         case UTF16_LEFTCARETUNDERBAR:       // ...          (Less than or equal)
+        case UTF16_LEFTCARETUNDERBAR2:      // ...          (Less than or equal)
         case UTF16_EQUAL:                   // ...          (Equal)
         case UTF16_NOTEQUAL:                // ...          (Not equal)
         case UTF16_RIGHTCARETUNDERBAR:      // ...          (Greater than or equal)
+        case UTF16_RIGHTCARETUNDERBAR2:     // ...          (Greater than or equal)
         case UTF16_RIGHTCARET:              // ...          (Greater than)
         case UTF16_EPSILON:                 // ...          (Membership)
         case UTF16_EQUALUNDERBAR:           // ...          (Match)
@@ -740,6 +742,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////// []CF:  Circular Functions divisor:
 //////////   L{circle}{variant}X R   is   L{circle}R{divide}X{divide}{circle}0.5
 ////////case UTF16_CIRCLE:                  // Dyadic w/ L=-3 -2 -1 1 2 3
+////////case UTF16_CIRCLE2:                 // ...
 ////////    // Validate the right operand as
 ////////    //   a simple numeric scalar or one-element vector
 ////////    if (IsMultiRank (aplRankRhtOpr))

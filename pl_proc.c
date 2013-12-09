@@ -296,7 +296,7 @@ char LookaheadAdjacent
 
         case TKT_OP2IMMED:
             // If the OP2 is JOT, ...
-            if (plLocalVars.lptkNext->tkData.tkChar EQ UTF16_JOT
+            if (IsAPLCharJot (plLocalVars.lptkNext->tkData.tkChar)
              && !bJotOpr)
             {
                 // If the caller wants us to check to the left of the jot, ...
@@ -319,7 +319,7 @@ char LookaheadAdjacent
 
         case TKT_OP2NAMED:
             // If the OP2 is JOT, ...
-            if (plLocalVars.lptkNext->tkData.tkSym->stData.stChar EQ UTF16_JOT)
+            if (IsAPLCharJot (plLocalVars.lptkNext->tkData.tkSym->stData.stChar))
             {
                 // If the caller wants us to check to the left of the jot, ...
                 if (bCheckLeft)
@@ -638,7 +638,7 @@ UBOOL LookaheadDyadicOp
             goto NORMAL_EXIT;
 
         case TKT_OP2IMMED:
-            if (lptkNext->tkData.tkChar EQ UTF16_JOT)
+            if (IsAPLCharJot (lptkNext->tkData.tkChar))
                 bRet = !LookaheadDyadicOp (lpplLocalVars, lptkNext - 1);
             else
                 bRet = TRUE;
@@ -646,7 +646,7 @@ UBOOL LookaheadDyadicOp
             goto NORMAL_EXIT;
 
         case TKT_OP2NAMED:
-            if (lptkNext->tkData.tkSym->stData.stChar EQ UTF16_JOT)
+            if (IsAPLCharJot (lptkNext->tkData.tkSym->stData.stChar))
                 bRet = !LookaheadDyadicOp (lpplLocalVars, lptkNext - 1);
             else
                 bRet = TRUE;

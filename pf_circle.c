@@ -101,7 +101,7 @@ LPPL_YYSTYPE PrimFnCircle_EM_YY
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLE);
+    Assert (IsAPLCharCircle (lptkFunc->tkData.tkChar));
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

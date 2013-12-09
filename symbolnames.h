@@ -237,8 +237,10 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_CIRCLESTAR           , L"{ln}"                 },  // ...
   {UTF16_DOWNCARETTILDE       , L"{downcarettilde}"     },  // Alt-'(' - nor
   {UTF16_DOWNCARETTILDE       , L"{nor}"                },  // ...
+  {UTF16_NOR                  , L"{nor2}"               },  // ...
   {UTF16_UPCARETTILDE         , L"{upcarettilde}"       },  // Alt-')' - nand
   {UTF16_UPCARETTILDE         , L"{nand}"               },  // ...
+  {UTF16_NAND                 , L"{nand2}"              },  // ...
   {UTF16_VARIANT              , L"{variant}"            },  // Alt-'_' - variant
   {UTF16_VARIANT              , L"{quadcolon}"          },  // Alt-'_' - variant
   {UTF16_DOMINO               , L"{domino}"             },  // Alt-'+' - domino
@@ -296,9 +298,16 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_STILE2               , L"{stile2}"             },  // 007C:  Stile (a.k.a. 0x2223)
   {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 007D:  Right brace
   {UTF16_TILDE2               , L"{tilde2}"             },  // 007E:  Tilde (a.k.a. 0x223C)
+  {UTF16_ALPHA2               , L"{alpha2}"             },  // 03B1:  Alpha2
+  {UTF16_OMEGA2               , L"{omega2}"             },  // 03C9:  Omega2
   {UTF16_BAR2                 , L"{bar2}"               },  // 2212:  Bar   (a.k.a. 0x002D)
-  {UTF16_QUAD2                , L"{quad2}"              },  // 25AF:  Quad  (a.k.a. 0x2395)
   {UTF16_STAR2                , L"{star2}"              },  // 22C6:  Star  (a.k.a. 0x002A)
+  {UTF16_QUAD2                , L"{quad2}"              },  // 25AF:  Quad  (a.k.a. 0x2395)
+  {UTF16_JOT2                 , L"{jot2}"               },  // 25E6:  Jot2
+  {UTF16_CIRCLE2              , L"{circle2}"            },  // 26AA:  Circle2  (a.k.a. 0x25CB)
+  {UTF16_LEFTCARETUNDERBAR2   , L"{notmore2}"           },  // 2A7D:  Notmore2 (a.k.a. 0x2264)
+  {UTF16_RIGHTCARETUNDERBAR2  , L"{notless2}"           },  // 2A7E:  Notless2 (a.k.a. 0x2265)
+  {UTF16_DIAMOND2             , L"{diamond2}"           },  // 2B26:  Diamond2 (a.k.a. 0x22C4)
 }
 #endif
 ;

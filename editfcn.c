@@ -3467,6 +3467,11 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     return FALSE;   // We handled the msg
 
+                case IDM_COPY_DYALOG:
+                    SendMessageW (hWnd, MYWM_COPY_APL, UNITRANS_DYALOG, 0);
+
+                    return FALSE;   // We handled the msg
+
                 case IDM_COPY_ISO:
                     SendMessageW (hWnd, MYWM_COPY_APL, UNITRANS_ISO, 0);
 
@@ -3494,6 +3499,11 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 case IDM_PASTE_APL2:
                     SendMessageW (hWnd, MYWM_PASTE_APL, UNITRANS_APL2, 0);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_PASTE_DYALOG:
+                    SendMessageW (hWnd, MYWM_PASTE_APL, UNITRANS_DYALOG, 0);
 
                     return FALSE;   // We handled the msg
 

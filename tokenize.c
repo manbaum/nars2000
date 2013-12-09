@@ -6742,6 +6742,7 @@ TKCOLINDICES CharTransTK
             return TKCOL_DEL;
 
 ////////case UTF16_ALPHA:               // Alt-'a' - alpha (TKCOL_DIRIDENT)
+////////case UTF16_ALPHA2:              // Alpha2
         case UTF16_UPTACK:              // Alt-'b' - up tack
         case UTF16_UPSHOE:              // Alt-'c' - up shoe
         case UTF16_DOWNSTILE:           // Alt-'d' - down stile
@@ -6751,11 +6752,14 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_DELTA:               // Alt-'h' - delta (TKCOL_ALPHA)
         case UTF16_IOTA:                // Alt-'i' - iota
 ////////case UTF16_JOT:                 // Alt-'j' - compose (jot) (TKCOL_JOT)
+////////case UTF16_JOT2:                // Jot2
 ////////case UTF16_APOSTROPHE:          // Alt-'k' - single quote (TKCOL_QUOTE1)
 ////////case UTF16_QUAD:                // Alt-'l' - quad (TKCOL_Q_QQ)
+////////case UTF16_QUAD2:               // Quad2
 ////////case UTF16_DOWNSHOESTILE:       // Alt-'m' - down-shoe-stile (TKCOL_PRIM_OP1)
         case UTF16_DOWNTACK:            // Alt-'n' - down tack
         case UTF16_CIRCLE:              // Alt-'o' - circle
+        case UTF16_CIRCLE2:             // Circle2
         case UTF16_PI:                  // Alt-'p' - pi
         case UTF16_QUERY:               // Alt-'q' - question mark
         case UTF16_RHO:                 // Alt-'r' - rho
@@ -6764,6 +6768,7 @@ TKCOLINDICES CharTransTK
         case UTF16_DOWNARROW:           // Alt-'u' - down arrow
         case UTF16_DOWNSHOE:            // Alt-'v' - down shoe
 ////////case UTF16_OMEGA:               // Alt-'w' - omega (TKCOL_DIRIDENT)
+////////case UTF16_OMEGA2:              // Omega2
         case UTF16_RIGHTSHOE:           // Alt-'x' - right shoe
         case UTF16_UPARROW:             // Alt-'y' - up arrow
         case UTF16_LEFTSHOE:            // Alt-'z' - left shoe
@@ -6776,7 +6781,9 @@ TKCOLINDICES CharTransTK
         case UTF16_CIRCLEBAR:           // Alt-'&' - circle-bar
         case UTF16_UPTACKJOT:           // Alt-'\''- execute
         case UTF16_DOWNCARETTILDE:      // Alt-'(' - nor
+        case UTF16_NOR:                 //           nor
         case UTF16_UPCARETTILDE:        // Alt-')' - nand
+        case UTF16_NAND:                //           nand
         case UTF16_CIRCLESTAR:          // Alt-'*' - log
         case UTF16_DOMINO:              // Alt-'+' - domino
 ////////case UTF16_LAMP:                // Alt-',' - comment (TKCOL_LAMP)
@@ -6789,8 +6796,10 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_OVERBAR:             // Alt-'2' - overbar (TKCOL_OVERBAR)
         case UTF16_LEFTCARET:           // Alt-'3' - less
         case UTF16_LEFTCARETUNDERBAR:   // Alt-'4' - not more
+        case UTF16_LEFTCARETUNDERBAR2:  // Not more2
         case UTF16_EQUAL:               // Alt-'5' - equal
         case UTF16_RIGHTCARETUNDERBAR:  // Alt-'6' - not less
+        case UTF16_RIGHTCARETUNDERBAR2: // Not less2
         case UTF16_RIGHTCARET:          // Alt-'7' - more
         case UTF16_NOTEQUAL:            // Alt-'8' - not equal
         case UTF16_DOWNCARET:           // Alt-'9' - or
@@ -6877,6 +6886,7 @@ TKCOLINDICES CharTransTK
             return TKCOL_PRIM_OP2;
 
         case UTF16_JOT:                 // Alt-'j' - compose (jot)
+        case UTF16_JOT2:                // Jot2
             return TKCOL_JOT;
 
         case UTF16_APOSTROPHE:          // Alt-'k' - single quote
@@ -6900,6 +6910,7 @@ TKCOLINDICES CharTransTK
             return TKCOL_OVERBAR;
 
         case UTF16_DIAMOND:             // Alt-'`' - diamond
+        case UTF16_DIAMOND2:            // Diamond2
             return TKCOL_DIAMOND;
 
         case UTF16_ZILDE:               // Alt-'}' - zilde

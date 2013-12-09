@@ -6,6 +6,7 @@
   <title>NARS2000 Welcome Page</title>
   <base target="_top" />
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta name="Braces2APL" content="title,deccode,hexcode" />
   <link rel="stylesheet"
         href="http://www.sudleyplace.com/styles/common.css"
         type="text/css" />
@@ -546,10 +547,10 @@ Welcome to NARS2000</h1>
   <p>The pages on this site were designed to be displayed with an
     attractive APL font such as <a class="ttfLeft"
     title="If the APL characters on this page don't display correctly, ..."
-    href="http://www.vector.org.uk/resource/simpl02.zip">SImPL (Unicode)</a>,
+    href="http://www.chastney.com/~philip/sixpack/sixpack_medium.ttf">SImPL (Unicode)</a>,
     <a class="ttfLeft"
        title="If the APL characters on this page don't display correctly, ..."
-       href="http://www.vector.org.uk/resource/apl385.zip">APL385 Unicode</a>,
+       href="http://archive.vector.org.uk/resource/apl385.ttf">APL385 Unicode</a>,
     or any of the other Unicode APL fonts (assuming they have all of the
     <a class="linkleft" href="http://wiki.nars2000.org/index.php/APL_Font">extra
     APL glyphs</a> used on this site).

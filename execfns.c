@@ -1372,6 +1372,7 @@ LPPL_YYSTYPE ExecOp2_EM_YY
                                        lpYYFcnStrOpr,       // Ptr to operator function strand
                                        lptkRhtArg);         // Ptr to right arg token
         case UTF16_JOT:             // Compose
+        case UTF16_JOT2:            // Compose
             return PrimOpJot_EM_YY    (lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
                                        lpYYFcnStrOpr,       // Ptr to operator function strand
                                        lptkRhtArg);         // Ptr to right arg token

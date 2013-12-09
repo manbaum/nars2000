@@ -113,8 +113,7 @@ LPPL_YYSTYPE PrimFnStar_EM_YY
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_STAR
-         || lptkFunc->tkData.tkChar EQ UTF16_STAR2);
+    Assert (IsAPLCharStar (lptkFunc->tkData.tkChar));
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

@@ -3586,6 +3586,8 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     EnableMenuItem(popup, IDM_COPY_APLWIN , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* copy APL2    */
     EnableMenuItem(popup, IDM_COPY_APL2   , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
+    /* copy Dyalog  */
+    EnableMenuItem(popup, IDM_COPY_DYALOG , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* copy ISO     */
     EnableMenuItem(popup, IDM_COPY_ISO    , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* copy PC/3270 */
@@ -3598,6 +3600,8 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     EnableMenuItem(popup, IDM_PASTE_APLWIN, ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste APL2 */
     EnableMenuItem(popup, IDM_PASTE_APL2  , ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    /* paste Dyalog */
+    EnableMenuItem(popup, IDM_PASTE_DYALOG, ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste ISO */
     EnableMenuItem(popup, IDM_PASTE_ISO   , ((IsClipboardFormatAvailable (CF_TEXT) || IsClipboardFormatAvailable (CF_PRIVATEFIRST)) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste PC/3270 */

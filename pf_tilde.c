@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2013 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,8 +110,7 @@ LPPL_YYSTYPE PrimFnTilde_EM_YY
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_TILDE
-         || lptkFunc->tkData.tkChar EQ UTF16_TILDE2);
+    Assert (IsAPLCharTilde (lptkFunc->tkData.tkChar));
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

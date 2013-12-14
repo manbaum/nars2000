@@ -1,6 +1,21 @@
 Version 0.4.5.xx consists of the following Builds:
 
 
+Build #1200 -- Version 0.4.5.xx
+-------------------------------
+
+* Implement Another Alias For The Diamond Character
+
+Directory trunk:
+
+MACROS.H:
+SYMBOLNAMES.H:
+TOKENIZE.C:
+UNICODE.H:
+UNITRANSTAB.H:
+  Implement Diamond3 as another alias for Diamond.
+
+
 Build #1199 -- Version 0.4.5.xx
 -------------------------------
 

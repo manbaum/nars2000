@@ -283,7 +283,8 @@
 #define UTF16_CIRCLE2             0x26AA        // Circle (a.k.a. 0x25CB)
 #define UTF16_LEFTCARETUNDERBAR2  0x2A7D        // Not more2 (a.k.a. 0x2264)
 #define UTF16_RIGHTCARETUNDERBAR2 0x2A7E        // Not less2 (a.k.a. 0x2265)
-#define UTF16_DIAMOND2            0x2B26        // Diamond (a.k.a. 0x22C4)
+#define UTF16_DIAMOND2            0x2B26        // Diamond2 (a.k.a. 0x22C4)
+#define UTF16_DIAMOND3            0x25CA        // Diamond3 (a.k.a. 0x22C4)
 
 #define UTF16_A_                  0xE036        // A underbar
 #define UTF16_B_                  0xE037        // B underbar
@@ -560,7 +561,8 @@
 #define WS_UTF16_CIRCLE2             L"\x26AA"  // Circle (a.k.a. 0x25CB)
 #define WS_UTF16_LEFTCARETUNDERBAR2  L"\x2A7D"  // Not more2 (a.k.a. 0x2264)
 #define WS_UTF16_RIGHTCARETUNDERBAR2 L"\x2A7E"  // Not less2 (a.k.a. 0x2265)
-#define WS_UTF16_DIAMOND2            L"\x2B26"  // Diamond (a.k.a. 0x22C4)
+#define WS_UTF16_DIAMOND2            L"\x2B26"  // Diamond2 (a.k.a. 0x22C4)
+#define WS_UTF16_DIAMOND3            L"\x25CA"  // Diamond3 (a.k.a. 0x22C4)
 
 #define WS_UTF16_A_                  L"\xE036"  // A underbar
 #define WS_UTF16_B_                  L"\xE037"  // B underbar

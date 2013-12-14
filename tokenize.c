@@ -6911,6 +6911,7 @@ TKCOLINDICES CharTransTK
 
         case UTF16_DIAMOND:             // Alt-'`' - diamond
         case UTF16_DIAMOND2:            // Diamond2
+        case UTF16_DIAMOND3:            // Diamond3
             return TKCOL_DIAMOND;
 
         case UTF16_ZILDE:               // Alt-'}' - zilde

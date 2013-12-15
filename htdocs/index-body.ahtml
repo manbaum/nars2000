@@ -151,10 +151,6 @@ Welcome to NARS2000</h1>
           <span class="APL">A[{iota}-{rho}A]</span>, and even
           <span class="APL">A[{iota}{neg}1 1[?({rho}{rho}A){rho}2]{times}{rho}A]</span>
           are all identical for any array <span class="APL">A</span> in either origin</li>
-        <li>± Infinity (e.g., <span class="APL">{infinity}</span> for infinity
-          and <span class="APL">{overbar}{infinity}</span> for negative infinity)
-          &mdash; considerable development work needs to be done to this
-          feature to handle the many special cases</li>
         <li>Monadic and dyadic domino (<span class="APL">{domino}R</span> and <span class="APL">L{domino}R</span>)
           &mdash; matrix inverse/divide extended to use Moore-Penrose pseudo-inverse algorithm via Singular Value
           Decomposition</li>
@@ -313,9 +309,7 @@ Welcome to NARS2000</h1>
     <li>APAs (Arithmetic Progression Arrays) (e.g.,
       <span class="APL">2 3 4{rho}{iota}24</span>)</li>
     <li>± Infinity (e.g., <span class="APL">{infinity}</span> for infinity
-      and <span class="APL">{overbar}{infinity}</span> for negative infinity)
-      &mdash; considerable development work needs to be done to this
-      feature to handle the many special cases</li>
+      and <span class="APL">{overbar}{infinity}</span> for negative infinity)</li>
     <li>Array predicates (a la Bernecky) for Permutation Vectors</li>
     <li>Rational numbers (e.g., <span class="APL">1r3</span>
       and <span class="APL">12345x</span>)</li>
@@ -326,7 +320,7 @@ Welcome to NARS2000</h1>
   <h3>Wish List of Datatypes</h3>
   <ul>
     <li>Unicode support via multiple character widths
-      (8-, 16-, and 32-bits) instead of the current 16-bit fixed width</li>
+      (8-, 16-, and 32-bits) instead of the current 16-bit fixed width (UCS-2)</li>
     <li>Complex numbers (e.g., <span class="APL">2i3.4</span>
       or <span class="APL">2J3.4</span>)</li>
     <li>Quaternions (e.g., <span class="APL">2i3j4ij5</span>

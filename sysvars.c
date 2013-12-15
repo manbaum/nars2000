@@ -4120,18 +4120,22 @@ void DeleSysVars
     (LPHSHTABSTR lphtsDst)          // Destination HSHTABSTR
 
 {
+    // If the HSHTABSTR is valid, ...
+    if (lphtsDst)
+    {
     // Delete HGLOBAL values
-////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);   // Not used in {}
-////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);   // Not used in {}
-////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);   // Not used in {}
-    FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = FALSE;
-    FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = FALSE;
-    FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = FALSE;
-////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);   // Not used in {}
-////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);   // Not used in {}
-////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);   // Not used in {}
-////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);   // Not used in {}
-////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);   // Not used in {}
+////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);   // Not used in {}
+////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);   // Not used in {}
+////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);   // Not used in {}
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = FALSE;
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = FALSE;
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = FALSE;
+////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);   // Not used in {}
+////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);   // Not used in {}
+////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);   // Not used in {}
+////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);   // Not used in {}
+////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);   // Not used in {}
+    } // End IF
 } // End DeleSysVars
 
 

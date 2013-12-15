@@ -1,6 +1,17 @@
 Version 0.4.5.xx consists of the following Builds:
 
 
+Build #1201 -- Version 0.4.5.xx
+-------------------------------
+
+* Fix Bug During Shutdown On Linux Systems
+
+Directory trunk:
+
+SYSVARS.C:
+  In <DeleSysVars> when running under Wine, the ptr argument may be zero, so we check for that.
+
+
 Build #1200 -- Version 0.4.5.xx
 -------------------------------
 

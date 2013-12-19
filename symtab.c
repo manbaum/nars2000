@@ -289,7 +289,8 @@ UBOOL HshTabFrisk
             } else
             {
                 if (!(lp->htSymEntry
-                 && lp->htSymEntry->stHshEntry EQ lp))
+                 && lp->htSymEntry->stHshEntry EQ lp
+                 && lp->htSymEntry->Sig.nature EQ SYM_HEADER_SIGNATURE))
                 {
                     if (lp->htSymEntry EQ 0)
                         MBC ("HshTabFrisk:  lp->htSymEntry EQ 0")
@@ -2336,6 +2337,7 @@ LPSYMENTRY _SymTabAppendInteger_EM
         // Save as return result
         lpSymEntryDest = lphtsPTD->lpSymTabNext++;
 #ifdef DEBUG
+        // Save the header signature
         lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
 #endif
         // Save the constant
@@ -2453,6 +2455,7 @@ LPSYMENTRY _SymTabAppendFloat_EM
         // Save as return result
         lpSymEntryDest = lphtsPTD->lpSymTabNext++;
 #ifdef DEBUG
+        // Save the header signature
         lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
 #endif
         // Save the constant
@@ -2594,6 +2597,7 @@ LPSYMENTRY _SymTabAppendChar_EM
         // Save as return result
         lpSymEntryDest = lphtsPTD->lpSymTabNext++;
 #ifdef DEBUG
+        // Save the header signature
         lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
 #endif
         // Save the constant
@@ -2804,12 +2808,14 @@ LPSYMENTRY _SymTabAppendNewName_EM
 
     // Save as return result
     lpSymEntryDest = lphtsPTD->lpSymTabNext++;
-#ifdef DEBUG
-    lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
-#endif
+
     // Zero the entry
     ZeroMemory (lpSymEntryDest, sizeof (*lpSymEntryDest));
 
+#ifdef DEBUG
+    // Save the header signature
+    lpSymEntryDest->Sig.nature = SYM_HEADER_SIGNATURE;
+#endif
     // Get a ptr to the corresponding hash entry
     // N.B.  It's very important to call MaskTheHash *AFTER*
     //   calling FindNextFreeUsingHash_SPLIT_EM as lpHshTabSplitNext
@@ -3055,6 +3061,10 @@ UBOOL AllocSymTab
     lpHTS->steDelDel    = _SymTabAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE , lpHTS);
     lpHTS->steRhtOper   = _SymTabAppendName_EM    (WS_UTF16_RHTOPER, NULL , TRUE , lpHTS);
     lpHTS->steNoValue   = lpHTS->lpSymTabNext++;
+#ifdef DEBUG
+    // Save the header signature
+    lpHTS->steNoValue->Sig.nature = SYM_HEADER_SIGNATURE;
+#endif
 
     if (lpHTS->steZero    EQ NULL
      || lpHTS->steOne     EQ NULL

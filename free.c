@@ -878,7 +878,7 @@ UBOOL FreeResultGlobalDfn
     if (bRet)
     {
         // Free the globals in the struc
-        FreeResultGlobalDfnStruc (lpMemDfnHdr);
+        FreeResultGlobalDfnStruc (lpMemDfnHdr, TRUE);
 
         // Free the HshTab & SymTab
         FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
@@ -918,7 +918,8 @@ UBOOL FreeResultGlobalDfn
 #endif
 
 void FreeResultGlobalDfnStruc
-    (LPDFN_HEADER lpMemDfnHdr)      // Ptr to DFN_HEADER struc
+    (LPDFN_HEADER lpMemDfnHdr,      // Ptr to DFN_HEADER struc
+     UBOOL        bUntokenize)      // TRUE iff we can call Untokenize on the function lines
 
 {
     UINT      numFcnLines;          // # lines in the function
@@ -981,7 +982,8 @@ void FreeResultGlobalDfnStruc
             DbgGlobalFree (lpFcnLines->hGlbTxtLine); lpFcnLines->hGlbTxtLine = NULL;
         } // End IF
 
-        if (lpFcnLines->offTknLine)
+        if (bUntokenize
+         && lpFcnLines->offTknLine)
             // Free the tokens
             Untokenize ((LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine));
 

@@ -782,6 +782,7 @@ void ExecNilMFO
     LPSYMENTRY     lpSymEntry;          // Ptr to function STE
     LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
     STFLAGS        stFlags = {0};       // SymTab flags
+    LPDFN_HEADER   lpMemDfnHdr;         // Ptr to user-defined function/operator header global memory
 
     // Tokenize the line
     hGlbTknHdr =
@@ -823,8 +824,26 @@ void ExecNilMFO
     lpSymEntry =
       SymTabLookupName (MFON_MonDotInit, &stFlags);
 
-    // Free the niladic function
-    FreeResultGlobalDfn (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
+    Assert (lpSymEntry);
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLock (lpSymEntry->stData.stGlbData);
+
+    // Free the globals in the struc
+    //   but don't Untokenize the function lines
+    FreeResultGlobalDfnStruc (lpMemDfnHdr, FALSE);
+
+    // Free the HshTab & SymTab
+    FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpSymEntry->stData.stGlbData); lpMemDfnHdr = NULL;
+
+    // We no longer need this storage
+    DbgGlobalFree (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
+
+    // Erase the Symbol Table Entry
+    EraseSTE (lpSymEntry, FALSE); lpSymEntry = NULL;
 } // End ExecNilMFO
 
 

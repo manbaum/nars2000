@@ -967,7 +967,7 @@ void FreeGlobalStorage
                     lpMemDfnHdr = MyGlobalLock (hGlbData);
 
                     // Free the globals in the struc
-                    FreeResultGlobalDfnStruc (lpMemDfnHdr);
+                    FreeResultGlobalDfnStruc (lpMemDfnHdr, TRUE);
 
                     // Free the HshTab & SymTab
                     FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);

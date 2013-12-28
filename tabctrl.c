@@ -980,7 +980,7 @@ void FreeGlobalStorage
                 }// End IF
             } else
             // Free all global fns and vars in the workspace
-            if (hGlbData || FreeResultGlobalDFLV (hGlbData))
+            if (hGlbData EQ NULL || FreeResultGlobalDFLV (hGlbData))
                 // Erase the Symbol Table Entry
                 //   even if it's a []var
                 EraseSTE (lpSymEntry, TRUE);

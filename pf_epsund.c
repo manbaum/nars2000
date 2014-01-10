@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,10 +200,10 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
 
     //***************************************************************
-    // Split off the case of scalar vs. scalar as the code below
+    // Split off the case of scalar right arg as the code below
     //   doesn't handle it well
     //***************************************************************
-    if (IsScalar (aplRankLft) && IsScalar (aplRankRht))
+    if (IsScalar (aplRankRht))
     {
         // Handle via {match}
         lpYYRes =

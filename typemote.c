@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -840,10 +840,11 @@ void DemoteData
      LPVOID   lpMemRht)             // Ptr to right arg global memory
 
 {
-    APLUINT    uRht;                // Loop counter
-    UINT       uBitIndex;           // Bit index for looping through Booleans
-    LPSYMENTRY lpSymGlbSub;         // Ptr to temp SYMENTRY/HGLOBAL
-    LPVOID     lpMemSub;            // Ptr to temp global memory
+    APLUINT           uRht;         // Loop counter
+    UINT              uBitIndex;    // Bit index for looping through Booleans
+    LPSYMENTRY        lpSymGlbSub;  // Ptr to temp SYMENTRY/HGLOBAL
+    LPVOID            lpMemSub;     // Ptr to temp global memory
+    LPVARARRAY_HEADER lpMemHdr;     // Ptr to temp memory header
 
     // Split cases based upon the result's storage type
     // Note that the result is always of lower type than
@@ -897,31 +898,76 @@ void DemoteData
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
-                        // Split cases based upon the immediate type
-                        switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
+                        // Get the SymGlb ptr
+                        lpSymGlbSub = *((LPAPLHETERO) lpMemRht)++;
+
+                        // Split cases based upon the ptr type bits
+                        switch (GetPtrTypeDir (lpSymGlbSub))
                         {
-                            case IMMTYPE_BOOL:
-                                Assert (IsBooleanValue ((*(LPAPLHETERO) lpMemRht)->stData.stBoolean));
+                            case PTRTYPE_STCONST:
+                                // Split cases based upon the immediate type
+                                switch (lpSymGlbSub->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:
+                                        Assert (IsBooleanValue (lpSymGlbSub->stData.stBoolean));
 
-                                *((LPAPLBOOL) lpMemRes) |= ((*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean) << uBitIndex;
+                                        *((LPAPLBOOL) lpMemRes) |= (lpSymGlbSub->stData.stBoolean) << uBitIndex;
+
+                                        break;
+
+                                    case IMMTYPE_INT:
+                                        Assert (IsBooleanValue (lpSymGlbSub->stData.stInteger));
+
+                                        *((LPAPLBOOL) lpMemRes) |= (lpSymGlbSub->stData.stInteger) << uBitIndex;
+
+                                        break;
+
+                                    case IMMTYPE_FLOAT:
+                                        Assert (IsBooleanValue (lpSymGlbSub->stData.stFloat));
+
+                                        *((LPAPLBOOL) lpMemRes) |= ((APLINT) (lpSymGlbSub->stData.stFloat)) << uBitIndex;
+
+                                        break;
+
+                                    case IMMTYPE_CHAR:
+                                    defstop
+                                        break;
+                                } // End SWITCH
 
                                 break;
 
-                            case IMMTYPE_INT:
-                                Assert (IsBooleanValue ((*(LPAPLHETERO) lpMemRht)->stData.stInteger));
+                            case PTRTYPE_HGLOBAL:
+                                // Lock the memory to get a ptr to it
+                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
 
-                                *((LPAPLBOOL) lpMemRes) |= ((*((LPAPLHETERO) lpMemRht)++)->stData.stInteger) << uBitIndex;
+                                Assert (lpMemHdr->Rank EQ 0);
+
+                                // Skip over the header & dimensions to the data
+                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
+
+                                // Split cases based upon the storage type
+                                switch (lpMemHdr->ArrType)
+                                {
+                                    case ARRAY_BOOL:    // Res = BOOL, Rht = BOOL
+                                    case ARRAY_INT:     // Res = BOOL, Rht = INT
+                                    case ARRAY_APA:     // Res = BOOL, Rht = APA
+                                    case ARRAY_FLOAT:   // Res = BOOL, Rht = FLT
+                                        *((LPAPLBOOL) lpMemRes) |= GetNextInteger (lpMemSub, lpMemHdr->ArrType, uRht) << uBitIndex;
+
+                                        break;
+
+                                    case ARRAY_RAT:     // Res = BOOL, Rht = RAT
+                                    case ARRAY_VFP:     // Res = BOOL, Rht = VFP
+                                                        // We don't demote RAT/VFP to BOOL
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
 
                                 break;
 
-                            case IMMTYPE_FLOAT:
-                                Assert (IsBooleanValue ((*(LPAPLHETERO) lpMemRht)->stData.stFloat));
-
-                                *((LPAPLBOOL) lpMemRes) |= ((APLINT) (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat) << uBitIndex;
-
-                                break;
-
-                            case IMMTYPE_CHAR:
                             defstop
                                 break;
                         } // End SWITCH
@@ -937,21 +983,8 @@ void DemoteData
                     break;
 
                 case ARRAY_RAT:     // Res = BOOL, Rht = RAT
-                    DbgBrk ();
-
-
-
-
-                    break;
-
                 case ARRAY_VFP:     // Res = BOOL, Rht = VFP
-                    DbgBrk ();
-
-
-
-
-                    break;
-
+                                    // We don't demote RAT/VFP to BOOL
                 defstop
                     break;
             } // End SWITCH
@@ -972,33 +1005,80 @@ void DemoteData
                 case ARRAY_NESTED:  // Res = INT , Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
-                    // Split cases based upon the immediate type
-                    switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
                     {
-                        case IMMTYPE_BOOL:
-                            *((LPAPLINT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean;
+                        // Get the SymGlb ptr
+                        lpSymGlbSub = *((LPAPLHETERO) lpMemRht)++;
 
-                            break;
+                        // Split cases based upon the ptr type bits
+                        switch (GetPtrTypeDir (lpSymGlbSub))
+                        {
+                            case PTRTYPE_STCONST:
+                                // Split cases based upon the immediate type
+                                switch (lpSymGlbSub->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:  // Res = INT , Rht = BOOL
+                                        *((LPAPLINT) lpMemRes)++ = lpSymGlbSub->stData.stBoolean;
 
-                        case IMMTYPE_INT:
-                            *((LPAPLINT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stInteger;
+                                        break;
 
-                            break;
+                                    case IMMTYPE_INT:   // Res = INT , Rht = INT
+                                        *((LPAPLINT) lpMemRes)++ = lpSymGlbSub->stData.stInteger;
 
-                        case IMMTYPE_FLOAT:
-                            *((LPAPLINT) lpMemRes)++ = (APLINT) (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat;
+                                        break;
 
-                            break;
+                                    case IMMTYPE_FLOAT: // Res = INT , Rht = FLT
+                                        *((LPAPLINT) lpMemRes)++ = (APLINT) lpSymGlbSub->stData.stFloat;
 
-                        case IMMTYPE_CHAR:
-                        defstop
-                            break;
-                    } // End FOR/SWITCH
+                                        break;
 
-                    break;
+                                    case IMMTYPE_CHAR:  // Res = INT , Rht = CHAR
+                                    defstop
+                                        break;
+                                } // End SWITCH
 
-                defstop
-                    break;
+                                break;
+
+                            case PTRTYPE_HGLOBAL:
+                                // Lock the memory to get a ptr to it
+                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
+
+                                Assert (lpMemHdr->Rank EQ 0);
+
+                                // Skip over the header & dimensions to the data
+                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
+
+                                // Split cases based upon the storage type
+                                switch (lpMemHdr->ArrType)
+                                {
+                                    case ARRAY_BOOL:    // Res = INT , Rht = BOOL
+                                    case ARRAY_INT:     // Res = INT , Rht = INT
+                                    case ARRAY_APA:     // Res = INT , Rht = APA
+                                    case ARRAY_FLOAT:   // Res = INT , Rht = FLT
+                                        *((LPAPLINT) lpMemRes)++ = GetNextInteger (lpMemSub, lpMemHdr->ArrType, uRht);
+
+                                        break;
+
+                                    case ARRAY_RAT:     // Res = INT , Rht = RAT
+                                    case ARRAY_VFP:     // Res = INT , Rht = VFP
+                                                        // We don't demote RAT/VFP to INT
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End FOR
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
             } // End SWITCH
 
             break;
@@ -1011,28 +1091,75 @@ void DemoteData
                 case ARRAY_NESTED:  // Res = FLOAT, Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
-                    // Split cases based upon the immediate type
-                    switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
                     {
-                        case IMMTYPE_BOOL:
-                            *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean;
+                        // Get the SymGlb ptr
+                        lpSymGlbSub = *((LPAPLHETERO) lpMemRht)++;
 
-                            break;
+                        // Split cases based upon the ptr type bits
+                        switch (GetPtrTypeDir (lpSymGlbSub))
+                        {
+                            case PTRTYPE_STCONST:
+                                // Split cases based upon the immediate type
+                                switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
+                                {
+                                    case IMMTYPE_BOOL:
+                                        *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean;
 
-                        case IMMTYPE_INT:
-                            *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (*((LPAPLHETERO) lpMemRht)++)->stData.stInteger;
+                                        break;
 
-                            break;
+                                    case IMMTYPE_INT:
+                                        *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (*((LPAPLHETERO) lpMemRht)++)->stData.stInteger;
 
-                        case IMMTYPE_FLOAT:
-                            *((LPAPLFLOAT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat;
+                                        break;
 
-                            break;
+                                    case IMMTYPE_FLOAT:
+                                        *((LPAPLFLOAT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat;
 
-                        case IMMTYPE_CHAR:
-                        defstop
-                            break;
-                    } // End FOR/SWITCH
+                                        break;
+
+                                    case IMMTYPE_CHAR:
+                                    defstop
+                                        break;
+                                } // End FOR/SWITCH
+
+                                break;
+
+                            case PTRTYPE_HGLOBAL:
+                                // Lock the memory to get a ptr to it
+                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
+
+                                Assert (lpMemHdr->Rank EQ 0);
+
+                                // Skip over the header & dimensions to the data
+                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
+
+                                // Split cases based upon the storage type
+                                switch (lpMemHdr->ArrType)
+                                {
+                                    case ARRAY_BOOL:    // Res = FLT , Rht = BOOL
+                                    case ARRAY_INT:     // Res = FLT , Rht = INT
+                                    case ARRAY_APA:     // Res = FLT , Rht = APA
+                                    case ARRAY_FLOAT:   // Res = FLT , Rht = FLT
+                                        *((LPAPLFLOAT) lpMemRes)++ = GetNextFloat (lpMemSub, lpMemHdr->ArrType, uRht);
+
+                                        break;
+
+                                    case ARRAY_RAT:     // Res = FLT , Rht = RAT
+                                    case ARRAY_VFP:     // Res = FLT , Rht = VFP
+                                                        // We don't demote RAT/VFP to FLT
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
 
                     break;
 
@@ -1068,7 +1195,7 @@ void DemoteData
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
-                        // Get the global memory handle
+                        // Get the SymGlb ptr
                         lpSymGlbSub = *((LPAPLNESTED) lpMemRht)++;
 
                         // Split cases based upon the ptr type bits
@@ -1104,12 +1231,12 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemSub = MyGlobalLock (lpSymGlbSub);
+                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
 
-                                Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
+                                Assert (lpMemHdr->Rank EQ 0);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemSub);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
 
                                 // Copy the data
                                 mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) lpMemSub);
@@ -1141,7 +1268,7 @@ void DemoteData
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
-                        // Get the global memory handle
+                        // Get the SymGlb ptr
                         lpSymGlbSub = *((LPAPLNESTED) lpMemRht)++;
 
                         // Split cases based upon the ptr type bits
@@ -1177,12 +1304,12 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemSub = MyGlobalLock (lpSymGlbSub);
+                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
 
-                                Assert (((LPVARARRAY_HEADER) lpMemSub)->Rank EQ 0);
+                                Assert (lpMemHdr->Rank EQ 0);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemSub);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
 
                                 // Copy the data
                                 mpfr_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpMemSub);

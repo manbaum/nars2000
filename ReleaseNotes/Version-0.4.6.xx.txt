@@ -1,6 +1,17 @@
 Version 0.4.6.xx consists of the following Builds:
 
 
+Build #1207 -- Version 0.4.6.xx
+-------------------------------
+
+* Fix Bug In Data Demotion, Part 2
+
+Directory trunk:
+
+TYPEMOTE.C:
+  Fix bug in <DemoteData> with mis-matched right braces.
+
+
 Build #1206 -- Version 0.4.6.xx
 -------------------------------
 

@@ -1072,13 +1072,13 @@ void DemoteData
 
                             defstop
                                 break;
-                        } // End FOR
+                        } // End SWITCH
+                    } // End FOR
 
-                        break;
+                    break;
 
-                    defstop
-                        break;
-                } // End SWITCH
+                defstop
+                    break;
             } // End SWITCH
 
             break;

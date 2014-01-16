@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -441,15 +441,22 @@ APLFLOAT PrimFnMonTildeFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    APLINT aplIntegerRht;
+    UBOOL  bRet;
+
     // If the float is between 0 and 1, ...
     if (0.0 <= aplFloatRht
      &&        aplFloatRht <= 1.0)
         // Return the complement in 1.0
         return 1.0 - aplFloatRht;
 
-    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return 0.0;             // To keep the compiler happy
+    // Attempt to convert the float to an integer using System []CT
+    aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+    if (!bRet
+     || !IsBooleanValue (aplIntegerRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+////else        // To keep the compiler happy as we must return a result
+        return (APLFLOAT) (1 - aplIntegerRht);
 } // End PrimFnMonTildeFisF
 
 

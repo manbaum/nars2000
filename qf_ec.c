@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,6 +88,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
     APLNELM      aplNELMRht;        // Right arg NELM
     HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
                  hGlbRes = NULL,    // Result    ...
+                 hGlbQuadDM,        // []DM      ...
                  hGlbTmp;           // Temporary ...
     LPAPLCHAR    lpMemRht = NULL;   // Ptr to right arg global memory
     LPAPLNESTED  lpMemRes = NULL;   // Ptr to result    ...
@@ -104,6 +105,12 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
+
+    // Save the current value of []DM
+    hGlbQuadDM = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData;
+
+    // Set it to a known (permanent) value
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
 
     // Create an SIS layer to stop unwinding through this level
     // Fill in the SIS header for Quad-EC
@@ -355,6 +362,12 @@ NORMAL_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
     UnlocalizeSTEs ();
+
+    // Free the current value of []DM
+    FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData);
+
+    // Restore the original value of []DM
+    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = hGlbQuadDM;
 
     return lpYYRes;
 } // End SysFnMonEC_EM_YY

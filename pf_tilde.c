@@ -334,20 +334,24 @@ APLVFP PrimFnMonTildeVisV
 
 {
     APLVFP mpfRes = {0};
+    UBOOL  bRet;
+    APLINT aplIntegerRht;
 
-    if (IsMpf0 (&aplVfpRht))
-        mpfr_init_set_ui (&mpfRes, 1, MPFR_RNDN);
-    else
-    if (IsMpf1 (&aplVfpRht))
-        mpfr_init_set_ui (&mpfRes, 0, MPFR_RNDN);
-    else
-    if (mpfr_cmp_ui (&aplVfpRht, 0) > 0
-     && mpfr_cmp_ui (&aplVfpRht, 1) < 0)
+    if (mpfr_cmp_ui (&aplVfpRht, 0) >= 0
+     && mpfr_cmp_ui (&aplVfpRht, 1) <= 0)
     {
         mpfr_init_set_ui (&mpfRes, 1, MPFR_RNDN);
         mpfr_sub         (&mpfRes, &mpfRes, &aplVfpRht, MPFR_RNDN);
     } else
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    {
+        // Attempt to convert the float to an integer using System []CT
+        aplIntegerRht = mpfr_get_sctsx (&aplVfpRht, &bRet);
+        if (!bRet
+         || !IsBooleanValue (aplIntegerRht))
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        else
+            mpfr_init_set_ui (&mpfRes, 1 - (UINT) aplIntegerRht, MPFR_RNDN);
+    } // End IF/ELSE/...
 
     return mpfRes;
 } // End PrimFnMonTildeVisV

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -535,6 +535,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                    &hGlbNam,            // Right arg global memory handle
                                                     NULL,               // Ptr to axis token (may be NULL)
                                                     lptkFunc,           // Ptr to function token
+                                                    TRUE,               // TRUE iff we came from indexing
                                                     NULL,               // Ptr to result global memory handle
                                                     NULL);              // Ptr to set arg token
                         // If valid, disclose the item as squad returns an enclosed item
@@ -1722,6 +1723,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
                                   &hGlbNam,     // Right arg global memory handle
                                    NULL,        // Ptr to axis token (may be NULL)
                                    lptkFunc,    // Ptr to function token
+                                   TRUE,        // TRUE iff we came from indexing
                                    NULL,        // Ptr to result global memory handle
                                    NULL);       // Ptr to set arg token
     else
@@ -1842,6 +1844,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
                                    &hGlbNam,        // Right arg global memory handle
                                    &tkAxis,         // Ptr to axis token (may be NULL)
                                     lptkFunc,       // Ptr to function token
+                                    TRUE,           // TRUE iff we came from indexing
                                     NULL,           // Ptr to result global memory handle
                                     NULL);          // Ptr to set arg token
     } // End IF/ELSE
@@ -3867,6 +3870,7 @@ UBOOL ArrayIndexSetRect_EM
                                   &hGlbNam2,        // Ptr to right arg global memory handle
                                    NULL,            // Ptr to axis token (may be NULL)
                                    lptkFunc,        // Ptr to function token
+                                   TRUE,            // TRUE iff we came from indexing
                                   &hGlbRes,         // Ptr to result global memory handle
                                    lptkRhtArg);     // Ptr to set arg token
         if (lpYYRes)
@@ -4000,6 +4004,7 @@ UBOOL ArrayIndexSetRect_EM
                                    &hGlbNam2,       // Right arg global memory handle
                                    &tkAxis,         // Ptr to axis token (may be NULL)
                                     lptkFunc,       // Ptr to function token
+                                    TRUE,           // TRUE iff we came from indexing
                                    &hGlbRes,        // Ptr to result global memory handle
                                     lptkRhtArg);    // Ptr to set arg token
         if (lpYYRes)

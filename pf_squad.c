@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -412,6 +412,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
                        &hGlbRht,            // Ptr to right arg global memory handle
                         lptkAxis,           // Ptr to axis token (may be NULL)
                         lptkFunc,           // Ptr to function token
+                        FALSE,              // TRUE iff we came from indexing
                         NULL,               // Ptr to result global memory handle
                         NULL);              // Ptr to set arg token
             } // End IF
@@ -443,6 +444,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
                    &hGlbRht,            // Ptr to right arg global memory handle
                     lptkAxis,           // Ptr to axis token (may be NULL)
                     lptkFunc,           // Ptr to function token
+                    FALSE,              // TRUE iff we came from indexing
                     NULL,               // Ptr to result global memory handle
                     NULL);              // Ptr to set arg token
         defstop
@@ -539,6 +541,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
      HGLOBAL   *lphGlbRht,              // Ptr to right arg global memory handle
      LPTOKEN    lptkAxis,               // Ptr to axis token (may be NULL)
      LPTOKEN    lptkFunc,               // Ptr to function token
+     UBOOL      bIndexing,              // TRUE iff we came from indexing
      HGLOBAL   *lphGlbRes,              // Ptr to result global memory handle (may be NULL if not assignment)
      LPTOKEN    lptkSetArg)             // Ptr to set arg token (may be NULL if not assignment)
 
@@ -552,6 +555,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                   aplNELMRht,           // Right ...
                   aplNELMAxis,          // Axis ...
                   aplNELMRes,           // Result   ...
+                  aplNELMTmp,           // Temp     ...
                   aplNELMSet;           // Set  ...
     APLRANK       aplRankLft,           // Left arg rank
                   aplRankRht,           // Right ...
@@ -772,6 +776,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             } // End IF/ELSE
         } // End FOR
     } // End IF
+
+    // Save the value of aplNELMRes before we take into account elided axes
+    aplNELMTmp = aplNELMRes;
 
     // Handle elided axes
 
@@ -1097,12 +1104,15 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     // Initialize bit mask when looping through Booleans
     uBitMask = BIT0;
 
+    // In case the result is empty, we need to validate the indices
+    aplNELMTmp = max (aplNELMRes, aplNELMTmp);
+
     //***************************************************************
     // Calculate each index into the right arg using a weighting value
     //   from the limit vector and copy the corresponding item from
     //   the right arg to the result.
     //***************************************************************
-    for (uRes = 0; uRes < aplNELMRes; uRes++)
+    for (uRes = 0; uRes < aplNELMTmp; uRes++)
     {
         HGLOBAL    hGlbSub;
         APLLONGEST aplLongestSub;
@@ -1273,20 +1283,20 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
                 // Convert to origin-0
                 aplLongestNxt -= bQuadIO;
+
+                // Check for negative indices [-lpMemDimRht[iAxisNxt], -1]
+                if (SIGN_APLLONGEST (aplLongestNxt)
+                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                    aplLongestNxt += lpMemDimRht[iAxisNxt];
+
+                // Ensure that the value is within range
+                // Note that because <aplLongestNxt> is unsigned,
+                //   we don't have to test for negative
+                if (aplLongestNxt >= lpMemDimRht[iAxisNxt])
+                    goto INDEX_EXIT;
             } else  // Elided dimension:  use dimension from right arg
                 // Copy dimension index (origin-0)
                 aplLongestNxt = lpMemOdo[iAxisNxt];
-
-            // Check for negative indices [-lpMemDimRht[iAxisNxt], -1]
-            if (SIGN_APLLONGEST (aplLongestNxt)
-             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-                aplLongestNxt += lpMemDimRht[iAxisNxt];
-
-            // Ensure that the value is within range
-            // Note that because <aplLongestNxt> is unsigned,
-            //   we don't have to test for negative
-            if (aplLongestNxt >= lpMemDimRht[iAxisNxt])
-                goto DOMAIN_EXIT;
 
             // Accumulate the index
             aplIntAcc += uWVal * aplLongestNxt;
@@ -1298,169 +1308,173 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             iAxisNxt--;
         } // End WHILE
 
-        // If we're not assigning, ...
-        if (lptkSetArg EQ NULL)
+        // If the result is non-empty, ...
+        if (aplNELMRes)
         {
-            // Extract the <aplIntAcc> value from the right arg
-            //   and save into the result
-            GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
-                             aplTypeRht,        // Right arg storage type
-                             aplIntAcc,         // Right arg index
-                            &hGlbSub,           // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
-                            &aplLongestSub,     // Ptr to right arg immediate value
-                            &immTypeSub);       // Ptr to right arg immediate type
-            // If the right arg item is a global and the right arg is not a global numeric, ...
-            if (hGlbSub && !IsGlbNum (aplTypeRht))
+            // If we're not assigning, ...
+            if (lptkSetArg EQ NULL)
             {
-                // Save in the result
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
-////////////////// Split cases based upon the immediate type
-////////////////switch (immTypeSub)
-////////////////{
-////////////////    LPVOID lpMemSub;            // Ptr to item global memory
-////////////////
-////////////////    case IMMTYPE_RAT:
-////////////////        // Lock the memory to get a ptr to it
-////////////////        lpMemSub = MyGlobalLock (hGlbSub);
-////////////////
-////////////////        // Skip over the header and dimensions to the data
-////////////////        lpMemSub = VarArrayDataFmBase (lpMemSub);
-////////////////
-////////////////        // Save in the result
-////////////////        *((LPAPLNESTED) lpMemRes)++ =
-////////////////          MakeGlbEntry_EM (ARRAY_RAT,                       // Entry type
-////////////////                           (LPAPLRAT) lpMemSub,             // Ptr to the value
-////////////////                           TRUE,                            // TRUE iff we should initialize the target first
-////////////////                           lptkFunc);                       // Ptr to function token
-////////////////        // We no longer need this ptr
-////////////////        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
-////////////////
-////////////////        break;
-////////////////
-////////////////    case IMMTYPE_VFP:
-////////////////        // Lock the memory to get a ptr to it
-////////////////        lpMemSub = MyGlobalLock (hGlbSub);
-////////////////
-////////////////        // Skip over the header and dimensions to the data
-////////////////        lpMemSub = VarArrayDataFmBase (lpMemSub);
-////////////////
-////////////////        // Save in the result
-////////////////        *((LPAPLNESTED) lpMemRes)++ =
-////////////////          MakeGlbEntry_EM (ARRAY_VFP,                       // Entry type
-////////////////                           (LPAPLVFP) lpMemSub,             // Ptr to the value
-////////////////                           TRUE,                            // TRUE iff we should initialize the target first
-////////////////                           lptkFunc);                       // Ptr to function token
-////////////////        // We no longer need this ptr
-////////////////        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
-////////////////
-////////////////        break;
-////////////////
-////////////////    case IMMTYPE_BOOL:
-////////////////    case IMMTYPE_INT:
-////////////////    case IMMTYPE_FLOAT:
-////////////////    case IMMTYPE_ERROR:
-////////////////        // Save in the result
-////////////////        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
-////////////////
-////////////////        break;
-////////////////
-////////////////    defstop
-////////////////        break;
-////////////////} // End SWITCH
-            } else
-            // The right arg item is immediate or a global numeric
-            //   (in <aplLongestSub> of immediate type <immTypeSub>)
-            {
-                // Split cases based upon the result storage type
-                switch (aplTypeRes)
+                // Extract the <aplIntAcc> value from the right arg
+                //   and save into the result
+                GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
+                                 aplTypeRht,        // Right arg storage type
+                                 aplIntAcc,         // Right arg index
+                                &hGlbSub,           // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
+                                &aplLongestSub,     // Ptr to right arg immediate value
+                                &immTypeSub);       // Ptr to right arg immediate type
+                // If the right arg item is a global and the right arg is not a global numeric, ...
+                if (hGlbSub && !IsGlbNum (aplTypeRht))
                 {
-                    case ARRAY_BOOL:
-                        // Save in result
-                        if (aplLongestSub)
-                            *((LPAPLBOOL) lpMemRes) |= uBitMask;
+                    // Save in the result
+                    *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
+////////////////////// Split cases based upon the immediate type
+////////////////////switch (immTypeSub)
+////////////////////{
+////////////////////    LPVOID lpMemSub;            // Ptr to item global memory
+////////////////////
+////////////////////    case IMMTYPE_RAT:
+////////////////////        // Lock the memory to get a ptr to it
+////////////////////        lpMemSub = MyGlobalLock (hGlbSub);
+////////////////////
+////////////////////        // Skip over the header and dimensions to the data
+////////////////////        lpMemSub = VarArrayDataFmBase (lpMemSub);
+////////////////////
+////////////////////        // Save in the result
+////////////////////        *((LPAPLNESTED) lpMemRes)++ =
+////////////////////          MakeGlbEntry_EM (ARRAY_RAT,                       // Entry type
+////////////////////                           (LPAPLRAT) lpMemSub,             // Ptr to the value
+////////////////////                           TRUE,                            // TRUE iff we should initialize the target first
+////////////////////                           lptkFunc);                       // Ptr to function token
+////////////////////        // We no longer need this ptr
+////////////////////        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+////////////////////
+////////////////////        break;
+////////////////////
+////////////////////    case IMMTYPE_VFP:
+////////////////////        // Lock the memory to get a ptr to it
+////////////////////        lpMemSub = MyGlobalLock (hGlbSub);
+////////////////////
+////////////////////        // Skip over the header and dimensions to the data
+////////////////////        lpMemSub = VarArrayDataFmBase (lpMemSub);
+////////////////////
+////////////////////        // Save in the result
+////////////////////        *((LPAPLNESTED) lpMemRes)++ =
+////////////////////          MakeGlbEntry_EM (ARRAY_VFP,                       // Entry type
+////////////////////                           (LPAPLVFP) lpMemSub,             // Ptr to the value
+////////////////////                           TRUE,                            // TRUE iff we should initialize the target first
+////////////////////                           lptkFunc);                       // Ptr to function token
+////////////////////        // We no longer need this ptr
+////////////////////        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+////////////////////
+////////////////////        break;
+////////////////////
+////////////////////    case IMMTYPE_BOOL:
+////////////////////    case IMMTYPE_INT:
+////////////////////    case IMMTYPE_FLOAT:
+////////////////////    case IMMTYPE_ERROR:
+////////////////////        // Save in the result
+////////////////////        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
+////////////////////
+////////////////////        break;
+////////////////////
+////////////////////    defstop
+////////////////////        break;
+////////////////////} // End SWITCH
+                } else
+                // The right arg item is immediate or a global numeric
+                //   (in <aplLongestSub> of immediate type <immTypeSub>)
+                {
+                    // Split cases based upon the result storage type
+                    switch (aplTypeRes)
+                    {
+                        case ARRAY_BOOL:
+                            // Save in result
+                            if (aplLongestSub)
+                                *((LPAPLBOOL) lpMemRes) |= uBitMask;
 
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
+                            // Shift over the bit mask
+                            uBitMask <<= 1;
 
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = BIT0;            // Start over
-                            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                            // Check for end-of-byte
+                            if (uBitMask EQ END_OF_BYTE)
+                            {
+                                uBitMask = BIT0;            // Start over
+                                ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
 
-                        } // End IF
+                            } // End IF
 
-                        break;
+                            break;
 
-                    case ARRAY_INT:
-                        // Save in result
-                        *((LPAPLINT) lpMemRes)++ = (APLINT) aplLongestSub;
+                        case ARRAY_INT:
+                            // Save in result
+                            *((LPAPLINT) lpMemRes)++ = (APLINT) aplLongestSub;
 
-                        break;
+                            break;
 
-                    case ARRAY_FLOAT:
-                        // If the right arg item is int, convert it to float
-                        if (IsImmInt (immTypeSub))
-                            *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (APLINT) aplLongestSub;
-                        else
-                            *((LPAPLFLOAT) lpMemRes)++ = *(LPAPLFLOAT) &aplLongestSub;
-                        break;
+                        case ARRAY_FLOAT:
+                            // If the right arg item is int, convert it to float
+                            if (IsImmInt (immTypeSub))
+                                *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (APLINT) aplLongestSub;
+                            else
+                                *((LPAPLFLOAT) lpMemRes)++ = *(LPAPLFLOAT) &aplLongestSub;
+                            break;
 
-                    case ARRAY_CHAR:
-                        // Save in result
-                        *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestSub;
+                        case ARRAY_CHAR:
+                            // Save in result
+                            *((LPAPLCHAR) lpMemRes)++ = (APLCHAR) aplLongestSub;
 
-                        break;
+                            break;
 
-                    case ARRAY_HETERO:
-                    case ARRAY_NESTED:
-                        // Save in result
-                        *((LPAPLNESTED) lpMemRes)++ =
-                        lpSymTmp =
-                          MakeSymEntry_EM (immTypeSub,      // Immediate type
-                                          &aplLongestSub,   // Ptr to immediate value
-                                           lptkFunc);       // Ptr to function token
-                        if (!lpSymTmp)
-                            goto ERROR_EXIT;
-                        break;
+                        case ARRAY_HETERO:
+                        case ARRAY_NESTED:
+                            // Save in result
+                            *((LPAPLNESTED) lpMemRes)++ =
+                            lpSymTmp =
+                              MakeSymEntry_EM (immTypeSub,      // Immediate type
+                                              &aplLongestSub,   // Ptr to immediate value
+                                               lptkFunc);       // Ptr to function token
+                            if (!lpSymTmp)
+                                goto ERROR_EXIT;
+                            break;
 
-                    case ARRAY_RAT:
-                        // Save in result
-                        mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) hGlbSub);
+                        case ARRAY_RAT:
+                            // Save in result
+                            mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) hGlbSub);
 
-                        break;
+                            break;
 
-                    case ARRAY_VFP:
-                        // Save in result
-                        mpfr_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
+                        case ARRAY_VFP:
+                            // Save in result
+                            mpfr_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) hGlbSub);
 
-                        break;
+                            break;
 
-                    defstop
-                        break;
-                } // End SWITCH
+                        defstop
+                            break;
+                    } // End SWITCH
+                } // End IF/ELSE
+            } else
+            // We are assigning
+            {
+                // Get the next item from the set arg
+                if (!IsSingleton (aplNELMSet))
+                    GetNextItemMem (lpMemSet,               // Ptr to item global memory data
+                                    aplTypeSet,             // Item storage type
+                                    aplIndexSet++,          // Index into item
+                                   &hGlbSubSet,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                   &aplLongestSet);         // Ptr to result immediate value (may be NULL)
+                // Replace the <aplIntAcc> element in hGlbRht
+                //   with <aplLongestSet> or <hGlbSubSet> depending upon <aplTypeRht>
+                if (!ArrayIndexReplace_EM (aplTypeRht,      // Right arg storage type
+                                           lpMemRht,        // Ptr to right arg global memory
+                                           aplIntAcc,       // Index into right arg
+                                           aplTypeSet,      // Set arg storage type
+                                           aplLongestSet,   // Set arg immediate value
+                                           hGlbSubSet,      // Set arg global memory handle
+                                           lptkFunc))       // Ptr to function token
+                    goto ERROR_EXIT;
             } // End IF/ELSE
-        } else
-        // We are assigning
-        {
-            // Get the next item from the set arg
-            if (!IsSingleton (aplNELMSet))
-                GetNextItemMem (lpMemSet,               // Ptr to item global memory data
-                                aplTypeSet,             // Item storage type
-                                aplIndexSet++,          // Index into item
-                               &hGlbSubSet,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                               &aplLongestSet);         // Ptr to result immediate value (may be NULL)
-            // Replace the <aplIntAcc> element in hGlbRht
-            //   with <aplLongestSet> or <hGlbSubSet> depending upon <aplTypeRht>
-            if (!ArrayIndexReplace_EM (aplTypeRht,      // Right arg storage type
-                                       lpMemRht,        // Ptr to right arg global memory
-                                       aplIntAcc,       // Index into right arg
-                                       aplTypeSet,      // Set arg storage type
-                                       aplLongestSet,   // Set arg immediate value
-                                       hGlbSubSet,      // Set arg global memory handle
-                                       lptkFunc))       // Ptr to function token
-                goto ERROR_EXIT;
-        } // End IF/ELSE
+        } // End IF
 
         // Increment the odometer in lpMemOdo subject to
         //   the values in lpMemLimLft
@@ -1505,6 +1519,16 @@ LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
+
+INDEX_EXIT:
+    if (bIndexing)
+    {
+        ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Fall through to common code
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,

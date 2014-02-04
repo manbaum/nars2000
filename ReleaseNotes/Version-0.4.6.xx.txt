@@ -1,6 +1,24 @@
 Version 0.4.6.xx consists of the following Builds:
 
 
+Build #1222 -- Version 0.4.6.xx
+-------------------------------
+
+* Update Copyright Year
+
+Directory trunk:
+
+VER.RC:
+  Update copyright year.
+
+
+Directory trunk\htdocs:
+
+INDEX-BODY.AHTML:
+LICENSE-BODY.HTML:
+  Update copyright year.
+
+
 Build #1221 -- Version 0.4.6.xx
 -------------------------------
 

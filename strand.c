@@ -104,9 +104,15 @@ LPPL_YYSTYPE PushVarStrand_YY
     lpYYRes->lpYYStrandBase  =
     lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrArrBase[STRAND_VAR];
 
-    // Save this token on the strand stack
-    //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_VAR]++, lpYYArg);
+    __try
+    {
+        // Save this token on the strand stack
+        //   and skip over it
+        YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_VAR]++, lpYYArg);
+    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    {
+        YYFree (lpYYRes); lpYYRes = NULL;
+    } // End __try/__except
 
 #ifdef DEBUG
     // Display the strand stack
@@ -2592,9 +2598,15 @@ LPPL_YYSTYPE PushNameStrand_YY
     lpYYRes->lpYYStrandBase  =
     lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrArrBase[STRAND_NAM];
 
-    // Save this token on the strand stack
-    //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_NAM]++, lpYYArg);
+    __try
+    {
+        // Save this token on the strand stack
+        //   and skip over it
+        YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_NAM]++, lpYYArg);
+    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    {
+        YYFree (lpYYRes); lpYYRes = NULL;
+    } // End __try/__except
 
 #ifdef DEBUG
     // Display the strand stack
@@ -2819,9 +2831,15 @@ LPPL_YYSTYPE PushList_YY
     lpYYRes->lpYYStrandBase  =
     lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrArrBase[STRAND_LST];
 
-    // Copy this token to the strand stack
-    //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_LST]++, lpYYArg);
+    __try
+    {
+        // Copy this token to the strand stack
+        //   and skip over it
+        YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_LST]++, lpYYArg);
+    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    {
+        YYFree (lpYYRes); lpYYRes = NULL;
+    } // End __try/__except
 
 #ifdef DEBUG
     // Display the strand stack

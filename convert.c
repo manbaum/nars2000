@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,7 +107,16 @@ APLINT FloatToAplint_SCT
      LPUBOOL  lpbRet)       // TRUE iff successful conversion
                             // (may be NULL if the caller isn't interested)
 {
-    return _FloatToAplint_CT (fFloat, SYS_CT, lpbRet, TRUE);
+    // Floats at or above 2*53 are by definition non-integral
+    if (fabs (fFloat) >= Float2Pow53)
+    {
+        if (lpbRet)
+            // Mark as non-integral
+            *lpbRet = FALSE;
+
+        return (APLINT) fFloat;
+    } else
+        return _FloatToAplint_CT (fFloat, SYS_CT, lpbRet, TRUE);
 } // End FloatToAplint_SCT
 
 

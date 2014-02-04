@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2644,7 +2644,7 @@ typedef struct tagLANGCHARS
         {WS_UTF16_DELSTILE          , {0}, L"DelStile",
                                            L"Grade Down:            " WS_UTF16_DELSTILE L"R\n"
                                            L"Grade Down Collated:  L" WS_UTF16_DELSTILE L"R\n\n"
-                                           L"Keyboard:  Alt-'^' or Alt-Shift-'6'\n\n"
+                                           L"Keyboard:  Alt-'#' or Alt-Shift-'3'\n\n"
                                            L"Unicode:  0x2352 or 9042"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_IOTA              , {0}, L"Iota",

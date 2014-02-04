@@ -1,6 +1,18 @@
 Version 0.4.6.xx consists of the following Builds:
 
 
+Build #1219 -- Version 0.4.6.xx
+-------------------------------
+
+* Fix Typo In Language Bar
+
+Directory trunk:
+
+REBAR.C:
+  Update copyright year.
+  Fix typo in keyboard entry for DelStile in the language bar.
+
+
 Build #1218 -- Version 0.4.6.xx
 -------------------------------
 

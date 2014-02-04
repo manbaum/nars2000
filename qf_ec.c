@@ -206,6 +206,10 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 #endif
     aplLongestRC = TranslateExitTypeToReturnCode (exitType);
 
+    // Create []DM & []EM
+    ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
+                        lpMemRht,                       // Ptr to the line which generated the error
+                        lpMemPTD->tkErrorCharIndex);    // Position of caret (origin-0)
     // Save the return code
     lpMemRes[0] =
       MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type

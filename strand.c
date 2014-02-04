@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -159,7 +159,14 @@ LPPL_YYSTYPE PushFcnStrand_YY
     // Save this token on the strand stack
     //   and skip over it
     lpYYCopy = CopyPL_YYSTYPE_YY (lpYYArg);
-    YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_FCN]++, lpYYCopy);
+    __try
+    {
+        YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_FCN]++, lpYYCopy);
+    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    {
+        YYFree (lpYYRes); lpYYRes = NULL;
+    } // End __try/__except
+
     YYFree (lpYYCopy); lpYYCopy = NULL;
 #ifdef DEBUG
     // Display the strand stack

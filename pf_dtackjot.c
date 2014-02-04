@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -187,10 +187,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
-    LPWCHAR       lpwszFormat,          // Ptr to formatting save area
-                  lpwszFormat2;         // ...
-    HGLOBAL       hGlbFormat = NULL,    // New lpwszFormat global memory handle
-                  hGlbFormat2;          // ...
+    LPWCHAR       lpwszFormat;          // Ptr to formatting save area
+    HGLOBAL       hGlbFormat = NULL;    // New lpwszFormat global memory handle
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -442,13 +440,16 @@ __try
         defstop
             break;
     } // End SWITCH
-} __except (CheckVirtAlloc (GetExceptionInformation (), L"PrimFnMonDownTackJot_EM_YY"))
+} __except (CheckException (GetExceptionInformation (), L"PrimFnMonDownTackJot_EM_YY"))
 {
     // Split cases based upon the exception code
     switch (MyGetExceptionCode ())
     {
-        APLU3264 uNewSize;
+        APLU3264 uNewSize;              // Temp new size
+        LPWCHAR  lpwszFormat2;          // Temp ptr
+        HGLOBAL  hGlbFormat2;           // Temp global memory handle
 
+        case EXCEPTION_ACCESS_VIOLATION:
         case EXCEPTION_LIMIT_ERROR:
             // If this is our first time through, ...
             if (hGlbFormat EQ NULL)

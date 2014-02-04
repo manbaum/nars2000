@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -7943,68 +7943,57 @@ EXIT_TYPES ParseLine
     plLocalVars.tkErrorCharIndex =
     plLocalVars.tkLACharIndex    = NEG1U;
 
-    // Initialize the strand starts
-    if (oldTlsPlLocalVars)
-    {
-        plLocalVars.lpYYStrArrStart[STRAND_VAR] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_VAR];
-        plLocalVars.lpYYStrArrStart[STRAND_FCN] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_FCN];
-        plLocalVars.lpYYStrArrStart[STRAND_LST] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_LST];
-        plLocalVars.lpYYStrArrStart[STRAND_NAM] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_NAM];
-    } else
-    {
-        plLocalVars.lpYYStrArrStart[STRAND_VAR] = lpMemPTD->lpStrand[STRAND_VAR];
-        plLocalVars.lpYYStrArrStart[STRAND_FCN] = lpMemPTD->lpStrand[STRAND_FCN];
-        plLocalVars.lpYYStrArrStart[STRAND_LST] = lpMemPTD->lpStrand[STRAND_LST];
-        plLocalVars.lpYYStrArrStart[STRAND_NAM] = lpMemPTD->lpStrand[STRAND_NAM];
-    } // End IF/ELSE
-
-    // Initialize the base & next strand ptrs
-    plLocalVars.lpYYStrArrStart[STRAND_VAR]->lpYYStrandBase =
-    plLocalVars.lpYYStrArrBase [STRAND_VAR]                 =
-    plLocalVars.lpYYStrArrNext [STRAND_VAR]                 = plLocalVars.lpYYStrArrStart[STRAND_VAR];
-    plLocalVars.lpYYStrArrStart[STRAND_FCN]->lpYYStrandBase =
-    plLocalVars.lpYYStrArrBase [STRAND_FCN]                 =
-    plLocalVars.lpYYStrArrNext [STRAND_FCN]                 = plLocalVars.lpYYStrArrStart[STRAND_FCN];
-    plLocalVars.lpYYStrArrStart[STRAND_LST]->lpYYStrandBase =
-    plLocalVars.lpYYStrArrBase [STRAND_LST]                 =
-    plLocalVars.lpYYStrArrNext [STRAND_LST]                 = plLocalVars.lpYYStrArrStart[STRAND_LST];
-    plLocalVars.lpYYStrArrStart[STRAND_NAM]->lpYYStrandBase =
-    plLocalVars.lpYYStrArrBase [STRAND_NAM]                 =
-    plLocalVars.lpYYStrArrNext [STRAND_NAM]                 = plLocalVars.lpYYStrArrStart[STRAND_NAM];
-
-    // Use VirtualAlloc for the stack
-    // ***FIXME***
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#if YYDEBUG
-    // Enable debugging
-    yydebug = TRUE;
-#endif
-
     __try
     {
         __try
         {
+            // Initialize the strand starts
+            if (oldTlsPlLocalVars)
+            {
+                plLocalVars.lpYYStrArrStart[STRAND_VAR] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_VAR];
+                plLocalVars.lpYYStrArrStart[STRAND_FCN] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_FCN];
+                plLocalVars.lpYYStrArrStart[STRAND_LST] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_LST];
+                plLocalVars.lpYYStrArrStart[STRAND_NAM] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_NAM];
+            } else
+            {
+                plLocalVars.lpYYStrArrStart[STRAND_VAR] = lpMemPTD->lpStrand[STRAND_VAR];
+                plLocalVars.lpYYStrArrStart[STRAND_FCN] = lpMemPTD->lpStrand[STRAND_FCN];
+                plLocalVars.lpYYStrArrStart[STRAND_LST] = lpMemPTD->lpStrand[STRAND_LST];
+                plLocalVars.lpYYStrArrStart[STRAND_NAM] = lpMemPTD->lpStrand[STRAND_NAM];
+            } // End IF/ELSE
+
+            // Initialize the base & next strand ptrs
+            plLocalVars.lpYYStrArrStart[STRAND_VAR]->lpYYStrandBase =
+            plLocalVars.lpYYStrArrBase [STRAND_VAR]                 =
+            plLocalVars.lpYYStrArrNext [STRAND_VAR]                 = plLocalVars.lpYYStrArrStart[STRAND_VAR];
+            plLocalVars.lpYYStrArrStart[STRAND_FCN]->lpYYStrandBase =
+            plLocalVars.lpYYStrArrBase [STRAND_FCN]                 =
+            plLocalVars.lpYYStrArrNext [STRAND_FCN]                 = plLocalVars.lpYYStrArrStart[STRAND_FCN];
+            plLocalVars.lpYYStrArrStart[STRAND_LST]->lpYYStrandBase =
+            plLocalVars.lpYYStrArrBase [STRAND_LST]                 =
+            plLocalVars.lpYYStrArrNext [STRAND_LST]                 = plLocalVars.lpYYStrArrStart[STRAND_LST];
+            plLocalVars.lpYYStrArrStart[STRAND_NAM]->lpYYStrandBase =
+            plLocalVars.lpYYStrArrBase [STRAND_NAM]                 =
+            plLocalVars.lpYYStrArrNext [STRAND_NAM]                 = plLocalVars.lpYYStrArrStart[STRAND_NAM];
+
+#if YYDEBUG
+            // Enable debugging
+            yydebug = TRUE;
+#endif
+
             // Parse the line, check for errors
             //   0 = success
             //   1 = YYABORT or APL error
             //   2 = memory exhausted
             uRet = pl_yyparse (&plLocalVars);
-        } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                    L"ParseLine"))
-        {} // End __try/__except
+        } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+        {
+            // Pass the exception on
+            RaiseException (MyGetExceptionCode (),
+                            0,
+                            0,
+                            NULL);
+        } // End __try/__except
     } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
     {
         // Split cases based upon the ExceptionCode
@@ -8024,6 +8013,17 @@ EXIT_TYPES ParseLine
                 uRet = 1;
                 uError = ERRORCODE_ELX;
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                           NULL);
+                break;
+
+            case EXCEPTION_LIMIT_ERROR:
+                // Set the exit type
+                plLocalVars.ExitType = EXITTYPE_ERROR;
+
+                // Mark as in error
+                uRet = 1;
+                uError = ERRORCODE_ELX;
+                ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                            NULL);
                 break;
 
@@ -8203,7 +8203,7 @@ EXIT_TYPES ParseLine
     {
         // If called from Immediate Execution/Execute, ...
         if (lpwszLine)
-            // Signal an error
+            // Create []DM & []EM
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
                                 lpwszLine,                      // Ptr to the line which generated the error
                                 plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
@@ -8214,7 +8214,7 @@ EXIT_TYPES ParseLine
             // Lock the memory to get a ptr to it
             lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
-            // Signal an error
+            // Create []DM & []EM
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
                                &lpMemTxtLine->C,                // Ptr to the line which generated the error
                                 plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
@@ -8320,18 +8320,64 @@ NORMAL_EXIT:
         {
             case ERRORCODE_ALX:
             case ERRORCODE_ELX:
-                // Execute the statement
-                exitType =
-                  PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
-                                               lpMemPTD,        // Ptr to PerTabData global memory
-                                               lpwszLine,       // Ptr to text of line to execute
-                                               lstrlenW (lpwszLine), // Length of the line to execute
-                                               TRUE,            // TRUE iff we should act on errors
-                                               bNoDepthCheck,   // TRUE iff we're to skip the depth check
-                                               NULL);           // Ptr to function token
+                __try
+                {
+                    // Execute the statement
+                    exitType =
+                      PrimFnMonUpTackJotCSPLParse (hWndEC,          // Edit Ctrl window handle
+                                                   lpMemPTD,        // Ptr to PerTabData global memory
+                                                   lpwszLine,       // Ptr to text of line to execute
+                                                   lstrlenW (lpwszLine), // Length of the line to execute
+                                                   TRUE,            // TRUE iff we should act on errors
+                                                   bNoDepthCheck,   // TRUE iff we're to skip the depth check
+                                                   NULL);           // Ptr to function token
+                } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+                {
+                    // Split cases based upon the ExceptionCode
+                    switch (MyGetExceptionCode ())
+                    {
+                        case EXCEPTION_STACK_OVERFLOW:
+                            // Set the error message
+                            ErrorMessageIndirectToken (ERRMSG_STACK_FULL APPEND_NAME,
+                                                       NULL);
+                            break;
+
+                        case EXCEPTION_LIMIT_ERROR:
+                            // Set the error message
+                            ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                                                       NULL);
+                            break;
+
+                        default:
+                            // Display message for unhandled exception
+                            DisplayException ();
+
+                            // Mark as in error
+                            uError = ERRORCODE_DM;
+
+                            break;
+                    } // End SWITCH
+
+                    // Create []DM & []EM
+                    ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
+                                        lpwszLine,                      // Ptr to the line which generated the error
+                                        plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
+                    // Set the exit type
+                    plLocalVars.ExitType = EXITTYPE_STACK_FULL;
+
+                    // Set the reset flag
+                    lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_STOP;
+
+                    // Mark as in error
+                    uError = ERRORCODE_DM;
+
+                    goto DISPLAYDM_EXIT;
+                } // End __try/__except
+
                 break;
 
             case ERRORCODE_DM:
+DISPLAYDM_EXIT:
                 // Display []DM
                 DisplayGlbArr_EM (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData,   // Global memory handle to display
                                   TRUE,                                                         // TRUE iff last line has CR
@@ -8425,6 +8471,7 @@ NORMAL_EXIT:
             case EXITTYPE_STACK_FULL:   // ...
             case EXITTYPE_STOP:         // ...
             case EXITTYPE_NOVALUE:      // ...
+            case EXITTYPE_RETURNxLX:
                 // Get a ptr to the current SIS header
                 lpSISPrv =
                 lpSISCur = lpMemPTD->lpSISCur;

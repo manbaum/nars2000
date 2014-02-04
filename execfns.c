@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -182,12 +182,23 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     lpMemPTD->lphtsPTD = lphtsPTD;
             } // End IF
 
-            // Execute the primitive function
-            lpYYRes =
-              (*lpPrimFn) (lptkLftArg,                      // Ptr to left arg token (may be NULL if monadic)
-                          &lpYYFcnStr->tkToken,             // Ptr to function token
-                           lptkRhtArg,                      // Ptr to right arg token
-                           lptkAxis);                       // Ptr to axis token (may be NULL)
+            __try
+            {
+                // Execute the primitive function
+                lpYYRes =
+                  (*lpPrimFn) (lptkLftArg,                      // Ptr to left arg token (may be NULL if monadic)
+                              &lpYYFcnStr->tkToken,             // Ptr to function token
+                               lptkRhtArg,                      // Ptr to right arg token
+                               lptkAxis);                       // Ptr to axis token (may be NULL)
+            } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+            {
+                // Set the error message text
+                ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                                           NULL);
+                // Mark as an error
+                lpYYRes = NULL;
+            } // End __try/__except
+
             // Get the system namespace level
             uSysNSLvl = lpYYFcnStr->tkToken.tkFlags.SysNSLvl;
 
@@ -239,12 +250,23 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                             lpMemPTD->lphtsPTD = lphtsPTD;
                     } // End IF
 
-                    // If it's an internal function, ...
-                    lpYYRes =
-                      (*lpNameFcn) (lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
-                                   &lpYYFcnStr->tkToken,    // Ptr to function token
-                                    lptkRhtArg,             // Ptr to right arg token
-                                    lptkAxis);              // Ptr to axis token (may be NULL)
+                    __try
+                    {
+                        // If it's an internal function, ...
+                        lpYYRes =
+                          (*lpNameFcn) (lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+                                       &lpYYFcnStr->tkToken,    // Ptr to function token
+                                        lptkRhtArg,             // Ptr to right arg token
+                                        lptkAxis);              // Ptr to axis token (may be NULL)
+                    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+                    {
+                        // Set the error message text
+                        ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                                                   NULL);
+                        // Mark as an error
+                        lpYYRes = NULL;
+                    } // End __try/__except
+
                     // Get the system namespace level
                     uSysNSLvl = lpYYFcnStr->tkToken.tkFlags.SysNSLvl;
 
@@ -265,22 +287,33 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                 Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
                      || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
-                // If it's a user-defined function/operator, ...
-                if (stFlags.UsrDfn)
-                    lpYYRes =
-                      ExecDfnGlb_EM_YY (hGlbFcn,        // User-defined function/operator global memory handle
-                                        lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
-                                        lpYYFcnStr,     // Ptr to function strand
-                                        lptkAxis,       // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                        lptkRhtArg,     // Ptr to right arg token
-                                        LINENUM_ONE);   // Starting line # (see LINE_NUMS)
-                else
-                    // Execute a function array global memory handle
-                    lpYYRes =
-                      ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic or niladic)
-                                        hGlbFcn,        // Function array global memory handle
-                                        lptkRhtArg,     // Ptr to right arg token (may be NULL if niladic)
-                                        lptkAxis);      // Ptr to axis token (may be NULL)
+                __try
+                {
+                    // If it's a user-defined function/operator, ...
+                    if (stFlags.UsrDfn)
+                        lpYYRes =
+                          ExecDfnGlb_EM_YY (hGlbFcn,        // User-defined function/operator global memory handle
+                                            lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
+                                            lpYYFcnStr,     // Ptr to function strand
+                                            lptkAxis,       // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                            lptkRhtArg,     // Ptr to right arg token
+                                            LINENUM_ONE);   // Starting line # (see LINE_NUMS)
+                    else
+                        // Execute a function array global memory handle
+                        lpYYRes =
+                          ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic or niladic)
+                                            hGlbFcn,        // Function array global memory handle
+                                            lptkRhtArg,     // Ptr to right arg token (may be NULL if niladic)
+                                            lptkAxis);      // Ptr to axis token (may be NULL)
+                } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+                {
+                    // Set the error message text
+                    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                                               NULL);
+                    // Mark as an error
+                    lpYYRes = NULL;
+                } // End __try/__except
+
                 break;
             } // End IF
 
@@ -304,11 +337,22 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     tkFn.tkData.tkChar     = lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar;
                     tkFn.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
 
-                    lpYYRes =
-                      (*lpPrimFn) (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-                                  &tkFn,            // Ptr to function token
-                                   lptkRhtArg,      // Ptr to right arg token
-                                   lptkAxis);       // Ptr to axis token (may be NULL)
+                    __try
+                    {
+                        lpYYRes =
+                          (*lpPrimFn) (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                      &tkFn,            // Ptr to function token
+                                       lptkRhtArg,      // Ptr to right arg token
+                                       lptkAxis);       // Ptr to axis token (may be NULL)
+                    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+                    {
+                        // Set the error message text
+                        ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                                                   NULL);
+                        // Mark as an error
+                        lpYYRes = NULL;
+                    } // End __try/__except
+
                     break;
                 } // End IMMTYPE_PRIMFCN
 
@@ -326,32 +370,42 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             Assert (IsGlbTypeFcnDir_PTB (hGlbFcn)
                  || IsGlbTypeDfnDir_PTB (hGlbFcn));
 
-            // If it's a user-defined function/operator, ...
-            switch (GetSignatureGlb_PTB (hGlbFcn))
+            __try
             {
-                case FCNARRAY_HEADER_SIGNATURE:
-                    // Execute a function array global memory handle
-                    lpYYRes =
-                      ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic or niladic)
-                                        hGlbFcn,        // Function array global memory handle
-                                        lptkRhtArg,     // Ptr to right arg token
-                                        lptkAxis);      // Ptr to axis token (may be NULL)
-                    break;
+                // If it's a user-defined function/operator, ...
+                switch (GetSignatureGlb_PTB (hGlbFcn))
+                {
+                    case FCNARRAY_HEADER_SIGNATURE:
+                        // Execute a function array global memory handle
+                        lpYYRes =
+                          ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic or niladic)
+                                            hGlbFcn,        // Function array global memory handle
+                                            lptkRhtArg,     // Ptr to right arg token
+                                            lptkAxis);      // Ptr to axis token (may be NULL)
+                        break;
 
-                case DFN_HEADER_SIGNATURE:
-                    // Execute a user-defined function/operator global memory handle
-                    lpYYRes =
-                      ExecDfnGlb_EM_YY (hGlbFcn,        // User-defined function/operator global memory handle
-                                        lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
-                                        lpYYFcnStr,     // Ptr to function strand
-                                        lptkAxis,       // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                        lptkRhtArg,     // Ptr to right arg token
-                                        LINENUM_ONE);   // Starting line # (see LINE_NUMS)
-                    break;
+                    case DFN_HEADER_SIGNATURE:
+                        // Execute a user-defined function/operator global memory handle
+                        lpYYRes =
+                          ExecDfnGlb_EM_YY (hGlbFcn,        // User-defined function/operator global memory handle
+                                            lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
+                                            lpYYFcnStr,     // Ptr to function strand
+                                            lptkAxis,       // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                            lptkRhtArg,     // Ptr to right arg token
+                                            LINENUM_ONE);   // Starting line # (see LINE_NUMS)
+                        break;
 
-                defstop
-                    break;
-            } // End SWITCH
+                    defstop
+                        break;
+                } // End SWITCH
+            } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+            {
+                // Set the error message text
+                ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                                           NULL);
+                // Mark as an error
+                lpYYRes = NULL;
+            } // End __try/__except
 
             break;
 
@@ -367,16 +421,27 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             // Setup left and right operands (if present)
             GetOperands (hGlbFcn, &lpYYFcnStrLft, &lpYYFcnStrRht);
 
-            // Call common routine
-            lpYYRes =
-              ExecDfnOprGlb_EM_YY (hGlbFcn,         // User-defined function/operator global memory handle
-                                   lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-                                   lpYYFcnStrLft,   // Ptr to left operand function strand (may be NULL if not an operator and no axis)
-                                   lpYYFcnStr,      // Ptr to function strand (may be NULL if not an operator and no axis)
-                                   lpYYFcnStrRht,   // Ptr to right operand function strand (may be NULL if not an operator and no axis)
-                                   lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                   lptkRhtArg,      // Ptr to right arg token
-                                   LINENUM_ONE);    // Starting line # (see LINE_NUMS)
+            __try
+            {
+                // Call common routine
+                lpYYRes =
+                  ExecDfnOprGlb_EM_YY (hGlbFcn,         // User-defined function/operator global memory handle
+                                       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStrLft,   // Ptr to left operand function strand (may be NULL if not an operator and no axis)
+                                       lpYYFcnStr,      // Ptr to function strand (may be NULL if not an operator and no axis)
+                                       lpYYFcnStrRht,   // Ptr to right operand function strand (may be NULL if not an operator and no axis)
+                                       lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                                       lptkRhtArg,      // Ptr to right arg token
+                                       LINENUM_ONE);    // Starting line # (see LINE_NUMS)
+            } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+            {
+                // Set the error message text
+                ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                                           NULL);
+                // Mark as an error
+                lpYYRes = NULL;
+            } // End __try/__except
+
             // If we allocated it, ...
             if (lpYYFcnStrLft)
                 // Free the left operand YYRes

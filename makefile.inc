@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2013 Sudley Place Software
+#     Copyright (C) 2006-2014 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,10 @@
 !error Environment variable ZIPPRG= not defined.
 !endif
 
+!ifndef MAKEDEP
+!error Environment variable MAKEDEP= not defined.
+!endif
+
 !ifndef MAKEPRO
 !error Environment variable MAKEPRO= not defined.
 !endif
@@ -44,6 +48,10 @@
 
 !ifndef MSVC
 !error Environment variable MSVC= not defined.
+!endif
+
+!ifndef CS_DIR
+!error Environment variable CS_DIR= not defined.
 !endif
 
 !ifndef MS_DIR
@@ -93,13 +101,13 @@ LIST=
 
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
-###CFLAGS_DEBUG=/Zi /D "DEBUG"
-CFLAGS_DEBUG=/Z7 /D "DEBUG"
+###CFLAGS_DEBUG=/Z7 /D "DEBUG"
+CFLAGS_DEBUG=/Zi /D "DEBUG"
 BUILD_DIR=Debug
 DEBUG_LIBSUFFIX=d
 !else
 RESDEBUG=0
-CFLAGS_DEBUG=
+CFLAGS_DEBUG=/Zi
 BUILD_DIR=Release
 DEBUG_LIBSUFFIX=
 !endif
@@ -124,7 +132,7 @@ ECM_INC  = $(ECM_DIR)include^\
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS_INC);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(GSL_INC)
+I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS_INC);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(GSL_INC);$(CS_DIR)include
 
 MV=makever
 
@@ -136,15 +144,28 @@ MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
 MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
 ECM_LIB  = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
 
+!if "$(DEBUG)" == "1"
+CS_DLL=
+CS_LIB=
+!else
+!if "$(WIN)" == "64"
+CS_DLL=$(CS_DIR)bin\x64\crshhndl.dll
+CS_LIB=$(CS_DIR)lib\x64\crshhndl.lib
+!else
+CS_DLL=$(CS_DIR)bin\crshhndl.dll
+CS_LIB=$(CS_DIR)lib\crshhndl.lib
+!endif
+!endif
+
 CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)" /D "_STDINT_H"
 
 ## Load all source file names
 !include makefile.src
 
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
-CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
+CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
 CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS"
-LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT
+LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /GS- /D_AMD64_ /D_M_AMD64 /D_WIN64 /Gd
 LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64
@@ -168,6 +189,7 @@ LIBS_WEXE = gdi32.lib           \
             qdebug32.lib        \
 !endif
             libcmt.lib          \
+            $(CS_LIB)           \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
             $(ECM_LIB)          \
@@ -198,6 +220,8 @@ B=$(BIN)D$(WIN)\                # Define output directory for binaries
 B=$(BIN)ND$(WIN)\               # Define output directory for binaries
 !endif
 OC=RET\COM\                     # Define output directory for common intermediate files
+
+PDBFILE = $(B)$(ENAME).pdb
 
 FONT=$(NARSROOT)SImPL-Medium.ttf # Default APL TrueType font
 
@@ -266,6 +290,11 @@ INITIAL_EXE:
         @if exist $@ del $@
         @$(CC) $(CFLAGS_WEXE) /Fo$@ $(LIST) %s
 
+{}.cpp{$(O)}.obj:
+        @Set INCLUDE=$(I98);$(O)
+        @if exist $@ del $@
+        @$(CC) $(CFLAGS_WEXE) /Fo$@ $(LIST) %s
+
 {}.c{$(OC)}.obj:
         @Set INCLUDE=$(I98);$(O)
         @if exist $@ del $@
@@ -297,23 +326,27 @@ DEP:    DIR                     \
 
 {}.c{$(O)}.dep:
         @echo $(@F)
-        @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
+        @php $(MAKEDEP) -s$(O)=$$(O) %s > $@
+
+{}.cpp{$(O)}.dep:
+        @echo $(@F)
+        @php $(MAKEDEP) -s$(O)=$$(O) %s > $@
 
 {$(O)}.c{$(O)}.dep:
         @echo $(@F)
-        @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
+        @php $(MAKEDEP) -s$(O)=$$(O) %s > $@
 
 {$(WS)}.c{$(O)}.dep:
         @echo $(@F)
-        @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(WS)=$$(WS) %s > $@
+        @php $(MAKEDEP) -s$(O)=$$(O),$(WS)=$$(WS) %s > $@
 
 {$(MS_DIR)}.c{$(O)}.dep:
         @echo $(@F)
-        @php $(NARSROOT)makedep.php -s$(O)=$$(O),$(MS_DIR)=$$(MS_DIR) %s > $@
+        @php $(MAKEDEP) -s$(O)=$$(O),$(MS_DIR)=$$(MS_DIR) %s > $@
 
 {}.rc{$(O)}.dev:
         @echo $(@F)
-        @php $(NARSROOT)makedep.php -s$(O)=$$(O) %s > $@
+        @php $(MAKEDEP) -s$(O)=$$(O) %s > $@
 
 !include $(O)dep.txt
 
@@ -326,6 +359,10 @@ PRO:    DIR                     \
         $(SRC_PARSE:???=pro)
 
 {}.c{$(O)}.pro:
+        @echo $(@F)
+        @php $(MAKEPRO) %s $@
+
+{}.cpp{$(O)}.pro:
         @echo $(@F)
         @php $(MAKEPRO) %s $@
 
@@ -425,6 +462,9 @@ $(O)bjhash.obj:         $(@B).c         $(BJHASH_DEP)
 $(O)common.obj:         $(@B).c         $(COMMON_DEP)
 $(O)convert.obj:        $(@B).c         $(CONVERT_DEP)
 $(O)crash.obj:          $(@B).c         $(CRASH_DEP)
+!if "$(DEBUG)" == "0"
+$(O)crashserver.obj:    $(@B).cpp       $(CRASHSERVER_DEP)
+!endif
 $(O)cs_proc.obj:        $(@B).c         $(CS_PROC_DEP)
 $(O)customize.obj:      $(@B).c         $(CUSTOMIZE_DEP)
 $(O)debug.obj:          $(@B).c         $(DEBUG_DEP)
@@ -626,6 +666,8 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(MPFR_LIB)         \
                         $(ECM_LIB)          \
                         $(GSL_LIB)          \
+                        $(CS_DLL)           \
+                        $(CS_LIB)           \
                         makefile.inc        \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.crf
@@ -634,6 +676,7 @@ $(OBJS)
 /MAP:$(O)$(ENAME).map
 $(LIBS_WEXE) $(LIBS_EXT)
 /DEF:$(DEFFILE)
+/PDB:$(PDBFILE)
 /NODEFAULTLIB
 !if "$(LINKDEBUG)" == "1"
 /VERBOSE:LIB
@@ -651,10 +694,10 @@ $(LIBS_WEXE) $(LIBS_EXT)
         @del $(O)$(@B).lib
         @copy $(O)$(ENAME).map $(B) >NUL
 
-$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE* $(FONT)
+$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE* $(FONT) $(CS_DLL)
         @echo ---.zip File----
         @copy $(O)$(ENAME).exe $(ENAME).exe >NUL
-        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE* $(FONT) >NUL
+        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE* $(FONT) $(CS_DLL) >NUL
         @del $(ENAME).exe
         @dir /ON $(B)$(ENAME).zip|grep "$(ENAME)\."
 

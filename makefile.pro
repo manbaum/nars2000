@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2011 Sudley Place Software
+#     Copyright (C) 2006-2014 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -30,6 +30,10 @@ MPFR=MPFR\                      # MPFR source
 !include makefile.src
 
 {}.c{$(O)}.pro:
+        @echo $(@F) #1
+        @php $(MAKEPRO) %s $@
+
+{}.cpp{$(O)}.pro:
         @echo $(@F) #1
         @php $(MAKEPRO) %s $@
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -209,22 +209,22 @@ END
 // Dialogs
 //
 
-IDD_ABOUT DIALOGEX DISCARDABLE  4, 4, 197,135
+IDD_ABOUT DIALOGEX DISCARDABLE  4, 4, 197,145
 STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "About NARS2000"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "&OK"     , IDOK          ,130,  5, 50, 14
+    DEFPUSHBUTTON   "&OK"     , IDOK          ,135,  5, 50, 14
     LTEXT           "NARS2000 (WinXX)#%u.%u%u"
                               , IDC_VERSION   , 10,  8,115, 14, NOT WS_GROUP
     LTEXT           ""        , IDC_VERSION2  , 10, 25,190,100
-    LTEXT           "Copyright \xA9 2006-13 Sudley Place Software\nAll rights reserved."
-                              , IDC_STATIC    , 10, 70,150, 18, NOT WS_GROUP
-    ICON            IDI_NARS  , IDC_LOADEDFROM,145, 65,  0,  0, SS_NOTIFY | SS_REALSIZEIMAGE
+    LTEXT           "Copyright \xA9 2006-14 Sudley Place Software\nAll rights reserved."
+                              , IDC_STATIC    , 10, 80,150, 18, NOT WS_GROUP
+    ICON            IDI_NARS  , IDC_LOADEDFROM,155, 75,  0,  0, SS_NOTIFY | SS_REALSIZEIMAGE
     LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see"
-                              , IDC_STATIC    , 10, 95,170, 20
+                              , IDC_STATIC    , 10,105,170, 20
     LTEXT           "http://www.nars2000.org/License.html"
-                              , IDC_LINK      , 10,115,170,  9, SS_NOTIFY
+                              , IDC_LINK      , 10,125,170,  9, SS_NOTIFY
 END
 
 IDD_UPDATES DIALOGEX DISCARDABLE  0, 0, 240, 110

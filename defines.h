@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,18 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
+
+// Wide char __FILE__ and __LINE__ macros
+#define WFILE       WIDEN(__FILE__)
+#define WIDEN(x)    SMASH(L,x)
+#define SMASH(x,y)  x##y
+
+#define WLINE       TOWL1 (__LINE__)
+#define TOWL1(p)    TOWL2(p)
+#define TOWL2(p)    L#p
+
+#define WFNLN       WFILE L" " WLINE
+
 
 #ifdef DEBUG
   ////#define DEBUG_REFCNT

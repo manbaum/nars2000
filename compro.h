@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,6 +30,9 @@
   #include "common.pro"
   #include "convert.pro"
   #include "crash.pro"
+#ifndef DEBUG
+  #include "crashserver.pro"
+#endif
   #include "cs_parse.pro"
   #include "cs_proc.pro"
   #include "customize.pro"

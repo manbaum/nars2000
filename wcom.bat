@@ -1,6 +1,9 @@
 REM Directory of the root of the NARS2000 project
 Set NARSROOT=R:\NARS2000^\
 
+REM Path to Crash Server SDK root
+Set CS_DIR=R:\CrashServerSDK^\
+
 REM Path and name of zip program (7-zip)
 Set ZIPPRG="%ProgramFiles%\7-Zip\7z"
 
@@ -10,6 +13,9 @@ Set CYGWIN_DIR=C:\Cygwin^\
 
 REM Path and name of parser generator (bison)
 Set PARGEN=%CYGWIN_DIR%bin\bison
+
+REM Path and name of makedep program
+Set MAKEDEP=%NARSROOT%makedep.php
 
 REM Path and name of makepro program
 Set MAKEPRO=%NARSROOT%makepro.php
@@ -30,6 +36,8 @@ Set MPIR_DIR=%NARSROOT%mpir^\
 Set MPFR_DIR=%NARSROOT%mpfr^\
 Set GSL_DIR=%NARSROOT%gsl^\
 Set ECM_DIR=%NARSROOT%ecm^\
+
+if not exist .\SImPL-Medium.ttf copy /Y ..\SImPL-Medium.ttf . >NUL
 
 if "%1" == "32" goto W32
 :W64

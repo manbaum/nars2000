@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,6 +44,8 @@ CRITICAL_SECTION CSOPthread;            // Critical Section Object for pthread
 #ifdef DEBUG
 extern int Debug = 1;
 #endif
+WCHAR crsh_dll[] = L"CRSHHNDL.DLL",
+      crsh_version[32] = L" not loaded";
 
 
 //************************** Data Area **************************************
@@ -3843,21 +3845,39 @@ int PASCAL WinMain
      int         nCmdShow)
 
 {
-    MSG     Msg;                    // Message for GetMessageW loop
-    UINT    uCnt;                   // Loop counter
-    INITCOMMONCONTROLSEX icex;      // Common control class struc
-    OSVERSIONINFO osvi = {0};       // Version info
+    MSG                  Msg;           // Message for GetMessageW loop
+    UINT                 uCnt;          // Loop counter
+    INITCOMMONCONTROLSEX icex;          // Common control class struc
+    OSVERSIONINFO        osvi = {0};    // Version info
+#ifndef DEBUG
+    // Instantiate the Crash Server
+    if (CrashServer ())
+        // Set the CRSHHNDL.DLL version #
+        LclFileVersionStrW (crsh_dll, crsh_version);
+    else
+    {
+        WCHAR wszTemp[128];
 
+        wsprintfW (wszTemp,
+                  L"The file <%s> was not found."
+                  L"  This file is part of the normal distribution of NARS2000, and should be in the same directory as the .exe file."
+                  L"  Without it, if the program encounters a problem, no record of the error will be created."
+                  L"  Are you sure you want to continue?",
+                   crsh_dll);
+        if (MessageBoxW (hWndMF, wszTemp, WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL)
+            return -1;
+    } // End IF/ELSE
+#endif
     // Ensure that the system meets our minimum requirements (WinXP = 5.1)
     osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
     GetVersionEx (&osvi);
 
-    if (!((osvi.dwMajorVersion > 5)
+    if (!((osvi.dwMajorVersion >  5)
       || ((osvi.dwMajorVersion == 5)
        && (osvi.dwMinorVersion >= 1))))
     {
         MessageBoxW (hWndMF,
-                     L"Sorry, but the minimum OS version for " WS_APPNAME L" is WinXP.",
+                    L"Sorry, but the minimum OS version for " WS_APPNAME L" is WinXP.",
                      lpwszAppName,
                      MB_OK | MB_ICONERROR);
         return -1;
@@ -4032,8 +4052,10 @@ int PASCAL WinMain
 
 ////PERFMONSHOW
 
+#ifdef DEBUG
     __try
     {
+#endif
         // Main message loop
         while (GetMessageW (&Msg, NULL, 0, 0))
         {
@@ -4062,11 +4084,13 @@ int PASCAL WinMain
                 } // End IF/IF
             } // End IF/ELSE
         } // End WHILE
+#ifdef DEBUG
     } __except (CheckException (GetExceptionInformation (), L"WinMain"))
     {
         // Display message for unhandled exception
         DisplayException ();
     } // End __try/__except
+#endif
 
     // GetMessageW returned FALSE for a Quit message
 EXIT5:

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,9 @@ WCHAR wszVarFileInfo[] = WS_SLOPE L"VarFileInfo" WS_SLOPE L"Translation",
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
 extern HICON hIconAbout;
-extern char ecm_version[];
+extern char  ecm_version[];
+extern WCHAR crsh_dll[];
+extern WCHAR crsh_version[];
 
 
 //***************************************************************************
@@ -52,7 +54,7 @@ void LclFileVersionStrW
     DWORD  dwVerSize;       // Size of the VERSIONINFO struc
     DWORD  dwTrans;         // Translation value
     LPWSTR lpwVer, lpwBuf;
-    HLOCAL hLoc;
+    HLOCAL hLoc = NULL;
     UINT   cb;
     WCHAR  wszTemp[128];
 
@@ -117,7 +119,11 @@ ERROR_EXIT3:
     goto NORMAL_EXIT;
 
 NORMAL_EXIT:
-    LocalFree (hLoc);       // Free the local memory
+    if (hLoc)
+    {
+        // Free the local memory
+        LocalFree (hLoc); hLoc = NULL;
+    } // End IF
 } // End LclFileVersionStrW
 
 
@@ -183,6 +189,13 @@ APLU3264 CALLBACK AboutDlgProc
 
             // Append the COMCTL32.DLL version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", wszComctl32FileVer);
+
+            // Copy the CRSHHNDL.DLL prefix to the text
+            lstrcatW (wszTemp, crsh_dll);
+            lstrcatW (wszTemp, L" #");
+
+            // Append the CRSHHNDL.DLL version #
+            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", crsh_version);
 
             // Write out the secondary version string
             SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);

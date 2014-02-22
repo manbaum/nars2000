@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -254,7 +254,7 @@ void MySetExceptionCode
 //***************************************************************************
 
 long CheckVirtAlloc
-    (LPEXCEPTION_POINTERS lpExcept, // Ptr to exception & context records
+    (LPEXCEPTION_POINTERS lpExcept,         // Ptr to exception & context records
      LPWCHAR              lpText)   // Ptr to text of exception handler
 
 {
@@ -566,6 +566,7 @@ void DisplayException
     (void)
 
 {
+#ifdef DEBUG
     WCHAR        wszTemp[1024]; // Temp output save area
     int          exceptIndex;   // Exception index
     UINT         exceptCode,    // Exception code
@@ -911,6 +912,7 @@ void DisplayException
 #undef  NewMsg
 
     exit (exceptCode);
+#endif
 } // End DisplayException
 
 

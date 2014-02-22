@@ -62,6 +62,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS_DIR)&quot;;&quot;$(MPIR_DIR)include&quot;;&quot;$(MPFR_DIR)include&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)include&quot;"
 				PreprocessorDefinitions="_WIN32;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;DEBUG;RESDEBUG=1;_STDINT_H"
 				StringPooling="false"
@@ -73,7 +74,7 @@
 				BrowseInformation="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="1"
+				DebugInformationFormat="3"
 				CompileAs="1"
 			/>
 			<Tool
@@ -89,9 +90,9 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
 				UseLibraryDependencyInputs="false"
-				AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib mpir32d.lib mpfr32d.lib libgsl32d-double.lib qdebug32.lib ecm32d.lib"
-				AdditionalDependencies="mpir32d.lib mpfr32d.lib libgsl32d-double.lib qdebug32.lib ecm32d.lib"
-				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;"
+				AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib"
+				AdditionalDependencies="mpir32d.lib mpfr32d.lib libgsl32d-double.lib qdebug32.lib ecm32d.lib crshhndl.lib"
+				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;;&quot;$(CS_DIR)lib&quot;"
 				GenerateManifest="false"
 				ManifestFile=""
 				AdditionalManifestDependencies="NARS2000.exe.manifest32"
@@ -172,7 +173,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="1"
-				FavorSizeOrSpeed="2"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS_DIR)&quot;;&quot;$(MPIR_DIR)include&quot;;&quot;$(MPFR_DIR)include&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)include&quot;"
 				PreprocessorDefinitions="_WIN32;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_STDINT_H"
 				StringPooling="false"
@@ -200,9 +201,9 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
 				UseLibraryDependencyInputs="false"
-				AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib dbghelp.lib qdebug32.lib mpir32.lib mpfr32.lib libgsl32-double.lib ecm32.lib"
-				AdditionalDependencies="mpir32.lib mpfr32.lib libgsl32-double.lib qdebug32.lib ecm32.lib"
-				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;"
+				AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib dbghelp.lib"
+				AdditionalDependencies="mpir32.lib mpfr32.lib libgsl32-double.lib qdebug32.lib ecm32.lib crshhndl.lib"
+				AdditionalLibraryDirectories="V:\VC\lib;U:\Lib;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;;&quot;$(CS_DIR)lib&quot;"
 				GenerateManifest="false"
 				ManifestFile=""
 				AdditionalManifestDependencies="NARS2000.exe.manifest32"
@@ -281,6 +282,27 @@
 			<File
 				RelativePath=".\crash.c"
 				>
+			</File>
+			<File
+				RelativePath=".\crashserver.cpp"
+				>
+				<FileConfiguration
+					Name="Debug32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="&quot;$(CS_DIR)include&quot;"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release32|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="&quot;$(OutDir)\cs_parse.c&quot;"
@@ -1153,6 +1175,10 @@
 						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="$(CS_DIR)include\CrashHandler.h"
+				>
 			</File>
 			<File
 				RelativePath=".\cs_parse.h"

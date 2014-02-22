@@ -1100,20 +1100,20 @@ void DemoteData
                         {
                             case PTRTYPE_STCONST:
                                 // Split cases based upon the immediate type
-                                switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
+                                switch (lpSymGlbSub->stFlags.ImmType)
                                 {
                                     case IMMTYPE_BOOL:
-                                        *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean;
+                                        *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) lpSymGlbSub->stData.stBoolean;
 
                                         break;
 
                                     case IMMTYPE_INT:
-                                        *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (*((LPAPLHETERO) lpMemRht)++)->stData.stInteger;
+                                        *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) lpSymGlbSub->stData.stInteger;
 
                                         break;
 
                                     case IMMTYPE_FLOAT:
-                                        *((LPAPLFLOAT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat;
+                                        *((LPAPLFLOAT) lpMemRes)++ = lpSymGlbSub->stData.stFloat;
 
                                         break;
 

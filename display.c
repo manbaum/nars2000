@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 #define DEF_POSINFINITY_CHAR     '!'
 #define DEF_POSINFINITY_STR      "!"
@@ -648,9 +649,12 @@ UBOOL DisplayGlbArr_EM
             LPWCHAR     lpwszTemp,          // Ptr to formatting temp area
                         lpwszOrigTemp;      // ...    original value ...
             LPROWPTRS   lpRowPtrs;
+            VARS_TEMP_OPEN
 
             // Save the original ptr to restore later
             lpwszOrigTemp = lpMemPTD->lpwszTemp;
+            CHECK_TEMP_OPEN
+            EXIT_TEMP_OPEN
 
             // Reserve space for Nxt and End Char ptrs
             lpRowPtrs = (LPVOID) lpMemPTD->lpwszTemp;

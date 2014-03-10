@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -364,8 +364,8 @@
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)        (LPVOID)     ((~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem))
-#define ClrPtrTypeInd(lpMem)        (LPVOID)     ((~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem))
+#define ClrPtrTypeDir(lpMem)        (LPVOID)     ((Assert (!PtrNullDir (lpMem) && !PtrReusedDir (lpMem)), (~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem)))
+#define ClrPtrTypeInd(lpMem)        (LPVOID)     ((Assert (!PtrNullInd (lpMem) && !PtrReusedInd (lpMem)), (~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem)))
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.

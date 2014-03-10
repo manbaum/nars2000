@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,10 +63,10 @@ int ChangeRefCntDir_PTB
 
         case PTRTYPE_HGLOBAL:
 #ifdef DEBUG
-            if (ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC1))
+            if (hGlb && hGlbRC1 && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC1))
                 DbgBrk ();
 
-            if (ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC2))
+            if (hGlb && hGlbRC2 && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC2))
                 DbgBrk ();
 #endif
             // Lock the memory to get a ptr to it

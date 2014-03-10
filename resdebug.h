@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
   #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(GPTR,b,FNLN)           // _MyGlobalAlloc(a,b,FNLN)
   #define MyGlobalLock(a)                 ClrPtrTypeDir(a)                      // _MyGlobalLock(ClrPtrTypeDir(a),FNLN)
   #define MyGlobalHandle(a)               ClrPtrTypeDir(a)                      // _MyGlobalHandle(ClrPtrTypeDir(a))
-  #define MyGlobalUnlock(a)               /* empty */                           // _MyGlobalUnlock(ClrPtrTypeDir(a),__LINE__)
+  #define MyGlobalUnlock(a)               ClrPtrTypeDir(a)                      // _MyGlobalUnlock(ClrPtrTypeDir(a),__LINE__)
   #define MyGlobalSize(a)                 _MyGlobalSize(ClrPtrTypeDir(a),__LINE__)
   #define MyGlobalFlags(a)                _MyGlobalFlags(ClrPtrTypeDir(a),__LINE__)
   #define MyGlobalReAlloc(a,b,c)          _MyGlobalReAlloc(ClrPtrTypeDir(a),b,c,FNLN)
@@ -73,9 +73,9 @@
   #define MyGetDC(a)                      GetDC(a)
   #define MyGetWindowDC(a)                GetWindowDC(a)
   #define MyGlobalAlloc(a,b)              GlobalAlloc(GPTR,b)
-  #define MyGlobalLock(a)                 ClrPtrTypeDir(a) // GlobalLock(a)
-  #define MyGlobalHandle(a)               ClrPtrTypeDir(a) // GlobalHandle(a)
-  #define MyGlobalUnlock(a)                   // GlobalUnlock(a)
+  #define MyGlobalLock(a)                 ClrPtrTypeDir(a)  // GlobalLock(a)
+  #define MyGlobalHandle(a)               ClrPtrTypeDir(a)  // GlobalHandle(a)
+  #define MyGlobalUnlock(a)               /* empty */       // GlobalUnlock(a)
   #define MyGlobalSize(a)                 GlobalSize(ClrPtrTypeDir(a))
   #define MyGlobalFlags(a)                GlobalFlags(ClrPtrTypeDir(a))
   #define MyGlobalReAlloc(a,b,c)          GlobalReAlloc(ClrPtrTypeDir(a),b,c)

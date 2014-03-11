@@ -1,6 +1,22 @@
 Version 0.4.6.xx consists of the following Builds:
 
 
+Build #1228 -- Version 0.4.6.xx
+-------------------------------
+
+* Skip DEBUG Display Of Global MFOs
+
+Directory trunk:
+
+ASSIGN.C:
+  Update copyright year.
+  Set bit in global UDFO if assigned into an MFO.
+
+DISPDBG.C:
+  Update copyright year.
+  Skip DEBUG display of global MFOs.
+
+
 Build #1227 -- Version 0.4.6.xx
 -------------------------------
 

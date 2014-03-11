@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,12 +102,15 @@ UBOOL AssignName_EM
             // Clear the name's STE flags
             ZeroMemory (&lptkNam->tkData.tkSym->stFlags, sizeof (lptkNam->tkData.tkSym->stFlags));
 
+            // Is the name being assigned into an MFO?
+            lpMemDfnHdr->bMFO = IsMFOName (lptkNam->tkData.tkSym->stHshEntry->lpwCharName);
+
             // Set STE flags
             lptkNam->tkData.tkSym->stFlags.Imm         = FALSE;
             lptkNam->tkData.tkSym->stFlags.ImmType     = IMMTYPE_ERROR;
             lptkNam->tkData.tkSym->stFlags.Inuse       =
             lptkNam->tkData.tkSym->stFlags.Value       = TRUE;
-            lptkNam->tkData.tkSym->stFlags.ObjName     = IsMFOName (lptkNam->tkData.tkSym->stHshEntry->lpwCharName) ? OBJNAME_MFO : OBJNAME_USR;
+            lptkNam->tkData.tkSym->stFlags.ObjName     = lpMemDfnHdr->bMFO ? OBJNAME_MFO : OBJNAME_USR;
             lptkNam->tkData.tkSym->stFlags.stNameType  = GetNameType (lptkSrc);
 ////////////lptkNam->tkData.tkSym->stFlags.SysVarValid = 0          // Already zero from ZeroMemory
             lptkNam->tkData.tkSym->stFlags.UsrDfn      = TRUE;

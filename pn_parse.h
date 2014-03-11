@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,13 +30,28 @@ typedef enum tagPN_NUMTYPE
     PN_NUMTYPE_HC8,                 // 05:  Octonion ...
     PN_NUMTYPE_RAT,                 // 06:  RAT ...
     PN_NUMTYPE_VFP,                 // 07:  VFP ...
-    PN_NUMTYPE_LENGTH               // 08:  Length
+    PN_NUMTYPE_INIT,                // 08:  Initial value (used in <aNumTypePromote>)
+    PN_NUMTYPE_LENGTH               // 09:  Length
 } PNNUMTYPE, *LPPNNUMTYPE;
+
+#define IsPnNumTypeFlt(a)           \
+    ((a) EQ PN_NUMTYPE_FLT          \
+/*|| (a) EQ PN_NUMTYPE_HC2F */      \
+/*|| (a) EQ PN_NUMTYPE_HC4F */      \
+/*|| (a) EQ PN_NUMTYPE_HC8F */      \
+    )
+
+#define IsPnNumTypeRat(a)           \
+    ((a) EQ PN_NUMTYPE_RAT          \
+/*|| (a) EQ PN_NUMTYPE_HC2R */      \
+/*|| (a) EQ PN_NUMTYPE_HC4R */      \
+/*|| (a) EQ PN_NUMTYPE_HC8R */      \
+    )
 
 typedef struct tagPN_YYSTYPE        // YYSTYPE for Point Notation parser
 {
     ALLTYPES  at;                   // 00:  All datatypes as a union (64 bytes)
-    UINT      uNumOff;              // 40:  Starting offset into lpszNumAccum
+    UINT      uNumAcc;              // 40:  Starting offset into lpszNumAccum
     PNNUMTYPE chType;               // 44:  The numeric type (see PNNUMTYPE)
     UCHAR     chCur,                // 48:  A char for the accumulator
               chAlign[3];           // 49:  For alignment
@@ -46,20 +61,43 @@ typedef struct tagPN_YYSTYPE        // YYSTYPE for Point Notation parser
 #define YYSTYPE_IS_DECLARED 1
 
 
+typedef struct tagPN_VECTOR
+{
+    ALLTYPES  at;                   // 00:  All datatypes as a union (64 bytes)
+    PNNUMTYPE chType;               // 44:  The numeric type (see PNNUMTYPE)
+    LPCHAR    lpStart;              // 48:  Ptr to start of char stream
+    UINT      uNumLen;              // 4C:  # chars in lpStart
+    UINT      bInteger:1;           // 50:  000000001:  TRUE iff the number is integral (no decimal point, no 'e' 'E')
+                                    // 54:  Length
+} PN_VECTOR, *LPPN_VECTOR;
+
+#define PNVECTOR_INIT       10      // Initial allocation count of PN_VECTOR
+#define PNVECTOR_INCR        5      // Incremental ...
+
+
 typedef struct tagPNLOCALVARS       // Point Notation Local Vars
 {
-    LPCHAR    lpszStart;            // 00:  Ptr to start of char stream
-    UINT      uNumLen,              // 04:  # chars in lpszStart
-              uNumCur,              // 08:  Current index into lpszStart
-              uAlpAcc,              // 0C:  Current index into lpszAlphaInt
-              uNumAcc,              // 10:  Current index into lpszNumAccum
-              uCharIndex;           // 14:  Starting character index
-    LPCHAR    lpszAlphaInt,         // 18:  Ptr to AlphaInt accumulator
-              lpszNumAccum;         // 1C:  Ptr to numeric accumulator (in case of overflow)
-    ALLTYPES  at;                   // 20:  All datatypes as a union (64 bytes)
-    PNNUMTYPE chType;               // 60:  The numeric type (see PNNUMTYPE)
-    UBOOL     bYYERROR;             // 64:  TRUE iff there's been a YYERROR
-                                    // 68:  Length
+    LPCHAR        lpszStart;        // 00:  Ptr to start of char stream
+    UINT          uNumLen,          // 04:  # chars in lpszStart
+                  uNumCur,          // 08:  Current index into lpszStart
+                  uNumIni,          // 0C:  Initial index into lpszStart
+                  uAlpAcc,          // 10:  Current index into lpszAlphaInt
+                  uNumAcc,          // 14:  Current index into lpszNumAccum
+                  uCharIndex;       // 18:  Starting character index
+    LPCHAR        lpszAlphaInt,     // 1C:  Ptr to AlphaInt accumulator
+                  lpszNumAccum;     // 20:  Ptr to numeric accumulator (in case of overflow)
+    ALLTYPES      at;               // 24:  All datatypes as a union (64 bytes)
+    PNNUMTYPE     chType,           // 64:  The numeric type (see PNNUMTYPE)
+                  chComType;        // 68:  The common numeric type ...
+    UBOOL         bYYERROR;         // 6C:  TRUE iff there's been a YYERROR
+    HGLOBAL       hGlbRes,          // 70:  Result global memory handle
+                  hGlbVector;       // 74:  PN_VECTOR global memory handle (NULL = none)
+    UINT          uGlbVectorMaxLen, // 78:  Maximum length of memory in hGlbVector (units = PN_VECTOR)
+                  uGlbVectorCurLen; // 7C:  Current ...
+    LPPN_YYSTYPE  lpYYRes;          // 80:  Temp ptr
+    struct tagTKLOCALVARS *
+                  lptkLocalVars;    // 84:  Ptr to Tokenize_EM local vars
+                                    // 88:  Length
 } PNLOCALVARS, *LPPNLOCALVARS;
 
 

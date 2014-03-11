@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,12 +24,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+/***************************************************************************
+
+Build 1227 accumulates a strand of numeric constants all at once by calling
+<ParsePointNotation> once on the entire scalar/vector (with intervening spaces),
+then looping through the individual elements to determine the common storage
+type taking into account that some FLTs might be expressible either as rational
+integers or as more precise VFP numbers, and then calling <ParsePointNotation>
+again on only those elements that need to be promoted to a higher storage type.
+This allows (say) 1111111111111111111111111111111111111 1r2 to be parsed as FLT
+RAT on the first pass, and then re-parse the FLT text as RAT so that the final
+result is a RAT that displays identically to the format in which it was
+entered.  Without this change, the FLT RAT pair would be promoted to VFP and
+the FLT value would be converted to a VFP with imprecise trailing digits as in
+1111111111111111174642258481095114752 0.5
+
+***************************************************************************/
+
 %{
 #define STRICT
 #include <windows.h>
 #include <math.h>
 #include "headers.h"
-
 
 ////#define YYLEX_DEBUG
 ////#define YYFPRINTF_DEBUG
@@ -81,7 +97,7 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 %lex-param   {LPPNLOCALVARS lppnLocalVars}
 %token EXT INF OVR
 
-%start Number
+%start VectorRes
 
 %%
 
@@ -110,7 +126,7 @@ Alphabet:
 Integer:
               Digit                 {DbgMsgWP (L"%%Integer:  Digit");
                                      // Mark starting offset
-                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the digit
                                      PN_NumAcc (lppnLocalVars, $1.chCur);
@@ -119,7 +135,7 @@ Integer:
                                     }
     | OVR     Digit                 {DbgMsgWP (L"%%Integer:  " WS_UTF16_OVERBAR L" Digit");
                                      // Mark starting offset
-                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the negative sign
                                      PN_NumAcc (lppnLocalVars, OVERBAR1);
@@ -153,7 +169,7 @@ AlphaInt:
 Decimal:
               '.' Digit             {DbgMsgWP (L"%%Decimal:  '.' Digit");
                                      // Mark starting offset
-                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the decimal point
                                      PN_NumAcc (lppnLocalVars, '.');
@@ -165,7 +181,7 @@ Decimal:
                                     }
     | OVR     '.' Digit             {DbgMsgWP (L"%%Decimal:  '" WS_UTF16_OVERBAR L"' '.' Digit");
                                      // Mark starting offset
-                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the negative sign
                                      PN_NumAcc (lppnLocalVars, OVERBAR1);
@@ -231,52 +247,24 @@ DecPoint:
     ;
 
 DecConstants:
-          INF                       {DbgMsgWP (L"%%DecConstants:  " WS_UTF16_INFINITY);
-                                     // Terminate the argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
-                                     // Mark the result as float
-                                     $1.chType = PN_NUMTYPE_FLT;
-                                     $1.at.aplFloat = PosInfinity;
-
-                                     $$ = $1;
+          INF                       {DbgMsgWP (L"%%DecConstants:  INF");
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT,  1);
                                     }
-    | OVR INF                       {DbgMsgWP (L"%%DecConstants:  " WS_UTF16_OVERBAR WS_UTF16_INFINITY);
-                                     // Terminate the argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
-                                     // Mark the result as float
-                                     $1.chType = PN_NUMTYPE_FLT;
-                                     $1.at.aplFloat = NegInfinity;
-
-                                     $$ = $1;
+    | OVR INF                       {DbgMsgWP (L"%%DecConstants:  OVR INF");
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, -1);
                                     }
     ;
 
 VfpConstants:
           INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  INF 'v'");
-                                     // Initialize the VFP
-                                     mpfr_init (&$1.at.aplVfp);
-
-                                     // Mark as positive infinity
-                                     mpfr_set_inf (&$1.at.aplVfp, 1);
-
-                                     // Mark the result as VFP
-                                     $1.chType = PN_NUMTYPE_VFP;
-
-                                     $$ = $1;
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP,  1);
                                     }
     | OVR INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
-                                     // Initialize the VFP
-                                     mpfr_init (&$1.at.aplVfp);
-
-                                     // Mark as negative infinity
-                                     mpfr_set_inf (&$1.at.aplVfp, -1);
-
-                                     // Mark the result as VFP
-                                     $1.chType = PN_NUMTYPE_VFP;
-
-                                     $$ = $1;
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, -1);
                                     }
     ;
 
@@ -495,7 +483,7 @@ Rational:
                                      PN_NumCalc (lppnLocalVars, &$1, TRUE);
 
                                      // Mark starting offset
-                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the digit
                                      PN_NumAcc (lppnLocalVars, $3.chCur);
@@ -513,7 +501,7 @@ Rational:
                                      PN_NumCalc (lppnLocalVars, &$1, TRUE);
 
                                      // Mark starting offset
-                                     $1.uNumOff = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the negative sign
                                      PN_NumAcc (lppnLocalVars, OVERBAR1);
@@ -545,44 +533,24 @@ RatPoint:
     ;
 
 RatConstants:
-          INF EXT                   {DbgMsgWP (L"%%RatConstants:  INF EXT");
-                                     // Mark as positive infinity
-                                     mpq_set_infsub (&$1.at.aplRat, 1);
-
-                                     // Mark the result as RAT
-                                     $1.chType = PN_NUMTYPE_RAT;
-
-                                     $$ = $1;
+          INF EXT                   {DbgMsgWP (L"%%RatConstants:  INF 'x'");
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT,  1);
                                     }
     |     INF DEF_RATSEP Integer    {DbgMsgWP (L"%%RatConstants:  INF 'r' Integer");
-                                     // Mark as positive infinity
-                                     mpq_set_infsub (&$1.at.aplRat, 1);
-
-                                     // Mark the result as RAT
-                                     $1.chType = PN_NUMTYPE_RAT;
-
-                                     $$ = $1;
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT,  1);
                                     }
-    | OVR INF EXT                   {DbgMsgWP (L"%%RatConstants:  OVR INF EXT");
-                                     // Mark as negative infinity
-                                     mpq_set_infsub (&$1.at.aplRat, -1);
-
-                                     // Mark the result as RAT
-                                     $1.chType = PN_NUMTYPE_RAT;
-
-                                     $$ = $1;
+    | OVR INF EXT                   {DbgMsgWP (L"%%RatConstants:  OVR INF 'x'");
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, -1);
                                     }
     | OVR INF DEF_RATSEP Integer    {DbgMsgWP (L"%%RatConstants:  OVR INF 'r' Integer");
-                                     // Mark as negative infinity
-                                     mpq_set_infsub (&$1.at.aplRat, -1);
-
-                                     // Mark the result as RAT
-                                     $1.chType = PN_NUMTYPE_RAT;
-
-                                     $$ = $1;
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, -1);
                                     }
     | Integer DEF_RATSEP INF        {DbgMsgWP (L"%%RatConstants:  Integer 'r' INF");
-                                     // Initialize to 0
+                                     // Initialize to 0/1
                                      mpq_init (&$1.at.aplRat);
 
                                      // Mark the result as RAT
@@ -591,7 +559,7 @@ RatConstants:
                                      $$ = $1;
                                     }
     | Integer DEF_RATSEP OVR INF    {DbgMsgWP (L"%%RatConstants:  Integer 'r' OVR INF");
-                                     // Initialize to 0
+                                     // Initialize to 0/1
                                      mpq_init (&$1.at.aplRat);
 
                                      // Mark the result as RAT
@@ -651,13 +619,19 @@ ExpPoint:
                                      // Terminate the (Exponent) argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
-                                     $$ = *PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
+                                     lppnLocalVars->lpYYRes = PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
+                                     if (!lppnLocalVars->lpYYRes)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
                                     }
     | DecPoint 'E' Integer          {DbgMsgWP (L"%%ExpPoint:  DecPoint 'E' Integer");
                                      // Terminate the (Exponent) argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
-                                     $$ = *PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
+                                     lppnLocalVars->lpYYRes = PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
+                                     if (!lppnLocalVars->lpYYRes)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
                                     }
     ;
 
@@ -776,11 +750,55 @@ Number:
                                     }
     ;
 
+// Accumulate into a vector
+VectorAcc:
+      Number                        {DbgMsgWP (L"%%VectorAcc:  Number");
+                                     // Accumulate the current value into the vector
+                                     if (!PN_VectorAcc (lppnLocalVars))
+                                         YYERROR2;
+                                    }
+    | VectorAcc Space Number        {DbgMsgWP (L"%%VectorAcc:  VectorAcc Space Number");
+                                     // Accumulate the current value into the vector
+                                     if (!PN_VectorAcc (lppnLocalVars))
+                                         YYERROR2;
+                                    }
+    ;
+
+Space:
+            ' '                     {DbgMsgWP (L"%%Space:  ' '");
+                                    }
+    | Space ' '                     {DbgMsgWP (L"%%Space:  Space ' '");
+////                                 Assert (IsWhite (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur]));
+////                                 lppnLocalVars->uNumCur++;
+////                                 lppnLocalVars->uNumIni = lppnLocalVars->uNumCur;
+                                    }
+    ;
+
+// The resulting vector
+VectorRes:
+      VectorAcc                     {DbgMsgWP (L"%%VectorRes:  VectorAcc");
+                                     // Create the scalar or vector result
+                                     if (!PN_VectorRes (lppnLocalVars))
+                                        YYERROR2;
+                                    }
+    ;
+
 %%
 
 //***************************************************************************
 //  Start of C program
 //***************************************************************************
+
+//***************************************************************************
+//  $PN_actIDENT
+//***************************************************************************
+
+void PN_actIDENT
+    (LPPN_YYSTYPE lpSrc)
+
+{
+} // End PN_actIDENT
+
 
 //***************************************************************************
 //  $PN_actUNK
@@ -920,16 +938,17 @@ void PN_actRAT_VFP
 } // End PN_actRAT_VFP
 
 
-#define PN_MAT                                                                                                              \
-{/*     BOOL          INT          FLT          HC2          HC4          HC8          RAT          VFP     */              \
-   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,HC2 ),M(BOOL,HC4 ),M(BOOL,HC8 ),M(BOOL,RAT ),M(BOOL,VFP )},   /* BOOL */  \
-   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,HC2 ),M(INT ,HC4 ),M(INT ,HC8 ),M(INT ,RAT ),M(INT ,VFP )},   /* INT  */  \
-   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,HC2 ),M(FLT ,HC4 ),M(FLT ,HC8 ),M(FLT ,VFP ),M(FLT ,VFP )},   /* FLT  */  \
-   {M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC4 ),M(HC2 ,HC8 ),M(HC2 ,HC2 ),M(HC2 ,HC2 )},   /* HC2  */  \
-   {M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC8 ),M(HC4 ,HC4 ),M(HC4 ,HC4 )},   /* HC4  */  \
-   {M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 )},   /* HC8  */  \
-   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HC2 ),M(RAT ,HC4 ),M(RAT ,HC8 ),M(RAT ,RAT ),M(RAT ,VFP )},   /* RAT  */  \
-   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HC2 ),M(VFP ,HC4 ),M(VFP ,HC8 ),M(VFP ,VFP ),M(VFP ,VFP )},   /* VFP  */  \
+#define PN_MAT                                                                                                                           \
+{/*     BOOL          INT          FLT          HC2          HC4          HC8          RAT          VFP         INIT     */              \
+   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,HC2 ),M(BOOL,HC4 ),M(BOOL,HC8 ),M(BOOL,RAT ),M(BOOL,VFP ),M(BOOL,BOOL)},   /* BOOL */  \
+   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,HC2 ),M(INT ,HC4 ),M(INT ,HC8 ),M(INT ,RAT ),M(INT ,VFP ),M(INT ,INT )},   /* INT  */  \
+   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,HC2 ),M(FLT ,HC4 ),M(FLT ,HC8 ),M(FLT ,VFP ),M(FLT ,VFP ),M(FLT ,FLT )},   /* FLT  */  \
+   {M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC4 ),M(HC2 ,HC8 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 )},   /* HC2  */  \
+   {M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC8 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 )},   /* HC4  */  \
+   {M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 )},   /* HC8  */  \
+   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HC2 ),M(RAT ,HC4 ),M(RAT ,HC8 ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,RAT )},   /* RAT  */  \
+   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HC2 ),M(VFP ,HC4 ),M(VFP ,HC8 ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP )},   /* VFP  */  \
+   {M(INIT,BOOL),M(INIT,INT ),M(INIT,FLT ),M(INIT,HC2 ),M(INIT,HC4 ),M(INIT,HC8 ),M(INIT,RAT ),M(INIT,VFP ),M(INIT,INIT)},   /* INIT */  \
 };
 // PN_NUMTYPE_xxx promotion result matrix
 PNNUMTYPE aNumTypePromote[PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH] =
@@ -939,42 +958,52 @@ PN_MAT
 
 typedef void (*PN_ACTION)(LPPN_YYSTYPE);
 
-#define PN_actBOOL_BOOL     NULL
-#define PN_actBOOL_INT      NULL
+#define PN_actBOOL_BOOL     PN_actIDENT
+#define PN_actBOOL_INT      PN_actIDENT
 ////ine PN_actBOOL_FLT      NULL
 #define PN_actBOOL_HC2      PN_actUNK
 #define PN_actBOOL_HC4      PN_actUNK
 #define PN_actBOOL_HC8      PN_actUNK
 
-#define PN_actINT_INT       NULL
+#define PN_actINT_INT       PN_actIDENT
 ////ine PN_actINT_FLT       NULL
 #define PN_actINT_HC2       PN_actUNK
 #define PN_actINT_HC4       PN_actUNK
 #define PN_actINT_HC8       PN_actUNK
 
-#define PN_actFLT_FLT       NULL
+#define PN_actFLT_FLT       PN_actIDENT
 #define PN_actFLT_HC2       PN_actUNK
 #define PN_actFLT_HC4       PN_actUNK
 #define PN_actFLT_HC8       PN_actUNK
 
-#define PN_actHC2_HC2       NULL
+#define PN_actHC2_HC2       PN_actIDENT
 #define PN_actHC2_HC4       PN_actUNK
 #define PN_actHC2_HC8       PN_actUNK
 
-#define PN_actHC4_HC4       NULL
+#define PN_actHC4_HC4       PN_actIDENT
 #define PN_actHC4_HC8       PN_actUNK
 
-#define PN_actHC8_HC8       NULL
+#define PN_actHC8_HC8       PN_actIDENT
 
-#define PN_actRAT_RAT       NULL
+#define PN_actRAT_RAT       PN_actIDENT
 #define PN_actRAT_HC2       PN_actUNK
 #define PN_actRAT_HC4       PN_actUNK
 #define PN_actRAT_HC8       PN_actUNK
 
-#define PN_actVFP_VFP       NULL
+#define PN_actVFP_VFP       PN_actIDENT
 #define PN_actVFP_HC2       PN_actUNK
 #define PN_actVFP_HC4       PN_actUNK
 #define PN_actVFP_HC8       PN_actUNK
+
+#define PN_actINIT_BOOL     PN_actUNK
+#define PN_actINIT_INT      PN_actUNK
+#define PN_actINIT_FLT      PN_actUNK
+#define PN_actINIT_HC2      PN_actUNK
+#define PN_actINIT_HC4      PN_actUNK
+#define PN_actINIT_HC8      PN_actUNK
+#define PN_actINIT_RAT      PN_actUNK
+#define PN_actINIT_VFP      PN_actUNK
+#define PN_actINIT_INIT     PN_actUNK
 
 // PN_NUMTYPE_xxx promotion action matrix
 PN_ACTION aNumTypeAction [PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH] =
@@ -1004,9 +1033,16 @@ UBOOL ParsePointNotation
     UBOOL bRet;                             // TRUE iff result is valid
 
     // Initialize the starting indices
-    lppnLocalVars->uNumCur = 0;
+    lppnLocalVars->uNumCur =
+    lppnLocalVars->uNumIni =
+    lppnLocalVars->uAlpAcc =
     lppnLocalVars->uNumAcc = 0;
-    lppnLocalVars->uAlpAcc = 0;
+
+    // While the last char is a blank, ...
+    while (lppnLocalVars->uNumLen && IsWhite (lppnLocalVars->lpszStart[lppnLocalVars->uNumLen - 1]))
+        // Delete it
+        lppnLocalVars->uNumLen--;
+
 #if YYDEBUG
     // Enable debugging
     yydebug = TRUE;
@@ -1063,24 +1099,27 @@ int pn_yylex
 {
     // Check for EOL
     if (lppnLocalVars->uNumCur EQ lppnLocalVars->uNumLen)
-        return '\0';
+        lpYYLval->chCur = '\0';
+    else
+    {
+        // Get the next char
+        lpYYLval->chCur = lppnLocalVars->lpszStart[lppnLocalVars->uNumCur++];
 
-    // Get the next char
-    lpYYLval->chCur = lppnLocalVars->lpszStart[lppnLocalVars->uNumCur++];
+        // If the character is 'x' and
+        //   is the last in the sequence, ...
+        if (lpYYLval->chCur EQ 'x'
+         && (lppnLocalVars->uNumCur EQ lppnLocalVars->uNumLen
+          || IsWhite (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur])))
+            return EXT;
 
-    // If the character is 'x' and
-    //   is the last in the sequence, ...
-    if (lpYYLval->chCur EQ 'x'
-     && lppnLocalVars->uNumCur EQ lppnLocalVars->uNumLen)
-        return EXT;
+        // If the character is overbar, ...
+        if (lpYYLval->chCur EQ OVERBAR1)
+            return OVR;
 
-    // If the character is overbar, ...
-    if (lpYYLval->chCur EQ OVERBAR1)
-        return OVR;
-
-    // If the character is infinity, ...
-    if (lpYYLval->chCur EQ INFINITY1)
-        return INF;
+        // If the character is infinity, ...
+        if (lpYYLval->chCur EQ INFINITY1)
+            return INF;
+    } // End IF/ELSE
 
     // Return it
     return lpYYLval->chCur;
@@ -1133,6 +1172,8 @@ void pn_yyerror                     // Called for Bison syntax error
         lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
         lpwszTemp = ERRMSG_WS_FULL APPEND_NAME;
+    else
+        lpwszTemp = ERRMSG_PN_PARSE APPEND_NAME;
 
     // Save the error message
     ErrorMessageIndirect (lpwszTemp);

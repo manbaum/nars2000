@@ -515,7 +515,9 @@ default:        \
 
 #define INFINITY1       '~'         // Use when translating to non-WCHAR code
                                     //   in <pn_parse.y>
+#define INFINITY1_STR   "~"         // ...
 #define OVERBAR1        '-'         // ...
+#define OVERBAR1_STR    "-"         // ...
 
 #define DEF_UNDERFLOW       L'_'    // Default underflow char
 #define DEF_UNDERFLOW_WS    L"_"    // ...
@@ -527,6 +529,10 @@ default:        \
 // Define text for infinity
 #define  TEXT_INFINITY       "{infinity}"
 #define LTEXT_INFINITY      L"{infinity}"
+
+#define DEF_POSINFINITY_CHAR     '!'
+#define DEF_POSINFINITY_STR      "!"
+#define DEF_NEGINFINITY_STR     "-!"
 
 
 //***************************************************************************

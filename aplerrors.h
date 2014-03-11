@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,6 +67,8 @@
 #define ERRMSG_NOT_ERASED                       L"NOT ERASED:"
 
 #define ERRMSG_NOTRESTARTABLE                   L"SI LEVEL NOT RESTARTABLE, USE " WS_UTF16_RIGHTARROW L" OR )RESET"
+
+#define ERRMSG_PN_PARSE                         L"Unknown PN_PARSE error"
 
 
 //***************************************************************************

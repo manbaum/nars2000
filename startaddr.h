@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -625,6 +625,19 @@ typedef struct tagSTART_ADDRESSES
 
     // pn_parse.c/y
     "pn_yyparse"                , (LPUCHAR) &pn_yyparse                 ,
+
+    // pn_proc.c
+    "PN_NumAcc"                 , (LPUCHAR) &PN_NumAcc                  ,
+    "PN_NumCalc"                , (LPUCHAR) &PN_NumCalc                 ,
+    "PN_ChrAcc"                 , (LPUCHAR) &PN_ChrAcc                  ,
+    "PN_MakeBasePoint"          , (LPUCHAR) &PN_MakeBasePoint           ,
+    "PN_MakeEulerPoint"         , (LPUCHAR) &PN_MakeEulerPoint          ,
+    "PN_MakeExpPoint"           , (LPUCHAR) &PN_MakeExpPoint            ,
+    "PN_MakePiPoint"            , (LPUCHAR) &PN_MakePiPoint             ,
+    "PN_MakeVfpPoint"           , (LPUCHAR) &PN_MakeVfpPoint            ,
+    "PN_VectorAcc"              , (LPUCHAR) &PN_VectorAcc               ,
+    "PN_VectorRes"              , (LPUCHAR) &PN_VectorRes               ,
+    "PN_SetInfinity"            , (LPUCHAR) &PN_SetInfinity             ,
 
     // po_cmiddot.c
     "PrimOpDydCircleMiddleDotCommon_EM_YY", (LPUCHAR) &PrimOpDydCircleMiddleDotCommon_EM_YY,

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,10 +25,6 @@
 #include <windows.h>
 #include <math.h>               // For fabs
 #include "headers.h"
-
-#define DEF_POSINFINITY_CHAR     '!'
-#define DEF_POSINFINITY_STR      "!"
-#define DEF_NEGINFINITY_STR     "-!"
 
 typedef mpir_ui (*MPZ_INVALID)  (enum MP_ENUM, mpz_t , mpz_t , mpz_t , mpz_t , mpir_ui, mpir_ui);
 typedef mpir_ui (*MPQ_INVALID)  (enum MP_ENUM, mpq_t , mpq_t , mpq_t , mpq_t , mpir_ui         );
@@ -2589,7 +2585,7 @@ void mpq_set_inf
     // If it's not infinite, ...
     if (!mpq_inf_p (rop))
         // Free the arg as we'll use a special format
-        mpq_clear (rop);
+        Myq_clear (rop);
 
     mpq_set_infsub (rop, sgn);
 } // mpq_set_inf

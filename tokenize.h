@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -78,21 +78,22 @@ typedef enum tagTKCOL_INDICES       // FSA column indices for Tokenize
 typedef enum tagTKROW_INDICES       // FSA row indices for Tokenize
 {TKROW_SOS = 0    ,                 // 00:  Start of stmt
  TKROW_INIT       ,                 // 01:  Initial state
- TKROW_POINTNOT   ,                 // 02:  Point Notation
- TKROW_ALPHA      ,                 // 03:  Alphabetic char
- TKROW_SYSNAME    ,                 // 04:  System name
- TKROW_QUOTE1A    ,                 // 05:  Start of or within single quoted char or char vector
- TKROW_QUOTE1Z    ,                 // 06:  End of   ...
- TKROW_QUOTE2A    ,                 // 07:  Start of or within double quoted char or char vector
- TKROW_QUOTE2Z    ,                 // 08:  End of   ...
- TKROW_DOTAMBIG   ,                 // 09:  Ambiguous dot:  either TKROW_POINTNOT or TKROW_INIT w/fnOp2Done
- TKROW_JOTAMBIG   ,                 // 0A:  Ambiguous jot:  either TKROW_INIT w/fnOp2Done or TKROW_OUTAMBIG
- TKROW_OUTAMBIG   ,                 // 0B:  Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOp2Done
- TKROW_SYS_NS     ,                 // 0C:  System namespace
- TKROW_LBR_INIT   ,                 // 0D:  Inside braces
- TKROW_LBR_Q1     ,                 // 0E:  Inside braces, single quotes
- TKROW_LBR_Q2     ,                 // 0F:  Inside braces, double quotes
- TKROW_LENGTH     ,                 // 10:  # FSA terminal states (rows in fsaActTableTK)
+ TKROW_POINTNOT0  ,                 // 02:  Point Notation, Initial State after white space
+ TKROW_POINTNOT1  ,                 // 03:  Point Notation, Initial State after first char
+ TKROW_ALPHA      ,                 // 04:  Alphabetic char
+ TKROW_SYSNAME    ,                 // 05:  System name
+ TKROW_QUOTE1A    ,                 // 06:  Start of or within single quoted char or char vector
+ TKROW_QUOTE1Z    ,                 // 07:  End of   ...
+ TKROW_QUOTE2A    ,                 // 08:  Start of or within double quoted char or char vector
+ TKROW_QUOTE2Z    ,                 // 09:  End of   ...
+ TKROW_DOTAMBIG   ,                 // 0A:  Ambiguous dot:  either TKROW_POINTNOT or TKROW_INIT w/fnOp2Done
+ TKROW_JOTAMBIG   ,                 // 0B:  Ambiguous jot:  either TKROW_INIT w/fnOp2Done or TKROW_OUTAMBIG
+ TKROW_OUTAMBIG   ,                 // 0C:  Ambiguous outer product:  either TKROW_INIT w/fnOutDone or TKROW_POINTNOT w/fnOp2Done
+ TKROW_SYS_NS     ,                 // 0D:  System namespace
+ TKROW_LBR_INIT   ,                 // 0E:  Inside braces
+ TKROW_LBR_Q1     ,                 // 0F:  Inside braces, single quotes
+ TKROW_LBR_Q2     ,                 // 10:  Inside braces, double quotes
+ TKROW_LENGTH     ,                 // 11:  # FSA terminal states (rows in fsaActTableTK)
                                     //      Because this enum is origin-0, this value is the # valid rows.
  TKROW_EXIT  = -1 ,                 // FSA is done
  TKROW_NONCE = -2 ,                 // State not specified as yet

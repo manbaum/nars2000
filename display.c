@@ -27,10 +27,6 @@
 #include "headers.h"
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
-#define DEF_POSINFINITY_CHAR     '!'
-#define DEF_POSINFINITY_STR      "!"
-#define DEF_NEGINFINITY_STR     "-!"
-
 typedef enum tagDTOA_MODE
 {
     DTOAMODE_SHORT_RND = 0,             // 0 = shortest string with rounding, e.g., 1e23
@@ -1213,24 +1209,28 @@ LPAPLCHAR FormatAplRatFC
 
     lpRawFmt = (LPCHAR) lpaplChar;
 
-    // If the denominator is NE 1, ...
-    if (mpz_cmp_ui (mpq_denref (&aplRat), 1) NE 0)
-        // Canonicalize the arg
-        mpq_canonicalize (&aplRat);
+    // If the number is not +/- infinity, ...
+    if (!mpq_inf_p (&aplRat))
+    {
+        // If the denominator is NE 1, ...
+        if (mpz_cmp_ui (mpq_denref (&aplRat), 1) NE 0)
+            // Canonicalize the arg
+            mpq_canonicalize (&aplRat);
 
-    // Calculate the needed size, where both "1 +"s include the sign,
-    //   the first "+ 1" includes the 'r' separator and the second
-    //   one the terminating zero
-    uTotSize = 1 + mpz_sizeinbase (mpq_numref (&aplRat), 10) + 1 +
-               1 + mpz_sizeinbase (mpq_denref (&aplRat), 10) + 1;
-    // Double as we convert in place
-    uTotSize = 2 * uTotSize;
+        // Calculate the needed size, where both "1 +"s include the sign,
+        //   the first "+ 1" includes the 'r' separator and the second
+        //   one the terminating zero
+        uTotSize = 1 + mpz_sizeinbase (mpq_numref (&aplRat), 10) + 1 +
+                   1 + mpz_sizeinbase (mpq_denref (&aplRat), 10) + 1;
+        // Double as we convert in place
+        uTotSize = 2 * uTotSize;
 
-    if (uTotSize NE (APLU3264) uTotSize)
-        uTotSize = UINT_MAX;
+        if (uTotSize NE (APLU3264) uTotSize)
+            uTotSize = UINT_MAX;
 
-    // Test the output save area limits
-    ZeroMemory (lpRawFmt, (APLU3264) uTotSize);
+        // Test the output save area limits
+        ZeroMemory (lpRawFmt, (APLU3264) uTotSize);
+    } // End IF
 
     // Format the num/den
     mpq_get_str (lpRawFmt, 10, &aplRat);
@@ -1266,12 +1266,9 @@ LPAPLCHAR FormatAplRatFC
     } else
     {
         // Convert '/' (if any) to aplCharRatSep
-//////////   or 'x' if no '/'
         lpw = strchrW (lpaplChar, L'/');
         if (lpw)
             *lpw = aplCharRatSep;
-////////else
-////////    lpaplChar[iLen++] = L'x';
 
         // Skip over the formatted number
         lpaplChar += iLen;

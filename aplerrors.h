@@ -25,6 +25,7 @@
 #define ERRMSG_CORRUPT_WS                       L"CORRUPT WS"
 #define ERRMSG_DESTINATION_ERROR                L"DESTINATION ERROR"
 #define ERRMSG_DOMAIN_ERROR                     L"DOMAIN ERROR"
+#define ERRMSG_ELLIPSIS                         WS_UTF16_HORIZELLIPSIS
 #define ERRMSG_FORMAT_ERROR                     L"FORMAT ERROR"
 #define ERRMSG_HASH_TABLE_FULL                  L"HASH TABLE FULL"
 #define ERRMSG_INCORRECT_COMMAND                L"INCORRECT COMMAND"

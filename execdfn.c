@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -968,7 +968,7 @@ RESTART_AFTER_ERROR:
                 lpSISCur = lpMemPTD->lpSISCur;
 
                 // Display the error message
-                AppendLine (ERRMSG_WS_FULL APPEND_NAME, FALSE, TRUE);
+                AppendLine (ERRMSG_ELLIPSIS APPEND_NAME, FALSE, TRUE);
 
                 // Lock the memory to get a ptr to it
                 lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);

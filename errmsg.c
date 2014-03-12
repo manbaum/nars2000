@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,17 +68,31 @@ void BreakMessage
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 
+        // Copy the leading text
+        lstrcpyW (lpMemPTD->lpwszTemp, ERRMSG_ELLIPSIS WS_CR);
+
+        // Calculate the length so far
+        aplNELMRes = lstrlenW (lpMemPTD->lpwszTemp);
+
         // Format the name and line #
-        aplNELMRes =
-          wsprintfW (lpMemPTD->lpwszTemp,
-                     L"%s[%d]",
-                     lpMemName,
-                     lpSISCur->CurLineNum);
+        aplNELMRes +=
+          wsprintfW (&lpMemPTD->lpwszTemp[aplNELMRes],
+                      L"%s[%d]",
+                      lpMemName,
+                      lpSISCur->CurLineNum);
         // We no longer need this ptr
         MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
+
+        // Save the ptr
+        lpMemPTD->lpwszErrorMessage = lpMemPTD->lpwszTemp;
     } else
-        // Mark as no leading text
-        aplNELMRes = 0;
+    {
+        // Prepend an ellipsis
+        lpMemPTD->lpwszErrorMessage = ERRMSG_ELLIPSIS;
+
+        // Calculate length of error message text
+        aplNELMRes = lstrlenW (lpMemPTD->lpwszErrorMessage);
+    } // End IF/ELSE
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
@@ -113,7 +127,7 @@ void BreakMessage
     lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the function name[line #] to the result
-    CopyMemoryW (lpMemRes, lpMemPTD->lpwszTemp, (APLU3264) aplNELMRes);
+    CopyMemoryW (lpMemRes, lpMemPTD->lpwszErrorMessage, (APLU3264) aplNELMRes);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -558,13 +572,8 @@ void ErrorMessageIndirect
     (LPWCHAR lpwszMsg)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // Save in global for later reference
-    lpMemPTD->lpwszErrorMessage = lpwszMsg;
+    GetMemPTD ()->lpwszErrorMessage = lpwszMsg;
 } // End ErrorMessageIndirect
 
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -246,19 +246,20 @@ typedef enum tagPERM_NDX
     PERMNDX_NONE = 0    ,               // 00:  Not a permanent array
     PERMNDX_QUADA       ,               // 01:  []A
     PERMNDX_QUADAV      ,               // 02:  []AV
-    PERMNDX_QUADxLX     ,               // 03:  []xLX default
-    PERMNDX_QUADFC      ,               // 04:  []FC default
-    PERMNDX_QUADFEATURE ,               // 05:  []FEATURE default
-    PERMNDX_QUADIC      ,               // 06:  []IC default
-    PERMNDX_SACLEAR     ,               // 07:  'CLEAR'
-    PERMNDX_SAERROR     ,               // 08:  'ERROR'
-    PERMNDX_SAEXIT      ,               // 09:  'EXIT'
-    PERMNDX_SAOFF       ,               // 0A:  'OFF'
-    PERMNDX_V0CHAR      ,               // 0B:  ''
-    PERMNDX_ZILDE       ,               // 0C:  {zilde}
-    PERMNDX_0BY0        ,               // 0D:  0 0 {rho} 0 -- []EC[2] default
-    PERMNDX_3BY0        ,               // 0E:  3 0 {rho}'' -- []EM default
-                                        // 0F-0F:  Available entries (4 bits)
+    PERMNDX_QUADD       ,               // 03:  []D
+    PERMNDX_QUADxLX     ,               // 04:  []xLX default
+    PERMNDX_QUADFC      ,               // 05:  []FC default
+    PERMNDX_QUADFEATURE ,               // 06:  []FEATURE default
+    PERMNDX_QUADIC      ,               // 07:  []IC default
+    PERMNDX_SACLEAR     ,               // 08:  'CLEAR'
+    PERMNDX_SAERROR     ,               // 09:  'ERROR'
+    PERMNDX_SAEXIT      ,               // 0A:  'EXIT'
+    PERMNDX_SAOFF       ,               // 0B:  'OFF'
+    PERMNDX_V0CHAR      ,               // 0C:  ''
+    PERMNDX_ZILDE       ,               // 0D:  {zilde}
+    PERMNDX_0BY0        ,               // 0E:  0 0 {rho} 0 -- []EC[2] default
+    PERMNDX_3BY0        ,               // 0F:  3 0 {rho}'' -- []EM default
+                                        // ??-??:  Available entries (4 bits)
 } PERM_NDX;
 
 // Variable array header

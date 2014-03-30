@@ -151,6 +151,8 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
+#define aplNELMRes  3
+
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -158,7 +160,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
-    lpHeader->NELM       = 3;
+    lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
 #undef  lpHeader
 
@@ -166,7 +168,8 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
     lpMemRes = (LPAPLNESTED) VarArrayBaseToDim (lpMemRes);
 
     // Save the dimension
-    *((LPAPLDIM) lpMemRes)++ = 3;
+    *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
+#undef  aplNELMRes
 
     // lpMemRes now points to its data
 

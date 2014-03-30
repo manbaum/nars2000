@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,6 +58,7 @@ SYSNAME aSystemNames[] =
 // Niladic system functions
     {WS_UTF16_QUAD L"a"        ,      0,      FALSE, FALSE, SysFnA_EM_YY        , 0              },    // Alphabet
     {WS_UTF16_QUAD L"av"       ,      0,      FALSE, TRUE , SysFnAV_EM_YY       , 0              },    // Atomic Vector
+    {WS_UTF16_QUAD L"d"        ,      0,      FALSE, FALSE, SysFnD_EM_YY        , 0              },    // Digits
     {WS_UTF16_QUAD L"em"       ,      0,      FALSE, TRUE , SysFnEM_EM_YY       , 0              },    // Event Message
     {WS_UTF16_QUAD L"et"       ,      0,      FALSE, TRUE , SysFnET_EM_YY       , 0              },    // Event Type
     {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, TRUE , SysFnLC_EM_YY       , 0              },    // Line Counter
@@ -174,6 +175,45 @@ void MakePermVars
 
     // We no longer need this ptr
      MyGlobalUnlock (hGlbQuadA); lpHeader = NULL;
+
+    //***************************************************************
+    // Create []D
+    //***************************************************************
+
+#define DIGITS      L"0123456789"
+#define DIGITSNELM  strcountof (DIGITS)
+
+    // Note, we can't use DbgGlobalAlloc here as the
+    //   PTD has not been allocated as yet
+    hGlbQuadD = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, DIGITSNELM, 1));
+    if (!hGlbQuadD)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpHeader = MyGlobalLock (hGlbQuadD);
+
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+    lpHeader->PermNdx    = PERMNDX_QUADD;   // So we don't free it
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+////lpHeader->RefCnt     = 0;               // Ignore as this is perm
+    lpHeader->NELM       = DIGITSNELM;
+    lpHeader->Rank       = 1;
+
+    // Save the vector length
+    *VarArrayBaseToDim (lpHeader) = DIGITSNELM;
+
+    // Skip over the header and dimensions to the data
+    lpHeader = VarArrayDataFmBase (lpHeader);
+
+    // Copy the data to the result
+    CopyMemoryW (lpHeader, DIGITS, DIGITSNELM);
+
+    // We no longer need this ptr
+     MyGlobalUnlock (hGlbQuadD); lpHeader = NULL;
 
     //***************************************************************
     // Create zilde

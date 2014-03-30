@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1061,6 +1061,7 @@ HWND hWndTC,                            // Global Tab Control window handle
 EXTERN
 HGLOBAL hGlbQuadA,                      // []A
         hGlbQuadAV,                     // []AV
+        hGlbQuadD,                      // []D
         hGlbQuadxLX,                    // []xLX default
         hGlb0by0,                       // 0 0 {rho} 0 -- []EC[2] default
         hGlb3by0,                       // 3 0 {rho}'' -- []EM default

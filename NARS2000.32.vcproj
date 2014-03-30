@@ -907,6 +907,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\qf_d.c"
+				>
+			</File>
+			<File
 				RelativePath=".\qf_dl.c"
 				>
 			</File>

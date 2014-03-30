@@ -154,6 +154,7 @@
   #include "qf_at.pro"
   #include "qf_av.pro"
   #include "qf_cr.pro"
+  #include "qf_d.pro"
   #include "qf_dl.pro"
   #include "qf_dr.pro"
   #include "qf_ea.pro"

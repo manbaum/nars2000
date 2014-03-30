@@ -2246,10 +2246,10 @@ UBOOL scCtrlDone
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
-    // Use the smaller of the name length and the # entries
+    // Use the smaller of the name length and the # entries remaining
     //   as we might be selecting a subset of the line
     lptkLocalVars->CtrlStrucStrLen =
-      min (lptkLocalVars->CtrlStrucStrLen, lptkLocalVars->uSyntClrLen);
+      min (lptkLocalVars->CtrlStrucStrLen, lptkLocalVars->uSyntClrLen - lptkLocalVars->uChar);
 
     // Loop through the chars
     for (uCnt = 0; uCnt < lptkLocalVars->CtrlStrucStrLen; uCnt++)

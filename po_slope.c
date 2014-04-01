@@ -1336,6 +1336,17 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
     // Check for axis operator
     lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
+    // If no axis specified,
+    //   and SlopeBar, use first dimension
+    if (lptkAxisOpr EQ NULL
+     && (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR
+      || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR))
+        // Get the magic function/operator global memory handle
+        hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydScan1];
+    else
+        // Get the magic function/operator global memory handle
+        hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydScan];
+
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
@@ -1343,9 +1354,6 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
         goto LEFT_SYNTAX_EXIT;
-
-    // Get the magic function/operator global memory handle
-    hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydScan];
 
     //  Use an internal magic function.
     return

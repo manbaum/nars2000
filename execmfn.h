@@ -61,8 +61,9 @@ typedef enum tagMFO
     MFOE_DydEpsUnderbar  ,      // 23:  Dyadic Epsilon Underbar on empty args
     MFOE_DydConv         ,      // 24:  Dyadic derived function from Convolution
     MFOE_IdnConv         ,      // 25:  Identity function for Convolution
-    MFOE_DydScan         ,      // 26:  Syadic Scan
-    MFOE_LENGTH                 // 27:  # entries in this enum
+    MFOE_DydScan         ,      // 26:  Dyadic Scan
+    MFOE_DydScan1        ,      // 27:  Dyadic Scan, first dimension
+    MFOE_LENGTH                 // 28:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -105,6 +106,7 @@ typedef enum tagMFO
 #define MFON_DydConv            L"#DydConv"
 #define MFON_IdnConv            L"#IdnConv"
 #define MFON_DydScan            L"#DydScan"
+#define MFON_DydScan1           L"#DydScan1"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

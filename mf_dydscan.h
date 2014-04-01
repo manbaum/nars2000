@@ -38,7 +38,7 @@ static APLCHAR DydLine1[] =
   L":if 0=⎕NC 'X'";
 
 static APLCHAR DydLine2[] = 
-  L"   Z←L LO/(((¯1↓⍴R),0⌈(|L)-1)⍴LO/0⍴R),R";
+  L"  Z←L LO/(((¯1↓⍴R),0⌈(|L)-1)⍴LO/0⍴R),R";
 
 static APLCHAR DydLine3[] = 
   L":else";
@@ -62,6 +62,44 @@ MAGIC_FCNOPR MFO_DydScan =
  DydBody,
  countof (DydBody),
 };
+
+
+//***************************************************************************
+//  Magic function/operator for dyadic derived function from the scan monadic operator
+//***************************************************************************
+
+static APLCHAR Dyd1Header[] =
+  L"Z←L (LO " MFON_DydScan1 L"[X]) R";
+
+static APLCHAR Dyd1Line1[] = 
+  L":if 0=⎕NC 'X'";
+
+static APLCHAR Dyd1Line2[] = 
+  L"  Z←L LO⌿(((0⌈(|L)-1),1↓⍴R)⍴LO/0⍴R)⍪R";
+
+static APLCHAR Dyd1Line3[] = 
+  L":else";
+
+static APLCHAR Dyd1Line4[] = 
+  L"  Z←L LO/[X]((((X≠⍳⍴⍴R)/⍴R),0⌈(|L)-1)[⍋⍋K=⍳⍴⍴R]⍴LO/0⍴R),[X]R";
+
+static APLCHAR Dyd1Line5[] = 
+  L":endif";
+
+static LPAPLCHAR Dyd1Body[] =
+{Dyd1Line1,
+ Dyd1Line2,
+ Dyd1Line3,
+ Dyd1Line4,
+ Dyd1Line5,
+};
+
+MAGIC_FCNOPR MFO_DydScan1 =
+{Dyd1Header,
+ Dyd1Body,
+ countof (Dyd1Body),
+};
+
 
 
 //***************************************************************************

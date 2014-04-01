@@ -2483,6 +2483,10 @@ void DisplayFnHdr
         lstrcatW (wszTemp, WS_UTF16_LEFTARROW);
     } // End IF
 
+    //***************************************************************
+    // Left Argument
+    //***************************************************************
+
     // Check for left argument
     if (lpfhLocalVars->lpYYLftArg)
     {
@@ -2534,6 +2538,10 @@ void DisplayFnHdr
             // Append a separator
             lstrcatW (wszTemp, L"(");
 
+            //***************************************************************
+            // Left Operand
+            //***************************************************************
+
             // Get the Name's global memory handle
             hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
@@ -2549,6 +2557,10 @@ void DisplayFnHdr
             // Append a separator
             lstrcatW (wszTemp, L" ");
 
+            //***************************************************************
+            // Operator Name
+            //***************************************************************
+
             // Get the Name's global memory handle
             hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
@@ -2560,6 +2572,36 @@ void DisplayFnHdr
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+            //***************************************************************
+            // Axis Operand
+            //***************************************************************
+
+            // Check for axis operand
+            if (lpfhLocalVars->lpYYAxisOpr)
+            {
+                // Append a separator
+                lstrcatW (wszTemp, L"[");
+
+                // Get the Name's global memory handle
+                hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLock (hGlbName);
+
+                // Copy the name
+                lstrcatW (wszTemp, lpMemName);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+                // Append a separator
+                lstrcatW (wszTemp, L"]");
+            } // End IF
+
+            //***************************************************************
+            // Right Operand
+            //***************************************************************
 
             // Check for right operand
             if (lpfhLocalVars->lpYYRhtOpr)
@@ -2586,6 +2628,10 @@ void DisplayFnHdr
             break;
 
         case DFNTYPE_FCN:
+            //***************************************************************
+            // Function Name
+            //***************************************************************
+
             // Get the Name's global memory handle
             hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
@@ -2598,6 +2644,32 @@ void DisplayFnHdr
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
+            //***************************************************************
+            // Axis Operand
+            //***************************************************************
+
+            // Check for axis operand
+            if (lpfhLocalVars->lpYYAxisOpr)
+            {
+                // Append a separator
+                lstrcatW (wszTemp, L"[");
+
+                // Get the Name's global memory handle
+                hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
+
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLock (hGlbName);
+
+                // Copy the name
+                lstrcatW (wszTemp, lpMemName);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+                // Append a separator
+                lstrcatW (wszTemp, L"]");
+            } // End IF
+
             break;
 
         case DFNTYPE_UNK:
@@ -2608,6 +2680,10 @@ void DisplayFnHdr
         defstop
             break;
     } // End SWITCH
+
+    //***************************************************************
+    // Right Argument
+    //***************************************************************
 
     // Check for right argument
     if (lpfhLocalVars->lpYYRhtArg)

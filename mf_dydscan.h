@@ -32,19 +32,19 @@
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  L"Z←L (LO DydScan[X]) R";
+  L"Z←L (LO " MFON_DydScan L"[X]) R";
 
 static APLCHAR DydLine1[] = 
   L":if 0=⎕NC 'X'";
 
 static APLCHAR DydLine2[] = 
-  L"   Z←L LO/(((¯1↓⍴R),(|L)-1)⍴LO/0⍴R),R";
+  L"   Z←L LO/(((¯1↓⍴R),0⌈(|L)-1)⍴LO/0⍴R),R";
 
 static APLCHAR DydLine3[] = 
   L":else";
 
 static APLCHAR DydLine4[] = 
-  L"  Z←L LO/[X]((((X≠⍳⍴⍴R)/⍴R),(|L)-1)[⍋((⍳⍴⍴R)~X),X]⍴LO/0⍴R),[X]R";
+  L"  Z←L LO/[X]((((X≠⍳⍴⍴R)/⍴R),0⌈(|L)-1)[⍋⍋K=⍳⍴⍴R]⍴LO/0⍴R),[X]R";
 
 static APLCHAR DydLine5[] = 
   L":endif";

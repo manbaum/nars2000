@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 //  $PrimOpSlope_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    monadic operator Slope ("scan" and ERROR)
+//    monadic operator Slope ("scan" and "scan")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -69,7 +69,7 @@ LPPL_YYSTYPE PrimOpSlope_EM_YY
 //  $PrimProtoOpSlope_EM_YY
 //
 //  Generate a prototype for the derived functions from
-//    monadic operator Slope ("scan" and ERROR)
+//    monadic operator Slope ("scan" and "scan")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimProtoOpSlope_EM_YY
@@ -1294,7 +1294,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $PrimOpDydSlope_EM_YY
 //
-//  Primitive operator for dyadic derived function from Slope (ERROR)
+//  Primitive operator for dyadic derived function from Slope ("scan")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpDydSlope_EM_YY
@@ -1313,7 +1313,7 @@ LPPL_YYSTYPE PrimOpDydSlope_EM_YY
 //***************************************************************************
 //  $PrimOpDydSlopeCommon_EM_YY
 //
-//  Primitive operator for dyadic derived function from Slope (ERROR)
+//  Primitive operator for dyadic derived function from Slope ("scan")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1329,9 +1329,50 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
      UBOOL        bPrototyping)         // TRUE if prototyping
 
 {
-    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
+    HGLOBAL      hGlbMFO;               // Magic function/operator global memory handle
+    LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
+    LPTOKEN      lptkAxisOpr;           // Ptr to operator axis token (may be NULL)
+
+    // Check for axis operator
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
+
+    // Set ptr to left operand,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+        goto LEFT_SYNTAX_EXIT;
+
+    // Get the magic function/operator global memory handle
+    hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydScan];
+
+    //  Use an internal magic function.
+    return
+      ExecuteMagicFunction_EM_YY (lptkLftArg,           // Ptr to left arg token
+                        (LPTOKEN) lpYYFcnStrLft,        // Ptr to left operand function token
+                                  lpYYFcnStrOpr,        // Ptr to function strand
+                                  lptkRhtArg,           // Ptr to right arg token
+                                  lptkAxisOpr,          // Ptr to operator axis token (may be NULL)
+                                  hGlbMFO,              // Magic function/operator global memory handle
+                                  NULL,                 // Ptr to HSHTAB struc (may be NULL)
+                   bPrototyping ? LINENUM_PRO
+                                : LINENUM_ONE);         // Starting line # type (see LINE_NUMS)
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    return NULL;
 } // End PrimOpDydSlopeCommon_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  Magic function for Dyadic Scan
+//
+//  Dyadic Scan
+//***************************************************************************
+
+#include "mf_dydscan.h"
 
 
 //***************************************************************************

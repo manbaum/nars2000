@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,7 +61,8 @@ typedef enum tagMFO
     MFOE_DydEpsUnderbar  ,      // 23:  Dyadic Epsilon Underbar on empty args
     MFOE_DydConv         ,      // 24:  Dyadic derived function from Convolution
     MFOE_IdnConv         ,      // 25:  Identity function for Convolution
-    MFOE_LENGTH                 // 26:  # entries in this enum
+    MFOE_DydScan         ,      // 26:  Syadic Scan
+    MFOE_LENGTH                 // 27:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -103,6 +104,7 @@ typedef enum tagMFO
 #define MFON_DydEpsUnderbar     L"#DydEpsUnderbar"
 #define MFON_DydConv            L"#DydConv"
 #define MFON_IdnConv            L"#IdnConv"
+#define MFON_DydScan            L"#DydScan"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

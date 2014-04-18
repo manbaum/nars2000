@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #define MPIFNS
 
 #undef  mpz_init_set
+#undef  mpz_init_set_str
 #undef  mpz_init_set_d
 
 #undef  mpz_set
@@ -269,6 +270,7 @@
 
 
 #define mpz_init_set            mpiz_init_set
+#define mpz_init_set_str        mpiz_init_set_str
 #define mpz_init_set_d          mpiz_init_set_d
 
 #define mpz_set                 mpiz_set

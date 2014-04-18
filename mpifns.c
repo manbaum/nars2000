@@ -352,6 +352,40 @@ int mpiz_set_str
 
 
 //***************************************************************************
+//  $mpiz_init_set_str
+//
+//  Set rop from a string in a given base
+//***************************************************************************
+
+int mpiz_init_set_str
+    (mpz_t rop,                 // Destination
+     char *str,                 // Source
+     int   base)                // Base
+
+{
+    char *p;
+
+    // Skip over white space
+    p = str;
+    while (isspace (*p))
+        p++;
+    // If the input consists of "!" or "-!", ...
+    if (strcmp (p, DEF_POSINFINITY_STR) EQ 0
+     || strcmp (p, DEF_NEGINFINITY_STR) EQ 0)
+    {
+        // Initialize the result
+        mpz_init (rop);
+
+        // Set to the appropriate signed infinity
+        mpz_set_inf (rop, p[0] EQ '-');
+
+        return 0;
+    } else
+        return mpz_init_set_str (mpz_clr_inf (rop), str, base);
+} // End mpiz_init_set_str
+
+
+//***************************************************************************
 //  $mpiz_init_set
 //
 //  Set the integer value from an integer
@@ -367,7 +401,7 @@ void mpiz_init_set
         mpz_init (rop);
         mpz_set_inf (rop, mpz_sgn (op));
     } else
-        mpz_init_set (rop, op);
+        mpz_init_set (mpz_clr_inf (rop), op);
 } // End mpiz_init_set
 
 

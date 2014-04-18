@@ -1,6 +1,18 @@
 Version 0.4.7.xx consists of the following Builds:
 
 
+Build #1237 -- Version 0.4.7.xx
+-------------------------------
+
+* Handle Infinity In Another MPZ Function
+
+Directory trunk:
+
+MPIFNS.C:
+MPIFNS.H:
+  Define another substitute <mpz_> function to handle infinities.
+
+
 Build #1236 -- Version 0.4.7.xx
 -------------------------------
 

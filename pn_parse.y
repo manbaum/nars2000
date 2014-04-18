@@ -224,8 +224,8 @@ DecPoint:
                                      // Terminate the argument
                                      PN_NumAcc (lppnLocalVars, '\0');
 
-                                     // Mark the result as integer
-                                     $1.chType = PN_NUMTYPE_INT;
+                                     // Mark the result as float
+                                     $1.chType = PN_NUMTYPE_FLT;
 
                                      // Calculate the number
                                      PN_NumCalc (lppnLocalVars, &$1, FALSE);

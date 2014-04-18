@@ -290,7 +290,7 @@ Welcome to NARS2000</h1>
      (<span class="APL"><i>f</i>{stardieresis}<i>g</i></span>,
       <span class="APL"><i>f</i>{stardieresis}<i>N</i></span>, and
       <span class="APL"><i>f</i>{stardieresis}{jot}</span>) (Power)</li>
-    <li>Primitive dyadic operator stile-tilde (<span class="APL"><i>f</i>{stiletilde}</span>) (Partition)</li>
+    <li>Primitive monadic operator stile-tilde (<span class="APL"><i>f</i>{stiletilde}[X]</span>) (Partition)</li>
     <li>Selective assignment (e.g., <span class="APL">(1 1{transpose}M){is}0</span>)</li>
   </ul>
 </div>

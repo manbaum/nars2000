@@ -187,8 +187,10 @@ LIBS_WEXE = gdi32.lib           \
             dbghelp.lib         \
 !if "$(DEBUG)" == "1"
             qdebug32.lib        \
-!endif
+            libcmtd.lib         \
+!else
             libcmt.lib          \
+!endif
             $(CS_LIB)           \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \

@@ -487,7 +487,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, NULL);
 
                     // Check for RANK ERROR
-                    if (!IsVector (aplRankItm))
+                    if (IsMultiRank (aplRankItm))
                         goto RANK_EXIT;
 
                     // If the item is simple,

@@ -1564,7 +1564,8 @@ UBOOL ArrayIndexValidZilde_EM
 
 {
     APLUINT  uLst,                  // Loop counter
-             uSub;                  // ...
+             uSub,                  // ...
+             uNdx;                  // ...
     HGLOBAL  hGlbSub = NULL;        // Index arg item global memory handle
     LPVOID   lpMemSub = NULL;       // Ptr to index arg item global memory
     APLSTYPE aplTypeSub,            // Index arg item storage type
@@ -1603,33 +1604,69 @@ UBOOL ArrayIndexValidZilde_EM
 
             // Loop through the items of this list arg index
             for (uSub = 0; uSub < aplNELMSub; uSub++)
-            // Split cases based upon the ptr type
-            switch (GetPtrTypeDir (((LPAPLNESTED) lpMemSub)[uSub]))
             {
-                case PTRTYPE_STCONST:
-                    // It's not a vector, so signal a RANK ERROR
-                    goto RANK_EXIT;
+                HGLOBAL hGlbNdx;
 
-                case PTRTYPE_HGLOBAL:
-                    // Get the attributes (Type, NELM, and Rank) of the list arg item
-                    AttrsOfGlb (((LPAPLNESTED) lpMemSub)[uSub], &aplTypeNdx, &aplNELMNdx, &aplRankNdx, NULL);
+                // Save the global memory handle
+                hGlbNdx = ((LPAPLNESTED) lpMemSub)[uSub];
 
-                    // Check for RANK ERROR
-                    if (!IsVector (aplRankNdx))
+                // Split cases based upon the ptr type
+                switch (GetPtrTypeDir (hGlbNdx))
+                {
+                    case PTRTYPE_STCONST:
+                        // It's a simple scalar, so signal a RANK ERROR
                         goto RANK_EXIT;
 
-                    // Check for LENGTH ERROR
-                    if (!IsEmpty (aplNELMNdx))
-                        goto LENGTH_EXIT;
+                    case PTRTYPE_HGLOBAL:
+                        // Get the attributes (Type, NELM, and Rank) of the list arg item
+                        AttrsOfGlb (hGlbNdx, &aplTypeNdx, &aplNELMNdx, &aplRankNdx, NULL);
 
-                    // Check for DOMAIN ERROR
-                    if (!IsSimple (aplTypeNdx))
-                        goto DOMAIN_EXIT;
-                    break;
+                        // If it's nested, ...
+                        if (IsNested (aplTypeNdx))
+                        {
+                            // Loop through the items of this list arg index
+                            for (uNdx = 0; uNdx < aplNELMNdx; uNdx++)
+                            {
+                                LPVARARRAY_HEADER lpMemHdrNdx;
+                                LPVOID            lpMemNdx;
+                                UBOOL             bRet;
 
-                defstop
-                    break;
-            } // End SWITCH
+                                // Lock the memory to get a ptr to it
+                                lpMemHdrNdx = MyGlobalLock (hGlbNdx);
+
+                                // Skip over the header and dimensions to the data
+                                lpMemNdx = VarArrayDataFmBase (lpMemHdrNdx);
+
+                                // Recurse on this item
+                                bRet = ArrayIndexValidZilde_EM (lpMemNdx, lpMemHdrNdx->NELM, lptkFunc);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbNdx); lpMemHdrNdx = lpMemNdx = NULL;
+
+                                if (!bRet)
+                                    goto ERROR_EXIT;
+                            } // End FOR
+                        } else
+                        {
+                            // Check for RANK ERROR
+                            if (!IsVector (aplRankNdx))
+                                goto RANK_EXIT;
+
+                            // Check for LENGTH ERROR
+                            if (!IsEmpty (aplNELMNdx))
+                                goto LENGTH_EXIT;
+
+                            // Check for DOMAIN ERROR
+                            if (!IsSimple (aplTypeNdx))
+                                goto DOMAIN_EXIT;
+                        } // End IF/ELSE
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbSub); lpMemSub = NULL;

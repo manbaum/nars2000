@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1979,7 +1979,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (IsMultiRank (aplRankLft))
+    if (!IsVector (aplRankLft))
         goto RANK_EXIT;
 
     // If the left arg is simple, it must be empty (i.e., {zilde} or '')
@@ -1987,34 +1987,29 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     {
         if (!IsEmpty (aplNELMLft))
             goto LENGTH_EXIT;
+    } else
+    {
+        // Check for LEFT DOMAIN ERROR
+        if (!IsNested (aplTypeLft)
+         || IsEmpty (aplNELMLft))
+            goto DOMAIN_EXIT;
 
-        goto YYALLOC_EXIT;
-    } // End IF
+        // From here on the left arg is a non-empty nested vector
 
-    // Check for LEFT DOMAIN ERROR
-    if (!IsNested (aplTypeLft))
-        goto DOMAIN_EXIT;
+        // Get left arg global ptr
+        GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
 
-    // From here on the left arg is a nested scalar or vector
+        // Skip over the header and dimensions
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
 
-    // Take into account nested prototypes
-    aplNELMLft = max (aplNELMLft, 1);
+        // Ensure the left arg items are zildes
+        if (!PrimFnDydRightShoeGlbImm_EM (aplNELMLft,           // Left arg NELM
+                                          lpMemLft,             // Ptr to left arg global memory
+                                          0,                    // Left arg starting index
+                                          lptkFunc))            // Ptr to function token
+            goto ERROR_EXIT;
+    } // End IF/ELSE
 
-    // Get left arg global ptr
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-
-    // Skip over the header and dimensions
-    lpMemLft = VarArrayDataFmBase (lpMemLft);
-
-    if (!PrimFnDydRightShoeGlbImm_EM (aplNELMLft,           // Left arg NELM
-                                      lpMemLft,             // Ptr to left arg global memory
-                                      0,                    // Left arg starting index
-                                      immTypeRht,           // Right arg singleton type
-                                      aplLongestRht,        // Right arg singleton value
-                                      lptkFunc))            // Ptr to function token
-        goto ERROR_EXIT;
-
-YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -2072,11 +2067,10 @@ UBOOL PrimFnDydRightShoeGlbImm_EM
     (APLNELM    aplNELMLft,     // Left arg NELM
      LPVOID     lpMemLft,       // Ptr to left arg global memory
      APLUINT    uLft,           // Left arg starting index
-     IMM_TYPES  immTypeRht,     // Right arg singleton type
-     APLLONGEST aplLongestRht,  // Right arg singleton value
      LPTOKEN    lptkFunc)       // Ptr to function token
 
 {
+    HGLOBAL  hGlbLft;           // Left arg global memory handle
     APLSTYPE aplTypeSub;        // Left arg item storage type
     APLNELM  aplNELMSub;        // Left arg item NELM
     APLRANK  aplRankSub;        // Left arg item rank
@@ -2085,18 +2079,22 @@ UBOOL PrimFnDydRightShoeGlbImm_EM
     //   a nested vector of zildes
     for (; uLft < aplNELMLft; uLft++)
     {
+        // Get the global memory handle
+        hGlbLft = ((LPAPLNESTED) lpMemLft)[uLft];
+
         // Split cases based upon the ptr type of the element
-        switch (GetPtrTypeDir (((LPAPLNESTED) lpMemLft)[uLft]))
+        switch (GetPtrTypeDir (hGlbLft))
         {
             case PTRTYPE_STCONST:
-                goto LENGTH_EXIT;
+                // It's a simple scalar, so signal a RANK ERROR
+                goto RANK_EXIT;
 
             case PTRTYPE_HGLOBAL:
                 // Ensure that this element is a simple empty vector
 
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the item
-                AttrsOfGlb (((LPAPLNESTED) lpMemLft)[uLft], &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
+                AttrsOfGlb (hGlbLft, &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
                 // Check for LEFT RANK ERROR
                 if (!IsVector (aplRankSub))
@@ -2958,8 +2956,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 if (!PrimFnDydRightShoeGlbImm_EM (aplNELMLft,           // Left arg NELM
                                                   lpMemLft,             // Ptr to left arg global memory
                                                   uLft + 1,             // Left arg starting index
-                                                  immTypeSubRht,        // Right arg singleton type
-                                                  aplLongestSubRht,     // Right arg singleton value
                                                   lptkFunc))            // Ptr to function token
                     goto ERROR_EXIT;
             } else

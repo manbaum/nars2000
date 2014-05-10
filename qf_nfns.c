@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3637,6 +3637,9 @@ LPPL_YYSTYPE SysFnMonNUNTIE_EM_YY
             *lpMemRes++ = TieNum;
             nTieNums++;
 
+            // Close the handle -- this also releases all locked regions
+            CloseHandle (lpNfnsMem->hFile); lpNfnsMem->hFile = NULL;
+
             // Release resources
             NfnsReleaseResources (lpNfnsHdr, lpNfnsMem, (UINT) (lpNfnsMem - &lpNfnsHdr->aNfnsData[0]));
         } // End IF
@@ -3756,11 +3759,17 @@ void NfnsReleaseOneResource
     (LPNFNSDATA lpNfnsMem)          // Ptr to aNfnsData
 
 {
-    // Close the handle -- this also releases all locked regions
-    CloseHandle (lpNfnsMem->hFile); lpNfnsMem->hFile = NULL;
+    // If it's still valid, ...
+    if (lpNfnsMem->hFile)
+    {
+        // Close the handle -- this also releases all locked regions
+        CloseHandle (lpNfnsMem->hFile); lpNfnsMem->hFile = NULL;
+    } // End IF
 
-    // Free the filename global memory handle
-    FreeResultGlobalVar (lpNfnsMem->hGlbFileName); lpNfnsMem->hGlbFileName = NULL;
+    // If it's still valid, free the filename global memory handle
+    if (lpNfnsMem->hGlbFileName
+     && FreeResultGlobalVar (lpNfnsMem->hGlbFileName))
+        lpNfnsMem->hGlbFileName = NULL;
 } // End NfnsReleaseOneResource
 
 
@@ -5142,13 +5151,13 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (lpMemFileName)
+    if (lpNfnsMem->hGlbFileName && lpMemFileName)
     {
         // We no longer need this ptr
         MyGlobalUnlock (lpNfnsMem->hGlbFileName); lpMemFileName = NULL;
     } // End IF
 
-    if (lpNfnsHdr)
+    if (lpMemPTD->hGlbNfns && lpNfnsHdr)
     {
         // We no longer need this ptr
         MyGlobalUnlock (lpMemPTD->hGlbNfns); lpNfnsHdr = NULL;
@@ -5172,10 +5181,18 @@ UBOOL NfnsErase
      LPAPLCHAR  lpMemLft)           // Ptr to left arg global memory data (or new size if []NRESIZE)
 
 {
+    UBOOL uRes;                     // The result
+
+    // Close the handle -- this also releases all locked regions
+    CloseHandle (lpNfnsMem->hFile); lpNfnsMem->hFile = NULL;
+
+    // Delete the file
+    uRes = DeleteFileW (lpMemFileName);
+
     // Release resources
     NfnsReleaseResources (lpNfnsHdr, lpNfnsMem, (UINT) (lpNfnsMem - &lpNfnsHdr->aNfnsData[0]));
 
-    return DeleteFileW (lpMemFileName);
+    return uRes;
 } // End NfnsErase
 
 

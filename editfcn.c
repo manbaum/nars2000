@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3683,10 +3683,23 @@ void RespecifyNewQuadPW
                                   DEF_MIN_QUADPW,   // Low range value (inclusive)
                                   DEF_MAX_QUADPW,   // High ...
                                   bRangeLimit.PW))  // TRUE iff we're range limiting
-            // Save as new []PW
-            GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
+        {
+            LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
+
+            // Get ptr to PerTabData global memory
+            lpMemPTD = GetMemPTD ();
+
+            // If the lphtsPTD is valid, ...
+            if (lpMemPTD->lphtsPTD)
+                // Save as new []PW
+                lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
+#ifdef DEBUG
+            else
+                DbgStop ();
+#endif
+        } // End IF
     } // End IF
-} // End RespecifynewQuadPW
+} // End RespecifyNewQuadPW
 
 
 //***************************************************************************

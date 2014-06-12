@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -340,6 +340,11 @@ APLFLOAT PrimFnDydColonBarFisIvI
         return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
                                      ICNDX_0DIV0,
                                      (APLFLOAT) aplIntegerRht);
+    // Check for indeterminates:  L {div} 0
+    if (aplIntegerRht EQ 0)
+        return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
+                                     ICNDX_DIV0,
+                                     (APLFLOAT) aplIntegerRht);
 
     // The FPU handles overflow and underflow for us
     return (((APLFLOAT) aplIntegerLft) / (APLFLOAT) aplIntegerRht);
@@ -364,7 +369,11 @@ APLFLOAT PrimFnDydColonBarFisFvF
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0DIV0,
                                      aplFloatRht);
-
+    // Check for indeterminates:  L {div} 0
+    if (aplFloatRht EQ 0)
+        return TranslateQuadICIndex (aplFloatLft,
+                                     ICNDX_DIV0,
+                                     aplFloatRht);
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (IsInfinity (aplFloatLft)
      && IsInfinity (aplFloatRht))
@@ -403,6 +412,12 @@ APLRAT PrimFnDydColonBarRisRvR
      && IsMpq0 (&aplRatRht))
         return *mpq_QuadICValue (&aplRatLft,
                                   ICNDX_0DIV0,
+                                 &aplRatRht,
+                                 &mpqRes);
+    // Check for indeterminates:  L {div} 0
+    if (IsMpq0 (&aplRatRht))
+        return *mpq_QuadICValue (&aplRatLft,
+                                  ICNDX_DIV0,
                                  &aplRatRht,
                                  &mpqRes);
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -450,6 +465,12 @@ APLVFP PrimFnDydColonBarVisVvV
      && IsMpf0 (&aplVfpRht))
         return *mpfr_QuadICValue (&aplVfpLft,
                                    ICNDX_0DIV0,
+                                  &aplVfpRht,
+                                  &mpfRes);
+    // Check for indeterminates:  L {div} 0
+    if (IsMpf0 (&aplVfpRht))
+        return *mpfr_QuadICValue (&aplVfpLft,
+                                   ICNDX_DIV0,
                                   &aplVfpRht,
                                   &mpfRes);
     // Check for indeterminates:  _ {div} _ (same or different signs)

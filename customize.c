@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ WCHAR wszCancelMessage[] = L"You have made changes to the Customize settings.  S
 
 // []IC Index Names -- these must be in the same order as the IC_INDICES enum.
 LPWCHAR icIndexNames[ICNDX_LENGTH]
-= {WS_UTF16_COLONBAR L"0"                                                             , // 00:    {div} 0
+= {WS_UTF16_COLONBAR L"0"                                                             , // 00:    {div} 0 and L {div} 0 for L != 0
    WS_UTF16_CIRCLESTAR L"0"                                                           , // 01:    {log} 0
    L"!N for integer N<0"                                                              , // 02:      !N for integer N < 0
    L"0" WS_UTF16_TIMES  INF                                                           , // 03:  0 {times} _

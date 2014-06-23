@@ -2745,32 +2745,29 @@ void cs_yyfprintf
 
 {
 #if (defined (DEBUG)) && (defined (YYFPRINTF_DEBUG))
+    HRESULT  hResult;       // The result of <StringCbVPrintf>
     va_list  vl;
-    APLU3264 i1,
-             i2,
-             i3;
-    static  char szTemp[256] = {'\0'};
+    APLU3264 i1;
+    static   char szTemp[256] = {'\0'};
 
+    // Initialize the variable list
     va_start (vl, lpszFmt);
-
-    // Bison uses no more than three arguments.
-    // Note we must grab them separately this way
-    //   as using va_arg in the argument list to
-    //   wsprintf pushes the arguments in reverse
-    //   order.
-    i1 = va_arg (vl, APLU3264);
-    i2 = va_arg (vl, APLU3264);
-    i3 = va_arg (vl, APLU3264);
-
-    va_end (vl);
 
     // Accumulate into local buffer because
     //   Bison calls this function multiple
     //   times for the same line, terminating
     //   the last call for the line with a LF.
-    wsprintf (&szTemp[lstrlen (szTemp)],
-              lpszFmt,
-              i1, i2, i3);
+    hResult = StringCbVPrintf (&szTemp[lstrlen (szTemp)],
+                                sizeof (szTemp),
+                                lpszFmt,
+                                vl);
+    // End the variable list
+    va_end (vl);
+
+    // If it failed, ...
+    if (FAILED (hResult))
+        DbgBrk ();
+
     // Check last character.
     i1 = lstrlen (szTemp);
 

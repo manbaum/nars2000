@@ -1,6 +1,20 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1247 -- Version 0.4.9.xx
+-------------------------------
+
+* String Safe Support #1
+
+Directory trunk:
+
+CS_PARSE.Y:
+DEBUG.C:
+FH_PARSE.Y:
+PN_PARSE.Y:
+  Use string safe functions instead of the unsafe ones.
+
+
 Build #1246 -- Version 0.4.9.xx
 -------------------------------
 

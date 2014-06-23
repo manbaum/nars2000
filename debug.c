@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -532,7 +532,7 @@ LRESULT APIENTRY DBWndProc
 
             // Format the string with a preceding line #
             wsprintfA (szTemp,
-                       "%5d:  %s",
+                       "%2d:  %s",
                        ++iLineNum,
                        *(LPCHAR *) &lParam);
             // Convert the string from A to W
@@ -556,7 +556,7 @@ LRESULT APIENTRY DBWndProc
 
             // Format the string with a preceding line #
             wsprintfW (wszTemp,
-                       L"%s%5d:  %s",
+                       L"%s%2d:  %s",
                        iIndex ? WS_UTF16_REFCNT_NE1 : L"",
                        ++iLineNum,
                        &(*(LPWCHAR *) &lParam)[iIndex]);
@@ -1032,41 +1032,34 @@ void DbgClr
 //***************************************************************************
 
 int oprintfW
-    (LPWCHAR lpwszFmt,
-     ...)
+    (LPWCHAR lpwszFmt,      // Ptr to format string
+             ...)           // The variable list
 
 {
-    va_list  vl;
-    APLU3264 i1, i2, i3, i4, i5, i6, i7, i8;
-    int      iRet;
-    WCHAR    wszTemp[1024];
+    HRESULT hResult;        // The result of <StringCbVPrintf>
+    va_list vl;             // Ptr to variable list
+    WCHAR   wszTemp[1024];  // The temp buffer
 
-
-    // We hope that no one calls us with more than
-    //   eight arguments.
-    // Note we must grab them separately this way
-    //   as using va_arg in the argument list to
-    //   wsprintf pushes the arguments in reverse
-    //   order.
+    // Initialize the variable list
     va_start (vl, lpwszFmt);
 
-    i1 = va_arg (vl, APLU3264);
-    i2 = va_arg (vl, APLU3264);
-    i3 = va_arg (vl, APLU3264);
-    i4 = va_arg (vl, APLU3264);
-    i5 = va_arg (vl, APLU3264);
-    i6 = va_arg (vl, APLU3264);
-    i7 = va_arg (vl, APLU3264);
-    i8 = va_arg (vl, APLU3264);
-
+    // wsprintfW the list
+    hResult = StringCbVPrintfW (wszTemp,
+                                sizeof (wszTemp),
+                                lpwszFmt,
+                                vl);
+    // End the variable list
     va_end (vl);
 
-    iRet = wsprintfW (wszTemp,
-                      lpwszFmt,
-                      i1, i2, i3, i4, i5, i6, i7, i8);
+    // Display the DEBUG message
     OutputDebugStringW (wszTemp);
 
-    return iRet;
+    // If it failed, ...
+    if (FAILED (hResult))
+        DbgBrk ();
+
+    // Return the length of the formatted string
+    return lstrlenW (wszTemp);
 } // End oprintfW
 #endif
 
@@ -1079,40 +1072,34 @@ int oprintfW
 //***************************************************************************
 
 int dprintfWL0
-    (LPWCHAR lpwszFmt,
-     ...)
+    (LPWCHAR lpwszFmt,      // Ptr to format string
+             ...)           // The variable list
 
 {
-    va_list  vl;
-    APLU3264 i1, i2, i3, i4, i5, i6, i7, i8;
-    int      iRet;
-    WCHAR    wszTemp[1024];
+    HRESULT  hResult;       // The result
+    va_list  vl;            // Ptr to variable list
+    WCHAR    wszTemp[1024]; // The temp buffer
 
-    // We hope that no one calls us with more than
-    //   eight arguments.
-    // Note we must grab them separately this way
-    //   as using va_arg in the argument list to
-    //   wsprintf pushes the arguments in reverse
-    //   order.
+    // Initialize the variable list
     va_start (vl, lpwszFmt);
 
-    i1 = va_arg (vl, APLU3264);
-    i2 = va_arg (vl, APLU3264);
-    i3 = va_arg (vl, APLU3264);
-    i4 = va_arg (vl, APLU3264);
-    i5 = va_arg (vl, APLU3264);
-    i6 = va_arg (vl, APLU3264);
-    i7 = va_arg (vl, APLU3264);
-    i8 = va_arg (vl, APLU3264);
-
+    // wsprintfW the list
+    hResult = StringCbVPrintfW (wszTemp,
+                                sizeof (wszTemp),
+                                lpwszFmt,
+                                vl);
+    // End the variable list
     va_end (vl);
 
-    iRet = wsprintfW (wszTemp,
-                      lpwszFmt,
-                      i1, i2, i3, i4, i5, i6, i7, i8);
+    // Display the DEBUG message
     DbgMsgW (wszTemp);
 
-    return iRet;
+    // If it failed, ...
+    if (FAILED (hResult))
+        DbgBrk ();
+
+    // Return the length of the formatted string
+    return lstrlenW (wszTemp);
 } // End dprintfWL0
 #endif
 
@@ -1125,43 +1112,37 @@ int dprintfWL0
 //***************************************************************************
 
 int dprintfWL9
-    (LPWCHAR lpwszFmt,
-     ...)
+    (LPWCHAR lpwszFmt,      // Ptr to format string
+             ...)           // The variable list
 
 {
-    va_list  vl;
-    APLU3264 i1, i2, i3, i4, i5, i6, i7, i8;
-    int      iRet;
-    WCHAR    wszTemp[1024];
+    HRESULT  hResult;       // The result
+    va_list  vl;            // Ptr to variable list
+    WCHAR    wszTemp[1024]; // The temp buffer
 
     if (gDbgLvl < 9)
         return 0;
 
-    // We hope that no one calls us with more than
-    //   eight arguments.
-    // Note we must grab them separately this way
-    //   as using va_arg in the argument list to
-    //   wsprintf pushes the arguments in reverse
-    //   order.
+    // Initialize the variable list
     va_start (vl, lpwszFmt);
 
-    i1 = va_arg (vl, APLU3264);
-    i2 = va_arg (vl, APLU3264);
-    i3 = va_arg (vl, APLU3264);
-    i4 = va_arg (vl, APLU3264);
-    i5 = va_arg (vl, APLU3264);
-    i6 = va_arg (vl, APLU3264);
-    i7 = va_arg (vl, APLU3264);
-    i8 = va_arg (vl, APLU3264);
-
+    // wsprintfW the list
+    hResult = StringCbVPrintfW (wszTemp,
+                                sizeof (wszTemp),
+                                lpwszFmt,
+                                vl);
+    // End the variable list
     va_end (vl);
 
-    iRet = wsprintfW (wszTemp,
-                      lpwszFmt,
-                      i1, i2, i3, i4, i5, i6, i7, i8);
+    // Display the DEBUG message
     DbgMsgW (wszTemp);
 
-    return iRet;
+    // If it failed, ...
+    if (FAILED (hResult))
+        DbgBrk ();
+
+    // Return the length of the formatted string
+    return lstrlenW (wszTemp);
 } // End dprintfWL9
 #endif
 

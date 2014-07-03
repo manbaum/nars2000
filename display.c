@@ -1207,6 +1207,8 @@ LPAPLCHAR FormatAplRatFC
     LPCHAR    lpRawFmt;             // Ptr to raw formatted #
     APLUINT   uTotSize;             // Total size of formatted #
 
+    Assert (!IsMpqNULL (&aplRat));
+
     lpRawFmt = (LPCHAR) lpaplChar;
 
     // If the number is not +/- infinity, ...
@@ -1918,6 +1920,8 @@ LPAPLCHAR FormatAplVfpFC
               iFrcDigs,             // # fractional digits (may be > iPrcDigs) (excluding 'Enn')
               iPrcDigs;             // # significant digits in the precision
     LPCHAR    lpRawFmt;             // Ptr to raw formatted #
+
+    Assert (!IsMpfNULL (&aplVfp));
 
     // If we're to precede the display with (FPCnnn), ...
     if (bPrecFPC)

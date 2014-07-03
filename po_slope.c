@@ -136,6 +136,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
 {
     APLSTYPE          aplTypeRht,           // Right arg storage type
+                      aplTypeTmp,           // Temporary ...
                       aplTypeRes;           // Result    ...
     APLNELM           aplNELMRht,           // Right arg NELM
                       aplNELMRes;           // Result    ...
@@ -669,6 +670,15 @@ RESTART_EXCEPTION:
                                         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
                                     } // End IF
 
+                                    // Get the left arg global memory handle (if any)
+                                    hGlbRes = GetGlbHandle (&tkLftArg);
+
+                                    if (hGlbRes)
+                                    {
+                                        // We no longer need this storage
+                                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                                    } // End IF
+
                                     goto RESTART_ALLOC;
                                 } // End IF/ELSE
 
@@ -814,6 +824,15 @@ RESTART_EXCEPTION:
                     // If it succeeded, ...
                     if (lpYYRes)
                     {
+                        // Check for NoValue
+                        if (IsTokenNoValue (&lpYYRes->tkToken))
+                        {
+                            // Free the YYRes (but not the storage)
+                            YYFree (lpYYRes); lpYYRes = NULL;
+
+                            goto VALUE_EXIT;
+                        } // End IF
+
                         // Copy the result to the left arg token
                         tkLftArg = lpYYRes->tkToken;
 
@@ -821,6 +840,39 @@ RESTART_EXCEPTION:
                         YYFree (lpYYRes); lpYYRes = NULL;
                     } else
                         goto ERROR_EXIT;
+
+                    // Get the attributes (Type, NELM, and Rank) of the new result
+                    AttrsOfToken (&tkLftArg, &aplTypeTmp, NULL, NULL, NULL);
+
+                    // Check for blow up
+                    if (aplTypeTmp NE aplTypeRes)
+                    {
+                        // It's now a aplTypeTmp result
+                        aplTypeRes = aplTypeTmp;
+
+                        if (hGlbRes)
+                        {
+                            if (lpMemRes)
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                            } // End IF
+
+                            // We no longer need this storage
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                        } // End IF
+
+                        // Get the left arg global memory handle (if any)
+                        hGlbRes = GetGlbHandle (&tkLftArg);
+
+                        if (hGlbRes)
+                        {
+                            // We no longer need this storage
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                        } // End IF
+
+                        goto RESTART_ALLOC;
+                    } // End IF
 
                     // Split cases based upon the token type of the left arg
                     switch (tkLftArg.tkFlags.TknType)
@@ -848,6 +900,15 @@ RESTART_EXCEPTION:
                                                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
                                             } // End IF
 
+                                            // We no longer need this storage
+                                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                                        } // End IF
+
+                                        // Get the left arg global memory handle (if any)
+                                        hGlbRes = GetGlbHandle (&tkLftArg);
+
+                                        if (hGlbRes)
+                                        {
                                             // We no longer need this storage
                                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
                                         } // End IF
@@ -1070,6 +1131,39 @@ RESTART_EXCEPTION:
                         YYFree (lpYYRes); lpYYRes = NULL;
                     } else
                         goto ERROR_EXIT;
+
+                    // Get the attributes (Type, NELM, and Rank) of the new result
+                    AttrsOfToken (&tkRhtArg, &aplTypeTmp, NULL, NULL, NULL);
+
+                    // Check for blow up
+                    if (aplTypeTmp NE aplTypeRes)
+                    {
+                        // It's now a aplTypeTmp result
+                        aplTypeRes = aplTypeTmp;
+
+                        if (hGlbRes)
+                        {
+                            if (lpMemRes)
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                            } // End IF
+
+                            // We no longer need this storage
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                        } // End IF
+
+                        // Get the right arg global memory handle (if any)
+                        hGlbRes = GetGlbHandle (&tkRhtArg);
+
+                        if (hGlbRes)
+                        {
+                            // We no longer need this storage
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                        } // End IF
+
+                        goto RESTART_ALLOC;
+                    } // End IF
                 } // End FOR
 
                 // Get the index into the result
@@ -1103,6 +1197,15 @@ RESTART_EXCEPTION:
                                             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
                                         } // End IF
 
+                                        // We no longer need this storage
+                                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                                    } // End IF
+
+                                    // Get the right arg global memory handle (if any)
+                                    hGlbRes = GetGlbHandle (&tkRhtArg);
+
+                                    if (hGlbRes)
+                                    {
                                         // We no longer need this storage
                                         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
                                     } // End IF
@@ -1170,7 +1273,7 @@ RESTART_EXCEPTION:
                                 lpMemRat = VarArrayBaseToData (lpMemRat, 0);
 
                                 // Copy to the result
-                                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
+                               mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemRat = NULL;

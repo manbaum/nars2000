@@ -836,6 +836,34 @@ RESTART_EXCEPTION_APA:
         // Initialize the secondary right arg storage type
         aplTypeRht2 = aplTypeRht;
 
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_HETERO:
+            case ARRAY_NESTED:
+                break;
+
+            case ARRAY_RAT:
+                // Initialize the temp
+                mpq_init (&aplRatRht);
+
+                break;
+
+            case ARRAY_VFP:
+                // Initialize the temp
+                mpfr_init0 (&aplVfpRht);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // if the result and right arg are of different types, ...
+        if (aplTypeRht NE aplTypeRes)
         // Split cases based upon the result storage type
         switch (aplTypeRes)
         {
@@ -2851,7 +2879,6 @@ UBOOL PrimOpDydSlashAllocate_EM
 
 {
     APLUINT  ByteRes,           // # bytes in the result
-             uRes,              // Result loop counter
              uDim;              // Dimension loop counter
 
     // Calculate space needed for the result
@@ -2904,15 +2931,6 @@ UBOOL PrimOpDydSlashAllocate_EM
         *lpapaOffRht = lpAPA->Off;
         *lpapaMulRht = lpAPA->Mul;
 #undef  lpAPA
-    } // End IF
-
-    if (IsNested (aplTypeRes))
-    {
-        // Fill nested result with PTR_REUSED
-        //   in case we fail part way through
-        *((LPAPLNESTED) *lplpMemRes) = PTR_REUSED;
-        for (uRes = 1; uRes < aplNELMRes; uRes++)
-            ((LPAPLNESTED) *lplpMemRes)[uRes] = PTR_REUSED;
     } // End IF
 
     return TRUE;

@@ -10480,6 +10480,8 @@ RESTART_EXCEPTION_IMMED:
                     // Now we can allocate the storage for the result
                     //***************************************************************
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                    if (lphGlbRes)
+                       *lphGlbRes = hGlbTmp;
                     if (!hGlbTmp)
                         goto WSFULL_EXIT;
                     // Lock the memory to get a ptr to it
@@ -10621,6 +10623,29 @@ RESTART_EXCEPTION_IMMED:
                 if (IsNumeric (aplTypeRes)
                  && !IsRat    (aplTypeRes))
                 {
+                    if (lphGlbRes && *lphGlbRes)
+                    {
+                        if (lpMemRes)
+                        {
+                            // We need to start over with the result
+                            MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+                        } // End IF
+
+                        // We no longer need this storage
+                        FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+                    } else
+                    if (hGlbTmp)
+                    {
+                        if (lpMemRes)
+                        {
+                            // We need to start over with the result
+                            MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+                        } // End IF
+
+                        // We no longer need this storage
+                        FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
+                    } // End IF/ELSE
+
                     // It's now a RAT result
                     aplTypeRes = ARRAY_RAT;
 
@@ -10640,6 +10665,29 @@ RESTART_EXCEPTION_IMMED:
                 if (IsNumeric (aplTypeRes)
                  && !IsVfp    (aplTypeRes))
                 {
+                    if (lphGlbRes && *lphGlbRes)
+                    {
+                        if (lpMemRes)
+                        {
+                            // We need to start over with the result
+                            MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+                        } // End IF
+
+                        // We no longer need this storage
+                        FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+                    } else
+                    if (hGlbTmp)
+                    {
+                        if (lpMemRes)
+                        {
+                            // We need to start over with the result
+                            MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+                        } // End IF
+
+                        // We no longer need this storage
+                        FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
+                    } // End IF/ELSE
+
                     // It's now a VFP result
                     aplTypeRes = ARRAY_VFP;
 
@@ -10659,6 +10707,29 @@ RESTART_EXCEPTION_IMMED:
                 if (IsNumeric (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
+                    if (lphGlbRes && *lphGlbRes)
+                    {
+                        if (lpMemRes)
+                        {
+                            // We need to start over with the result
+                            MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+                        } // End IF
+
+                        // We no longer need this storage
+                        FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+                    } else
+                    if (hGlbTmp)
+                    {
+                        if (lpMemRes)
+                        {
+                            // We need to start over with the result
+                            MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+                        } // End IF
+
+                        // We no longer need this storage
+                        FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
+                    } // End IF/ELSE
+
                     // It's now a FLOAT result
                     aplTypeRes = ARRAY_FLOAT;
 

@@ -1327,7 +1327,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
@@ -1470,7 +1470,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
@@ -2601,7 +2601,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (overLapped.hEvent)
@@ -3699,7 +3699,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRht && lpMemRht)
@@ -4542,7 +4542,7 @@ APLINT GetNextTieNum_EM
         lpNfnsMem = &lpNfnsHdr->aNfnsData[lpNfnsHdr->offFirstInuse];
 
         // Allocate memory to hold the existing tie numbers so we may sort them
-        hGlbTie = MyGlobalAlloc (GHND, lpNfnsHdr->nTieNums * sizeof (TieNum));
+        hGlbTie = DbgGlobalAlloc (GHND, lpNfnsHdr->nTieNums * sizeof (TieNum));
         if (hGlbTie)
         {
             // Lock the memory to get a ptr to it
@@ -4570,7 +4570,7 @@ APLINT GetNextTieNum_EM
             MyGlobalUnlock (hGlbTie); lpMemTie = NULL;
 
             // We no longer need this storage
-            MyGlobalFree (hGlbTie); hGlbTie = NULL;
+            DbgGlobalFree (hGlbTie); hGlbTie = NULL;
         } else
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -4674,7 +4674,7 @@ UBOOL InitGlbNfns_EM
     Assert (lpMemPTD->hGlbNfns EQ NULL);
 
     // Allocate the initial entry
-    lpMemPTD->hGlbNfns = MyGlobalAlloc (GHND, sizeof (NFNSHDR) + DEF_NFNS_INIT * sizeof (NFNSDATA));
+    lpMemPTD->hGlbNfns = DbgGlobalAlloc (GHND, sizeof (NFNSHDR) + DEF_NFNS_INIT * sizeof (NFNSDATA));
 
     if (lpMemPTD->hGlbNfns)
     {

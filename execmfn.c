@@ -301,7 +301,7 @@ HGLOBAL Init1MagicFunction
     // Allocate space for the text
     //   (the "sizeof (uLineLen)" is for the leading line length
     //    and the "+ 1" is for the terminating zero)
-    hGlbTxtHdr = MyGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
+    hGlbTxtHdr = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (!hGlbTxtHdr)
     {
         MessageBox (hWndEC,
@@ -450,13 +450,13 @@ HGLOBAL Init1MagicFunction
                 goto ERROR_EXIT;
         // Allocate global memory for the function header
         hGlbDfnHdr =
-          MyGlobalAlloc (GHND, sizeof (DFN_HEADER)
-                             + sizeof (LPSYMENTRY) * (numResultSTE
-                                                    + numLftArgSTE
-                                                    + numRhtArgSTE
-                                                    + numLocalsSTE)
-                             + sizeof (FCNLINE) * numFcnLines
-                             + uOffset);
+          DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
+                              + sizeof (LPSYMENTRY) * (numResultSTE
+                                                     + numLftArgSTE
+                                                     + numRhtArgSTE
+                                                     + numLocalsSTE)
+                              + sizeof (FCNLINE) * numFcnLines
+                              + uOffset);
         if (!hGlbDfnHdr)
         {
             MessageBox (hWndEC,
@@ -678,7 +678,7 @@ ERROR_EXIT:
     if (hGlbTxtHdr)
     {
         // We no longer need this storage
-        MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
+        DbgGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
     } // End IF
 NORMAL_EXIT:
     // Restore the ptr to the next token on the CS stack
@@ -777,6 +777,12 @@ UBOOL InitMagicFunctions
 //  Execute and erase a niladic MFO (MFON_MonDotInit)
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecNilMFO"
+#else
+#define APPEND_NAME
+#endif
+
 void ExecNilMFO
     (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      HWND         hWndEC)               // Session Manager window handle
@@ -849,6 +855,7 @@ void ExecNilMFO
     // Erase the Symbol Table Entry
     EraseSTE (lpSymEntry, FALSE); lpSymEntry = NULL;
 } // End ExecNilMFO
+#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -560,6 +560,12 @@ INT_PTR CALLBACK UpdatesDlgProc
 //  Download and run the setup program
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- DownloadRun"
+#else
+#define APPEND_NAME
+#endif
+
 void DownloadRun
     (LPWCHAR     lpWebVer,                      // Ptr to web version string
      LPDNLTHRSTR lpDnlThrStr)                   // Ptr to DownloadInThread parameter
@@ -704,7 +710,7 @@ void DownloadRun
 
     // Allocate global memory to read the file
     while (lpDnlThrStr->lpDnlDlgStr->uNumBytesAlloc
-        && (lpDnlThrStr->lpDnlDlgStr->lpMem = MyGlobalAlloc (GPTR, lpDnlThrStr->lpDnlDlgStr->uNumBytesAlloc)) EQ NULL)
+        && (lpDnlThrStr->lpDnlDlgStr->lpMem = DbgGlobalAlloc (GPTR, lpDnlThrStr->lpDnlDlgStr->uNumBytesAlloc)) EQ NULL)
         lpDnlThrStr->lpDnlDlgStr->uNumBytesAlloc /= 2;
     if (lpDnlThrStr->lpDnlDlgStr->uNumBytesAlloc EQ 0)
         goto WSFULL_EXIT;
@@ -788,6 +794,7 @@ NORMAL_EXIT:
 
     return;
 } // End DownloadRun
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1188,6 +1195,12 @@ void FormatSystemErrorMessage
 //  Free and close internat resources and handles
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FreeAndClose"
+#else
+#define APPEND_NAME
+#endif
+
 void FreeAndClose
     (LPDNLTHRSTR lpDnlThrStr,           // Ptr to DNLTHRSTR
      UBOOL       bDeleteFile)           // TRUE iff we should delete the temp file
@@ -1205,7 +1218,7 @@ void FreeAndClose
     if (lpDnlThrStr->lpDnlDlgStr->lpMem)
     {
         // We no longer need this storage
-        MyGlobalFree (lpDnlThrStr->lpDnlDlgStr->lpMem); lpDnlThrStr->lpDnlDlgStr->lpMem = NULL;
+        DbgGlobalFree (lpDnlThrStr->lpDnlDlgStr->lpMem); lpDnlThrStr->lpDnlDlgStr->lpMem = NULL;
     } // End IF
 
     if (lpDnlThrStr->lpDnlDlgStr->hTempFile NE INVALID_HANDLE_VALUE)
@@ -1238,6 +1251,7 @@ void FreeAndClose
 
 ////oprintfW (L"%3d:  FreeAndClose end\n", guCnt++);
 } // End FreeAndClose
+#undef  APPEND_NAME
 
 
 //***************************************************************************

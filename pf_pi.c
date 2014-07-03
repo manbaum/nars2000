@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -437,7 +437,7 @@ NORMAL_EXIT:
         MyGlobalUnlock (memTmp.lpMemOrg); memTmp.lpMemOrg = memTmp.lpMemNxt = NULL;
 
         // We no longer need this storage
-        MyGlobalFree (memTmp.hGlbMem); memTmp.hGlbMem = NULL;
+        DbgGlobalFree (memTmp.hGlbMem); memTmp.hGlbMem = NULL;
     } // End IF
 
     // We no longer need this storage
@@ -1214,6 +1214,12 @@ NORMAL_EXIT:
 //  Resize the factor memory struc if needed
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ResizeFactorStruc"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL ResizeFactorStruc
     (LPMEMTMP lpMemTmp)
 
@@ -1280,6 +1286,7 @@ UBOOL ResizeFactorStruc
 
     return TRUE;
 } // End ResizeFactorStruc
+#undef  APPEND_NAME
 
 
 //***************************************************************************

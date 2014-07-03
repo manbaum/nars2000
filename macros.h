@@ -65,9 +65,10 @@
 
 #define CheckSymEntries()       _CheckSymEntries (FNLN)
 
-////#define DEBUG_ALLOCFREE
 
 #ifdef DEBUG
+//#define DEBUG_ALLOCFREE
+
   #define YYAlloc()     _YYAlloc(FNLN)
 
   #ifdef DEBUG_ALLOCFREE
@@ -75,8 +76,7 @@
     DbgGlobalAllocSub ((uFlags), (ByteRes), L"##GlobalAlloc in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
     #define DbgGlobalFree(hGlbToken) \
-    {dprintfWL9 (L"**GlobalFree  in " APPEND_NAME L": %p (%S#%d)", (hGlbToken), FNLN); \
-     MyGlobalFree (hGlbToken);}
+    DbgGlobalFreeSub ((hGlbToken), L"**GlobalFree  in " APPEND_NAME L": %p (%S#%d)", FNLN)
   #else
     #define DbgGlobalAlloc(uFlags,ByteRes) \
     MyGlobalAlloc ((uFlags), (ByteRes))

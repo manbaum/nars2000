@@ -67,7 +67,7 @@
 //
 //  must call this function to check their result to see if it
 //  can be stored more simply.  Note that more simply does not
-//  mean in fewer bytes as ptrs are four bytes while integers are eight.
+//  mean in fewer bytes as 32-bit ptrs are four bytes while integers are eight.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1477,7 +1477,7 @@ UBOOL TypePromoteGlb_EM
     ByteRes = CalcArraySize (aplTypeRes, aplNELMArg, aplRankArg);
 
     // Allocate space for the result
-    hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbRes)
         // WS FULL, so no promotion
         goto NORMAL_EXIT;
@@ -2128,7 +2128,7 @@ void TPT_RAT2VFP
     // Lock the memory to get a ptr to it
     lpMemRat = MyGlobalLock (hGlbRat);
 
-    Assert (IsScalar ((LPVARARRAY_HEADER) lpMemRat));
+    Assert (IsScalar (((LPVARARRAY_HEADER) lpMemRat)->Rank));
 
     // Skip over the header and dimensions to the data
     lpMemRat = VarArrayDataFmBase (lpMemRat);

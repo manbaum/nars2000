@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -191,7 +191,7 @@ UBOOL CreateNewTab
 
     // Allocate space for the workspace name ("+ 1" for trailing zero)
     // The storage for this handle is freed in <CreateNewTabInThread>.
-    hGlbDPFE = MyGlobalAlloc (GHND, (uLen + 1) * sizeof (lpwsz[0]));
+    hGlbDPFE = DbgGlobalAlloc (GHND, (uLen + 1) * sizeof (lpwsz[0]));
     if (!hGlbDPFE)
         return FALSE;
 
@@ -510,7 +510,7 @@ NORMAL_EXIT:
     if (csSM.hGlbDPFE)
     {
         // Free the storage for the workspace DPFE global memory
-        MyGlobalFree (csSM.hGlbDPFE); csSM.hGlbDPFE = NULL;
+        DbgGlobalFree (csSM.hGlbDPFE); csSM.hGlbDPFE = NULL;
     } // End IF
 
     if (lpMemPTD)
@@ -902,7 +902,7 @@ void FreeGlobalStorage
         MyGlobalUnlock (lpMemPTD->hGlbNfns); lpNfnsHdr = NULL;
 
         // We no longer need this storage
-        MyGlobalFree (lpMemPTD->hGlbNfns); lpMemPTD->hGlbNfns = NULL;
+        DbgGlobalFree (lpMemPTD->hGlbNfns); lpMemPTD->hGlbNfns = NULL;
     } // End IF
 
     // Free global storage if the SymTab is valid
@@ -992,7 +992,7 @@ void FreeGlobalStorage
              lpHshEntry++)
         if (lpHshEntry->htFlags.Inuse
          && lpHshEntry->htGlbName NE NULL)
-            MyGlobalFree (lpHshEntry->htGlbName);
+            DbgGlobalFree (lpHshEntry->htGlbName);
 
         // Zap the SymTab ptr so we don't re-execute this code
         lpMemPTD->lphtsPTD->lpSymTab = NULL;

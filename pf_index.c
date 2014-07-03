@@ -503,7 +503,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
                         // Free the allocated memory
-                        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+                        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
 
                         Assert (hGlbNam NE NULL);
 
@@ -637,7 +637,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                 MyGlobalUnlock (lpYYItm->tkToken.tkData.tkGlbData); lpSymTmp = NULL;
 
                                 // We no longer need this storage
-                                MyGlobalFree (lpYYItm->tkToken.tkData.tkGlbData); lpYYItm->tkToken.tkData.tkGlbData = NULL;
+                                DbgGlobalFree (lpYYItm->tkToken.tkData.tkGlbData); lpYYItm->tkToken.tkData.tkGlbData = NULL;
 
                                 break;
 
@@ -652,7 +652,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                 MyGlobalUnlock (lpYYItm->tkToken.tkData.tkGlbData); lpSymTmp = NULL;
 
                                 // We no longer need this storage
-                                MyGlobalFree (lpYYItm->tkToken.tkData.tkGlbData); lpYYItm->tkToken.tkData.tkGlbData = NULL;
+                                DbgGlobalFree (lpYYItm->tkToken.tkData.tkGlbData); lpYYItm->tkToken.tkData.tkGlbData = NULL;
 
                                 break;
 
@@ -2346,7 +2346,7 @@ UBOOL ArrayIndexSetNamImmed_EM
             goto WSFULL_EXIT;
 
         // Wrap the global in a scalar
-        hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlbRes)
             goto WSFULL_EXIT;
 
@@ -3280,7 +3280,7 @@ UBOOL ArrayIndexSetSingLst_EM
                         MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
 
                         // We no longer need this storage
-                        MyGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
+                        DbgGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
 
                         // If the list is a singleton, ...
                         if (IsSingleton (aplNELMSubLst))

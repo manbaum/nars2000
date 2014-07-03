@@ -1248,6 +1248,12 @@ void MF_Delete
 //  Message processing routine for the Master Frame window
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MFWndProc"
+#else
+#define APPEND_NAME
+#endif
+
 LRESULT APIENTRY MFWndProc
     (HWND   hWnd,       // Window handle
      UINT   message,    // Type of message
@@ -1643,7 +1649,7 @@ LRESULT APIENTRY MFWndProc
 
                     // Allocate memory to store initial state info
                     lpSavedButtons =
-                      MyGlobalAlloc (GPTR, nSavedButtons * sizeof (TBBUTTON));
+                      DbgGlobalAlloc (GPTR, nSavedButtons * sizeof (TBBUTTON));
 
                     // Save the current state
                     for (iCnt = 0; iCnt < nSavedButtons; iCnt++)
@@ -1652,7 +1658,7 @@ LRESULT APIENTRY MFWndProc
                     return TRUE;
 
                 case TBN_ENDADJUST:         // Free initial state memory
-                    MyGlobalFree (lpSavedButtons); lpSavedButtons = NULL;
+                    DbgGlobalFree (lpSavedButtons); lpSavedButtons = NULL;
 
                     return TRUE;
 
@@ -2841,7 +2847,7 @@ LRESULT APIENTRY MFWndProc
             // If the Keyboard Layout global memory is present, ...
             if (hGlbKeybLayouts)
             {
-                MyGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
+                DbgGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
             } // End IF
 
             // Remove all saved window properties
@@ -2935,6 +2941,7 @@ LRESULT APIENTRY MFWndProc
 ////LCLODSAPI ("MFZ:", hWnd, message, wParam, lParam);
     return DefFrameProcW (hWnd, hWndMC, message, wParam, lParam);
 } // End MFWndProc
+#undef  APPEND_NAME
 
 
 //***************************************************************************

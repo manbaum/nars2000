@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -994,7 +994,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
+        DbgGlobalFree (hGlbTmp); hGlbTmp = NULL;
     } // End IF
 
     return lpYYRes;
@@ -1801,7 +1801,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbTmpLft); hGlbTmpLft = NULL;
+        DbgGlobalFree (hGlbTmpLft); hGlbTmpLft = NULL;
     } // End IF
 
     if (hGlbTmpRht)
@@ -1818,7 +1818,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbTmpRht); hGlbTmpRht = NULL;
+        DbgGlobalFree (hGlbTmpRht); hGlbTmpRht = NULL;
     } // End IF
 
     // We no longer need this storage
@@ -2006,7 +2006,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbInd); hGlbInd = NULL;
+        DbgGlobalFree (hGlbInd); hGlbInd = NULL;
     } // End IF
 
     // If we allocated memory for the index vector, ...
@@ -2020,7 +2020,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbAux); hGlbAux = NULL;
+        DbgGlobalFree (hGlbAux); hGlbAux = NULL;
     } // End IF
 
     // We no longer need this storage

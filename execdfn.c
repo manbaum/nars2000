@@ -1083,7 +1083,7 @@ NEXTLINE:
                 MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 
                 // We no longer need this resource
-                MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+                DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 
                 goto RESTART_AFTER_ERROR;
             } // End IF
@@ -1715,6 +1715,12 @@ LPSYMENTRY LocalizeLabels
 //  Initialize variable arg STEs
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- InitVarSTEs"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL InitVarSTEs
     (LPTOKEN      lptkArg,      // Ptr to variable token
      UINT         numArgSTE,    // # STEs to initialize
@@ -2069,6 +2075,7 @@ UBOOL InitVarSTEs
 WSFULL_EXIT:
     return FALSE;
 } // End InitVarSTEs
+#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1433,7 +1433,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             //***************************************************************
             // Now we can allocate the storage for the result
             //***************************************************************
-            hGlbObj = MyGlobalAlloc (GHND, (APLU3264) ByteObj);
+            hGlbObj = DbgGlobalAlloc (GHND, (APLU3264) ByteObj);
             if (!hGlbObj)
                 goto WSFULL_EXIT;
 
@@ -1971,7 +1971,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
                     // Allocate space for the monitor info
                     lpMemDfnHdr->hGlbMonInfo =
-                      MyGlobalAlloc (GHND, (lpMemDfnHdr->numFcnLines + 1) * sizeof (INTMONINFO));
+                      DbgGlobalAlloc (GHND, (lpMemDfnHdr->numFcnLines + 1) * sizeof (INTMONINFO));
                     if (lpMemDfnHdr->hGlbMonInfo)
                     {
                         // Lock the memory to get a ptr to it

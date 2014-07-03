@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -536,7 +536,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 
     // We no longer need this storage
-    MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+    DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 ERROR_EXIT:
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -199,7 +199,7 @@ UBOOL CmdSave_EM
         goto WSFULL_EXIT;
 
     // Allocate space for two counters (Vars & Fcns) per SI level
-    hGlbCnt = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+    hGlbCnt = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (!hGlbCnt)
         goto WSFULL_EXIT;
 
@@ -612,7 +612,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbCnt); hGlbCnt = NULL;
+        DbgGlobalFree (hGlbCnt); hGlbCnt = NULL;
     } // End IF
 
     EXIT_TEMP_OPEN

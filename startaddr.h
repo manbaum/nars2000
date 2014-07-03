@@ -145,8 +145,12 @@ typedef struct tagSTART_ADDRESSES
     "oprintfW"                  , (LPUCHAR) &oprintfW                   ,
     "dprintfWL0"                , (LPUCHAR) &dprintfWL0                 ,
     "dprintfWL9"                , (LPUCHAR) &dprintfWL9                 ,
+#ifdef DEBUG_ALLOCFREE
+    "ExcludeFuncName"           , (LPUCHAR) &ExcludeFuncName            ,
     "DbgGlobalAllocSub"         , (LPUCHAR) &DbgGlobalAllocSub          ,
+    "DbgGlobalFreeSub"          , (LPUCHAR) &DbgGlobalFreeSub           ,
     "FileNameOnly"              , (LPUCHAR) &FileNameOnly               ,
+#endif
   #endif
 
     // fh_parse.c/y

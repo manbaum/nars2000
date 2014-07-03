@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1265,7 +1265,7 @@ UBOOL SaveFunctionCom
     //   via a system command, in which case there is
     //   no PTD for that thread.
     hGlbTxtHdr =
-      MyGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
+      DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (!hGlbTxtHdr)
     {
         // Mark the line in error
@@ -1966,7 +1966,7 @@ ERROR_EXIT:
     if (hGlbTxtHdr)
     {
         // We no longer need this storage
-        MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
+        DbgGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
     } // End IF
 NORMAL_EXIT:
     // Restore the ptr to the next token on the CS stack
@@ -2123,7 +2123,7 @@ UINT SaveFunctionLine
                             || (lpMemDfnHdr
                              && lpMemDfnHdr->bMFO));    // TRUE iff we're tokenizing a Magic Function/Operator
                 // We no longer need this storage
-                MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+                DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 
                 // Delete the surrounding braces to bring it back to where it was
                 CopyMemory (lpwszLine, &lpwszLine[1], uLineLen * sizeof (lpwszLine[0]));
@@ -2155,7 +2155,7 @@ UINT SaveFunctionLine
     if (!lpFcnLines)
     {
         // We no longer need this storage
-        MyGlobalFree (hGlbTxtLine); hGlbTxtLine = NULL;
+        DbgGlobalFree (hGlbTxtLine); hGlbTxtLine = NULL;
     } // End IF
 
     // If tokenization failed, ...
@@ -2210,7 +2210,7 @@ UINT SaveFunctionLine
     MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
 
     // We no longer need this storage
-    MyGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+    DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
 
     // Account for these tokens
     *lpOffNextTknLine += uTknSize;
@@ -2296,6 +2296,12 @@ UBOOL IsLineEmpty
 //
 //  Calculate the line #s of the line labels
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- GetLabelNums"
+#else
+#define APPEND_NAME
+#endif
 
 UBOOL GetLabelNums
     (LPDFN_HEADER  lpMemDfnHdr,         // Ptr to user-defined function/operator header
@@ -2501,11 +2507,12 @@ NORMAL_EXIT:
     if (lplpLblEntry)
     {
         // We no longer need this storage
-        MyGlobalFree (lplpLblEntry); lplpLblEntry = NULL;
+        DbgGlobalFree (lplpLblEntry); lplpLblEntry = NULL;
     } // End IF
 
     return bRet;
 } // End GetLabelNums
+#undef  APPEND_NAME
 
 
 //***************************************************************************

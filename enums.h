@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -141,8 +141,7 @@ typedef enum tagEXCEPTION_CODES // Exception Codes
 // N.B.:  Whenever changing the above tagEXCEPTION_CODES enum,
 //   be sure to make a corresponding change to
 //   <CheckException> in <except.c>,
-//   <MyGetExceptionStr> in <except.c>,
-//   <ExceptNames> in <except.c>
+//   <MyGetExceptionStr> in <except.c>
 
 
 typedef enum tagMAKE_PROTO

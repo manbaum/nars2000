@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1222,10 +1222,12 @@ RESTART_EXCEPTION_VARNAMED:
                 } // SWITCH
             } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
             {
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
-                switch (MyGetExceptionCode ())
+                switch (ExceptionCode)
                 {
                     case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -1257,7 +1259,7 @@ RESTART_EXCEPTION_VARNAMED:
                             // It's now a RAT result
                             aplTypeRes = ARRAY_RAT;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #1: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_VARNAMED;
                         } // End IF
@@ -1276,7 +1278,7 @@ RESTART_EXCEPTION_VARNAMED:
                             // It's now a VFP result
                             aplTypeRes = ARRAY_VFP;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #1: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_VARNAMED;
                         } // End IF
@@ -1298,7 +1300,7 @@ RESTART_EXCEPTION_VARNAMED:
                             // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #1: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_VARNAMED;
                         } // End IF
@@ -1471,10 +1473,12 @@ RESTART_EXCEPTION_VARIMMED:
                 } // End SWITCH
             } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #2"))
             {
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #2: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
-                switch (MyGetExceptionCode ())
+                switch (ExceptionCode)
                 {
                     case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -1504,7 +1508,7 @@ RESTART_EXCEPTION_VARIMMED:
                             // It's now a RAT result
                             aplTypeRes = ARRAY_RAT;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #2: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_VARIMMED;
                         } // End IF
@@ -1523,7 +1527,7 @@ RESTART_EXCEPTION_VARIMMED:
                             // It's now a VFP result
                             aplTypeRes = ARRAY_VFP;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #2: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_VARIMMED;
                         } // End IF
@@ -1545,7 +1549,7 @@ RESTART_EXCEPTION_VARIMMED:
                             // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #2: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_VARIMMED;
                         } // End IF
@@ -1719,10 +1723,12 @@ HGLOBAL PrimFnMonGlb_EM
                 goto NORMAL_EXIT;
         } __except (CheckException (GetExceptionInformation (), L"PrimFnMonGlb_EM"))
         {
-            dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+            EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+            dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #3: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
             // Split cases based upon the ExceptionCode
-            switch (MyGetExceptionCode ())
+            switch (ExceptionCode)
             {
                 case EXCEPTION_DOMAIN_ERROR:
                 case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -1763,7 +1769,7 @@ HGLOBAL PrimFnMonGlb_EM
                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
                         } // End IF
 
-                        dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                        dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #3: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                         goto RESTART_EXCEPTION;
                     } // End IF
@@ -1797,7 +1803,7 @@ HGLOBAL PrimFnMonGlb_EM
                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
                         } // End IF
 
-                        dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                        dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #3: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                         goto RESTART_EXCEPTION;
                     } // End IF
@@ -1834,7 +1840,7 @@ HGLOBAL PrimFnMonGlb_EM
                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
                         } // End IF
 
-                        dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                        dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #3: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                         goto RESTART_EXCEPTION;
                     } // End IF
@@ -2630,10 +2636,12 @@ RESTART_EXCEPTION:
         } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), L"PrimFnMonGlb_EM"))
     {
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+        EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #4: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
         // Split cases based upon the ExceptionCode
-        switch (MyGetExceptionCode ())
+        switch (ExceptionCode)
         {
             case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -2671,7 +2679,7 @@ RESTART_EXCEPTION:
                     // We no longer need this storage
                     FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #4: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -2702,7 +2710,7 @@ RESTART_EXCEPTION:
                     // We no longer need this storage
                     FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #4: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -2736,7 +2744,7 @@ RESTART_EXCEPTION:
                     // We no longer need this storage
                     FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #4: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -6779,10 +6787,12 @@ RESTART_EXCEPTION:
     } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSingMult_EM"))
     {
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+        EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #5: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
         // Split cases based upon the ExceptionCode
-        switch (MyGetExceptionCode ())
+        switch (ExceptionCode)
         {
             case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -6833,7 +6843,7 @@ RESTART_EXCEPTION:
                     // Restart the pointer
                     lpMemRht = lpMemRhtStart;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #5: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -6877,7 +6887,7 @@ RESTART_EXCEPTION:
                     // Restart the pointer
                     lpMemRht = lpMemRhtStart;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #5: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -6939,7 +6949,7 @@ RESTART_EXCEPTION:
                     // Restart the pointer
                     lpMemRht = lpMemRhtStart;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #5: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -9393,10 +9403,12 @@ RESTART_EXCEPTION:
     } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), L"PrimFnDydMultSing_EM"))
     {
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+        EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #6: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
         // Split cases based upon the ExceptionCode
-        switch (MyGetExceptionCode ())
+        switch (ExceptionCode)
         {
             case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -9447,7 +9459,7 @@ RESTART_EXCEPTION:
                     // Restart the pointer
                     lpMemLft = lpMemLftStart;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #6: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -9491,7 +9503,7 @@ RESTART_EXCEPTION:
                     // Restart the pointer
                     lpMemLft = lpMemLftStart;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #6: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -9553,7 +9565,7 @@ RESTART_EXCEPTION:
                     // Restart the pointer
                     lpMemLft = lpMemLftStart;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #6: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -10345,6 +10357,8 @@ RESTART_EXCEPTION_IMMED:
                     // Now we can allocate the storage for the result
                     //***************************************************************
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                    if (lphGlbRes)
+                       *lphGlbRes = hGlbTmp;
                     if (!hGlbTmp)
                         goto WSFULL_EXIT;
                     // Lock the memory to get a ptr to it
@@ -10579,10 +10593,12 @@ RESTART_EXCEPTION_IMMED:
         } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSiScSiScSub_EM"))
     {
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+        EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
         // Split cases based upon the ExceptionCode
-        switch (MyGetExceptionCode ())
+        switch (ExceptionCode)
         {
             case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -10608,7 +10624,7 @@ RESTART_EXCEPTION_IMMED:
                     // It's now a RAT result
                     aplTypeRes = ARRAY_RAT;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION_IMMED;
                 } // End IF
@@ -10627,7 +10643,7 @@ RESTART_EXCEPTION_IMMED:
                     // It's now a VFP result
                     aplTypeRes = ARRAY_VFP;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION_IMMED;
                 } // End IF
@@ -10646,7 +10662,7 @@ RESTART_EXCEPTION_IMMED:
                     // It's now a FLOAT result
                     aplTypeRes = ARRAY_FLOAT;
 
-                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                     goto RESTART_EXCEPTION_IMMED;
                 } // End IF
@@ -11359,10 +11375,12 @@ RESTART_EXCEPTION_SINGLETON:
             } // End SWITCH
             } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSimpSimp_EM #1"))
             {
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
-                switch (GetExceptionCode ())
+                switch (ExceptionCode)
                 {
                     case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -11410,7 +11428,7 @@ RESTART_EXCEPTION_SINGLETON:
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_SINGLETON;
                         } // End IF
@@ -11454,7 +11472,7 @@ RESTART_EXCEPTION_SINGLETON:
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_SINGLETON;
                         } // End IF
@@ -11513,7 +11531,7 @@ RESTART_EXCEPTION_SINGLETON:
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_SINGLETON;
                         } // End IF
@@ -12924,10 +12942,12 @@ RESTART_EXCEPTION_AXIS:
             } // End SWITCH
             } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSimpSimp_EM #2"))
             {
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #9: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
-                switch (GetExceptionCode ())
+                switch (ExceptionCode)
                 {
                     case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -12979,7 +12999,7 @@ RESTART_EXCEPTION_AXIS:
                             for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
                                 lpMemOdo[uRes] = 0;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #9: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_AXIS;
                         } // End IF
@@ -13027,7 +13047,7 @@ RESTART_EXCEPTION_AXIS:
                             for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
                                 lpMemOdo[uRes] = 0;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #9: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_AXIS;
                         } // End IF
@@ -13090,7 +13110,7 @@ RESTART_EXCEPTION_AXIS:
                             for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
                                 lpMemOdo[uRes] = 0;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #9: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_AXIS;
                         } // End IF
@@ -14339,10 +14359,12 @@ RESTART_EXCEPTION_NOAXIS:
             } // End SWITCH
             } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSimpSimp_EM #3"))
             {
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #10: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
-                switch (GetExceptionCode ())
+                switch (ExceptionCode)
                 {
                     case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -14390,7 +14412,7 @@ RESTART_EXCEPTION_NOAXIS:
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #10: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_NOAXIS;
                         } // End IF
@@ -14434,7 +14456,7 @@ RESTART_EXCEPTION_NOAXIS:
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #10: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_NOAXIS;
                         } // End IF
@@ -14493,7 +14515,7 @@ RESTART_EXCEPTION_NOAXIS:
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
 
-                            dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #10: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             goto RESTART_EXCEPTION_NOAXIS;
                         } // End IF

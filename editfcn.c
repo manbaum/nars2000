@@ -987,6 +987,12 @@ void SetFETitle
 //  Syntax color a line of text
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SyntaxColor"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL SyntaxColor
     (LPAPLCHAR lpwszLine,           // Ptr to line of text
      UINT      uLen,                // Length of text to display
@@ -1010,7 +1016,7 @@ UBOOL SyntaxColor
 ////LCLODS ("Entering <SyntaxColor>\r\n");
 
     // Allocate room for <uLen> Syntax Color entries
-    hSyntClr = MyGlobalAlloc (GHND, uLen * sizeof (SCINDICES));
+    hSyntClr = DbgGlobalAlloc (GHND, uLen * sizeof (SCINDICES));
     if (hSyntClr EQ NULL)
         goto CRIT_EXIT;
 
@@ -1044,7 +1050,7 @@ UBOOL SyntaxColor
 
     // Allocate storage for hGlbNum
     tkLocalVars.hGlbNum =
-      MyGlobalAlloc (GHND, tkLocalVars.iNumLim * sizeof (char));
+      DbgGlobalAlloc (GHND, tkLocalVars.iNumLim * sizeof (char));
     if (!tkLocalVars.hGlbNum)
         goto FREEGLB_EXIT;
 
@@ -1053,7 +1059,7 @@ UBOOL SyntaxColor
 
     // Allocate storage for hGlbStr
     tkLocalVars.hGlbStr =
-      MyGlobalAlloc (GHND, tkLocalVars.iStrLim * sizeof (APLCHAR));
+      DbgGlobalAlloc (GHND, tkLocalVars.iStrLim * sizeof (APLCHAR));
     if (!tkLocalVars.hGlbStr)
         goto FREEGLB_EXIT;
 
@@ -1167,13 +1173,13 @@ NORMAL_EXIT:
     // Free the global memory:  hGlbNum
     if (tkLocalVars.hGlbNum)
     {
-        MyGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
     } // End IF
 
     // Free the global memory:  hGlbStr
     if (tkLocalVars.hGlbStr)
     {
-        MyGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
 
     // Free the global memory:  hSyntClr
@@ -1186,13 +1192,14 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hSyntClr); hSyntClr = NULL;
+        DbgGlobalFree (hSyntClr); hSyntClr = NULL;
     } // End IF
 CRIT_EXIT:
 ////LCLODS ("Exiting  <SyntaxColor>\r\n");
 
     return bRet;
 } // End SyntaxColor
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3792,6 +3799,12 @@ void ForceSendCursorMsg
 //  Copy global memory from one handle to another
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CopyGlbMemory"
+#else
+#define APPEND_NAME
+#endif
+
 HGLOBAL CopyGlbMemory
     (HGLOBAL hGlbSrc,       // Global memory handle to copy
      UBOOL   bMyFns)        // TRUE iff we're to MyXxx functions
@@ -3811,14 +3824,14 @@ HGLOBAL CopyGlbMemory
 
     // Allocate space for the result
 
-    // Note we do not use MyGlobalAlloc here as the global memory handle
+    // Note we do not use MyGlobalAlloc or DbgGlobalAlloc here as the global memory handle
     //   is to be placed onto the clipboard at which point the system
     //   will own the handle
 
     if (bMyFns)
-        hGlbDst = MyGlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+        hGlbDst = DbgGlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
     else
-        hGlbDst =   GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+        hGlbDst =    GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
     if (hGlbDst)
     {
         // We don't use MyGlobalLock/Unlock on the source
@@ -3838,6 +3851,7 @@ HGLOBAL CopyGlbMemory
 
     return hGlbDst;
 } // End CopyGlbMemory
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4059,6 +4073,12 @@ NORMAL_EXIT:
 //  Paste APL chars from another APL system
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PasteAPLChars_EM"
+#else
+#define APPEND_NAME
+#endif
+
 void PasteAPLChars_EM
     (HWND      hWndEC,              // Window handle of the Edit Ctrl
      UNI_TRANS uIndex)              // UNI_TRANS index
@@ -4088,7 +4108,7 @@ void PasteAPLChars_EM
         goto NORMAL_EXIT;
 
     // Allocate memory to hold the format # and the matching handle
-    hGlbFmts = MyGlobalAlloc (GHND, uCount * sizeof (CLIPFMTS));
+    hGlbFmts = DbgGlobalAlloc (GHND, uCount * sizeof (CLIPFMTS));
     if (!hGlbFmts)
     {
         MessageBox (hWndEC,
@@ -4264,7 +4284,7 @@ void PasteAPLChars_EM
     MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
 
     // We no longer need this storage
-    MyGlobalFree (hGlbFmts); hGlbFmts = NULL;
+    DbgGlobalFree (hGlbFmts); hGlbFmts = NULL;
 ERROR_EXIT:
 NORMAL_EXIT:
     // We're done with the clipboard and its handle
@@ -4327,9 +4347,10 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
 
         // We no longer need this storage
-        MyGlobalFree (hGlbFmts); hGlbFmts = NULL;
+        DbgGlobalFree (hGlbFmts); hGlbFmts = NULL;
     } // End IF
 } // End PasteAPLChars_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -343,6 +343,12 @@ UBOOL ThemeLibLoaded = FALSE,       // TRUE iff the theme library successfully l
 //  Modeless dialog box to allow the user to customize the program
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CustomizeDlgProc"
+#else
+#define APPEND_NAME
+#endif
+
 INT_PTR CALLBACK CustomizeDlgProc
     (HWND   hWnd,       // Window handle
      UINT   message,    // Type of message
@@ -1150,7 +1156,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         uKeybSize = MyGlobalSize (hGlbKeybLayouts);
 
                         // Make a local copy of the keyboard layouts
-                        hLclKeybLayouts = MyGlobalAlloc (GHND, uKeybSize);
+                        hLclKeybLayouts = DbgGlobalAlloc (GHND, uKeybSize);
                         if (!hLclKeybLayouts)
                         {
                             MessageBoxW (hWndProp, L"Unable to allocate memory for a local copy of the keyboard layouts.", lpwszAppName, MB_OK | MB_ICONERROR);
@@ -2732,7 +2738,7 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Allocate space for the LibDirs
                         hGlb =
-                          MyGlobalAlloc (GHND, uCnt * _MAX_PATH * sizeof (WCHAR));
+                          DbgGlobalAlloc (GHND, uCnt * _MAX_PATH * sizeof (WCHAR));
 
                         if (hGlb EQ NULL)
                             MessageBoxW (hWndMF, L"Unable to allocate enough memory for Library Directories", WS_APPNAME, MB_OK | MB_ICONSTOP);
@@ -2752,7 +2758,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                             MyGlobalUnlock (hGlb); lpwszLibDirs = NULL;
 
                             // Free the old memory
-                            MyGlobalFree (hGlbLibDirs); hGlbLibDirs = NULL;
+                            DbgGlobalFree (hGlbLibDirs); hGlbLibDirs = NULL;
 
                             // Save the global memory handle
                             hGlbLibDirs = hGlb;
@@ -2852,13 +2858,13 @@ INT_PTR CALLBACK CustomizeDlgProc
                     if (custStruc[uCnt].bInitialized)
                     {
                         // Delete the global copy
-                        MyGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
+                        DbgGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
 
                         // Get the size of the local copy
                         uKeybSize = MyGlobalSize (hLclKeybLayouts);
 
                         // Allocate space for another copy of the local layouts
-                        hGlbKeybLayouts = MyGlobalAlloc (GHND, uKeybSize);
+                        hGlbKeybLayouts = DbgGlobalAlloc (GHND, uKeybSize);
                         if (!hGlbKeybLayouts)
                         {
                             MessageBoxW (hWndProp, L"Unable to allocate memory for a local copy of the keyboard layouts.", lpwszAppName, MB_OK | MB_ICONERROR);
@@ -4780,7 +4786,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                 if (hLclKeybLayouts)
                 {
                     // Delete the local copy
-                    MyGlobalFree (hLclKeybLayouts); hLclKeybLayouts = NULL;
+                    DbgGlobalFree (hLclKeybLayouts); hLclKeybLayouts = NULL;
                 } // End IF
 
                 // If it's still valid, ...
@@ -4839,6 +4845,7 @@ INT_PTR CALLBACK CustomizeDlgProc
     // Return dialog result
     DlgMsgPass (hDlg);      // We didn't handle the msg
 } // End CustomizeDlgProc
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5617,6 +5624,12 @@ void GetClearWsChrValue
 //  Common routine to get a CLEARWS value
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- GetClearWsComValue"
+#else
+#define APPEND_NAME
+#endif
+
 void GetClearWsComValue
     (APLSTYPE aplTypeCom,               // Common storage type
      UINT     uLen,                     // Common length
@@ -5635,7 +5648,7 @@ void GetClearWsComValue
     // Allocate space for the data
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbCom = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+    hGlbCom = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
     if (hGlbCom)
     {
         // Free the current value
@@ -5677,6 +5690,7 @@ void GetClearWsComValue
 #endif
     } // End IF/ELSE
 } // End GetClearWsComValue
+#undef  APPEND_NAME
 
 
 //***************************************************************************

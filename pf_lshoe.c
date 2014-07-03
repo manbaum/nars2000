@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1300,7 +1300,7 @@ WSFULL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (*lphGlbProto); *lphGlbProto = NULL;
+        DbgGlobalFree (*lphGlbProto); *lphGlbProto = NULL;
     } // End IF
 
     return FALSE;

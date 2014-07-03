@@ -186,6 +186,7 @@ LIBS_WEXE = gdi32.lib           \
             advapi32.lib        \
             dbghelp.lib         \
 !if "$(DEBUG)" == "1"
+            Shlwapi.lib         \
             qdebug32.lib        \
             libcmtd.lib         \
 !else

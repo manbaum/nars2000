@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -264,9 +264,9 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                                       aplTypeRht,       // Right arg storage type
                                       aplLongestRht,    // Right arg immediate value
                                       hGlbRht,          // Right arg global memory handle
-                                 lpYYFcnStrOpr,     // Ptr to operator function strand
-                                 lpYYFcnStrLft,     // Ptr to left operand
-                                 bPrototyping);     // TRUE iff prototyping
+                                      lpYYFcnStrOpr,     // Ptr to operator function strand
+                                      lpYYFcnStrLft,     // Ptr to left operand
+                                      bPrototyping);     // TRUE iff prototyping
         goto NORMAL_EXIT;
     } // End IF
 
@@ -1129,7 +1129,7 @@ RESTART_EXCEPTION:
                             MyGlobalUnlock (hGlbTmp); lpSymGlbRht = NULL;
 
                             // We no longer need this storage
-                            MyGlobalFree (hGlbTmp); tkRhtArg.tkData.tkGlbData = hGlbTmp = NULL;
+                            DbgGlobalFree (hGlbTmp); tkRhtArg.tkData.tkGlbData = hGlbTmp = NULL;
 
                             // Point to the data
                             lpSymGlbRht = &aplRatRht;
@@ -1156,7 +1156,7 @@ RESTART_EXCEPTION:
                             MyGlobalUnlock (hGlbTmp); lpSymGlbRht = NULL;
 
                             // We no longer need this storage
-                            MyGlobalFree (hGlbTmp); tkRhtArg.tkData.tkGlbData = hGlbTmp = NULL;
+                            DbgGlobalFree (hGlbTmp); tkRhtArg.tkData.tkGlbData = hGlbTmp = NULL;
 
                             // Point to the data
                             lpSymGlbRht = &aplVfpRht;
@@ -2495,7 +2495,7 @@ RESTART_EXCEPTION:
                                 MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemRat = NULL;
 
                                 // We no longer need this storage
-                                MyGlobalFree (tkRhtArg.tkData.tkGlbData); tkRhtArg.tkData.tkGlbData = NULL;
+                                DbgGlobalFree (tkRhtArg.tkData.tkGlbData); tkRhtArg.tkData.tkGlbData = NULL;
 
                                 break;
 
@@ -2512,7 +2512,7 @@ RESTART_EXCEPTION:
                                 MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemVfp = NULL;
 
                                 // We no longer need this storage
-                                MyGlobalFree (tkRhtArg.tkData.tkGlbData); tkRhtArg.tkData.tkGlbData = NULL;
+                                DbgGlobalFree (tkRhtArg.tkData.tkGlbData); tkRhtArg.tkData.tkGlbData = NULL;
 
                                 break;
 

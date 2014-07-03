@@ -855,7 +855,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this resource
-        MyGlobalFree (hGlbKmpNext); hGlbKmpNext = NULL;
+        DbgGlobalFree (hGlbKmpNext); hGlbKmpNext = NULL;
     } // End IF
 
     if (hGlbDimTmp)
@@ -867,7 +867,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this resource
-        MyGlobalFree (hGlbDimTmp); hGlbDimTmp = NULL;
+        DbgGlobalFree (hGlbDimTmp); hGlbDimTmp = NULL;
     } // End IF
 
     if (hGlbOdoTst)
@@ -879,7 +879,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this resource
-        MyGlobalFree (hGlbOdoTst); hGlbOdoTst = NULL;
+        DbgGlobalFree (hGlbOdoTst); hGlbOdoTst = NULL;
     } // End IF
 
     if (hGlbWVecTst)
@@ -891,7 +891,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this resource
-        MyGlobalFree (hGlbWVecTst); hGlbWVecTst = NULL;
+        DbgGlobalFree (hGlbWVecTst); hGlbWVecTst = NULL;
     } // End IF
 
     if (hGlbOdoTst)
@@ -903,7 +903,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this resource
-        MyGlobalFree (hGlbOdoTst); hGlbOdoTst = NULL;
+        DbgGlobalFree (hGlbOdoTst); hGlbOdoTst = NULL;
     } // End IF
 
     if (hGlbWVecRht)
@@ -915,7 +915,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this resource
-        MyGlobalFree (hGlbWVecRht); hGlbWVecRht = NULL;
+        DbgGlobalFree (hGlbWVecRht); hGlbWVecRht = NULL;
     } // End IF
 
     if (hGlbOdoRht)
@@ -927,7 +927,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this resource
-        MyGlobalFree (hGlbOdoRht); hGlbOdoRht = NULL;
+        DbgGlobalFree (hGlbOdoRht); hGlbOdoRht = NULL;
     } // End IF
 
     if (hGlbLft && lpMemLft)

@@ -1,6 +1,3 @@
-Version 0.4.9.xx consists of the following Builds:
-
-
 Build #1248 -- Version 0.4.9.xx
 -------------------------------
 
@@ -66,35 +63,3 @@ NARS2000.64.VCPROJ:
 TYPEMOTE.C:
   Use DEBUG versions of <MyGlobalXXX> functions.
   Fix bug in <Assert> stmt.
-
-
-Build #1247 -- Version 0.4.9.xx
--------------------------------
-
-* String Safe Support #1
-
-Directory trunk:
-
-CS_PARSE.Y:
-DEBUG.C:
-FH_PARSE.Y:
-PN_PARSE.Y:
-  Use string safe functions instead of the unsafe ones.
-
-
-Build #1246 -- Version 0.4.9.xx
--------------------------------
-
-* Miscellaneous Fixes Omitted From Last Build
-
-Directory trunk:
-
-CUSTOMIZE.C
-  Update copyright year.
-  Update comment for "{div} 0"
-
-EXTERNS.H:
-  Update comment for "{div} 0"
-
-VER.RC:
-  Increment version # to 0.4.9.xx.

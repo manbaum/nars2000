@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ UBOOL CmdLibCom_EM
     lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
 
     // Allocate temp storage for the saved names
-    lpwszSaveBase = MyGlobalAlloc (GPTR, 64*1024*sizeof (WCHAR));
+    lpwszSaveBase = DbgGlobalAlloc (GPTR, 64*1024*sizeof (WCHAR));
     if (lpwszSaveBase EQ NULL)
         goto WSFULL_EXIT;
 
@@ -161,7 +161,7 @@ NORMAL_EXIT:
     if (lpwszSaveBase)
     {
         // We no longer need this storage
-        MyGlobalFree (lpwszSaveBase); lpwszSaveBase = NULL;
+        DbgGlobalFree (lpwszSaveBase); lpwszSaveBase = NULL;
     } // End IF
 
     // If we locked it, ...

@@ -484,7 +484,7 @@ __try
 ////////////////////MyGlobalUnlock (hGbFormat); lpwszFormat = NULL;
 
                     // We no longer need this resource
-                    MyGlobalFree (hGlbFormat); hGlbFormat = NULL;
+                    DbgGlobalFree (hGlbFormat); hGlbFormat = NULL;
 ////////////////} else
 ////////////////{
 ////////////////    // Copy the old data to the new memory
@@ -700,7 +700,7 @@ QUICK_EXIT:
         MyGlobalUnlock (hGlbFormat); lpwszFormat = NULL;
 
         // We no longer need this resource
-        MyGlobalFree (hGlbFormat); hGlbFormat = NULL;
+        DbgGlobalFree (hGlbFormat); hGlbFormat = NULL;
     } // End IF
 
     return lpYYRes;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -916,7 +916,7 @@ MINDOTPLUS:
             } // End IF/ELSE
 
             // We no longer need this resource
-            MyGlobalFree (resLong); resLong = NULL;
+            DbgGlobalFree (resLong); resLong = NULL;
 
             break;
 
@@ -991,7 +991,7 @@ MINDOTPLUS:
             } // End IF/ELSE
 
             // We no longer need this resource
-            MyGlobalFree (resLong); resLong = NULL;
+            DbgGlobalFree (resLong); resLong = NULL;
 
             break;
 
@@ -1072,7 +1072,7 @@ MINDOTPLUS:
             } // End IF/ELSE
 
             // We no longer need this resource
-            MyGlobalFree (resLong); resLong = NULL;
+            DbgGlobalFree (resLong); resLong = NULL;
 
             break;
 
@@ -1153,7 +1153,7 @@ MINDOTPLUS:
             } // End IF/ELSE
 
             // We no longer need this resource
-            MyGlobalFree (resLong); resLong = NULL;
+            DbgGlobalFree (resLong); resLong = NULL;
 
             break;
 
@@ -1275,7 +1275,7 @@ NORMAL_EXIT:
         } // End IF
 
         // We no longer need this storage
-        MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
+        DbgGlobalFree (hGlbTmp); hGlbTmp = NULL;
     } // End IF
 
     return lpYYRes;

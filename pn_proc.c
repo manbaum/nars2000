@@ -959,7 +959,7 @@ UBOOL PN_VectorAcc
     if (lppnLocalVars->hGlbVector EQ NULL)
     {
         lppnLocalVars->hGlbVector =
-          MyGlobalAlloc (GHND, PNVECTOR_INIT * sizeof (PN_VECTOR));
+          DbgGlobalAlloc (GHND, PNVECTOR_INIT * sizeof (PN_VECTOR));
         if (lppnLocalVars->hGlbVector EQ NULL)
             goto WSFULL_EXIT;
         lppnLocalVars->uGlbVectorMaxLen = PNVECTOR_INIT;
@@ -988,7 +988,7 @@ UBOOL PN_VectorAcc
 
             // Allocate a new global memory object
             hGlbVector =
-               MyGlobalAlloc (GHND,
+               DbgGlobalAlloc (GHND,
                               uMaxLen * sizeof (PN_VECTOR));
             if (hGlbVector EQ NULL)    // ***FIXME*** do we need to free the hGlbVector storage???
                 goto WSFULL_EXIT;
@@ -1003,7 +1003,7 @@ UBOOL PN_VectorAcc
             MyGlobalUnlock (               hGlbVector); lpMemVectorOld = NULL;
 
             // Free the old storage
-            MyGlobalFree (lppnLocalVars->hGlbVector); lppnLocalVars->hGlbVector = NULL;
+            DbgGlobalFree (lppnLocalVars->hGlbVector); lppnLocalVars->hGlbVector = NULL;
 
             // Copy to save area
             lppnLocalVars->hGlbVector = hGlbVector; hGlbVector = NULL;
@@ -1145,7 +1145,7 @@ UBOOL PN_VectorRes
             goto WSFULL_EXIT;
 
         // Allocate global memory for the array
-        lppnLocalVars->hGlbRes = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+        lppnLocalVars->hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!lppnLocalVars->hGlbRes)
             goto WSFULL_EXIT;
 
@@ -1213,7 +1213,7 @@ UBOOL PN_VectorRes
                     MyGlobalUnlock (pnLocalVars.hGlbVector); lpMemVector = NULL;
 
                     // We no longer need this storage
-                    MyGlobalFree (pnLocalVars.hGlbVector); pnLocalVars.hGlbVector = NULL;
+                    DbgGlobalFree (pnLocalVars.hGlbVector); pnLocalVars.hGlbVector = NULL;
                 } else
                     goto ERROR_EXIT;
             } else
@@ -1305,7 +1305,7 @@ NORMAL_EXIT:
     if (bPass1)
     {
         // We no longer need this storage
-        MyGlobalFree (lppnLocalVars->hGlbVector); lppnLocalVars->hGlbVector = NULL;
+        DbgGlobalFree (lppnLocalVars->hGlbVector); lppnLocalVars->hGlbVector = NULL;
     } // End IF
 
     return bRet;

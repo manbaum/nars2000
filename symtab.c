@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -495,7 +495,7 @@ UBOOL HshTabResize_EM
         if (!lpHshTabNew)
             // Allocate anew
             lpHshTabNew =
-              MyGlobalAlloc (GHND,                  // At any address
+              DbgGlobalAlloc (GHND,                  // At any address
                              iHshTabNewNelm * sizeof (lpHTS->lpHshTab[0]));
     } else
     {
@@ -570,7 +570,7 @@ UBOOL HshTabResize_EM
         if (lpHTS->bGlbHshSymTabs)
         {
             // We no longer need this storage
-            MyGlobalFree (lpHTS->lpHshTab); lpHTS->lpHshTab = NULL;
+            DbgGlobalFree (lpHTS->lpHshTab); lpHTS->lpHshTab = NULL;
         } else
             // Free and unlink the old entry, relink the new one
             FreeRelinkHshTab (lpHshTabNew, lpHTS->lpHshTab); lpHTS->lpHshTab = NULL;
@@ -2882,6 +2882,12 @@ NORMAL_EXIT:
 //  Allocate global or virtual memory for the HshTab
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- AllocHshTab"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL AllocHshTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
      LPHSHTABSTR  lpHTS,            // Ptr to HshTab Struc
@@ -2926,7 +2932,7 @@ UBOOL AllocHshTab
     if (lpLclMemVirtStr EQ NULL)
     {
         lpHTS->lpHshTab =
-          MyGlobalAlloc (GPTR, uHshTabMaxNelm  * sizeof (lpHTS->lpHshTab[0]));
+          DbgGlobalAlloc (GPTR, uHshTabMaxNelm  * sizeof (lpHTS->lpHshTab[0]));
 
         if (!lpHTS->lpHshTab)
             return FALSE;
@@ -2972,6 +2978,7 @@ UBOOL AllocHshTab
 
     return TRUE;
 } // End AllocHshTab
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2979,6 +2986,12 @@ UBOOL AllocHshTab
 //
 //  Allocate global or virtual memory for the SymTab
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- AllocSymTab"
+#else
+#define APPEND_NAME
+#endif
 
 UBOOL AllocSymTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
@@ -3009,7 +3022,7 @@ UBOOL AllocSymTab
     if (lpLclMemVirtStr EQ NULL)
     {
         lpHTS->lpSymTab =
-          MyGlobalAlloc (GPTR, uSymTabMaxNelm  * sizeof (lpHTS->lpSymTab[0]));
+          DbgGlobalAlloc (GPTR, uSymTabMaxNelm  * sizeof (lpHTS->lpSymTab[0]));
 
         if (!lpHTS->lpSymTab)
             return FALSE;
@@ -3095,6 +3108,7 @@ UBOOL AllocSymTab
         return TRUE;
     } // End IF
 } // End AllocSymTab
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3102,6 +3116,12 @@ UBOOL AllocSymTab
 //
 //  Free the storage associated with a HshTab and its associated SymTab
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FreeHshSymTabs"
+#else
+#define APPEND_NAME
+#endif
 
 void FreeHshSymTabs
     (LPHSHTABSTR lpHTS,                 // Ptr to HshTab struc
@@ -3147,7 +3167,7 @@ void FreeHshSymTabs
             // If the Hsh & Sym tabs are from global (not virtual) memory, ...
             if (lpHTS->bGlbHshSymTabs)
                 // We no longer need this storage
-                MyGlobalFree (lpHTS->lpSymTab);
+                DbgGlobalFree (lpHTS->lpSymTab);
             else
                 // Free the virtual memory and unlink it
                 FreeVirtUnlink (PTDMEMVIRT_SYMTAB, NULL);
@@ -3158,7 +3178,7 @@ void FreeHshSymTabs
         // If the Hsh & Sym tabs are from global (not virtual) memory, ...
         if (lpHTS->bGlbHshSymTabs)
             // We no longer need this storage
-            MyGlobalFree (lpHTS->lpHshTab);
+            DbgGlobalFree (lpHTS->lpHshTab);
         else
             // Free the virtual memory and unlink it
             FreeVirtUnlink (PTDMEMVIRT_HSHTAB, NULL);
@@ -3172,7 +3192,7 @@ void FreeHshSymTabs
         // If the Hsh & Sym tabs are from global (not virtual) memory, ...
         if (lpHTS->bGlbHshSymTabs)
             // We no longer need this storage
-            MyGlobalFree (lpHTS);
+            DbgGlobalFree (lpHTS);
         else
             // Free the virtual memory and unlink it
             FreeVirtUnlink (PTDMEMVIRT_HTSPTD, NULL);
@@ -3182,6 +3202,7 @@ void FreeHshSymTabs
 
     MyLeaveCriticalSection (&CSOHshTab);
 } // End FreeHshSymTabs
+#undef  APPEND_NAME
 
 
 //***************************************************************************

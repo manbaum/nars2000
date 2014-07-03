@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -741,7 +741,7 @@ RESTART_JOTDOT:
                             // We no longer need this storage
                             // Note that we reused the global numeric, so we don't
                             //   need to use FreeResultGlobalVar here
-                            MyGlobalFree (tkRes.tkData.tkGlbData); tkRes.tkData.tkGlbData = NULL;
+                            DbgGlobalFree (tkRes.tkData.tkGlbData); tkRes.tkData.tkGlbData = NULL;
 
                             break;
 
@@ -761,7 +761,7 @@ RESTART_JOTDOT:
                             // We no longer need this storage
                             // Note that we reused the global numeric, so we don't
                             //   need to use FreeResultGlobalVar here
-                            MyGlobalFree (tkRes.tkData.tkGlbData); tkRes.tkData.tkGlbData = NULL;
+                            DbgGlobalFree (tkRes.tkData.tkGlbData); tkRes.tkData.tkGlbData = NULL;
 
                             break;
 

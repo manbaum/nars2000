@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <windowsx.h>
+#include <Shlwapi.h>
 #include <stdio.h>
 #include "headers.h"
 
@@ -1147,7 +1148,30 @@ int dprintfWL9
 #endif
 
 
-#ifdef DEBUG
+#ifdef DEBUG_ALLOCFREE
+//***************************************************************************
+//  $ExcludeFuncName
+//
+//  Return TRUE iff we're excluding this function name
+//***************************************************************************
+
+UBOOL ExcludeFuncName
+    (LPWCHAR lpwFmtStr)
+
+{
+    return StrStrW (lpwFmtStr, L"SyntaxColor:"     ) NE NULL
+        || StrStrW (lpwFmtStr, L"LclECPaintHook:"  ) NE NULL
+        || StrStrW (lpwFmtStr, L"MoveToLine:"      ) NE NULL
+////    || StrStrW (lpwFmtStr, L"PN_VectorAcc:"    ) NE NULL
+////    || StrStrW (lpwFmtStr, L"PN_VectorRes:"    ) NE NULL
+////    || StrStrW (lpwFmtStr, L"Tokenize_EM:"     ) NE NULL
+        || StrStrW (lpwFmtStr, L"PasteAPLChars_EM" ) NE NULL
+           ;
+} // End ExcludeFuncName
+#endif
+
+
+#ifdef DEBUG_ALLOCFREE
 //***************************************************************************
 //  $DbgGlobalAllocSub
 //
@@ -1166,11 +1190,37 @@ HGLOBAL DbgGlobalAllocSub
 
     hGlbRes = MyGlobalAlloc (uFlags, ByteRes);
 
-    if (hGlbRes)
-        dprintfWL9 (lpwFmtStr, hGlbRes, lpFileName, uLineNum);
+    // If it's valid, ...
+    if (hGlbRes
+    // If we're not excluding this function name, ...
+     && !ExcludeFuncName (lpwFmtStr))
+        dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (hGlbRes), lpFileName, uLineNum);
 
     return hGlbRes;
 } // End DbgGlobalAllocSub
+#endif
+
+
+#ifdef DEBUG_ALLOCFREE
+//***************************************************************************
+//  $DbgGlobalFreeSub
+//
+//  Debug version of MyGlobalFree
+//***************************************************************************
+
+HGLOBAL DbgGlobalFreeSub
+    (HGLOBAL  hGlbToken,
+     LPWCHAR  lpwFmtStr,
+     LPSTR    lpFileName,
+     UINT     uLineNum)
+
+{
+    // If we're not excluding this function name, ...
+    if (!ExcludeFuncName (lpwFmtStr))
+        dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (hGlbToken), lpFileName, uLineNum);
+
+    return MyGlobalFree (hGlbToken);
+} // End DbgGlobalFreeSub
 #endif
 
 

@@ -29,25 +29,6 @@
 #include "startaddr.h"
 
 
-typedef struct tagEXCEPT_NAMES
-{
-    char *ExceptName;
-    UINT  ExceptCode;
-} EXCEPT_NAMES, *LPEXCEPT_NAMES;
-
-EXCEPT_NAMES ExceptNames[] =
-{
- {"FLT_DIVIDE_BY_ZERO", EXCEPTION_FLT_DIVIDE_BY_ZERO},
- {"INT_DIVIDE_BY_ZERO", EXCEPTION_INT_DIVIDE_BY_ZERO},
- {"ACCESS_VIOLATION"  , EXCEPTION_ACCESS_VIOLATION  },
- {"SINGLE_STEP"       , EXCEPTION_SINGLE_STEP       },
- {"BREAKPOINT"        , EXCEPTION_BREAKPOINT        },
- {"LIMIT ERROR"       , EXCEPTION_LIMIT_ERROR       },
- {"STACK OVERFLOW"    , EXCEPTION_STACK_OVERFLOW    },
-};
-
-#define EXCEPT_NAMES_LENGTH         countof (ExceptNames)
-
 // Save area for exception address if EXCEPTION_BREAKPOINT
 APLU3264        gExceptAddr;            // Exception address
 LPWCHAR         glpExceptionText;       // Ptr to Exception text
@@ -131,13 +112,13 @@ EXCEPTION_CODES MyGetExceptionCode
 //***************************************************************************
 
 LPWSTR MyGetExceptionStr
-    (void)
+    (EXCEPTION_CODES exceptCode)
 
 {
     static WCHAR wszTemp[256];
 
     // Split cases based upon the exception code
-    switch (gExceptionCode)
+    switch (exceptCode)
     {
         case EXCEPTION_ACCESS_VIOLATION:
             return L"EXCEPTION_ACCESS_VIOLATION";
@@ -148,14 +129,8 @@ LPWSTR MyGetExceptionStr
         case EXCEPTION_BREAKPOINT:
             return L"EXCEPTION_BREAKPOINT";
 
-        case EXCEPTION_CTRL_BREAK:
-            return L"EXCEPTION_CTRL_BREAK";
-
         case EXCEPTION_DATATYPE_MISALIGNMENT:
             return L"EXCEPTION_DATATYPE_MISALIGNMENT";
-
-        case EXCEPTION_DOMAIN_ERROR:
-            return L"EXCEPTION_DOMAIN_ERROR";
 
         case EXCEPTION_FLT_DENORMAL_OPERAND:
             return L"EXCEPTION_FLT_DENORMAL_OPERAND";
@@ -199,17 +174,35 @@ LPWSTR MyGetExceptionStr
         case EXCEPTION_INVALID_HANDLE:
             return L"EXCEPTION_INVALID_HANDLE";
 
+        case EXCEPTION_PRIV_INSTRUCTION:
+            return L"EXCEPTION_PRIV_INSTRUCTION";
+
+        case EXCEPTION_SUCCESS:
+            return L"EXCEPTION_SUCCESS";
+
+        case EXCEPTION_RESULT_FLOAT:
+            return L"EXCEPTION_RESULT_FLOAT";
+
+        case EXCEPTION_RESULT_RAT:
+            return L"EXCEPTION_RESULT_RAT";
+
+        case EXCEPTION_RESULT_VFP:
+            return L"EXCEPTION_RESULT_VFP";
+
+        case EXCEPTION_DOMAIN_ERROR:
+            return L"EXCEPTION_DOMAIN_ERROR";
+
         case EXCEPTION_LIMIT_ERROR:
             return L"EXCEPTION_LIMIT_ERROR";
 
         case EXCEPTION_NONCE_ERROR:
             return L"EXCEPTION_NONCE_ERROR";
 
-        case EXCEPTION_PRIV_INSTRUCTION:
-            return L"EXCEPTION_PRIV_INSTRUCTION";
+        case EXCEPTION_WS_FULL:
+            return L"EXCEPTION_WS_FULL";
 
-        case EXCEPTION_RESULT_FLOAT:
-            return L"EXCEPTION_RESULT_FLOAT";
+        case EXCEPTION_CTRL_BREAK:
+            return L"EXCEPTION_CTRL_BREAK";
 
         case EXCEPTION_SINGLE_STEP:
             return L"EXCEPTION_SINGLE_STEP";
@@ -217,13 +210,10 @@ LPWSTR MyGetExceptionStr
         case EXCEPTION_STACK_OVERFLOW:
             return L"EXCEPTION_STACK_OVERFLOW";
 
-        case EXCEPTION_SUCCESS:
-            return L"EXCEPTION_SUCCESS";
-
         case STATUS_UNWIND_CONSOLIDATE:
             return L"STATUS_UNWIND_CONSOLIDATE";
 
-        defstop
+        default:
             wsprintfW (wszTemp,
                        L"*** Unknown Exception Code:  %u",
                        gExceptionCode);
@@ -568,9 +558,8 @@ void DisplayException
 {
 #ifdef DEBUG
     WCHAR        wszTemp[1024]; // Temp output save area
-    int          exceptIndex;   // Exception index
-    UINT         exceptCode,    // Exception code
-                 uMem,          // Loop counter
+    EXCEPTION_CODES exceptCode; // Exception code
+    UINT         uMem,          // Loop counter
                  uCnt,          // ...
                  SILevel;       // The current SI level
     APLU3264     nearAddress,   // Offset from closest address
@@ -638,10 +627,6 @@ void DisplayException
         nearIndex   = nearIndex1;
     } // End IF/ELSE
 
-    for (exceptIndex = 0; exceptIndex < EXCEPT_NAMES_LENGTH; exceptIndex++)
-    if (exceptCode EQ ExceptNames[exceptIndex].ExceptCode)
-        break;
-
     ShowWindow (hWndCC, SW_SHOWNORMAL);
     UpdateWindow (hWndCC);
 
@@ -676,13 +661,11 @@ void DisplayException
                );
     NewMsg (wszTemp);
 
-    // Display the exception code
+    // Display the exception code and string
     wsprintfW (wszTemp,
-               L"Exception code = %08X (%S)",
+               L"Exception code = %08X (%s)",
                exceptCode,
-               (exceptIndex EQ EXCEPT_NAMES_LENGTH)
-                 ? "Exception Unknown"
-                 : ExceptNames[exceptIndex].ExceptName);
+               MyGetExceptionStr (exceptCode));
     NewMsg (L"");
     NewMsg (wszTemp);
 

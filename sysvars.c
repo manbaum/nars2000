@@ -146,7 +146,7 @@ void MakePermVars
 
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbQuadA = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, ALPHANELM, 1));
+    hGlbQuadA = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, ALPHANELM, 1));
     if (!hGlbQuadA)
     {
         DbgStop ();         // We should never get here
@@ -185,7 +185,7 @@ void MakePermVars
 
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbQuadD = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, DIGITSNELM, 1));
+    hGlbQuadD = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, DIGITSNELM, 1));
     if (!hGlbQuadD)
     {
         DbgStop ();         // We should never get here
@@ -221,7 +221,7 @@ void MakePermVars
 
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbZilde = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 1));
+    hGlbZilde = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 1));
     if (!hGlbZilde)
     {
         DbgStop ();         // We should never get here
@@ -248,7 +248,7 @@ void MakePermVars
     //***************************************************************
     // Create initial value for []EC[2] (0 x 0 Boolean matrix)
     //***************************************************************
-    hGlb0by0 = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 2));
+    hGlb0by0 = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 2));
     if (!hGlb0by0)
     {
         DbgStop ();         // We should never get here
@@ -279,7 +279,7 @@ void MakePermVars
     //***************************************************************
     // Create initial value for []EM (3 x 0 char matrix)
     //***************************************************************
-    hGlb3by0 = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, 0, 2));
+    hGlb3by0 = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, 0, 2));
     if (!hGlb3by0)
     {
         DbgStop ();         // We should never get here
@@ -392,7 +392,7 @@ HGLOBAL MakePermVectorCom
 
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
-    hGlbRes = MyGlobalAlloc (GHND, (APLU3264) CalcArraySize (aplTypeCom, uLen, 1));
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (aplTypeCom, uLen, 1));
     if (!hGlbRes)
     {
         DbgStop ();         // We should never get here

@@ -2480,6 +2480,12 @@ UBOOL fnPointSub
 //  A Point Notation symbol done
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- fnPointDone"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL fnPointDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
@@ -2611,7 +2617,7 @@ UBOOL fnPointDone
             MyGlobalUnlock (pnLocalVars.hGlbRes); lpMemRes = NULL;
 
             // We no longer need this storage
-            MyGlobalFree (pnLocalVars.hGlbRes); pnLocalVars.hGlbRes = NULL;
+            DbgGlobalFree (pnLocalVars.hGlbRes); pnLocalVars.hGlbRes = NULL;
         } else
         {
             // Setup the flags and global data handle
@@ -2643,6 +2649,7 @@ ERROR_EXIT:
 
     return bRet;
 } // End fnPointDone
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3862,7 +3869,7 @@ UBOOL fnQuoDoneSub
         //   one dimension (it's a vector), and the string
         //   excluding the terminating zero.
         //***************************************************************
-        hGlb = MyGlobalAlloc (GHND, (APLU3264) ByteRes);
+        hGlb = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
         if (!hGlb)
             goto WSFULL_EXIT;
 
@@ -5100,7 +5107,7 @@ __try
     //   might free this line by being called from the Master Frame
     //   via a system command, in which case there is
     //   no PTD for that thread.
-    tkLocalVars.hGlbToken = MyGlobalAlloc (GHND, DEF_TOKEN_SIZE * sizeof (TOKEN));
+    tkLocalVars.hGlbToken = DbgGlobalAlloc (GHND, DEF_TOKEN_SIZE * sizeof (TOKEN));
     if (!tkLocalVars.hGlbToken)
     {
         // Mark as no caret
@@ -5130,7 +5137,7 @@ __try
 
     // Allocate storage for hGlbNum
     tkLocalVars.hGlbNum =
-      MyGlobalAlloc (GHND, tkLocalVars.iNumLim * sizeof (char));
+      DbgGlobalAlloc (GHND, tkLocalVars.iNumLim * sizeof (char));
     if (!tkLocalVars.hGlbNum)
         goto ERROR_EXIT;
 
@@ -5139,7 +5146,7 @@ __try
 
     // Allocate storage for hGlbStr
     tkLocalVars.hGlbStr =
-      MyGlobalAlloc (GHND, tkLocalVars.iStrLim * sizeof (APLCHAR));
+      DbgGlobalAlloc (GHND, tkLocalVars.iStrLim * sizeof (APLCHAR));
     if (!tkLocalVars.hGlbStr)
         goto ERROR_EXIT;
 
@@ -5359,7 +5366,7 @@ ERROR_EXIT:
         } // End IF
 
         // Free the handle
-        MyGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
     } // End IF
 
     goto FREED_EXIT;
@@ -5377,13 +5384,13 @@ FREED_EXIT:
     // Free the global memory:  hGlbNum
     if (tkLocalVars.hGlbNum)
     {
-        MyGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
     } // End IF
 
     // Free the global memory:  hGlbStr
     if (tkLocalVars.hGlbStr)
     {
-        MyGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
 
     // If this is the function header, ...
@@ -5402,19 +5409,19 @@ FREED_EXIT:
         tkLocalVars.lptkLastEOS = NULL;
 
         // Free the handle
-        MyGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
     } // End IF
 
     // Free the global memory:  hGlbNum
     if (tkLocalVars.hGlbNum)
     {
-        MyGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
     } // End IF
 
     // Free the global memory:  hGlbStr
     if (tkLocalVars.hGlbStr)
     {
-        MyGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
 #ifdef DEBUG
     // Mark as no longer in use
@@ -5815,7 +5822,7 @@ UBOOL AppendNewToken_EM
                    lpMemNew;        // ...
 
             // Increase the size by DEF_TOKEN_RESIZE
-            hGlbToken = MyGlobalAlloc (GHND, uOldSize + DEF_TOKEN_RESIZE);
+            hGlbToken = DbgGlobalAlloc (GHND, uOldSize + DEF_TOKEN_RESIZE);
 
             if (hGlbToken EQ NULL)
             {

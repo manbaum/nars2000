@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2167,7 +2167,7 @@ UBOOL PrimFnDydIotaCvC_EM
     // Allocate space for a ByteTT Translate Table
     // Note that this allocation is GMEM_FIXED
     //   because we'll use it quickly and then free it.
-    lpMemTT = MyGlobalAlloc (GMEM_FIXED, ByteTT);
+    lpMemTT = DbgGlobalAlloc (GMEM_FIXED, ByteTT);
     if (!lpMemTT)
         goto WSFULL_EXIT;
 
@@ -2208,7 +2208,7 @@ NORMAL_EXIT:
     if (lpMemTT)
     {
         // We no longer need this storage
-        MyGlobalFree (lpMemTT); lpMemTT = NULL;
+        DbgGlobalFree (lpMemTT); lpMemTT = NULL;
     } // End IF
 
     return bRet;

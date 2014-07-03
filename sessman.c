@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1326,7 +1326,7 @@ LOAD_WORKSPACE_FAIL:
             FreeGlobalStorage (lpMemPTD);
 NORMAL_EXIT:
             // Free the workspace global
-            MyGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE); (*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE = NULL;
+            DbgGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE); (*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE = NULL;
 
             PERFMON
 ////////////PERFMONSHOW
@@ -1641,7 +1641,7 @@ NORMAL_EXIT:
 
                             // Allocate space for the line including a terminating CR/LF/zero
                             lpwTmpLine =
-                              MyGlobalAlloc (GPTR, (uLineLen + 3) * sizeof (lpwTmpLine[0]));
+                              DbgGlobalAlloc (GPTR, (uLineLen + 3) * sizeof (lpwTmpLine[0]));
 
                             // Tell EM_GETLINE maximum # chars in the buffer
                             ((LPWORD) lpwTmpLine)[0] = uLineLen;
@@ -1662,7 +1662,7 @@ NORMAL_EXIT:
                             ReplaceLine (hWndEC, lpwTmpLine, uLastNum);
 
                             // We no longer need this storage
-                            MyGlobalFree (lpwTmpLine); lpwTmpLine = NULL;
+                            DbgGlobalFree (lpwTmpLine); lpwTmpLine = NULL;
 
                             // Lock the memory to get a ptr to it
                             lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
@@ -1983,7 +1983,7 @@ NORMAL_EXIT:
             // *************** hGlbCurLine *****************************
             if (lpMemPTD->hGlbCurLine)
             {
-                MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
+                DbgGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
             } // End IF
 
             // *************** PTDMEMVIRTENUM Entries ******************
@@ -2060,6 +2060,12 @@ NORMAL_EXIT:
 //  Common routine when moving the text cursor to a new line
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MoveToLine"
+#else
+#define APPEND_NAME
+#endif
+
 void MoveToLine
     (APLU3264     uLineNum,             // The given line #
      LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
@@ -2076,12 +2082,12 @@ void MoveToLine
     //   free it
     if (lpMemPTD->hGlbCurLine)
     {
-        MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
+        DbgGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
     } // End IF
 
     // Allocate space for the line including a terminating zero
     lpMemPTD->hGlbCurLine =
-      MyGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
+      DbgGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
 
     // Check for error
     if (lpMemPTD->hGlbCurLine EQ NULL)
@@ -2106,6 +2112,7 @@ void MoveToLine
     // Reset the changed line flag
     SetWindowLongW (lpMemPTD->hWndSM, GWLSF_CHANGED, FALSE);
 } // End MoveToLine
+#undef  APPEND_NAME
 
 
 //***************************************************************************

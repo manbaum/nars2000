@@ -253,7 +253,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
             // Allocate space for the result
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (!hGlbRes)
+            if (hGlbRes EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -538,6 +538,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                     TRUE,               // TRUE iff we came from indexing
                                                     NULL,               // Ptr to result global memory handle
                                                     NULL);              // Ptr to set arg token
+                        Assert (!IsPtrSuccess (lpYYItm));
+
                         // If valid, disclose the item as squad returns an enclosed item
                         if (lpYYItm)
                         {
@@ -564,6 +566,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                             } // End IF
                         } // End IF
                     } else
+                    {
                         // Note the args get switched between indexing and pick
                         lpYYItm =
                           PrimFnDydRightShoeGlbGlb_EM_YY (hGlbItm,      // Left arg global memory handle
@@ -574,6 +577,9 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                           NULL,         // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
                                                           0,            // Set arg immediate value
                                                           lpMemPTD);    // Ptr to PerTabData global memory
+                        Assert (!IsPtrSuccess (lpYYItm));
+                    } // End IF/ELSE
+
                     if (lpYYItm)
                     {
                         // Split cases based upon the result storage type
@@ -619,7 +625,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                       MakeSymEntry_EM (lpYYItm->tkToken.tkFlags.ImmType,    // Immediate type
                                                       &lpYYItm->tkToken.tkData.tkLongest,   // Ptr to immediate value
                                                        lptkFunc);                           // Ptr to function token
-                                    if (!lpSymTmp)
+                                    if (lpSymTmp EQ NULL)
                                         goto ERROR_EXIT;
                                 } else
                                     *((LPAPLNESTED) lpMemRes)++ =
@@ -884,7 +890,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1104,7 +1110,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1421,7 +1427,7 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1713,6 +1719,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
 
     // If there are no elided indices, use squad without axis operator
     if (uCount EQ aplNELMLst)
+    {
         // Note the args get switched between indexing and squad
         lpYYRes =
           PrimFnDydSquadGlb_EM_YY (lptkLstArg,  // Ptr to Left arg token
@@ -1722,7 +1729,8 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
                                    TRUE,        // TRUE iff we came from indexing
                                    NULL,        // Ptr to result global memory handle
                                    NULL);       // Ptr to set arg token
-    else
+        Assert (!IsPtrSuccess (lpYYRes));
+    } else
     // There are elided indices, so we must create a new
     //   list arg (w/o the elided indices) and a new
     //   axis operator value
@@ -1736,7 +1744,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
 
         // Allocate space for the new list arg
         hGlbLstNew = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbLstNew)
+        if (hGlbLstNew EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -1793,7 +1801,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
 
         // Allocate space for the axis operator
         hGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbAxis)
+        if (hGlbAxis EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -1843,6 +1851,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
                                     TRUE,           // TRUE iff we came from indexing
                                     NULL,           // Ptr to result global memory handle
                                     NULL);          // Ptr to set arg token
+        Assert (!IsPtrSuccess (lpYYRes));
     } // End IF/ELSE
 
     goto NORMAL_EXIT;
@@ -2104,7 +2113,7 @@ UBOOL ArrayIndexSet_EM
                                              lptkRhtArg,    // Ptr to right ...
                                              bSysVar,       // TRUE iff indexed assignment into a SysVar
                                              lptkFunc);     // Ptr to function ...
-            if (!hGlbRes)
+            if (hGlbRes EQ NULL)
                 goto ERROR_EXIT;
         } else
         {
@@ -2126,7 +2135,7 @@ UBOOL ArrayIndexSet_EM
                                                 lptkFunc);      // Ptr to function token
                 if (!bRet)
                     goto ERROR_EXIT;
-                if (!hGlbRes)
+                if (hGlbRes EQ NULL)
                     goto NORMAL_EXIT;
             } else
             //***************************************************************
@@ -2347,7 +2356,7 @@ UBOOL ArrayIndexSetNamImmed_EM
 
         // Wrap the global in a scalar
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -2570,7 +2579,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
 
         // Copy the name arg
         hGlbRes = CopyGlbAsType_EM (hGlbNam, aplTypeNam, lptkNamArg);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto ERROR_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -2643,7 +2652,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
     lpYYRes1 = PrimFnMonRho_EM_YY (lptkFunc,                // Ptr to function token
                                    lptkNamArg,              // Ptr to right arg token
                                    NULL);                   // Ptr to axis token
-    if (!lpYYRes1)
+    if (lpYYRes1 EQ NULL)
         goto ERROR_EXIT;
 
     // Reshape the right arg to the shape of the name arg
@@ -2654,7 +2663,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
     // Free the first result
     FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
 
-    if (!lpYYRes2)
+    if (lpYYRes2 EQ NULL)
         goto ERROR_EXIT;
 
     // Get the global memory handle
@@ -3075,7 +3084,7 @@ UBOOL ArrayIndexSetSingLst_EM
                       MakeSymEntry_EM (immTypeRht,      // Immediate type
                                       &aplLongestRht,   // Ptr to immediate value
                                        lptkFunc);       // Ptr to function token
-                    if (!lpSymTmp)
+                    if (lpSymTmp EQ NULL)
                         goto ERROR_EXIT;
                 } // End IF/ELSE
 
@@ -3338,7 +3347,7 @@ UBOOL ArrayIndexSetSingLst_EM
                         FreeResultGlobalVar (hGlbSubLst2); hGlbSubLst2 = NULL;
                     } // End IF
 
-                    if (!lpYYItm)
+                    if (lpYYItm EQ NULL)
                         goto ERROR_EXIT;
                     break;
 
@@ -3744,7 +3753,7 @@ UBOOL ArrayIndexSetVector_EM
                   MakeSymEntry_EM (immTypeRht,      // Immediate type
                                   &aplLongestRht,   // Ptr to immediate value
                                    lptkFunc);       // Ptr to function token
-                if (!lpSymTmp)
+                if (lpSymTmp EQ NULL)
                     goto ERROR_EXIT;
             } // End IF/ELSE
 
@@ -3893,7 +3902,7 @@ UBOOL ArrayIndexSetRect_EM
 
         // Allocate space for the new list arg
         hGlbLstNew = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbLstNew)
+        if (hGlbLstNew EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -3950,7 +3959,7 @@ UBOOL ArrayIndexSetRect_EM
 
         // Allocate space for the axis operator
         hGlbAxis = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbAxis)
+        if (hGlbAxis EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -4016,8 +4025,9 @@ UBOOL ArrayIndexSetRect_EM
     } // End IF/ELSE
 
     // The result is dependent upon the state of lpYYRes
-    //   (it's either NULL or PTR_REUSED)
-    bRet = (lpYYRes NE NULL);
+    //   (it's either NULL or PTR_SUCCESS)
+    Assert (IsPtrSuccess (lpYYRes) || IsPtrNullDir (lpYYRes));
+    bRet = IsPtrSuccess (lpYYRes);
     if (bRet)
         goto NORMAL_EXIT;
     else
@@ -4142,7 +4152,7 @@ UBOOL ArrayIndexReplace_EM
                   MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),    // Immediate type
                                   &aplLongestSet,                               // Ptr to immediate value
                                    lptkFunc);                                   // Ptr to function token
-                if (!lpSymTmp)
+                if (lpSymTmp EQ NULL)
                     goto ERROR_EXIT;
             } else
             if (IsGlbNum (aplTypeSet))
@@ -4153,7 +4163,7 @@ UBOOL ArrayIndexReplace_EM
                                    hGlbSet,             // Ptr to the value
                                    TRUE,                // TRUE iff we should initialize the target first
                                    lptkFunc);           // Ptr to function token
-                if (!lpSymTmp)
+                if (lpSymTmp EQ NULL)
                     goto ERROR_EXIT;
             } else
                 ((LPAPLNESTED) lpMemRht)[aplIndex] =
@@ -4241,7 +4251,7 @@ UBOOL ArrayIndexFcnSet_EM
     // Compute A[L]
     lpYYRes1 = ArrayIndexRef_EM_YY (lptkNamArg,         // Ptr to name arg token
                                    lptkLstArg);         // Ptr to right arg token
-    if (!lpYYRes1)
+    if (lpYYRes1 EQ NULL)
         return FALSE;
     // Compute A[L] fcn R
     lpYYRes2 = ExecFuncStr_EM_YY (&lpYYRes1->tkToken,   // Ptr to left arg token (may be NULL if monadic)
@@ -4249,7 +4259,7 @@ UBOOL ArrayIndexFcnSet_EM
                                    lptkRhtArg,          // Ptr to right arg token
                                    NULL);               // Ptr to axis token (may be NULL)
     FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
-    if (!lpYYRes2)
+    if (lpYYRes2 EQ NULL)
         return FALSE;
 
     // Assign the resulting values into A[L]

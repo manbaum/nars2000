@@ -258,7 +258,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
 
                 // Allocate temp storage for the normalized right arg
                 hGlbRep = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                if (!hGlbRep)
+                if (hGlbRep EQ NULL)
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
@@ -447,7 +447,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -486,7 +486,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
         //   dimension in the right arg.
         //***************************************************************
         hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbOdoRht)
+        if (hGlbOdoRht EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -738,7 +738,7 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
     // Allocate space for the next nested vector from the odometer
     //***************************************************************
     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbTmp)
+    if (hGlbTmp EQ NULL)
         return FALSE;
 
     // Lock the memory to get a ptr to it

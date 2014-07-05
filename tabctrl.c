@@ -192,7 +192,7 @@ UBOOL CreateNewTab
     // Allocate space for the workspace name ("+ 1" for trailing zero)
     // The storage for this handle is freed in <CreateNewTabInThread>.
     hGlbDPFE = DbgGlobalAlloc (GHND, (uLen + 1) * sizeof (lpwsz[0]));
-    if (!hGlbDPFE)
+    if (hGlbDPFE EQ NULL)
         return FALSE;
 
     // Lock the memory to get a ptr to it

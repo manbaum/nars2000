@@ -329,7 +329,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -639,7 +639,7 @@ RESTART_RAT:
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -214,7 +214,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
 
     // Allocate storage for the left argument
     hGlbLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbLft)
+    if (hGlbLft EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -482,7 +482,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -551,7 +551,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   {times}{backscan}1{drop}({rho}R),1
     //***************************************************************
     hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbWVec)
+    if (hGlbWVec EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -586,7 +586,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   in the result, with values initially all zero (thanks to GHND).
     //***************************************************************
     hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbOdo)
+    if (hGlbOdo EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it

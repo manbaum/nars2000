@@ -201,7 +201,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
@@ -411,7 +411,7 @@ RESTART_ALLOC:
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -717,7 +717,7 @@ RESTART_EXCEPTION:
                                   MakeSymEntry_EM (tkLftArg.tkFlags.ImmType,    // Immediate type
                                                   &tkLftArg.tkData.tkLongest,   // Ptr to immediate value
                                                   &lpYYFcnStrOpr->tkToken);     // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                                 break;
 
@@ -951,7 +951,7 @@ RESTART_EXCEPTION:
                                       MakeSymEntry_EM (tkLftArg.tkFlags.ImmType,    // Immediate type
                                                       &tkLftArg.tkData.tkLongest,   // Ptr to immediate value
                                                       &lpYYFcnStrOpr->tkToken);     // Ptr to function token
-                                    if (!lpSymTmp)
+                                    if (lpSymTmp EQ NULL)
                                         goto ERROR_EXIT;
                                     break;
 
@@ -1248,7 +1248,7 @@ RESTART_EXCEPTION:
                                   MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,    // Immediate type
                                                   &tkRhtArg.tkData.tkLongest,   // Ptr to immediate value
                                                   &lpYYFcnStrOpr->tkToken);     // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                                 break;
 

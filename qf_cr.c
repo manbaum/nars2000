@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -131,7 +131,6 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     LPVOID         lpMemRes = NULL,     // Ptr to result    ...
                    lpMemData = NULL;    // Ptr to function data ...
     LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
-    UINT           uRes;                // Loop counter
     APLLONGEST     aplLongestRht;       // Right arg longest if immediate
     LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY
     STFLAGS        stFlags = {0};       // STE flags
@@ -193,7 +192,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     //   or it's a System Name,
     //   or without a value,
     //   return empty vector or 0 x 0 char matrix
-    if (!lpSymEntry
+    if (lpSymEntry EQ NULL
      ||  lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
      || !lpSymEntry->stFlags.Value)
         // Not the signature of anything we know
@@ -345,7 +344,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                         // Allocate space for the result
                         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                        if (!hGlbRes)
+                        if (hGlbRes EQ NULL)
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
@@ -370,12 +369,6 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 #define lpMemResChar    ((LPAPLCHAR) lpMemRes)
                         // Skip over the header and dimensions to the data
                         lpMemResChar = VarArrayDataFmBase (lpMemRes);
-
-                        // If this is a nested result, fill it in PTR_REUSED
-                        //   in case we fail along the way
-                        if (IsVector (aplRankRes))
-                        for (uRes = 0; uRes < aplNELMRes; uRes++)
-                            ((LPAPLNESTED) lpMemResChar)[uRes] = PTR_REUSED;
 
                         // Copy the header to the result as either a row or as an allocated HGLOBAL
                         lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, lpMemDfnHdr->hGlbTxtHdr, uMaxLineLen, lptkFunc);
@@ -422,7 +415,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         } // End IF/ELSE
     } // End IF/ELSE
 
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto ERROR_EXIT;
 
     // Allocate a new YYRes
@@ -531,7 +524,7 @@ LPVOID SysFnCR_Copy_EM
 
         // Allocate space for the result.
         hGlbCpy = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbCpy)
+        if (hGlbCpy EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -642,7 +635,7 @@ HGLOBAL SysFnMonCR_ALLOC_EM
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it

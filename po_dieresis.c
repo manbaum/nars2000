@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -163,7 +163,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
     // Check for error
-    if (!lpPrimFlagsLft || !lpPrimFlagsLft->lpPrimOps)
+    if (lpPrimFlagsLft EQ NULL || lpPrimFlagsLft->lpPrimOps EQ NULL)
         goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Calculate space needed for the result
@@ -175,7 +175,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -430,7 +430,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
 
 ////////// Make sure the result is marked as Nested
@@ -486,7 +486,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -835,7 +835,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                        ((LPAPLRAT) lpMemRht)++,     // Ptr to the value
                                        TRUE,                        // TRUE iff we should initialize the target first
                                       &lpYYFcnStrOpr->tkToken);     // Ptr to function token
-                    if (!lpSymGlb)
+                    if (lpSymGlb EQ NULL)
                         goto ERROR_EXIT;
                     // Execute the function on the arg token
                     bRet =
@@ -874,7 +874,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                        ((LPAPLVFP) lpMemRht)++,     // Ptr to the value
                                        TRUE,                        // TRUE iff we should initialize the target first
                                       &lpYYFcnStrOpr->tkToken);     // Ptr to function token
-                    if (!lpSymGlb)
+                    if (lpSymGlb EQ NULL)
                         goto ERROR_EXIT;
                     // Execute the function on the arg token
                     bRet =
@@ -1048,7 +1048,7 @@ UBOOL ExecFuncOnToken_EM
                   MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
                                   &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
                                   &lpYYFcnStr->tkToken);                // Ptr to function token
-                if (!lpSymTmp)
+                if (lpSymTmp EQ NULL)
                     goto ERROR_EXIT;
                 break;
 
@@ -1295,7 +1295,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
 
 ////////// Make sure the result is marked as Nested
@@ -1401,7 +1401,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         //   {times}{backscan}1{drop}({rho}Z),1
         //***************************************************************
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
-        if (!hGlbWVec)
+        if (hGlbWVec EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -1431,7 +1431,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         //   in the right arg, with values initially all zero (thanks to GHND).
         //***************************************************************
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
-        if (!hGlbOdo)
+        if (hGlbOdo EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it

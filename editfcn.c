@@ -293,7 +293,7 @@ LRESULT APIENTRY FEWndProc
                               FCNMEMVIRT_LENGTH * sizeof (MEMVIRTSTR),
                               MEM_COMMIT | MEM_TOP_DOWN,
                               PAGE_READWRITE);
-            if (!lpLclMemVirtStr)
+            if (lpLclMemVirtStr EQ NULL)
             {
                 // ***FIXME*** -- Display error msg
                 DbgMsgW (L"FEWndProc/WM_NCCREATE:  MyVirtualAlloc for <lpLclMemVirtStr> failed");
@@ -368,7 +368,7 @@ LRESULT APIENTRY FEWndProc
                           lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].IniAddr)
+            if (lpLclMemVirtStr[FCNMEMVIRT_UNDOBEG].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"FEWndProc/WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
@@ -1346,7 +1346,7 @@ int LclECPaintHook
     rcScr.right = rcScr.left + cxAveChar * uLen;
     rcAct.right = rcAct.left + cxAveChar * uLen;
 
-    if (!lpMemPTD->lpFontLink
+    if (lpMemPTD->lpFontLink EQ NULL
      || FAILED (DrawTextFL (lpMemPTD->lpFontLink, hDC, &rcAct, lpwsz, uLen, cxAveChar)))
         OneDrawTextW (hDC, &rcAct, &lpwsz, uLen, cxAveChar);
 #else
@@ -3159,7 +3159,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             // Get a handle to the clipboard data
             hGlbClip = GetClipboardData (CF_PRIVATEFIRST);
-            if (!hGlbClip)
+            if (hGlbClip EQ NULL)
                 hGlbClip = GetClipboardData (CF_UNICODETEXT);
 
             // If there's data in the clipboard, ...
@@ -3953,7 +3953,7 @@ void CopyAPLChars_EM
         //   we won't own it anymore.
         // "+ 1" for the trailing zero
         hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, (numChars + 1 ) * sizeof (WCHAR));
-        if (!hGlbText)
+        if (hGlbText EQ NULL)
         {
             MessageBox (hWndEC,
                         "Unable to allocate memory for the copy of CF_UNICODETEXT format",
@@ -3976,7 +3976,7 @@ void CopyAPLChars_EM
         //   because after we pass this handle to the clipboard
         //   we won't own it anymore.
         hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, numChars * sizeof (WCHAR));
-        if (!hGlbText)
+        if (hGlbText EQ NULL)
         {
             MessageBox (hWndEC,
                         "Unable to allocate memory for the copy of CF_UNICODETEXT format",
@@ -4109,7 +4109,7 @@ void PasteAPLChars_EM
 
     // Allocate memory to hold the format # and the matching handle
     hGlbFmts = DbgGlobalAlloc (GHND, uCount * sizeof (CLIPFMTS));
-    if (!hGlbFmts)
+    if (hGlbFmts EQ NULL)
     {
         MessageBox (hWndEC,
                     "Unable to allocate memory for the clipboard formats",
@@ -4171,7 +4171,7 @@ void PasteAPLChars_EM
             //   because after we pass this handle to the clipboard
             //   we won't own it anymore.
             hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
-            if (!hGlbText)
+            if (hGlbText EQ NULL)
             {
                 MessageBox (hWndEC,
                             "Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
@@ -4197,7 +4197,7 @@ void PasteAPLChars_EM
             //   because after we pass this handle to the clipboard
             //   we won't own it anymore.
             hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
-            if (!hGlbText)
+            if (hGlbText EQ NULL)
             {
                 MessageBox (hWndEC,
                             "Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
@@ -5015,7 +5015,7 @@ LPSYMENTRY ParseFunctionName
                    NULL,                    // Ptr to error handling function (may be NULL)
                    NULL,                    // Ptr to common struc (may be NULL if unused)
                    FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator
-    if (!hGlbTknHdr)
+    if (hGlbTknHdr EQ NULL)
         goto ERROR_EXIT;
 
     // Allocate virtual memory for the Variable Strand accumulator

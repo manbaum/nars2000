@@ -326,7 +326,7 @@ UBOOL LoadWorkspace_EM
 
     // Initialize the iniparser
     lpDict = ProfileLoad_EM (wszDPFE, &lpwErrMsg);
-    if (!lpDict)
+    if (lpDict EQ NULL)
         goto ERRMSG_EXIT;
 
     // Get the version #
@@ -441,7 +441,7 @@ UBOOL LoadWorkspace_EM
                     lpSymEntry =
                       SymTabLookupName (lpwFcnName, &stFlags);
 
-////////////////////if (!lpSymEntry)            // ***FIXME***
+////////////////////if (lpSymEntry EQ NULL)            // ***FIXME***
 
                     // Get a ptr to the function header
                     hGlbDfnHdr = lpSymEntry->stData.stGlbData;
@@ -567,7 +567,7 @@ UBOOL LoadWorkspace_EM
                 {
                     // Append the name as new to get a new LPSYMENTRY
                     lpSymEntry = SymTabAppendNewName_EM (lpwSrcStart, &stFlags);
-                    if (!lpSymEntry)
+                    if (lpSymEntry EQ NULL)
                         goto ETO_ERROR_EXIT;
 
                     // Set the common values
@@ -586,7 +586,7 @@ UBOOL LoadWorkspace_EM
                     {
                         // Append the name to get a new LPSYMENTRY
                         lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
-                        if (!lpSymEntry)
+                        if (lpSymEntry EQ NULL)
                             goto ETO_ERROR_EXIT;
 
                         // Mark the SYMENTRY as immediate so we don't free the
@@ -748,7 +748,7 @@ UBOOL LoadWorkspace_EM
                 {
                     // Append the name to get a new LPSYMENTRY
                     lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
-                    if (!lpSymEntry)
+                    if (lpSymEntry EQ NULL)
                         goto ETO_ERROR_EXIT;
 
                     // Set stFlags as appropriate
@@ -1186,7 +1186,7 @@ LPWCHAR ParseSavedWsVar_EM
                     *((LPAPLHETERO) *lplpMemObj)++ =
                     lpSymTmp =
                       SymTabAppendInteger_EM (aplInteger, TRUE);
-                    if (!lpSymTmp)
+                    if (lpSymTmp EQ NULL)
                         goto ERROR_EXIT;
                 } else
                     // Save the result directly
@@ -1225,7 +1225,7 @@ LPWCHAR ParseSavedWsVar_EM
                     *((LPAPLHETERO) *lplpMemObj)++ =
                     lpSymTmp =
                       SymTabAppendChar_EM (wcTmp, TRUE);
-                    if (!lpSymTmp)
+                    if (lpSymTmp EQ NULL)
                         goto ERROR_EXIT;
                 } else
                     // Save the result directly
@@ -1264,7 +1264,7 @@ LPWCHAR ParseSavedWsVar_EM
                     *((LPAPLHETERO) *lplpMemObj)++ =
                     lpSymTmp =
                       SymTabAppendFloat_EM (aplFloat);
-                    if (!lpSymTmp)
+                    if (lpSymTmp EQ NULL)
                         goto ERROR_EXIT;
                 } else
                     // Save the result directly
@@ -1434,7 +1434,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Now we can allocate the storage for the result
             //***************************************************************
             hGlbObj = DbgGlobalAlloc (GHND, (APLU3264) ByteObj);
-            if (!hGlbObj)
+            if (hGlbObj EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -2123,7 +2123,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     // Create a symbol table entry for the )LOAD HGLOBAL
     lpSymEntry =
       SymTabAppendName_EM (lpwGlbName, &stFlags);
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
         goto ERROR_EXIT;
 
     // Set the handle

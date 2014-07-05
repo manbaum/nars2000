@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -149,7 +149,7 @@ UBOOL CmdCopy_EM
 
         // Initialize the iniparser
         lpDict = ProfileLoad_EM (wszTailDPFE, &lpwErrMsg);
-        if (!lpDict)
+        if (lpDict EQ NULL)
             goto ERRMSG_EXIT;
 
         // Get the version #
@@ -482,7 +482,7 @@ int CopyWsVars
             {
                 // Append the name to get a new LPSYMENTRY
                 lpSymEntry = SymTabAppendName_EM (lpwNameInWrk, &stFlags);
-                if (!lpSymEntry)
+                if (lpSymEntry EQ NULL)
                     goto ERROR_EXIT;
 
                 // Mark the SYMENTRY as immediate so we don't free the
@@ -640,7 +640,7 @@ int CopyWsFcns
             {
                 // Append the name to get a new LPSYMENTRY
                 lpSymEntry = SymTabAppendName_EM (lpwNameInWrk, &stFlags);
-                if (!lpSymEntry)
+                if (lpSymEntry EQ NULL)
                     goto ERROR_EXIT;
 
                 // Set stFlags as appropriate

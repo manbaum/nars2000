@@ -1832,7 +1832,7 @@ LRESULT APIENTRY MFWndProc
 
                                     // Get a handle to the clipboard data
                                     hGlbClip = GetClipboardData (CF_PRIVATEFIRST);
-                                    if (!hGlbClip)
+                                    if (hGlbClip EQ NULL)
                                         hGlbClip = GetClipboardData (CF_UNICODETEXT);
 
                                     // We're done with the clipboard

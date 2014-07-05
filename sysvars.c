@@ -147,7 +147,7 @@ void MakePermVars
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
     hGlbQuadA = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, ALPHANELM, 1));
-    if (!hGlbQuadA)
+    if (hGlbQuadA EQ NULL)
     {
         DbgStop ();         // We should never get here
     } // End IF
@@ -186,7 +186,7 @@ void MakePermVars
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
     hGlbQuadD = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, DIGITSNELM, 1));
-    if (!hGlbQuadD)
+    if (hGlbQuadD EQ NULL)
     {
         DbgStop ();         // We should never get here
     } // End IF
@@ -222,7 +222,7 @@ void MakePermVars
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
     hGlbZilde = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 1));
-    if (!hGlbZilde)
+    if (hGlbZilde EQ NULL)
     {
         DbgStop ();         // We should never get here
     } // End IF
@@ -249,7 +249,7 @@ void MakePermVars
     // Create initial value for []EC[2] (0 x 0 Boolean matrix)
     //***************************************************************
     hGlb0by0 = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_BOOL, 0, 2));
-    if (!hGlb0by0)
+    if (hGlb0by0 EQ NULL)
     {
         DbgStop ();         // We should never get here
     } // End IF
@@ -280,7 +280,7 @@ void MakePermVars
     // Create initial value for []EM (3 x 0 char matrix)
     //***************************************************************
     hGlb3by0 = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, 0, 2));
-    if (!hGlb3by0)
+    if (hGlb3by0 EQ NULL)
     {
         DbgStop ();         // We should never get here
     } // End IF
@@ -393,7 +393,7 @@ HGLOBAL MakePermVectorCom
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (aplTypeCom, uLen, 1));
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
     {
         DbgStop ();         // We should never get here
     } // End IF
@@ -468,7 +468,7 @@ UBOOL SymTabAppendOneSysName_EM
       _SymTabAppendNewName_EM (lpSysName->lpwszName, &stFlags, lpHTS);
 
     // Check for error
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
         return FALSE;
 
     // Save the LPSYMENTRY if requested

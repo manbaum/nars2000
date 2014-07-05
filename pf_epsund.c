@@ -236,7 +236,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         // Now we can allocate the storage for the result
         //***************************************************************
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -341,7 +341,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         // Allocate space for the temporary left arg dimension vector
         //***************************************************************
         hGlbDimTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbDimTmp)
+        if (hGlbDimTmp EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -362,7 +362,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     //***************************************************************
     hGlbKmpNext =
       DbgGlobalAlloc (GHND, (APLU3264) ((aplColsLft + 1 ) * sizeof (APLINT)));
-    if (!hGlbKmpNext)
+    if (hGlbKmpNext EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -379,7 +379,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     // Allocate space for the dimension difference vector
     //***************************************************************
     hGlbDimDiff = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbDimDiff)
+    if (hGlbDimDiff EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -409,7 +409,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     //   separately.
     //***************************************************************
     hGlbWVecRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbWVecRht)
+    if (hGlbWVecRht EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -440,7 +440,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     //   dimension in the right arg.
     //***************************************************************
     hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbOdoRht)
+    if (hGlbOdoRht EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -460,7 +460,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     //   separately.
     //***************************************************************
     hGlbWVecTst = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbWVecTst)
+    if (hGlbWVecTst EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -481,7 +481,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     //   dimension in the right arg.
     //***************************************************************
     hGlbOdoTst = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbOdoTst)
+    if (hGlbOdoTst EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -774,7 +774,7 @@ NOMATCH:
             // Now we can allocate the storage for the result
             //***************************************************************
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (!hGlbRes)
+            if (hGlbRes EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it

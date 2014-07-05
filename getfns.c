@@ -1432,7 +1432,7 @@ UBOOL GetNextValueMemIntoToken
                               &((LPAPLRAT) lpMemArg)[uArg],     // Ptr to the value
                                TRUE,                            // TRUE iff we should initialize the target first
                                lptkArg);                        // Ptr to function token
-            if (!lptkArg->tkData.tkGlbData)
+            if (lptkArg->tkData.tkGlbData EQ NULL)
                 goto ERROR_EXIT;
             break;
 
@@ -1444,7 +1444,7 @@ UBOOL GetNextValueMemIntoToken
                               &((LPAPLVFP) lpMemArg)[uArg],     // Ptr to the value
                                TRUE,                            // TRUE iff we should initialize the target first
                                lptkArg);                        // Ptr to function token
-            if (!lptkArg->tkData.tkGlbData)
+            if (lptkArg->tkData.tkGlbData EQ NULL)
                 goto ERROR_EXIT;
             break;
 

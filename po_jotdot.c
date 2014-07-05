@@ -348,7 +348,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
-        if (!lpPrimProtoRht)
+        if (lpPrimProtoRht EQ NULL)
             goto RIGHT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoRht = NULL;
@@ -398,7 +398,7 @@ RESTART_JOTDOT:
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -954,7 +954,7 @@ UBOOL PrimOpDydJotDotProto_EM
     hGlbPro = GetGlbHandle (&lpYYRes->tkToken);
 
     // If the result of the last calc is immediate, ...
-    if (!hGlbPro)
+    if (hGlbPro EQ NULL)
     {
         // Convert the immediate type and value in lpYYRes->tkToken
         //   into an LPSYMENTRY

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ LPPL_YYSTYPE PrimIdentOpDieresisTilde_EM_YY
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
     // Check for error
-    if (!lpPrimFlagsLft || !lpPrimFlagsLft->lpPrimOps)
+    if (lpPrimFlagsLft EQ NULL || lpPrimFlagsLft->lpPrimOps EQ NULL)
         goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Execute the left operand identity function on the right arg
@@ -254,7 +254,7 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
 
         // Execute the function dyadically between the right arg and itself
@@ -358,7 +358,7 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
 
         // Execute the function dyadically between the two args switched

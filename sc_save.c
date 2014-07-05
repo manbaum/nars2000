@@ -200,7 +200,7 @@ UBOOL CmdSave_EM
 
     // Allocate space for two counters (Vars & Fcns) per SI level
     hGlbCnt = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbCnt)
+    if (hGlbCnt EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1500,35 +1500,24 @@ LPAPLCHAR SavedWsFormGlbVar
                     {
                         APLSTYPE aplTypeSub;
 
-    #define hGlbSub     (*(LPAPLNESTED *) lpMemObj)
+#define hGlbSub     (*(LPAPLNESTED *) lpMemObj)
+                        // Get the global's Type
+                        AttrsOfGlb (hGlbSub, &aplTypeSub, NULL, NULL, NULL);
 
-                        if (PtrReusedDir (hGlbObj))
+                        // Convert the variable in global memory to saved ws form
+                        lpaplChar =
+                          SavedWsFormGlbVar (lpaplChar,
+                                             hGlbSub,
+                                             lpMemSaveWSID,
+                                             lpuGlbCnt,
+                                             lpSymEntry);
+                        // Ensure there's a trailing blank
+                        if (lpaplChar[-1] NE L' ')
                         {
-                            // Append the HGLOBAL name
-                            lpaplChar +=
-                              wsprintfW (lpaplChar,
-                                         L"REUSED ");
-                        } else
-                        {
-                            // Get the global's Type
-                            AttrsOfGlb (hGlbSub, &aplTypeSub, NULL, NULL, NULL);
-
-                            // Convert the variable in global memory to saved ws form
-                            lpaplChar =
-                              SavedWsFormGlbVar (lpaplChar,
-                                                 hGlbSub,
-                                                 lpMemSaveWSID,
-                                                 lpuGlbCnt,
-                                                 lpSymEntry);
-                            // Ensure there's a trailing blank
-                            if (lpaplChar[-1] NE L' ')
-                            {
-                                *lpaplChar++ = L' ';
-                                *lpaplChar   = WC_EOS;
-                            } // End IF
-    #undef  hGlbSub
-                        } // End IF/ELSE
-
+                            *lpaplChar++ = L' ';
+                            *lpaplChar   = WC_EOS;
+                        } // End IF
+#undef  hGlbSub
                         break;
                     } // End PTRTYPE_HGLOBAL
 

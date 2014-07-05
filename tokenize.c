@@ -716,7 +716,7 @@ UBOOL CheckResizeNum_EM
         // Attempt to realloc to that size
         hGlbNum =
           MyGlobalReAlloc (lptkLocalVars->hGlbNum, iNumLim * sizeof (char), GMEM_MOVEABLE);
-        if (!hGlbNum)
+        if (hGlbNum EQ NULL)
             goto WSFULL_EXIT;
 
         // Save back in PTD var
@@ -774,7 +774,7 @@ UBOOL CheckResizeStr_EM
         // Attempt to realloc to that size
         hGlbStr =
           MyGlobalReAlloc (lptkLocalVars->hGlbStr, iStrLim * sizeof (APLCHAR), GMEM_MOVEABLE);
-        if (!hGlbStr)
+        if (hGlbStr EQ NULL)
             goto WSFULL_EXIT;
 
         // Save back in PTD var
@@ -1440,7 +1440,7 @@ UBOOL fnAlpDone
                                        FALSE,                   // TRUE iff the name is to be local to the given HTS
                                        lptkLocalVars->lpHTS);   // Ptr to HshTab struc (may be NULL)
             // If it's not found, ...
-            if (!lpSymEntry)
+            if (lpSymEntry EQ NULL)
                 lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
         } // End IF
     } else
@@ -1462,7 +1462,7 @@ UBOOL fnAlpDone
                                        FALSE,                   // TRUE iff the name is to be local to the given HTS
                                        lpHTS);                  // Ptr to HshTab struc (may be NULL)
             // If it's not found, ...
-            if (!lpSymEntry)
+            if (lpSymEntry EQ NULL)
             {
                 // Save the last non-NULL HTS
                 lpLastHTS = lpHTS;
@@ -1497,7 +1497,7 @@ UBOOL fnAlpDone
                                 FALSE,                  // TRUE iff the name is to be local to the given HTS
                                 lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
     // If it's not found, ...
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
         bRet = FALSE;
     else
     {
@@ -1630,7 +1630,7 @@ UBOOL fnDirIdent
                             bAFO,                   // TRUE iff the name is to be local to the given HTS
                             lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
     // If it's not found, ...
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
         bRet = FALSE;
     else
     {
@@ -2584,7 +2584,7 @@ UBOOL fnPointDone
                                        FALSE,                   // TRUE iff we should initialize the target first
                                        NULL);                   // Ptr to function token
                     // If the allocate failed, ...
-                    if (!hGlbData)
+                    if (hGlbData EQ NULL)
                         goto ERROR_EXIT;
 
                     // Mark the data as a (scalar) array
@@ -2600,7 +2600,7 @@ UBOOL fnPointDone
                                        FALSE,                   // TRUE iff we should initialize the target first
                                        NULL);                   // Ptr to function token
                     // If the allocate failed, ...
-                    if (!hGlbData)
+                    if (hGlbData EQ NULL)
                         goto ERROR_EXIT;
 
                     // Mark the data as a (scalar) array
@@ -3870,7 +3870,7 @@ UBOOL fnQuoDoneSub
         //   excluding the terminating zero.
         //***************************************************************
         hGlb = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlb)
+        if (hGlb EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -6201,9 +6201,9 @@ TKCOLINDICES CharTransTK
             if (lptkLocalVars->lpwszCur[1] EQ UTF16_DOT)
             {
                 // If we're not Syntax Coloring and we're not in a char string, ...
-                if (!lptkLocalVars->lpMemClrNxt
-                 &&  lptkLocalVars->State[0] NE TKROW_QUOTE1A
-                 &&  lptkLocalVars->State[0] NE TKROW_QUOTE2A
+                if (lptkLocalVars->lpMemClrNxt EQ NULL
+                 && lptkLocalVars->State[0] NE TKROW_QUOTE1A
+                 && lptkLocalVars->State[0] NE TKROW_QUOTE2A
                    )
                     // Skip over it
                     lptkLocalVars->uChar++;

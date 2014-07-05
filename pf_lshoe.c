@@ -395,7 +395,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     // Now we can allocate the storage for the result.
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -558,7 +558,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         //   {times}{backscan}1{drop}({rho}R),1
         //***************************************************************
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbWVec)
+        if (hGlbWVec EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -588,7 +588,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         //   in the right arg, with values initially all zero (thanks to GHND).
         //***************************************************************
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbOdo)
+        if (hGlbOdo EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -1730,7 +1730,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1837,7 +1837,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
                         // Allocate space for the result.
                         hGlbPro = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                        if (!hGlbPro)
+                        if (hGlbPro EQ NULL)
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
@@ -2168,7 +2168,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
         // Now we can allocate the storage for the item.
         //***************************************************************
         hGlbItm = DbgGlobalAlloc (GHND, (APLU3264) ByteItm);
-        if (!hGlbItm)
+        if (hGlbItm EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -209,7 +209,7 @@ UBOOL CmdIn_EM
         lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);
         EXIT_TEMP_OPEN
 
-        if (!lpAtfView)
+        if (lpAtfView EQ NULL)
             goto ERROR_EXIT;
 
         // Process the record in lpwszTemp of length uLen
@@ -359,9 +359,9 @@ UBOOL TransferInverseArr2_EM
 
     // Search for the left arrow which marks the end of the name
     lpwNameEnd = SkipToCharW (lpwName, UTF16_LEFTARROW);
-    if (!lpwNameEnd)
+    if (lpwNameEnd EQ NULL)
     {
-        if (!lptkFunc)
+        if (lptkFunc EQ NULL)
         {
             // Format the error message
             wsprintfW (lpwszFormat,
@@ -398,13 +398,13 @@ UBOOL TransferInverseArr2_EM
 
     // Look up the name
     lpSymEntry = SymTabLookupName (lpwName, &stFlags);
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
     {
         // If it's a system name and it's not found, then we don't support it
         if (IsSysName (lpwName))
             goto INVALIDSYSNAME_EXIT;
         lpSymEntry = SymTabAppendNewName_EM (lpwName, &stFlags);
-        if (!lpSymEntry)
+        if (lpSymEntry EQ NULL)
             goto STFULL_EXIT;
 
         // Set the object name and name type value for this new entry
@@ -450,7 +450,7 @@ UBOOL TransferInverseArr2_EM
 
             case EXITTYPE_ERROR:
             case EXITTYPE_STACK_FULL:
-                if (!lptkFunc)
+                if (lptkFunc EQ NULL)
                 {
                     // Display the leading part of the error message
                     AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);
@@ -481,7 +481,7 @@ UBOOL TransferInverseArr2_EM
     goto NORMAL_EXIT;
 
 INVALIDSYSNAME_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
     {
         // Format the error message
         wsprintfW (lpwszFormat,
@@ -496,7 +496,7 @@ INVALIDSYSNAME_EXIT:
     goto ERROR_EXIT;
 
 STFULL_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
         AppendLine (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME, FALSE, TRUE);
 
     goto ERROR_EXIT;
@@ -555,7 +555,7 @@ UBOOL TransferInverseFcn2_EM
     // Get the Edit Ctrl window handle
     hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
     {
         LPWCHAR lpwQ1,
                 lpwQ2;
@@ -598,7 +598,7 @@ UBOOL TransferInverseFcn2_EM
     if (exitType EQ EXITTYPE_ERROR
      || lpMemPTD->uErrLine NE NEG1U)
     {
-        if (!lptkFunc)
+        if (lptkFunc EQ NULL)
         {
             // Display the leading part of the error message
             AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);
@@ -737,9 +737,9 @@ UBOOL TransferInverseChr1_EM
 
     // Search for the blank which marks the end of the name
     lpwData = SkipToCharW (lpwName, L' ');
-    if (!lpwData)
+    if (lpwData EQ NULL)
     {
-        if (!lptkFunc)
+        if (lptkFunc EQ NULL)
         {
             // Format the error message
             wsprintfW (lpwszFormat,
@@ -780,13 +780,13 @@ UBOOL TransferInverseChr1_EM
 
     // Look up the name
     lpSymEntry = SymTabLookupName (lpwName, &stFlags);
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
     {
         // If it's a system name and it's not found, then we don't support it
         if (IsSysName (lpwName))
             goto INVALIDSYSNAME_EXIT;
         lpSymEntry = SymTabAppendNewName_EM (lpwName, &stFlags);
-        if (!lpSymEntry)
+        if (lpSymEntry EQ NULL)
             goto STFULL_EXIT;
 
         // Set the object name and name type value for this new entry
@@ -842,7 +842,7 @@ UBOOL TransferInverseChr1_EM
 
         // Now we can allocate the storage for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -898,7 +898,7 @@ UBOOL TransferInverseChr1_EM
     goto NORMAL_EXIT;
 
 INVALIDSYSNAME_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
     {
         // Format the error message
         wsprintfW (lpwszFormat,
@@ -913,13 +913,13 @@ INVALIDSYSNAME_EXIT:
     goto ERROR_EXIT;
 
 STFULL_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
         AppendLine (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME, FALSE, TRUE);
 
     goto ERROR_EXIT;
 
 WSFULL_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
         AppendLine (ERRMSG_WS_FULL APPEND_NAME, FALSE, TRUE);
 
     goto ERROR_EXIT;
@@ -989,9 +989,9 @@ UBOOL TransferInverseNum1_EM
 
     // Search for the blank which marks the end of the name
     lpwData = SkipToCharW (lpwName, L' ');
-    if (!lpwData)
+    if (lpwData EQ NULL)
     {
-        if (!lptkFunc)
+        if (lptkFunc EQ NULL)
         {
             // Format the error message
             wsprintfW (lpwszFormat,
@@ -1031,13 +1031,13 @@ UBOOL TransferInverseNum1_EM
 
     // Look up the name
     lpSymEntry = SymTabLookupName (lpwName, &stFlags);
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
     {
         // If it's a system name and it's not found, then we don't support it
         if (IsSysName (lpwName))
             goto INVALIDSYSNAME_EXIT;
         lpSymEntry = SymTabAppendNewName_EM (lpwName, &stFlags);
-        if (!lpSymEntry)
+        if (lpSymEntry EQ NULL)
             goto STFULL_EXIT;
 
         // Set the object name and name type value for this new entry
@@ -1128,7 +1128,7 @@ UBOOL TransferInverseNum1_EM
     goto NORMAL_EXIT;
 
 INVALIDSYSNAME_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
     {
         // Format the error message
         wsprintfW (lpwszFormat,
@@ -1143,13 +1143,13 @@ INVALIDSYSNAME_EXIT:
     goto ERROR_EXIT;
 
 STFULL_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
         AppendLine (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME, FALSE, TRUE);
 
     goto ERROR_EXIT;
 
 IMMEXEC_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
     {
         // Display the leading part of the error message
         AppendLine (lpMemPTD->lpwszErrorMessage, FALSE, TRUE);

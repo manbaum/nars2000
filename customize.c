@@ -2865,7 +2865,7 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Allocate space for another copy of the local layouts
                         hGlbKeybLayouts = DbgGlobalAlloc (GHND, uKeybSize);
-                        if (!hGlbKeybLayouts)
+                        if (hGlbKeybLayouts EQ NULL)
                         {
                             MessageBoxW (hWndProp, L"Unable to allocate memory for a local copy of the keyboard layouts.", lpwszAppName, MB_OK | MB_ICONERROR);
 

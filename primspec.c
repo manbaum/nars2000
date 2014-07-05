@@ -589,7 +589,7 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -874,7 +874,7 @@ UBOOL PrimIdentFnScalarCommon_EM
                 // Now we can allocate the storage for the result
                 //***************************************************************
                 hGlbRes2 = DbgGlobalAlloc (GHND, (APLU3264) ByteRes2);
-                if (!hGlbRes2)
+                if (hGlbRes2 EQ NULL)
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
@@ -1094,7 +1094,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 hGlbRes = PrimFnMonGlb_EM (hGlbRes,
                                            lptkFunc,
                                           &LclPrimSpec);
-                if (!hGlbRes)
+                if (hGlbRes EQ NULL)
                 {
                     YYFree (lpYYRes); lpYYRes = NULL;
 
@@ -1585,7 +1585,7 @@ RESTART_EXCEPTION_VARIMMED:
             hGlbRes = PrimFnMonGlb_EM (hGlbRes,
                                        lptkFunc,
                                       &LclPrimSpec);
-            if (!hGlbRes)
+            if (hGlbRes EQ NULL)
             {
                 YYFree (lpYYRes); lpYYRes = NULL;
 
@@ -1865,7 +1865,7 @@ RESTART_EXCEPTION:
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -3205,7 +3205,7 @@ UBOOL PrimFnDydSimpNest_EM
     DBGENTER;
 
     // If the left arg is immediate, get the one and only value
-    if (!lpMemLft)
+    if (lpMemLft EQ NULL)
         GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
                            &aplIntegerLft,  // Ptr to integer result
                            &aplFloatLft,    // Ptr to float ...
@@ -3259,7 +3259,7 @@ UBOOL PrimFnDydSimpNest_EM
         //   {times}{backscan}1{drop}({rho}Z),1
         //***************************************************************
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
-        if (!hGlbWVec)
+        if (hGlbWVec EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -3289,7 +3289,7 @@ UBOOL PrimFnDydSimpNest_EM
         //   in the right arg, with values initially all zero (thanks to GHND).
         //***************************************************************
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
-        if (!hGlbOdo)
+        if (hGlbOdo EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -3411,7 +3411,7 @@ UBOOL PrimFnDydSimpNest_EM
                                                 aplCharRht,
                                                 NULL,
                                                 lpPrimSpec);
-                if (!hGlbSub)
+                if (hGlbSub EQ NULL)
                     goto ERROR_EXIT;
                 else
                     // Save in result
@@ -3429,7 +3429,7 @@ UBOOL PrimFnDydSimpNest_EM
                                                 bLftIdent,
                                                 bRhtIdent,
                                                 lpPrimSpec);
-                if (!hGlbSub)
+                if (hGlbSub EQ NULL)
                     goto ERROR_EXIT;
                 else
                     // Save in result
@@ -3589,7 +3589,7 @@ UBOOL PrimFnDydNestSimp_EM
     DBGENTER;
 
     // If the right arg is immediate, get the one and only value
-    if (!lpMemRht)
+    if (lpMemRht EQ NULL)
        GetFirstValueToken (lptkRhtArg,      // Ptr to right arg token
                           &aplIntegerRht,   // Ptr to integer result
                           &aplFloatRht,     // Ptr to float ...
@@ -3643,7 +3643,7 @@ UBOOL PrimFnDydNestSimp_EM
         //   {times}{backscan}1{drop}({rho}Z),1
         //***************************************************************
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
-        if (!hGlbWVec)
+        if (hGlbWVec EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -3673,7 +3673,7 @@ UBOOL PrimFnDydNestSimp_EM
         //   in the right arg, with values initially all zero (thanks to GHND).
         //***************************************************************
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteAlloc);
-        if (!hGlbOdo)
+        if (hGlbOdo EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -3795,7 +3795,7 @@ UBOOL PrimFnDydNestSimp_EM
                                                 aplCharRht,
                                                 NULL,
                                                 lpPrimSpec);
-                if (!hGlbSub)
+                if (hGlbSub EQ NULL)
                     goto ERROR_EXIT;
                 else
                     // Save in result
@@ -3813,7 +3813,7 @@ UBOOL PrimFnDydNestSimp_EM
                                                 bLftIdent,
                                                 bRhtIdent,
                                                 lpPrimSpec);
-                if (!hGlbSub)
+                if (hGlbSub EQ NULL)
                     goto ERROR_EXIT;
                 else
                     // Save in result
@@ -4089,7 +4089,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                                     aplCharRht,
                                                     NULL,
                                                     lpPrimSpec);
-                    if (!hGlbSub)
+                    if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
                     else
                         // Save in result
@@ -4107,7 +4107,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                                     bLftIdent,
                                                     bRhtIdent,
                                                     lpPrimSpec);
-                    if (!hGlbSub)
+                    if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
                     else
                         // Save in result
@@ -9811,7 +9811,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                                                     aplCharRht,
                                                     NULL,
                                                     lpPrimSpec);
-                    if (!hGlbSub)
+                    if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
                     else
                         // Save in result
@@ -9829,7 +9829,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                                                     bLftIdent,
                                                     bRhtIdent,
                                                     lpPrimSpec);
-                    if (!hGlbSub)
+                    if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
                     else
                         // Save in result
@@ -10359,7 +10359,7 @@ RESTART_EXCEPTION_IMMED:
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (lphGlbRes)
                        *lphGlbRes = hGlbTmp;
-                    if (!hGlbTmp)
+                    if (hGlbTmp EQ NULL)
                         goto WSFULL_EXIT;
                     // Lock the memory to get a ptr to it
                     lpMemRes = MyGlobalLock (hGlbTmp);
@@ -10482,7 +10482,7 @@ RESTART_EXCEPTION_IMMED:
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
                     if (lphGlbRes)
                        *lphGlbRes = hGlbTmp;
-                    if (!hGlbTmp)
+                    if (hGlbTmp EQ NULL)
                         goto WSFULL_EXIT;
                     // Lock the memory to get a ptr to it
                     lpMemRes = MyGlobalLock (hGlbTmp);
@@ -11789,7 +11789,7 @@ RESTART_EXCEPTION_SINGLETON:
             //   Cx contains the remaining axes.
             //***************************************************************
             hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (!hGlbWVec)
+            if (hGlbWVec EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -11819,7 +11819,7 @@ RESTART_EXCEPTION_SINGLETON:
             //   in the right arg, with values initially all zero (thanks to GHND).
             //***************************************************************
             hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (!hGlbOdo)
+            if (hGlbOdo EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it

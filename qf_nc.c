@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -152,7 +152,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -197,7 +197,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                                                  1,
                                                 &stFlags);
             // If not found, return NAMECLASS_INV or NAMECLASS_AVL
-            if (!lpSymEntry)
+            if (lpSymEntry EQ NULL)
                 *lpMemDataRes++ = IsValidName ((LPAPLCHAR) &aplLongestRht, 1)
                                 ? NAMECLASS_AVL : NAMECLASS_INV;
             else
@@ -231,7 +231,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                                                         (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart),
                                                         &stFlags);
                     // If not found, return NAMECLASS_INV or NAMECLASS_AVL
-                    if (!lpSymEntry)
+                    if (lpSymEntry EQ NULL)
                         *lpMemDataRes++ = IsValidName (lpMemDataStart, (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart))
                                         ? NAMECLASS_AVL : NAMECLASS_INV;
                     else
@@ -264,7 +264,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                                                       (APLU3264) (aplNELMCol - uCol),
                                                      &stFlags);
                 // If not found, return NAMECLASS_INV or NAMECLASS_AVL
-                if (!lpSymEntry)
+                if (lpSymEntry EQ NULL)
                     *lpMemDataRes++ = IsValidName (&lpMemDataStart[uCol], (APLU3264) (aplNELMCol - uCol))
                                     ? NAMECLASS_AVL : NAMECLASS_INV;
                 else

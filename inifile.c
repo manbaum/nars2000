@@ -1082,7 +1082,7 @@ UBOOL ReadIniFileGlb
       DbgGlobalAlloc (GHND, DEF_RECENTFILES * _MAX_PATH * sizeof (WCHAR));
 
     // Check for error
-    if (!hGlbRecentFiles)
+    if (hGlbRecentFiles EQ NULL)
         return FALSE;           // Stop the whole process
 
     // Lock the memory to get a ptr to it
@@ -1595,7 +1595,7 @@ HGLOBAL GetPrivateProfileGlbComW
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         return hGlbRes;
 
     // Lock the memory to get a ptr to it

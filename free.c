@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -201,7 +201,7 @@ void FreeResultSub
                               ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
                               FNLN);
 #endif
-                    lptkRes->tkData.tkSym->stData.stGlbData = PTR_REUSED;
+                    lptkRes->tkData.tkSym->stData.stGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -260,7 +260,7 @@ void FreeResultSub
                               ClrPtrTypeDir (hGlbData),
                               FNLN);
 #endif
-                    lptkRes->tkData.tkSym->stData.stGlbData = PTR_REUSED;
+                    lptkRes->tkData.tkSym->stData.stGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -302,8 +302,8 @@ void FreeResultSub
             // Get the global memory ptr
             hGlbData = lptkRes->tkData.tkGlbData;
 
-            // Check for ptr reuse
-            if (!PtrReusedDir (hGlbData))
+            // Check for valid ptr
+            if (hGlbData)
             {
                 // tkData is a valid HGLOBAL variable or function array or list
                 Assert (IsGlbTypeVarDir_PTB (hGlbData)
@@ -319,7 +319,7 @@ void FreeResultSub
                               ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
                               FNLN);
 #endif
-                    lptkRes->tkData.tkGlbData = PTR_REUSED;
+                    lptkRes->tkData.tkGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -556,7 +556,7 @@ UBOOL FreeResultGlobalVarSub
                     // Check for required complete vars
                     if (bReqComplete || *(LPAPLNESTED) lpMem)
                     // Check for reused ptrs
-                    if (!PtrReusedInd (lpMem))
+                    if (!IsPtrNullInd (lpMem))
                     switch (GetPtrTypeInd (lpMem))
                     {
                         case PTRTYPE_STCONST:
@@ -571,7 +571,7 @@ UBOOL FreeResultGlobalVarSub
                                           ClrPtrTypeInd (lpMem),
                                           FNLN);
 #endif
-                                *((LPVOID *) lpMem) = PTR_REUSED;
+                                *((LPVOID *) lpMem) = NULL;
                             } // End IF
 
                             break;
@@ -725,7 +725,7 @@ UBOOL FreeResultGlobalFcn
                               hGlbLcl,
                               FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = PTR_REUSED;
+                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
                 } // End IF
 
                 break;
@@ -752,7 +752,7 @@ UBOOL FreeResultGlobalFcn
                               hGlbLcl,
                               FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = PTR_REUSED;
+                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
                 } // End IF
 
                 break;
@@ -777,7 +777,7 @@ UBOOL FreeResultGlobalFcn
                               hGlbLcl,
                               FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = PTR_REUSED;
+                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
                 } // End IF
 
                 break;
@@ -804,7 +804,7 @@ UBOOL FreeResultGlobalFcn
                                   hGlbLcl,
                                   FNLN);
 #endif
-                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = PTR_REUSED;
+                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = NULL;
                     } // End IF
                 } // End IF
 

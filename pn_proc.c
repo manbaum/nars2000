@@ -1146,7 +1146,7 @@ UBOOL PN_VectorRes
 
         // Allocate global memory for the array
         lppnLocalVars->hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!lppnLocalVars->hGlbRes)
+        if (lppnLocalVars->hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it

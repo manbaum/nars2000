@@ -149,7 +149,7 @@ LPPL_YYSTYPE PushFcnStrand_YY
 
     // Copy the strand base to the result
     lpYYArg->lpYYStrandBase = lpplLocalVars->lpYYStrArrBase[STRAND_FCN];
-    if (!lpYYArg->lpYYFcnBase)
+    if (lpYYArg->lpYYFcnBase EQ NULL)
         lpYYArg->lpYYFcnBase = lpplLocalVars->lpYYStrArrNext[STRAND_FCN];
 
     // Allocate a new YYRes
@@ -266,9 +266,9 @@ void FreeStrand
             case TKT_NUMSCALAR:
             case TKT_VARARRAY:
             case TKT_AXISARRAY:
-                // Check for reused and indirect ptrs
+                // Check for invalid and indirect ptrs
                 if (!lpYYToken->YYIndirect
-                 && !PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
+                 && lpYYToken->tkToken.tkData.tkGlbData)
                 {
                     // tkData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
@@ -287,9 +287,9 @@ void FreeStrand
                 break;
 
             case TKT_FCNARRAY:
-                // Check for reused and indirect ptrs
+                // Check for invalid and indirect ptrs
                 if (!lpYYToken->YYIndirect
-                 && !PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
+                 && lpYYToken->tkToken.tkData.tkGlbData)
                 {
                     // tkData is a valid HGLOBAL function array
                     Assert (IsGlbTypeFcnDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
@@ -792,7 +792,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
     // Allocate global memory for a length <iLen> vector of type <aplTypeRes>.
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbStr)
+    if (hGlbStr EQ NULL)
         goto WSFULL_EXIT;
 
     // Fill in the result token
@@ -1650,7 +1650,7 @@ HGLOBAL MakeGlbEntry_EM
 
     // Allocate global memory for a length <iLen> vector of type <aplTypeRes>.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1825,7 +1825,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     // Allocate global memory for the function array
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbStr)
+    if (hGlbStr EQ NULL)
         goto WSFULL_EXIT;
 
     // Fill in the result token
@@ -2409,7 +2409,7 @@ LPPL_YYSTYPE MakeTrainOp_YY
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         return NULL;
 
     // Fill in the result token
@@ -2670,7 +2670,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
 
     // Allocate global memory for a length <iLen> vector of type <cState>
     hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbStr)
+    if (hGlbStr EQ NULL)
         goto WSFULL_EXIT;
 
     // Fill in the result token
@@ -2958,7 +2958,7 @@ LPPL_YYSTYPE MakeList_EM_YY
 
     // Allocate global memory for a length <iLen> vector
     hGlbLst = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbLst)
+    if (hGlbLst EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -3115,7 +3115,7 @@ LPSYMENTRY CopyImmToken_EM
     } // End SWITCH
 
     // If it failed, set the error token
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
         ErrorMessageSetToken (lpToken);
 
     return lpSymEntry;

@@ -1193,7 +1193,7 @@ NEXTLINE:
 
             // Allocate space for the result
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (!hGlbRes)
+            if (hGlbRes EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -1975,7 +1975,7 @@ UBOOL InitVarSTEs
 
                         // Allocate space for the result
                         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                        if (!hGlbRes)
+                        if (hGlbRes EQ NULL)
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
@@ -2023,7 +2023,7 @@ UBOOL InitVarSTEs
 
                         // Allocate space for the result
                         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                        if (!hGlbRes)
+                        if (hGlbRes EQ NULL)
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
@@ -2204,7 +2204,7 @@ UBOOL InitFcnSTEs
 
             // Allocate global memory for the function array
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (!hGlbRes)
+            if (hGlbRes EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it

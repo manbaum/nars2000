@@ -110,7 +110,7 @@ void MakeQuadAV
 
     // Create []AV
     hGlbQuadAV = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbQuadAV)
+    if (hGlbQuadAV EQ NULL)
     {
         DbgStop ();         // We should never get here
     } // End IF

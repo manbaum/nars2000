@@ -159,7 +159,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
         case TKT_FCNIMMED:
             // Get the address of the execution routine
             lpPrimFn = PrimFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
-            if (!lpPrimFn)
+            if (lpPrimFn EQ NULL)
                 goto SYNTAX_EXIT;
 
             // Get the system namespace level
@@ -327,7 +327,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     TOKEN tkFn = {0};
 
                     lpPrimFn = PrimFnsTab[FcnTrans (lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar)];
-                    if (!lpPrimFn)
+                    if (lpPrimFn EQ NULL)
                         goto SYNTAX_EXIT;
 
                     // Fill in for PrimFn*** test
@@ -1181,7 +1181,7 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
             lptkAxis = CheckAxisOper (lpYYFcnStr);
 
             lpPrimFn = PrimFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
-            if (!lpPrimFn)
+            if (lpPrimFn EQ NULL)
                 goto SYNTAX_EXIT;
 
             return (*lpPrimFn) (lptkLftArg,                 // Ptr to left arg token (may be NULL if monadic)

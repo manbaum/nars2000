@@ -103,7 +103,7 @@ void BreakMessage
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -354,7 +354,7 @@ void ErrorMessageDirect
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_DM_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -438,7 +438,7 @@ void ErrorMessageDirect
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EM_EXIT;
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);

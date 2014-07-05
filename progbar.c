@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -142,7 +142,7 @@ LRESULT APIENTRY PBWndProc
         case WM_CREATE:
             // Allocate global memory for the per window data
             hGlbWD = GlobalAlloc (GHND, sizeof (PBWD));
-            if (!hGlbWD)
+            if (hGlbWD EQ NULL)
                 return -1;          // Fail the create
 
             // Save it for later use

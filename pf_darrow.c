@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -171,7 +171,7 @@ LPPL_YYSTYPE PrimIdentFnDownArrow_EM_YY
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -408,7 +408,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
                                           lpMemAxisTail,    // Ptr to axis global memory (may be NULL if axis not present)
                                           TRUE,             // TRUE iff it's DownArrow
                                           lptkFunc);        // Ptr to function token
-    if (!hGlbTmpLft)
+    if (hGlbTmpLft EQ NULL)
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -441,7 +441,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -541,7 +541,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     //   {times}{backscan}1{drop}({rho}R),1
     //***************************************************************
     hGlbWVecRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbWVecRht)
+    if (hGlbWVecRht EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -573,7 +573,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     //   in the right arg.
     //***************************************************************
     hGlbOdoRht = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbOdoRht)
+    if (hGlbOdoRht EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -893,7 +893,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     // Three copies for DownArrow (TmpLft, LoRht, HiRht),
     //   five for UpArrow (TmpLft, LoRht, HiRht, LoRes, HiRes)
     hGlbTmpLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbTmpLft)
+    if (hGlbTmpLft EQ NULL)
         return NULL;
 
     // Lock the memory to get a ptr to it

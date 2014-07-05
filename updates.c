@@ -610,7 +610,7 @@ void DownloadRun
                      NULL,                                  // Ptr to proxy name (may be NULL)
                      NULL,                                  // Ptr to proxy bypass (may be NULL)
                      0);                                    // Flags
-    if (!lpDnlThrStr->lpDnlDlgStr->hNetOpen)
+    if (lpDnlThrStr->lpDnlDlgStr->hNetOpen EQ NULL)
     {
         FormatNetErrorMessage (L"InterNetOpen");
 
@@ -636,7 +636,7 @@ void DownloadRun
                       | INTERNET_FLAG_RELOAD,               // Forces a download of the requested file, object, or directory
                                                             //   listing from the origin server, not from the cache.
                         0);                                 // Context value
-    if (!lpDnlThrStr->lpDnlDlgStr->hNetOpenUrl)
+    if (lpDnlThrStr->lpDnlDlgStr->hNetOpenUrl EQ NULL)
     {
         FormatNetErrorMessage (L"InterNetOpenUrl");
 
@@ -724,7 +724,7 @@ void DownloadRun
                     TRUE,                       // TRUE iff manual-reset event
                     FALSE,                      // TRUE iff initial state is signalled
                     WS_APPNAME L"-suspend");    // Event name
-    if (!lpDnlThrStr->hSuspend)
+    if (lpDnlThrStr->hSuspend EQ NULL)
     {
         FormatSystemErrorMessage (L"CreateEvent");
 
@@ -741,7 +741,7 @@ void DownloadRun
                     lpDnlThrStr,                // Param to thread func
                     CREATE_SUSPENDED,           // Creation flag
                    &lpDnlThrStr->dwThreadId);   // Returns thread id
-    if (!lpDnlThrStr->hThreadWork)
+    if (lpDnlThrStr->hThreadWork EQ NULL)
     {
         FormatSystemErrorMessage (L"CreateThread");
 

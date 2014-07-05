@@ -1051,7 +1051,7 @@ LPVOID _MyGlobalAlloc
 
     lpMem = GlobalAlloc (uFlags, dwBytes);
 
-    if (!lpMem)
+    if (lpMem EQ NULL)
     {
         UINT uLastError;
 
@@ -1096,7 +1096,7 @@ HGLOBAL _MyGlobalHandle
     // Call the Windows function
     hGlb = GlobalHandle (lpVoid);
 
-    if (!hGlb)
+    if (hGlb EQ NULL)
     {
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
@@ -1167,7 +1167,7 @@ LPVOID _MyGlobalLockSub
 
     lpVoid = GlobalLock (hMem);
 
-    if (!lpVoid)
+    if (lpVoid EQ NULL)
     {
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
@@ -1331,7 +1331,7 @@ HGLOBAL _MyGlobalReAlloc
     } // End IF
 
     hGlb = GlobalReAlloc (hMem, dwBytes, uFlags);
-    if (!hGlb)
+    if (hGlb EQ NULL)
     {
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source

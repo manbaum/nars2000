@@ -471,7 +471,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
     // Allocate space for the max shape of the items
     hGlbDimCom = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbDimCom)
+    if (hGlbDimCom EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -568,7 +568,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1159,10 +1159,6 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
         //   and the result is nested/hetero.
         //***************************************************************
 
-        // Fill the entire result with PTR_REUSED in case we fail during processing
-        for (uCom = 0; uCom < aplNELMRes; uCom++)
-            ((LPAPLNESTED) lpMemRes)[uCom] = PTR_REUSED;
-
         // Loop through the elements of the right arg
         for (uRht = 0; uRht < aplNELMRht; uRht++)
         {
@@ -1292,7 +1288,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                                 lpSymTmp =
                                   SymTabAppendInteger_EM (*((LPAPLINT) lpMemSub)++, TRUE);
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1345,7 +1341,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                                 lpSymTmp =
                                   SymTabAppendInteger_EM (apaOffSub + apaMulSub * (uSubLast + (uSubRest * aplNELMSubLast)), TRUE);
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1393,7 +1389,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                                 lpSymTmp =
                                   SymTabAppendFloat_EM (*((LPAPLFLOAT) lpMemSub)++);
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1441,7 +1437,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                                 lpSymTmp =
                                   SymTabAppendChar_EM (*((LPAPLCHAR) lpMemSub)++, TRUE);
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1568,7 +1564,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                                     ((LPAPLRAT) lpMemSub)++,    // Ptr to the value
                                                     TRUE,                       // TRUE iff we should initialize the target first
                                                     lptkFunc);                  // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1587,7 +1583,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                                    &mpqTmp,                     // Ptr to the value
                                                     TRUE,                       // TRUE iff we should initialize the target first
                                                     lptkFunc);                  // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1606,7 +1602,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                                    &mpqTmp,                     // Ptr to the value
                                                     TRUE,                       // TRUE iff we should initialize the target first
                                                     lptkFunc);                  // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1631,7 +1627,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                                     ((LPAPLVFP) lpMemSub)++,    // Ptr to the value
                                                     TRUE,                       // TRUE iff we should initialize the target first
                                                     lptkFunc);                  // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1650,7 +1646,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                                    &mpfTmp,                     // Ptr to the value
                                                     TRUE,                       // TRUE iff we should initialize the target first
                                                     lptkFunc);                  // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1669,7 +1665,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                                    &mpfTmp,                     // Ptr to the value
                                                     TRUE,                       // TRUE iff we should initialize the target first
                                                     lptkFunc);                  // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR/FOR
 
@@ -1723,7 +1719,7 @@ NORMAL_EXIT:
 
         // Allocate space for the max shape of the items
         hGlbLft = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbLft)
+        if (hGlbLft EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -2204,6 +2200,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                        NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
                        0,                                       // Set arg immediate value
                        lpMemPTD);                               // Ptr to PerTabData global memory
+                    Assert (!IsPtrSuccess (lpYYRes));
                 } // End IF/ELSE
             } else
                 // Handle the immediate case
@@ -2251,6 +2248,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                    lpMemPTD,                                // Ptr to PerTabData global memory
                    lptkFunc);                               // Ptr to function token
             } else
+            {
                 lpYYRes =
                   PrimFnDydRightShoeGlbGlb_EM_YY
                   (hGlbLft,                                 // Left arg global memory handle
@@ -2261,13 +2259,16 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                    NULL,                                    // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
                    0,                                       // Set arg immediate value
                    lpMemPTD);                               // Ptr to PerTabData global memory
+                Assert (!IsPtrSuccess (lpYYRes));
+            } // End IF/ELSE
+
             break;
 
         defstop
             return NULL;
     } // End SWITCH
 
-    if (lpYYRes)
+    if (lpYYRes && !IsPtrSuccess (lpYYRes))
         // See if it fits into a lower (but not necessarily smaller) datatype
         TypeDemote (&lpYYRes->tkToken);
 
@@ -2894,7 +2895,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                               MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),    // Immediate type
                                               &aplLongestSet,                               // Ptr to immediate value
                                                lptkFunc);                                   // Ptr to function token
-                            if (!lpSymTmp)
+                            if (lpSymTmp EQ NULL)
                                 goto ERROR_EXIT;
                         } else
                             ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
@@ -2934,7 +2935,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
                 // Return pseudo-value
-                lpYYRes = PTR_REUSED;
+                lpYYRes = PTR_SUCCESS;
             } else
             {
                 // In case we need to know where this item
@@ -3020,7 +3021,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
                 // Return pseudo-value
-                lpYYRes = PTR_REUSED;
+                lpYYRes = PTR_SUCCESS;
             } else
             {
                 // Allocate a new YYRes

@@ -492,7 +492,7 @@ UBOOL HshTabResize_EM
                            iHshTabNewNelm * sizeof (lpHTS->lpHshTab[0]),
                            GMEM_MOVEABLE | GMEM_ZEROINIT);
         // If it didn't succeed, ...
-        if (!lpHshTabNew)
+        if (lpHshTabNew EQ NULL)
             // Allocate anew
             lpHshTabNew =
               DbgGlobalAlloc (GHND,                  // At any address
@@ -506,7 +506,7 @@ UBOOL HshTabResize_EM
                           MEM_COMMIT,
                           PAGE_READWRITE);
         // If it didn't succeed, ...
-        if (!lpHshTabNew)
+        if (lpHshTabNew EQ NULL)
             // Allocate anew
             lpHshTabNew =
               GuardAlloc (NULL,                     // Any address
@@ -516,7 +516,7 @@ UBOOL HshTabResize_EM
     } // End IF/ELSE
 
     // If it didn't succeed, ...
-    if (!lpHshTabNew)
+    if (lpHshTabNew EQ NULL)
         goto HSHTAB_FULL_EXIT;
 
     // If the new and old bases are different, ...
@@ -680,7 +680,7 @@ UBOOL SymTabResize_EM
 ////MBW (wszTemp);
 
     // If it didn't succeed, ...
-    if (!lpSymTabNew)
+    if (lpSymTabNew EQ NULL)
         // Quit as we can't change the base address of the SymTab
         goto SYMTAB_FULL_EXIT;
 
@@ -1200,7 +1200,7 @@ LPHSHENTRY HshTabLookupCharHash
          lpHshEntry NE LPHSHENTRY_NONE;
          lpHshEntry = lpHshEntry->NextSameHash)
 #ifdef DEBUG
-    if (!lpHshEntry)
+    if (lpHshEntry EQ NULL)
     {
         DbgStop ();             // We should never get here
         DisplayHshTab (lpHTS);
@@ -1246,7 +1246,7 @@ LPHSHENTRY HshTabLookupNameHash
          lpHshEntry NE LPHSHENTRY_NONE;
          lpHshEntry = lpHshEntry->NextSameHash)
 #ifdef DEBUG
-    if (!lpHshEntry)
+    if (lpHshEntry EQ NULL)
     {
         DbgStop ();             // We should never get here
         DisplayHshTab (lpHTS);
@@ -1300,7 +1300,7 @@ UBOOL AppendSymbolValue
         lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lpHTS);
 
         // If it's invalid, quit
-        if (!lpHshEntryDest)
+        if (lpHshEntryDest EQ NULL)
             goto ERROR_EXIT;
 
         // We *MUST NOT* call MaskTheHash until after the call
@@ -1376,7 +1376,7 @@ UBOOL AppendSymbolName
         lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lpHTS);
 
         // If it's invalid, quit
-        if (!lpHshEntryDest)
+        if (lpHshEntryDest EQ NULL)
             goto ERROR_EXIT;
 
         // We *MUST NOT* call MaskTheHash until after the call
@@ -1621,7 +1621,7 @@ LPSYMENTRY _SymTabLookupChar
              lpHshEntry NE LPHSHENTRY_NONE;
              lpHshEntry = lpHshEntry->NextSameHash)
 #ifdef DEBUG
-        if (!lpHshEntry)
+        if (lpHshEntry EQ NULL)
         {
             DbgStop ();             // We should never get here
             DisplayHshTab (lphtsPTD);
@@ -1718,7 +1718,7 @@ LPSYMENTRY _SymTabLookupNumber
              lpHshEntry NE LPHSHENTRY_NONE;
              lpHshEntry = lpHshEntry->NextSameHash)
 #ifdef DEBUG
-        if (!lpHshEntry)
+        if (lpHshEntry EQ NULL)
         {
             DbgStop ();             // We should never get here
             DisplayHshTab (lphtsPTD);
@@ -1812,7 +1812,7 @@ LPSYMENTRY _SymTabLookupFloat
              lpHshEntry NE LPHSHENTRY_NONE;
              lpHshEntry = lpHshEntry->NextSameHash)
 #ifdef DEBUG
-        if (!lpHshEntry)
+        if (lpHshEntry EQ NULL)
         {
             DbgStop ();             // We should never get here
             DisplayHshTab (lphtsPTD);
@@ -2155,7 +2155,7 @@ LPSYMENTRY MakeSymEntry_EM
     } // End SWITCH
 
     // If it failed and there's a function token, set the error token
-    if (!lpSymDst && lptkFunc)
+    if (lpSymDst EQ NULL && lptkFunc)
         ErrorMessageSetToken (lptkFunc);
 
     return lpSymDst;
@@ -2211,7 +2211,7 @@ LPSYMENTRY CopyImmSymEntry_EM
     } // End SWITCH
 
     // If it failed and there's a function token, set the error token
-    if (!lpSymDst && lptkFunc)
+    if (lpSymDst EQ NULL && lptkFunc)
         ErrorMessageSetToken (lptkFunc);
 
     return lpSymDst;
@@ -2306,7 +2306,7 @@ LPSYMENTRY _SymTabAppendInteger_EM
         lpSymEntryDest = NULL;
 
     // If it's not found, ...
-    if (!lpSymEntryDest)
+    if (lpSymEntryDest EQ NULL)
     {
         LPHSHENTRY lpHshEntryHash;
 
@@ -2314,7 +2314,7 @@ LPSYMENTRY _SymTabAppendInteger_EM
         lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);
 
         // If it's invalid, quit
-        if (!lpHshEntryDest)
+        if (lpHshEntryDest EQ NULL)
             goto ERROR_EXIT;
 
         // We *MUST NOT* call MaskTheHash until after the call
@@ -2424,7 +2424,7 @@ LPSYMENTRY _SymTabAppendFloat_EM
 
     // Lookup the number in the symbol table
     lpSymEntryDest = _SymTabLookupFloat (uHash, aplFloat, &stNeedFlags, lphtsPTD);
-    if (!lpSymEntryDest)
+    if (lpSymEntryDest EQ NULL)
     {
         LPHSHENTRY lpHshEntryHash;
 
@@ -2432,7 +2432,7 @@ LPSYMENTRY _SymTabAppendFloat_EM
         lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);
 
         // If it's invalid, quit
-        if (!lpHshEntryDest)
+        if (lpHshEntryDest EQ NULL)
             goto ERROR_EXIT;
 
         // We *MUST NOT* call MaskTheHash until after the call
@@ -2566,7 +2566,7 @@ LPSYMENTRY _SymTabAppendChar_EM
         lpSymEntryDest = NULL;
 
     // If it's not found, ...
-    if (!lpSymEntryDest)
+    if (lpSymEntryDest EQ NULL)
     {
         LPHSHENTRY lpHshEntryHash;
 
@@ -2574,7 +2574,7 @@ LPSYMENTRY _SymTabAppendChar_EM
         lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);
 
         // If it's invalid, quit
-        if (!lpHshEntryDest)
+        if (lpHshEntryDest EQ NULL)
             goto ERROR_EXIT;
 
         // We *MUST NOT* call MaskTheHash until after the call
@@ -2691,14 +2691,14 @@ LPSYMENTRY _SymTabAppendName_EM
 
     // If not found and it's a system name, fail
     //    as we don't handle unknown system names
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
     {
         if (lpstFlags->ObjName EQ OBJNAME_SYS)
             goto SYNTAX_EXIT;
         else
             lpSymEntry =
               _SymTabAppendNewName_EM (lpwszString, lpstFlags, lphtsPTD);
-        if (!lpSymEntry)
+        if (lpSymEntry EQ NULL)
             goto ERROR_EXIT;
     } // End IF
 
@@ -2795,7 +2795,7 @@ LPSYMENTRY _SymTabAppendNewName_EM
     lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);
 
     // If it's invalid, quit
-    if (!lpHshEntryDest)
+    if (lpHshEntryDest EQ NULL)
         goto ERROR_EXIT;
 
     // Ensure there's enough room in the symbol table for one more entry
@@ -2825,7 +2825,7 @@ LPSYMENTRY _SymTabAppendNewName_EM
 
     // Allocate global memory for the name ("+ 1" for the terminating zero)
     lpHshEntryDest->htGlbName = DbgGlobalAlloc (GHND, (iLen + 1) * sizeof (WCHAR));
-    if (!lpHshEntryDest->htGlbName)
+    if (lpHshEntryDest->htGlbName EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -2934,7 +2934,7 @@ UBOOL AllocHshTab
         lpHTS->lpHshTab =
           DbgGlobalAlloc (GPTR, uHshTabMaxNelm  * sizeof (lpHTS->lpHshTab[0]));
 
-        if (!lpHTS->lpHshTab)
+        if (lpHTS->lpHshTab EQ NULL)
             return FALSE;
     } else
     {
@@ -2947,7 +2947,7 @@ UBOOL AllocHshTab
                       lpLclMemVirtStr->MaxSize,
                       MEM_RESERVE,
                       PAGE_READWRITE);
-        if (!lpLclMemVirtStr->IniAddr)
+        if (lpLclMemVirtStr->IniAddr EQ NULL)
             return FALSE;
 
         // Link this struc into the chain
@@ -3024,7 +3024,7 @@ UBOOL AllocSymTab
         lpHTS->lpSymTab =
           DbgGlobalAlloc (GPTR, uSymTabMaxNelm  * sizeof (lpHTS->lpSymTab[0]));
 
-        if (!lpHTS->lpSymTab)
+        if (lpHTS->lpSymTab EQ NULL)
             return FALSE;
     } else
     {
@@ -3037,7 +3037,7 @@ UBOOL AllocSymTab
                       lpLclMemVirtStr->MaxSize,
                       MEM_RESERVE,
                       PAGE_READWRITE);
-        if (!lpLclMemVirtStr->IniAddr)
+        if (lpLclMemVirtStr->IniAddr EQ NULL)
             return FALSE;
 
         // Link this struc into the chain

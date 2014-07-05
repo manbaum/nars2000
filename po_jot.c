@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -145,7 +145,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
@@ -155,7 +155,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
-        if (!lpPrimProtoRht)
+        if (lpPrimProtoRht EQ NULL)
             goto RIGHT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoRht = NULL;

@@ -199,7 +199,7 @@ LPPL_YYSTYPE PrimIdentFnSquad_EM_YY
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -812,7 +812,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         // Now we can allocate the storage for the result
         //***************************************************************
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -871,7 +871,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     // Now we can allocate the storage for the odometer & limit vectors
     //***************************************************************
     hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbOdo)
+    if (hGlbOdo EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1064,7 +1064,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         //   we need to copy the entire array first.  The
         //   caller of this code deletes the old array.
         hGlbRht2 = CopyArray_EM (hGlbRht, lptkSetArg);
-        if (!hGlbRht2)
+        if (hGlbRht2 EQ NULL)
             goto ERROR_EXIT;
 
         // If the right arg should be promoted, ...
@@ -1433,7 +1433,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                               MakeSymEntry_EM (immTypeSub,      // Immediate type
                                               &aplLongestSub,   // Ptr to immediate value
                                                lptkFunc);       // Ptr to function token
-                            if (!lpSymTmp)
+                            if (lpSymTmp EQ NULL)
                                 goto ERROR_EXIT;
                             break;
 
@@ -1506,7 +1506,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     } else
         // We are assigning
         // Return pseudo-value indicating success
-        lpYYRes = PTR_REUSED;
+        lpYYRes = PTR_SUCCESS;
 
     goto NORMAL_EXIT;
 

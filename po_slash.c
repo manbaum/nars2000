@@ -321,7 +321,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
@@ -501,7 +501,7 @@ RESTART_ALLOC:
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1355,7 +1355,7 @@ RESTART_EXCEPTION:
                               MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,    // Immediate type
                                               &tkRhtArg.tkData.tkLongest,   // Ptr to immediate value
                                               &lpYYFcnStrOpr->tkToken);     // Ptr to function token
-                            if (!lpSymTmp)
+                            if (lpSymTmp EQ NULL)
                                 goto ERROR_EXIT;
                             break;
 
@@ -1556,7 +1556,7 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
               MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbRht),    // Proto arg global memory handle
                                   &lpYYFcnStrOpr->tkToken,  // Ptr to function token
                                        MP_NUMONLY);                 // Numerics only
-            if (!hGlbRht)
+            if (hGlbRht EQ NULL)
                 goto WSFULL_EXIT;
 
             Assert (GetPtrTypeDir (hGlbRht) EQ PTRTYPE_HGLOBAL);
@@ -1736,7 +1736,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
@@ -2493,7 +2493,7 @@ RESTART_EXCEPTION:
                                   MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,    // Immediate type
                                                   &tkRhtArg.tkData.tkLongest,   // Ptr to immediate value
                                                   &lpYYFcnStrOpr->tkToken);     // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                                 break;
 
@@ -2691,7 +2691,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
     LPVOID  lpMemRes;           // Ptr to result global memory
 
     // If it failed, ...
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         return FALSE;
 
     // Check for immediate result
@@ -2720,7 +2720,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
 
         // Allocate space for the result
         hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbTmp)
+        if (hGlbTmp EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it

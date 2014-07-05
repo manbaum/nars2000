@@ -535,7 +535,7 @@ void FormatQQuadInput
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -717,7 +717,7 @@ LRESULT APIENTRY SMWndProc
                               PTDMEMVIRT_LENGTH * sizeof (MEMVIRTSTR),
                               MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN,
                               PAGE_READWRITE);
-            if (!lpLclMemVirtStr)
+            if (lpLclMemVirtStr EQ NULL)
             {
                 // ***FIXME*** -- Display error msg
                 DbgMsgW (L"SMWndProc/WM_NCCREATE:  MyVirtualAlloc for <lpLclMemVirtStr> failed");
@@ -774,7 +774,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszQuadErrorMsg> failed");
@@ -808,7 +808,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpUndoBeg> failed");
@@ -853,7 +853,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].MaxSize,
                           MEM_COMMIT | MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lphtsPTD> failed");
@@ -913,7 +913,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_SIS].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpSISBeg> failed");
@@ -942,7 +942,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_CS].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lptkCSIni> failed");
@@ -971,7 +971,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_YYRES].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpYYRes> failed");
@@ -1004,7 +1004,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_VAR]> failed");
@@ -1032,7 +1032,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_FCN]> failed");
@@ -1061,7 +1061,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_LST]> failed");
@@ -1090,7 +1090,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_NAM]> failed");
@@ -1119,7 +1119,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszFormat> failed");
@@ -1152,7 +1152,7 @@ WM_NCCREATE_FAIL:
             // Save the maximum size
             lpMemPTD->uTempMaxSize = lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize;
 
-            if (!lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszTemp> failed");
@@ -1181,7 +1181,7 @@ WM_NCCREATE_FAIL:
                           lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].MaxSize,
                           MEM_RESERVE,
                           PAGE_READWRITE);
-            if (!lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr)
+            if (lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpForStmtBase> failed");

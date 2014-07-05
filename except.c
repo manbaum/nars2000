@@ -945,7 +945,7 @@ void DoStackWalk
 
 ////// Allocate space for the symbol info struc
 ////lpSymInfo = (PSYMBOL_INFO) malloc (sizeof (SYMBOL_INFO) + STACKWALK_MAX_NAMELEN);
-////if (!lpSymInfo)
+////if (lpSymInfo EQ NULL)
 ////    goto CLEANUP;       // Not enough memory...
 ////memset (lpSymInfo, 0, sizeof (SYMBOL_INFO) + STACKWALK_MAX_NAMELEN);
 ////lpSymInfo->SizeOfStruct = sizeof (SYMBOL_INFO);

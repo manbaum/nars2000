@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -270,7 +270,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     {
         // Return {enclose}{zilde}
         hGlbRes = MakeEncloseZilde ();
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
         else
             goto YYALLOC_EXIT;
@@ -344,7 +344,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -516,7 +516,7 @@ HGLOBAL MakeEncloseZilde
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         return NULL;
 
     // Lock the memory to get a ptr to it
@@ -884,7 +884,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     {
         // Return {enclose}{zilde}
         hGlbRes = MakeEncloseZilde ();
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
         else
             goto YYALLOC_EXIT;
@@ -903,7 +903,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 
     // Allocate an array to hold the HGLOBALs of the translate tables
     hGlbTTHandles = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbTTHandles)
+    if (hGlbTTHandles EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -923,7 +923,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         // Allocate space for the TT -- note we don't use GHND (which includes GMEM_ZEROINIT)
         //    as we'll initialize it ourselves
         lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, (APLU3264) ByteRes);
-        if (!lpMemTTHandles[uDim].hGlbTT)
+        if (lpMemTTHandles[uDim].hGlbTT EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -1013,7 +1013,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 
     // Allocate space for the result.
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it

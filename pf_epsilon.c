@@ -209,7 +209,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -340,7 +340,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1052,7 +1052,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                           MakeSymEntry_EM (IMMTYPE_BOOL,            // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -1081,7 +1081,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                           MakeSymEntry_EM (IMMTYPE_INT,             // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -1101,7 +1101,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                           MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -1121,7 +1121,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                           MakeSymEntry_EM (IMMTYPE_INT,             // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -1141,7 +1141,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                           MakeSymEntry_EM (IMMTYPE_CHAR,            // Immediate type
                                           &aplVal,                  // Ptr to immediate value
                                            lptkFunc);               // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -1184,7 +1184,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                           MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
                                                           &aplVal,          // Ptr to immediate value
                                                            lptkFunc);       // Ptr to function token
-                                        if (!lpSymTmp)
+                                        if (lpSymTmp EQ NULL)
                                             goto ERROR_EXIT;
                                         break;
 
@@ -1195,7 +1195,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                           MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
                                                           &aplVal,          // Ptr to immediate value
                                                            lptkFunc);       // Ptr to function token
-                                        if (!lpSymTmp)
+                                        if (lpSymTmp EQ NULL)
                                             goto ERROR_EXIT;
                                         break;
 
@@ -1206,7 +1206,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                           MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
                                                           &aplVal,          // Ptr to immediate value
                                                            lptkFunc);       // Ptr to function token
-                                        if (!lpSymTmp)
+                                        if (lpSymTmp EQ NULL)
                                             goto ERROR_EXIT;
                                         break;
 
@@ -1218,7 +1218,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                           MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
                                                           &aplVal,          // Ptr to immediate value
                                                           lptkFunc);        // Ptr to function token
-                                        if (!lpSymTmp)
+                                        if (lpSymTmp EQ NULL)
                                             goto ERROR_EXIT;
                                         break;
 
@@ -1263,7 +1263,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                                            lpMemRht,                // Ptr to the value
                                            TRUE,                    // TRUE iff we should initialize the target first
                                            lptkFunc);               // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -1662,7 +1662,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -3572,7 +3572,7 @@ UBOOL PrimFnDydEpsilonCvC_EM
     // Note that this allocation is GPTR (GMEM_FIXED | GMEM_ZEROINIT)
     //   because we'll use it quickly and then free it.
     lpMemTT = DbgGlobalAlloc (GPTR, (APLU3264) ByteTT);
-    if (!lpMemTT)
+    if (lpMemTT EQ NULL)
         goto WSFULL_EXIT;
 
     // Trundle through the right arg marking the TT

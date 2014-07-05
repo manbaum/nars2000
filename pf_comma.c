@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -380,7 +380,7 @@ LPPL_YYSTYPE PrimFnMonCommaScalar_EM_YY
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -720,7 +720,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     // Now we can allocate the storage for the result.
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -905,7 +905,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         //   {times}{backscan}1{drop}({rho}R),1
         //***************************************************************
         hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbWVec)
+        if (hGlbWVec EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -935,7 +935,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         //   in the right arg, with values initially all zero (thanks to GHND).
         //***************************************************************
         hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbOdo)
+        if (hGlbOdo EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -1619,7 +1619,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -2324,7 +2324,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                   MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeLft),    // Immediate type
                                   &aplVal,                                      // Ptr to immediate value
                                    lptkFunc);                                   // Ptr to function token
-                if (!lpSymGlbLft)
+                if (lpSymGlbLft EQ NULL)
                     goto ERROR_EXIT;
             } // End IF
 
@@ -2360,7 +2360,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                   MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRht),    // Immediate type
                                   &aplVal,                                      // Ptr to immediate value
                                    lptkFunc);                                   // Ptr to function token
-                if (!lpSymGlbRht)
+                if (lpSymGlbRht EQ NULL)
                     goto ERROR_EXIT;
             } // End IF
 
@@ -2400,7 +2400,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                   MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                                 // Shift over the bit mask
                                 uBitMaskLft <<= 1;
@@ -2440,7 +2440,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                   MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                   lptkFunc);        // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR
                         break;
@@ -2471,7 +2471,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                   MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                   lptkFunc);        // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR
                         break;
@@ -2502,7 +2502,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                   MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR
                         break;
@@ -2521,7 +2521,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                               MakeSymEntry_EM (IMMTYPE_INT,         // Immediate type
                                               &aplVal,              // Ptr to immediate value
                                                lptkFunc);           // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                         } // End FOR
 
@@ -2566,7 +2566,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                    ((LPAPLRAT) lpMemLft)++,     // Ptr to the value
                                                TRUE,            // TRUE iff we should initialize the target first
                                                lptkFunc);       // Ptr to function token
-                            if (!lpSymTmp)
+                            if (lpSymTmp EQ NULL)
                                 goto ERROR_EXIT;
                         } // End FOR
 
@@ -2586,7 +2586,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                    ((LPAPLVFP) lpMemLft)++,     // Ptr to the value
                                                TRUE,            // TRUE iff we should initialize the target first
                                                lptkFunc);       // Ptr to function token
-                            if (!lpSymTmp)
+                            if (lpSymTmp EQ NULL)
                                 goto ERROR_EXIT;
                         } // End FOR
 
@@ -2625,7 +2625,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                   MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
 
                                 // Shift over the bit mask
@@ -2666,7 +2666,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                   MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR
                         break;
@@ -2697,7 +2697,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                   MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR
                         break;
@@ -2728,7 +2728,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                   MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
                                                   &aplVal,          // Ptr to immediate value
                                                    lptkFunc);       // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                             } // End FOR
                         break;
@@ -2747,7 +2747,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                               MakeSymEntry_EM (IMMTYPE_INT,         // Immediate type
                                               &aplVal,              // Ptr to immediate value
                                                lptkFunc);           // Ptr to function token
-                                if (!lpSymTmp)
+                                if (lpSymTmp EQ NULL)
                                     goto ERROR_EXIT;
                         } // End FOR
 
@@ -2792,7 +2792,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                    ((LPAPLRAT) lpMemRht)++,     // Ptr to the value
                                                TRUE,            // TRUE iff we should initialize the target first
                                                lptkFunc);       // Ptr to function token
-                            if (!lpSymTmp)
+                            if (lpSymTmp EQ NULL)
                                 goto ERROR_EXIT;
                         } // End FOR
 
@@ -2812,7 +2812,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                                    ((LPAPLVFP) lpMemRht)++,     // Ptr to the value
                                                TRUE,            // TRUE iff we should initialize the target first
                                                lptkFunc);       // Ptr to function token
-                            if (!lpSymTmp)
+                            if (lpSymTmp EQ NULL)
                                 goto ERROR_EXIT;
                         } // End FOR
 

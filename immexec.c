@@ -153,7 +153,7 @@ void ImmExecLine
                       (uLineLen + 1) * sizeof (WCHAR),  // "+ 1" for the terminating zero
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
-    if (!lpwszCompLine)
+    if (lpwszCompLine EQ NULL)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsgW (L"ImmExecLine:  VirtualAlloc for <lpwszCompLine> failed");

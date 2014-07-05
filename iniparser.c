@@ -668,7 +668,7 @@ LPDICTIONARY iniparser_load
 
     // Allocate a new dictionary
     lpDict = dictionary_new (0);
-    if (!lpDict)
+    if (lpDict EQ NULL)
         goto ERROR_EXIT;
 
     // Get the file length

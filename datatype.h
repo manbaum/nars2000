@@ -349,16 +349,8 @@ typedef enum tagPTR_TYPES
 } PTR_TYPES;
 
 #define PTRTYPE_MASK    BIT0            // This masks the one low-order bit
-#define PTRREUSE_MASK   0x0FFFFFFF      // This masks the PTR_REUSEx bits
-
-// For LPSYMENTRY and HGLOBAL values in a temporary array, sometimes
-//   those values can be re-used in another array without having
-//   to make a copy.  In that case, the original value is replaced
-//   by this which is checked for before trying to free it.
-#define PTR_REUSED  ((LPVOID) (HANDLE_PTR) 0x0FFFFFFF)
-#define PTR_REUSE1  ((LPVOID) (HANDLE_PTR) 0x1FFFFFFF)
-#define PTR_REUSE2  ((LPVOID) (HANDLE_PTR) 0x2FFFFFFF)
-#define PTR_REUSE3  ((LPVOID) (HANDLE_PTR) 0x3FFFFFFF)
+#define PTR_SUCCESS     ((LPVOID) (HANDLE_PTR) 0x0FFFFFFF)  // Used to indicate success on ArrayIndexSet only
+#define IsPtrSuccess(a) ((a) EQ PTR_SUCCESS)
 
 
 //***************************************************************************

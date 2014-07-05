@@ -147,7 +147,7 @@ LPDICTIONARY dictionary_new
         size = DICTMINSZ;
 
     lpDict = (LPDICTIONARY) calloc (1, sizeof (DICTIONARY));
-    if (!lpDict)
+    if (lpDict EQ NULL)
         return NULL;
 
     lpDict->size      = size;

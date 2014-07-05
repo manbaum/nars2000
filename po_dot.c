@@ -567,7 +567,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                                    FALSE,
                                    lptkFunc);
                 // Check for errors
-                if (!lpYYRes->tkToken.tkData.tkGlbData)
+                if (lpYYRes->tkToken.tkData.tkGlbData EQ NULL)
                     goto WSFULL_EXIT;
                 break;
 
@@ -593,7 +593,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                                    FALSE,
                                    lptkFunc);
                 // Check for errors
-                if (!lpYYRes->tkToken.tkData.tkGlbData)
+                if (lpYYRes->tkToken.tkData.tkGlbData EQ NULL)
                     goto WSFULL_EXIT;
                 break;
 
@@ -759,7 +759,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
         case ARRAY_RAT:
             // Allocate temporary space for a copy of the right arg
             hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) aplNELMRht * sizeof (APLRAT));
-            if (!hGlbTmp)
+            if (hGlbTmp EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -787,7 +787,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
         case ARRAY_VFP:
             // Allocate a temp array to hold the VFPs when converted to RATs
             hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) (aplDimRows * aplDimCols * sizeof (APLRAT)));
-            if (!hGlbTmp)
+            if (hGlbTmp EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -868,7 +868,7 @@ MINDOTPLUS:
 ////////////////    goto WSFULL_EXIT;
 
                 hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                if (!hGlbRes)
+                if (hGlbRes EQ NULL)
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
@@ -943,7 +943,7 @@ MINDOTPLUS:
 ////////////////    goto WSFULL_EXIT;
 
                 hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                if (!hGlbRes)
+                if (hGlbRes EQ NULL)
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
@@ -1018,7 +1018,7 @@ MINDOTPLUS:
 ////////////////    goto WSFULL_EXIT;
 
                 hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                if (!hGlbRes)
+                if (hGlbRes EQ NULL)
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
@@ -1099,7 +1099,7 @@ MINDOTPLUS:
 ////////////////    goto WSFULL_EXIT;
 
                 hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                if (!hGlbRes)
+                if (hGlbRes EQ NULL)
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
@@ -1181,7 +1181,7 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Check for errors
-    if (!lpYYRes->tkToken.tkData.tkGlbData)
+    if (lpYYRes->tkToken.tkData.tkGlbData EQ NULL)
         goto WSFULL_EXIT;
 
     goto NORMAL_EXIT;
@@ -1715,10 +1715,10 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
        lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
 
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
 
-        if (!lpPrimProtoRht)
+        if (lpPrimProtoRht EQ NULL)
             goto RIGHT_OPERAND_NONCE_EXIT;
     } // End IF
 
@@ -1784,10 +1784,10 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     if (IsEmpty (aplNELMRes)
      || bPrototyping)
     {
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             // Get the appropriate prototype function ptr
             lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
@@ -1891,7 +1891,7 @@ RESTART_INNERPROD_RES:
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -2164,11 +2164,11 @@ RESTART_INNERPROD_RES:
         } // End IF
 
         // If the right operand has no prototype function, ...
-        if (!lpPrimProtoRht)
+        if (lpPrimProtoRht EQ NULL)
         {
             // Get the appropriate prototype function ptr
             lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
-            if (!lpPrimProtoRht)
+            if (lpPrimProtoRht EQ NULL)
                 goto RIGHT_OPERAND_NONCE_EXIT;
         } // End IF
 
@@ -2209,7 +2209,7 @@ RESTART_INNERPROD_RES:
                       MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
                                       &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
                                       &lpYYRes->tkToken);                   // Ptr to function token
-                    if (!lpSymTmp)
+                    if (lpSymTmp EQ NULL)
                         goto ERROR_EXIT;
                 } else
                     *((LPAPLNESTED) lpMemRes)++ =
@@ -2280,7 +2280,7 @@ RESTART_INNERPROD_RES:
         // The zero case is done (GHND)
 
         // If we're not doing prototypes, ...
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
         {
             // Check for Boolean identity element
             if (lpPrimIdentLft->IsBool)
@@ -2931,7 +2931,7 @@ RESTART_INNERPROD_RES:
                   MakeSymEntry_EM (tkItmRed.tkFlags.ImmType,    // Immediate type
                                   &tkItmRed.tkData.tkLongest,   // Ptr to immediate value
                                   &tkItmRed);                   // Ptr to function token
-                if (!lpSymTmp)
+                if (lpSymTmp EQ NULL)
                     goto ERROR_EXIT;
             } else
                 *((LPAPLNESTED) lpMemRes)++ =

@@ -620,7 +620,7 @@ ExpPoint:
                                      PN_NumAcc (lppnLocalVars, '\0');
 
                                      lppnLocalVars->lpYYRes = PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
-                                     if (!lppnLocalVars->lpYYRes)
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
@@ -629,7 +629,7 @@ ExpPoint:
                                      PN_NumAcc (lppnLocalVars, '\0');
 
                                      lppnLocalVars->lpYYRes = PN_MakeExpPoint (lppnLocalVars, &$1, &$3);
-                                     if (!lppnLocalVars->lpYYRes)
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }

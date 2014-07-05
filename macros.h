@@ -364,35 +364,31 @@
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)        (LPVOID)     ((Assert (!PtrNullDir (lpMem) && !PtrReusedDir (lpMem)), (~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem)))
-#define ClrPtrTypeInd(lpMem)        (LPVOID)     ((Assert (!PtrNullInd (lpMem) && !PtrReusedInd (lpMem)), (~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem)))
+#define ClrPtrTypeDir(lpMem)        (LPVOID)     ((Assert (!IsPtrNullDir (lpMem)), (~PTRTYPE_MASK) &  (HANDLE_PTR  ) (lpMem)))
+#define ClrPtrTypeInd(lpMem)        (LPVOID)     ((Assert (!IsPtrNullInd (lpMem)), (~PTRTYPE_MASK) & *(HANDLE_PTR *) (lpMem)))
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.
 // NOTE:  THIS MACRO CALLS ITS ARGUMENT *TWICE*, HENCE IT WILL WORK DIFFERENTLY
 //        IN THE DEBUG VERSION FROM THE NON-DEBUG VERSION IF THE ARGUMENT HAS
 //        ANY SIDE EFFECTS SUCH AS PRE- OR POST-INCREMENT/DECREMENT, OR THE LIKE.
-#define GetPtrTypeDir(lpMem)        (BYTE)       (Assert (!PtrNullDir (lpMem) && !PtrReusedDir (lpMem)), (PTRTYPE_MASK   &  (HANDLE_PTR  ) (lpMem)))
-#define GetPtrTypeInd(lpMem)        (BYTE)       (Assert (!PtrNullInd (lpMem) && !PtrReusedInd (lpMem)), (PTRTYPE_MASK   & *(HANDLE_PTR *) (lpMem)))
+#define GetPtrTypeDir(lpMem)        (BYTE)       (Assert (!IsPtrNullDir (lpMem)), (PTRTYPE_MASK   &  (HANDLE_PTR  ) (lpMem)))
+#define GetPtrTypeInd(lpMem)        (BYTE)       (Assert (!IsPtrNullInd (lpMem)), (PTRTYPE_MASK   & *(HANDLE_PTR *) (lpMem)))
 
 // Macro to create a masked LPSYMENTRY
-#define MakePtrTypeSym(lpMem)       (LPSYMENTRY) (Assert (!PtrNullDir (lpMem) && !PtrReusedDir (lpMem)), PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
+#define MakePtrTypeSym(lpMem)       (LPSYMENTRY) (Assert (!IsPtrNullDir (lpMem)), PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to create a masked HGLOBAL
-#define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (Assert (!PtrNullDir (lpMem) && !PtrReusedDir (lpMem)), PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
+#define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (Assert (!IsPtrNullDir (lpMem)), PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to copy direct and indirect ptrs, incrementing the reference count
 #define CopySymGlbDirAsGlb(hGlb)                        CopySymGlbDir_PTB (MakePtrTypeGlb (hGlb))
 #define CopySymGlbNumDirAsGlb(hGlb,aplType,lptkFunc)    CopySymGlbNumDir_PTB (MakePtrTypeGlb (hGlb), aplType, lptkFunc)
 #define CopySymGlbInd_PTB(lpSymGlb)                     CopySymGlbDir_PTB (*(LPAPLNESTED) lpSymGlb)
 
-// Macros to check on PTR_REUSED
-#define PtrReusedDir(lpMem)         (                      (PTRREUSE_MASK & (HANDLE_PTR)              (lpMem) ) EQ (HANDLE_PTR) PTR_REUSED)
-#define PtrReusedInd(lpMem)         (PtrNullDir (lpMem) || (PTRREUSE_MASK & (HANDLE_PTR) (*(LPVOID *) (lpMem))) EQ (HANDLE_PTR) PTR_REUSED)
-
 // Macros to check on ptr NULL
-#define PtrNullDir(lpMem)                                             ( (lpMem)  EQ NULL)
-#define PtrNullInd(lpMem)           (PtrNullDir (lpMem) || (*(LPVOID *) (lpMem)) EQ NULL)
+#define IsPtrNullDir(lpMem)                                             ( (lpMem)  EQ NULL)
+#define IsPtrNullInd(lpMem)         (IsPtrNullDir (lpMem) || (*(LPVOID *) (lpMem)) EQ NULL)
 
 // Note that some of the following macros depend upon
 //   the ordering of the enum IMM_TYPES in <symtab.h>

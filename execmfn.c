@@ -302,7 +302,7 @@ HGLOBAL Init1MagicFunction
     //   (the "sizeof (uLineLen)" is for the leading line length
     //    and the "+ 1" is for the terminating zero)
     hGlbTxtHdr = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
-    if (!hGlbTxtHdr)
+    if (hGlbTxtHdr EQ NULL)
     {
         MessageBox (hWndEC,
                     "Insufficient memory to save the magic function/operator header text!!",
@@ -352,7 +352,7 @@ HGLOBAL Init1MagicFunction
                        NULL,                // Ptr to error handling function (may be NULL)
                        NULL,                // Ptr to common struc (may be NULL if unused)
                        TRUE);               // TRUE iff we're tokenizing a Magic Function/Operator
-    if (!hGlbTknHdr)
+    if (hGlbTknHdr EQ NULL)
     {
         WCHAR wszTemp[1024];
 
@@ -457,7 +457,7 @@ HGLOBAL Init1MagicFunction
                                                      + numLocalsSTE)
                               + sizeof (FCNLINE) * numFcnLines
                               + uOffset);
-        if (!hGlbDfnHdr)
+        if (hGlbDfnHdr EQ NULL)
         {
             MessageBox (hWndEC,
                         "Insufficient memory to save the function header!!",

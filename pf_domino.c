@@ -239,7 +239,7 @@ LPPL_YYSTYPE PrimIdentFnDomino_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -529,7 +529,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                                    FALSE,
                                    lptkFunc);
                 // Check for errors
-                if (!lpYYRes->tkToken.tkData.tkGlbData)
+                if (lpYYRes->tkToken.tkData.tkGlbData EQ NULL)
                     goto WSFULL_EXIT;
                 break;
 
@@ -555,7 +555,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                                    FALSE,
                                    lptkFunc);
                 // Check for errors
-                if (!lpYYRes->tkToken.tkData.tkGlbData)
+                if (lpYYRes->tkToken.tkData.tkGlbData EQ NULL)
                     goto WSFULL_EXIT;
                 break;
 
@@ -614,7 +614,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -852,7 +852,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         case ARRAY_VFP:
             // Allocate a temp array to hold the VFPs when converted to RATs
             hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) (uNumRows * uNumCols * sizeof (APLRAT)));
-            if (!hGlbTmp)
+            if (hGlbTmp EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -1238,7 +1238,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
             // Allocate space for the result
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (!hGlbRes)
+            if (hGlbRes EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -1874,7 +1874,7 @@ UBOOL GaussJordan
 
     // Allocate temp storage for the auxiliary matrix
     hGlbAux = DbgGlobalAlloc (GHND, (APLU3264) (uNumRows * uNumColsLft * sizeof (APLRAT)));
-    if (!hGlbAux)
+    if (hGlbAux EQ NULL)
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1892,7 +1892,7 @@ UBOOL GaussJordan
 
     // Allocate temp storage for the index vector
     hGlbInd = DbgGlobalAlloc (GHND, (APLU3264) (uNumRows * sizeof (APLDIM)));
-    if (!hGlbInd)
+    if (hGlbInd EQ NULL)
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it

@@ -230,7 +230,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
                       (1 + 1) * sizeof (WCHAR), // "+ 1" for the terminating zero
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
-    if (!lpwszCompLine)
+    if (lpwszCompLine EQ NULL)
         goto WSFULL_EXIT;
 
     // Save the char in the line
@@ -297,7 +297,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
                       (DWORD) (aplNELMRht + 1) * sizeof (APLCHAR),   // "+ 1" for the terminating zero
                       MEM_COMMIT | MEM_TOP_DOWN,
                       PAGE_READWRITE);
-    if (!lpwszCompLine)
+    if (lpwszCompLine EQ NULL)
         goto WSFULL_EXIT;
 
     // Check for overflow

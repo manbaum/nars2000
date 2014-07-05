@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -383,7 +383,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
 
         // Now we can allocate the storage for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -455,7 +455,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
 
         // Look up the name
         lpSymEntry = SymTabLookupName (lpwName, &stFlags);
-        if (!lpSymEntry)
+        if (lpSymEntry EQ NULL)
             goto EMPTY_EXIT;
 
         // Search for the global entry
@@ -766,7 +766,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
 
         // Now we can allocate the storage for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -931,7 +931,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
 
         // Look up the name
         lpSymEntry = SymTabLookupName (lpwszTemp, &stFlags);
-        if (!lpSymEntry)
+        if (lpSymEntry EQ NULL)
             goto EMPTY_EXIT;
 
         // Split cases based upon the name type
@@ -1024,7 +1024,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
 
             // Look up the name
             lpSymEntry = SymTabLookupName (lpwszTemp, &stFlags);
-            if (!lpSymEntry)
+            if (lpSymEntry EQ NULL)
                 goto EMPTY_EXIT;
 
             // Save the STE to restore later
@@ -1085,7 +1085,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
 
     // Now we can allocate the storage for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -1136,7 +1136,7 @@ YYALLOC_EXIT:
     goto NORMAL_EXIT;
 
 WSFULL_EXIT:
-    if (!lptkFunc)
+    if (lptkFunc EQ NULL)
         AppendLine (ERRMSG_WS_FULL APPEND_NAME, FALSE, TRUE);
 
     goto ERROR_EXIT;
@@ -1214,9 +1214,9 @@ UBOOL TransferInverseFcn1_EM
 
     // Search for the blank which marks the end of the name
     lpwData = SkipToCharW (lpwName, L' ');
-    if (!lpwData)
+    if (lpwData EQ NULL)
     {
-////////if (!lptkFunc)
+////////if (lptkFunc EQ NULL)
 ////////{
 ////////    // Format the error message
 ////////    wsprintfW (lpwszFormat,
@@ -1257,13 +1257,13 @@ UBOOL TransferInverseFcn1_EM
 
     // Look up the name
     lpSymEntry = SymTabLookupName (lpwName, &stFlags);
-    if (!lpSymEntry)
+    if (lpSymEntry EQ NULL)
     {
         // If it's a system name and it's not found, then we don't support it
         if (IsSysName (lpwName))
             goto INVALIDSYSNAME_EXIT;
         lpSymEntry = SymTabAppendNewName_EM (lpwName, &stFlags);
-        if (!lpSymEntry)
+        if (lpSymEntry EQ NULL)
             goto STFULL_EXIT;
 
         // As this is a system command, we change the global values only
@@ -1327,7 +1327,7 @@ UBOOL TransferInverseFcn1_EM
         goto NORMAL_EXIT;
 
 INVALIDSYSNAME_EXIT:
-////if (!lptkFunc)
+////if (lptkFunc EQ NULL)
 ////{
 ////    // Format the error message
 ////    wsprintfW (lpwszFormat,
@@ -1342,7 +1342,7 @@ INVALIDSYSNAME_EXIT:
     goto ERROR_EXIT;
 
 STFULL_EXIT:
-////if (!lptkFunc)
+////if (lptkFunc EQ NULL)
 ////    AppendLine (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME, FALSE, TRUE);
 
     goto ERROR_EXIT;

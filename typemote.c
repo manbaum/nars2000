@@ -241,7 +241,7 @@ void TypeDemote
                                 MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 
                                 // Check for error
-                                if (!lptkRhtArg->tkData.tkGlbData)
+                                if (lptkRhtArg->tkData.tkGlbData EQ NULL)
                                     goto WSFULL_EXIT;
                                 goto UNLOCK_EXIT;
 
@@ -267,7 +267,7 @@ void TypeDemote
                                 MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 
                                 // Check for error
-                                if (!lptkRhtArg->tkData.tkGlbData)
+                                if (lptkRhtArg->tkData.tkGlbData EQ NULL)
                                     goto WSFULL_EXIT;
                                 goto UNLOCK_EXIT;
 
@@ -325,7 +325,7 @@ void TypeDemote
                         MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 
                         // Check for error
-                        if (!lptkRhtArg->tkData.tkGlbData)
+                        if (lptkRhtArg->tkData.tkGlbData EQ NULL)
                             goto WSFULL_EXIT;
                         goto UNLOCK_EXIT;
 
@@ -652,7 +652,7 @@ UNLOCK_EXIT:
 
         // Allocate space for a new array
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
@@ -707,7 +707,7 @@ UNLOCK_EXIT:
 
         // Allocate space for a new array
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
@@ -1478,7 +1478,7 @@ UBOOL TypePromoteGlb_EM
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         // WS FULL, so no promotion
         goto NORMAL_EXIT;
 
@@ -1707,7 +1707,7 @@ UBOOL TypePromoteGlb_EM
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
                           SymTabAppendInteger_EM (*((LPAPLINT) lpMemArg)++, TRUE);
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -1720,7 +1720,7 @@ UBOOL TypePromoteGlb_EM
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
                           SymTabAppendFloat_EM (*((LPAPLFLOAT) lpMemArg)++);
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -1733,7 +1733,7 @@ UBOOL TypePromoteGlb_EM
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
                           SymTabAppendChar_EM (*((LPAPLCHAR) lpMemArg)++, TRUE);
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -1751,7 +1751,7 @@ UBOOL TypePromoteGlb_EM
                         *((LPAPLHETERO) lpMemRes)++ =
                         lpSymTmp =
                           SymTabAppendInteger_EM (apaOff + apaMul * uRes, TRUE);
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 

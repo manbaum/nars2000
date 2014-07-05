@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -185,7 +185,7 @@ LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
     // Check for error
-    if (!lpPrimFlagsLft || !lpPrimFlagsLft->lpPrimOps)
+    if (lpPrimFlagsLft EQ NULL || lpPrimFlagsLft->lpPrimOps EQ NULL)
         goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Execute the left operand identity function on the right arg
@@ -429,7 +429,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
         case UTF16_RIGHTSHOE:               // ...          (Pick)
         case UTF16_PI:                      // ...          (Number theoretic)
             // Ensure there's a left arg
-            if (!lptkLftArg)
+            if (lptkLftArg EQ NULL)
                 goto LEFT_SYNTAX_EXIT;
 
         case UTF16_DELSTILE:                // Monadic:  Grade down, Dyadic: Grade down
@@ -548,7 +548,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
         case UTF16_TILDE2:                  // ...          (Without)
         case UTF16_EPSILONUNDERBAR:         // ...          (Find)
             // Ensure there's a left arg
-            if (!lptkLftArg)
+            if (lptkLftArg EQ NULL)
                 goto LEFT_SYNTAX_EXIT;
 
         case UTF16_DOWNSHOE:                // Monadic:  Unique,   Dyadic:  Set union

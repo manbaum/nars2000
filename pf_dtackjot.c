@@ -540,7 +540,7 @@ __try
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -3830,7 +3830,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
     // Allocate temp storage for the normalized left arg
     hGlbWidPrc = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbWidPrc)
+    if (hGlbWidPrc EQ NULL)
         goto WSFULL_EXIT;
 
     // Copy left arg to temp storage (as WIDPRCs),
@@ -4450,7 +4450,7 @@ __try
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it

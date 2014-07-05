@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ GLBSYM GetIdentityElement_EM
         lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
 
         // Check for error
-        if (!lpPrimProtoRht)
+        if (lpPrimProtoRht EQ NULL)
             goto RIGHT_NONCE_EXIT;
 
         // Reshape the left arg item to an empty vector
@@ -183,7 +183,7 @@ GLBSYM GetIdentityElement_EM
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
     // Check for error
-    if (!lpPrimFlagsLft || !lpPrimFlagsLft->lpPrimOps)
+    if (lpPrimFlagsLft EQ NULL || lpPrimFlagsLft->lpPrimOps EQ NULL)
         goto LEFT_NONCE_EXIT;
 
     lpYYRes =

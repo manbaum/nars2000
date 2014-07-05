@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -208,10 +208,10 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
        lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
        lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
 
-        if (!lpPrimProtoLft)
+        if (lpPrimProtoLft EQ NULL)
             goto LEFT_OPERAND_NONCE_EXIT;
 
-        if (!lpPrimProtoRht)
+        if (lpPrimProtoRht EQ NULL)
             goto RIGHT_OPERAND_NONCE_EXIT;
     } // End IF
 
@@ -251,7 +251,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
                                       lptkRhtArg,               // Ptr to right arg token
                                       lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
     // Check for error
-    if (!lpYYResR)
+    if (lpYYResR EQ NULL)
         goto RIGHT_ERROR_EXIT;
 
     // Execute the right operand monadically
@@ -271,7 +271,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
                                       lptkLftArg,           // Ptr to right arg token
                                       lptkAxisRht);         // Ptr to right operand axis token (may be NULL)
     // Check for error
-    if (!lpYYResL)
+    if (lpYYResL EQ NULL)
         goto LEFT_ERROR_EXIT;
 
     // Execute the left operand dyadically

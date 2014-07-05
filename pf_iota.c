@@ -283,7 +283,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 
     // Allocate space for an APA
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -466,7 +466,7 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
 
         // Allocate space for the result
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -658,7 +658,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     // Now we can allocate the storage for the result
     //***************************************************************
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -2009,7 +2009,7 @@ UBOOL PrimFnDydIotaPvN_EM
 
     // Allocate a temporary array to hold the inverse indices
     hGlbInv = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbInv)
+    if (hGlbInv EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -2168,7 +2168,7 @@ UBOOL PrimFnDydIotaCvC_EM
     // Note that this allocation is GMEM_FIXED
     //   because we'll use it quickly and then free it.
     lpMemTT = DbgGlobalAlloc (GMEM_FIXED, ByteTT);
-    if (!lpMemTT)
+    if (lpMemTT EQ NULL)
         goto WSFULL_EXIT;
 
     // Trundle through the TT setting each value to NotFound

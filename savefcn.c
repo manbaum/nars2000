@@ -936,7 +936,7 @@ HGLOBAL SF_UndoBufferFE
         {
             // Allocate storage for the Undo buffer
             hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
-            if (!hGlbUndoBuff)
+            if (hGlbUndoBuff EQ NULL)
             {
                 // Display the error message
                 MessageBoxW (hWndEC,
@@ -1009,7 +1009,7 @@ HGLOBAL SF_UndoBufferLW
 
     // Allocate storage for the Undo buffer
     hGlbUndoBuff = DbgGlobalAlloc (GHND, uUndoCount * sizeof (UNDO_BUF));
-    if (!hGlbUndoBuff)
+    if (hGlbUndoBuff EQ NULL)
     {
         // Display the error message
         MessageBoxW (hWndEC,
@@ -1266,7 +1266,7 @@ UBOOL SaveFunctionCom
     //   no PTD for that thread.
     hGlbTxtHdr =
       DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
-    if (!hGlbTxtHdr)
+    if (hGlbTxtHdr EQ NULL)
     {
         // Mark the line in error
         lpSF_Fcns->uErrLine = 0;
@@ -1318,7 +1318,7 @@ UBOOL SaveFunctionCom
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } // End IF
 
-    if (!hGlbTknHdr)
+    if (hGlbTknHdr EQ NULL)
     {
         // Mark the line in error
         lpSF_Fcns->uErrLine = 0;
@@ -1538,7 +1538,7 @@ UBOOL SaveFunctionCom
                                                      + numLocalsSTE)
                               + sizeof (FCNLINE) * numFcnLines
                               + uOffset);
-        if (!hGlbDfnHdr)
+        if (hGlbDfnHdr EQ NULL)
         {
             if (hWndFE)
             {
@@ -2044,7 +2044,7 @@ UINT SaveFunctionLine
     //   as well as to handle GlobalLock's aversion to locking
     //   zero-length arrays
     hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1 + uLen) * sizeof (APLCHAR));
-    if (!hGlbTxtLine)
+    if (hGlbTxtLine EQ NULL)
     {
         if (hWndFE)
         {
@@ -2152,14 +2152,14 @@ UINT SaveFunctionLine
     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
     // If we're sizing, ...
-    if (!lpFcnLines)
+    if (lpFcnLines EQ NULL)
     {
         // We no longer need this storage
         DbgGlobalFree (hGlbTxtLine); hGlbTxtLine = NULL;
     } // End IF
 
     // If tokenization failed, ...
-    if (!hGlbTknHdr)
+    if (hGlbTknHdr EQ NULL)
     {
         // Mark the line in error
         lpSF_Fcns->uErrLine = uLineNum + 1;

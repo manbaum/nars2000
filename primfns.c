@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -758,7 +758,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
     // Make a copy of the array as we're changing it
     hGlbArr = CopyArray_EM (hGlbArr,
                             lptkFunc);
-    if (!hGlbArr)
+    if (hGlbArr EQ NULL)
         return NULL;
 
     // Lock the memory to get a ptr to it
@@ -826,7 +826,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
 
                     // Allocate space for the result.
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                    if (!hGlbTmp)
+                    if (hGlbTmp EQ NULL)
                         goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
@@ -984,7 +984,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
 
             // Allocate space for the result.
             hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (!hGlbRes)
+            if (hGlbRes EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -1265,7 +1265,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
 
         // Allocate space for the result.
         hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (!hGlbRes)
+        if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
@@ -1408,7 +1408,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                 //   {times}{backscan}1{drop}({rho}Z),1
                 //***************************************************************
                 hGlbWVec = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                if (!hGlbWVec)
+                if (hGlbWVec EQ NULL)
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
@@ -1438,7 +1438,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                 //   in the right arg, with values initially all zero (thanks to GHND).
                 //***************************************************************
                 hGlbOdo = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                if (!hGlbOdo)
+                if (hGlbOdo EQ NULL)
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
@@ -1491,7 +1491,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                       MakeMonPrototype_EM_PTB (lpMemRht[uRht],                  // Proto arg handle
                                                lptkFunc,                        // Ptr to function token
                                                bBoolFn ? MP_NUMCONV : MP_NUMONLY);
-                    if (!hGlbSub)
+                    if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
                     *lpMemRes++ = hGlbSub;
                 } else
@@ -1505,7 +1505,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                       MakeMonPrototype_EM_PTB (lpMemLft[uLft],                  // Proto arg handle
                                                lptkFunc,                        // Ptr to function token
                                                bBoolFn ? MP_NUMCONV : MP_NUMONLY);
-                    if (!hGlbSub)
+                    if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
                     *lpMemRes++ = hGlbSub;
                 } else
@@ -1518,7 +1518,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                                                lpMemRht[uRht],  // Right arg proto handle
                                                0,               // Right arg immediate type (irrelevant as it's an HGLOBAL)
                                                NULL);           // Ptr to axis token (may be NULL)
-                    if (!hGlbSub)
+                    if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
                     *lpMemRes++ = hGlbSub;
                 } // End IF/ELSE/...
@@ -1899,11 +1899,6 @@ HGLOBAL CopyArray_EM
                         // Handle the empty case
                         aplNELM = max (aplNELM, 1);
 
-                        // Fill nested result with PTR_REUSED
-                        //   in case we fail part way through
-                        for (u = 0; u < aplNELM; u++)
-                            *((LPAPLNESTED) lpMemDst)++ = PTR_REUSED;
-
                         // Start the destin ptr over again
                         lpMemDst = lpMemDstBase;
 
@@ -2181,7 +2176,7 @@ HGLOBAL CopyGlbAsType_EM
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -2304,7 +2299,7 @@ HGLOBAL CopyGlbAsType_EM
                           MakeSymEntry_EM (IMMTYPE_INT,                 // Immediate type
                                            ((LPAPLINT) lpMemArg)++,     // Ptr to immediate value
                                            lptkFunc);                   // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End IF
 
@@ -2328,7 +2323,7 @@ HGLOBAL CopyGlbAsType_EM
                           MakeSymEntry_EM (IMMTYPE_INT,                 // Immediate type
                                           &aplInteger,                  // Ptr to immediate value
                                            lptkFunc);                   // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -2344,7 +2339,7 @@ HGLOBAL CopyGlbAsType_EM
                           MakeSymEntry_EM (IMMTYPE_FLOAT,               // Immediate type
                             (LPAPLLONGEST) ((LPAPLFLOAT) lpMemArg)++,   // Ptr to immediate value
                                            lptkFunc);                   // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 
@@ -2360,7 +2355,7 @@ HGLOBAL CopyGlbAsType_EM
                           MakeSymEntry_EM (IMMTYPE_CHAR,                // Immediate type
                             (LPAPLLONGEST) ((LPAPLCHAR) lpMemArg)++,    // Ptr to immediate value
                                            lptkFunc);                   // Ptr to function token
-                        if (!lpSymTmp)
+                        if (lpSymTmp EQ NULL)
                             goto ERROR_EXIT;
                     } // End FOR
 

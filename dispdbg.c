@@ -459,7 +459,7 @@ void DisplayGlobals
 
         // Lock the memory to get a ptr to it
         lpMem = GlobalLock (hGlb);
-        if (!lpMem)
+        if (lpMem EQ NULL)
         {
             wsprintfW (wszTemp,
                        L"hGlb=%p *** INVALID ***",
@@ -900,7 +900,7 @@ void DisplayTokens
     DbgMsgW (L"********** Start Tokens ********************************");
 
     // Ensure it's valid
-    if (!lpMemTknHdr)
+    if (lpMemTknHdr EQ NULL)
     {
         DbgMsgW (L"DisplayTokens:  ***INAVLID HANDLE***:  lpMemTknHdr EQ 0");
         return;

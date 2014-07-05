@@ -145,7 +145,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbRes)
+    if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -411,7 +411,7 @@ HGLOBAL AllocateET_EM
 
     // Allocate space for the result
     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!hGlbTmp)
+    if (hGlbTmp EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it

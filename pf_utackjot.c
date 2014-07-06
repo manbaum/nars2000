@@ -286,7 +286,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
 #undef  lpHeader
 
     // Skip over the header and dimension
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     if (aplNELMRht NE (APLU3264) aplNELMRht)
         goto WSFULL_EXIT;

@@ -113,7 +113,7 @@ UBOOL CmdWsid_EM
         *VarArrayBaseToDim (lpMemWSID) = uLen;
 
         // Skip over the header and dimensions to the data
-        lpMemWSID = VarArrayBaseToData (lpMemWSID, 1);
+        lpMemWSID = VarArrayDataFmBase (lpMemWSID);
 
         // Copy data to the []WSID
         CopyMemoryW (lpMemWSID, wszTailDPFE, uLen);
@@ -125,7 +125,7 @@ UBOOL CmdWsid_EM
         lpMemWSID = MyGlobalLock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
 
         // Skip over the header and dimensions to the data
-        lpMemWSID = VarArrayBaseToData (lpMemWSID, aplRankWSID);
+        lpMemWSID = VarArrayDataFmBase (lpMemWSID);
 
         // Display the old WSID
         AppendLine (L"WAS ", FALSE, FALSE);
@@ -161,7 +161,7 @@ UBOOL CmdWsid_EM
         else
         {
             // Skip over the header and dimensions to the data
-            lpMemWSID = VarArrayBaseToData (lpMemWSID, aplRankWSID);
+            lpMemWSID = VarArrayDataFmBase (lpMemWSID);
 
             // Because the global memory has a zero terminator,
             //   we don't need to copy the data to a temporary location and then

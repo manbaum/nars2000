@@ -780,7 +780,7 @@ UBOOL ReadIniFileGlb
         lpMemQuadIC = MyGlobalLock (hGlbQuadIC_CWS);
 
         // Skip over the header and dimensions to the data
-        lpMemQuadIC = VarArrayBaseToData (lpMemQuadIC, 1);
+        lpMemQuadIC = VarArrayDataFmBase (lpMemQuadIC);
 
         // Set the new value
         lpMemQuadIC[ICNDX_0LOG0] = aplDefaultIC[ICNDX_0LOG0];
@@ -1616,7 +1616,7 @@ HGLOBAL GetPrivateProfileGlbComW
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy and convert the values to the result
     CopyConvertDataOfType (lpMemRes, aplTypeRes, aplNELMRes, lpMemInp);
@@ -2330,7 +2330,7 @@ void SaveIniFile
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemObj = VarArrayBaseToData (lpMemObj, 1);
+    lpMemObj = VarArrayDataFmBase (lpMemObj);
 
     // Format []FEATURE
     lpaplChar = wszTemp;
@@ -2374,7 +2374,7 @@ void SaveIniFile
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemObj = VarArrayBaseToData (lpMemObj, 1);
+    lpMemObj = VarArrayDataFmBase (lpMemObj);
 
     // Format []IC
     lpaplChar = wszTemp;
@@ -3030,7 +3030,7 @@ void WritePrivateProfileGlbCharW
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemObj = VarArrayBaseToData (lpMemObj, 1);
+    lpMemObj = VarArrayDataFmBase (lpMemObj);
 
     // Get starting ptr
     lpaplChar = lpwszGlbTemp;

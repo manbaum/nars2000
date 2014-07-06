@@ -551,7 +551,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         lpMemGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
     } else
         // Handle the scalar case
         lpMemGupLft = &aplIntegerZero;
@@ -583,7 +583,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         lpMemGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
     } else
         // Handle the scalar case
         lpMemGupRht = &aplIntegerZero;
@@ -646,7 +646,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
 
     if (lpMemRht)
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
         // Point to the right arg immediate value
         lpMemRht = &aplLongestRht;
@@ -1220,7 +1220,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         lpMemGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
     } else
         // Handle the scalar case
         lpMemGupLft = &aplIntegerZero;
@@ -1252,7 +1252,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         lpMemGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
     } else
         // Handle the scalar case
         lpMemGupRht = &aplIntegerZero;
@@ -1312,7 +1312,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
 
     if (lpMemLft)
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
     else
         // Point to the left arg immediate value
         lpMemLft = &aplLongestLft;
@@ -1902,7 +1902,7 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         lpMemGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
 
         // Set the current index origin to zero for convenience
         SetQuadIO (0);
@@ -1929,11 +1929,11 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         lpMemGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
         // Split cases based upon the left and right arg storage types
         if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))

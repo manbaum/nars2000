@@ -471,7 +471,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
             aplRestLft = aplNELMLft / (aplRowsLft * aplColsLft);
 
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
     } else
     {
         aplRowsLft = aplRestLft = 1;
@@ -486,7 +486,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
         lpMemDimRes += aplRankRht;
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     } else
         lpMemRht = &aplLongestRht;
 

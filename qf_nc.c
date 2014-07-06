@@ -173,7 +173,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemDataRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemDataRes = VarArrayDataFmBase (lpMemRes);
 
     // If we failed in CalcNumIDs, quit now
     if (!bRet)
@@ -206,7 +206,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
         case 1:
             // Skip over the header and dimensions to the data
-            lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemDataRht = VarArrayDataFmBase (lpMemRht);
 
             // Loop through the right arg looking for identifiers
             uRht = 0;
@@ -244,7 +244,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
         case 2:
             // Skip over the header and dimensions to the data
-            lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemDataRht = VarArrayDataFmBase (lpMemRht);
 
             for (uRht = 0; uRht < aplNELMRes; uRht++)
             {
@@ -547,7 +547,7 @@ UBOOL CalcNumIDs
             *lpaplNELMRes = 0;      // Initialize
 
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Loop through the right arg looking for identifiers
             uRht = 0;

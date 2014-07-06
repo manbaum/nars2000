@@ -235,7 +235,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     *VarArrayBaseToDim (lpMemLft) = aplRankRht;
 
     // Skip over the header and dimensions to the data
-    lpMemLft = VarArrayBaseToData (lpMemLft, 1);
+    lpMemLft = VarArrayDataFmBase (lpMemLft);
 
     // Fill in the APA parameters
 #define lpAPA       ((LPAPLAPA) lpMemLft)
@@ -449,7 +449,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Calculate the NELM of the result
     aplNELMRes = 1;

@@ -769,7 +769,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
     aplRank = lpHeader->Rank;
 
     // Point to the data
-    lpMemArr = VarArrayBaseToData (lpMemArr, aplRank);
+    lpMemArr = VarArrayDataFmBase (lpMemArr);
 
     // Split cases based upon the array type
     switch (aplType)
@@ -1310,7 +1310,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
         } // End IF/ELSE/...
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
         // To make a prototype APA, set its
@@ -1384,9 +1384,9 @@ HGLOBAL MakeDydPrototype_EM_PTB
         lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // If either arg is not simple, loop through the result
         // Otherwise, the result is all zero (already filled in by GHND).
@@ -1650,7 +1650,7 @@ UBOOL IsFirstSimpleGlb
     Assert (IsNested (aplTypeRht));
 
     // Point to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Split cases based upon the element's ptr type
     switch (GetPtrTypeInd (lpMemRht))
@@ -1881,8 +1881,8 @@ HGLOBAL CopyArray_EM
                 aplNELM = lpHeader->NELM;
                 aplRank = lpHeader->Rank;
 #undef  lpHeader
-                lpMemDstBase = lpMemDst = VarArrayBaseToData (lpMemDst, aplRank);
-                lpMemSrcBase = lpMemSrc = VarArrayBaseToData (lpMemSrc, aplRank);
+                lpMemDstBase = lpMemDst = VarArrayDataFmBase (lpMemDst);
+                lpMemSrcBase = lpMemSrc = VarArrayDataFmBase (lpMemSrc);
 
                 // Split cases based upon the array type
                 switch (aplType)
@@ -2198,8 +2198,8 @@ HGLOBAL CopyGlbAsType_EM
                 VarArrayBaseToDim (lpMemArg),
                 (APLU3264) aplRankArg * sizeof (APLDIM));
     // Skip over the header to the data
-    lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankArg);
+    lpMemArg = VarArrayDataFmBase (lpMemArg);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the existing named values to the result
     // Split cases based upon the result storage type

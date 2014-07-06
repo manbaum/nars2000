@@ -820,7 +820,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
     *VarArrayBaseToDim (lpMemStr) = iLen;
 
     // Skip over the header and one dimension (it's a vector)
-    LPAPL.Bool = (LPAPLBOOL) VarArrayBaseToData (lpMemStr, 1);
+    LPAPL.Bool = (LPAPLBOOL) VarArrayDataFmBase (lpMemStr);
 
     // Copy the elements to the global memory
     // Note we copy the elements in the reverse
@@ -885,7 +885,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
 
                         // Skip over the header and dimensions to the data
-                        lpMemNum = VarArrayBaseToData (lpMemNum, 1);
+                        lpMemNum = VarArrayDataFmBase (lpMemNum);
 
                         // Loop through the numeric strand
                         for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -976,7 +976,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
 
                     // Skip over the header and dimensions to the data
-                    lpMemNum = VarArrayBaseToData (lpMemNum, 1);
+                    lpMemNum = VarArrayDataFmBase (lpMemNum);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1143,7 +1143,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
 
                     // Skip over the header and dimensions to the data
-                    lpMemNum = VarArrayBaseToData (lpMemNum, 1);
+                    lpMemNum = VarArrayDataFmBase (lpMemNum);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1253,7 +1253,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemNum)
                     // Skip over the header and dimensions to the data
-                    lpMemNum = VarArrayBaseToData (lpMemNum, lpHeader->Rank);
+                    lpMemNum = VarArrayDataFmBase (lpMemNum);
 #undef  lpHeader
                     // Get the numeric strand immediate type
                     immTypeNum = TranslateArrayTypeToImmType (aplTypeNum);
@@ -1384,7 +1384,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
 
                     // Skip over the header and dimensions to the data
-                    lpMemNum = VarArrayBaseToData (lpMemNum, aplRankNum);
+                    lpMemNum = VarArrayDataFmBase (lpMemNum);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1513,7 +1513,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
 
                     // Skip over the header and dimensions to the data
-                    lpMemNum = VarArrayBaseToData (lpMemNum, aplRankNum);
+                    lpMemNum = VarArrayDataFmBase (lpMemNum);
 
                     // Loop through the numeric strand
                     for (uNum = 0; uNum < aplNELMNum; uNum++)
@@ -1668,7 +1668,7 @@ HGLOBAL MakeGlbEntry_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions
-    lpMemRes = VarArrayBaseToData (lpMemRes, 0);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Split cases based upon the storage type
     switch (aplTypeRes)

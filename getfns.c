@@ -1099,7 +1099,7 @@ void GetFirstValueGlb
             aplNELM = lpHeader->NELM;
 
             // Skip over the header and dimensions to the data
-            lpMem = VarArrayBaseToData (lpMem, lpHeader->Rank);
+            lpMem = VarArrayDataFmBase (lpMem);
 #undef  lpHeader
             break;
 
@@ -1484,7 +1484,7 @@ APLINT GetNextRatIntGlb
     lpMemRat = MyGlobalLock (hGlbRat);
 
     // Skip over the header and dimensions to the data
-    lpMemRat = VarArrayBaseToData (lpMemRat, ((LPVARARRAY_HEADER) lpMemRat)->Rank);
+    lpMemRat = VarArrayDataFmBase (lpMemRat);
 
     // Convert the next RAT to an INT using System []CT
     aplInteger = mpq_get_sctsx (&lpMemRat[uRes], lpbRet);
@@ -1578,7 +1578,7 @@ APLINT GetNextVfpIntGlb
     lpMemVfp = MyGlobalLock (hGlbVfp);
 
     // Skip over the header and dimensions to the data
-    lpMemVfp = VarArrayBaseToData (lpMemVfp, ((LPVARARRAY_HEADER) lpMemVfp)->Rank);
+    lpMemVfp = VarArrayDataFmBase (lpMemVfp);
 
     // Convert the next VFP to an INT using System []CT
     aplInteger = mpfr_get_sctsx (&lpMemVfp[uRes], lpbRet);
@@ -1794,7 +1794,7 @@ APLSTYPE GetNextHetero
                 lpSymGlb = ClrPtrTypeDir (lpSymGlb);
 
                 // Skip over the header to the data
-                lpSymGlb = VarArrayBaseToData (lpSymGlb, 0);
+                lpSymGlb = VarArrayDataFmBase (lpSymGlb);
             } // End IF
 
             if (lplpSymGlb)
@@ -1844,7 +1844,7 @@ void GetNextItemGlb
     Assert (uSub < aplNELMSub);
 
     // Skip over the header and dimensions to the data
-    lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+    lpMemSub = VarArrayDataFmBase (lpMemSub);
 
     // Get next item from global memory
     GetNextItemMem (lpMemSub,               // Ptr to item global memory data
@@ -1909,7 +1909,7 @@ void GetNextValueGlb
             aplRankSub = lpHeader->Rank;
 #undef  lpHeader
             // Skip over the header and dimensions to the data
-            lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+            lpMemSub = VarArrayDataFmBase (lpMemSub);
 
             break;
 

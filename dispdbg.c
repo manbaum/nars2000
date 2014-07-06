@@ -494,7 +494,7 @@ void DisplayGlobals
                     else
                         aplDim = *VarArrayBaseToDim (lpHeader);
                     // Skip over the header and dimension to the data
-                    lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+                    lpData = VarArrayDataFmBase (lpHeader);
 
 #define MAXDISPLEN  7
 
@@ -1994,7 +1994,7 @@ LPWCHAR DisplayVarSub
             lpMemData = MyGlobalLock (hGlbData);
 
             // Skip over the header and dimensions to the data
-            lpMemData = VarArrayBaseToData (lpMemData, aplRank);
+            lpMemData = VarArrayDataFmBase (lpMemData);
 
             // Split cases based upon the storage type
             switch (aplType)

@@ -548,7 +548,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_HETERO:  // Free the LPSYMENTRYs and/or HGLOBALs
                 // Point to the array data (LPSYMENTRYs and/or HGLOBALs)
-                lpMem = VarArrayBaseToData (lpMem, aplRank);
+                lpMem = VarArrayDataFmBase (lpMem);
 
                 // Loop through the LPSYMENTRYs and/or HGLOBALs
                 for (u = 0; u < aplNELM; u++, ((LPAPLNESTED) lpMem)++)
@@ -585,7 +585,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_RAT:
                 // Point to the array data (APLRATs)
-                lpMem = VarArrayBaseToData (lpMem, aplRank);
+                lpMem = VarArrayDataFmBase (lpMem);
 
                 // Loop through the APLRATs
                 for (u = 0; u < aplNELM; u++, ((LPAPLRAT) lpMem)++)
@@ -595,7 +595,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_VFP:
                 // Point to the array data (APLVFPs)
-                lpMem = VarArrayBaseToData (lpMem, aplRank);
+                lpMem = VarArrayDataFmBase (lpMem);
 
                 // Loop through the APLVFPs
                 for (u = 0; u < aplNELM; u++, ((LPAPLVFP) lpMem)++)

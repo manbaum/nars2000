@@ -106,7 +106,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 ////*VarArrayBaseToDim (lpMemRes) = SYSVER_NELM;    // Filled in below
 
     // Skip over the header and dimensions to the data
-    lpw = lpMemData = VarArrayBaseToData (lpMemRes, 1);
+    lpw = lpMemData = VarArrayDataFmBase (lpMemRes);
 
     // Copy the application's File Version String
     lstrcpyW (lpw, wszFileVer);

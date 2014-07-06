@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -289,7 +289,7 @@ UBOOL PrimFnMonBarAPA_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Check for un-negatable integer
 #define lpAPA       ((LPAPLAPA) lpMemRes)
@@ -569,7 +569,7 @@ UBOOL PrimFnDydBarAPA_EM
     lpMemRes = MyGlobalLock (*lphGlbRes);
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
 

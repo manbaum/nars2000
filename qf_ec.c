@@ -193,7 +193,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
     // If it's global, ...
     if (hGlbRht)
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
         // Point to the immediate value
         lpMemRht = (LPAPLCHAR) &aplLongestRht;

@@ -96,7 +96,7 @@ UBOOL CmdSave_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemSaveWSID = VarArrayBaseToData (lpMemOldWSID, aplRankWSID);
+    lpMemSaveWSID = VarArrayDataFmBase (lpMemOldWSID);
 
     // Because the global memory doesn't have a zero terminator,
     //   we must copy the data to a temporary location and then
@@ -307,7 +307,7 @@ UBOOL CmdSave_EM
                 lpMemWSID = MyGlobalLock (hGlbWSID);
 
                 // Skip oer the header and dimensions
-                lpMemWSID = VarArrayBaseToData (lpMemWSID, 1);
+                lpMemWSID = VarArrayDataFmBase (lpMemWSID);
 
                 // Write out to the [General] section
                 WritePrivateProfileStringW (SECTNAME_GENERAL,   // Ptr to the section name
@@ -1324,7 +1324,7 @@ LPAPLCHAR SavedWsFormGlbVar
                          lpHeader);                             // Ptr to array header
 #undef  lpHeader
     // Skip over the header and dimensions to the data
-    lpMemObj = VarArrayBaseToData (lpMemObj, aplRankObj);
+    lpMemObj = VarArrayDataFmBase (lpMemObj);
 
     __try
     {
@@ -1706,7 +1706,7 @@ LPAPLCHAR AppendArrayHeader
             LPAPLVFP lpaplVfp;
 
             // Skip over the header and dimensions to the data
-            lpaplVfp = VarArrayBaseToData (lpHeader, aplRankObj);
+            lpaplVfp = VarArrayDataFmBase (lpHeader);
 
             // Get the initial precision
             *lpuCommPrec = mpfr_get_prec (lpaplVfp++);

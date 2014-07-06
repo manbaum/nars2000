@@ -708,7 +708,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         aplNELM = lpHeader->NELM;
 #undef  lpHeader
                         // Skip over the header and dimension to the data
-                        lpMemChr = VarArrayBaseToData (lpMemChr, 1);
+                        lpMemChr = VarArrayDataFmBase (lpMemChr);
 
                         // Copy to temp string so we can zero-terminate it
                         CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
@@ -768,7 +768,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         aplNELM = lpHeader->NELM;
 #undef  lpHeader
                         // Skip over the header and dimension to the data
-                        lpMemChr = VarArrayBaseToData (lpMemChr, 1);
+                        lpMemChr = VarArrayDataFmBase (lpMemChr);
 
                         // Copy to temp string so we can zero-terminate it
                         CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
@@ -794,7 +794,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         aplNELM = lpHeader->NELM;
 #undef  lpHeader
                         // Skip over the header and dimension to the data
-                        lpMemChr = VarArrayBaseToData (lpMemChr, 1);
+                        lpMemChr = VarArrayDataFmBase (lpMemChr);
 
                         // Copy to temp string so we can zero-terminate it
                         CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
@@ -832,7 +832,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         aplNELM = lpHeader->NELM;
 #undef  lpHeader
                         // Skip over the header and dimension to the data
-                        lpMemInt = VarArrayBaseToData (lpMemInt, 1);
+                        lpMemInt = VarArrayDataFmBase (lpMemInt);
 
                         // Initialize the []FEATURE local values
                         for (uCnt = 0; uCnt < FEATURENDX_LENGTH; uCnt++)
@@ -886,7 +886,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         aplNELM = lpHeader->NELM;
 #undef  lpHeader
                         // Skip over the header and dimension to the data
-                        lpMemInt = VarArrayBaseToData (lpMemInt, 1);
+                        lpMemInt = VarArrayDataFmBase (lpMemInt);
 
                         // Initialize the []IC local values
                         for (uCnt = 0; uCnt < ICNDX_LENGTH; uCnt++)
@@ -928,7 +928,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         aplNELM = lpHeader->NELM;
 #undef  lpHeader
                         // Skip over the header and dimension to the data
-                        lpMemChr = VarArrayBaseToData (lpMemChr, 1);
+                        lpMemChr = VarArrayDataFmBase (lpMemChr);
 
                         // Copy to temp string so we can zero-terminate it
                         CopyMemoryW (lpwszGlbTemp, lpMemChr, (APLU3264) aplNELM);
@@ -5606,7 +5606,7 @@ void GetClearWsChrValue
         lpMemChr = MyGlobalLock (*lphGlbVal);
 
         // Skip over the header and dimensions to the data
-        lpMemChr = VarArrayBaseToData (lpMemChr, 1);
+        lpMemChr = VarArrayDataFmBase (lpMemChr);
 
         // Copy the values
         CopyMemoryW (lpMemChr, lpwszGlbTemp, uLen);
@@ -5674,7 +5674,7 @@ void GetClearWsComValue
         *VarArrayBaseToDim (lpMemCom) = uLen;
 
         // Skip over the header and dimensions to the data
-        lpMemCom = VarArrayBaseToData (lpMemCom, 1);
+        lpMemCom = VarArrayDataFmBase (lpMemCom);
 
         // Copy the values to the result
         CopyMemory (lpMemCom, lpwszGlbTemp, uLen * uSizeOf);

@@ -429,7 +429,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
         LPAPLINT lpMemDataRht;
 
         // Skip over the header and dimensions to the data
-        lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemDataRht = VarArrayDataFmBase (lpMemRht);
 
         // Get the APA offset
         apaOffRes = ((LPAPLAPA) lpMemDataRht)->Off;
@@ -525,7 +525,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
         lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // If the result is an APA, save the offset & multiplier
         if (IsSimpleAPA (aplTypeRes))
@@ -534,7 +534,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
             ((LPAPLAPA) lpMemRes)->Mul = apaMulRes;
 
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Save the result shape vector
             CopyMemory (lpMemDimRes, &((LPAPLUINT) lpMemRht)[2], (APLU3264) BytesIn (ARRAY_INT, aplRankRes));
@@ -554,7 +554,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
                              VarArrayBaseToDim (lpMemRht),
                              (APLU3264) BytesIn (ARRAY_INT, aplRankRht));
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Copy the right arg data to the result
             CopyMemory (lpMemRes, lpMemRht, (APLU3264) BytesIn (aplTypeRht, aplNELMRht));
@@ -565,7 +565,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
         *VarArrayBaseToDim (lpMemRes) = aplColsRes;
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Copy the right arg to the result
         *((LPAPLLONGEST) lpMemRes) = aplLongestRht;
@@ -823,7 +823,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         // If the array is all the same precision, ...
 
         // Skip over the header and dimensions to the data
-        lpaplVfp = VarArrayBaseToData (lpHeader, aplRankRht);
+        lpaplVfp = VarArrayDataFmBase (lpHeader);
 
         // Get the initial precision
         uCommPrec = mpfr_get_prec (lpaplVfp++);
@@ -894,7 +894,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Point to the data (APLAPA struct)
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the text to the result
     CopyMemory (lpMemRes, wszTemp, (APLU3264) BytesIn (ARRAY_CHAR, aplNELMRes));
@@ -1263,7 +1263,7 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
     Assert (hGlbRht NE NULL);
 
     // Skip over the header to the data
-    lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemDataRht = VarArrayDataFmBase (lpMemRht);
 
     // Ensure the right arg is all hexadecimal digits
     for (uRht = 0; uRht < aplNELMRht; uRht++)

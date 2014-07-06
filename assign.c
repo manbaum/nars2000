@@ -724,7 +724,7 @@ UBOOL AssignNamedVars_EM
         goto LENGTH_EXIT;
 
     // Skip over the header and dimension to the data
-    lpMemVal = VarArrayBaseToData (lpMemVal, aplRankVal);
+    lpMemVal = VarArrayDataFmBase (lpMemVal);
 
     // If the value is an APA, ...
     if (IsSimpleAPA (aplTypeVal))

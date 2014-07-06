@@ -1,7 +1,7 @@
 Build #1252 -- Version 0.4.9.xx
 -------------------------------
 
-* Fix Bug In
+* Fix Bug In []EC
 
 Directory trunk:
 

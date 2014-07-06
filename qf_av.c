@@ -131,7 +131,7 @@ void MakeQuadAV
     *VarArrayBaseToDim (lpHeader) = QUADAV_LEN;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpHeader, 1);
+    lpMemRes = VarArrayDataFmBase (lpHeader);
 
     // Fill in the result with 0-0xFFFF
     for (uRes = 0; uRes < QUADAV_LEN;  uRes++)

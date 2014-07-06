@@ -105,7 +105,7 @@ LPPL_YYSTYPE SysFnLC_EM_YY
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Trundle through the SI stack copying the line #
     //   from layers with a user-defined function/operator

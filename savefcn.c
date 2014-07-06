@@ -185,7 +185,7 @@ UINT SF_LineLenM
     uRowOff = uLineNum * uLineLen;
 
     // Skip over the header to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // As this is a matrix and the header/function line might have
     //   been padded out beyond its normal length, delete trailing blanks
@@ -221,7 +221,7 @@ UINT SF_LineLenN
     lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Split cases based upon the right arg item ptr type
     switch (GetPtrTypeDir (lpMemRht[uLineNum]))
@@ -471,7 +471,7 @@ void SF_ReadLineM
     lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Get the # cols in the matrix
     uLineLen = (UINT) lpFX_Params->aplColsRht;
@@ -520,7 +520,7 @@ void SF_ReadLineN
     lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // Split cases based upon the right arg item ptr type
     switch (GetPtrTypeDir (lpMemRht[uLineNum]))
@@ -544,7 +544,7 @@ void SF_ReadLineN
             uLineLen = (UINT) lpHeader->NELM;
 
             // Skip over the header to the data
-            lpMemItmRht = VarArrayBaseToData (lpMemItmRht, lpHeader->Rank);
+            lpMemItmRht = VarArrayDataFmBase (lpMemItmRht);
 #undef  lpHeader
 
             // Copy the data to the result
@@ -592,7 +592,7 @@ void SF_ReadLineSV
         lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
         // Skip over the header to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
 
         // Copy the simple char to the result
         *lpMemLine++ = lpMemRht[uLineNum];

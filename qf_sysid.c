@@ -92,7 +92,7 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
     *VarArrayBaseToDim (lpMemRes) = SYSID_NELM;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the SYSID to the result
     CopyMemoryW (lpMemRes, SYSID, SYSID_NELM);

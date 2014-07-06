@@ -334,7 +334,7 @@ UBOOL SaveNewWsid_EM
         *VarArrayBaseToDim (lpMemNewWSID) = iLen2;
 
         // Skip over the header and dimensions to the data
-        lpMemNewWSID = VarArrayBaseToData (lpMemNewWSID, 1);
+        lpMemNewWSID = VarArrayDataFmBase (lpMemNewWSID);
 
         // Copy data to the new []WSID
         CopyMemoryW (lpMemNewWSID, lpMemSaveWSID, iLen2);

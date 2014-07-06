@@ -90,7 +90,7 @@ LPPL_YYSTYPE SysFnTS_EM_YY
     *VarArrayBaseToDim (lpMemRes) = 7;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Get the current time
     if (OptionFlags.bUseLocalTime)

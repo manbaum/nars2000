@@ -281,7 +281,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (aplTypeRht))
@@ -739,7 +739,7 @@ RESTART_EXCEPTION:
                                 lpMemRat = MyGlobalLock (tkLftArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemRat = VarArrayBaseToData (lpMemRat, 0);
+                                lpMemRat = VarArrayDataFmBase (lpMemRat);
 
                                 // Copy to the result
                                 mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
@@ -754,7 +754,7 @@ RESTART_EXCEPTION:
                                 lpMemVfp = MyGlobalLock (tkLftArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemVfp = VarArrayBaseToData (lpMemVfp, 0);
+                                lpMemVfp = VarArrayDataFmBase (lpMemVfp);
 
                                 // Copy to the result
                                 mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
@@ -973,7 +973,7 @@ RESTART_EXCEPTION:
                                     lpMemRat = MyGlobalLock (tkLftArg.tkData.tkGlbData);
 
                                     // Skip over the header and dimensions to the data
-                                    lpMemRat = VarArrayBaseToData (lpMemRat, 0);
+                                    lpMemRat = VarArrayDataFmBase (lpMemRat);
 
                                     // Copy to the result
                                     mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
@@ -988,7 +988,7 @@ RESTART_EXCEPTION:
                                     lpMemVfp = MyGlobalLock (tkLftArg.tkData.tkGlbData);
 
                                     // Skip over the header and dimensions to the data
-                                    lpMemVfp = VarArrayBaseToData (lpMemVfp, 0);
+                                    lpMemVfp = VarArrayDataFmBase (lpMemVfp);
 
                                     // Copy to the result
                                     mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
@@ -1270,7 +1270,7 @@ RESTART_EXCEPTION:
                                 lpMemRat = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemRat = VarArrayBaseToData (lpMemRat, 0);
+                                lpMemRat = VarArrayDataFmBase (lpMemRat);
 
                                 // Copy to the result
                                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
@@ -1285,7 +1285,7 @@ RESTART_EXCEPTION:
                                 lpMemVfp = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemVfp = VarArrayBaseToData (lpMemVfp, 0);
+                                lpMemVfp = VarArrayDataFmBase (lpMemVfp);
 
                                 // Copy to the result
                                 mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);

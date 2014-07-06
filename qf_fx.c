@@ -137,7 +137,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
             if (IsNested (aplTypeRht))
             {
                 // Skip over the header to the data
-                lpMemRht = VarArrayBaseToData (lpMemRht, FX_Params.aplRankRht);
+                lpMemRht = VarArrayDataFmBase (lpMemRht);
 
                 // Ensure that each item is a char scalar/vector
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -173,7 +173,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             aplNELMItmRht = lpHeader->NELM;
 
                             // Skip over the header to the data
-                            lpMemItmRht = VarArrayBaseToData (lpMemItmRht, lpHeader->Rank);
+                            lpMemItmRht = VarArrayDataFmBase (lpMemItmRht);
 #undef  lpHeader
                             // Check for all blanks
                             for (; aplNELMItmRht; aplNELMItmRht--)
@@ -315,7 +315,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         *VarArrayBaseToDim (lpMemRes) = uNameLen;
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+        lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Copy the function name to the result
         CopyMemoryW (lpMemRes, lpMemName, uNameLen);

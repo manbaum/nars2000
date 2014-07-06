@@ -348,7 +348,6 @@
 
 // Macros to skip from the variable array base to either the dimensions or the data
 #define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER)                              )
-#define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplRank))
 #define VarArrayDataFmBase(lpMem)         (LPVOID)   (((LPCHAR) (lpMem)) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (((LPVARARRAY_HEADER) lpMem)->Rank))
 #define VarArrayDimToData(lpMem,aplRank)  (LPVOID)   (((LPCHAR) (lpMem))                            + sizeof (APLDIM) * (aplRank))
 

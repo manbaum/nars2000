@@ -230,7 +230,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     *VarArrayBaseToDim (lpMemRes) = 1;
 
     // Skip over the header and dimension to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Split cases based upon the result storage type
     switch (aplTypeRes)
@@ -368,7 +368,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimension to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the data from the right arg to the result
     if (!PrimFnMonEpsilonGlbCopy_EM (aplTypeRes,
@@ -469,7 +469,7 @@ void PrimFnMonEpsilonGlbCount
 
         case ARRAY_NESTED:
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            lpMemRht = VarArrayDataFmBase (lpMemRht);
 
             // Take prototypes into account
             aplNELMRht = max (aplNELMRht, 1);
@@ -562,7 +562,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
 #undef  lpHeader
 
     // Skip past the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (aplTypeRht))
@@ -1703,7 +1703,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
 
     if (lpMemRht)
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
         // Point to the right arg immediate value
         lpMemRht = &aplLongestRht;
@@ -2404,7 +2404,7 @@ UBOOL PrimFnDydEpsilonIvI_EM
         lpMemGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
     } else
         lpMemGupLft = &aplIntegerZero;
 #endif
@@ -2435,7 +2435,7 @@ UBOOL PrimFnDydEpsilonIvI_EM
         lpMemGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
     } else
         lpMemGupRht = &aplIntegerZero;
 
@@ -2647,7 +2647,7 @@ UBOOL PrimFnDydEpsilonNvN_EM
         lpMemGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
     } else
         lpMemGupLft = &aplIntegerZero;
 #endif
@@ -2678,7 +2678,7 @@ UBOOL PrimFnDydEpsilonNvN_EM
         lpMemGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
     } else
         lpMemGupRht = &aplIntegerZero;
 
@@ -2928,7 +2928,7 @@ UBOOL PrimFnDydEpsilonNvR_EM
         lpMemGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
     } else
         lpMemGupLft = &aplIntegerZero;
 #endif
@@ -2959,7 +2959,7 @@ UBOOL PrimFnDydEpsilonNvR_EM
         lpMemGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
     } else
         lpMemGupRht = &aplIntegerZero;
 
@@ -3222,7 +3222,7 @@ UBOOL PrimFnDydEpsilonNvV_EM
         lpMemGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayBaseToData (lpMemGupLft, 1);
+        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
     } else
         lpMemGupLft = &aplIntegerZero;
 #endif
@@ -3253,7 +3253,7 @@ UBOOL PrimFnDydEpsilonNvV_EM
         lpMemGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayBaseToData (lpMemGupRht, 1);
+        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
     } else
         lpMemGupRht = &aplIntegerZero;
 

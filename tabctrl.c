@@ -1510,7 +1510,7 @@ LPAPLCHAR PointToWsName
                 LPAPLCHAR p, q;             // Temporary ptrs
 
                 // Skip over the header to the data
-                lpMemWSID = VarArrayBaseToData (lpMemWSID, aplRankWSID);
+                lpMemWSID = VarArrayDataFmBase (lpMemWSID);
 
                 // Skip over the path
                 q = lpMemWSID;

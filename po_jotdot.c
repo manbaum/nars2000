@@ -730,7 +730,7 @@ RESTART_JOTDOT:
                             lpMemSub = MyGlobalLock (tkRes.tkData.tkGlbData);
 
                             // Skip over the header and dimensions to the data
-                            lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                            lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                             // Save in the result
                             *((LPAPLRAT)   lpMemRes)++ = *(LPAPLRAT) lpMemSub;
@@ -750,7 +750,7 @@ RESTART_JOTDOT:
                             lpMemSub = MyGlobalLock (tkRes.tkData.tkGlbData);
 
                             // Skip over the header and dimensions to the data
-                            lpMemSub = VarArrayBaseToData (lpMemSub, 0);
+                            lpMemSub = VarArrayDataFmBase (lpMemSub);
 
                             // Save in the result
                             *((LPAPLVFP)   lpMemRes)++ = *(LPAPLVFP) lpMemSub;

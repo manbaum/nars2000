@@ -421,7 +421,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
     } // End IF
 
     // lpMemRht now points to its data
@@ -498,7 +498,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
     // Skip over the header and dimensions to the data
     if (lpMemLft)
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+        lpMemLft = VarArrayDataFmBase (lpMemLft);
     else
         lpMemLft = &aplLongestLft;
 

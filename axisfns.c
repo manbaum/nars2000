@@ -332,7 +332,7 @@ UBOOL CheckAxisGlb
     lpDup = MyGlobalLock (hGlbDup);
 
     // Skip over the header and dimensions to the data
-    lpMem = VarArrayBaseToData (lpMem, aplRankLcl);
+    lpMem = VarArrayDataFmBase (lpMem);
 
     // Split cases based upon the array type
     switch (aplTypeLcl)

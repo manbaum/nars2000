@@ -26,6 +26,7 @@
 #include "headers.h"
 
 #define DEBUG_HEAP
+//#define DEBUG_SEMAPHORE
 
 #define OBJ_GLBLOCK     15
 #define OBJ_GLBALLOC    16
@@ -377,14 +378,17 @@ void _LastTouch
 
 UBOOL _MyCloseSemaphore
     (HANDLE hSemaphore,                             // Semaphore handle
+     LPCHAR lpFileName,                             // Ptr to filename
      UINT   uLine)                                  // Line #
 
 {
     UBOOL bRet;
     char  szTemp[1024];
-
+#ifdef DEBUG_SEMAPHORE
+    dprintfWL0 (L"~~Closing semaphore:    %p (%S#%d)", hSemaphore, lpFileName, uLine);
+#endif
     bRet =
-      CloseHandle (hSemaphore);                     // Semaphore handle
+      CloseHandle (hSemaphore); // hSemaphore = NULL;   // Semaphore handle
     if (!bRet)
     {
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
@@ -678,6 +682,9 @@ HANDLE _MyCreateSemaphoreW
                         lInitialCount,              // Initial count
                         lMaximumCount,              // Maximum count
                         lpName);                    // Ptr to name (may be NULL)
+#ifdef DEBUG_SEMAPHORE
+    dprintfWL0 (L"~~Created semaphore:    %p (%S#%d)", hSemaphore, lpFileName, uLine);
+#endif
     if (!hSemaphore)
     {
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
@@ -1004,12 +1011,16 @@ UBOOL _MyReleaseSemaphore
     (HANDLE hSemaphore,                             // Semaphore handle
      LONG   lReleaseCount,                          // Release count
      LPLONG lpPreviousCount,                        // Ptr to previous count (may be NULL)
+     LPCHAR lpFileName,                             // Ptr to filename
      UINT   uLine)                                  // Line #
 
 {
     UBOOL bRet;
     char  szTemp[1024];
 
+#ifdef DEBUG_SEMAPHORE
+    dprintfWL0 (L"~~Releasing semaphore:  %p (%S#%d)", hSemaphore, lpFileName, uLine);
+#endif
     bRet =
       ReleaseSemaphore (hSemaphore,                 // Semaphore handle
                         lReleaseCount,              // Release count

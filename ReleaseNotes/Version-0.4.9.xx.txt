@@ -1,6 +1,18 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1251 -- Version 0.4.9.xx
+-------------------------------
+
+* Enable Debugging Of Semaphores
+
+Directory trunk:
+
+RESDEBUG.C:
+RESDEBUG.H:
+  Display a debugging message when creating, closing, or releasing a semaphore.
+
+
 Build #1250 -- Version 0.4.9.xx
 -------------------------------
 

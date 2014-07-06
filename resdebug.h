@@ -21,7 +21,7 @@
 ***************************************************************************/
 
 #if RESDEBUG
-  #define MyCloseSemaphore(a)             _MyCloseSemaphore(a,__LINE__)
+  #define MyCloseSemaphore(a)             _MyCloseSemaphore(a,FNLN)
   #define MyCreateCompatibleBitmap(a,b,c) _MyCreateCompatibleBitmap(a,b,c,__LINE__)
   #define MyCreateCompatibleDC(a)         _MyCreateCompatibleDC(a,__LINE__)
   #define MyCreateFontIndirect(a)         _MyCreateFontIndirect(a,__LINE__)
@@ -46,7 +46,7 @@
   #define MyHeapAlloc(a,b,c)              _MyHeapAlloc(a,b,c,__LINE__)
   #define MyHeapReAlloc(a,b,c,d)          _MyHeapReAlloc(a,b,c,d,__LINE__)
   #define MyHeapFree(a,b,c)               _MyHeapFree(a,b,c,__LINE__)
-  #define MyReleaseSemaphore(a,b,c)       _MyReleaseSemaphore(a,b,c,__LINE__)
+  #define MyReleaseSemaphore(a,b,c)       _MyReleaseSemaphore(a,b,c,FNLN)
   #define MyVirtualAlloc(a,b,c,d)         _MyVirtualAlloc(a,b,c,d,__LINE__)
   #define MyVirtualFree(a,b,c)            _MyVirtualFree(a,b,c,__LINE__)
   #define MyLoadBitmap(a,b)               _MyLoadBitmap(a,b,__LINE__)

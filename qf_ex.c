@@ -480,7 +480,7 @@ void EraseSTE
 
 APLBOOL EraseableName
     (LPSYMENTRY lpSymEntry,     // Ptr to SYMENTRY of name
-     LPUBOOL    lpbQuadDM,      // Ptr to return flag of TRUE iff the name if []DM
+     LPUBOOL    lpbQuadDM,      // Ptr to return flag of TRUE iff the name is []DM
      LPUBOOL    lpbQuadEM)      // ...                                        []EM
 
 {

@@ -90,6 +90,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
                  hGlbRes = NULL,    // Result    ...
                  hGlbQuadDM,        // []DM      ...
                  hGlbTmp;           // Temporary ...
+    RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
     LPAPLCHAR    lpMemRht = NULL;   // Ptr to right arg global memory
     LPAPLNESTED  lpMemRes = NULL;   // Ptr to result    ...
     APLLONGEST   aplLongestRht,     // Right arg immediate value
@@ -111,6 +112,9 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 
     // Set it to a known (permanent) value
     lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+
+    // Save the current resetFlag as UnlocalizeSTEs transfers if up from the outgoing SIS layer
+    resetFlag = lpMemPTD->lpSISCur->ResetFlag;
 
     // Create an SIS layer to stop unwinding through this level
     // Fill in the SIS header for Quad-EC
@@ -369,6 +373,9 @@ NORMAL_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
     UnlocalizeSTEs ();
+
+    // Restore the resetFlag
+    lpMemPTD->lpSISCur->ResetFlag = resetFlag;
 
     // Free the current value of []DM
     FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData);

@@ -1,6 +1,20 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1252 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug In
+
+Directory trunk:
+
+QF_EC.C:
+  In <SysFnMonEC_EM_YY>, save the <resetFlag> over the call to <UnlocalizeSTEs>.
+
+QF_EX.C:
+  Improve comments.
+
+
 Build #1251 -- Version 0.4.9.xx
 -------------------------------
 

@@ -841,6 +841,7 @@ RESTART_EXCEPTION_APA:
         {
             case ARRAY_BOOL:
             case ARRAY_INT:
+            case ARRAY_APA:
             case ARRAY_FLOAT:
             case ARRAY_HETERO:
             case ARRAY_NESTED:
@@ -869,6 +870,7 @@ RESTART_EXCEPTION_APA:
         {
             case ARRAY_BOOL:
             case ARRAY_INT:
+            case ARRAY_APA:
             case ARRAY_FLOAT:
             case ARRAY_HETERO:
             case ARRAY_NESTED:
@@ -888,7 +890,7 @@ RESTART_EXCEPTION_APA:
 
             defstop
                 break;
-        } // End SWITCH
+        } // End IF/SWITCH
 RESTART_EXCEPTION:
         // Initialize in case Boolean
         uBitIndex = 0;

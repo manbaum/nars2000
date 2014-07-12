@@ -76,10 +76,10 @@ LPPL_YYSTYPE PrimProtoOpSlope_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
+     LPTOKEN      lptkAxisOpr)          // Ptr to axis token always NULL)
 
 {
-    Assert (lptkAxis EQ NULL);
+    Assert (lptkAxisOpr EQ NULL);
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
@@ -166,7 +166,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     LPPRIMFLAGS       lpPrimFlagsLft;       // Ptr to left operand PrimFlags entry
     TOKEN             tkLftArg = {0},       // Left arg token
                       tkRhtArg = {0};       // Right ...
-    LPTOKEN           lptkAxis;             // Ptr to axis token (may be NULL)
+    LPTOKEN           lptkAxisOpr;          // Ptr to axis token (may be NULL)
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
                       lpYYFcnStrLft;        // Ptr to left operand function strand
     PL_YYSTYPE        YYFcnStrLft;          // Temporary left operand function strand for alternating scans
@@ -185,11 +185,11 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -210,10 +210,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for axis present
-    if (lptkAxis NE NULL)
+    if (lptkAxisOpr NE NULL)
     {
         // Reverse allows a single integer axis value only
-        if (!CheckAxis_EM (lptkAxis,        // The axis token
+        if (!CheckAxis_EM (lptkAxisOpr,     // The axis token
                            aplRankRht,      // All values less than this
                            TRUE,            // TRUE iff scalar or one-element vector only
                            FALSE,           // TRUE iff want sorted axes
@@ -811,12 +811,12 @@ RESTART_EXCEPTION:
                         lpYYRes = (*lpPrimProtoLft) (&tkLftArg,         // Ptr to left arg token
                                            (LPTOKEN) &YYFcnStrLft,      // Ptr to left operand function strand
                                                      &tkRhtArg,         // Ptr to right arg token
-                                                      lptkAxis);        // Ptr to axis token (may be NULL)
+                                                      lptkAxisOpr);     // Ptr to axis token (may be NULL)
                     else
                         lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
                                                      &YYFcnStrLft,      // Ptr to function strand
                                                      &tkRhtArg,         // Ptr to right arg token
-                                                      lptkAxis);        // Ptr to axis token (may be NULL)
+                                                      lptkAxisOpr);     // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens
                     FreeResultTkn (&tkRhtArg);
                     FreeResultTkn (&tkLftArg);
@@ -1102,12 +1102,12 @@ RESTART_EXCEPTION:
                         lpYYRes = (*lpPrimProtoLft) (&tkLftArg,         // Ptr to left arg token
                                             (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
                                                      &tkRhtArg,         // Ptr to right arg token
-                                                      lptkAxis);        // Ptr to axis token (may be NULL)
+                                                      lptkAxisOpr);     // Ptr to axis token (may be NULL)
                     else
                         lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
                                                       lpYYFcnStrLft,    // Ptr to function strand
                                                      &tkRhtArg,         // Ptr to right arg token
-                                                      lptkAxis);        // Ptr to axis token (may be NULL)
+                                                      lptkAxisOpr);     // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens
                     FreeResultTkn (&tkRhtArg);
                     FreeResultTkn (&tkLftArg);
@@ -1452,7 +1452,7 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))

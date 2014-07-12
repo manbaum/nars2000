@@ -165,8 +165,8 @@ LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -255,8 +255,8 @@ LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr));
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     return
       PrimOpVariantCommon_EM_YY (NULL,                // Ptr to left arg token (may be NULL if monadic derived function)
@@ -414,9 +414,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             lpYYRes =
               ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
                               lpYYFcnStrLft,        // Ptr to function strand
-                              lptkRhtArg,           // Ptr to right arg token
-                              FALSE,                // TRUE iff we should free the left arg on exit
-                              FALSE);               // ...                         right ...
+                              lptkRhtArg);          // Ptr to right arg token
             // Restore the original values
             SetQuadIO (bQuadIO);
             SetQuadCT (fQuadCT);
@@ -471,9 +469,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             lpYYRes =
               ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
                               lpYYFcnStrLft,        // Ptr to function strand
-                              lptkRhtArg,           // Ptr to right arg token
-                              FALSE,                // TRUE iff we should free the left arg on exit
-                              FALSE);               // ...                         right ...
+                              lptkRhtArg);          // Ptr to right arg token
             // Restore the original values
             SetQuadIO (bQuadIO);
 
@@ -518,9 +514,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             lpYYRes =
               ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
                               lpYYFcnStrLft,        // Ptr to function strand
-                              lptkRhtArg,           // Ptr to right arg token
-                              FALSE,                // TRUE iff we should free the left arg on exit
-                              FALSE);               // ...                         right ...
+                              lptkRhtArg);          // Ptr to right arg token
             // Restore the original value for VFPs
             SetQuadPPV (uQuadPPV);
 
@@ -591,9 +585,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             lpYYRes =
               ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
                               lpYYFcnStrLft,        // Ptr to function strand
-                              lptkRhtArg,           // Ptr to right arg token
-                              FALSE,                // TRUE iff we should free the left arg on exit
-                              FALSE);               // ...                         right ...
+                              lptkRhtArg);          // Ptr to right arg token
             // Restore the original value
             SetQuadCT (fQuadCT);
 
@@ -730,9 +722,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             lpYYRes =
               ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
                               lpYYFcnStrLft,        // Ptr to function strand
-                              lptkRhtArg,           // Ptr to right arg token
-                              FALSE,                // TRUE iff we should free the left arg on exit
-                              FALSE);               // ...                         right ...
+                              lptkRhtArg);          // Ptr to right arg token
             // Restore the original values
             SetQuadDT (cQuadDT);
             SetQuadCT (bQuadIO);
@@ -837,9 +827,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////    lpYYRes2 =
 ////////      ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
 ////////                      lpYYFcnStrLft,        // Ptr to function strand
-////////                      lptkRhtArg,           // Ptr to right arg token
-////////                      FALSE,                // TRUE iff we should free the left arg on exit
-////////                      FALSE);               // ...                         right ...
+////////                      lptkRhtArg);          // Ptr to right arg token
 ////////    // If the result is valid, ...
 ////////    if (lpYYRes2)
 ////////    {
@@ -1136,8 +1124,8 @@ LPPL_YYSTYPE PrimOpDydVariantCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr));
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     return
       PrimOpVariantCommon_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)

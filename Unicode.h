@@ -47,7 +47,6 @@
 #define UTF16_LEFTRIGHTARROWS     0x2194        // Left-right arrows
 #define UTF16_UPDOWNARROWS        0x2195        // Up-down arrows
 #define UTF16_CIRCLESLASH         0x2205        //
-#define UTF16_CHECKMARK           0x221A        // Check mark
 #define UTF16_DIERESISDOT         0x2235        //
 #define UTF16_NAND                0x22BC        //
 #define UTF16_NOR                 0x22BD        //
@@ -325,7 +324,6 @@
 #define WS_UTF16_LEFTRIGHTARROWS     L"\x2194"  // Left-right arrows
 #define WS_UTF16_UPDOWNARROWS        L"\x2195"  // Up-down arrows
 #define WS_UTF16_CIRCLESLASH         L"\x2205"  //
-#define WS_UTF16_CHECKMARK           L"\x221A"  // Check mark
 #define WS_UTF16_DIERESISDOT         L"\x2235"  //
 #define WS_UTF16_NAND                l"\x22BC"  //
 #define WS_UTF16_NOR                 L"\x22BD"  //

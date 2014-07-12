@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 //  $PrimOpDieresisDownTack_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    dyadic operator DieresisDownTack (ERROR and "convolution")
+//    dyadic operator DieresisDownTack (ERROR and "Convolution")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -53,11 +53,11 @@ LPPL_YYSTYPE PrimOpDieresisDownTack_EM_YY
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return PrimOpMonDieresisDownTack_EM_YY (lpYYFcnStrOpr,      // Ptr to operator function strand
-                                                   lptkRhtArg);     // Ptr to right arg token
+                                                lptkRhtArg);        // Ptr to right arg token
     else
         return PrimOpDydDieresisDownTack_EM_YY (lptkLftArg,         // Ptr to left arg token
-                                                   lpYYFcnStrOpr,   // Ptr to operator function strand
-                                                   lptkRhtArg);     // Ptr to right arg token
+                                                lpYYFcnStrOpr,      // Ptr to operator function strand
+                                                lptkRhtArg);        // Ptr to right arg token
 } // End PrimOpDieresisDownTack_EM_YY
 #undef  APPEND_NAME
 
@@ -66,7 +66,7 @@ LPPL_YYSTYPE PrimOpDieresisDownTack_EM_YY
 //  $PrimProtoOpDieresisDownTack_EM_YY
 //
 //  Generate a prototype for the derived functions from
-//    dyadic operator DieresisDownTack (ERROR and "convolution")
+//    dyadic operator DieresisDownTack (ERROR and "Convolution")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -98,16 +98,16 @@ LPPL_YYSTYPE PrimProtoOpDieresisDownTack_EM_YY
         //***************************************************************
         // Called monadically
         //***************************************************************
-        return PrimOpMonDieresisDownTack_EM_YY (lpYYFcnStrOpr,      // Ptr to operator function strand
-                                                   lptkRhtArg);     // Ptr to right arg token
+        return PrimOpMonDieresisDownTack_EM_YY (lpYYFcnStrOpr,          // Ptr to operator function strand
+                                                lptkRhtArg);            // Ptr to right arg token
     else
         //***************************************************************
         // Called dyadically
         //***************************************************************
-        return PrimOpDydDieresisDownTackCommon_EM_YY (lptkLftArg,           // Ptr to left arg token
-                                                         lpYYFcnStrOpr,     // Ptr to operator function strand
-                                                         lptkRhtArg,        // Ptr to right arg token
-                                                         TRUE);             // TRUE iff prototyping
+        return PrimOpDydDieresisDownTackCommon_EM_YY (lptkLftArg,       // Ptr to left arg token
+                                                      lpYYFcnStrOpr,    // Ptr to operator function strand
+                                                      lptkRhtArg,       // Ptr to right arg token
+                                                      TRUE);            // TRUE iff prototyping
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
@@ -159,8 +159,8 @@ LPPL_YYSTYPE PrimIdentOpDieresisDownTack_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -233,7 +233,7 @@ LPPL_YYSTYPE PrimOpMonDieresisDownTack_EM_YY
 //  $PrimOpDieresisDownTackCommon_EM_YY
 //
 //  Primitive operator for monadic & dyadic derived function
-//    from DieresisDownTack ("convolution")
+//    from DieresisDownTack ("Convolution")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -321,7 +321,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  Magic function/operator for dyadic derived function from the convolution dyadic operator
+//  Magic function/operator for dyadic derived function from the dyadic Convolution Operator
 //
 //  This operator is based upon design from the original NARS system.
 //***************************************************************************
@@ -332,7 +332,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $PrimOpDydDieresisDownTack_EM_YY
 //
-//  Primitive operator for dyadic derived function from DieresisDownTack ("convolution")
+//  Primitive operator for dyadic derived function from DieresisDownTack ("Convolution")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpDydDieresisDownTack_EM_YY
@@ -342,16 +342,16 @@ LPPL_YYSTYPE PrimOpDydDieresisDownTack_EM_YY
 
 {
     return PrimOpDydDieresisDownTackCommon_EM_YY (lptkLftArg,       // Ptr to left arg token
-                                             lpYYFcnStrOpr, // Ptr to operator function strand
-                                             lptkRhtArg,    // Ptr to right arg token
-                                             FALSE);        // TRUE iff prototyping
+                                                  lpYYFcnStrOpr,    // Ptr to operator function strand
+                                                  lptkRhtArg,       // Ptr to right arg token
+                                                  FALSE);           // TRUE iff prototyping
 } // End PrimOpDydDieresisDownTack_EM_YY
 
 
 //***************************************************************************
 //  $PrimOpDydDieresisDownTackCommon_EM_YY
 //
-//  Primitive operator for dyadic derived function from DieresisDownTack ("convolution")
+//  Primitive operator for dyadic derived function from DieresisDownTack ("Convolution")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpDydDieresisDownTackCommon_EM_YY
@@ -366,16 +366,16 @@ LPPL_YYSTYPE PrimOpDydDieresisDownTackCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     return
       PrimOpDieresisDownTackCommon_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic derived function)
-                                             lpYYFcnStrLft,     // Ptr to left operand function strand
-                                             lpYYFcnStrOpr,     // Ptr to operator function strand
-                                             lpYYFcnStrRht,     // Ptr to right operand function strand
-                                             lptkRhtArg,        // Ptr to right arg token
-                                             bPrototyping);     // TRUE iff protoyping
+                                          lpYYFcnStrLft,        // Ptr to left operand function strand
+                                          lpYYFcnStrOpr,        // Ptr to operator function strand
+                                          lpYYFcnStrRht,        // Ptr to right operand function strand
+                                          lptkRhtArg,           // Ptr to right arg token
+                                          bPrototyping);        // TRUE iff protoyping
 } // End PrimOpDydDieresisDownTackCommon_EM_YY
 
 

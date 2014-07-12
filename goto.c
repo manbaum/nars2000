@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -191,168 +191,171 @@ EXIT_TYPES GotoLine_EM
         goto NORMAL_EXIT;
     } // End IF
 
-    // Ensure line # is within range
-    if (aplIntegerRht < 0
-     || aplIntegerRht > UINT_MAX)
-        aplIntegerRht = -1;
-
-    // Peel back to non-ImmExec, non-Execute, non-Quad layer
-    while (lpSISCur
-        && (lpSISCur->DfnType EQ DFNTYPE_IMM
-         || lpSISCur->DfnType EQ DFNTYPE_QUAD
-         || lpSISCur->DfnType EQ DFNTYPE_EXEC))
-        lpSISCur = lpSISCur->lpSISPrv;
-
-    // If we're at a UDFO layer, ...
-    if (lpSISCur NE NULL)
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
-
-    if (lpSISCur NE NULL
-     && !bExecEC
-     && aplIntegerRht > 0
-     && aplIntegerRht <= lpMemDfnHdr->numFcnLines)
+    // If we're not in []EC, ...
+    if (!bExecEC)
     {
-        UINT         uStmtLen,          // Statement length (in TOKENs)
-                     TokenCnt;          // Token count in this line
-        LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
+        // Ensure line # is within range
+        if (aplIntegerRht < 0
+         || aplIntegerRht > UINT_MAX)
+            aplIntegerRht = -1;
 
-        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+        // Peel back to non-ImmExec, non-Execute, non-Quad layer
+        while (lpSISCur
+            && (lpSISCur->DfnType EQ DFNTYPE_IMM
+             || lpSISCur->DfnType EQ DFNTYPE_QUAD
+             || lpSISCur->DfnType EQ DFNTYPE_EXEC))
+            lpSISCur = lpSISCur->lpSISPrv;
 
-        // Get a ptr to the corresponding tokenized line's global memory
-        lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[aplIntegerRht - 1].offTknLine);
+        // If we're at a UDFO layer, ...
+        if (lpSISCur NE NULL)
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
 
-        // Get the token count
-        TokenCnt = lpMemTknHdr->TokenCnt;
-
-        // Skip over the header to the data
-        lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
-
-        Assert (lpMemTknLine->tkFlags.TknType EQ TKT_EOS
-             || lpMemTknLine->tkFlags.TknType EQ TKT_EOL);
-        // Get the EOS/EOL token length and skip over it
-        uStmtLen = lpMemTknLine->tkData.tkIndex;
-        lpMemTknLine++; TokenCnt--;
-
-        // Check for and skip over line label
-        if (TokenCnt > 1
-         && lpMemTknLine[1].tkFlags.TknType EQ TKT_LABELSEP)
+        if (lpSISCur NE NULL
+         && aplIntegerRht > 0
+         && aplIntegerRht <= lpMemDfnHdr->numFcnLines)
         {
-            lpMemTknLine += 2; TokenCnt -= 2;
+            UINT         uStmtLen,          // Statement length (in TOKENs)
+                         TokenCnt;          // Token count in this line
+            LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
+
+            // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+            lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+            // Get a ptr to the corresponding tokenized line's global memory
+            lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[aplIntegerRht - 1].offTknLine);
+
+            // Get the token count
+            TokenCnt = lpMemTknHdr->TokenCnt;
+
+            // Skip over the header to the data
+            lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
+
+            Assert (lpMemTknLine->tkFlags.TknType EQ TKT_EOS
+                 || lpMemTknLine->tkFlags.TknType EQ TKT_EOL);
+            // Get the EOS/EOL token length and skip over it
+            uStmtLen = lpMemTknLine->tkData.tkIndex;
+            lpMemTknLine++; TokenCnt--;
+
+            // Check for and skip over line label
+            if (TokenCnt > 1
+             && lpMemTknLine[1].tkFlags.TknType EQ TKT_LABELSEP)
+            {
+                lpMemTknLine += 2; TokenCnt -= 2;
+            } // End IF
+
+            // Get the next token and its type
+            tkNxt = *lpMemTknLine;
+            TknType = tkNxt.tkFlags.TknType;
+
+            // Check for branch to non-restartable Control Structure tokens:
+            //   CASE, CASELIST (both covered by SKIPCASE)
+            if (TknType EQ TKT_CS_SKIPCASE)
+                goto DESTIN_EXIT;
+
+            // Get a ptr to the PL local vars
+            lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+            // If the target is an ELSE stmt, skip to the next stmt
+            //   and execute that one
+            if (TknType EQ TKT_CS_ELSE)
+                // Skip over the ELSE stmt
+                uTknNum = uStmtLen;
+            else
+            // If the target is a FOR/FORLCL stmt, ensure that the identifier
+            //  on the FORSTMT stack is the same as the one in the EndFor
+            //  token.
+            if (TknType EQ TKT_CS_ENDFOR
+             || TknType EQ TKT_CS_ENDFORLCL)
+            {
+                // If there's no previous entry on the FORSTMT stack, ...
+                if (lpSISCur EQ NULL
+                 || lpSISCur->lpForStmtBase EQ lpSISCur->lpForStmtNext)
+                    goto DESTIN_EXIT;
+
+                // Compare the current FOR/FORLCL stmt identifier from the FORSTMT stack
+                //   with the CLIndex in the ENDFOR/ENDFORLCL stmt -- if they are unequal,
+                //   then this ENDFOR/ENDFORLCL stmt is not restartable (we're starting in
+                //   the middle of a FOR/FORLCL stmt which has not been initialized
+                //   or is out of nested sequence).
+                if (lpSISCur->lpForStmtNext[-1].uForStmtID
+                 NE tkNxt.tkData.uCLIndex)
+                    goto DESTIN_EXIT;
+            } // End IF/ELSE/IF
         } // End IF
 
-        // Get the next token and its type
-        tkNxt = *lpMemTknLine;
-        TknType = tkNxt.tkFlags.TknType;
-
-        // Check for branch to non-restartable Control Structure tokens:
-        //   CASE, CASELIST (both covered by SKIPCASE)
-        if (TknType EQ TKT_CS_SKIPCASE)
-            goto DESTIN_EXIT;
-
-        // Get a ptr to the PL local vars
-        lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
-
-        // If the target is an ELSE stmt, skip to the next stmt
-        //   and execute that one
-        if (TknType EQ TKT_CS_ELSE)
-            // Skip over the ELSE stmt
-            uTknNum = uStmtLen;
-        else
-        // If the target is a FOR/FORLCL stmt, ensure that the identifier
-        //  on the FORSTMT stack is the same as the one in the EndFor
-        //  token.
-        if (TknType EQ TKT_CS_ENDFOR
-         || TknType EQ TKT_CS_ENDFORLCL)
+        // If we're at a UDFO layer, ...
+        if (lpSISCur NE NULL)
         {
-            // If there's no previous entry on the FORSTMT stack, ...
-            if (lpSISCur EQ NULL
-             || lpSISCur->lpForStmtBase EQ lpSISCur->lpForStmtNext)
-                goto DESTIN_EXIT;
+            // We no longer need this ptr
+            MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
+        } // End IF
 
-            // Compare the current FOR/FORLCL stmt identifier from the FORSTMT stack
-            //   with the CLIndex in the ENDFOR/ENDFORLCL stmt -- if they are unequal,
-            //   then this ENDFOR/ENDFORLCL stmt is not restartable (we're starting in
-            //   the middle of a FOR/FORLCL stmt which has not been initialized
-            //   or is out of nested sequence).
-            if (lpSISCur->lpForStmtNext[-1].uForStmtID
-             NE tkNxt.tkData.uCLIndex)
-                goto DESTIN_EXIT;
-        } // End IF/ELSE/IF
+        // Split cases based upon the function type
+        switch (lpMemPTD->lpSISCur->DfnType)
+        {
+            case DFNTYPE_IMM:       // Restart execution in a suspended function
+                // If there's a suspended function, ...
+                if (lpMemPTD->lpSISCur->lpSISPrv)
+                {
+                    // Save as the next line & token #s
+                    lpMemPTD->lpSISCur->lpSISPrv->NxtLineNum = (UINT) aplIntegerRht;
+                    lpMemPTD->lpSISCur->lpSISPrv->NxtTknNum  = uTknNum;
+
+                    // Mark as no longer suspended
+                    lpMemPTD->lpSISCur->lpSISPrv->Suspended = FALSE;
+                } // End IF
+
+                break;
+
+            case DFNTYPE_OP1:
+            case DFNTYPE_OP2:
+            case DFNTYPE_FCN:       // Jump to a new line #
+                // If there's a suspended function, ...
+                if (lpMemPTD->lpSISCur)
+                {
+                    // Save as the next line & token #s
+                    lpMemPTD->lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
+                    lpMemPTD->lpSISCur->NxtTknNum  = uTknNum;
+
+                    // Mark as no longer suspended
+                    lpMemPTD->lpSISCur->Suspended = FALSE;
+                } // End IF
+
+                break;
+
+            case DFNTYPE_EXEC:
+            case DFNTYPE_QUAD:
+                // Peel back to the first non-Imm/Exec layer
+                //   starting with the previous SIS header
+                lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
+
+                // If there's a suspended user-defined function/operator, ...
+                if (lpSISCur
+                 && (lpSISCur->DfnType EQ DFNTYPE_OP1
+                  || lpSISCur->DfnType EQ DFNTYPE_OP2
+                  || lpSISCur->DfnType EQ DFNTYPE_FCN))
+                {
+                    // Save as the next line & token #s
+                    lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
+                    lpSISCur->NxtTknNum  = uTknNum;
+
+                    // Mark as no longer suspended
+                    lpSISCur->Suspended = FALSE;
+
+                    // Save the suspended function's semaphore as the one to signal
+                    lpMemPTD->lpSISCur->hSigaphore = lpSISCur->hSemaphore;
+                } // End IF
+
+                break;
+
+            defstop
+                break;
+        } // End IF/SWITCH
     } // End IF
-
-    // If we're at a UDFO layer, ...
-    if (lpSISCur NE NULL)
-        // We no longer need this ptr
-        MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
 
     // Save the exit type
     exitType = EXITTYPE_GOTO_LINE;
-
-    // If we're not executing under []EC, ...
-    if (!bExecEC)
-    // Split cases based upon the function type
-    switch (lpMemPTD->lpSISCur->DfnType)
-    {
-        case DFNTYPE_IMM:       // Restart execution in a suspended function
-            // If there's a suspended function, ...
-            if (lpMemPTD->lpSISCur->lpSISPrv)
-            {
-                // Save as the next line & token #s
-                lpMemPTD->lpSISCur->lpSISPrv->NxtLineNum = (UINT) aplIntegerRht;
-                lpMemPTD->lpSISCur->lpSISPrv->NxtTknNum  = uTknNum;
-
-                // Mark as no longer suspended
-                lpMemPTD->lpSISCur->lpSISPrv->Suspended = FALSE;
-            } // End IF
-
-            break;
-
-        case DFNTYPE_OP1:
-        case DFNTYPE_OP2:
-        case DFNTYPE_FCN:       // Jump to a new line #
-            // If there's a suspended function, ...
-            if (lpMemPTD->lpSISCur)
-            {
-                // Save as the next line & token #s
-                lpMemPTD->lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
-                lpMemPTD->lpSISCur->NxtTknNum  = uTknNum;
-
-                // Mark as no longer suspended
-                lpMemPTD->lpSISCur->Suspended = FALSE;
-            } // End IF
-
-            break;
-
-        case DFNTYPE_EXEC:
-        case DFNTYPE_QUAD:
-            // Peel back to the first non-Imm/Exec layer
-            //   starting with the previous SIS header
-            lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
-
-            // If there's a suspended user-defined function/operator, ...
-            if (lpSISCur
-             && (lpSISCur->DfnType EQ DFNTYPE_OP1
-              || lpSISCur->DfnType EQ DFNTYPE_OP2
-              || lpSISCur->DfnType EQ DFNTYPE_FCN))
-            {
-                // Save as the next line & token #s
-                lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
-                lpSISCur->NxtTknNum  = uTknNum;
-
-                // Mark as no longer suspended
-                lpSISCur->Suspended = FALSE;
-
-                // Save the suspended function's semaphore as the one to signal
-                lpMemPTD->lpSISCur->hSigaphore = lpSISCur->hSemaphore;
-            } // End IF
-
-            break;
-
-        defstop
-            break;
-    } // End IF/SWITCH
 
     goto NORMAL_EXIT;
 

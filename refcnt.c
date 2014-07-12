@@ -92,21 +92,11 @@ int ChangeRefCntDir_PTB
 #endif
                         RefCnt = NEG1U;
 
-                        // If we're to skip this RefCnt increment, ...
-                        if (iIncr EQ 1
-                         && lpHeader->SkipRefCntIncr)
-                            // Clear the flag
-                            lpHeader->SkipRefCntIncr = FALSE;
-
                         break;
                     } // End IF
 
                     // Change the reference count
 #ifdef DEBUG_REFCNT
-                    if (iIncr EQ 1
-                     && lpHeader->SkipRefCntIncr)
-                        dprintfWL0 (L"  RefCnt** in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt        , FNLN);
-                    else
                     if (iIncr EQ 1)
                         dprintfWL0 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
@@ -117,18 +107,8 @@ int ChangeRefCntDir_PTB
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
 
-                    // If we're to skip this RefCnt increment, ...
-                    if (iIncr EQ 1
-                     && lpHeader->SkipRefCntIncr)
-                        // Clear the flag
-                        lpHeader->SkipRefCntIncr = FALSE;
-                    else
-                    {
-                        // Clear the flag
-                        lpHeader->SkipRefCntIncr = FALSE;
-
-                        lpHeader->RefCnt += iIncr;
-                    } // End IF/ELSE
+                    // Change the reference count
+                    lpHeader->RefCnt += iIncr;
 
                     RefCnt = lpHeader->RefCnt;
 #undef  lpHeader
@@ -142,10 +122,6 @@ int ChangeRefCntDir_PTB
 #endif
                     // Change the reference count
 #ifdef DEBUG_REFCNT
-                    if (iIncr EQ 1
-                     && lpHeader->SkipRefCntIncr)
-                        dprintfWL0 (L"  RefCnt** in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt        , FNLN);
-                    else
                     if (iIncr EQ 1)
                         dprintfWL0 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
@@ -156,18 +132,8 @@ int ChangeRefCntDir_PTB
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
 
-                    // If we're to skip this RefCnt increment, ...
-                    if (iIncr EQ 1
-                     && lpHeader->SkipRefCntIncr)
-                        // Clear the flag
-                        lpHeader->SkipRefCntIncr = FALSE;
-                    else
-                    {
-                        // Clear the flag
-                        lpHeader->SkipRefCntIncr = FALSE;
-
-                        lpHeader->RefCnt += iIncr;
-                    } // End IF/ELSE
+                    // Change the reference count
+                    lpHeader->RefCnt += iIncr;
 
                     RefCnt = lpHeader->RefCnt;
 #undef  lpHeader
@@ -180,23 +146,8 @@ int ChangeRefCntDir_PTB
   #define lpHeader      ((LPDFN_HEADER) lpSig)
 #endif
 
-                    // Don't change the reference count on permanent functions (i.e. Magic Functions/Operators)
-                    if (lpHeader->PermFn)
-                    {
-#ifdef DEBUG_REFCNT
-                        dprintfWL0 (L"  RefCntNC in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt, FNLN);
-#endif
-                        RefCnt = NEG1U;
-
-                        break;
-                    } // End IF
-
                     // Change the reference count
 #ifdef DEBUG_REFCNT
-                    if (iIncr EQ 1
-                     && lpHeader->SkipRefCntIncr)
-                        dprintfWL0 (L"  RefCnt** in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt        , FNLN);
-                    else
                     if (iIncr EQ 1)
                         dprintfWL0 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
                     else
@@ -207,18 +158,8 @@ int ChangeRefCntDir_PTB
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
 
-                    // If we're to skip this RefCnt increment, ...
-                    if (iIncr EQ 1
-                     && lpHeader->SkipRefCntIncr)
-                        // Clear the flag
-                        lpHeader->SkipRefCntIncr = FALSE;
-                    else
-                    {
-                        // Clear the flag
-                        lpHeader->SkipRefCntIncr = FALSE;
-
-                        lpHeader->RefCnt += iIncr;
-                    } // End IF/ELSE
+                    // Change the reference count
+                    lpHeader->RefCnt += iIncr;
 
                     RefCnt = lpHeader->RefCnt;
 #undef  lpHeader

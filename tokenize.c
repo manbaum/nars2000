@@ -24,6 +24,9 @@
 #include <windows.h>
 #include <math.h>
 #include "headers.h"
+#define EXTERN  extern
+#include "tokenso.h"
+#undef  EXTERN
 
 
 ////#define EXEC_TRACE
@@ -47,6 +50,8 @@ functions, etc. as necessary.
 #ifdef DEBUG
 UINT gInUse = 0;
 #endif
+
+extern TOKEN_SO tokenSo[];
 
 #define DEF_TOKEN_SIZE  1024    // Default initial amount of memory
                                 //   allocated for the tokenized line
@@ -1703,6 +1708,7 @@ UBOOL fnAsnDone
 {
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
+    UBOOL      bAFO;                    // TRUE iff this stmt is in an AFO
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnAsnDone");
@@ -1711,14 +1717,17 @@ UBOOL fnAsnDone
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
-    // If we're in an AFO,
-    //   and not the function header, ...
+    // Are we in an AFO?
+    bAFO = lptkLocalVars->lpSF_Fcns->bAFO;
+
     // This code may be called from <savefcn.c> as well as <sc_load.c>.
-    if (lptkLocalVars->lpSF_Fcns->bAFO
-     && lptkLocalVars->Orig.d.uLineNum NE 0)
+
+    // If this is not the function header, ...
+    if (lptkLocalVars->Orig.d.uLineNum NE 0)
     {
         LPTOKEN lptkCur;            // Loop counter
-        UBOOL   bInStrand = FALSE;  // TRUE iff inside a strand of names, e.g. (A B C){is}...
+        UBOOL   bInStrand = FALSE,  // TRUE iff inside a strand of names, e.g. (A B C){is}...
+                b1stName  = TRUE;   // TRUE iff the first name
 
         // Loop backwards through the tokens
         for (lptkCur = &lptkLocalVars->lptkNext[-1];
@@ -1726,78 +1735,94 @@ UBOOL fnAsnDone
              lptkCur--)
         if (IsTknNamed (lptkCur))
         {
-            HGLOBAL hGlbName;
-            LPWCHAR lpwszName;
+            // If not the first name and not in a strand of names, ...
+            if (!b1stName
+             && !bInStrand)
+                break;
 
-            Assert (GetPtrTypeDir (lptkCur->tkData.tkVoid) EQ PTRTYPE_STCONST);
+            // Mark as assignment into this name for use in <ParseLine>
+            lptkCur->tkFlags.bAssignName = TRUE;
+            lptkCur->tkSynObj = soNAM;
 
-            // Get the name's global memory handle
-            hGlbName = lptkCur->tkData.tkSym->stHshEntry->htGlbName;
-
-            // Lock the memory to get a ptr to it
-            lpwszName = MyGlobalLock (hGlbName);
-
-            // Allow assignment into {alpha}, but none of the other special names
-            if (IsAfoName (lpwszName, lstrlenW (lpwszName))
-             && lstrcmpW (lpwszName, WS_UTF16_ALPHA) NE 0)
-                // Mark the stmt as a SYNTAX ERROR
-                lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
-            else
+            // If we're in an AFO, ...
+            if (bAFO)
             {
-                LPTOKEN lptkCur2;           // Loop counter
+                HGLOBAL hGlbName;
+                LPWCHAR lpwszName;
 
-                if (lstrcmpW (lpwszName, WS_UTF16_ALPHA) EQ 0)
-                {
-                    // Mark the stmt as assignment into {alpha}
-                    lptkLocalVars->lptkLastEOS->tkFlags.bSetAlpha = TRUE;
-                    if (lptkLocalVars->lpSF_Fcns->bAFO)
-                        lptkLocalVars->lpSF_Fcns->bSetAlpha = TRUE;
-                } // End IF
+                Assert (GetPtrTypeDir (lptkCur->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-                // Ensure that the SymEntry is local to lptkLocalVars->lpHTS
-                lptkCur->tkData.tkSym =
-                  _SymTabAppendName_EM (lpwszName,              // Ptr to name
-                                        NULL,                   // Ptr to incoming stFlags (may be NULL)
-                                        TRUE,                   // TRUE iff the name is to be local to the given HTS
-                                        lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
-                if (lptkLocalVars->lpSF_Fcns->lplpLocalSTEs)
-                    // Save the LPSYMENTRY
-                    *lptkLocalVars->lpSF_Fcns->lplpLocalSTEs++ = lptkCur->tkData.tkSym;
+                // Get the name's global memory handle
+                hGlbName = lptkCur->tkData.tkSym->stHshEntry->htGlbName;
+
+                // Lock the memory to get a ptr to it
+                lpwszName = MyGlobalLock (hGlbName);
+
+                // Allow assignment into {alpha}, but none of the other special names
+                if (IsAfoName (lpwszName, lstrlenW (lpwszName))
+                 && lstrcmpW (lpwszName, WS_UTF16_ALPHA) NE 0)
+                    // Mark the stmt as a SYNTAX ERROR
+                    lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
                 else
-                    // Count in another name
-                    lptkLocalVars->lpSF_Fcns->numLocalsSTE++;
-
-                // In case this assignment is to the right of a reference to the same name
-                //   in the same stmt, we need to change that STE to the local name
-                // Loop backwards through the tokens
-                for (lptkCur2 = &lptkLocalVars->lptkNext[-1];
-                     lptkCur2 >= lptkLocalVars->lptkStart;
-                     lptkCur2--)
-                if (IsTknNamed (lptkCur2))
                 {
-                    HGLOBAL hGlbName2;
-                    LPWCHAR lpwszName2;
+                    LPTOKEN lptkCur2;           // Loop counter
 
-                    Assert (GetPtrTypeDir (lptkCur2->tkData.tkVoid) EQ PTRTYPE_STCONST);
+                    if (lstrcmpW (lpwszName, WS_UTF16_ALPHA) EQ 0)
+                    {
+                        // Mark the stmt as assignment into {alpha}
+                        lptkLocalVars->lptkLastEOS->tkFlags.bSetAlpha = TRUE;
+                        if (lptkLocalVars->lpSF_Fcns->bAFO)
+                            lptkLocalVars->lpSF_Fcns->bSetAlpha = TRUE;
+                    } // End IF
 
-                    // Get the name's global memory handle
-                    hGlbName2 = lptkCur2->tkData.tkSym->stHshEntry->htGlbName;
+                    // Ensure that the SymEntry is local to lptkLocalVars->lpHTS
+                    lptkCur->tkData.tkSym =
+                      _SymTabAppendName_EM (lpwszName,              // Ptr to name
+                                            NULL,                   // Ptr to incoming stFlags (may be NULL)
+                                            TRUE,                   // TRUE iff the name is to be local to the given HTS
+                                            lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
+                    if (lptkLocalVars->lpSF_Fcns->lplpLocalSTEs)
+                        // Save the LPSYMENTRY
+                        *lptkLocalVars->lpSF_Fcns->lplpLocalSTEs++ = lptkCur->tkData.tkSym;
+                    else
+                        // Count in another name
+                        lptkLocalVars->lpSF_Fcns->numLocalsSTE++;
 
-                    // Lock the memory to get a ptr to it
-                    lpwszName2 = MyGlobalLock (hGlbName2);
+                    // In case this assignment is to the right of a reference to the same name
+                    //   in the same stmt, we need to change that STE to the local name
+                    // Loop backwards through the tokens
+                    for (lptkCur2 = &lptkLocalVars->lptkNext[-1];
+                         lptkCur2 >= lptkLocalVars->lptkStart;
+                         lptkCur2--)
+                    if (IsTknNamed (lptkCur2))
+                    {
+                        HGLOBAL hGlbName2;
+                        LPWCHAR lpwszName2;
 
-                    // If it's the same name, ...
-                    if (lstrcmpW (lpwszName, lpwszName2) EQ 0)
-                        // Ensure that the SymEntry is local to lptkLocalVars->lpHTS
-                        lptkCur2->tkData.tkSym = lptkCur->tkData.tkSym;
+                        Assert (GetPtrTypeDir (lptkCur2->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbName2); lpwszName2 = NULL;
+                        // Get the name's global memory handle
+                        hGlbName2 = lptkCur2->tkData.tkSym->stHshEntry->htGlbName;
+
+                        // Lock the memory to get a ptr to it
+                        lpwszName2 = MyGlobalLock (hGlbName2);
+
+                        // If it's the same name, ...
+                        if (lstrcmpW (lpwszName, lpwszName2) EQ 0)
+                            // Ensure that the SymEntry is local to lptkLocalVars->lpHTS
+                            lptkCur2->tkData.tkSym = lptkCur->tkData.tkSym;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbName2); lpwszName2 = NULL;
+                    } // End IF
                 } // End IF
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbName); lpwszName = NULL;
             } // End IF
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbName); lpwszName = NULL;
+            // Mark as no longer the first name
+            b1stName = FALSE;
         } else
         if (lptkCur->tkFlags.TknType EQ TKT_RIGHTPAREN
          && !bInStrand)
@@ -1807,6 +1832,11 @@ UBOOL fnAsnDone
 
             // ***FIXME*** -- Should we localize a name in selective assignment???
         } else
+        if (lptkCur->tkFlags.TknType EQ TKT_RIGHTBRACKET
+         && !bInStrand)
+            // Skip to the matching left bracket
+            lptkCur = &lptkLocalVars->lptkStart[lptkCur->tkData.tkIndex];
+        else
             break;
     } // End IF
 
@@ -1975,8 +2005,8 @@ UBOOL fnClnDone
         bSyntErr = lptkLocalVars->lptkLastEOS->tkFlags.bGuardStmt;
 
         if (lptkLocalVars->lptkLastEOS[1].tkFlags.TknType EQ TKT_NOP)
-            // Change the token type from NOP to AFOGUARD
-            lptkLocalVars->lptkLastEOS[1].tkFlags.TknType = TKT_AFOGUARD;
+            // Change the token type from NOP to AFOGUARD and set the SYNOBJ
+            SetTknTypeSynObj (&lptkLocalVars->lptkLastEOS[1], TKT_AFOGUARD);
 
         // End the stmt
         if (!fnDiaDone (lptkLocalVars))
@@ -1984,7 +2014,7 @@ UBOOL fnClnDone
         Assert (lptkLocalVars->lptkLastEOS[1].tkFlags.TknType EQ TKT_NOP);
 
         // Change the token type to AFORETURN
-        lptkLocalVars->lptkLastEOS[1].tkFlags.TknType = TKT_AFORETURN;
+        SetTknTypeSynObj (&lptkLocalVars->lptkLastEOS[1], TKT_AFORETURN);
 
         // Mark as the previous stmt is a guard stmt
         lptkLocalVars->lptkLastEOS->tkFlags.bGuardStmt = TRUE;
@@ -2237,7 +2267,7 @@ UBOOL scCtrlDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    UINT uCnt;              // Loop counter
+    UINT uCnt;                          // Loop counter
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"scCtrlDone");
@@ -2260,7 +2290,7 @@ UBOOL scCtrlDone
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =
           gSyntaxColorName[SC_CTRLSTRUC].syntClr;
-    } // End IF
+    } // End FOR
 
     // Skip over the name
     // ("- 1" to account for the ++ at the end of the FOR stmt)
@@ -4464,8 +4494,7 @@ UBOOL fnDiaDone
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
     // Test for mismatched or improperly nested grouping symbols
-    if (!CheckGroupSymbols_EM (lptkLocalVars))
-        return FALSE;
+    CheckGroupSymbols_EM (lptkLocalVars);
 
     // Mark as an SOS
     tkFlags.TknType = TKT_SOS;
@@ -5286,8 +5315,7 @@ __try
                 TOKEN_DATA tkData = {0};        // Token data
 
                 // Test for mismatched or improperly nested grouping symbols
-                if (!CheckGroupSymbols_EM (&tkLocalVars))
-                    goto ERROR_EXIT;
+                CheckGroupSymbols_EM (&tkLocalVars);
 
                 // Mark as an SOS
                 tkFlags.TknType = TKT_SOS;
@@ -5460,13 +5488,7 @@ FREED_EXIT:
 //  Check for mismatched or improperly nested grouping symbols
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CheckGroupSymbols_EM"
-#else
-#define APPEND_NAME
-#endif
-
-UBOOL CheckGroupSymbols_EM
+void CheckGroupSymbols_EM
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
@@ -5474,9 +5496,7 @@ UBOOL CheckGroupSymbols_EM
      && lptkLocalVars->lpHeader->PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
         // Mark as a SYNTAX ERROR
         lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
-    return TRUE;
 } // End CheckGroupSymbols_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5854,8 +5874,8 @@ UBOOL AppendNewToken_EM
     if (lptkData)
         lptkLocalVars->lptkNext->tkData.tkCtrlStruc = lptkData->tkCtrlStruc;
     else
-        lptkLocalVars->lptkNext->tkData.tkLongest = 0;
-    lptkLocalVars->lptkNext->tkFlags        = *lptkFlags;   // Append the flags
+        lptkLocalVars->lptkNext->tkData.tkLongest   = 0;
+    lptkLocalVars->lptkNext->tkFlags                = *lptkFlags;   // Append the flags
 
     // Save index in input line of this token
     lptkLocalVars->lptkNext->tkCharIndex = iCharOffset + (UINT) (lptkLocalVars->lpwszCur - lptkLocalVars->lpwszOrig);
@@ -5866,6 +5886,17 @@ UBOOL AppendNewToken_EM
      && lptkLocalVars->lptkLastEOS->tkFlags.bSetAlpha)
         // Save the offset backwards to the LastEOS/EOL
         lptkLocalVars->lptkNext->tkData.tkIndex = (UINT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkLastEOS);
+
+    Assert (lptkFlags->TknType < tokenSoLen);
+
+    // If this token is a right arrow, ...
+    if (lptkFlags->TknType EQ TKT_FCNIMMED
+     && lptkData ->tkIndex EQ UTF16_RIGHTARROW)
+        // Set the appropriate Syntax Object value
+        lptkLocalVars->lptkNext->tkSynObj = soGO;
+    else
+        // Set the appropriate Syntax Object value
+        lptkLocalVars->lptkNext->tkSynObj = tokenSo[lptkFlags->TknType].tkSynObj;
 
     // Count in another token
     lptkLocalVars->lpHeader->TokenCnt++;
@@ -5986,6 +6017,7 @@ UBOOL AppendNewToken_EM
         case TKT_CS_RETURN     :
         case TKT_NOP           :
         case TKT_AFOGUARD      :
+        case TKT_AFORETURN     :
             break;
 
         case TKT_CS_NEC        :
@@ -6691,6 +6723,25 @@ void SetTokenStatesTK
     // Save the current state
     lptkLocalVars->State[0] = curState;
 } // End SetTokenStatesTK
+
+
+//***************************************************************************
+//  $SetTknTypeSynObj
+//
+//  Set the token type and SYNOBJ
+//***************************************************************************
+
+void SetTknTypeSynObj
+    (LPTOKEN     lptkCur,               // Ptr to token to set
+     TOKEN_TYPES tknType)               // Token type
+
+{
+    // Set the token type
+    lptkCur->tkFlags.TknType = tknType;
+
+    // Set the appropriate Syntax Object value
+    lptkCur->tkSynObj        = tokenSo[tknType].tkSynObj;
+} // End SetTknTypeSynObj
 
 
 //***************************************************************************

@@ -33,9 +33,9 @@
 #define IsGlbTypeNamDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), VARNAMED_HEADER_SIGNATURE))
 #define IsGlbTypeLstDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), LSTARRAY_HEADER_SIGNATURE))
 #define IsSymNoValue(a)         ((a)->stFlags.Value EQ FALSE)
-#define IsTokenNoValue(a)       ((a)                                    \
-                              && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
-                              && IsSymNoValue ((a)->tkData.tkSym))
+#define IsTokenNoValue(a)       (((a) NE NULL)                          \
+                              && ((a)->tkFlags.TknType EQ TKT_VARNAMED) \
+                              && (IsSymNoValue ((a)->tkData.tkSym)))
 #define IsMFOName(a)            ((a)[0] EQ L'#')
 #define IsSysName(a)            ((a)[0] EQ UTF16_QUAD  || (a)[0] EQ UTF16_QUAD2 || (a)[0] EQ UTF16_QUOTEQUAD)
 #define IsDirectName(a)         ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA)
@@ -371,14 +371,14 @@
 // NOTE:  THIS MACRO CALLS ITS ARGUMENT *TWICE*, HENCE IT WILL WORK DIFFERENTLY
 //        IN THE DEBUG VERSION FROM THE NON-DEBUG VERSION IF THE ARGUMENT HAS
 //        ANY SIDE EFFECTS SUCH AS PRE- OR POST-INCREMENT/DECREMENT, OR THE LIKE.
-#define GetPtrTypeDir(lpMem)        (BYTE)       (Assert (!IsPtrNullDir (lpMem)), (PTRTYPE_MASK   &  (HANDLE_PTR  ) (lpMem)))
-#define GetPtrTypeInd(lpMem)        (BYTE)       (Assert (!IsPtrNullInd (lpMem)), (PTRTYPE_MASK   & *(HANDLE_PTR *) (lpMem)))
+#define GetPtrTypeDir(lpMem)        (BYTE)       (Assert (IsValidPtr (lpMem, sizeof (lpMem)) && !IsPtrNullDir (lpMem)), (PTRTYPE_MASK   &  (HANDLE_PTR  ) (lpMem)))
+#define GetPtrTypeInd(lpMem)        (BYTE)       (Assert (IsValidPtr (lpMem, sizeof (lpMem)) && !IsPtrNullInd (lpMem)), (PTRTYPE_MASK   & *(HANDLE_PTR *) (lpMem)))
 
 // Macro to create a masked LPSYMENTRY
-#define MakePtrTypeSym(lpMem)       (LPSYMENTRY) (Assert (!IsPtrNullDir (lpMem)), PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
+#define MakePtrTypeSym(lpMem)       (LPSYMENTRY) (Assert (IsValidPtr (lpMem, sizeof (lpMem)) && !IsPtrNullDir (lpMem)), PTRTYPE_STCONST |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to create a masked HGLOBAL
-#define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (Assert (!IsPtrNullDir (lpMem)), PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
+#define MakePtrTypeGlb(lpMem)       (HGLOBAL)    (Assert (IsValidPtr (lpMem, sizeof (lpMem)) && !IsPtrNullDir (lpMem)), PTRTYPE_HGLOBAL |  (HANDLE_PTR  ) (lpMem))
 
 // Macro to copy direct and indirect ptrs, incrementing the reference count
 #define CopySymGlbDirAsGlb(hGlb)                        CopySymGlbDir_PTB (MakePtrTypeGlb (hGlb))
@@ -409,8 +409,11 @@
 #define IsNameTypeVar(a)            ((a) EQ NAMETYPE_VAR)
 #define IsNameTypeName(a)           (IsNameTypeVar (a) || IsNameTypeFnOp (a))
 
-
-#define GetSignatureMem(a)          (((LPHEADER_SIGNATURE) (a))->nature)
+#ifdef DEBUG
+  #define GetSignatureMem(a)          (Assert (((LPHEADER_SIGNATURE) (a))->nature NE 0), ((LPHEADER_SIGNATURE) (a))->nature)
+#else
+  #define GetSignatureMem(a)          (((LPHEADER_SIGNATURE) (a))->nature)
+#endif
 
 #define GetImmTypeFcn(a)            IMMTYPE_PRIMFCN
 
@@ -457,6 +460,12 @@
 
 // Define macro for negating VFP numbers
 #define mpfr_neg0(rop,op,rnd)  {mpfr_neg (rop, op, rnd); if (IsMpf0 (rop)) mpfr_set_ui (rop, 0, rnd);}
+
+// Define macros for extracting the left and right operands from operators
+#define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]
+#define GetDydLftOper(lpYYFcnStrRht)                &lpYYFcnStrRht[lpYYFcnStrRht->TknCount]
+#define GetDydRhtOper(lpYYFcnStrOpr,lptkAxisOpr)    GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)
+
 
 //***************************************************************************
 //  End of File: macros.h

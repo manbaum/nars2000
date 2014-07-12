@@ -70,6 +70,32 @@ void InitVarStrand
 
 
 //***************************************************************************
+//  $_DbgPushVarStrand_YY
+//
+//  Push a variable token onto the strand stack.
+//
+//  On exit:
+//      No change in RefCnt.
+//***************************************************************************
+
+LPPL_YYSTYPE _DbgPushVarStrand_YY
+    (LPPL_YYSTYPE lpplYYCurObj)     // Ptr to the incoming argument
+
+{
+#ifdef DEBUG
+    if (IsTknNamed (&lpplYYCurObj->tkToken))
+        dprintfWL0 (L"PushVarStrand:  (%s) (%s)",
+                    soNames[lpplYYCurObj->tkToken.tkSynObj],
+                    lpplYYCurObj->tkToken.tkData.tkSym->stHshEntry->lpwCharName);
+    else
+        dprintfWL0 (L"PushVarStrand:  (%s)",
+                    soNames[lpplYYCurObj->tkToken.tkSynObj]);
+#endif
+    return PushVarStrand_YY (lpplYYCurObj);
+} // End _DbgPushVarStrand_YY
+
+
+//***************************************************************************
 //  $PushVarStrand_YY
 //
 //  Push a variable token onto the strand stack.
@@ -85,6 +111,11 @@ LPPL_YYSTYPE PushVarStrand_YY
     LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
+    Assert (!lpYYArg->YYStranding);
+
+    // Mark as in the process of stranding
+    lpYYArg->YYStranding = TRUE;
+
     // Get this thread's LocalVars ptr
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
@@ -98,6 +129,7 @@ LPPL_YYSTYPE PushVarStrand_YY
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U;         // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
     lpYYRes->TknCount                  = 0;
+    lpYYRes->YYStranding               = TRUE;
     lpYYRes->lpYYFcnBase               = NULL;
 
     // Copy the strand base to the result
@@ -109,7 +141,7 @@ LPPL_YYSTYPE PushVarStrand_YY
         // Save this token on the strand stack
         //   and skip over it
         YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_VAR]++, lpYYArg);
-    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    } __except (CheckException (GetExceptionInformation (), L"PushVarStrand_YY"))
     {
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End __try/__except
@@ -120,6 +152,27 @@ LPPL_YYSTYPE PushVarStrand_YY
 #endif
     return lpYYRes;
 } // End PushVarStrand_YY
+
+
+//***************************************************************************
+//  $_DbgPushFcnStrand_YY
+//
+//  Local debugging version of <PushFcnStrand>
+//***************************************************************************
+
+LPPL_YYSTYPE _DbgPushFcnStrand_YY
+    (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to the incoming argument
+     int          TknCount,         // Token count
+     UBOOL        bIndirect)        // TRUE iff lpYYArg is indirect
+
+{
+    dprintfWL0 (L"PushFcnStrand:  (%s) TknCount (%d) %s",
+                soNames[lpplYYCurObj->tkToken.tkSynObj],
+                TknCount,
+                bIndirect ? L"INDIRECT"
+                          : L"DIRECT");
+    return PushFcnStrand_YY (lpplYYCurObj, TknCount, bIndirect);
+} // End _DbgPushFcnStrand_YY
 
 
 //***************************************************************************
@@ -158,6 +211,10 @@ LPPL_YYSTYPE PushFcnStrand_YY
     // Fill in the result token
     YYCopy (lpYYRes, lpYYArg);
 
+    // Mark as in the process of being stranded and not
+    lpYYRes->YYStranding = TRUE;
+    lpYYArg->YYStranding = FALSE;
+
     // Return our own position so the next user
     //   of this token can refer to it.
     lpYYRes->lpYYFcnBase = lpplLocalVars->lpYYStrArrNext[STRAND_FCN];
@@ -168,7 +225,7 @@ LPPL_YYSTYPE PushFcnStrand_YY
     __try
     {
         YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_FCN]++, lpYYCopy);
-    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    } __except (CheckException (GetExceptionInformation (), L"PushFcnStrand_YY"))
     {
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End __try/__except
@@ -326,6 +383,26 @@ void FreeStrand
 
 
 //***************************************************************************
+//  $_DbgMakeVarStrand_EM_YY
+//
+//  Make the variable strand into an immediate token or a global memory array.
+//
+//  On exit:
+//      RefCnt++ at the top level.
+//***************************************************************************
+
+LPPL_YYSTYPE _DbgMakeVarStrand_EM_YY
+    (LPPL_YYSTYPE lpplYYCurObj)         // Ptr to incoming token
+
+{
+    dprintfWL0 (L"MakeVarStrand:  (%s)",
+                soNames[lpplYYCurObj->tkToken.tkSynObj]);
+
+    return MakeVarStrand_EM_YY (lpplYYCurObj);
+} // End _DgMakeVarStrand_EM_YY
+
+
+//***************************************************************************
 //  $MakeVarStrand_EM_YY
 //
 //  Make the variable strand into an immediate token or a global memory array.
@@ -403,6 +480,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
     DBGENTER;
 
+    Assert (lpYYArg->YYStranding);
+
+    // Reset the stranding flag
+    lpYYArg->YYStranding = FALSE;
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -431,6 +513,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
          bRet && lpYYToken NE &lpYYStrand[-1];
          lpYYToken--)
     {
+        Assert (lpYYToken->YYStranding);
+
+        // Reset the stranding flag
+        lpYYToken->YYStranding = FALSE;
+
         // Split cases based upon the token type
         switch (lpYYToken->tkToken.tkFlags.TknType)
         {
@@ -672,6 +759,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
                         lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
+///                     lpYYRes->tkToken.tkData.tkGlbData  =                    lpYYStrand->tkToken.tkData.tkGlbData ;
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                         break;
@@ -713,6 +801,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
                         lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
+///                     lpYYRes->tkToken.tkData.tkGlbData  =                    lpYYStrand->tkToken.tkData.tkGlbData ;
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                         break;
@@ -729,6 +818,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
                 lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                 lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
+///             lpYYRes->tkToken.tkData.tkGlbData  =                    lpYYStrand->tkToken.tkData.tkGlbData ;
                 lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                 break;
@@ -747,6 +837,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
                         lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkSym->stData.stGlbData);
+///                     lpYYRes->tkToken.tkData.tkGlbData  =                    lpYYStrand->tkToken.tkData.tkSym->stData.stGlbData ;
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                         break;
@@ -762,6 +853,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
                         lpYYRes->tkToken.tkFlags.NoDisplay = lpYYStrand->tkToken.tkFlags.NoDisplay;
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYStrand->tkToken.tkData.tkGlbData);
+///                     lpYYRes->tkToken.tkData.tkGlbData  =                    lpYYStrand->tkToken.tkData.tkGlbData ;
                         lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                         break;
@@ -838,9 +930,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             // Initialize the bit index
             iBitIndex = 0;
 
-            for (lpYYToken = &lpYYStrand[iNELM - 1];
-                 lpYYToken NE &lpYYStrand[-1];
-                 lpYYToken--)
+            for (lpYYToken = &lpYYStrand[0];
+                 iNELM--;
+                 lpYYToken++)
             {
                 // Split cases based upon the token type
                 switch (lpYYToken->tkToken.tkFlags.TknType)
@@ -926,9 +1018,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             break;
 
         case STRAND_INT:            // lpYYToken->tkToken.tkData.tkInteger (TKT_VARIMMED)
-            for (lpYYToken = &lpYYStrand[iNELM - 1];
-                 lpYYToken NE &lpYYStrand[-1];
-                 lpYYToken--)
+            for (lpYYToken = &lpYYStrand[0];
+                 iNELM--;
+                 lpYYToken++)
             // Split cases based upon the token type
             switch (lpYYToken->tkToken.tkFlags.TknType)
             {
@@ -1005,9 +1097,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
         case STRAND_CHAR:
         case STRAND_CHARST:         // lpYYToken->tkToken.tkData.tkChar (TKT_VARIMMED)
-            for (lpYYToken = &lpYYStrand[iNELM - 1];
-                 lpYYToken NE &lpYYStrand[-1];
-                 lpYYToken--)
+            for (lpYYToken = &lpYYStrand[0];
+                 iNELM--;
+                 lpYYToken++)
             // Split cases based upon the token type
             switch (lpYYToken->tkToken.tkFlags.TknType)
             {
@@ -1053,9 +1145,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             break;
 
         case STRAND_FLOAT:          // lpYYToken->tkToken.tkData.tkFloat (TKT_VARIMMED)
-            for (lpYYToken = &lpYYStrand[iNELM - 1];
-                 bRet && lpYYToken NE &lpYYStrand[-1];
-                 lpYYToken--)
+            for (lpYYToken = &lpYYStrand[0];
+                 bRet && iNELM--;
+                 lpYYToken++)
             // Split cases based upon the token type
             switch (lpYYToken->tkToken.tkFlags.TknType)
             {
@@ -1177,9 +1269,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
         case STRAND_HETERO:     // lpYYToken->tkToken.tkData.tkSym (LPSYMENTRY)
         case STRAND_NESTED:     // lpYYToken->tkToken.tkData.aplNested (LPSYMENTRY or HGLOBAL)
-            for (lpYYToken = &lpYYStrand[iNELM - 1];
-                 bRet && lpYYToken NE &lpYYStrand[-1];
-                 lpYYToken--)
+            for (lpYYToken = &lpYYStrand[0];
+                 bRet && iNELM--;
+                 lpYYToken++)
             switch (lpYYToken->tkToken.tkFlags.TknType)
             {
                 case TKT_VARNAMED:    // 1 a
@@ -1222,9 +1314,6 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 case TKT_VARARRAY:  // 1('ab')
                     // tkData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir_PTB (lpYYToken->tkToken.tkData.tkGlbData));
-
-                    // Clear the SkipRefCntIncr flag as it's no longer applicable
-                    ClrVFOArraySRCIFlag (&lpYYToken->tkToken);
 
                     // Copy the nested entry to the result, w/o incrementing the RefCnt
                     //   as it is a temp with no other reference whose value is passed on
@@ -1341,9 +1430,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             break;
 
         case STRAND_RAT:            // lpYYToken->tkToken.tkData.tkGlbData (TKT_VARARRAY)
-            for (lpYYToken = &lpYYStrand[iNELM - 1];
-                 lpYYToken NE &lpYYStrand[-1];
-                 lpYYToken--)
+            for (lpYYToken = &lpYYStrand[0];
+                 iNELM--;
+                 lpYYToken++)
             // Split cases based upon the token type
             switch (lpYYToken->tkToken.tkFlags.TknType)
             {
@@ -1420,11 +1509,14 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbNum); lpMemNum = NULL;
 
-////////////////////// If it's a scalar global numeric, ...
-////////////////////if (IsScalar (aplRankNum)
-//////////////////// && IsGlbNum (aplTypeNum))
-////////////////////    // Decrement the refcnt as we're making a copy of the value, not reusing it
-////////////////////    FreeResultGlobalVar (MakePtrTypeGlb (hGlbNum));
+                    // If it's a scalar global numeric, ...
+                    if (IsScalar (aplRankNum)
+                     && IsGlbNum (aplTypeNum))
+                    {
+                        // Decrement the refcnt as we're making a copy of the value, not reusing it
+                        FreeResultGlobalVar (MakePtrTypeGlb (hGlbNum)); hGlbNum = NULL;
+                    } // End IF
+
                     break;
 
                 defstop
@@ -1434,9 +1526,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             break;
 
         case STRAND_VFP:            // lpYYToken->tkToken.tkData.tkGlbData (TKT_VARARRAY)
-            for (lpYYToken = &lpYYStrand[iNELM - 1];
-                 lpYYToken NE &lpYYStrand[-1];
-                 lpYYToken--)
+            for (lpYYToken = &lpYYStrand[0];
+                 iNELM--;
+                 lpYYToken++)
             // Split cases based upon the token type
             switch (lpYYToken->tkToken.tkFlags.TknType)
             {
@@ -1561,11 +1653,14 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbNum); lpMemNum = NULL;
 
-////////////////////// If it's a scalar global numeric, ...
-////////////////////if (IsScalar (aplRankNum)
-//////////////////// && IsGlbNum (aplTypeNum))
-////////////////////    // Decrement the refcnt as we're making a copy of the value, not reusing it
-////////////////////    FreeResultGlobalVar (MakePtrTypeGlb (hGlbNum));
+                    // If it's a scalar global numeric, ...
+                    if (IsScalar (aplRankNum)
+                     && IsGlbNum (aplTypeNum))
+                    {
+                        // Decrement the refcnt as we're making a copy of the value, not reusing it
+                        FreeResultGlobalVar (MakePtrTypeGlb (hGlbNum)); hGlbNum = NULL;
+                    } // End IF
+
                     break;
 
                 defstop
@@ -1717,6 +1812,27 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $_DbgMakeFcnStrand_EM_YY
+//
+//  Local debugging version of <MakeFcnStrand>
+//***************************************************************************
+
+LPPL_YYSTYPE _DbgMakeFcnStrand_EM_YY
+    (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to incoming token
+     NAME_TYPES   fnNameType,       // Type of the strand
+     UBOOL        bSaveTxtLine)     // TRUE iff we should save the line text
+
+{
+    dprintfWL0 (L"MakeFcnStrand:  (%s) fnNameType (%s) bSaveTxtLine (%s)",
+                soNames[lpplYYCurObj->tkToken.tkSynObj],
+                lpwNameTypeStr[fnNameType],
+                bSaveTxtLine ? L"TRUE"
+                             : L"FALSE");
+    return MakeFcnStrand_EM_YY (lpplYYCurObj, fnNameType, bSaveTxtLine);
+} // End _DbgMakeFcnStrand_EM_YY
+
+
+//***************************************************************************
 //  $MakeFcnStrand_EM_YY
 //
 //  Make the function strand into an immediate token or a global memory array.
@@ -1796,6 +1912,10 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
         // Copy the entire token
         lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg->lpYYFcnBase, FALSE);
+
+///     // Copy the entire token w/o changing the RefCnt
+///     lpYYRes = CopyPL_YYSTYPE_YY (lpYYArg->lpYYFcnBase);
+
         lpYYRes->TknCount = 1;
         lpYYRes->tkToken.tkFlags.SysNSLvl = lpYYArg->tkToken.tkFlags.SysNSLvl;
 
@@ -1869,8 +1989,31 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         {
             LPPL_YYSTYPE lpYYTmp;
 
-            // Copy the function array
-            lpYYTmp = CopyPL_YYSTYPE_EM_YY (&lpYYStrand[uCnt], FALSE);
+            // If this item is an array of functions, ...
+            if (lpYYStrand[uCnt].tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+            {
+                LPFCNARRAY_HEADER lpFcnHdr;
+                HGLOBAL           hGlbFcn;
+
+                // Get the global memory handle
+                hGlbFcn = GetGlbDataToken (&lpYYStrand[uCnt].tkToken);
+
+                // Lock the memory to get a ptr to it
+                lpFcnHdr = MyGlobalLock (hGlbFcn);
+
+                // If the function array is a train, ...
+                if (lpFcnHdr->fnNameType EQ NAMETYPE_TRN)
+                    // Copy the entire token w/o changing the RefCnt
+                    lpYYTmp = CopyPL_YYSTYPE_YY (&lpYYStrand[uCnt]);
+                else
+                    // Copy the function array
+                    lpYYTmp = CopyPL_YYSTYPE_EM_YY (&lpYYStrand[uCnt], FALSE);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbFcn); lpFcnHdr = NULL;
+            } else
+                // Copy the function array
+                lpYYTmp = CopyPL_YYSTYPE_EM_YY (&lpYYStrand[uCnt], FALSE);
 
             // Save the result in memory
             lpYYMemData[uCnt] = *lpYYTmp;
@@ -2106,6 +2249,9 @@ LPPL_YYSTYPE MakeAxis_YY
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
+    // Set the token type
+    lpYYRes->tkToken.tkSynObj = soA;
+
     // Split cases based upon the token type
     switch (lpYYAxis->tkToken.tkFlags.TknType)
     {
@@ -2197,6 +2343,9 @@ LPPL_YYSTYPE MakePrimFcn_YY
     lpYYRes->lpYYFcnBase = NULL;
     lpYYRes->TknCount = 1;
 
+    // Set the token type
+    lpYYRes->tkToken.tkSynObj = soF;
+
     DBGLEAVE;
 
     return lpYYRes;
@@ -2234,6 +2383,9 @@ LPPL_YYSTYPE MakeFillJot_YY
     lpYYRes->tkToken.tkData.tkChar     = UTF16_JOT;
     lpYYRes->tkToken.tkCharIndex       = lpYYJot->tkToken.tkCharIndex;
     lpYYRes->TknCount = 1;
+
+    // Set the token type
+    lpYYRes->tkToken.tkSynObj = soNF;
 
     DBGLEAVE;
 
@@ -2286,11 +2438,17 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
                 // Save the token type
                 lpYYRes->tkToken.tkFlags.TknType = TKT_FCNIMMED;
 
+                // Set the token type
+                lpYYRes->tkToken.tkSynObj = soF;
+
                 break;
 
             case IMMTYPE_PRIMOP1:
                 // Save the token type
                 lpYYRes->tkToken.tkFlags.TknType = TKT_OP1IMMED;
+
+                // Set the token type
+                lpYYRes->tkToken.tkSynObj = soMOP;
 
                 break;
 
@@ -2298,11 +2456,17 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
                 // Save the token type
                 lpYYRes->tkToken.tkFlags.TknType = TKT_OP2IMMED;
 
+                // Set the token type
+                lpYYRes->tkToken.tkSynObj = soDOP;
+
                 break;
 
             case IMMTYPE_PRIMOP3:
                 // Save the token type
                 lpYYRes->tkToken.tkFlags.TknType = TKT_OP3IMMED;
+
+                // Set the token type
+                lpYYRes->tkToken.tkSynObj = soHY;
 
                 break;
 
@@ -2370,6 +2534,9 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
             *lpYYFcnOpr = *lpYYRes;
         } else
             lpYYRes = CopyPL_YYSTYPE_YY (lpYYFcnOpr);
+
+        // Set the token type
+        lpYYRes->tkToken.tkSynObj = soF;
     } // End IF/ELSE
 
     // Set common elements
@@ -2428,8 +2595,13 @@ LPPL_YYSTYPE MakeTrainOp_YY
     YYFree (lpYYRes); lpYYRes = NULL;
 
     if (lpYYRes2)
+    {
         // Initialize the token count (TrainOp Arg1 Arg2)
         lpYYRes2->TknCount = 3;
+
+        // Set the token type
+        lpYYRes2->tkToken.tkSynObj = soF;
+    } // End IF
 
     return lpYYRes2;
 } // End MakeTrainOp_YY
@@ -2455,7 +2627,15 @@ LPPL_YYSTYPE MakePrimOp1_YY
     (LPPL_YYSTYPE lpYYOp1)
 
 {
-    return MakePrimOp123_YY (lpYYOp1, IMMTYPE_PRIMOP1);
+    LPPL_YYSTYPE lpYYRes;
+
+    lpYYRes =
+      MakePrimOp123_YY (lpYYOp1, IMMTYPE_PRIMOP1);
+
+    // Set the token type
+    lpYYRes->tkToken.tkSynObj = soMOP;
+
+    return lpYYRes;
 } // End MakePrimOp1_YY
 #undef  APPEND_NAME
 
@@ -2479,7 +2659,15 @@ LPPL_YYSTYPE MakePrimOp2_YY
     (LPPL_YYSTYPE lpYYOp2)
 
 {
-    return MakePrimOp123_YY (lpYYOp2, IMMTYPE_PRIMOP2);
+    LPPL_YYSTYPE lpYYRes;
+
+    lpYYRes =
+      MakePrimOp123_YY (lpYYOp2, IMMTYPE_PRIMOP2);
+
+    // Set the token type
+    lpYYRes->tkToken.tkSynObj = soDOP;
+
+    return lpYYRes;
 } // End MakePrimOp2_YY
 #undef  APPEND_NAME
 
@@ -2503,7 +2691,15 @@ LPPL_YYSTYPE MakePrimOp3_YY
     (LPPL_YYSTYPE lpYYOp3)
 
 {
-    return MakePrimOp123_YY (lpYYOp3, IMMTYPE_PRIMOP3);
+    LPPL_YYSTYPE lpYYRes;
+
+    lpYYRes =
+      MakePrimOp123_YY (lpYYOp3, IMMTYPE_PRIMOP3);
+
+    // Set the token type
+    lpYYRes->tkToken.tkSynObj = soHY;
+
+    return lpYYRes;
 } // End MakePrimOp3_YY
 #undef  APPEND_NAME
 
@@ -2593,6 +2789,7 @@ LPPL_YYSTYPE PushNameStrand_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
+    lpYYRes->YYStranding               = TRUE;
 
     // Copy the strand base to the result
     lpYYRes->lpYYStrandBase  =
@@ -2603,7 +2800,7 @@ LPPL_YYSTYPE PushNameStrand_YY
         // Save this token on the strand stack
         //   and skip over it
         YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_NAM]++, lpYYArg);
-    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    } __except (CheckException (GetExceptionInformation (), L"PushNameStrand_YY"))
     {
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End __try/__except
@@ -2836,7 +3033,7 @@ LPPL_YYSTYPE PushList_YY
         // Copy this token to the strand stack
         //   and skip over it
         YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_LST]++, lpYYArg);
-    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    } __except (CheckException (GetExceptionInformation (), L"PushList_YY"))
     {
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End __try/__except
@@ -2847,6 +3044,41 @@ LPPL_YYSTYPE PushList_YY
 #endif
     return lpYYRes;
 } // End PushList_YY
+
+
+//***************************************************************************
+//  $PopList_YY
+//
+//  Pop a token from the list stack
+//***************************************************************************
+
+LPPL_YYSTYPE PopList_YY
+    (LPPL_YYSTYPE lpYYStrand)       // Ptr to base of strand
+
+{
+    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
+
+    // Get this thread's LocalVars ptr
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Copy the last item to the result
+    //   and back off from the next list item
+    YYCopy2 (lpYYRes, --lpplLocalVars->lpYYStrArrNext[STRAND_LST]);
+
+    // Zap the fcn & strand bases
+    lpYYRes->lpYYFcnBase    =
+    lpYYRes->lpYYStrandBase = NULL;
+
+#ifdef DEBUG
+    // Display the strand stack
+    DisplayStrand (STRAND_LST);
+#endif
+    return lpYYRes;
+} // End PopList_YY
 
 
 //***************************************************************************
@@ -2925,8 +3157,8 @@ LPPL_YYSTYPE MakeList_EM_YY
                     lpYYRes->tkToken.tkFlags.TknType   = TKT_LSTARRAY;
 ////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Set by lpYYRes->tkToken =
 ////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Set by lpYYRes->tkToken =
-////                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData);   // #1A
-                    lpYYRes->tkToken.tkData.tkGlbData  =                lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;    // #1B
+                    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData);   // #1A
+////                lpYYRes->tkToken.tkData.tkGlbData  =                lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;    // #1B
 ////////////////////lpYYRes->tkToken.tkCharIndex       =                // Set by lpYYRes->tkToken =
                 } else
                 {
@@ -3001,8 +3233,9 @@ LPPL_YYSTYPE MakeList_EM_YY
                 lpMemLst->tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpMemLst->tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from GHND
 ////////////////lpMemLst->tkFlags.NoDisplay = FALSE;            // Already zero from GHND
-////            lpMemLst->tkData.tkGlbData  = CopySymGlbDir_PTB (lpSymEntry->stData.stGlbData);     // #2A
-                lpMemLst->tkData.tkGlbData  =                lpSymEntry->stData.stGlbData;      // #2B
+                // Use the following line for a[y;] so that when we free the list, we don't lose y
+                lpMemLst->tkData.tkGlbData  = CopySymGlbDir_PTB (lpSymEntry->stData.stGlbData);     // #2A
+////            lpMemLst->tkData.tkGlbData  =                lpSymEntry->stData.stGlbData;      // #2B
                 lpMemLst->tkCharIndex       = lpYYToken->tkToken.tkCharIndex;
             } // End IF/ELSE
 
@@ -3143,6 +3376,7 @@ LPTOKEN CopyToken_EM
 
 {
     LPSYMENTRY lpSymEntry;  // Ptr to SYMENTRY in the token
+    HGLOBAL    hGlbData;    // Global memory handle
 
     DBGENTER;
 
@@ -3217,11 +3451,16 @@ LPTOKEN CopyToken_EM
         case TKT_OP1AFO:
         case TKT_OP2AFO:
         case TKT_DELAFO:        // Del Anon -- either a monadic or dyadic operator, bound to its operands
-            // tkData is a valid HGLOBAL UDFO
-            Assert (IsGlbTypeDfnDir_PTB (lpToken->tkData.tkGlbData));
+            // Get the global memory handle
+            hGlbData = GetGlbDataToken (lpToken);
 
-            // Increment the reference count in global memory
-            DbgIncrRefCntDir_PTB (lpToken->tkData.tkGlbData);
+            // tkData is a valid HGLOBAL UDFO
+            Assert (IsGlbTypeDfnDir_PTB (hGlbData));
+
+            // If this function/operator is NOT named, ...
+            if (!IsTknNamedFcnOpr (lpToken))
+                // Increment the reference count in global memory
+                DbgIncrRefCntDir_PTB (hGlbData);
 
             break;
 
@@ -3340,6 +3579,37 @@ LPPL_YYSTYPE CopyPL_YYSTYPE_YY
     return lpYYRes;
 } // End CopyPL_YYSTYPE_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $UnStrand
+//
+//  If the object is a numeric/character strand/scalar, convert its token
+//    type to that of a variable
+//***************************************************************************
+
+void UnStrand
+    (LPPL_YYSTYPE lpplYYObj)
+
+{
+    // Split cases based upon the token type
+    switch (lpplYYObj->tkToken.tkFlags.TknType)
+    {
+        case TKT_NUMSTRAND:
+        case TKT_CHRSTRAND:
+        case TKT_NUMSCALAR:
+            // Set the correct token type
+            lpplYYObj->tkToken.tkFlags.TknType = TKT_VARARRAY;
+
+            // Increment the refcnt
+            IncrRefCntTkn (&lpplYYObj->tkToken);
+
+            break;
+
+        default:
+            break;
+    } // End SWITCH
+} // End Unstrand
 
 
 //***************************************************************************

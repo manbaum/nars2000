@@ -76,10 +76,10 @@ LPPL_YYSTYPE PrimProtoOpSlash_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
+     LPTOKEN      lptkAxisOpr)          // Ptr to axis token always NULL)
 
 {
-    Assert (lptkAxis EQ NULL);
+    Assert (lptkAxisOpr EQ NULL);
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
@@ -208,7 +208,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -1715,7 +1715,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)

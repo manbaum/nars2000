@@ -134,10 +134,13 @@ LPPL_YYSTYPE PrimIdentOpDot_EM_YY
     //   for +.{times} is
     //   ({iota}{neg}1{take}{rho} R){jot}.={iota}{neg}1{take}{rho} R.
 
+    // Check for axis operator
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
+
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -385,8 +388,8 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr));
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -1309,27 +1312,27 @@ UBOOL IzitMinMaxAfo
         UINT           uTokenCnt,       // # tokens in the function line
                        uCnt;            // Loop counter
  static TOKEN tkMinMaxAfo[] =
- //        tkFlags            tkData
-        {{{TKT_EOS       , }, },                    // 00:
-         {{TKT_AFOGUARD  , }, },                    // 01:
-         {{TKT_LEFTPAREN , }, },                    // 02:
-         {{TKT_FCNIMMED  , }, (LPSYMENTRY) L'+'},   // 03:
-         {{TKT_OP3IMMED  , }, (LPSYMENTRY) L'/'},   // 04:
-         {{TKT_VARNAMED  , }, },                    // 05:  Alpha
-         {{TKT_RIGHTPAREN, }, },                    // 06:
-         {{TKT_FCNIMMED  , }, (LPSYMENTRY) L'<'},   // 07:  <  <=  >  >=
-         {{TKT_FCNIMMED  , }, (LPSYMENTRY) L'+'},   // 08:
-         {{TKT_OP3IMMED  , }, (LPSYMENTRY) L'/'},   // 09:
-         {{TKT_VARNAMED  , }, },                    // 0A:  Omega
-         {{TKT_SOS       , }, },                    // 0B:
-         {{TKT_EOS       , }, },                    // 0C:
-         {{TKT_AFORETURN , }, },                    // 0D:
-         {{TKT_VARNAMED  , }, },                    // 0E:  Alpha
-         {{TKT_SOS       , }, },                    // 0F:
-         {{TKT_EOL       , }, },                    // 10:
-         {{TKT_NOP       , }, },                    // 11:
-         {{TKT_VARNAMED  , }, },                    // 12:  Omega
-         {{TKT_SOS       , }, },                    // 13:
+ //        tkFlags         tkSynObj    tkData
+        {{{TKT_EOS       , }, 0,                  },   // 00:
+         {{TKT_AFOGUARD  , }, 0,                  },   // 01:
+         {{TKT_LEFTPAREN , }, 0,                  },   // 02:
+         {{TKT_FCNIMMED  , }, 0, (LPSYMENTRY) L'+'},   // 03:
+         {{TKT_OP3IMMED  , }, 0, (LPSYMENTRY) L'/'},   // 04:
+         {{TKT_VARNAMED  , }, 0,                  },   // 05:  Alpha
+         {{TKT_RIGHTPAREN, }, 0,                  },   // 06:
+         {{TKT_FCNIMMED  , }, 0, (LPSYMENTRY) L'<'},   // 07:  <  <=  >  >=
+         {{TKT_FCNIMMED  , }, 0, (LPSYMENTRY) L'+'},   // 08:
+         {{TKT_OP3IMMED  , }, 0, (LPSYMENTRY) L'/'},   // 09:
+         {{TKT_VARNAMED  , }, 0,                  },   // 0A:  Omega
+         {{TKT_SOS       , }, 0,                  },   // 0B:
+         {{TKT_EOS       , }, 0,                  },   // 0C:
+         {{TKT_AFORETURN , }, 0,                  },   // 0D:
+         {{TKT_VARNAMED  , }, 0,                  },   // 0E:  Alpha
+         {{TKT_SOS       , }, 0,                  },   // 0F:
+         {{TKT_EOL       , }, 0,                  },   // 10:
+         {{TKT_NOP       , }, 0,                  },   // 11:
+         {{TKT_VARNAMED  , }, 0,                  },   // 12:  Omega
+         {{TKT_SOS       , }, 0,                  },   // 13:
         };
 
         // Initialize the bMaxFcn flag
@@ -1689,8 +1692,8 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)

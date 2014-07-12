@@ -147,6 +147,36 @@ void YYCopy
 
 
 //***************************************************************************
+//  $YYCopy2
+//
+//  Copy one PL_YYSTYPE to another
+//    retaining the destination Index
+//***************************************************************************
+
+void YYCopy2
+    (LPPL_YYSTYPE lpYYDst,
+     LPPL_YYSTYPE lpYYSrc)
+
+{
+#ifdef DEBUG
+    UINT   YYIndex;
+#endif
+
+    Assert (lpYYDst->YYInuse);
+
+#ifdef DEBUG
+    // Save the old values
+    YYIndex  = lpYYDst->YYIndex;
+#endif
+    *lpYYDst = *lpYYSrc;                // Copy the PL_YYSTYPE
+    lpYYDst->YYInuse = TRUE;            // Retain YYInuse flag
+#ifdef DEBUG
+    lpYYDst->YYIndex    = YYIndex;      // Retain YYIndex
+#endif
+} // End YYCopy2
+
+
+//***************************************************************************
 //  $YYCopyFreeDst
 //
 //  Copy one PL_YYSTYPE to another
@@ -181,15 +211,18 @@ void YYFree
 
 {
 #ifdef DEBUG
-    APLU3264     u;             // Index into lpMemPTD->YYRes
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    if (!lpYYRes->YYPerm)
+    {
+        APLU3264     u;             // Index into lpMemPTD->YYRes
+        LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
 
-    u = (APLU3264) (lpYYRes - lpMemPTD->lpYYRes);
-    Assert (u < lpMemPTD->numYYRes);
-    Assert (lpYYRes->YYInuse);
+        u = (APLU3264) (lpYYRes - lpMemPTD->lpYYRes);
+        Assert (u < lpMemPTD->numYYRes);
+        Assert (lpYYRes->YYInuse);
+    } // End IF
 #endif
     ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 } // End YYFree
@@ -235,8 +268,6 @@ UBOOL YYResIsEmpty
         DbgMsgW (wszTemp);
 #endif
         bRet = FALSE;
-
-        break;
     } // End FOR/IF
 
     return bRet;
@@ -281,9 +312,9 @@ UINT YYCountFcnStr
 
             // If it's named and not immediate and not an internal function, ...
             if (IsTknNamedFcnOpr (lpToken)
-             && !lpToken->tkData.tkSym->stFlags.Imm     // not an immediate, and
-             && !lpToken->tkData.tkSym->stFlags.UsrDfn  // not a user-defined function/operator, and
-             && !lpToken->tkData.tkSym->stFlags.FcnDir) // not an internal function
+             && !lpToken->tkData.tkSym->stFlags.Imm     // Not an immediate, and
+             && !lpToken->tkData.tkSym->stFlags.UsrDfn  // Not a user-defined function/operator, and
+             && !lpToken->tkData.tkSym->stFlags.FcnDir) // Not an internal function
             {
                 // Get the global memory handle
                 hGlbFcn = lpToken->tkData.tkSym->stData.stGlbData;
@@ -445,7 +476,7 @@ UBOOL YYIsFcnStrAxis
 
             Assert (lpMemHdrFcn->tknNELM > 1);
 
-            // Skip over the function array header
+            // Skip over the header to the data
             lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
 
             // Is the next token an axis value?
@@ -706,10 +737,15 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
             DbgIncrRefCntDir_PTB (hGlbFcn);
 
             // Fill in the token
-            YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+///         YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+            YYFcn.tkToken.tkFlags.TknType   = lpToken->tkFlags.TknType;
 ////////////YYFcn.tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
 ////////////YYFcn.tkToken.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
-            YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;
+            //If the token is named, ...
+            if (IsTknNamed (lpToken))
+                YYFcn.tkToken.tkData.tkSym      = lpToken->tkData.tkSym;
+            else
+                YYFcn.tkToken.tkData.tkGlbData  = hGlbFcn;
             YYFcn.tkToken.tkCharIndex       = lpYYArgI->tkToken.tkCharIndex;
             YYFcn.TknCount                  = TknCount;
 ////////////YYFcn.YYInuse                   = FALSE;            // (Factored out below)
@@ -890,24 +926,35 @@ void YYFreeArray
     (LPPL_YYSTYPE lpYYArg)
 
 {
-    UINT    uLen,                   // Token count in this function strand
-            uCnt;                   // Loop counter
-    HGLOBAL hGlbFcn;                // Function array global memory handle
+    UINT         uLen,              // Token count in this function strand
+                 uCnt;              // Loop counter
+    HGLOBAL      hGlbFcn;           // Function array global memory handle
+    LPPL_YYSTYPE lpMemArg;          // Ptr to YYSTYPEs in memory
 
     // Get the token count in this function strand
     uLen = lpYYArg->TknCount;
 
+    // If this is a function array, ...
+    if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+        // Lock the memory to get a ptr to it
+        // Skip over the header to the data
+        lpMemArg = FcnArrayBaseToData (MyGlobalLock (lpYYArg->tkToken.tkData.tkGlbData));
+    else
+        lpMemArg = lpYYArg;
+
     // Loop through the elements
     for (uCnt = 0; uCnt < uLen; uCnt++)
     {
+        Assert (lpMemArg[uCnt].tkToken.tkFlags.TknType NE TKT_UNUSED);
+
         // If the function is indirect, recurse
-        if (lpYYArg[uCnt].YYIndirect)
-            YYFreeArray (lpYYArg[uCnt].lpYYFcnBase);
+        if (lpMemArg[uCnt].YYIndirect)
+            YYFreeArray (lpMemArg[uCnt].lpYYFcnBase);
         else
-        if (lpYYArg[uCnt].tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+        if (lpMemArg[uCnt].tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
         {
             // Get the global memory handle or function address if direct
-            hGlbFcn = lpYYArg[uCnt].tkToken.tkData.tkGlbData;
+            hGlbFcn = lpMemArg[uCnt].tkToken.tkData.tkGlbData;
 
             // If it hasn't already been erased, ...
             if (hGlbFcn)
@@ -925,11 +972,18 @@ void YYFreeArray
             } // End IF
         } // End IF
 
-        if (lpYYArg[uCnt].YYCopyArray
-         && !lpYYArg[uCnt].YYIndirect)
+        if (lpMemArg[uCnt].YYCopyArray
+         && !lpMemArg[uCnt].YYIndirect)
             // Free the storage
-            FreeResult (&lpYYArg[uCnt]);
+            FreeResult (&lpMemArg[uCnt]);
     } // End FOR
+
+    // If this is a function array, ...
+    if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpYYArg->tkToken.tkData.tkGlbData); lpMemArg = NULL;
+    } // End IF
 } // End YYFreeArray
 
 

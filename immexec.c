@@ -98,8 +98,9 @@ VOID CALLBACK WaitForImmExecStmt
       UnregisterWait (lpMemWFSO->WaitHandle); lpMemWFSO->WaitHandle = NULL;
     Assert (dwRet EQ 0 || dwRet EQ ERROR_IO_PENDING);
 
-    // Signal the next level (if appropriate)
+    // If there's a next level up, ...
     if (lpMemWFSO->hSigaphore)
+        // Signal the next level
         MyReleaseSemaphore (lpMemWFSO->hSigaphore, 1, NULL);
     else
         DisplayPrompt (lpMemWFSO->hWndEC, 10);
@@ -482,7 +483,7 @@ DWORD WINAPI ImmExecStmtInThread
                        csLocalVars.lpwszErrMsg,
                        csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
                        csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1);
-            // Set the error message
+            // Create []DM & []EM
             ErrorMessageDirect (wszTemp,                            // Ptr to error message text
                                 lpwszCompLine,                      // Ptr to the line which generated the error
                                 csLocalVars.tkCSErr.tkCharIndex);   // Position of caret (origin-0)
@@ -539,7 +540,7 @@ DWORD WINAPI ImmExecStmtInThread
                 {
                     // ***FIXME*** -- Set the tkCharIndex for the error???
 
-                    // Set the error message
+                    // Create []DM & []EM
                     ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
                                         lpwszCompLine,                  // Ptr to the line which generated the error
                                         lpMemPTD->tkErrorCharIndex);    // Position of caret (origin-0)
@@ -577,6 +578,7 @@ DWORD WINAPI ImmExecStmtInThread
                                                            EXEC_QUAD_ELX_LEN,   // Length of the line to execute
                                                            TRUE,                // TRUE iff we should act on errors
                                                            FALSE,               // TRUE iff we're to skip the depth check
+                                                           DFNTYPE_EXEC,        // DfnType for FillSISNxt
                                                            NULL);               // Ptr to function token
                         } // End IF/ELSE
                     } // End IF
@@ -622,6 +624,7 @@ DWORD WINAPI ImmExecStmtInThread
                                                    EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
                                                    TRUE,                                    // TRUE iff we should act on errors
                                                    FALSE,                                   // TRUE iff we're to skip the depth check
+                                                   DFNTYPE_EXEC,                            // DfnType for FillSISNxt
                                                    NULL);                                   // Ptr to function token
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
@@ -790,6 +793,7 @@ EXIT_TYPES ActOnError
                                    EXEC_QUAD_ELX_LEN,                       // Length of the line to execute
                                    TRUE,                                    // TRUE iff we should act on errors
                                    FALSE,                                   // TRUE iff we're to skip the depth check
+                                   DFNTYPE_EXEC,                            // DfnType for FillSISNxt
                                    NULL);                                   // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)

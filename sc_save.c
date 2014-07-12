@@ -495,7 +495,7 @@ UBOOL CmdSave_EM
                                             lpMemSaveWSID);         // Ptr to the file name
             } // End IF/ELSE/...
         } // End FOR/IF/...
-    } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM"))
+    } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM #1"))
     {
         EXIT_TEMP_OPEN          // lpwszTemp is used in CleanUpAfterSav
 
@@ -1557,7 +1557,7 @@ LPAPLCHAR SavedWsFormGlbVar
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM"))
+    } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM #2"))
     {
         if (hGlbObj && lpMemObj)
         {

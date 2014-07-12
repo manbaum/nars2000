@@ -2067,6 +2067,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                              lstrlenW (lpwLine),    // Length of the line to execute
                                              TRUE,                  // TRUE iff we should act on errors
                                              FALSE,                 // TRUE iff we're to skip the depth check
+                                             DFNTYPE_EXEC,          // DfnType for FillSISNxt
                                              NULL);                 // Ptr to function token
                 Assert (exitType EQ EXITTYPE_NOVALUE);
 

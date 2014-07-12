@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,61 @@
 #include <math.h>
 #include "headers.h"
 #include "qf_ec.h"
+
+
+//***************************************************************************
+//  $TranslateSOTypeToNameType
+//
+//  Translate a SynObj type (see SO_ENUM)
+//    to a function type (see NAME_TYPES).
+//***************************************************************************
+
+NAME_TYPES TranslateSOTypeToNameType
+    (SO_ENUM soType)            // SynObj type
+
+{
+    // Split cases based upon the user-defined function/operator type
+    switch (soType)
+    {
+        // Flavors of monadic/dyadic functions
+        case soF:
+        case soFR:
+        case soFFR:
+        case soSPF:
+        case soSPFR:
+            return NAMETYPE_FN12;
+
+        // Flavors of niladic functions
+        case soNF:
+        case soSPNF:
+            return NAMETYPE_FN0;
+
+        // Flavors of monadic operators
+        case soMOP:
+        case soMOPN:
+        case soSPM:
+        case soSPMN:
+        case soSPMR:
+            return NAMETYPE_OP1;
+
+        // Flavors of dyadic operators
+        case soDOP:
+        case soDOPN:
+        case soSPD:
+        case soSPDN:
+        case soSPDR:
+            return NAMETYPE_OP2;
+
+        // Flavors of hybrids
+        case soHY:
+        case soSPHY:
+        case soSPHR:
+            return NAMETYPE_OP3;
+
+        defstop
+            return NAMETYPE_UNK;
+    } // End SWITCH
+} // End TranslateSOTypeToNameType
 
 
 //***************************************************************************
@@ -78,7 +133,7 @@ TOKEN_TYPES TranslateTknTypeToTknTypeNamed
 
 NAME_TYPES TranslateDfnToNameType
     (DFN_TYPES    dfnType,      // User-defined function/operator type (see DFN_TYPES)
-     FCN_VALENCES fcnValence)   // Function valance (see FCN_VALENCES)
+     FCN_VALENCES fcnValence)   // Function valence (see FCN_VALENCES)
 
 {
     // Split cases based upon the user-defined function/operator type
@@ -754,10 +809,10 @@ UINT TranslateExitTypeToReturnCode
             return EC_RETCODE_NOVALUE;
 
         case EXITTYPE_RESET_ONE_INIT:
+        case EXITTYPE_RESET_ONE:
             return EC_RETCODE_RESET_ONE;
 
         case EXITTYPE_NONE:
-        case EXITTYPE_RESET_ONE:
         case EXITTYPE_RESET_ALL:
         case EXITTYPE_QUADERROR_EXEC:
         case EXITTYPE_STOP:

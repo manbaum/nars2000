@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -433,16 +433,16 @@ UBOOL CS_CASE_Stmt
 
 UBOOL CS_CONTINUE_Stmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYContinueArg)     // Ptr to CONTINUE arg
+     LPTOKEN       lptkContinueArg)     // Ptr to CONTINUE arg
 
 {
     // Tell the lexical analyzer to get the next token from
     //   the start of the stmt at the token pointed to by
     //   the CONTINUE stmt
-    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &lpYYContinueArg->tkToken.tkData);
+    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &lptkContinueArg->tkData);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYContinueArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
+    if (lptkContinueArg->tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -469,7 +469,7 @@ UBOOL CS_CONTINUE_Stmt
 
 UBOOL CS_CONTINUEIF_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYContinueIfArg,   // Ptr to CONTINUEIF arg
+     LPTOKEN       lptkContinueIfArg,   // Ptr to CONTINUEIF arg
      LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
 
 {
@@ -503,7 +503,7 @@ UBOOL CS_CONTINUEIF_Stmt_EM
          goto DOMAIN_EXIT;
 
     if (aplLongestRht)
-        CS_CONTINUE_Stmt (lpplLocalVars, lpYYContinueIfArg);
+        CS_CONTINUE_Stmt (lpplLocalVars, lptkContinueIfArg);
 
     return TRUE;
 
@@ -536,7 +536,7 @@ ERROR_EXIT:
 
 UBOOL CS_ELSE_Stmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYElseArg)         // Ptr to ELSE arg
+     LPTOKEN       lptkElseArg)         // Ptr to ELSE arg
 
 {
     // Entry into this function means that we dropped through from above
@@ -544,20 +544,20 @@ UBOOL CS_ELSE_Stmt
 
     // Tell the lexical analyzer to get the next token from
     //   the stmt after the token pointed to by the ELSE stmt
-    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
+    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lptkElseArg->tkData);
 
 #ifdef DEBUG
     {
         TOKEN_TYPES TknType;
 
         // Get the token type of the stmt pointed to by the ELSE stmt
-        TknType = CS_GetTokenType_NEXT (lpplLocalVars, &lpYYElseArg->tkToken.tkData);
+        TknType = CS_GetTokenType_NEXT (lpplLocalVars, &lptkElseArg->tkData);
         Assert (TknType EQ TKT_CS_ENDIF
              || TknType EQ TKT_CS_ENDSELECT);
     }
 #endif
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYElseArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
+    if (lptkElseArg->tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -616,7 +616,7 @@ LPFORSTMT FindMatchingForStmt
 
 UBOOL CS_ENDFOR_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYEndForArg,       // Ptr to ENDFOR arg
+     LPTOKEN       lptkEndForArg,       // Ptr to ENDFOR arg
      UBOOL         bFORLCL)             // TRUE iff FORLCL
 
 {
@@ -625,7 +625,7 @@ UBOOL CS_ENDFOR_Stmt_EM
     // Find the matching FORSTMT/FORLCLSTMT ptr
     lpForStmtNext =
       FindMatchingForStmt (lpplLocalVars,
-                           lpYYEndForArg->tkToken.tkData.uCLIndex);
+                           lptkEndForArg->tkData.uCLIndex);
     // If it's not found, it's a spurious branch to :endfor
     if (lpForStmtNext EQ NULL)
         goto UNINIT_EXIT;
@@ -640,16 +640,16 @@ UBOOL CS_ENDFOR_Stmt_EM
                                                     &lpForStmtNext->tkForI))
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                      &lpYYEndForArg->tkToken);
+                                       lptkEndForArg);
             return FALSE;
         } // End IF
 
         // Tell the lexical analyzer to get the next token from
         //   the stmt after the token pointed to by the ENDFOR/ENDFORLCL stmt
-        CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYEndForArg->tkToken.tkData);
+        CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lptkEndForArg->tkData);
 
         // If the starting and ending stmts are not on the same line, ...
-        if (lpYYEndForArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
+        if (lptkEndForArg->tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
             // Tell the parser to stop executing this line
             lpplLocalVars->bStopExec = TRUE;
     } else
@@ -710,15 +710,15 @@ void CS_DoneFOR
 
 UBOOL CS_ENDREPEAT_Stmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYEndRepeatArg)    // Ptr to ENDREPEAT arg
+     LPTOKEN       lptkEndRepeatArg)    // Ptr to ENDREPEAT arg
 
 {
     // Tell the lexical analyzer to get the next token from
     //   the stmt after the token pointed to by the ENDREPEAT stmt
-    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYEndRepeatArg->tkToken.tkData);
+    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lptkEndRepeatArg->tkData);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYEndRepeatArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
+    if (lptkEndRepeatArg->tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -734,16 +734,16 @@ UBOOL CS_ENDREPEAT_Stmt
 
 UBOOL CS_ENDWHILE_Stmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYEndWhileArg)     // Ptr to ENDWHILE arg
+     LPTOKEN       lptkEndWhileArg)     // Ptr to ENDWHILE arg
 
 {
     // Tell the lexical analyzer to get the next token from
     //   the start of the stmt at the token pointed to by
     //   the ENDWHILE stmt
-    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &lpYYEndWhileArg->tkToken.tkData);
+    CS_SetNextStmtToStmtAt_NEXT (lpplLocalVars, &lptkEndWhileArg->tkData);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYEndWhileArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
+    if (lptkEndWhileArg->tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -772,13 +772,17 @@ UBOOL CS_FOR_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPPL_YYSTYPE  lpYYForArg,          // Ptr to FOR arg
      LPPL_YYSTYPE  lpYYNameArg,         // Ptr to Name arg
-     LPPL_YYSTYPE  lpYYInArg,           // Ptr to IN arg
-     LPPL_YYSTYPE  lpYYRhtArg,          // Ptr to right arg
-     UBOOL         bFORLCL)             // TRUE iff FORLCL
+     LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
 
 {
+    UBOOL        bFORLCL;               // TRUE iff FORLCL
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPFORSTMT    lpForStmtNext;         // Ptr to next available entry on FORSTMT/FORLCLSTMT stack
+
+    // Set the FORLCL flag
+    bFORLCL = lpYYForArg->tkToken.tkFlags.TknType EQ TKT_CS_FORLCL;
+
+    Assert (bFORLCL || lpYYForArg->tkToken.tkFlags.TknType EQ TKT_CS_FOR);
 
     // Find the matching FORSTMT/FORLCLSTMT ptr
     // If it's found, this is a branch to an active FOR/FORLCL stmt
@@ -850,7 +854,7 @@ UBOOL CS_FOR_Stmt_EM
 
 UBOOL CS_IF_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYIfArg,           // Ptr to IF/... arg
+     LPTOKEN       lptkIfArg,           // Ptr to IF/... arg
      LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
 
 {
@@ -896,7 +900,7 @@ UBOOL CS_IF_Stmt_EM
          goto DOMAIN_EXIT;
 
     // Copy the token data
-    tdCur = lpYYIfArg->tkToken.tkData;
+    tdCur = lptkIfArg->tkData;
 
     // Get the contents of the token pointed to by
     //   the IF/... token
@@ -1261,17 +1265,17 @@ ERROR_EXIT:
 
 UBOOL CS_LEAVE_Stmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYLeaveArg)        // Ptr to LEAVE arg
+     LPTOKEN       lptkLeaveArg)        // Ptr to LEAVE arg
 
 {
      TOKEN_TYPES TknType;               // Token type
 
     // Tell the lexical analyzer to get the next token from
     //   the stmt after the token pointed to by the LEAVE stmt
-    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
+    CS_SetNextStmtToStmtAfter_NEXT (lpplLocalVars, &lptkLeaveArg->tkData);
 
     // If the starting and ending stmts are not on the same line, ...
-    if (lpYYLeaveArg->tkToken.tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
+    if (lptkLeaveArg->tkData.Next.uLineNum NE lpplLocalVars->uLineNum)
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;
 
@@ -1281,7 +1285,7 @@ UBOOL CS_LEAVE_Stmt
         lpplLocalVars->bRestart = TRUE;
 
     // Get the token type of the stmt pointed to by the LEAVE stmt
-    TknType = CS_GetTokenType_NEXT (lpplLocalVars, &lpYYLeaveArg->tkToken.tkData);
+    TknType = CS_GetTokenType_NEXT (lpplLocalVars, &lptkLeaveArg->tkData);
 
     // If the stmt pointed to by the LEAVE stmt is ENDFOR/ENDFORLCL, ...
     if (TknType EQ TKT_CS_ENDFOR
@@ -1307,7 +1311,7 @@ UBOOL CS_LEAVE_Stmt
 
 UBOOL CS_LEAVEIF_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYLeaveIfArg,      // Ptr to LEAVEIF arg
+     LPTOKEN       lptkLeaveIfArg,      // Ptr to LEAVEIF arg
      LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
 
 {
@@ -1341,7 +1345,7 @@ UBOOL CS_LEAVEIF_Stmt_EM
          goto DOMAIN_EXIT;
 
     if (aplLongestRht)
-        CS_LEAVE_Stmt (lpplLocalVars, lpYYLeaveIfArg);
+        CS_LEAVE_Stmt (lpplLocalVars, lptkLeaveIfArg);
 
     return TRUE;
 
@@ -1380,7 +1384,7 @@ ERROR_EXIT:
 
 UBOOL CS_SELECT_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYSelectArg,       // Ptr to SELECT arg
+     LPTOKEN       lptkSelectArg,       // Ptr to SELECT arg
      LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
 
 {
@@ -1399,7 +1403,7 @@ UBOOL CS_SELECT_Stmt_EM
     lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Copy the token data
-    tkNxt.tkData = lpYYSelectArg->tkToken.tkData;
+    tkNxt.tkData = lptkSelectArg->tkData;
 
     // Run through the chain of SELECT/CASE/CASELIST stmts looking for a match
     while (TRUE)
@@ -1455,6 +1459,7 @@ UBOOL CS_SELECT_Stmt_EM
                                              tdSOS.Next.uTknNum,    // Starting token # in the above function line
                                              TRUE,                  // TRUE iff we should act on errors
                                              TRUE,                  // TRUE iff executing only one stmt
+                                             lpMemPTD->lpSISCur->DfnType,   // DfnType for FillSISNxt
                                              FALSE);                // TRUE iff we're to skip the depth check
                 // If the offset from dfn header to tokenized line header is valid, ...
                 if (offTknHdr)
@@ -1467,6 +1472,7 @@ UBOOL CS_SELECT_Stmt_EM
                 switch (exitType)
                 {
                     case EXITTYPE_NONE:
+                    case EXITTYPE_DISPLAY:
                         // Match the SELECT arg against the CASE arg
 
                         // If it's CASE, ...
@@ -1541,7 +1547,6 @@ UBOOL CS_SELECT_Stmt_EM
                     case EXITTYPE_QUADERROR_INIT:
                     case EXITTYPE_QUADERROR_EXEC:
                     case EXITTYPE_STOP:
-                    case EXITTYPE_DISPLAY:
                     case EXITTYPE_NOVALUE:
                     case EXITTYPE_NODISPLAY:
                     defstop
@@ -1580,7 +1585,7 @@ UBOOL CS_SELECT_Stmt_EM
 
 UBOOL CS_SKIPCASE_Stmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYSkipCaseArg)     // Ptr to SKIPCASE arg
+     LPTOKEN       lptkSkipCaseArg)     // Ptr to SKIPCASE arg
 
 {
     TOKEN      tkNxt;                   // Next token
@@ -1588,7 +1593,7 @@ UBOOL CS_SKIPCASE_Stmt
 
     // Get the contents of the (CASE/CASELIST) token pointed to by
     //   the SKIPCASE token
-    CS_GetToken_NEXT (lpplLocalVars, &lpYYSkipCaseArg->tkToken.tkData, &tkNxt);
+    CS_GetToken_NEXT (lpplLocalVars, &lptkSkipCaseArg->tkData, &tkNxt);
 
     Assert (tkNxt.tkFlags.TknType EQ TKT_CS_CASE
          || tkNxt.tkFlags.TknType EQ TKT_CS_CASELIST);
@@ -1628,7 +1633,7 @@ UBOOL CS_SKIPCASE_Stmt
 
 UBOOL CS_SKIPEND_Stmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
-     LPPL_YYSTYPE  lpYYSkipEndArg)      // Ptr to SKIPEND arg
+     LPTOKEN       lptkSkipEndArg)      // Ptr to SKIPEND arg
 
 {
     TOKEN      tkNxt;                   // Next token
@@ -1636,7 +1641,7 @@ UBOOL CS_SKIPEND_Stmt
 
     // Get the contents of the (ELSEIF) token pointed to by
     //   the SKIPEND token
-    CS_GetToken_NEXT (lpplLocalVars, &lpYYSkipEndArg->tkToken.tkData, &tkNxt);
+    CS_GetToken_NEXT (lpplLocalVars, &lptkSkipEndArg->tkData, &tkNxt);
 
     Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ELSEIF);
 

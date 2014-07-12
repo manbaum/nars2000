@@ -204,7 +204,7 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- InitMagicFunction"
+#define APPEND_NAME     L" -- Init1MagicFunction"
 #else
 #define APPEND_NAME
 #endif

@@ -274,13 +274,12 @@ typedef struct tagVARARRAY_HEADER
                      PV0:1,             //      00000200:  Permutation Vector in origin-0
                      PV1:1,             //      00000400:  ...                          1
                      bSelSpec:1,        //      00000800:  Select Specification array
-                     SkipRefCntIncr:1,  //      00001000:  Skip the next RefCnt increment
-                     All2s:1,           //      00002000:  Values are all 2s
+                     All2s:1,           //      00001000:  Values are all 2s
 #ifdef DEBUG
-                     bMFOvar:1,         //      00004000:  Magic Function/Operator var -- do not display
-                     :17;               //      FFFF8000:  Available bits
-#else
+                     bMFOvar:1,         //      00002000:  Magic Function/Operator var -- do not display
                      :18;               //      FFFFC000:  Available bits
+#else
+                     :19;               //      FFFFE000:  Available bits
 #endif
     UINT             RefCnt;            // 08:  Reference count
     APLNELM          NELM;              // 0C:  # elements in the array (8 bytes)
@@ -307,8 +306,7 @@ typedef struct tagFCNARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;               // 00:  Array header signature
     UINT             fnNameType:4,      // 04:  0000000F:  The type of the array (see NAME_TYPES)
-                     SkipRefCntIncr:1,  //      00000010:  Skip the next RefCnt increment
-                     :27;               //      FFFFFFE0:  Available bits
+                     :28;               //      FFFFFFF0:  Available bits
     UINT             RefCnt,            // 08:  Reference count
                      tknNELM;           // 0C:  # tokens in the array (each of which may point to additional arrays)
     HGLOBAL          hGlbTxtLine;       // 10:  Line text global memory handle (may be NULL)

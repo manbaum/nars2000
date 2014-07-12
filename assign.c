@@ -55,6 +55,9 @@ UBOOL AssignName_EM
     Assert (lptkNam->tkFlags.TknType EQ TKT_VARNAMED
          || lptkNam->tkFlags.TknType EQ TKT_FCNNAMED
          || lptkNam->tkFlags.TknType EQ TKT_FCNIMMED
+         || lptkNam->tkFlags.TknType EQ TKT_FCNAFO
+         || lptkNam->tkFlags.TknType EQ TKT_OP1AFO
+         || lptkNam->tkFlags.TknType EQ TKT_OP2AFO
          || lptkNam->tkFlags.TknType EQ TKT_OP1NAMED
          || lptkNam->tkFlags.TknType EQ TKT_OP2NAMED
          || lptkNam->tkFlags.TknType EQ TKT_OP3NAMED);
@@ -121,7 +124,7 @@ UBOOL AssignName_EM
 
             // Copy the source global memory handle
             //   and save it as the new global memory ptr
-            lptkNam->tkData.tkSym->stData.stGlbData    = CopySymGlbDir_PTB (hGlbSrc);
+            lptkNam->tkData.tkSym->stData.stGlbData    = lpMemDfnHdr->bMFO ? hGlbSrc : CopySymGlbDir_PTB (hGlbSrc);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbSrc); lpMemDfnHdr = NULL;
@@ -437,9 +440,9 @@ NAME_TYPES GetNameType
     (LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL    hGlbData;            // Function array global memory handle
-    LPVOID     lpMem;               // Ptr to function array global memory
-    NAME_TYPES fnNameType;          // Function name type (see NAME_TYPES)
+    HGLOBAL      hGlbData;          // Function array global memory handle
+    LPVOID       lpMem;             // Ptr to function array global memory
+    NAME_TYPES   fnNameType;        // Function name type (see NAME_TYPES)
 
     // Split cases based upon the token type
     switch (lptkFunc->tkFlags.TknType)
@@ -500,19 +503,22 @@ NAME_TYPES GetNameType
 
             return -1;
 
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+            // Set the UDFO/AFO properties
+            return plSetDfn (lptkFunc, GetGlbDataToken (lptkFunc));
+
         case TKT_FCNIMMED:
         case TKT_OPJOTDOT:
-        case TKT_FCNAFO:
             return NAMETYPE_FN12;
 
         case TKT_OP1NAMED:
         case TKT_OP1IMMED:
-        case TKT_OP1AFO:
             return NAMETYPE_OP1;
 
         case TKT_OP2NAMED:
         case TKT_OP2IMMED:
-        case TKT_OP2AFO:
             return NAMETYPE_OP2;
 
         case TKT_OP3NAMED:
@@ -1060,7 +1066,7 @@ UBOOL ModifyAssignNameVals_EM
         LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
         lpYYRes =
-          ExecFunc_EM_YY (&lpMemName[uName].tkToken, lpYYFcnStr, lptkVal, FALSE, FALSE);
+          ExecFunc_EM_YY (&lpMemName[uName].tkToken, lpYYFcnStr, lptkVal);
 
         if (lpYYRes)
         {

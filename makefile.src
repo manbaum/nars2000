@@ -29,7 +29,6 @@
 SRC_PARSE=              \
 $(O)cs_parse.???        \
 $(O)fh_parse.???        \
-$(O)pl_parse.???        \
 $(O)pn_parse.???
 
 SRC=                    \
@@ -77,6 +76,7 @@ $(O)malloc.???          \
 $(O)mp.???              \
 $(O)mpfns.???           \
 $(O)mpifns.???          \
+$(O)parseline.???       \
 $(O)perfmon.???         \
 $(O)pf_bar.???          \
 $(O)pf_circle.???       \

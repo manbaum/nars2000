@@ -362,6 +362,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
                                    aplNELMComp,     // Length of the line to execute
                                    bActOnErrors,    // TRUE iff we should act on errors
                                    FALSE,           // TRUE iff we're to skip the depth check
+                                   DFNTYPE_EXEC,    // DfnType for FillSISNxt
                                    lptkFunc);       // Ptr to function token
     // Split cases based upon the exit type
     switch (exitType)
@@ -398,6 +399,10 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
             {
                 // Make a PL_YYSTYPE NoValue entry
                 lpYYRes = MakeNoValue_YY (lptkFunc);
+
+                // If the exit type is NONE, ...
+                if (exitType EQ EXITTYPE_NONE)
+                    exitType = EXITTYPE_NOVALUE;
 
                 break;
             } // End IF
@@ -453,6 +458,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
      APLNELM      aplNELMComp,          // Length of the line to execute
      UBOOL        bActOnErrors,         // TRUE iff we should act on errors
      UBOOL        bNoDepthCheck,        // TRUE iff we're to skip the depth check
+     DFN_TYPES    DfnType,              // DfnType for FillSISNxt
      LPTOKEN      lptkFunc)             // Ptr to function token
 
 {
@@ -528,6 +534,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
                                  0,                 // Starting token # in the above function line
                                  bActOnErrors,      // TRUE iff we should act on errors
                                  FALSE,             // TRUE iff executing only one stmt
+                                 DfnType,           // DfnType for FillSISNxt
                                  bNoDepthCheck);    // TRUE iff we're to skip the depth check
     // Untokenize the temporary line and free its memory
     Untokenize (lpMemTknHdr);
@@ -544,8 +551,7 @@ ERROR_EXIT:
     // If there's a semaphore to signal, ...
     if (hSigaphore)
     {
-        dprintfWL9 (L"~~Releasing semaphore:  %p (%S#%d)", hSigaphore, FNLN);
-
+        // Release it
         MyReleaseSemaphore (hSigaphore, 1, NULL);
 
         // Release our time slice so the released thread can act
@@ -573,6 +579,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
      UINT           uTknNum,            // Starting token # in the above function line
      UBOOL          bActOnErrors,       // TRUE iff we should act on errors
      UBOOL          bExec1Stmt,         // TRUE iff executing only one stmt
+     DFN_TYPES      DfnType,            // DfnType for FillSISNxt
      UBOOL          bNoDepthCheck)      // TRUE iff we're to skip the depth check
 
 {
@@ -582,7 +589,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
     // Fill in the SIS header for Execute
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 NULL,                   // Semaphore handle
-                DFNTYPE_EXEC,           // DfnType
+                DfnType,                // DfnType
                 FCNVALENCE_MON,         // FcnValence
                 FALSE,                  // Suspended
                 TRUE,                   // Restartable

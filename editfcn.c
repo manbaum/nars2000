@@ -1149,11 +1149,6 @@ UBOOL SyntaxColor
         uChar = tkLocalVars.uChar;
     } // End FOR
 
-////// We should never get here as we process the
-//////   trailing zero in the input line which should
-//////   exit from one of the actions with TKROW_EXIT.
-////DbgStop ();
-
     // In rare circumstances we fall through to this point.
     // I think what is happening is that the mouse selects
     //   parts of more than one line and moves during the WM_PAINT

@@ -286,7 +286,9 @@ typedef enum tagPTDMEMVIRTENUM
     PTDMEMVIRT_FORSTMT,                 // 0E:  FOR ... IN stmts
     PTDMEMVIRT_MFO1,                    // 0F:  Magic functions/operators
     PTDMEMVIRT_MFO2,                    // 10:  ...
-    PTDMEMVIRT_LENGTH                   // 11:  # entries
+    PTDMEMVIRT_LFTSTK,                  // 11:  2by2 left stack
+    PTDMEMVIRT_RHTSTK,                  // 12:  ...  right ...
+    PTDMEMVIRT_LENGTH                   // 13:  # entries
 } PTDMEMVIRTENUM;
 
 

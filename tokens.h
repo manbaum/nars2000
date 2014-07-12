@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -175,6 +175,7 @@ typedef enum tagTOKEN_TYPES
 //   <MakeVarStrand_EM_YY> and <CopyToken_EM> in <strand.c>,
 //   <GetTokenTypeName> in <dispdbg.c>,
 //   <GetNameType> in <assign.c>,
+//   <tokenSo> in <parseline.c>,
 //   and <TokenTypeFV>, <IsTknNamed>, <IsTknNamedVar>, and <IsTknImmed> in <primfns.c>.
 
 
@@ -188,7 +189,8 @@ typedef struct tagTKFLAGS
          bSyntErr:1,        // 00010000:  TRUE iff this stmt is a SYNTAX ERROR
          bAfoArgs:1,        // 00020000:  TRUE iff this stmt references {alpha} or {omega}
          bGuardStmt:1,      // 00040000:  TRUE iff this stmt is an AFO Guard
-         :13;               // FFF80000:  Available bits
+         bAssignName:1,     // 00080000:  TRUE iff this token is a name that is the target of an assignment
+         :12;               // FFF00000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 // N.B.:  Whenever changing the above enum (TKFLAGS),
@@ -247,10 +249,17 @@ typedef union tagTOKEN_DATA
 typedef struct tagTOKEN
 {
     TKFLAGS          tkFlags;       // 00:  The flags part
-    TOKEN_DATA       tkData;        // 04:  The data part (16 bytes)
-    int              tkCharIndex;   // 14:  Index into the input line of this token
-                                    // 18:  Length
+    SO_ENUM          tkSynObj;      // 04:  The Syntax Object for this token
+    TOKEN_DATA       tkData;        // 08:  The data part (16 bytes)
+    int              tkCharIndex;   // 18:  Index into the input line of this token
+                                    // 1C:  Length
 } TOKEN, *LPTOKEN;
+
+// N.B.:  Whenever changing the above struct (TOKEN),
+//   be sure to make a corresponding change to
+//   <tkZero> and <tkBlank> in <externs.h>,
+//   <plYYEOS> in <parseline.c>,
+//   <tkMinMaxAfo> in <po_dot.c>.
 
 #define TOKEN_HEADER_SIGNATURE      'NKOT'
 

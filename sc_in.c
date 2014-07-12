@@ -430,6 +430,7 @@ UBOOL TransferInverseArr2_EM
                                        lstrlenW (lpwName),  // Length of the line to execute
                                        TRUE,                // TRUE iff we should act on errors
                                        FALSE,               // TRUE iff we're to skip the depth check
+                                       DFNTYPE_EXEC,        // DfnType for FillSISNxt
                                        NULL);               // Ptr to function token
         // Split cases based upon the exit type
         switch (exitType)
@@ -582,6 +583,7 @@ UBOOL TransferInverseFcn2_EM
                                    lstrlenW (lpwData),  // Length of the line to execute
                                    TRUE,                // TRUE iff we should act on errors
                                    FALSE,               // TRUE iff we're to skip the depth check
+                                   DFNTYPE_EXEC,        // DfnType for FillSISNxt
                                    NULL);               // Ptr to function token
     Assert (exitType EQ EXITTYPE_NODISPLAY
          || exitType EQ EXITTYPE_NOVALUE
@@ -1112,6 +1114,7 @@ UBOOL TransferInverseNum1_EM
                                        lstrlenW (lpwName),  // Length of the line to execute
                                        TRUE,                // TRUE iff we should act on errors
                                        FALSE,               // TRUE iff we're to skip the depth check
+                                       DFNTYPE_EXEC,        // DfnType for FillSISNxt
                                        NULL);               // Ptr to function token
         Assert (exitType EQ EXITTYPE_NODISPLAY
              || exitType EQ EXITTYPE_ERROR);

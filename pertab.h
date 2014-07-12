@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -122,6 +122,8 @@ typedef struct tagPERTABDATA
                  lptkCSNxt;                 // Ptr to next available slot in CS ...  (dynamic)
     struct tagFORSTMT *
                  lpForStmtBase;             // Ptr to base of FORSTMT stack
+    PL_YYSTYPE   ForToken,                  // Temporary ptr to :FOR or :FORLCL token
+                 ForName;                   // ...               NAM in :FOR NAM :IN A
 #ifndef UNISCRIBE
     IMLangFontLink
                 *lpFontLink;                // Ptr to FontLink struc
@@ -141,6 +143,10 @@ typedef struct tagPERTABDATA
     HGLOBAL      hGlbNfns;                  // Global memory handle for []Nfns data
     LPVOID       gslRNG;                    // Ptr to GSL random number generator
     LARGE_INTEGER liTickCnt;                // Performance counter
+    LPPL_YYSTYPE *lpplLftStk,               // Ptr to ptr to left stack used by 2by2
+                 *lpplOrgLftStk,            // ...           base of ...
+                 *lpplRhtStk,               // ...           right ...
+                 *lpplOrgRhtStk;            // ...           base of ...
 } PERTABDATA, *LPPERTABDATA;
 
 

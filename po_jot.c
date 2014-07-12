@@ -108,27 +108,27 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                  bRhtArg;               //          right ...
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
     LPPRIMFNS    lpPrimProtoRht;        // Ptr to right ...
-    LPTOKEN      lptkAxis,              // Ptr to axis token (may be NULL)
+    LPTOKEN      lptkAxisOpr,           // Ptr to axis token (may be NULL)
                  lptkAxisLft,           // Ptr to left operand axis token (may be NULL)
                  lptkAxisRht;           // Ptr to right ...
 
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_JOT);
 
     // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive to
     //   the axis operator, so signal a syntax error if present
     //***************************************************************
 
-    if (lptkAxis NE NULL)
+    if (lptkAxisOpr NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     if (IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_OPERAND_SYNTAX_EXIT;
@@ -284,7 +284,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
 
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
+                               lptkAxisOpr);
     return NULL;
 
 LEFT_OPERAND_SYNTAX_EXIT:

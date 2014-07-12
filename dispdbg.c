@@ -450,7 +450,7 @@ void DisplayGlobals
 
     DbgMsgW (L"********** Start Globals *******************************");
 
-#define MAX_VAL_LEN     12
+#define MAX_VAL_LEN     80
     for (i = 0; i < MAXOBJ; i++)
     if (hGlb = ahGLBALLOC[i])
     {
@@ -641,7 +641,7 @@ void DisplayGlobals
                     {
                         wsprintfW (wszTemp,
                                    L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
-                                   (lpHeader->RefCnt NE 1 || lpHeader->SkipRefCntIncr) ? WS_UTF16_REFCNT_NE1 : L"",
+                                   (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                    hGlb,
                                    ArrayTypeAsChar[lpHeader->ArrType],
                                    L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
@@ -721,33 +721,37 @@ void DisplayGlobals
                 // It's a valid HGLOBAL user-defined function/operator
                 Assert (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlb)));
 
-                // Copy the user-defined function/operator name
-                CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
-                             lpHeader->steFcnName,      // Ptr to function symbol table entry
-                            &uNameLen);                 // Ptr to name length (may be NULL)
-
-                // If we're to display all globals or
-                //   this one is not a Magic Function/Operator, ...
-                if (uDispGlb EQ 2
-                 || (!IsMFOName (lpMemPTD->lpwszTemp)
-                  && !lpHeader->bMFO))
+                // If not a Magic Function/Operator, ...
+                if (!lpHeader->bMFO || lpHeader->RefCnt NE 1)
                 {
-                    // Copy the name to local storage
-                    lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
-                    aplArrChar[min (MAX_VAL_LEN, uNameLen)] = WC_EOS;
+                    // Copy the user-defined function/operator name
+                    CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
+                                 lpHeader->steFcnName,      // Ptr to function symbol table entry
+                                &uNameLen);                 // Ptr to name length (may be NULL)
 
-                    wsprintfW (wszTemp,
-                               L"%shGlb=%p DType=%c  NELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
-                               (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
-                               hGlb,
-                               cDfnTypeStr[lpHeader->DfnType],
-                               lpHeader->numFcnLines,
-                               lpHeader->RefCnt,
-                               (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                               lpaFileNameGLBALLOC[i],
-                               auLinNumGLBALLOC[i],
-                               aplArrChar);
-                    DbgMsgW (wszTemp);
+                    // If we're to display all globals or
+                    //   this one is not a Magic Function/Operator, ...
+                    if (uDispGlb EQ 2
+                     || (!IsMFOName (lpMemPTD->lpwszTemp)
+                      && !lpHeader->bMFO))
+                    {
+                        // Copy the name to local storage
+                        lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
+                        aplArrChar[min (MAX_VAL_LEN, uNameLen)] = WC_EOS;
+
+                        wsprintfW (wszTemp,
+                                   L"%shGlb=%p DType=%c  NELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
+                                   (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
+                                   hGlb,
+                                   cDfnTypeStr[lpHeader->DfnType],
+                                   lpHeader->numFcnLines,
+                                   lpHeader->RefCnt,
+                                   (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                                   lpaFileNameGLBALLOC[i],
+                                   auLinNumGLBALLOC[i],
+                                   aplArrChar);
+                        DbgMsgW (wszTemp);
+                    } // End IF
                 } // End IF
 
                 break;
@@ -1249,12 +1253,11 @@ LPWCHAR DisplayFcnGlb
 #ifdef DEBUG
     if (bDispHeader)
         lpaplChar += wsprintfW (lpaplChar,
-                                L"%sfnNameType=%s, NELM=%3d, RC=%2d%s, Fn:  ",
+                                L"%sfnNameType=%s, NELM=%3d, RC=%2d, Fn:  ",
                                 (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                 lpwNameTypeStr[lpHeader->fnNameType],
                                 tknNELM,
-                                lpHeader->RefCnt,
-                                lpHeader->SkipRefCntIncr ? L"*" : L" ");
+                                lpHeader->RefCnt);
 #endif
     // Skip over the function array header
     lpMemFcnArr = FcnArrayBaseToData (lpHeader);
@@ -1454,8 +1457,8 @@ LPWCHAR DisplayFcnSub
             TknCount = 1 + lpYYMem[1].TknCount;
             lpaplChar =
               DisplayFcnSub (lpaplChar,                                                 // Lfcn
-                            &lpYYMem[1],
-                             lpYYMem[1].TknCount,
+                            &lpYYMem[TknCount],
+                             lpYYMem[TknCount].TknCount,
                              lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                              lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
@@ -1466,8 +1469,8 @@ LPWCHAR DisplayFcnSub
                 *lpaplChar++ = L'(';
             lpaplChar =
               DisplayFcnSub (lpaplChar,                                                 // Rfcn
-                            &lpYYMem[TknCount],
-                             lpYYMem[TknCount].TknCount,
+                            &lpYYMem[1],
+                             lpYYMem[1].TknCount,
                              lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                              lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
@@ -1496,6 +1499,9 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_FCNNAMED:
+        case TKT_OP1NAMED:
+        case TKT_OP2NAMED:
+        case TKT_OP3NAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYMem->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -1739,8 +1745,8 @@ LPWCHAR DisplayFcnSub
                             {
                                 lpaplChar =
                                   DisplayFcnSub (lpaplChar,                                             // Lfcn
-                                                &lpYYMem[1],
-                                                 lpYYMem[1].TknCount,
+                                                &lpYYMem[TknCount],
+                                                 lpYYMem[TknCount].TknCount,
                                                  lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
                                                  lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                                                  lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
@@ -1760,8 +1766,8 @@ LPWCHAR DisplayFcnSub
                                 *lpaplChar++ = L' ';
                             lpaplChar =
                               DisplayFcnSub (lpaplChar,                                                 // Rfcn
-                                            &lpYYMem[TknCount],
-                                             lpYYMem[TknCount].TknCount,
+                                            &lpYYMem[1],
+                                             lpYYMem[1].TknCount,
                                              lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
                                              lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                                              lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
@@ -1892,8 +1898,8 @@ LPWCHAR DisplayFcnSub
             {
                 lpaplChar =
                   DisplayFcnSub (lpaplChar,                                             // Lfcn
-                                &lpYYMem[1],
-                                 lpYYMem[1].TknCount,
+                                &lpYYMem[TknCount],
+                                 lpYYMem[TknCount].TknCount,
                                  lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
                                  lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                                  lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
@@ -1913,8 +1919,8 @@ LPWCHAR DisplayFcnSub
                 *lpaplChar++ = L' ';
             lpaplChar =
               DisplayFcnSub (lpaplChar,                                                 // Rfcn
-                            &lpYYMem[TknCount],
-                             lpYYMem[TknCount].TknCount,
+                            &lpYYMem[1],
+                             lpYYMem[1].TknCount,
                              lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                              lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
@@ -1937,9 +1943,6 @@ LPWCHAR DisplayFcnSub
 
             break;
 
-        case TKT_OP1NAMED:          // At the moment, named operators are all one char
-        case TKT_OP2NAMED:          //   symbols (no assignment of {jot}{dot}), so they
-        case TKT_OP3NAMED:          //   are all immediates and are handled as such above.
         defstop
             break;
     } // End SWITCH
@@ -2281,7 +2284,7 @@ void DisplayStrand
         // Get the function array
 
         wsprintfW (wszTemp,
-                   L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d%s IN=%1d F=%p B=%p",
+                   L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
                    lp,
                    GetTokenTypeName (lp->tkToken.tkFlags.TknType),
                    bIsTknImmed
@@ -2289,7 +2292,6 @@ void DisplayStrand
                  : (APLUINT) lp->tkToken.tkData.tkGlbData,
                    lp->tkToken.tkCharIndex,
                    lp->TknCount,
-                   GetVFOArraySRCIFlag (&lp->tkToken) ? L"*" : L" ",
                    lp->YYIndirect,
                    lp->lpYYFcnBase,
                    lpLast);

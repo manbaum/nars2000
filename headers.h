@@ -49,6 +49,7 @@
 #include "resdebug.h"
 #include "resource.h"
 #include "datatype.h"
+#include "synobj.h"
 #include "tokens.h"
 #include "primfns.h"
 #include "execmfn.h"

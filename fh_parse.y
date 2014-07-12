@@ -91,9 +91,17 @@ Result
     5.  {(Z1 Z2 ...)}{is}
     6.  ({Z1 Z2 ...}){is}
 
+Left Arg
+--------
+    1.  **Empty**
+
 Fcn
 ---
     1.  FOO
+
+Right Arg
+---------
+    1.  **Empty**
 
 
 Monadic/Dyadic Functions/Operators
@@ -122,26 +130,31 @@ Left Arg
     9.  ({L})
    10.  ({L1 L2 ...})
 
-Fcn/Opr
--------
+Fcn
+---
     1.  FOO
-    2.  (FOO)
-    3.  (LO FOO)
-    4.  (LO FOO RO)
-    5.  FOO[X]
-    6.  (FOO[X])
-    7.  (LO FOO[X])
-    8.  (LO FOO[X] RO)
+    2.  FOO[X]
+
+Opr
+---
+    1.  (FOO)
+    2.  (LO FOO)
+    3.  (LO FOO RO)
+    4.  (FOO[X])
+    5.  (LO FOO[X])
+    6.  (LO FOO[X] RO)
 
 Right Arg
 ---------
     1.  R
     2.  (R)
     3.  (R1 R2 ...)
-
-This yields 1440 (=6 x 10 x 8 x 3) distinct Monadic/Dyadic Function/Operator headers
-and            6 (=6      x 1    ) distinct Niladic Function headers
-for a total of 1446 user-defined function/operator headers,
+                   Z    L   F   R
+This yields  360 (=6 x 10 x 2 x 3) distinct Monadic/Dyadic Function headers
+and         1080 (=6 x 10 x 6 x 3) distinct Monadic/Dyadic Derived Function headers from Monadic/Dyadic Operators
+and            6 (=6 x  1 x 1 x 1) distinct Niladic Function headers
+and           36 (=6 x  1 x 6 x 1) distinct Niladic Derived Function headers from Monadic/Dyadic Operators
+Total       1482                   user-defined function/operator headers,
 not counting the presence/absence of locals and presence/absence of a comment.
 
  */
@@ -279,6 +292,16 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
                                 }
 
+    |         AxisOpr           {DbgMsgWP (L"%%NoResHdr:  AxisOpr");                // Niladic function w/axis operator
+                                 InitHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 MakeHdrStrand_YY (&$1);
+
+                                 lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // Mark as a niladic function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
+                                }
     |         AxisOpr  RhtArg   {DbgMsgWP (L"%%NoResHdr:  AxisOpr RhtArg");         // Monadic function w/axis operator
                                  InitHdrStrand (&$1);
                                  PushHdrStrand_YY (&$1);
@@ -387,12 +410,26 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
+    |        AxisList           {DbgMsgWP (L"%%NoResHdr:  AxisList");               // Mon/Dyd operator, niladic derived function w/axis operator
+                                 if (!GetOprName_EM (&$1))
+                                     YYERROR;
+
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // ...
+                                }
     |        AxisList  RhtArg   {DbgMsgWP (L"%%NoResHdr:  AxisList RhtArg");        // Mon/Dyd operator, monadic derived function w/axis operator
                                  if (!GetOprName_EM (&$1))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
+                                }
+    |         List              {DbgMsgWP (L"%%NoResHdr:  List");                   // Mon/Dyd operator, niladic derived function
+                                 if (!GetOprName_EM (&$1))
+                                     YYERROR;
+
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
+                                 lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // ...
                                 }
     |         List     RhtArg   {DbgMsgWP (L"%%NoResHdr:  List RhtArg");            // Mon/Dyd operator, monadic derived function
                                  if (!GetOprName_EM (&$1))

@@ -422,8 +422,6 @@ $(O)cs_parse.c:         $(@B).y
 $(O)cs_parse.obj:       $(O)$(@B).c     $(CS_PARSE_DEP)
 $(O)fh_parse.c:         $(@B).y
 $(O)fh_parse.obj:       $(O)$(@B).c     $(FH_PARSE_DEP)
-$(O)pl_parse.c:         $(@B).y
-$(O)pl_parse.obj:       $(O)$(@B).c     $(PL_PARSE_DEP)
 $(O)pn_parse.c:         $(@B).y
 $(O)pn_parse.obj:       $(O)$(@B).c     $(PN_PARSE_DEP)
 
@@ -501,6 +499,7 @@ $(O)main.obj:           $(@B).c         $(MAIN_DEP)
 $(O)malloc.obj:         $(@B).c         $(MALLOC_DEP)
 $(O)mpfns.obj:          $(@B).c         $(MPFNS_DEP)
 $(O)mpifns.obj:         $(@B).c         $(MPIFNS_DEP)
+$(O)parseline.obj:      $(@B).c         $(PARSELINE_DEP)
 $(O)perfmon.obj:        $(@B).c         $(PERFMON_DEP)
 $(O)pf_bar.obj:         $(@B).c         $(PF_BAR_DEP)
 $(O)pf_circle.obj:      $(@B).c         $(PF_CIRCLE_DEP)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -115,12 +115,11 @@ typedef struct tagDFN_HEADER            // Function header structure
                      ListRht:1,         //      00001000:  TRUE iff the right arg is a list
                      MonOn:1,           //      00002000:  TRUE iff function line monitoring is on for this function
                      SaveSTEFlags:1,    //      00004000:  TRUE iff on free we are to save the function name STE flags
-                     SkipRefCntIncr:1,  //      00008000:  Skip the next RefCnt increment
-                     bAFO:1,            //      00010000:  TRUE iff this is an AFO
-                     bAfoCtrlStruc:1,   //      00020000:  TRUE iff Ctrl Strucs in AFO
-                     bAfoNoDispRes:1,   //      00040000:  TRUE iff the AFO result is non-displayable
-                     bMFO:1,            //      00080000:  TRUE iff this is an MFO
-                     :12;               //      FFF00000:  Available bits
+                     bAFO:1,            //      00008000:  TRUE iff this is an AFO
+                     bAfoCtrlStruc:1,   //      00010000:  TRUE iff Ctrl Strucs in AFO
+                     bAfoNoDispRes:1,   //      00020000:  TRUE iff the AFO result is non-displayable
+                     bMFO:1,            //      00040000:  TRUE iff this is an MFO
+                     :13;               //      FFF80000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
                      nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
                      nSysLblId,         // 14:  Line # of the []INV label (0 if not present)
@@ -167,16 +166,16 @@ typedef struct tagDFN_HEADER            // Function header structure
 
 typedef struct tagFH_YYSTYPE        // YYSTYPE for Function Header parser
 {
-    TOKEN  tkToken;                 // 00:  Token info (24 bytes)
-    UINT   uStrandLen:30,           // 18:  3FFFFFFF:  # elements in this strand
+    TOKEN  tkToken;                 // 00:  Token info (28 bytes)
+    UINT   uStrandLen:30,           // 1C:  3FFFFFFF:  # elements in this strand
            Indirect:1,              //      40000000:  Indirect entry
            List:1;                  //      80000000:  Itsa list
                                     //      00000000:  No available bits
     struct tagFH_YYSTYPE *
-           lpYYStrandIndirect;      // 1C:  Ptr to the indirect strand if .Indirect is set
+           lpYYStrandIndirect;      // 20:  Ptr to the indirect strand if .Indirect is set
     struct tagFH_YYSTYPE *
-           lpYYStrandBase;          // 20:  Ptr to this token's strand base
-                                    // 24:  Length
+           lpYYStrandBase;          // 24:  Ptr to this token's strand base
+                                    // 28:  Length
 } FH_YYSTYPE, *LPFH_YYSTYPE;        // Data type of yacc stack
 
 #define YYSTYPE_IS_DECLARED 1

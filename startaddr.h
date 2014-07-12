@@ -305,6 +305,7 @@ typedef struct tagSTART_ADDRESSES
     "FreeYYFcn1"                , (LPUCHAR) &FreeYYFcn1                 ,
 
     // getfns.c
+    "GetGlbDataToken"           , (LPUCHAR) &GetGlbDataToken            ,
     "GetFirstItemToken"         , (LPUCHAR) &GetFirstItemToken          ,
     "GetNextValueTokenIntoToken", (LPUCHAR) &GetNextValueTokenIntoToken ,
     "GetNextValueToken"         , (LPUCHAR) &GetNextValueToken          ,
@@ -320,7 +321,7 @@ typedef struct tagSTART_ADDRESSES
     "GetNextValueMem"           , (LPUCHAR) &GetNextValueMem            ,
     "GetNextItemMem"            , (LPUCHAR) &GetNextItemMem             ,
     "GetNextValueMemSub"        , (LPUCHAR) &GetNextValueMemSub         ,
-    "GetGlbHandle"              , (LPUCHAR) &GetGlbHandle               ,
+    "GetGlbHandle"          , (LPUCHAR) &GetGlbHandle           ,
     "GetGlbPtrs"                , (LPUCHAR) &GetGlbPtrs                 ,
     "GetGlbPtrs_LOCK"           , (LPUCHAR) &GetGlbPtrs_LOCK            ,
     "GetSteZero"                , (LPUCHAR) &GetSteZero                 ,
@@ -385,6 +386,18 @@ typedef struct tagSTART_ADDRESSES
     "mpz_exit"                  , (LPUCHAR) &mpz_exit                   ,
     "mpz_inf_p"                 , (LPUCHAR) &mpz_inf_p                  ,
     "IsMpzNULL"                 , (LPUCHAR) &IsMpzNULL                  ,
+
+    // parseline.c
+    "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
+    "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
+    "GetLftSynObj"              , (LPUCHAR) &GetLftSynObj               ,
+    "_pl_yylex"                 , (LPUCHAR) &_pl_yylex                  ,
+#ifdef DEBUG
+    "PadMemoryW"                , (LPUCHAR) &PadMemoryW                 ,
+    "LSTACK"                    , (LPUCHAR) &LSTACK                     ,
+    "RSTACK"                    , (LPUCHAR) &RSTACK                     ,
+#endif
+    "plSetDfn"                  , (LPUCHAR) &plSetDfn                   ,
 
     // pf_bar.c
     "PrimFnBar_EM_YY"           , (LPUCHAR) &PrimFnBar_EM_YY            ,
@@ -604,28 +617,14 @@ typedef struct tagSTART_ADDRESSES
     "PrimFnMonUptackJotCSPLParse",(LPUCHAR) &PrimFnMonUpTackJotCSPLParse,
     "PrimFnMonUptackJotPLParse" , (LPUCHAR) &PrimFnMonUpTackJotPLParse  ,
 
-    // pl_parse.c/y
-    "pl_yyparse"                , (LPUCHAR) &pl_yyparse                 ,
-    "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
-    "SymbTypeVFO"               , (LPUCHAR) &SymbTypeVFO                ,
-    "LookaheadSurround"         , (LPUCHAR) &LookaheadSurround          ,
-    "LookaheadAdjacent"         , (LPUCHAR) &LookaheadAdjacent          ,
-    "LookaheadDyadicOp"         , (LPUCHAR) &LookaheadDyadicOp          ,
-    "LookbehindOp"              , (LPUCHAR) &LookbehindOp               ,
-    "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
-    "CheckNullOp3"              , (LPUCHAR) &CheckNullOp3               ,
-    "pl_yyerror"                , (LPUCHAR) &pl_yyerror                 ,
-    "pl_yyfprintf"              , (LPUCHAR) &pl_yyfprintf               ,
+    // pl_proc.c
     "WaitForInput"              , (LPUCHAR) &WaitForInput               ,
-    "AmbOpSwap_EM"              , (LPUCHAR) &AmbOpSwap_EM               ,
-    "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                 ,
-    "AmbOpToOp1"                , (LPUCHAR) &AmbOpToOp1                 ,
     "ArrExprCheckCaller"        , (LPUCHAR) &ArrExprCheckCaller         ,
-    "CheckSelSpec_EM"           , (LPUCHAR) &CheckSelSpec_EM            ,
-    "IsSelectSpec"              , (LPUCHAR) &IsSelectSpec               ,
-    "MakeTempCopy"              , (LPUCHAR) &MakeTempCopy               ,
+////"CheckSelSpec_EM"           , (LPUCHAR) &CheckSelSpec_EM            ,
+////"IsSelectSpec"              , (LPUCHAR) &IsSelectSpec               ,
     "GetEOSIndex"               , (LPUCHAR) &GetEOSIndex                ,
     "IsLastStmt"                , (LPUCHAR) &IsLastStmt                 ,
+    "SrchSISForDfn"             , (LPUCHAR) &SrchSISForDfn              ,
 
     // pn_parse.c/y
     "pn_yyparse"                , (LPUCHAR) &pn_yyparse                 ,
@@ -728,12 +727,8 @@ typedef struct tagSTART_ADDRESSES
     "IsTknNamedVar"             , (LPUCHAR) &IsTknNamedVar              ,
     "IsTknUsrDfn"               , (LPUCHAR) &IsTknUsrDfn                ,
     "IsTknImmed"                , (LPUCHAR) &IsTknImmed                 ,
-    "SetVFOArraySRCIFlag"       , (LPUCHAR) &SetVFOArraySRCIFlag        ,
-  #ifdef DEBUG
-    "GetVFOArraySRCIFlag"       , (LPUCHAR) &GetVFOArraySRCIFlag        ,
-  #endif
-    "ClrVFOArraySRCIFlag"       , (LPUCHAR) &ClrVFOArraySRCIFlag        ,
 ////"mod64"                     , (LPUCHAR) &mod64                      ,   // Static
+    "SrchSISForDfn"             , (LPUCHAR) &SrchSISForDfn              ,
 
     // primspec.c
     "PrimFnSyntaxError_EM"      , (LPUCHAR) &PrimFnSyntaxError_EM       ,
@@ -843,9 +838,9 @@ typedef struct tagSTART_ADDRESSES
     "SysFnNERASE_EM_YY"         , (LPUCHAR) &SysFnNERASE_EM_YY          ,
     "SysFnMonNERASE_EM_YY"      , (LPUCHAR) &SysFnMonNERASE_EM_YY       ,
     "SysFnDydNERASE_EM_YY"      , (LPUCHAR) &SysFnDydNERASE_EM_YY       ,
-////"SysFnLock_EM_YY"           , (LPUCHAR) &SysFnLock_EM_YY            ,
-////"SysFnMonLOCK_EM_YY"        , (LPUCHAR) &SysFnMonLOCK_EM_YY         ,
-////"SysFnDydLOCK_EM_YY"        , (LPUCHAR) &SysFnDydLOCK_EM_YY         ,
+    "SysFnNLOCK_EM_YY"          , (LPUCHAR) &SysFnNLOCK_EM_YY           ,
+    "SysFnMonNLOCK_EM_YY"       , (LPUCHAR) &SysFnMonNLOCK_EM_YY        ,
+    "SysFnDydNLOCK_EM_YY"       , (LPUCHAR) &SysFnDydNLOCK_EM_YY        ,
     "SysFnNNAMES_EM_YY"         , (LPUCHAR) &SysFnNNAMES_EM_YY          ,
     "SysFnNNUMS_EM_YY"          , (LPUCHAR) &SysFnNNUMS_EM_YY           ,
     "SysFnNREAD_EM_YY"          , (LPUCHAR) &SysFnNREAD_EM_YY           ,
@@ -996,8 +991,35 @@ typedef struct tagSTART_ADDRESSES
 
     // strand.c
     "InitVarStrand"             , (LPUCHAR) &InitVarStrand              ,
+    "PushVarStrand_YY"          , (LPUCHAR) &PushVarStrand_YY           ,
+    "PushFcnStrand_YY"          , (LPUCHAR) &PushFcnStrand_YY           ,
+    "StripStrand"               , (LPUCHAR) &StripStrand                ,
+    "FreeStrand "               , (LPUCHAR) &FreeStrand                 ,
+    "MakeVarStrand_EM_YY"       , (LPUCHAR) &MakeVarStrand_EM_YY        ,
+    "MakeGlbEntry_EM"           , (LPUCHAR) &MakeGlbEntry_EM            ,
+    "MakeFcnStrand_EM_YY"       , (LPUCHAR) &MakeFcnStrand_EM_YY        ,
+    "MakeTxtLine"               , (LPUCHAR) &MakeTxtLine                ,
+    "CopyString_EM_YY"          , (LPUCHAR) &CopyString_EM_YY           ,
+    "MakeAxis_YY"               , (LPUCHAR) &MakeAxis_YY                ,
+    "MakePrimFcn_YY"            , (LPUCHAR) &MakePrimFcn_YY             ,
+    "MakeFillJot_YY"            , (LPUCHAR) &MakeFillJot_YY             ,
+    "MakeNameFcnOpr_YY"         , (LPUCHAR) &MakeNameFcnOpr_YY          ,
+    "MakeTrainOp_YY"            , (LPUCHAR) &MakeTrainOp_YY             ,
+    "MakePrimOp1_YY"            , (LPUCHAR) &MakePrimOp1_YY             ,
+    "MakePrimOp2_YY"            , (LPUCHAR) &MakePrimOp2_YY             ,
+    "MakePrimOp3_YY"            , (LPUCHAR) &MakePrimOp3_YY             ,
+    "MakePrimOp123_YY"          , (LPUCHAR) &MakePrimOp123_YY           ,
+    "InitNameStrand"            , (LPUCHAR) &InitNameStrand             ,
+    "PushNameStrand_YY"         , (LPUCHAR) &PushNameStrand_YY          ,
+    "MakeNameStrand_EM_YY"      , (LPUCHAR) &MakeNameStrand_EM_YY       ,
+    "InitList0_YY"              , (LPUCHAR) &InitList0_YY               ,
+    "InitList1_YY"              , (LPUCHAR) &InitList1_YY               ,
+    "PushList_YY"               , (LPUCHAR) &PushList_YY                ,
     "MakeList_EM_YY"            , (LPUCHAR) &MakeList_EM_YY             ,
     "CopyImmToken_EM"           , (LPUCHAR) &CopyImmToken_EM            ,
+    "CopyToken_EM"              , (LPUCHAR) &CopyToken_EM               ,
+    "CopyPL_YYSTYPE_EM_YY"      , (LPUCHAR) &CopyPL_YYSTYPE_EM_YY       ,
+    "CopyPL_YYSTYPE_YY"         , (LPUCHAR) &CopyPL_YYSTYPE_YY          ,
 
     // symtab.c
   #ifdef DEBUG

@@ -82,18 +82,18 @@ LPPL_YYSTYPE PrimProtoOpDieresisCircle_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
+     LPTOKEN      lptkAxisOpr)          // Ptr to axis token always NULL)
 
 {
-    if (lptkAxis EQ NULL)
+    if (lptkAxisOpr EQ NULL)
         // Check for axis operator
-        lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+        lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive
     //   to the axis operator, so signal a syntax error if present
     //***************************************************************
-    if (lptkAxis NE NULL)
+    if (lptkAxisOpr NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
     // If left arg is not present, ...
@@ -116,7 +116,7 @@ LPPL_YYSTYPE PrimProtoOpDieresisCircle_EM_YY
                                          TRUE);         // TRUE iff prototyping
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
+                               lptkAxisOpr);
     return NULL;
 } // End PrimProtoOpDieresisCircle_EM_YY
 #undef  APPEND_NAME
@@ -171,25 +171,25 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
                  lpYYResR = NULL;       // Ptr to right ...
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
     LPPRIMFNS    lpPrimProtoRht;        // Ptr to right ...
-    LPTOKEN      lptkAxis,              // Ptr to axis token (may be NULL)
+    LPTOKEN      lptkAxisOpr,           // Ptr to axis token (may be NULL)
                  lptkAxisLft,           // Ptr to left operand axis token (may be NULL)
                  lptkAxisRht;           // Ptr to right ...
 
     // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive to
     //   the axis operator, so signal a syntax error if present
     //***************************************************************
 
-    if (lptkAxis NE NULL)
+    if (lptkAxisOpr NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -298,7 +298,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
 
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
+                               lptkAxisOpr);
     return NULL;
 
 LEFT_OPERAND_SYNTAX_EXIT:

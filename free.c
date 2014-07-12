@@ -197,11 +197,15 @@ void FreeResultSub
                 {
 #ifdef DEBUG_ZAP
                     dprintfWL9 (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
-                              lptkRes,
-                              ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
-                              FNLN);
+                                 lptkRes,
+                                 ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
+                                 FNLN);
 #endif
-                    lptkRes->tkData.tkSym->stData.stGlbData = NULL;
+                    // If it's []DM, ...
+                    if (IzitQuadDM (lptkRes))
+                        lptkRes->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+                    else
+                        lptkRes->tkData.tkSym->stData.stGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -256,11 +260,15 @@ void FreeResultSub
                 {
 #ifdef DEBUG_ZAP
                     dprintfWL9 (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
-                              lptkRes,
-                              ClrPtrTypeDir (hGlbData),
-                              FNLN);
+                                 lptkRes,
+                                 ClrPtrTypeDir (hGlbData),
+                                 FNLN);
 #endif
-                    lptkRes->tkData.tkSym->stData.stGlbData = NULL;
+                    // If it's []DM, ...
+                    if (IzitQuadDM (lptkRes))
+                        lptkRes->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+                    else
+                        lptkRes->tkData.tkSym->stData.stGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -299,10 +307,10 @@ void FreeResultSub
         case TKT_OP1AFO:    // ...                           ...
         case TKT_OP2AFO:    // ...                           ...
         case TKT_DELAFO:    // ...                           ...
-            // Get the global memory ptr
-            hGlbData = lptkRes->tkData.tkGlbData;
+            // Get the global memory handle
+            hGlbData = GetGlbDataToken (lptkRes);
 
-            // Check for valid ptr
+            // Check for valid handle
             if (hGlbData)
             {
                 // tkData is a valid HGLOBAL variable or function array or list
@@ -315,11 +323,15 @@ void FreeResultSub
                 {
 #ifdef DEBUG_ZAP
                     dprintfWL9 (L"**Zapping in FreeResultSub: Token=%p, Value=%p (%S#%d)",
-                              lptkRes,
-                              ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
-                              FNLN);
+                                 lptkRes,
+                                 ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
+                                 FNLN);
 #endif
-                    lptkRes->tkData.tkGlbData = NULL;
+                    // If it's []DM, ...
+                    if (IzitQuadDM (lptkRes))
+                        lptkRes->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+                    else
+                        lptkRes->tkData.tkGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -426,9 +438,9 @@ UBOOL FreeResultGlobalLst
             {
 #ifdef DEBUG_ZAP
                 dprintfWL9 (L"**Zapping in FreeResultGlobalLst: Global=%p, Value=%p (%S#%d)",
-                          hGlbData,
-                          ClrPtrTypeDir (lpMemLst->tkData.tkGlbData),
-                          FNLN);
+                             hGlbData,
+                             ClrPtrTypeDir (lpMemLst->tkData.tkGlbData),
+                             FNLN);
 #endif
                 // Zap the APLLIST
                 ZeroMemory (lpMemLst, sizeof (lpMemLst[0]));
@@ -553,10 +565,10 @@ UBOOL FreeResultGlobalVarSub
                 // Loop through the LPSYMENTRYs and/or HGLOBALs
                 for (u = 0; u < aplNELM; u++, ((LPAPLNESTED) lpMem)++)
                 {
+                    // Check for invalid ptrs
+                    if (lpMem)
                     // Check for required complete vars
                     if (bReqComplete || *(LPAPLNESTED) lpMem)
-                    // Check for reused ptrs
-                    if (!IsPtrNullInd (lpMem))
                     switch (GetPtrTypeInd (lpMem))
                     {
                         case PTRTYPE_STCONST:
@@ -567,9 +579,9 @@ UBOOL FreeResultGlobalVarSub
                             {
 #ifdef DEBUG_ZAP
                                 dprintfWL9 (L"**Zapping in FreeResultGlobalVar: Global=%p, Value=%p (%S#%d)",
-                                          hGlbData,
-                                          ClrPtrTypeInd (lpMem),
-                                          FNLN);
+                                             hGlbData,
+                                             ClrPtrTypeInd (lpMem),
+                                             FNLN);
 #endif
                                 *((LPVOID *) lpMem) = NULL;
                             } // End IF
@@ -701,6 +713,9 @@ UBOOL FreeResultGlobalFcn
                 break;              // Ignore immediates
 
             case TKT_FCNNAMED:      // Free the named function array
+            case TKT_OP1NAMED:      // ...
+            case TKT_OP2NAMED:      // ...
+            case TKT_OP3NAMED:      // ...
                 // tkData is an LPSYMENTRY
                 Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -721,11 +736,15 @@ UBOOL FreeResultGlobalFcn
                 {
 #ifdef DEBUG_ZAP
                     dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
-                              hGlbData,
-                              hGlbLcl,
-                              FNLN);
+                                 hGlbData,
+                                 hGlbLcl,
+                                 FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                    // If it's []DM, ...
+                    if (IzitQuadDM (&lpYYToken->tkToken))
+                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+                    else
+                        lpYYToken->tkToken.tkData.tkGlbData = NULL;
                 } // End IF
 
                 break;
@@ -736,23 +755,30 @@ UBOOL FreeResultGlobalFcn
             case TKT_OP2AFO:
             case TKT_DELAFO:
                 // Get the global memory handle
-                hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
+                hGlbLcl = GetGlbDataToken (&lpYYToken->tkToken);
 
                 // tkData is a valid HGLOBAL function array
                 //   or user-defined function/operator
                 Assert (IsGlbTypeFcnDir_PTB (hGlbLcl)
                      || IsGlbTypeDfnDir_PTB (hGlbLcl));
 
+                // If it's a function array or not named, ...
                 // Free the function array or user-defined function/operator
-                if (FreeResultGlobalDFLV (hGlbLcl))
+                if (((lpYYToken->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+                  || !IsTknNamedFcnOpr (&lpYYToken->tkToken))
+                 && FreeResultGlobalDFLV (hGlbLcl))
                 {
 #ifdef DEBUG_ZAP
                     dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
-                              hGlbData,
-                              hGlbLcl,
-                              FNLN);
+                                 hGlbData,
+                                 hGlbLcl,
+                                 FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                    // If it's []DM, ...
+                    if (IzitQuadDM (&lpYYToken->tkToken))
+                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+                    else
+                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = NULL;
                 } // End IF
 
                 break;
@@ -773,11 +799,15 @@ UBOOL FreeResultGlobalFcn
                 {
 #ifdef DEBUG_ZAP
                     dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
-                              hGlbData,
-                              hGlbLcl,
-                              FNLN);
+                                 hGlbData,
+                                 hGlbLcl,
+                                 FNLN);
 #endif
-                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                    // If it's []DM, ...
+                    if (IzitQuadDM (&lpYYToken->tkToken))
+                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+                    else
+                        lpYYToken->tkToken.tkData.tkGlbData = NULL;
                 } // End IF
 
                 break;
@@ -800,11 +830,15 @@ UBOOL FreeResultGlobalFcn
                     {
 #ifdef DEBUG_ZAP
                         dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
-                                  hGlbData,
-                                  hGlbLcl,
-                                  FNLN);
+                                     hGlbData,
+                                     hGlbLcl,
+                                     FNLN);
 #endif
-                        lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = NULL;
+                        // If it's []DM, ...
+                        if (IzitQuadDM (&lpYYToken->tkToken))
+                            lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
+                        else
+                            lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = NULL;
                     } // End IF
                 } // End IF
 
@@ -891,8 +925,8 @@ UBOOL FreeResultGlobalDfn
     {
 #ifdef DEBUG_ZAP
         dprintfWL0 (L"**Freeing in FreeResultGlobalDfn: %p (%S#%d)",
-                  ClrPtrTypeDir (hGlbData),
-                  FNLN);
+                     ClrPtrTypeDir (hGlbData),
+                     FNLN);
 #endif
         // We no longer need this storage
         DbgGlobalFree (hGlbData); hGlbData = NULL;
@@ -984,8 +1018,10 @@ void FreeResultGlobalDfnStruc
 
         if (bUntokenize
          && lpFcnLines->offTknLine)
+        {
             // Free the tokens
-            Untokenize ((LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine));
+            Untokenize ((LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine)); lpFcnLines->offTknLine = 0;
+        } //End IF
 
         // Skip to the next struct
         lpFcnLines++;
@@ -1021,17 +1057,93 @@ void FreeResultGlobalDfnStruc
 //***************************************************************************
 //  $FreeYYFcn1
 //
-//  Free the first element of a strand of YYFcns
+//  Free the HGLOBALs and LPSYMENTRYs in a result
+//    and free the YYRes
 //***************************************************************************
 
 void FreeYYFcn1
     (LPPL_YYSTYPE lpYYFcn)
 
 {
-    Assert (!IsTknFcnOpr (&lpYYFcn->tkToken) || lpYYFcn->TknCount NE 0);
-
     FreeResult (lpYYFcn); YYFree (lpYYFcn);
 } // End FreeYYFcn1
+
+
+//***************************************************************************
+//  $FreeResNNU1
+//
+//  Free the HGLOBALs and LPSYMENTRYs in a result
+//    only if it's not a named UDFO and not an AFO
+//    and free the YYRes
+//***************************************************************************
+
+void FreeResNNU1
+    (LPPL_YYSTYPE lpYYFcn)
+
+{
+    FreeResNNU (lpYYFcn); YYFree (lpYYFcn);
+} // End FreeResNNU1
+
+
+//***************************************************************************
+//  $IzitQuadDM
+//
+//  Is the name of a token []DM?
+//***************************************************************************
+
+UBOOL IzitQuadDM
+    (LPTOKEN lptkName)          // Ptr to the token
+
+{
+    HGLOBAL    htGlbName;       // Name global memory handle
+    LPAPLCHAR  lpMemName;       // Ptr to name global memory
+    APLBOOL    bRet;            // TRUE iff eraseable name
+
+    if (IsTknNamed (lptkName))
+    {
+        // Get the name global memory handle
+        htGlbName = lptkName->tkData.tkSym->stHshEntry->htGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLock (htGlbName);
+
+        // Save flag of whether or not the name is []DM
+        bRet = lstrcmpiW (lpMemName, $QUAD_DM) EQ 0;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (htGlbName); lpMemName = NULL;
+    } else
+        bRet = FALSE;
+
+    return bRet;
+} // End IzitQuadDM
+
+
+//***************************************************************************
+//  $FreeTempResult
+//
+//  Free temporary (unnamed) result
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FreeTempResult"
+#else
+#define APPEND_NAME
+#endif
+
+void FreeTempResult
+    (LPPL_YYSTYPE lpYYRes)
+
+{
+    DBGENTER;
+
+    // If it's not named, ...
+    if (!IsTknNamed (&lpYYRes->tkToken))
+        FreeResultSub (&lpYYRes->tkToken, FALSE, FALSE);
+
+    DBGLEAVE;
+} // End FreeTempResult
+#undef  APPEND_NAME
 
 
 //***************************************************************************

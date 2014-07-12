@@ -29,6 +29,83 @@ static APLINT mod64 (APLINT, APLINT);
 
 
 //***************************************************************************
+//  $IsTknOp1
+//
+//  Is the token a monadic operator?
+//***************************************************************************
+
+UBOOL IsTknOp1
+    (LPTOKEN lptkFcnOpr)            // Ptr to token
+
+{
+    return GetTknOpType (lptkFcnOpr, IMMTYPE_PRIMOP1, DFNTYPE_OP1);
+} // End IsTknOp1
+
+
+//***************************************************************************
+//  $IsTknOp2
+//
+//  Is the token a dyadic operator?
+//***************************************************************************
+
+UBOOL IsTknOp2
+    (LPTOKEN lptkFcnOpr)            // Ptr to token
+
+{
+    return GetTknOpType (lptkFcnOpr, IMMTYPE_PRIMOP2, DFNTYPE_OP2);
+} // End IsTknOp2
+
+
+//***************************************************************************
+//  $GetTknOpType
+//
+//  Is the token a monadic operator?
+//***************************************************************************
+
+UBOOL GetTknOpType
+    (LPTOKEN   lptkFcnOpr,          // Ptr to token
+     IMM_TYPES immType,             // Immediate type
+     DFN_TYPES dfnType)             // UDFO type
+
+{
+    UBOOL         bRet = FALSE;     // TRUE iff the result is valid
+
+    // If the token is a function/operator, ...
+    if (IsTknFcnOpr (lptkFcnOpr))
+    {
+        // If the token is immediate, ...
+        if (IsTknImmed (lptkFcnOpr))
+            // Check the immediate type
+            bRet = (GetImmedType (lptkFcnOpr) EQ immType);
+        else
+        {
+            HGLOBAL hGlbData;
+
+            // Get the global handle
+            hGlbData = GetGlbHandle (lptkFcnOpr);
+
+            // Check the signature for UDFO
+            if (GetSignatureGlb_PTB (hGlbData) EQ DFN_HEADER_SIGNATURE)
+            {
+                LPDFN_HEADER  lpMemDfnHdr;      // Ptr to user-defined function/operator header ...
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (hGlbData);
+
+                // Get the DFNTYPE_xxx
+                bRet = (lpMemDfnHdr->DfnType EQ dfnType);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+            } // End IF/ELSE
+        } // End IF/ELSE
+    } // End IF
+
+    return bRet;
+} // End GetTknOpType
+
+
+//***************************************************************************
 //  $IsTknFcnOpr
 //
 //  Return TRUE iff the given token is a function or operator
@@ -50,6 +127,7 @@ UBOOL IsTknFcnOpr
             return FALSE;
 
         defstop
+        case '?':
             return 0;
     } // End SWITCH
 } // End IsTknFcnOpr
@@ -144,11 +222,10 @@ char TokenTypeFV
 
             return '?';
 
+        defstop
         case TKT_SYNTERR:
         case TKT_SETALPHA:
         case TKT_GLBDFN:
-            return '?';
-
         case TKT_ASSIGN:
         case TKT_LISTSEP:
         case TKT_LABELSEP:
@@ -204,7 +281,6 @@ char TokenTypeFV
         case TKT_NOP:                       // NOP
         case TKT_AFOGUARD:                  // AFO guard
         case TKT_AFORETURN:                 // AFO return
-        defstop
             return '?';
     } // End SWITCH
 } // End TokenTypeFV
@@ -1815,8 +1891,8 @@ HGLOBAL CopyArray_EM
 
 {
     SIZE_T       dwSize;
-    LPVOID       lpMemSrc, lpMemSrcBase,
-                 lpMemDst, lpMemDstBase;
+    LPVOID       lpMemSrc,
+                 lpMemDst;
     HGLOBAL      hGlbDst,                   // Dest global memory handle
                  hGlbItm;                   // Item ...
     APLSTYPE     aplType;
@@ -1862,9 +1938,6 @@ HGLOBAL CopyArray_EM
 #else
   #define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
 #endif
-                // Clear the SkipRefCnt flag
-                lpHeader->SkipRefCntIncr = FALSE;
-
                 // Clear the PermNdx flags
                 lpHeader->PermNdx = PERMNDX_NONE;
 
@@ -1881,8 +1954,8 @@ HGLOBAL CopyArray_EM
                 aplNELM = lpHeader->NELM;
                 aplRank = lpHeader->Rank;
 #undef  lpHeader
-                lpMemDstBase = lpMemDst = VarArrayDataFmBase (lpMemDst);
-                lpMemSrcBase = lpMemSrc = VarArrayDataFmBase (lpMemSrc);
+                lpMemDst = VarArrayDataFmBase (lpMemDst);
+                lpMemSrc = VarArrayDataFmBase (lpMemSrc);
 
                 // Split cases based upon the array type
                 switch (aplType)
@@ -1898,9 +1971,6 @@ HGLOBAL CopyArray_EM
                     case ARRAY_NESTED:
                         // Handle the empty case
                         aplNELM = max (aplNELM, 1);
-
-                        // Start the destin ptr over again
-                        lpMemDst = lpMemDstBase;
 
                         // Loop through the source and destin arrays
                         for (u = 0;
@@ -3152,6 +3222,53 @@ LPSIS_HEADER PassSigaphore
 
 
 //***************************************************************************
+//  $IsFcnStrDirect
+//
+//  Return TRUE iff the given function strand is DIRECT (immediate fcn or a var
+//***************************************************************************
+
+UBOOL IsFcnStrDirect
+    (LPPL_YYSTYPE lpYYFcnStr)               // Ptr to function strand
+
+{
+    // If the token count is <= 1, ...
+    if (lpYYFcnStr->TknCount <= 1)
+        // Split cases based upon the token type
+        switch (lpYYFcnStr->tkToken.tkFlags.TknType)
+        {
+            case TKT_VARIMMED:
+            case TKT_FCNIMMED:
+            case TKT_OP1IMMED:
+            case TKT_OP2IMMED:
+            case TKT_OP3IMMED:
+            case TKT_AXISIMMED:
+            case TKT_AXISARRAY:
+            case TKT_LSTIMMED:
+            case TKT_OPJOTDOT:
+            case TKT_FILLJOT:
+            case TKT_VARARRAY:
+            case TKT_VARNAMED:
+            case TKT_DEL:
+            case TKT_DELDEL:
+            case TKT_DELAFO:
+            case TKT_FCNAFO:
+            case TKT_OP1AFO:
+            case TKT_OP2AFO:
+            case TKT_GLBDFN:
+            case TKT_FCNNAMED:
+            case TKT_OP1NAMED:
+            case TKT_OP2NAMED:
+                return TRUE;
+
+            default:
+                return FALSE;
+        } // End SWITCH
+    else
+        return FALSE;
+} // End IsFcnStrDirect
+
+
+//***************************************************************************
 //  $IsTknNamed
 //
 //  Return TRUE iff the given token is named
@@ -3316,6 +3433,7 @@ UBOOL IsTknTypeVar
         case TKT_VARIMMED:
         case TKT_VARARRAY:
         case TKT_AXISARRAY:
+        case TKT_STRAND:
             return TRUE;
 
         default:
@@ -3379,7 +3497,7 @@ UBOOL IsTknUsrDfn
 //***************************************************************************
 
 UBOOL IsTknImmed
-    (LPTOKEN lptkVar)                       // Ptr to var token
+    (LPTOKEN lptkVar)                       // Ptr to token
 
 {
     // Split cases based upon the token type
@@ -3409,187 +3527,6 @@ UBOOL IsTknImmed
             return FALSE;
     } // End SWITCH
 } // End IsTknImmed
-
-
-//***************************************************************************
-//  $SetVFOArraySRCIFlag
-//
-//  Set SkipRefCntIncr flag in a variable/function/operator array.
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SetVFOArraySRCIFlag"
-#else
-#define APPEND_NAME
-#endif
-
-void SetVFOArraySRCIFlag
-    (LPTOKEN lptkVFO)                   // Ptr to var/fcn/opr token
-
-{
-    HGLOBAL    hGlbVFO;
-    VFOHDRPTRS vfoHdrPtrs;
-
-    // If the token is named and has no value, ...
-    if (IsTknNamed   (lptkVFO)
-     && IsSymNoValue (lptkVFO->tkData.tkSym))
-        return;
-
-    // If the token is immediate, ...
-    if (IsTknImmed (lptkVFO))
-        return;
-
-    // Get the array's global ptrs (if any)
-    //   and lock it
-    GetGlbPtrs_LOCK (lptkVFO, &hGlbVFO, &vfoHdrPtrs.lpMemVFO);
-
-    // Is the array global?
-    if (hGlbVFO)
-    {
-        // If the array is a UDFO, ...
-        if (IsTknUsrDfn (lptkVFO))
-            // Set the UDFO flag which says to skip the next
-            //   IncrRefCnt
-            vfoHdrPtrs.lpMemDfn->SkipRefCntIncr = TRUE;
-        else
-        // If the array is a fcn/opr, ...
-        if (IsTknTypeFcnOpr (lptkVFO->tkFlags.TknType))
-            // Set the Function Array flag which says to skip the next
-            //   IncrRefCnt
-            vfoHdrPtrs.lpMemFcn->SkipRefCntIncr = TRUE;
-        else
-        // If the array is a var?
-        if (IsTknTypeVar (lptkVFO->tkFlags.TknType))
-        {
-            // Set the Variable flag which says to skip the next
-            //   IncrRefCnt
-            vfoHdrPtrs.lpMemVar->SkipRefCntIncr = TRUE;
-#ifdef DEBUG_REFCNT
-            dprintfWL0 (L"  RefCnt&& in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlbVFO, vfoHdrPtrs.lpMemVar->RefCnt, FNLN);
-#endif
-        } else
-            DbgStop ();
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;
-    } // End IF
-} // End SetVFOArraySRCIFlag
-#undef  APPEND_NAME
-
-
-#ifdef DEBUG
-//***************************************************************************
-//  $GetVFOArraySRCIFlag
-//
-//  Get the SkipRefCntIncr flag in a variable/function/operator array.
-//***************************************************************************
-
-UBOOL GetVFOArraySRCIFlag
-    (LPTOKEN lptkVFO)                   // Ptr to var/fcn/opr token
-
-{
-    HGLOBAL    hGlbVFO;
-    VFOHDRPTRS vfoHdrPtrs;
-    UBOOL      bRet = FALSE;        // Return value
-
-    // If the token is named and has no value, ...
-    if (IsTknNamed   (lptkVFO)
-     && IsSymNoValue (lptkVFO->tkData.tkSym))
-        return FALSE;
-
-    // If the token is immediate, ...
-    if (IsTknImmed (lptkVFO))
-        return FALSE;
-
-    // Get the array's global ptrs (if any)
-    //   and lock it
-    GetGlbPtrs_LOCK (lptkVFO, &hGlbVFO, &vfoHdrPtrs.lpMemVFO);
-
-    // Is the array global?
-    if (hGlbVFO)
-    {
-        // If the array is a UDFO, ...
-        if (IsTknUsrDfn (lptkVFO))
-            // Set the UDFO flag which says to skip the next
-            //   IncrRefCnt
-            bRet = vfoHdrPtrs.lpMemDfn->SkipRefCntIncr;
-        else
-        // If the array is a fcn/opr, ...
-        if (IsTknTypeFcnOpr (lptkVFO->tkFlags.TknType))
-            // Set the Function Array flag which says to skip the next
-            //   IncrRefCnt
-            bRet = vfoHdrPtrs.lpMemFcn->SkipRefCntIncr;
-        else
-        // If the array is a var?
-        if (IsTknTypeVar (lptkVFO->tkFlags.TknType))
-            // Set the Variable flag which says to skip the next
-            //   IncrRefCnt
-            bRet = vfoHdrPtrs.lpMemVar->SkipRefCntIncr;
-        else
-            DbgStop ();
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;
-    } // End IF
-
-    return bRet;
-} // End GetVFOArraySRCIFlag
-#endif
-
-
-//***************************************************************************
-//  $ClrVFOArraySRCIFlag
-//
-//  Clear SkipRefCntIncr flag in a variable/function/operator array.
-//***************************************************************************
-
-void ClrVFOArraySRCIFlag
-    (LPTOKEN lptkVFO)                   // Ptr to var/fcn/opr token
-
-{
-    HGLOBAL    hGlbVFO;
-    VFOHDRPTRS vfoHdrPtrs;
-
-    // If the token is named and has no value, ...
-    if (IsTknNamed   (lptkVFO)
-     && IsSymNoValue (lptkVFO->tkData.tkSym))
-        return;
-
-    // If the token is immediate, ...
-    if (IsTknImmed (lptkVFO))
-        return;
-
-    // Get the array's global ptrs (if any)
-    //   and lock it
-    GetGlbPtrs_LOCK (lptkVFO, &hGlbVFO, &vfoHdrPtrs.lpMemVFO);
-
-    // Is the array global?
-    if (hGlbVFO)
-    {
-        // If the array is a UDFO, ...
-        if (IsTknUsrDfn (lptkVFO))
-            // Set the UDFO flag which says to skip the next
-            //   IncrRefCnt
-            vfoHdrPtrs.lpMemDfn->SkipRefCntIncr = FALSE;
-        else
-        // If the array is a fcn/opr, ...
-        if (IsTknTypeFcnOpr (lptkVFO->tkFlags.TknType))
-            // Set the Function Array flag which says to skip the next
-            //   IncrRefCnt
-            vfoHdrPtrs.lpMemFcn->SkipRefCntIncr = FALSE;
-        else
-        // If the array is a var?
-        if (IsTknTypeVar (lptkVFO->tkFlags.TknType))
-            // Set the Variable flag which says to skip the next
-            //   IncrRefCnt
-            vfoHdrPtrs.lpMemVar->SkipRefCntIncr = FALSE;
-        else
-            DbgStop ();
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbVFO); vfoHdrPtrs.lpMemVFO = NULL;
-    } // End IF
-} // End ClrVFOArraySRCIFlag
 
 
 //***************************************************************************

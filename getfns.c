@@ -26,6 +26,27 @@
 
 
 //***************************************************************************
+//  $GetGlbDataToken
+//
+//  Return the xxGlbData value from a token
+//    taking into account whether or the token is named
+//***************************************************************************
+
+HGLOBAL GetGlbDataToken
+    (LPTOKEN lptkToken)                 // Ptr to the token
+
+{
+    // If it's named, ...
+    if (IsTknNamed (lptkToken))
+        // Get the xxGlbData value from the SYMENTRY
+        return lptkToken->tkData.tkSym->stData.stGlbData;
+    else
+        // Get the xxGlbData value from the TOKEN
+        return lptkToken->tkData.tkGlbData;
+} // End GetGlbDataToken
+
+
+//***************************************************************************
 //  $ValidateFirstItemToken
 //
 //  Get and validate the first item from the token as an integer
@@ -2187,11 +2208,7 @@ HGLOBAL GetGlbHandle
     if (IsTknImmed (lpToken))
         return NULL;
     else
-    // If it's a named object, ...
-    if (IsTknNamed (lpToken))
-        return lpToken->tkData.tkSym->stData.stGlbData;
-    else
-        return lpToken->tkData.tkGlbData;
+        return GetGlbDataToken (lpToken);
 } // End GetGlbHandle
 
 
@@ -2697,16 +2714,14 @@ LPPRIMFNS GetPrototypeFcnPtr
             return (LPPRIMFNS) PrimProtoOpsTab[SymTrans (lptkFunc)];
 
         case TKT_FCNNAMED:      // e.g. []VR{each}0{rho}{enclose}'abc'
-            return NULL;
-
         case TKT_FCNARRAY:
+            // Get the function global memory handle
+            hGlbFcn = GetGlbHandle (lptkFunc);
+
             // Split cases based upon the function array signature
-            switch (GetSignatureGlb (lptkFunc->tkData.tkGlbData))
+            switch (GetSignatureGlb_PTB (hGlbFcn))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
-                    // Get the function global memory handle
-                    hGlbFcn = lptkFunc->tkData.tkGlbData;
-
                     // Lock the memory to get a ptr to it
                     lpMemFcn = MyGlobalLock (hGlbFcn);
 
@@ -2777,11 +2792,47 @@ LPPRIMFLAGS GetPrimFlagsPtr
             return &PrimFlags[SymTrans (lptkFunc)];
 
         case TKT_FCNNAMED:
+        case TKT_OP1NAMED:
+        case TKT_OP2NAMED:
+        case TKT_OP3NAMED:
             // If this is a direct function, ...
             if (lptkFunc->tkData.tkSym->stFlags.FcnDir)
                 return &PrimFlagsNone;
-            else
-                DbgStop ();
+
+            Assert (GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // Get the operator global memory handle
+            hGlbFcn = lptkFunc->tkData.tkSym->stData.stGlbData;
+
+            // Lock the memory to get a ptr to it
+            lpMemFcn = MyGlobalLock (hGlbFcn);
+
+            // Split cases based upon the signature
+            switch (GetSignatureMem (lpMemFcn))
+            {
+                case DFN_HEADER_SIGNATURE:
+                    // Get a ptr to the prototype function for the user-defined function/operator
+                    lpPrimFlags = &DfnIdentFns;
+
+                    break;
+
+                case FCNARRAY_HEADER_SIGNATURE:
+                    // Skip over the header to the data (PL_YYSTYPEs)
+                    lpMemFcn = FcnArrayBaseToData (lpMemFcn);
+
+                    // Get a ptr to the corresponding PrimFlags
+                    lpPrimFlags = &PrimFlags[SymTrans (&lpMemFcn->tkToken)];
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+
+            return lpPrimFlags;
 
         case TKT_FCNARRAY:
             // Split cases based upon the function array signature

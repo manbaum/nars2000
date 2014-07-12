@@ -141,6 +141,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
         if (hGlbLst EQ NULL)
         {
             Assert (lptkLstArg->tkFlags.TknType EQ TKT_LSTIMMED
+                 || lptkLstArg->tkFlags.TknType EQ TKT_VARIMMED
                  || lptkLstArg->tkFlags.TknType EQ TKT_AXISIMMED);
 
             // Set the vars for an immediate
@@ -152,6 +153,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
         } else
         {
             Assert (lptkLstArg->tkFlags.TknType EQ TKT_LSTARRAY
+                 || lptkLstArg->tkFlags.TknType EQ TKT_VARARRAY
                  || lptkLstArg->tkFlags.TknType EQ TKT_AXISARRAY);
 
             // Set the vars for an HGLOBAL

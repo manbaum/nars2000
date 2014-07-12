@@ -140,7 +140,7 @@ LPPL_YYSTYPE PrimIdentOpJotDot_EM_YY
 
     // Set ptr to right operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+    lpYYFcnStrRht = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
@@ -327,7 +327,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
 
     // Set ptr to right operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)];
+    lpYYFcnStrRht = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)

@@ -532,6 +532,10 @@
                 >
             </File>
             <File
+                RelativePath=".\parseline.c"
+                >
+            </File>
+            <File
                 RelativePath=".\perfmon.c"
                 >
             </File>
@@ -758,30 +762,6 @@
             <File
                 RelativePath=".\pf_utackjot.c"
                 >
-            </File>
-            <File
-                RelativePath="&quot;$(OutDir)\pl_parse.c&quot;"
-                >
-            </File>
-            <File
-                RelativePath=".\pl_parse.y"
-                >
-                <FileConfiguration
-                    Name="Debug64|Win32"
-                    >
-                    <Tool
-                        Name="Bison Rule"
-                        AdditionalOptions=""
-                    />
-                </FileConfiguration>
-                <FileConfiguration
-                    Name="Release64|Win32"
-                    >
-                    <Tool
-                        Name="Bison Rule"
-                        AdditionalOptions=""
-                    />
-                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\pl_proc.c"
@@ -1235,6 +1215,10 @@
             </File>
             <File
                 RelativePath=".\nameclass.h"
+                >
+            </File>
+            <File
+                RelativePath=".\parseline.h"
                 >
             </File>
             <File

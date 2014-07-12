@@ -48,7 +48,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
                  lpYYRes2;          // Ptr to secondary result
 
     // Get the user-defined function/operator global memory handle
-    hGlbUDFO = lptkFcnStr->tkData.tkGlbData;
+    hGlbUDFO = GetGlbHandle (lptkFcnStr);
 
     Assert (GetSignatureGlb_PTB (hGlbUDFO) EQ DFN_HEADER_SIGNATURE);
 
@@ -112,8 +112,8 @@ LPPL_YYSTYPE ExecDfnGlbIdent_EM_YY
     HGLOBAL      hGlbUDFO;          // UDFO global memory handle
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
-    // Get the user-defined function/operator global memory handle
-    hGlbUDFO = lptkFcnStr->tkData.tkGlbData;
+    // Get the global memory handle
+    hGlbUDFO = GetGlbDataToken (lptkFcnStr);
 
     Assert (GetSignatureGlb_PTB (hGlbUDFO) EQ DFN_HEADER_SIGNATURE);
 
@@ -163,8 +163,8 @@ VALUE_EXIT:
 LPPL_YYSTYPE ExecDfnGlb_EM_YY
     (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
      LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
-     LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
-     LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+     LPPL_YYSTYPE lpYYFcnStrOpr,    // Ptr to function strand (may be NULL if not an operator and no axis)
+     LPTOKEN      lptkAxisOpr,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token
      LINE_NUMS    startLineType)    // Starting line type (see LINE_NUMS)
 
@@ -175,32 +175,38 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     UBOOL        bTknDel;           // TRUE iff the function strand token is a Del
 
     // If there's no axis and a function strand, ...
-    if (lptkAxis EQ NULL
-     && lpYYFcnStr NE NULL)
+    if (lptkAxisOpr EQ NULL
+     && lpYYFcnStrOpr NE NULL)
         // Check for axis operator
-        lptkAxis = CheckAxisOper (lpYYFcnStr);
+        lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Determine if the token is a Del
-    bTknDel = (lpYYFcnStr
-            && lpYYFcnStr->tkToken.tkFlags.TknType EQ TKT_DELAFO);
+    bTknDel = (lpYYFcnStrOpr
+            && lpYYFcnStrOpr->tkToken.tkFlags.TknType EQ TKT_DELAFO);
     // If the token is a Del, ...
     if (bTknDel)
         // Setup left and right operands (if present)
-        GetOperands (lpYYFcnStr->tkToken.tkData.tkGlbData, &lpYYFcnStrLft, &lpYYFcnStrRht);
+        GetOperands (lpYYFcnStrOpr->tkToken.tkData.tkGlbData, &lpYYFcnStrLft, &lpYYFcnStrRht);
     else
-    // If there's room for a left operand, ...
-    if (lpYYFcnStr
-     && lpYYFcnStr->TknCount > (APLU3264) (1 + (lptkAxis NE NULL)))
+    // If this is a monadic operator, ...
+    if (lpYYFcnStrOpr NE NULL
+     && IsTknOp1 (&lpYYFcnStrOpr->tkToken))
     {
         // Set ptr to left operand
-        lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
+        lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
-        // If there's room for a right operand, ...
-        if (lpYYFcnStr->TknCount > (APLU3264) (lpYYFcnStrLft->TknCount + (lpYYFcnStrLft - lpYYFcnStr)))
-            // Set ptr to right operand
-            lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
-        else
-            lpYYFcnStrRht = NULL;
+        // Zap the right operand
+        lpYYFcnStrRht = NULL;
+    } else
+    // If this is a dyadic operator, ...
+    if (lpYYFcnStrOpr NE NULL
+     && IsTknOp2 (&lpYYFcnStrOpr->tkToken))
+    {
+        // Set ptr to right operand
+        lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
+
+        // Set ptr to left operand
+        lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
     } else
         lpYYFcnStrLft = lpYYFcnStrRht = NULL;
 
@@ -209,9 +215,9 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
       ExecDfnOprGlb_EM_YY (hGlbDfnHdr,      // User-defined function/operator global memory handle
                            lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
                            lpYYFcnStrLft,   // Ptr to left operand function strand (may be NULL if not an operator and no axis)
-                           lpYYFcnStr,      // Ptr to function strand (may be NULL if not an operator and no axis)
+                           lpYYFcnStrOpr,   // Ptr to function strand (may be NULL if not an operator and no axis)
                            lpYYFcnStrRht,   // Ptr to right operand function strand (may be NULL if not an operator and no axis)
-                           lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                           lptkAxisOpr,     // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                            lptkRhtArg,      // Ptr to right arg token
                            startLineType);  // Starting line type (see LINE_NUMS)
     // If the token is a Del, ...
@@ -1149,7 +1155,11 @@ NEXTLINE:
             {
                 // Allocate a new YYRes
                 lpYYRes = YYAlloc ();
-
+#ifdef DEBUG
+                // Decrement the SI Level as this result belongs
+                //   to the next higher up level
+                lpYYRes->SILevel--;
+#endif
                 // If it's immediate, ...
                 if ((*lplpSymEntry)->stFlags.Imm)
                 {
@@ -1232,7 +1242,11 @@ NEXTLINE:
 
             // Allocate a new YYRes
             lpYYRes = YYAlloc ();
-
+#ifdef DEBUG
+            // Decrement the SI Level as this result belongs
+            //   to the next higher up level
+            lpYYRes->SILevel--;
+#endif
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
@@ -1324,6 +1338,9 @@ UBOOL CheckDfnExitError_EM
 
     // If we're resetting, quit
     if (lpSISCur->ResetFlag NE RESETFLAG_NONE)
+        goto NORMAL_EXIT;
+
+    if (lpSISCur->hGlbDfnHdr EQ NULL)
         goto NORMAL_EXIT;
 
     // Lock the memory to get a ptr to it
@@ -2117,6 +2134,7 @@ UBOOL InitFcnSTEs
             switch (lpYYArg->tkToken.tkFlags.TknType)
             {
                 case TKT_FCNIMMED:
+                case TKT_OP3IMMED:
                     // Clear the STE flags
                     *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 

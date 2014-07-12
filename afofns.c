@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,8 +71,6 @@ void AfoReturn
 
         // Assign the value to $AFORESULT
         AfoDisplay_EM (&lpYYRhtArg->tkToken, FALSE, lpplLocalVars, lpplLocalVars->hGlbDfnHdr);
-
-        FreeResult (lpYYRhtArg);
     } // End IF/ELSE
 
     // We no longer need this ptr
@@ -185,12 +183,10 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE MakeAfo_EM_YY
-    (LPPL_YYSTYPE  lpYYLft,             // Ptr to left brace token
-     LPPL_YYSTYPE  lpYYRht,             // Ptr to right ...
+void MakeAfo_EM_YY
+    (LPPL_YYSTYPE  lpYYRht,             // Ptr to right brace token
      LPPLLOCALVARS lpplLocalVars)       // Ptr to LocalVars
 {
-    LPPL_YYSTYPE lpYYRes = NULL;        // The result
     SF_FCNS      SF_Fcns = {0};         // Common struc for SaveFunctionCom
     LW_PARAMS    LW_Params = {0};       // Local  ...
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
@@ -223,7 +219,7 @@ LPPL_YYSTYPE MakeAfo_EM_YY
     SF_Fcns.LclParams       = &LW_Params;           // Ptr to local parameters
 
     // Fill in local values
-    LW_Params.lpYYRht       = lpYYRht;              // Ptr to right brace YYSTYPE
+    LW_Params.lpYYRht       = lpYYRht;              // Ptr to right brace token
 ////LW_Params.htsDFN        =                       // Already zero from = {0}
     LW_Params.lpplLocalVars = lpplLocalVars;        // Ptr to Local Vars
 
@@ -238,32 +234,6 @@ LPPL_YYSTYPE MakeAfo_EM_YY
     {
         // ***FIXME*** -- Should we rebase tkCharIndexes now?
 
-        // Allocate a new YYRes
-        lpYYRes = YYAlloc ();
-
-        // Fill in the result token type
-        // Split cases based upon the DFNTYPE_xxx
-        switch (lpYYRht->lptkRhtBrace->tkData.tkDfnType)
-        {
-            case DFNTYPE_FCN:
-                lpYYRes->tkToken.tkFlags.TknType = TKT_FCNAFO;
-
-                break;
-
-            case DFNTYPE_OP1:
-                lpYYRes->tkToken.tkFlags.TknType = TKT_OP1AFO;
-
-                break;
-
-            case DFNTYPE_OP2:
-                lpYYRes->tkToken.tkFlags.TknType = TKT_OP2AFO;
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
-
         // If we've not already saved this AFO, ...
         if (hGlbDfnHdr EQ NULL)
         {
@@ -275,12 +245,6 @@ LPPL_YYSTYPE MakeAfo_EM_YY
         } else
             // Convert to a PTRTYPE_HGLOBAL
             hGlbDfnHdr = MakePtrTypeGlb (hGlbDfnHdr);
-
-        // Fill in the rest of the result token
-////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = hGlbDfnHdr;
-        lpYYRes->tkToken.tkCharIndex       = lpYYLft->tkToken.tkCharIndex;
 
         goto NORMAL_EXIT;
     } else
@@ -294,14 +258,14 @@ LPPL_YYSTYPE MakeAfo_EM_YY
 
 SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYLft->tkToken);
+                               lpYYRht->lptkLftBrace);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
     // Free the Hshtab & SymTab
     FreeHshSymTabs (&LW_Params.htsDFN, FALSE);
 NORMAL_EXIT:
-    return lpYYRes;
+    nop ();
 } // End MakeAfo_EM_YY
 #undef  APPEND_NAME
 

@@ -615,16 +615,11 @@ NORMAL_EXIT:
 
     Assert (lpMemPTD->lpSISCur->hSemaphore NE NULL);
 
-    if (lpMemPTD->lpSISCur->hSemaphore)
-    {
-        dprintfWL9 (L"~~Releasing semaphore:  %p (%S#%d)", lpMemPTD->lpSISCur->hSemaphore, FNLN);
+    // Signal WaitForInput that we have a result
+    MyReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
 
-        // Signal WaitForInput that we have a result
-        MyReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
-
-        // Release our time slice so the released thread can act
-        Sleep (0);
-    } // End IF
+    // Release our time slice so the released thread can act
+    Sleep (0);
 } // End FormatQQuadInput
 #undef  APPEND_NAME
 
@@ -724,6 +719,62 @@ LRESULT APIENTRY SMWndProc
 
                 goto WM_NCCREATE_FAIL;
             } // End IF
+
+            // Allocate room for PTDMEMVIRT_LFTSTK
+            lpLclMemVirtStr[PTDMEMVIRT_LFTSTK].lpText   = "lpMemPTD->lpplLftStk in <SMWndProc>";
+            lpLclMemVirtStr[PTDMEMVIRT_LFTSTK].IncrSize = DEF_LFTSTK_INCRNELM * sizeof (lpMemPTD->lpplLftStk[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_LFTSTK].MaxSize  = DEF_LFTSTK_MAXNELM  * sizeof (lpMemPTD->lpplLftStk[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_LFTSTK].IniAddr  = (LPVOID)
+            lpMemPTD->lpplLftStk =
+            lpMemPTD->lpplOrgLftStk =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_LFTSTK].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            if (!lpLclMemVirtStr[PTDMEMVIRT_LFTSTK].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpplLftStk> failed");
+
+                goto WM_CREATE_FAIL;    // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_LFTSTK]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_LFTSTK].IniAddr,
+                            DEF_LFTSTK_INITNELM * sizeof (lpMemPTD->lpplLftStk[0]),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
+
+            // Allocate room for PTDMEMVIRT_RHTSTK
+            lpLclMemVirtStr[PTDMEMVIRT_RHTSTK].lpText   = "lpMemPTD->lpplRhtStk in <SMWndProc>";
+            lpLclMemVirtStr[PTDMEMVIRT_RHTSTK].IncrSize = DEF_RHTSTK_INCRNELM * sizeof (lpMemPTD->lpplRhtStk[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_RHTSTK].MaxSize  = DEF_RHTSTK_MAXNELM  * sizeof (lpMemPTD->lpplRhtStk[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_RHTSTK].IniAddr  = (LPVOID)
+            lpMemPTD->lpplRhtStk =
+            lpMemPTD->lpplOrgRhtStk =
+              GuardAlloc (NULL,             // Any address
+                          lpLclMemVirtStr[PTDMEMVIRT_RHTSTK].MaxSize,
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            if (!lpLclMemVirtStr[PTDMEMVIRT_RHTSTK].IniAddr)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpplRhtStk> failed");
+
+                goto WM_CREATE_FAIL;    // Mark as failed
+            } // End IF
+
+            // Link this struc into the chain
+            LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_RHTSTK]);
+
+            // Commit the intial size
+            MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_RHTSTK].IniAddr,
+                            DEF_RHTSTK_INITNELM * sizeof (lpMemPTD->lpplRhtStk[0]),
+                            MEM_COMMIT,
+                            PAGE_READWRITE);
 
             // Save in window extra bytes
             SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) lpLclMemVirtStr);

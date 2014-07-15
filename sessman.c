@@ -1715,14 +1715,20 @@ NORMAL_EXIT:
                             // We no longer need this storage
                             DbgGlobalFree (lpwTmpLine); lpwTmpLine = NULL;
 
-                            // Lock the memory to get a ptr to it
-                            lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
+                            // If the current line is valid, ...
+                            // ***FIXME*** -- happens at top of buffer in timing glitch
+                            //                when the CR is handled before hGlbCurLine is saved
+                            if (lpMemPTD->hGlbCurLine NE NULL)
+                            {
+                                // Lock the memory to get a ptr to it
+                                lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
 
-                            // Restore the original of the current line
-                            ReplaceLine (hWndEC, lpwCurLine, uLineNum);
+                                // Restore the original of the current line
+                                ReplaceLine (hWndEC, lpwCurLine, uLineNum);
 
-                            // We no longer need this ptr
-                            MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
+                            } // End IF
 
                             // Move the text caret to the end of the buffer
                             MoveCaretEOB (hWndEC);

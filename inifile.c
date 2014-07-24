@@ -2280,13 +2280,13 @@ void SaveIniFile
     //************************ []CT ***************************
     // Format []CT
     lpaplChar =
-     FormatFloatFC (wszTemp,                                // Ptr to output save area
-                    fQuadCT_CWS,                            // The value to format
-                    DEF_MAX_QUADPP64,                       // Precision to use
-                    L'.',                                   // Char to use as decimal separator
-                    L'-',                                   // Char to use as overbar
-                    FLTDISPFMT_RAWFLT,                      // Float display format
-                    FALSE);                                 // TRUE iff we're to substitute text for infinity
+     FormatAplFltFC (wszTemp,                               // Ptr to output save area
+                     fQuadCT_CWS,                           // The value to format
+                     DEF_MAX_QUADPP64,                      // Precision to use
+                     L'.',                                  // Char to use as decimal separator
+                     L'-',                                  // Char to use as overbar
+                     FLTDISPFMT_RAWFLT,                     // Float display format
+                     FALSE);                                // TRUE iff we're to substitute text for infinity
     // Zap the trailing blank
     lpaplChar[-1] = WC_EOS;
 
@@ -2353,7 +2353,7 @@ void SaveIniFile
     //************************ []FPC **************************
     // Format []FPC
     lpaplChar =
-      FormatAplintFC (wszTemp,                              // Ptr to output save area
+      FormatAplIntFC (wszTemp,                              // Ptr to output save area
                       uQuadFPC_CWS,                         // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
@@ -2397,7 +2397,7 @@ void SaveIniFile
     //************************ []IO ***************************
     // Format []IO
     lpaplChar =
-      FormatAplintFC (wszTemp,                              // Ptr to output save area
+      FormatAplIntFC (wszTemp,                              // Ptr to output save area
                       bQuadIO_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
@@ -2417,7 +2417,7 @@ void SaveIniFile
     //************************ []MF ***************************
     // Format []MF
     lpaplChar =
-      FormatAplintFC (wszTemp,                              // Ptr to output save area
+      FormatAplIntFC (wszTemp,                              // Ptr to output save area
                       uQuadMF_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
@@ -2431,7 +2431,7 @@ void SaveIniFile
     //************************ []PP ***************************
     // Format []PP
     lpaplChar =
-      FormatAplintFC (wszTemp,                              // Ptr to output save area
+      FormatAplIntFC (wszTemp,                              // Ptr to output save area
                       uQuadPP_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
@@ -2466,7 +2466,7 @@ void SaveIniFile
     //************************ []PW ***************************
     // Format []PW
     lpaplChar =
-      FormatAplintFC (wszTemp,                              // Ptr to output save area
+      FormatAplIntFC (wszTemp,                              // Ptr to output save area
                       uQuadPW_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank
@@ -2480,7 +2480,7 @@ void SaveIniFile
     //************************ []RL ***************************
     // Format []RL
     lpaplChar =
-      FormatAplintFC (wszTemp,                              // Ptr to output save area
+      FormatAplIntFC (wszTemp,                              // Ptr to output save area
                       uQuadRL_CWS,                          // The value to format
                       L'-');                                // Char to use as overbar
     // Zap the trailing blank

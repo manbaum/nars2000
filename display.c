@@ -907,13 +907,13 @@ LPAPLCHAR FormatImmed
     {
         case IMMTYPE_BOOL:
             lpaplChar =
-              FormatAplint (lpaplChar,                          // Ptr to output save area
+              FormatAplInt (lpaplChar,                          // Ptr to output save area
                             BIT0 & *(LPAPLBOOL) lpaplLongest);  // The value to format
             break;
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplint (lpaplChar,                          // Ptr to output save area
+              FormatAplInt (lpaplChar,                          // Ptr to output save area
                             *(LPAPLINT) lpaplLongest);          // The value to format
             break;
 
@@ -925,9 +925,9 @@ LPAPLCHAR FormatImmed
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatFloat (lpaplChar,                 // Ptr to output save area
-                           *(LPAPLFLOAT) lpaplLongest,// The value to format
-                           0);                        // Use default significant digits
+              FormatAplFlt (lpaplChar,                	// Ptr to output save area
+                           *(LPAPLFLOAT) lpaplLongest,	// The value to format
+                            0);                        	// Use default significant digits
             break;
 
         case IMMTYPE_RAT:
@@ -1009,14 +1009,14 @@ LPAPLCHAR FormatImmedFC
     {
         case IMMTYPE_BOOL:
             lpaplChar =
-              FormatAplintFC (lpaplChar,                        // Ptr to output save area
+              FormatAplIntFC (lpaplChar,                        // Ptr to output save area
                               BIT0 & *(LPAPLBOOL) lpaplLongest, // The value to format
                               aplCharOverbar);                  // Char to use as overbar
             break;
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplintFC (lpaplChar,                        // Ptr to output save area
+              FormatAplIntFC (lpaplChar,                        // Ptr to output save area
                               *(LPAPLINT) lpaplLongest,         // The value to format
                               aplCharOverbar);                  // Char to use as overbar
             break;
@@ -1069,13 +1069,13 @@ LPAPLCHAR FormatImmedFC
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatFloatFC (lpaplChar,                 // Ptr to output save area
-                             *(LPAPLFLOAT) lpaplLongest,// The value to format
-                             nDigits,                   // # significant digits
-                             aplCharDecimal,            // Char to use as decimal separator
-                             aplCharOverbar,            // Char to use as overbar
-                             fltDispFmt,                // Float display format
-                             bSubstInf);                // TRUE iff we're to substitute text for infinity
+              FormatAplFltFC (lpaplChar,              		// Ptr to output save area
+                             *(LPAPLFLOAT) lpaplLongest,	// The value to format
+                              nDigits,                   	// # significant digits
+                              aplCharDecimal,            	// Char to use as decimal separator
+                              aplCharOverbar,            	// Char to use as overbar
+                              fltDispFmt,                	// Float display format
+                              bSubstInf);                	// TRUE iff we're to substitute text for infinity
             break;
 
         defstop
@@ -1087,29 +1087,29 @@ LPAPLCHAR FormatImmedFC
 
 
 //***************************************************************************
-//  $FormatAplint
+//  $FormatAplInt
 //
 //  Format an APLINT
 //***************************************************************************
 
-LPAPLCHAR FormatAplint
+LPAPLCHAR FormatAplInt
     (LPAPLCHAR lpaplChar,           // Ptr to output save area
      APLINT    aplInt)              // Integer to format
 
 {
-    return FormatAplintFC (lpaplChar,       // Ptr to output save area
+    return FormatAplIntFC (lpaplChar,       // Ptr to output save area
                            aplInt,          // The value to format
                            UTF16_OVERBAR);  // Char to use as overbar
-} // End FormatAplint
+} // End FormatAplInt
 
 
 //***************************************************************************
-//  $FormatAplintFC
+//  $FormatAplIntFC
 //
 //  Format an APLINT using []FC
 //***************************************************************************
 
-LPAPLCHAR FormatAplintFC
+LPAPLCHAR FormatAplIntFC
     (LPAPLCHAR lpaplChar,           // Ptr to output save area
      APLINT    aplInt,              // Integer to format
      APLCHAR   aplCharOverbar)      // Char to use as overbar
@@ -1164,7 +1164,7 @@ NORMAL_EXIT:
     *lpaplChar++ = L' ';
 
     return lpaplChar;
-} // End FormatAplintFC
+} // End FormatAplIntFC
 
 
 //***************************************************************************
@@ -1284,35 +1284,35 @@ LPAPLCHAR FormatAplRatFC
 
 
 //***************************************************************************
-//  $FormatFloat
+//  $FormatAplFlt
 //
 //  Format a floating point number
 //***************************************************************************
 
-LPAPLCHAR FormatFloat
+LPAPLCHAR FormatAplFlt
     (LPWCHAR  lpaplChar,        // Ptr to output save area
      APLFLOAT aplFloat,         // The value to format
      APLUINT  nDigits)          // Raw or E-format:  # significant digits
                                 // F-format:  # digits to right of decimal sep
 
 {
-    return FormatFloatFC (lpaplChar,                // Ptr to output save area
-                          aplFloat,                 // The value to format
-                          nDigits,                  // # significant digits (0 = default)
-                          L'.',                     // Char to use as decimal separator
-                          UTF16_OVERBAR,            // Char to use as overbar
-                          FLTDISPFMT_RAWFLT,        // Float display format
-                          FALSE);                   // TRUE iff we're to substitute text for infinity
-} // End FormatFloat
+    return FormatAplFltFC (lpaplChar,               // Ptr to output save area
+                           aplFloat,                // The value to format
+                           nDigits,                 // # significant digits (0 = default)
+                           L'.',                    // Char to use as decimal separator
+                           UTF16_OVERBAR,           // Char to use as overbar
+                           FLTDISPFMT_RAWFLT,       // Float display format
+                           FALSE);                  // TRUE iff we're to substitute text for infinity
+} // End FormatAplFlt
 
 
 //***************************************************************************
-//  $FormatFloatFC
+//  $FormatAplFltFC
 //
 //  Format a APLFLOAT using []FC
 //***************************************************************************
 
-LPAPLCHAR FormatFloatFC
+LPAPLCHAR FormatAplFltFC
     (LPWCHAR    lpaplChar,          // Ptr to output save area
      APLFLOAT   aplFloat,           // The value to format
      APLINT     nDigits,            // Raw or E-format:  # significant digits
@@ -1754,7 +1754,7 @@ LPAPLCHAR FormatFloatFC
     *lpaplChar++ = L' ';
 
     return lpaplChar;
-} // End FormatFloatFC
+} // End FormatAplFltFC
 
 
 //***************************************************************************
@@ -1855,7 +1855,7 @@ LPAPLCHAR FormatExpFmt
 
     // Finally the exponent
     lpaplChar =
-      FormatAplintFC (lpaplChar,        // Ptr to output save area
+      FormatAplIntFC (lpaplChar,        // Ptr to output save area
                       decpt - 1,        // The value to format
                       aplCharOverbar);  // Char to use as overbar
     // Ensure properly terminated
@@ -1930,7 +1930,7 @@ LPAPLCHAR FormatAplVfpFC
         *lpaplChar++ = L'(';
 
         lpaplChar =
-          FormatAplint (lpaplChar,                  // Ptr to output save area
+          FormatAplInt (lpaplChar,                  // Ptr to output save area
                         mpfr_get_prec (&aplVfp));   // The value to format
         // Append trailing marker overwriting the trailing space
         lpaplChar[-1] = L')';
@@ -2432,7 +2432,7 @@ LPWCHAR DisplayTransferGlb2
         // Format & save the shape
         for (uCnt = 0; uCnt < aplRankArg; uCnt++)
             lpwszTemp =
-              FormatAplintFC (lpwszTemp,                // Ptr to output save area
+              FormatAplIntFC (lpwszTemp,                // Ptr to output save area
                               *((LPAPLDIM) lpMemArg)++, // The value to format
                               UTF16_OVERBAR);           // Char to use as overbar
         // lpMemArg now points to the data
@@ -2453,7 +2453,7 @@ LPWCHAR DisplayTransferGlb2
             // Loop through the elements
             for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
                 lpwszTemp =
-                  FormatAplintFC (lpwszTemp,        // Ptr to output save area
+                  FormatAplIntFC (lpwszTemp,        // Ptr to output save area
                                   GetNextInteger (lpMemArg, aplTypeArg, uCnt),  // The value to format
                                   UTF16_OVERBAR);   // Char to use as overbar
             break;
@@ -2473,7 +2473,7 @@ LPWCHAR DisplayTransferGlb2
             {
                 // Append the offset
                 lpwszTemp =
-                  FormatAplintFC (lpwszTemp,            // Ptr to output save area
+                  FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                                   lpAPA->Off,           // The value to format
                                   UTF16_OVERBAR);       // Char to use as overbar
                 // Append a minus sign, zapping the trailing blank
@@ -2481,7 +2481,7 @@ LPWCHAR DisplayTransferGlb2
 
                 // Append the multiplier
                 lpwszTemp =
-                  FormatAplintFC (lpwszTemp,            // Ptr to output save area
+                  FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                                   lpAPA->Mul,           // The value to format
                                   UTF16_OVERBAR);       // Char to use as overbar
 #undef  lpAPA
@@ -2491,7 +2491,7 @@ LPWCHAR DisplayTransferGlb2
 
                 // Format the length
                 lpwszTemp =
-                  FormatAplintFC (lpwszTemp,            // Ptr to output save area
+                  FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                                   aplNELMArg,           // The value to format
                                   UTF16_OVERBAR);       // Char to use as overbar
             } // End IF/ELSE
@@ -2502,13 +2502,13 @@ LPWCHAR DisplayTransferGlb2
             // Loop through the elements
             for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
                 lpwszTemp =
-                  FormatFloatFC (lpwszTemp,             // Ptr to output save area
-                                 *((LPAPLFLOAT) lpMemArg)++, // Ptr to float value
-                                 DEF_MAX_QUADPP64,      // # significant digits
-                                 L'.',                  // Char to use as decimal separator
-                                 UTF16_OVERBAR,         // Char to use as overbar
-                                 FLTDISPFMT_RAWFLT,     // Float display format
-                                 FALSE);                // TRUE iff we're to substitute text for infinity
+                  FormatAplFltFC (lpwszTemp,            // Ptr to output save area
+                                 *((LPAPLFLOAT) lpMemArg)++,// Ptr to float value
+                                  DEF_MAX_QUADPP64,     // # significant digits
+                                  L'.',                 // Char to use as decimal separator
+                                  UTF16_OVERBAR,        // Char to use as overbar
+                                  FLTDISPFMT_RAWFLT,    // Float display format
+                                  FALSE);               // TRUE iff we're to substitute text for infinity
             break;
 
         case ARRAY_CHAR:

@@ -522,29 +522,29 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                             // Format and save the value
                             if (IsImmInt (lpSymEntry->stFlags.ImmType))
                                 lpwszTemp =
-                                  FormatAplintFC (lpwszTemp,                    // Ptr to output save area
+                                  FormatAplIntFC (lpwszTemp,                    // Ptr to output save area
                                                   lpSymEntry->stData.stLongest, // The value to format
                                                   UTF16_OVERBAR);               // Char to use as overbar
                             else
                                 lpwszTemp =
-                                  FormatFloatFC (lpwszTemp,                     // Ptr to output save area
-                                                 lpSymEntry->stData.stFloat,    // The value to format
-                                                 DEF_MAX_QUADPP64,              // Precision to use
-                                                 L'.',                          // Char to use as decimal separator
-                                                 UTF16_OVERBAR,                 // Char to use as overbar
-                                                 FLTDISPFMT_RAWFLT,             // Float display format
-                                                 FALSE);                        // TRUE iff we're to substitute text for infinity
+                                  FormatAplFltFC (lpwszTemp,                    // Ptr to output save area
+                                                  lpSymEntry->stData.stFloat,   // The value to format
+                                                  DEF_MAX_QUADPP64,             // Precision to use
+                                                  L'.',                         // Char to use as decimal separator
+                                                  UTF16_OVERBAR,                // Char to use as overbar
+                                                  FLTDISPFMT_RAWFLT,            // Float display format
+                                                  FALSE);                       // TRUE iff we're to substitute text for infinity
                         } else
                         {
                             // Format & save the rank
                             lpwszTemp =
-                              FormatAplintFC (lpwszTemp,                        // Ptr to output save area
+                              FormatAplIntFC (lpwszTemp,                        // Ptr to output save area
                                               aplRankItm,                       // The value to format
                                               UTF16_OVERBAR);                   // Char to use as overbar
                             // Format & save the shape
                             for (uCnt = 0; uCnt < aplRankItm; uCnt++)
                                 lpwszTemp =
-                                  FormatAplintFC (lpwszTemp,                    // Ptr to output save area
+                                  FormatAplIntFC (lpwszTemp,                    // Ptr to output save area
                                                   *((LPAPLDIM) lpMemItm)++,     // The value to format
                                                   UTF16_OVERBAR);               // Char to use as overbar
                             // Loop through the elements formatting and saving them
@@ -558,18 +558,18 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                                  NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
                                 if (IsSimpleInt (aplTypeItm))
                                     lpwszTemp =
-                                      FormatAplintFC (lpwszTemp,                // Ptr to output save area
+                                      FormatAplIntFC (lpwszTemp,                // Ptr to output save area
                                                       aplLongestItm,            // The value to format
                                                       UTF16_OVERBAR);           // Char to use as overbar
                                 else
                                     lpwszTemp =
-                                      FormatFloatFC (lpwszTemp,                     // Ptr to output save area
+                                      FormatAplFltFC (lpwszTemp,                    // Ptr to output save area
                                                      *(LPAPLFLOAT) &aplLongestItm,  // The value to format
-                                                     DEF_MAX_QUADPP64,              // Precision to use
-                                                     L'.',                          // Char to use as decimal separator
-                                                     UTF16_OVERBAR,                 // Char to use as overbar
-                                                     FLTDISPFMT_RAWFLT,             // Float display format
-                                                     FALSE);                        // TRUE iff we're to substitute text for infinity
+                                                      DEF_MAX_QUADPP64,             // Precision to use
+                                                      L'.',                         // Char to use as decimal separator
+                                                      UTF16_OVERBAR,                // Char to use as overbar
+                                                      FLTDISPFMT_RAWFLT,            // Float display format
+                                                      FALSE);                       // TRUE iff we're to substitute text for infinity
                             } // End FOR
                         } // End IF/ELSE
 
@@ -602,13 +602,13 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                         {
                             // Format & save the rank
                             lpwszTemp =
-                              FormatAplintFC (lpwszTemp,                        // Ptr to output save area
+                              FormatAplIntFC (lpwszTemp,                        // Ptr to output save area
                                               aplRankItm,                       // The value to format
                                               UTF16_OVERBAR);                   // Char to use as overbar
                             // Format & save the shape
                             for (uCnt = 0; uCnt < aplRankItm; uCnt++)
                                 lpwszTemp =
-                                  FormatAplintFC (lpwszTemp,                    // Ptr to output save area
+                                  FormatAplIntFC (lpwszTemp,                    // Ptr to output save area
                                                   *((LPAPLDIM) lpMemItm)++,     // The value to format
                                                   UTF16_OVERBAR);               // Char to use as overbar
                             // Copy the values to temp storage
@@ -711,12 +711,12 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
 
                 // Format & save the # rows
                 lpwszTemp =
-                  FormatAplintFC (lpwszTemp,                                    // Ptr to output save area
+                  FormatAplIntFC (lpwszTemp,                                    // Ptr to output save area
                                   uNumLines + 1,                                // The value to format
                                   UTF16_OVERBAR);                               // Char to use as overbar
                 // Format & save the # cols
                 lpwszTemp =
-                  FormatAplintFC (lpwszTemp,                                    // Ptr to output save area
+                  FormatAplIntFC (lpwszTemp,                                    // Ptr to output save area
                                   uMaxLineLen,                                  // The value to format
                                   UTF16_OVERBAR);                               // Char to use as overbar
                 // Copy the header to the result as either a row or as an allocated HGLOBAL

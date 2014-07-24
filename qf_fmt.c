@@ -1310,18 +1310,18 @@ void QFMT_CommonG
     // Format the value
     if (IsImmInt (immTypeItm))
         lpaplChar =
-          FormatAplintFC (lpwszFormat,                  // Ptr to output save area
-                          aplIntItm,                    // The value to format
-                          UTF16_OVERBAR);               // Char to use as overbar
+          FormatAplIntFC (lpwszFormat,              // Ptr to output save area
+                          aplIntItm,                // The value to format
+                          UTF16_OVERBAR);           // Char to use as overbar
     else
         lpaplChar =
-          FormatFloatFC (lpwszFormat,                   // Ptr to output save area
-                         aplFltItm,                     // The value to format
-                         fsWid,                         // Precision for F-format, significant digits for E-format
-                         UTF16_DOT,                     // Char to use as decimal separator
-                         UTF16_OVERBAR,                 // Char to use as overbar
-                         FLTDISPFMT_RAWINT,             // Float display format
-                         FALSE);                        // TRUE iff we're to substitute text for infinity
+          FormatAplFltFC (lpwszFormat,              // Ptr to output save area
+                          aplFltItm,                // The value to format
+                          fsWid,                    // Precision for F-format, significant digits for E-format
+                          UTF16_DOT,                // Char to use as decimal separator
+                          UTF16_OVERBAR,            // Char to use as overbar
+                          FLTDISPFMT_RAWINT,        // Float display format
+                          FALSE);                   // TRUE iff we're to substitute text for infinity
     // Ensure properly terminated
     *--lpaplChar = WC_EOS;
 
@@ -1744,13 +1744,13 @@ void QFMT_CommonEFIR
                     bInfinity = IsInfinity (aplFltItm);
 
                     lpwEnd =
-                      FormatFloatFC (lpwszFormat,           // Ptr to output save area
-                                     aplFltItm,             // The value to format
-                                     fsDig,                 // Precision for F-format, significant digits for E-format
-                                     UTF16_DOT,             // Char to use as decimal separator
-                                     UTF16_OVERBAR,         // Char to use as overbar
-                                     FLTDISPFMT_E,          // Float display format
-                                     FALSE);                // TRUE iff we're to substitute text for infinity
+                      FormatAplFltFC (lpwszFormat,          // Ptr to output save area
+                                      aplFltItm,            // The value to format
+                                      fsDig,                // Precision for F-format, significant digits for E-format
+                                      UTF16_DOT,            // Char to use as decimal separator
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      FLTDISPFMT_E,         // Float display format
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
                     break;
 
                 case IMMTYPE_RAT:
@@ -1762,14 +1762,14 @@ void QFMT_CommonEFIR
 
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
-                                      aplVfpItm,            // The value to format
+                                   aplVfpItm,            // The value to format
                             -(APLINT) fsDig,                // # significant digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
                                       FALSE,                // TRUE iff we're to substitute text for infinity
                                       FALSE);               // TRUE iff we're to precede the display with (FPC)
-                    // We no longer need this storage
+                    //    We no longer need this storage
                     Myf_clear (&aplVfpItm);
 
                     break;
@@ -1817,13 +1817,13 @@ void QFMT_CommonEFIR
                     bInfinity = IsInfinity (aplFltItm);
 
                     lpwEnd =
-                      FormatFloatFC (lpwszFormat,           // Ptr to output save area
-                                     aplFltItm,             // The value to format
-                                     fsDig,                 // Precision for F-format, significant digits for E-format
-                                     UTF16_DOT,             // Char to use as decimal separator
-                                     UTF16_OVERBAR,         // Char to use as overbar
-                                     FLTDISPFMT_F,          // Float display format
-                                     FALSE);                // TRUE iff we're to substitute text for infinity
+                      FormatAplFltFC (lpwszFormat,          // Ptr to output save area
+                                      aplFltItm,            // The value to format
+                                      fsDig,                // Precision for F-format, significant digits for E-format
+                                      UTF16_DOT,            // Char to use as decimal separator
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      FLTDISPFMT_F,         // Float display format
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
                     break;
 
                 case IMMTYPE_RAT:
@@ -1998,7 +1998,7 @@ void QFMT_CommonEFIR
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
                     lpaplChar =
-                      FormatAplintFC (lpwszFormat,          // Ptr to output save area
+                      FormatAplIntFC (lpwszFormat,          // Ptr to output save area
                                       aplIntItm,            // The value to format
                                       UTF16_OVERBAR);       // Char to use as overbar
                     break;
@@ -2008,13 +2008,13 @@ void QFMT_CommonEFIR
                     aplFltItm = floor (aplFltItm + 0.5);
 
                     lpaplChar =
-                      FormatFloatFC (lpwszFormat,           // Ptr to output save area
-                                     aplFltItm,             // The value to format
-                                     fsWid,                 // Precision for F-format, significant digits for E-format
-                                     UTF16_DOT,             // Char to use as decimal separator
-                                     UTF16_OVERBAR,         // Char to use as overbar
-                                     FLTDISPFMT_RAWINT,     // Float display format
-                                     FALSE);                // TRUE iff we're to substitute text for infinity
+                      FormatAplFltFC (lpwszFormat,          // Ptr to output save area
+                                      aplFltItm,            // The value to format
+                                      fsWid,                // Precision for F-format, significant digits for E-format
+                                      UTF16_DOT,            // Char to use as decimal separator
+                                      UTF16_OVERBAR,        // Char to use as overbar
+                                      FLTDISPFMT_RAWINT,    // Float display format
+                                      FALSE);               // TRUE iff we're to substitute text for infinity
                     break;
 
                 case IMMTYPE_RAT:

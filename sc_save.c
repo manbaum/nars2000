@@ -1083,15 +1083,15 @@ LPAPLCHAR SavedWsFormGlbFcn
                 {
                     // Format the IncSubFns value
                     lpaplCharMon =
-                      FormatAplint (lpaplCharMon,               // Ptr to output save area
+                      FormatAplInt (lpaplCharMon,               // Ptr to output save area
                                     lpMemMonInfo->IncSubFns);   // The value to format
                     // Format the ExcSubFns value
                     lpaplCharMon =
-                      FormatAplint (lpaplCharMon,               // Ptr to output save area
+                      FormatAplInt (lpaplCharMon,               // Ptr to output save area
                                     lpMemMonInfo->ExcSubFns);   // The value to format
                     // Format the Count value
                     lpaplCharMon =
-                      FormatAplint (lpaplCharMon,               // Ptr to output save area
+                      FormatAplInt (lpaplCharMon,               // Ptr to output save area
                                     lpMemMonInfo->Count);       // The value to format
                     // Append a separator
                     lpaplCharMon[-1] = L',';
@@ -1340,7 +1340,7 @@ LPAPLCHAR SavedWsFormGlbVar
                 {
                     // Format the value
                     lpaplChar =
-                      FormatAplintFC (lpaplChar,                                        // Ptr to output save area
+                      FormatAplIntFC (lpaplChar,                                        // Ptr to output save area
                                       BIT0 & ((*(LPAPLBOOL) lpMemObj) >> uBitIndex),    // The value to format
                                       UTF16_BAR);                                       // Char to use as overbar
                     // Check for end-of-byte
@@ -1358,7 +1358,7 @@ LPAPLCHAR SavedWsFormGlbVar
                 for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLINT) lpMemObj)++)
                     // Format the value
                     lpaplChar =
-                      FormatAplintFC (lpaplChar,            // Ptr to output save area
+                      FormatAplIntFC (lpaplChar,            // Ptr to output save area
                                      *(LPAPLINT) lpMemObj,  // The value to format
                                       UTF16_BAR);           // Char to use as overbar
                 break;
@@ -1368,13 +1368,13 @@ LPAPLCHAR SavedWsFormGlbVar
                 for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLFLOAT) lpMemObj)++)
                     // Format the value
                     lpaplChar =
-                      FormatFloatFC (lpaplChar,             // Ptr to output save area
-                                    *(LPAPLFLOAT) lpMemObj, // The value to format
-                                     DEF_MAX_QUADPP64,      // Precision to use
-                                     UTF16_DOT,             // Char to use as decimal separator
-                                     UTF16_BAR,             // Char to use as overbar
-                                     FLTDISPFMT_RAWFLT,     // Float display format
-                                     TRUE);                 // TRUE iff we're to substitute text for infinity
+                      FormatAplFltFC (lpaplChar,                // Ptr to output save area
+                                     *(LPAPLFLOAT) lpMemObj,    // The value to format
+                                      DEF_MAX_QUADPP64,         // Precision to use
+                                      UTF16_DOT,                // Char to use as decimal separator
+                                      UTF16_BAR,                // Char to use as overbar
+                                      FLTDISPFMT_RAWFLT,        // Float display format
+                                      TRUE);                    // TRUE iff we're to substitute text for infinity
                 break;
 
             case ARRAY_CHAR:
@@ -1405,12 +1405,12 @@ LPAPLCHAR SavedWsFormGlbVar
 
                 // Append the offset
                 lpaplChar =
-                  FormatAplintFC (lpaplChar,        // Ptr to output save area
+                  FormatAplIntFC (lpaplChar,        // Ptr to output save area
                                   apaOff,           // The value to format
                                   UTF16_BAR);       // Char to use as overbar
                 // Append the multiplier
                 lpaplChar =
-                  FormatAplintFC (lpaplChar,        // Ptr to output save area
+                  FormatAplIntFC (lpaplChar,        // Ptr to output save area
                                   apaMul,           // The value to format
                                   UTF16_BAR);       // Char to use as overbar
                 break;
@@ -1653,12 +1653,12 @@ LPAPLCHAR AppendArrayHeader
 
     // Append the NELM (with a trailing blank)
     lpaplChar =
-      FormatAplintFC (lpaplChar,                // Ptr to output save area
+      FormatAplIntFC (lpaplChar,                // Ptr to output save area
                       aplNELMObj,               // The value to format
                       UTF16_BAR);               // Char to use as overbar
     // Append the rank (with a trailing blank)
     lpaplChar =
-      FormatAplintFC (lpaplChar,                // Ptr to output save area
+      FormatAplIntFC (lpaplChar,                // Ptr to output save area
                       aplRankObj,               // The value to format
                       UTF16_BAR);               // Char to use as overbar
 
@@ -1666,7 +1666,7 @@ LPAPLCHAR AppendArrayHeader
     for (uObj = 0; uObj < aplRankObj; uObj++)
         // Format the dimension
         lpaplChar =
-          FormatAplintFC (lpaplChar,            // Ptr to output save area
+          FormatAplIntFC (lpaplChar,            // Ptr to output save area
                           lpaplDimObj[uObj],    // The value to format
                           UTF16_BAR);           // Char to use as overbar
     // Append array properties

@@ -2009,7 +2009,7 @@ LPWCHAR DisplayVarSub
                     for (uCnt = 0; uCnt < aplNELM; uCnt++)
                         // Format the next value as an integer
                         lpaplChar =
-                          FormatAplint (lpaplChar,                                  // Ptr to output save area
+                          FormatAplInt (lpaplChar,                                  // Ptr to output save area
                                         GetNextInteger (lpMemData, aplType, uCnt)); // The value to format
                     break;
 
@@ -2018,9 +2018,9 @@ LPWCHAR DisplayVarSub
                     for (uCnt = 0; uCnt < aplNELM; uCnt++)
                         // Format the next value as an integer
                         lpaplChar =
-                          FormatFloat (lpaplChar,                                   // Ptr to output savea area
-                                       GetNextFloat (lpMemData, aplType, uCnt),     // The value to format
-                                       0);                                          // Use default significant digits
+                          FormatAplFlt (lpaplChar,                                  // Ptr to output savea area
+                                        GetNextFloat (lpMemData, aplType, uCnt),    // The value to format
+                                        0);                                         // Use default significant digits
                     break;
 
                 case ARRAY_CHAR:

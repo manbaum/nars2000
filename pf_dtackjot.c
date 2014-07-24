@@ -912,7 +912,7 @@ LPAPLCHAR CompileArrInteger
         {
             // Format the integer
             lpaplChar =
-              FormatAplint (lpwszOut = lpaplChar,
+              FormatAplInt (lpwszOut = lpaplChar,
                             *lpMem++);
             // Zap the trailing blank
             lpaplChar[-1] = WC_EOS;
@@ -1039,9 +1039,9 @@ LPAPLCHAR CompileArrFloat
         {
             // Format the float
             lpaplChar =
-              FormatFloat (lpwszOut = lpaplChar,    // Ptr to output save area
+              FormatAplFlt (lpwszOut = lpaplChar,   // Ptr to output save area
                            *lpMem++,                // The floating point value
-                           0);                      // Use default significant digits
+                            0);                     // Use default significant digits
             // Zap the trailing blank
             lpaplChar[-1] = WC_EOS;
 
@@ -1316,7 +1316,7 @@ LPAPLCHAR CompileArrAPA
         {
             // Format the integer
             lpaplChar =
-              FormatAplint (lpwszOut = lpaplChar,
+              FormatAplInt (lpwszOut = lpaplChar,
                             apaOff + apaMul * apaAcc);
             // Zap the trailing blank
             lpaplChar[-1] = WC_EOS;
@@ -4283,7 +4283,7 @@ __try
                             {
                                 // Format the number
                                 lpaplChar =
-                                  FormatAplintFC (lpaplChar,        // Ptr to output save area
+                                  FormatAplIntFC (lpaplChar,        // Ptr to output save area
                                                   aplLongestRht,    // The value to format
                                                   aplCharOverbar);  // Char to use as overbar
                                 // Zap the trailing blank
@@ -4301,13 +4301,13 @@ __try
                             {
                                 // Format the number
                                 lpaplChar =
-                                  FormatFloatFC (lpaplChar,                         // Ptr to output save area
-                                                 (APLFLOAT) (APLINT) aplLongestRht, // The value to format
-                                                 -iPrc,                             // Precision to use
-                                                 aplCharDecimal,                    // Char to use as decimal separator
-                                                 aplCharOverbar,                    // Char to use as overbar
-                                                 FLTDISPFMT_E,                      // Float display format
-                                                 FALSE);                            // TRUE iff we're to substitute text for infinity
+                                  FormatAplFltFC (lpaplChar,        // Ptr to output save area
+                              (APLFLOAT) (APLINT) aplLongestRht, 	// The value to format
+                                                  -iPrc,            // Precision to use
+                                                  aplCharDecimal,   // Char to use as decimal separator
+                                                  aplCharOverbar,   // Char to use as overbar
+                                                  FLTDISPFMT_E,     // Float display format
+                                                  FALSE);           // TRUE iff we're to substitute text for infinity
                                 // Zap the trailing blank
                                 lpaplChar[-1] = WC_EOS;
                             } // End IF/ELSE
@@ -4322,35 +4322,35 @@ __try
                             if (iPrc > 0)
                                 // Format the number
                                 lpaplChar =
-                                  FormatFloatFC (lpaplChar,                             // Ptr to output save area
-                                                *(LPAPLFLOAT) &aplLongestRht,           // The value to format
-                                                 iPrc,                                  // Precision for F-format, significant digits for E-format
-                                                 aplCharDecimal,                        // Char to use as decimal separator
-                                                 aplCharOverbar,                        // Char to use as overbar
-                                                 FLTDISPFMT_F,                          // Float display format
-                                                 FALSE);                                // TRUE iff we're to substitute text for infinity
+                                  FormatAplFltFC (lpaplChar,                            // Ptr to output save area
+                                                 *(LPAPLFLOAT) &aplLongestRht,          // The value to format
+                                                  iPrc,                                 // Precision for F-format, significant digits for E-format
+                                                  aplCharDecimal,                       // Char to use as decimal separator
+                                                  aplCharOverbar,                       // Char to use as overbar
+                                                  FLTDISPFMT_F,                         // Float display format
+                                                  FALSE);                               // TRUE iff we're to substitute text for infinity
                             else
                             if (iPrc EQ 0)
                                 // Format the number
                                 lpaplChar =
-                                  FormatFloatFC (lpaplChar,                             // Ptr to output save area
-                                                *(LPAPLFLOAT) &aplLongestRht,           // The value to format
-                                                 DBL_MAX_10_EXP + 2,                    // Precision for F-format, significant digits for E-format
-                                                 aplCharDecimal,                        // Char to use as decimal separator
-                                                 aplCharOverbar,                        // Char to use as overbar
-                                                 FLTDISPFMT_RAWINT,                     // Float display format
-                                                 FALSE);                                // TRUE iff we're to substitute text for infinity
+                                  FormatAplFltFC (lpaplChar,                            // Ptr to output save area
+                                                 *(LPAPLFLOAT) &aplLongestRht,          // The value to format
+                                                  DBL_MAX_10_EXP + 2,                   // Precision for F-format, significant digits for E-format
+                                                  aplCharDecimal,                       // Char to use as decimal separator
+                                                  aplCharOverbar,                       // Char to use as overbar
+                                                  FLTDISPFMT_RAWINT,                    // Float display format
+                                                  FALSE);                               // TRUE iff we're to substitute text for infinity
                             else
 ////////////////////////////if (iPrc < 0)
                                 // Format the number
                                 lpaplChar =
-                                  FormatFloatFC (lpaplChar,                             // Ptr to output save area
-                                                *(LPAPLFLOAT) &aplLongestRht,           // The value to format
-                                                 -iPrc,                                 // Precision for F-format, significant digits for E-format
-                                                 aplCharDecimal,                        // Char to use as decimal separator
-                                                 aplCharOverbar,                        // Char to use as overbar
-                                                 FLTDISPFMT_E,                          // Float display format
-                                                 FALSE);                                // TRUE iff we're to substitute text for infinity
+                                  FormatAplFltFC (lpaplChar,                            // Ptr to output save area
+                                                 *(LPAPLFLOAT) &aplLongestRht,          // The value to format
+                                                  -iPrc,                                // Precision for F-format, significant digits for E-format
+                                                  aplCharDecimal,                       // Char to use as decimal separator
+                                                  aplCharOverbar,                       // Char to use as overbar
+                                                  FLTDISPFMT_E,                         // Float display format
+                                                  FALSE);                               // TRUE iff we're to substitute text for infinity
                             // Zap the trailing blank
                             lpaplChar[-1] = WC_EOS;
 

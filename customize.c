@@ -728,13 +728,13 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Format the value
                         lpMemChr =
-                          FormatFloatFC (lpwszGlbTemp,                  // Ptr to output save area
-                                         fQuadCT_CWS,                   // The value to format
-                                         DEF_MAX_QUADPP64,              // Precision to use
-                                         L'.',                          // Char to use as decimal separator
-                                         UTF16_OVERBAR,                 // Char to use as overbar
-                                         FLTDISPFMT_RAWFLT,             // Float display format
-                                         FALSE);                        // TRUE iff we're to substitute text for infinity
+                          FormatAplFltFC (lpwszGlbTemp,                 // Ptr to output save area
+                                          fQuadCT_CWS,                  // The value to format
+                                          DEF_MAX_QUADPP64,             // Precision to use
+                                          L'.',                         // Char to use as decimal separator
+                                          UTF16_OVERBAR,                // Char to use as overbar
+                                          FLTDISPFMT_RAWFLT,            // Float display format
+                                          FALSE);                       // TRUE iff we're to substitute text for infinity
                         // Zap the trailing blank
                         lpMemChr[-1] = WC_EOS;
 
@@ -948,7 +948,7 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Format the value
                         lpaplChar =
-                          FormatAplint (lpwszGlbTemp,                   // Ptr to output save area
+                          FormatAplInt (lpwszGlbTemp,                   // Ptr to output save area
                                         uQuadMF_CWS);                   // The value to format
                         // Zap the trailing blank
                         lpaplChar[-1] = WC_EOS;
@@ -996,7 +996,7 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Format the value
                         lpaplChar =
-                          FormatAplint (lpwszGlbTemp,                   // Ptr to output save area
+                          FormatAplInt (lpwszGlbTemp,                   // Ptr to output save area
                                         uQuadRL_CWS);                   // The value to format
                         // Zap the trailing blank
                         lpaplChar[-1] = WC_EOS;

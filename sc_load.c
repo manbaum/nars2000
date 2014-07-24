@@ -1742,9 +1742,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Convert it to a WC_EOS
                         wc = *lpwWS; *lpwWS = WC_EOS;
 
-                        // Initialize the save area
-                        mpfr_init0 ((LPAPLVFP) lpMemObj);
-
                         // If there's a preceding (FPC), ...
                         if (*lpwSrc EQ L'(')
                         {
@@ -1762,6 +1759,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         } else
                             // Set the default precision
                             mpfr_set_default_prec ((uCommPrec EQ 0) ? uOldPrec : uCommPrec);
+
+                        // Initialize the save area to 0 using the precision set above
+                        mpfr_init0 ((LPAPLVFP) lpMemObj);
 
                         // Convert the string from WCHAR to char
                         lpwStr = lpwSrc; lpStr = (LPCHAR) lpwStr;

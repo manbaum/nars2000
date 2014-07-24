@@ -3119,6 +3119,9 @@ LPPL_YYSTYPE plRedIO_SPA
     // Mark as already displayed
     lpplYYLstRht->tkToken.tkFlags.NoDisplay = TRUE;
 
+    // Change the tkSynObj
+    lpplYYLstRht->tkToken.tkSynObj = soType;
+
     return lpplYYLstRht;
 
 ERROR_EXIT:
@@ -3295,7 +3298,7 @@ LPPL_YYSTYPE plRedA_SPA
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    // Ensure it's a named var
+    // If it's a named var, ...
     if (lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_VARNAMED)
     {
         // Change the tkSynObj

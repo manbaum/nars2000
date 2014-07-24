@@ -1,6 +1,17 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1257 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug In Syntax Analyzer
+
+Directory trunk:
+
+PARSELINE.C:
+  In <plRedIO_SPA>, set the syntax object for the result.
+
+
 Build #1256 -- Version 0.4.9.xx
 -------------------------------
 

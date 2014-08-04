@@ -846,17 +846,8 @@ NORMAL_EXIT:
         FreeResultGlobalVar (aplNestProto); aplNestProto = NULL;
     } // End IF
 
-    if (hGlbRep)
-    {
-        if (lpMemRep)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRep); lpMemRep = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbRep); hGlbRep = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbRep, lpMemRep);
 
     if (hGlbLft && lpMemLft)
     {

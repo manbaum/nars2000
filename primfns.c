@@ -1651,41 +1651,14 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
     } // End IF
 
-    if (hGlbWVec)
-    {
-        if (lpMemWVec)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbWVec); lpMemWVec = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVec, lpMemWVec);
 
-        // We no longer need this storage
-        DbgGlobalFree (hGlbWVec); hGlbWVec = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdo, lpMemOdo);
 
-    if (hGlbOdo)
-    {
-        if (lpMemOdo)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdo); lpMemOdo = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbOdo); hGlbOdo = NULL;
-    } // End IF
-
-    if (hGlbAxis)
-    {
-        if (lpMemAxisHead)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = lpMemAxisTail = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbAxis, lpMemAxisHead);
 
     return hGlbRes;
 } // End MakeDydPrototype_EM_PTB

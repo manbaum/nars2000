@@ -1318,17 +1318,8 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
-    {
-        if (lpMemRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbRes, lpMemRes);
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {
@@ -1461,17 +1452,8 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
-    {
-        if (lpMemRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbRes, lpMemRes);
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {
@@ -2592,17 +2574,8 @@ SYS_ERROR_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
-    {
-        if (lpMemRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbRes, lpMemRes);
 NORMAL_EXIT:
     if (overLapped.hEvent)
     {
@@ -3690,17 +3663,8 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
-    {
-        if (lpMemRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbRes, lpMemRes);
 NORMAL_EXIT:
     if (hGlbRht && lpMemRht)
     {
@@ -4566,11 +4530,8 @@ APLINT GetNextTieNum_EM
             if (TieNum NE lpMemTie[uCnt])
                 break;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbTie); lpMemTie = NULL;
-
-            // We no longer need this storage
-            DbgGlobalFree (hGlbTie); hGlbTie = NULL;
+            // Unlock and free (and set to NULL) a global name and ptr
+            UnlFreeGlbName (hGlbTie, lpMemTie);
         } else
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,

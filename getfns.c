@@ -26,6 +26,27 @@
 
 
 //***************************************************************************
+//  $GetPtrGlbDataToken
+//
+//  Return the xxGlbData value from a token
+//    taking into account whether or the token is named
+//***************************************************************************
+
+HGLOBAL *GetPtrGlbDataToken
+    (LPTOKEN lptkToken)                 // Ptr to the token
+
+{
+    // If it's named, ...
+    if (IsTknNamed (lptkToken))
+        // Get the xxGlbData value from the SYMENTRY
+        return &lptkToken->tkData.tkSym->stData.stGlbData;
+    else
+        // Get the xxGlbData value from the TOKEN
+        return &lptkToken->tkData.tkGlbData;
+} // End GetPtrGlbDataToken
+
+
+//***************************************************************************
 //  $GetGlbDataToken
 //
 //  Return the xxGlbData value from a token
@@ -36,13 +57,7 @@ HGLOBAL GetGlbDataToken
     (LPTOKEN lptkToken)                 // Ptr to the token
 
 {
-    // If it's named, ...
-    if (IsTknNamed (lptkToken))
-        // Get the xxGlbData value from the SYMENTRY
-        return lptkToken->tkData.tkSym->stData.stGlbData;
-    else
-        // Get the xxGlbData value from the TOKEN
-        return lptkToken->tkData.tkGlbData;
+    return *GetPtrGlbDataToken (lptkToken);
 } // End GetGlbDataToken
 
 

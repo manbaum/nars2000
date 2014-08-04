@@ -2114,17 +2114,8 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbInv)
-    {
-        if (lpMemInv)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbInv); lpMemInv = NULL;
-        } // End IF
-
-        // We no longer need this resource
-        DbgGlobalFree (hGlbInv); hGlbInv = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbInv, lpMemInv);
 
     return bRet;
 } // End PrimFnDydIotaPvN_EM

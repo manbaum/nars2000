@@ -539,11 +539,8 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     // Untokenize the temporary line and free its memory
     Untokenize (lpMemTknHdr);
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
-    // We no longer need this storage
-    DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbTknHdr, lpMemTknHdr);
 ERROR_EXIT:
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;

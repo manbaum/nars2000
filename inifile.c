@@ -1356,6 +1356,21 @@ UBOOL ReadIniFileGlb
 
 
 //***************************************************************************
+//  $DeleIniFileGlb
+//
+//  Delete the global vars created by <ReadIniFileGlb>
+//***************************************************************************
+
+void DeleIniFileGlb
+    (void)
+
+{
+    FreeGlbName (hGlbLibDirs);
+    FreeGlbName (hGlbRecentFiles);
+} // End DeleIniFileGlb
+
+
+//***************************************************************************
 //  $RedoWinBG
 //
 //  Respecify the Window Background brush

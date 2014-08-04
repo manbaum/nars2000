@@ -668,18 +668,12 @@ ERROR_EXIT:
         // Free the tokens
         Untokenize (lpMemTknHdr);
 
-        // We no Longer need this ptr
-        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbTknHdr, lpMemTknHdr);
     } // End IF
 
-    if (hGlbTxtHdr)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbTxtHdr, lpMemTxtLine);
 NORMAL_EXIT:
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;
@@ -819,11 +813,8 @@ void ExecNilMFO
                  FALSE,                 // TRUE iff errors are acted upon
                  FALSE,                 // TRUE iff executing only one stmt
                  FALSE);                // TRUE iff we're to skip the depth check
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
-    // We no longer need this resource
-    DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbTknHdr, lpMemTknHdr);
 
     // Tell 'em we're looking for MFO objects
 ////ZeroMemory (&stFlags, sizeof (stFlags));

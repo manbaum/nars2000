@@ -719,15 +719,8 @@ NOMATCH:
     // If the right arg is a global, ...
     if (lpMemRht)
     {
-        // If the result is a global, ...
-        if (hGlbRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-            // We no longer need this resource
-            DbgGlobalFree (hGlbRes); hGlbRes = NULL;
-        } // End IF
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbRes, lpMemRes);
 
         // If there was a YYAlloc, ...
         if (lpYYRes)
@@ -846,89 +839,23 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbKmpNext)
-    {
-        if (lpMemKmpNext)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbKmpNext); lpMemKmpNext = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbKmpNext, lpMemKmpNext);
 
-        // We no longer need this resource
-        DbgGlobalFree (hGlbKmpNext); hGlbKmpNext = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbDimTmp, lpMemDimTmp);
 
-    if (hGlbDimTmp)
-    {
-        if (lpMemDimTmp)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbDimTmp); lpMemDimTmp = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdoTst, lpMemOdoTst);
 
-        // We no longer need this resource
-        DbgGlobalFree (hGlbDimTmp); hGlbDimTmp = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVecTst, lpMemWVecTst);
 
-    if (hGlbOdoTst)
-    {
-        if (lpMemOdoTst)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdoTst); lpMemOdoTst = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVecRht, lpMemWVecRht);
 
-        // We no longer need this resource
-        DbgGlobalFree (hGlbOdoTst); hGlbOdoTst = NULL;
-    } // End IF
-
-    if (hGlbWVecTst)
-    {
-        if (lpMemWVecTst)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbWVecTst); lpMemWVecTst = NULL;
-        } // End IF
-
-        // We no longer need this resource
-        DbgGlobalFree (hGlbWVecTst); hGlbWVecTst = NULL;
-    } // End IF
-
-    if (hGlbOdoTst)
-    {
-        if (lpMemOdoTst)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdoTst); lpMemOdoTst = NULL;
-        } // End IF
-
-        // We no longer need this resource
-        DbgGlobalFree (hGlbOdoTst); hGlbOdoTst = NULL;
-    } // End IF
-
-    if (hGlbWVecRht)
-    {
-        if (lpMemWVecRht)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbWVecRht); lpMemWVecRht = NULL;
-        } // End IF
-
-        // We no longer need this resource
-        DbgGlobalFree (hGlbWVecRht); hGlbWVecRht = NULL;
-    } // End IF
-
-    if (hGlbOdoRht)
-    {
-        if (lpMemOdoRht)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdoRht); lpMemOdoRht = NULL;
-        } // End IF
-
-        // We no longer need this resource
-        DbgGlobalFree (hGlbOdoRht); hGlbOdoRht = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdoRht, lpMemOdoRht);
 
     if (hGlbLft && lpMemLft)
     {

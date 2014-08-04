@@ -501,11 +501,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                         if (!IsSingleton (aplNELMNestSub))
                             goto INDEX_EXIT;
 
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-                        // Free the allocated memory
-                        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+                        // Unlock and free (and set to NULL) a global name and ptr
+                        UnlFreeGlbName (hGlbRes, lpMemRes);
 
                         Assert (hGlbNam NE NULL);
 

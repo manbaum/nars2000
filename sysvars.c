@@ -329,6 +329,37 @@ void MakePermVars
 
 
 //***************************************************************************
+//  $DelePermVars
+//
+//  Delete the globals created by <MakePermVars>
+//***************************************************************************
+
+void DelePermVars
+    (void)
+
+{
+    FreeGlbName (hGlbQuadAV          );
+    FreeGlbName (hGlbQuadIC_SYS      );
+    FreeGlbName (hGlbQuadFEATURE_SYS );
+    FreeGlbName (hGlbQuadFC_SYS      );
+////FreeGlbName (hGlbQuadWSID_CWS    ); EQ hGlbV0Char
+    FreeGlbName (hGlbSAOff           );
+    FreeGlbName (hGlbSAExit          );
+    FreeGlbName (hGlbSAError         );
+    FreeGlbName (hGlbSAClear         );
+////FreeGlbName (hGlbSAEmpty         ); EQ hGlbV0Char
+    FreeGlbName (hGlbV0Char          );
+    FreeGlbName (hGlbQuadxLX         );
+    FreeGlbName (hGlb3by0            );
+    FreeGlbName (hGlb0by0            );
+    FreeGlbName (hGlbZilde           );
+    FreeGlbName (hGlbQuadD           );
+    FreeGlbName (hGlbQuadA           );
+#undef  FreeGlbName
+} // End DelePermVars
+
+
+//***************************************************************************
 //  $MakePermCharVector
 //
 //  Make a permanent character vector

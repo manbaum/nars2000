@@ -2023,9 +2023,6 @@ NORMAL_EXIT:
 
             // Free global storage
             FreeGlobalStorage (lpMemPTD);
-
-            // Remove all saved window properties
-            EnumPropsW (hWnd, EnumCallbackRemoveProp);
 #ifdef DEBUG
             // If the debugger is still active, close it
             if (lpMemPTD->hWndDB)

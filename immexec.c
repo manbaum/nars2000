@@ -104,11 +104,8 @@ VOID CALLBACK WaitForImmExecStmt
         MyReleaseSemaphore (lpMemWFSO->hSigaphore, 1, NULL);
     else
         DisplayPrompt (lpMemWFSO->hWndEC, 10);
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
-
-    // Free the allocated memory
-    DbgGlobalFree (hGlbWFSO); hGlbWFSO = NULL;
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWFSO, lpMemWFSO);
 #undef  hGlbWFSO
 } // End WaitForImmExecStmt
 #undef  APPEND_NAME
@@ -733,11 +730,8 @@ UNTOKENIZE_EXIT:
         // Free the tokens
         Untokenize (lpMemTknHdr);
 
-        // We no Longer need this ptr
-        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
-        // We no Longer need this storage
-        DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbTknHdr, lpMemTknHdr);
 ERROR_EXIT:
         // Unlocalize the STEs on the innermost level
         //   and strip off one level

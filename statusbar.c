@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,12 +116,14 @@ void SetStatusParts
     STATUSPARTS iCnt;           // Loop counter
     SIZE        sText;
     HWND        hWndEC;         // Edit Ctrl window handle
+    HFONT       oldhFont;       // Previous HFONT
 
     // Get a Client Area DC for the Status Window
     hDC = MyGetDC (hWndStatus);
 
     // Copy the Status Window font
-    SelectObject (hDC, (HFONT) SendMessageW (hWndStatus, WM_GETFONT, 0, 0));
+    oldhFont =
+      SelectObject (hDC, (HFONT) SendMessageW (hWndStatus, WM_GETFONT, 0, 0));
 
 #define GRIPPER_WIDTH       20
 #define SP_BORDER_EXTRA      5
@@ -228,6 +230,9 @@ void SetStatusParts
     // Tell the status window about the new Status Parts right edge
     SendStatusMsg (SB_SETPARTS, SP_LENGTH, (LPARAM) lclStatusPartsRight);
 
+    // Restore the old HFONT
+    SelectObject (hDC, oldhFont);
+
     // We no longer need this resource
     MyReleaseDC (hWndStatus, hDC); hDC = NULL;
 
@@ -312,7 +317,7 @@ void SetStatusPos
     (HWND hWndEC)               // Edit Ctrl window handle
 
 {
-    APLU3264 uCharPos,              // Character position (origin-0), initially from start
+    APLU3264 uCharPos = 0,          // Character position (origin-0), initially from start
                                     //   of buffer then eventually from the start of the line
              uLineNum,              // Line # (origin-0)
              uLinePos;              // Line position from start of buffer

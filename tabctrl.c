@@ -972,11 +972,8 @@ void FreeGlobalStorage
                     // Free the HshTab & SymTab
                     FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
-
-                    // We no longer need this storage
-                    DbgGlobalFree (hGlbData); hGlbData = NULL;
+                    // Unlock and free (and set to NULL) a global name and ptr
+                    UnlFreeGlbName (hGlbData, lpMemDfnHdr);
                 }// End IF
             } else
             // Free all global fns and vars in the workspace

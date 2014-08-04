@@ -492,25 +492,6 @@ void nop
 
 
 //***************************************************************************
-//  $EnumCallbackRemoveProp
-//
-//  Callback function to remove all window properties
-//***************************************************************************
-
-UBOOL CALLBACK EnumCallbackRemoveProp
-    (HWND    hWnd,          // Handle of window with property
-     LPCWSTR lpwszString,   // Property string or atom
-     HANDLE  hData)         // Data handle
-{
-    // Remove the property
-    RemovePropW (hWnd, lpwszString);
-
-    // Continue enumerating
-    return TRUE;
-} // End EnumCallbackRemoveProp
-
-
-//***************************************************************************
 //  $IsValidHandle
 //
 //  Return TRUE iff the given handle is valid

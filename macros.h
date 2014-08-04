@@ -466,6 +466,27 @@
 #define GetDydLftOper(lpYYFcnStrRht)                &lpYYFcnStrRht[lpYYFcnStrRht->TknCount]
 #define GetDydRhtOper(lpYYFcnStrOpr,lptkAxisOpr)    GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)
 
+// Define macro to free (and set to NULL) a global name
+#define FreeGlbName(hGlb)                           \
+    if (hGlb)                                       \
+    {                                               \
+        DbgGlobalFree (hGlb); (hGlb) = NULL;        \
+    } /* End IF */
+
+// Define macro to unlock and free (and set to NULL) a global name and ptr
+#define UnlFreeGlbName(hGlb,lpMem)                  \
+    if (hGlb)                                       \
+    {                                               \
+        if (lpMem)                                  \
+        {                                           \
+            /* We no longer need this ptr */        \
+            MyGlobalUnlock (lpMem); (lpMem) = NULL; \
+        } /* End IF */                              \
+                                                    \
+        /* We no longer need this storage */        \
+        DbgGlobalFree (hGlb); (hGlb) = NULL;        \
+    } /* End IF */
+
 
 //***************************************************************************
 //  End of File: macros.h

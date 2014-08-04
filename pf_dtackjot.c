@@ -694,14 +694,8 @@ QUICK_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (hGlbFormat && lpwszFormat)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbFormat); lpwszFormat = NULL;
-
-        // We no longer need this resource
-        DbgGlobalFree (hGlbFormat); hGlbFormat = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbFormat, lpwszFormat);
 
     return lpYYRes;
 } // End PrimFnMonDownTackJot_EM_YY
@@ -4302,7 +4296,7 @@ __try
                                 // Format the number
                                 lpaplChar =
                                   FormatAplFltFC (lpaplChar,        // Ptr to output save area
-                              (APLFLOAT) (APLINT) aplLongestRht, 	// The value to format
+                              (APLFLOAT) (APLINT) aplLongestRht,    // The value to format
                                                   -iPrc,            // Precision to use
                                                   aplCharDecimal,   // Char to use as decimal separator
                                                   aplCharOverbar,   // Char to use as overbar
@@ -4585,17 +4579,8 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbWidPrc)
-    {
-        if (lpMemWidPrc)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbWidPrc); lpMemWidPrc = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbWidPrc); hGlbWidPrc = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWidPrc, lpMemWidPrc);
 
     if (hGlbLft && lpMemLft)
     {

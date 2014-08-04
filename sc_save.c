@@ -603,17 +603,8 @@ NORMAL_EXIT:
         MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
     } // End IF
 
-    if (hGlbCnt)
-    {
-        if (lpMemCnt)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbCnt); lpMemCnt = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbCnt); hGlbCnt = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbCnt, lpMemCnt);
 
     EXIT_TEMP_OPEN
 

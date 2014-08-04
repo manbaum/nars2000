@@ -1085,11 +1085,8 @@ NEXTLINE:
                              TRUE,                      // TRUE iff errors are acted upon
                              FALSE,                     // TRUE iff executing only one stmt
                              FALSE);                    // TRUE iff we're to skip the depth check
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
-                // We no longer need this resource
-                DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+                // Unlock and free (and set to NULL) a global name and ptr
+                UnlFreeGlbName (hGlbTknHdr, lpMemTknHdr);
 
                 goto RESTART_AFTER_ERROR;
             } // End IF

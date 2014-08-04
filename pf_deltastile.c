@@ -1155,11 +1155,8 @@ NORMAL_EXIT:
             DbgGlobalFree (lpMemTTHandles[uDim].hGlbTT); lpMemTTHandles[uDim].hGlbTT = NULL;
         } // End FOR/IF
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbTTHandles); lpMemTTHandles = NULL;
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbTTHandles); hGlbTTHandles = NULL;
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbTTHandles, lpMemTTHandles);
     } // End IF
 
     return lpYYRes;

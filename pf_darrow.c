@@ -733,53 +733,17 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbWVecRht)
-    {
-        if (lpMemWVecRht)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbWVecRht); lpMemWVecRht = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVecRht, lpMemWVecRht);
 
-        // We no longer need this storage
-        DbgGlobalFree (hGlbWVecRht); hGlbWVecRht = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdoRht, lpMemOdoRht);
 
-    if (hGlbOdoRht)
-    {
-        if (lpMemOdoRht)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdoRht); lpMemOdoRht = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbAxis, lpMemAxisHead);
 
-        // We no longer need this storage
-        DbgGlobalFree (hGlbOdoRht); hGlbOdoRht = NULL;
-    } // End IF
-
-    if (hGlbAxis)
-    {
-        if (lpMemAxisHead)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
-    } // End IF
-
-    if (hGlbTmpLft)
-    {
-        if (lpMemTmpLft)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbTmpLft); lpMemTmpLft = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbTmpLft); hGlbTmpLft = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbTmpLft, lpMemTmpLft);
 
     return lpYYRes;
 } // End PrimFnDownArrow_EM_YY
@@ -1167,17 +1131,8 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     // If error, it's a DOMAIN ERROR
     if (!bRet)
     {
-        if (hGlbTmpLft)
-        {
-            if (lpMemTmpLft)
-            {
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbTmpLft); lpMemTmpLft = NULL;
-            } // End IF
-
-            // We no longer need this storage
-            DbgGlobalFree (hGlbTmpLft); hGlbTmpLft = NULL;
-        } // End IF
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbTmpLft, lpMemTmpLft);
 
         goto DOMAIN_EXIT;
     } else

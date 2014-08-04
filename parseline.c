@@ -3878,7 +3878,7 @@ EXIT_TYPES ParseLine
             //***************************************************************************
 
             // Initialize the lpplYYLstRht var
-            lpplYYLstRht = &plYYEOS;
+            lpplYYLstRht = &plYYEOS; lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
 
             // Parse the line, check for errors
             //   0 = success

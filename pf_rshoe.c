@@ -1824,29 +1824,11 @@ TAIL_EXIT:
     Myf_clear (&mpfTmp);
     Myq_clear (&mpqTmp);
 
-    if (hGlbDimCom)
-    {
-        if (lpMemDimCom)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbDimCom); lpMemDimCom = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbDimCom, lpMemDimCom);
 
-        // We no longer need this storage
-        DbgGlobalFree (hGlbDimCom); hGlbDimCom = NULL;
-    } // End IF
-
-    if (hGlbAxis)
-    {
-        if (lpMemAxisHead)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbAxis, lpMemAxisHead);
 
     if (hGlbRht && lpMemRht)
     {

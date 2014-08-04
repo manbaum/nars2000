@@ -657,29 +657,11 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbOdoRht)
-    {
-        if (lpMemOdoRht)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdoRht); lpMemOdoRht = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdoRht, lpMemOdoRht);
 
-        // We no longer need this resource
-        DbgGlobalFree (hGlbOdoRht); hGlbOdoRht = NULL;
-    } // End IF
-
-    if (hGlbRep)
-    {
-        if (lpMemRep)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRep); lpMemRep = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbRep); hGlbRep = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbRep, lpMemRep);
 
     if (hGlbRht && lpMemRht)
     {

@@ -3476,29 +3476,11 @@ NORMAL_EXIT:
         MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (lpMemWVec)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbWVec); lpMemWVec = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVec, lpMemWVec);
 
-    if (lpMemOdo)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbOdo); lpMemOdo = NULL;
-    } // End IF
-
-    if (hGlbWVec)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbWVec); hGlbWVec = NULL;
-    } // End IF
-
-    if (hGlbOdo)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbOdo); hGlbOdo = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdo, lpMemOdo);
 
     DBGLEAVE;
 
@@ -3860,29 +3842,11 @@ NORMAL_EXIT:
         MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (lpMemWVec)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbWVec); lpMemWVec = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVec, lpMemWVec);
 
-    if (lpMemOdo)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbOdo); lpMemOdo = NULL;
-    } // End IF
-
-    if (hGlbWVec)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbWVec); hGlbWVec = NULL;
-    } // End IF
-
-    if (hGlbOdo)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbOdo); hGlbOdo = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdo, lpMemOdo);
 
     DBGLEAVE;
 
@@ -14668,29 +14632,11 @@ NORMAL_EXIT:
         MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbOdo && lpMemOdo)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbOdo); lpMemOdo = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVec, lpMemWVec);
 
-    if (hGlbWVec && lpMemWVec)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbWVec); lpMemWVec = NULL;
-    } // End IF
-
-    if (hGlbWVec)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbWVec); hGlbWVec = NULL;
-    } // End IF
-
-    if (hGlbOdo)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbOdo); hGlbOdo = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdo, lpMemOdo);
 
     DBGLEAVE;
 

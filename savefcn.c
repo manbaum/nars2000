@@ -1956,18 +1956,12 @@ ERROR_EXIT:
         // Free the tokens
         Untokenize (lpMemTknHdr);
 
-        // We no Longer need this ptr
-        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbTknHdr, lpMemTknHdr);
     } // End IF
 
-    if (hGlbTxtHdr)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbTxtHdr, lpMemTxtLine);
 NORMAL_EXIT:
     // Restore the ptr to the next token on the CS stack
     lpMemPTD->lptkCSNxt = lptkCSBeg;
@@ -2206,11 +2200,8 @@ UINT SaveFunctionLine
         // Free the storage in the tokens
         Untokenize (lpMemTknHdr);
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
-    // We no longer need this storage
-    DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbTknHdr, lpMemTknHdr);
 
     // Account for these tokens
     *lpOffNextTknLine += uTknSize;

@@ -842,9 +842,6 @@ LRESULT APIENTRY FEWndProc
             break;                  // Default action is to close
 
         case WM_DESTROY:
-            // Remove all saved window properties
-            EnumPropsW (hWnd, EnumCallbackRemoveProp);
-
             // *************** FCNMEMVIRTENUM Entries ******************
             // Get the MemVirtStr ptr
             lpLclMemVirtStr = (LPMEMVIRTSTR) GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
@@ -1258,11 +1255,8 @@ int LclECPaintHook
                 // Syntax color the line
                 if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
                 {
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbClr); lpMemClrIni = NULL;
-
-                    // It's a system command, so we don't color that line
-                    DbgGlobalFree (hGlbClr); hGlbClr = NULL;
+                    // Unlock and free (and set to NULL) a global name and ptr
+                    UnlFreeGlbName (hGlbClr, lpMemClrIni);
                 } // End IF
 
                 // Set the Window text colors
@@ -1411,17 +1405,8 @@ int LclECPaintHook
     if (lFlags & PRF_PRINTCLIENT)
         SelectObject (hDC, hFontOld);
 
-    if (hGlbClr)
-    {
-        if (lpMemClrIni)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbClr); lpMemClrIni = NULL;
-        } // End IF
-
-        // We no longer need this resource
-        DbgGlobalFree (hGlbClr); hGlbClr = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbClr, lpMemClrIni);
 
     // Calculate the result
     return MAKELONG (rcScr.right - rcScr.left, rcScr.bottom - rcScr.top);
@@ -3616,9 +3601,6 @@ LRESULT WINAPI LclEditCtrlWndProc
         {
             HBITMAP hBitMap;        // Handle of the replace caret bitmap
 
-            // Remove all saved window properties
-            EnumPropsW (hWnd, EnumCallbackRemoveProp);
-
             // Get the replace caret bitmap handle (if any)
             hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
 
@@ -3628,8 +3610,8 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // Delete it
                 DeleteObject (hBitMap); hBitMap = NULL;
 
-////////////////// Save the handle
-////////////////SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+                // Save the handle
+                SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
             } // End IF
 
             break;
@@ -4275,11 +4257,8 @@ void PasteAPLChars_EM
         SetClipboardData (CF_PRIVATEFIRST, hGlbText); hGlbText = NULL;
     } // End IF
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
-
-    // We no longer need this storage
-    DbgGlobalFree (hGlbFmts); hGlbFmts = NULL;
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbFmts, lpMemFmts);
 ERROR_EXIT:
 NORMAL_EXIT:
     // We're done with the clipboard and its handle
@@ -4338,11 +4317,8 @@ NORMAL_EXIT:
                 break;
         } // End FOR/SWITCH
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbFmts); hGlbFmts = NULL;
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbFmts, lpMemFmts);
     } // End IF
 } // End PasteAPLChars_EM
 #undef  APPEND_NAME
@@ -5072,11 +5048,8 @@ NORMAL_EXIT:
         // Free the tokens
         Untokenize (lpMemTknHdr);
 
-        // We no Longer need this ptr
-        MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbTknHdr, lpMemTknHdr);
     } // End IF
 
     return lpSymName;

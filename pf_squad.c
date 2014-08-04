@@ -1591,29 +1591,11 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbSet); lpMemSet = NULL;
     } // End IF
 
-    if (hGlbAxis)
-    {
-        if (lpMemAxisHead)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbAxis, lpMemAxisHead);
 
-        // We no longer need this storage
-        DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
-    } // End IF
-
-    if (hGlbOdo)
-    {
-        if (lpMemOdo)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdo); lpMemOdo = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbOdo); hGlbOdo = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdo, lpMemOdo);
 
     return lpYYRes;
 } // End PrimFnDydSquadGlb_EM_YY

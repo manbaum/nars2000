@@ -707,6 +707,7 @@ void CreateNewFontSM
         HDC   hDC;
         WCHAR wszTemp[TXTLEN + 1];
         SIZE  sz;
+        HFONT oldhFont;
 
         // The following code is necessary as the code in CreateNewFontCom
         //   doesn't always calculate the correct average char width.
@@ -716,7 +717,8 @@ void CreateNewFontSM
         hDC = MyGetDC (HWND_DESKTOP);
 
         // Set the font
-        SelectObject (hDC, hFontSM);
+        oldhFont =
+          SelectObject (hDC, hFontSM);
 
         // Set the mapping mode
         SetMapMode (hDC, MM_TEXT);
@@ -732,6 +734,9 @@ void CreateNewFontSM
 
         // Save as the "new" average char width of this font
         GetFSDirAveCharSize (FONTENUM_SM)->cx = sz.cx / TXTLEN;
+
+        // Restore the old HFONT
+        SelectObject (hDC, oldhFont);
 
         // We no longer need this resource
         MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
@@ -2850,9 +2855,6 @@ LRESULT APIENTRY MFWndProc
                 DbgGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
             } // End IF
 
-            // Remove all saved window properties
-            EnumPropsW (hWnd, EnumCallbackRemoveProp);
-
             // Uninitialize window-specific resources
             MF_Delete (hWnd);
 
@@ -3817,22 +3819,26 @@ UBOOL ParseCommandLine
     LPCHAR p;
     WCHAR  wszTempDPFE[1024];
 
-    // Skip over leading space
-    p = SkipWhite (lpCmdLine);
-
-    if (*p)
+    // If there's a command line, ...
+    if (lpCmdLine && lstrlen (lpCmdLine) NE 0)
     {
-        // Copy to temporary buffer
-        A2W (wszTempDPFE, p, sizeof (wszTempDPFE));
+        // Skip over leading space
+        p = SkipWhite (lpCmdLine);
 
-        // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
-        MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
+        if (*p)
+        {
+            // Copy to temporary buffer
+            A2W (wszTempDPFE, p, sizeof (wszTempDPFE));
 
-        // Append the common workspace extension
-        lstrcatW (wszLoadFile, WS_WKSEXT);
+            // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
+            MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
 
-        // Mark as present
-        bCommandLine = TRUE;
+            // Append the common workspace extension
+            lstrcatW (wszLoadFile, WS_WKSEXT);
+
+            // Mark as present
+            bCommandLine = TRUE;
+        } // End IF
     } // End IF
 
     return TRUE;
@@ -4107,7 +4113,14 @@ EXIT4:
     // Mark as all CSO deleted
     bCSO = FALSE;
 
+    // Delete globals created by <ReadIniFileGlb>
+    DeleIniFileGlb ();
+
+    // Delete globals created by <MakePermVars>.
+    DelePermVars ();
+
     DeleteCriticalSection (&CSOPthread);
+    DeleteCriticalSection (&CSOHshTab);
     DeleteCriticalSection (&CSOTokenize);
     DeleteCriticalSection (&CSOPL);
 #if RESDEBUG

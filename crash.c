@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,7 +200,7 @@ LRESULT WINAPI LclCCListboxWndProc
     POINT        ptScr;
     HGLOBAL      hGlbInd,
                  hGlbSel;
-    LPINT        lpInd;
+    LPINT        lpMemInd;
     LPWCHAR      lpSel,
                  p;
 
@@ -222,16 +222,16 @@ LRESULT WINAPI LclCCListboxWndProc
                     hGlbInd = GlobalAlloc (GHND, iSelCnt * sizeof (int));
 
                     // Lock the memory to get a ptr to it
-                    lpInd = GlobalLock (hGlbInd);
+                    lpMemInd = GlobalLock (hGlbInd);
 
                     // Populate the array
-                    SendMessageW (hWnd, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
+                    SendMessageW (hWnd, LB_GETSELITEMS, iSelCnt, (LPARAM) lpMemInd);
 
                     // Loop through the selected items and calculate
                     //   the storage requirement for the collection
                     for (iTotalBytes = i = 0; i < iSelCnt; i++)
                         // The "EOL_LEN +" is for the AC_CR and AC_LF at the end of each line
-                        iTotalBytes += sizeof (WCHAR) * (EOL_LEN + (UINT) SendMessageW (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
+                        iTotalBytes += sizeof (WCHAR) * (EOL_LEN + (UINT) SendMessageW (hWnd, LB_GETTEXTLEN, lpMemInd[i], 0));
 
                     // Allocate storage for the entire collection
                     hGlbSel = GlobalAlloc (GHND | GMEM_DDESHARE, iTotalBytes);
@@ -242,7 +242,7 @@ LRESULT WINAPI LclCCListboxWndProc
                     // Copy the text to the array, separated by a newline
                     for (p = lpSel, i = 0; i < iSelCnt; i++)
                     {
-                        p += (UINT) SendMessageW (hWnd, LB_GETTEXT, lpInd[i], (LPARAM) p);
+                        p += (UINT) SendMessageW (hWnd, LB_GETTEXT, lpMemInd[i], (LPARAM) p);
                         *p++ = AC_CR;
                         *p++ = AC_LF;
                     } // End FOR
@@ -250,11 +250,8 @@ LRESULT WINAPI LclCCListboxWndProc
                     // We no longer need this ptr
                     GlobalUnlock (hGlbSel); lpSel = NULL;
 
-                    // We no longer need this ptr
-                    GlobalUnlock (hGlbInd); lpInd = NULL;
-
-                    // We no longer need this resource
-                    GlobalFree (hGlbInd); hGlbInd = NULL;
+                    // Unlock and free (and set to NULL) a global name and ptr
+                    UnlFreeGlbName (hGlbInd, lpMemInd);
 
                     // Prepare to put the data onto the clipboard
                     OpenClipboard (hWnd);

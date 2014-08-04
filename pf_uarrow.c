@@ -942,77 +942,23 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbWVecRes)
-    {
-        if (lpMemWVecRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbWVecRes); lpMemWVecRes = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVecRes, lpMemWVecRes);
 
-        // We no longer need this storage
-        DbgGlobalFree (hGlbWVecRes); hGlbWVecRes = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdoRes, lpMemOdoRes);
 
-    if (hGlbOdoRes)
-    {
-        if (lpMemOdoRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdoRes); lpMemOdoRes = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbWVecRht, lpMemWVecRht);
 
-        // We no longer need this storage
-        DbgGlobalFree (hGlbOdoRes); hGlbOdoRes = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbOdoRht, lpMemOdoRht);
 
-    if (hGlbWVecRht)
-    {
-        if (lpMemWVecRht)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbWVecRht); lpMemWVecRht = NULL;
-        } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbAxis, lpMemAxisHead);
 
-        // We no longer need this storage
-        DbgGlobalFree (hGlbWVecRht); hGlbWVecRht = NULL;
-    } // End IF
-
-    if (hGlbOdoRht)
-    {
-        if (lpMemOdoRht)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOdoRht); lpMemOdoRht = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbOdoRht); hGlbOdoRht = NULL;
-    } // End IF
-
-    if (hGlbAxis)
-    {
-        if (lpMemAxisHead)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
-    } // End IF
-
-    if (hGlbTmpLft)
-    {
-        if (lpMemTmpLft)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbTmpLft); lpMemTmpLft = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbTmpLft); hGlbTmpLft = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbTmpLft, lpMemTmpLft);
 
     return lpYYRes;
 } // End PrimFnUpArrow_EM_YY

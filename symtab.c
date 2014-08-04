@@ -3153,6 +3153,13 @@ void FreeHshSymTabs
             {
                 if (!lp->htFlags.CharIsValid)
                 {
+                    // If the ptr to the name is valid, ...
+                    if (lp->htGlbName NE NULL)
+                    {
+                        // Free the name
+                        DbgGlobalFree (lp->htGlbName); lp->htGlbName = NULL;
+                    } // End IF
+
                     Assert (lp->htSymEntry->stFlags.Inuse);
 
                     // If the entry has a value

@@ -2010,18 +2010,8 @@ NORMAL_EXIT:
     } // End IF
 
     // If we allocated memory for the index vector, ...
-    if (hGlbAux)
-    {
-        // If it's still locked, ...
-        if (lpMemAux)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbAux); lpMemAux = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbAux); hGlbAux = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbAux, lpMemAux);
 
     // We no longer need this storage
     Myq_clear (&mpqCof);

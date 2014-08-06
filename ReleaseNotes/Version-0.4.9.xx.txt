@@ -1,6 +1,21 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1264 -- Version 0.4.9.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory trunk:
+
+COMMON.C:
+  Update copyright year.
+  Use simpler code instead of the conditional syntax (a?b:c).
+
+DISPDBG.C:
+  In >DisplayTokens>, also display the Syntax Object.
+
+
 Build #1263 -- Version 0.4.9.xx
 -------------------------------
 

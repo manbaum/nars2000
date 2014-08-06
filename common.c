@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -185,21 +185,21 @@ UBOOL IsWhite
     (char c)
 
 {
-    return (c EQ ' ' || c EQ '\t') ? TRUE : FALSE;
+    return (c EQ ' ' || c EQ '\t');
 } // End IsWhite
 
 
 //****************************************************************************
 //  $IsWhiteW
 //
-//  Determine if a char is white space
+//  Determine if a wide char is white space
 //****************************************************************************
 
 UBOOL IsWhiteW
     (WCHAR wc)
 
 {
-    return (wc EQ L' ' || wc EQ WC_HT) ? TRUE : FALSE;
+    return (wc EQ L' ' || wc EQ WC_HT);
 } // End IsWhiteW
 
 

@@ -928,11 +928,13 @@ void DisplayTokens
     for (i = 0; i < iLen; i++, lpMemTknLine++)
     {
         wsprintfW (wszTemp,
-                   L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S",
+                   L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S, so=<%s>",
                    i,
                    *(LPAPLINT) &lpMemTknLine->tkData.tkFloat,
                    lpMemTknLine->tkCharIndex,
-                   GetTokenTypeName (lpMemTknLine->tkFlags.TknType));
+                   GetTokenTypeName (lpMemTknLine->tkFlags.TknType),
+                   (lpMemTknLine->tkSynObj EQ soNONE) ? L"NONE"
+                                                      : soNames[lpMemTknLine->tkSynObj]);
         DbgMsgW (wszTemp);
     } // End FOR
 

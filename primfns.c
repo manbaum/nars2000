@@ -3197,7 +3197,8 @@ LPSIS_HEADER PassSigaphore
 //***************************************************************************
 //  $IsFcnStrDirect
 //
-//  Return TRUE iff the given function strand is DIRECT (immediate fcn or a var
+//  Return TRUE iff the given function strand is DIRECT
+//    (immediate fcn or a var) or an unnamed Train.
 //***************************************************************************
 
 UBOOL IsFcnStrDirect
@@ -3237,6 +3238,23 @@ UBOOL IsFcnStrDirect
                 return FALSE;
         } // End SWITCH
     else
+    // If it's a Function Array, ...
+    if (lpYYFcnStr->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+    {
+        LPFCNARRAY_HEADER lpMemFcn;
+        UBOOL             bRet;
+
+        // Lock the memory to get a ptr to it
+        lpMemFcn = MyGlobalLock (lpYYFcnStr->tkToken.tkData.tkGlbData);
+
+        // Set if it's a Train
+        bRet = (lpMemFcn->fnNameType EQ NAMETYPE_TRN);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpYYFcnStr->tkToken.tkData.tkGlbData); lpMemFcn = NULL;
+
+        return bRet;
+    } else
         return FALSE;
 } // End IsFcnStrDirect
 

@@ -97,6 +97,12 @@ NORMAL_EXIT:
 
     // Save unique number for debugging/tracking purposes
     lpYYRes->YYIndex = ++YYIndex;
+
+    // When debugging a <YYResIsEmpty> memory leak, uncomment
+    //   the following line and substitute the leaking
+    //   <YYIndex> number for XXX in order to trap the <YYAlloc>
+    //   of the allocation leak.
+////Assert (lpYYRes->YYIndex NE 0xXXX);
 #endif
     return lpYYRes;
 } // End _YYAlloc
@@ -320,8 +326,13 @@ UINT YYCountFcnStr
 
                 Assert (lpMemHdrFcn->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE);
 
-                // Accumulate tokens
-                TknCount += lpMemHdrFcn->tknNELM;
+                // If this is a Train, ...
+                if (lpMemHdrFcn->fnNameType EQ NAMETYPE_TRN)
+                    // Accumulate a single token for a Train
+                    TknCount++;
+                else
+                    // Accumulate multiple tokens
+                    TknCount += lpMemHdrFcn->tknNELM;
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
@@ -763,9 +774,6 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
 
             Assert (GetPtrTypeDir (hGlbFcn) EQ PTRTYPE_HGLOBAL);
 
-            // In case this is a Train with SRCIFlag set, ...
-            DbgIncrRefCntDir_PTB (hGlbFcn);
-
             // Lock the memory to get a ptr to it
             lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
@@ -781,8 +789,10 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
                 // Count in one token
                 TknCount = 1;
 
-                // Count in another use
-                DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbFcn));
+                // If it's a named Train, ...
+                if (IsTknNamedFcnOpr (lpToken))
+                    // Count in another use
+                    DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbFcn));
 
                 // Fill in the token
                 YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
@@ -823,9 +833,6 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL; lpMemFcn = NULL;
-
-            // In case this is a Train with SRCIFlag set, ...
-            FreeResultGlobalDFLV (hGlbFcn);
 
             break;
         } // End FCNARRAY_HEADER_SIGNATURE

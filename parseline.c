@@ -4590,9 +4590,7 @@ PARSELINE_DONE:
             Assert (lpplOrgLftStk EQ &lpMemPTD->lpplLftStk[-1]);
             Assert (lpplOrgRhtStk EQ &lpMemPTD->lpplRhtStk[-1]);
 
-            // Get the current & LstRht SynObj values
-////////////curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
-////////////lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+            // N.B.:  DO NOT RELOAD lstSynObj as we are relying on the old value
 #ifdef DEBUG2
             dprintfWL0 (L"Stmt Done:  curSynObj (%s), lstSynObj (%s)",
                         soNames[curSynObj],
@@ -5570,9 +5568,11 @@ PL_YYLEX_FCNNAMED:
                         lpplYYLval->tkToken.tkFlags.bAssignName = TRUE;
 
                     // If we should not restore the token stack ptr,
-                    //   and if we're not assigning into this name, ...
+                    //   and if we're not assigning into this name,
+                    //   and we're not in the middle of "for I :in", ...
                     if (!bRestoreStk
-                     && !lpplYYLval->tkToken.tkFlags.bAssignName)
+                     && !lpplYYLval->tkToken.tkFlags.bAssignName
+                     &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
                     {
                         // If it's an immediate, ...
                         if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
@@ -5590,7 +5590,13 @@ PL_YYLEX_FCNNAMED:
                             // Increment the refcnt
                             IncrRefCntTkn (&lpplYYLval->tkToken);
                         } // End IF/ELSE
-                    } // End IF
+
+                        // Mark it as an Array so it can't be re-assigned.
+                        lpplYYLval->tkToken.tkSynObj = soA;
+                    } else
+                    {
+                        Assert (lpplYYLval->tkToken.tkSynObj EQ soNAM);
+                    } // End IF/ELSE
 
                     break;
 
@@ -5599,13 +5605,12 @@ PL_YYLEX_FCNNAMED:
                     lpplYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
                     lpplYYLval->tkToken.tkSynObj = soNF;
 
-                    // If the name is assigned into, or
-                    //   the preceding token is TKT_CS_FOR2, ...
-                    if (lpplLocalVars->lptkNext->tkFlags.bAssignName
-                     || lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_CS_FOR2)
-                        break;
-                    else
+                    // If we're not assigning into this name,
+                    //   and we're not in the middle of "for I :in", ...
+                    if (!lpplYYLval->tkToken.tkFlags.bAssignName
+                     &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
                         goto PL_YYLEX_FCNNAMED;
+                    break;
 
                 case NAMETYPE_FN12:
                     // Call this one TKT_FCNNAMED
@@ -5628,63 +5633,58 @@ PL_YYLEX_FCNNAMED:
                     } else
                         lpplYYLval->tkToken.tkSynObj = soF;
 
-                    // If the name is assigned into, or
-                    //   the preceding token is TKT_CS_FOR2, ...
-                    if (lpplLocalVars->lptkNext->tkFlags.bAssignName
-                     || lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_CS_FOR2)
-                        break;
-                    else
+                    // If we're not assigning into this name,
+                    //   and we're not in the middle of "for I :in", ...
+                    if (!lpplYYLval->tkToken.tkFlags.bAssignName
+                     &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
                         goto PL_YYLEX_FCNNAMED;
+                    break;
 
                 case NAMETYPE_OP1:
                     // Call this one TKT_OP1NAMED
                     lpplYYLval->tkToken.tkFlags.TknType = TKT_OP1NAMED;
 
-                    // If the name is assigned into, or
-                    //   the preceding token is TKT_CS_FOR2, ...
-                    if (lpplLocalVars->lptkNext->tkFlags.bAssignName
-                     || lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_CS_FOR2)
-                        break;
-                    else
+                    // If we're not assigning into this name,
+                    //   and we're not in the middle of "for I :in", ...
+                    if (!lpplYYLval->tkToken.tkFlags.bAssignName
+                     &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
                         goto PL_YYLEX_NAMEOP1;
+                    break;
 
                 case NAMETYPE_OP2:
                     // Call this one TKT_OP2NAMED
                     lpplYYLval->tkToken.tkFlags.TknType = TKT_OP2NAMED;
 
-                    // If the name is assigned into, or
-                    //   the preceding token is TKT_CS_FOR2, ...
-                    if (lpplLocalVars->lptkNext->tkFlags.bAssignName
-                     || lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_CS_FOR2)
-                        break;
-                    else
+                    // If we're not assigning into this name,
+                    //   and we're not in the middle of "for I :in", ...
+                    if (!lpplYYLval->tkToken.tkFlags.bAssignName
+                     &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
                         goto PL_YYLEX_NAMEOP2;
+                    break;
 
                 case NAMETYPE_OP3:
                     // Call this one TKT_OP3NAMED
                     lpplYYLval->tkToken.tkFlags.TknType = TKT_OP3NAMED;
 
-                    // If the name is assigned into, or
-                    //   the preceding token is TKT_CS_FOR2, ...
-                    if (lpplLocalVars->lptkNext->tkFlags.bAssignName
-                     || lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_CS_FOR2)
-                        break;
-                    else
+                    // If we're not assigning into this name,
+                    //   and we're not in the middle of "for I :in", ...
+                    if (!lpplYYLval->tkToken.tkFlags.bAssignName
+                     &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
                         goto PL_YYLEX_NAMEOP3;
+                    break;
 
                 case NAMETYPE_TRN:
                     // Call this one TKT_FCNNAMED
                     lpplYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
 
-                    Assert (lpplYYLval->tkToken.tkSynObj EQ soF);
+                    lpplYYLval->tkToken.tkSynObj = soF;
 
-                    // If the name is assigned into, or
-                    //   the preceding token is TKT_CS_FOR2, ...
-                    if (lpplLocalVars->lptkNext->tkFlags.bAssignName
-                     || lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_CS_FOR2)
-                        break;
-                    else
+                    // If we're not assigning into this name,
+                    //   and we're not in the middle of "for I :in", ...
+                    if (!lpplYYLval->tkToken.tkFlags.bAssignName
+                     &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
                         goto PL_YYLEX_FCNNAMED;
+                    break;
 
                 case NAMETYPE_LST:
                 defstop
@@ -5692,9 +5692,9 @@ PL_YYLEX_FCNNAMED:
             } // End SWITCH
 
             // If the name is assigned into, or
-            //   the preceding token is TKT_CS_FOR2, ...
+            //   the next token is TKT_CS_IN, ...
             if (lpplLocalVars->lptkNext->tkFlags.bAssignName
-             || lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_CS_FOR2)
+             || lpplLocalVars->lptkNext[1].tkFlags.TknType EQ TKT_CS_IN)
                 // Make it a NAME
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 

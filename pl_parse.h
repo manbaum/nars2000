@@ -35,8 +35,7 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
             YYStranding:1,          //      00000010:  Item is in the process of being stranded
 #ifdef DEBUG
             :3,                     //      000000E0:  Available bits
-            YYIndex:23,             //      7FFFFF00:  Index #
-            YYFlag:1;               //      80000000:  Flag to distinguish YYAlloc from yylex
+            YYIndex:24;             //      FFFFFF00:  Index #
 #else
             :27;                    //      FFFFFFE0:  Available bits
 #endif

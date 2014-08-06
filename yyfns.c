@@ -94,7 +94,6 @@ LPPL_YYSTYPE _YYAlloc
 NORMAL_EXIT:
 #ifdef DEBUG
     lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
-    lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
 
     // Save unique number for debugging/tracking purposes
     lpYYRes->YYIndex = ++YYIndex;
@@ -118,7 +117,6 @@ void YYCopy
 {
 #ifdef DEBUG
     UINT   YYIndex,
-           YYFlag,
            SILevel,
            uLineNum;
     LPCHAR lpFileName;
@@ -129,7 +127,6 @@ void YYCopy
 #ifdef DEBUG
     // Save the old values
     YYIndex    = lpYYDst->YYIndex;
-    YYFlag     = lpYYDst->YYFlag;
     SILevel    = lpYYDst->SILevel;
     lpFileName = lpYYDst->lpFileName;
     uLineNum   = lpYYDst->uLineNum;
@@ -138,7 +135,6 @@ void YYCopy
     lpYYDst->YYInuse = TRUE;            // Retain YYInuse flag
 #ifdef DEBUG
     lpYYDst->YYIndex    = YYIndex;      // Retain YYIndex
-    lpYYDst->YYFlag     = YYFlag;       // ...    YYFlag
     lpYYDst->SILevel    = SILevel;      // ...    SILevel
     lpYYDst->lpFileName = lpFileName;   // ...    ptr to filename
     lpYYDst->uLineNum   = uLineNum;     // ...    line #
@@ -595,7 +591,6 @@ LPPL_YYSTYPE YYCopyFcn
                     YYFcn.YYCopyArray               = lpYYArg[i].YYCopyArray;
 ////////////////////YYFcn.YYAvail                   = 0;        // Already zero from = {0}
 ////////////////////YYFcn.YYIndex                   = 0;        // (Factored out below)
-////////////////////YYFcn.YYFlag                    = 0;        // Already zero from = {0}
 ////////////////////YYFcn.lpYYFcnBase               = NULL;     // Already zero from = {0}
                     YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
                 } else
@@ -753,7 +748,6 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
 ////////////YYFcn.YYCopyArray               = 0;                // Already zero from = {0}
 ////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
 ////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
-////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
 ////////////YYFcn.lpYYFcnBase               = NULL;             // Already zero from = {0}
             YYFcn.lpYYStrandBase            = lpYYArgI->lpYYStrandBase;
 
@@ -802,7 +796,6 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
 ////////////////YYFcn.YYCopyArray               = 0;                // Already zero from = {0}
 ////////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
 ////////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
-////////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
 ////////////////YYFcn.lpYYFcnBase               = NULL;             // Already zero from = {0}
                 YYFcn.lpYYStrandBase            = lpYYArgI->lpYYStrandBase;
 
@@ -878,7 +871,6 @@ LPPL_YYSTYPE YYCopyGlbFcn_PTB
 ////////////YYFcn.YYCopyArray               = 0;                // Already zero from = {0}
 ////////////YYFcn.YYAvail                   = 0;                // Already zero from = {0}
 ////////////YYFcn.YYIndex                   = 0;                // (Factored out below)
-////////////YYFcn.YYFlag                    = 0;                // Already zero from = {0}
 ////////////YYFcn.lpYYFcnBase               = NULL;             // Already zero from = {0}
             YYFcn.lpYYStrandBase            = lpYYArgI->lpYYStrandBase;
 

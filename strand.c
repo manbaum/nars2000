@@ -2544,7 +2544,6 @@ LPPL_YYSTYPE MakeNameFcnOpr_YY
     lpYYRes->TknCount    = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex     = NEG1U;
-    lpYYRes->YYFlag      = 0;
 #endif
     return lpYYRes;
 } // End MakeNameFcnOpr_YY
@@ -2733,7 +2732,6 @@ LPPL_YYSTYPE MakePrimOp123_YY
     lpYYRes->TknCount    = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex     = NEG1U;
-    lpYYRes->YYFlag      = 0;
 #endif
     return lpYYRes;
 } // End MakePrimOp123_YY
@@ -3018,7 +3016,6 @@ LPPL_YYSTYPE PushList_YY
 ////////YYTmp.Indirect                  = FALSE;// Already zero from = {0}
 ////////YYTmp.Avail                     = 0;    // Already zero from = {0}
 ////////YYTmp.YYIndex                   = 0;    // Already zero from = {0}
-////////YYTmp.YYFlag                    = 0;    // Already zero from = {0}
 ////////YYTmp.lpYYFcnBase               = NULL; // Already zero from = {0]
         YYTmp.lpYYStrandBase            = lpplLocalVars->lpYYStrArrBase[STRAND_LST];
         lpYYArg = &YYTmp;

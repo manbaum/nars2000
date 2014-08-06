@@ -5376,9 +5376,6 @@ LPPL_YYSTYPE _pl_yylex
      UBOOL         bRestoreStk)     // TRUE iff we restore the token stack upon exit
 
 {
-#ifdef DEBUG
-    static UINT YYIndex = 0;        // Unique index for each YYRes
-#endif
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
     LPPL_YYSTYPE lpplYYLval;        // Ptr to current object
@@ -5394,15 +5391,6 @@ LPPL_YYSTYPE _pl_yylex
 
     // Allocate a new YYRes
     lpplYYLval = YYAlloc ();
-
-#ifdef DEBUG
-    lpplYYLval->YYIndex         = ++YYIndex;
-    lpplYYLval->YYFlag          = TRUE;         // Mark as a pl_yylex Index
-    lpplYYLval->SILevel         = lpMemPTD->SILevel;
-    lpplYYLval->lpFileName      = FileNameOnly (__FILE__);
-    lpplYYLval->uLineNum        = __LINE__;
-#endif
-
 PL_YYLEX_START:
     Assert (IsValidPtr (lpplLocalVars->lptkNext, sizeof (lpplLocalVars->lptkNext[0])));
     Assert ((*(LPUINT) lpplLocalVars->lptkNext) NE 0xfeeefeee);

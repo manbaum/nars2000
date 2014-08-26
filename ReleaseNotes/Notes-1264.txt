@@ -10,4 +10,4 @@ COMMON.C:
   Use simpler code instead of the conditional syntax (a?b:c).
 
 DISPDBG.C:
-  In >DisplayTokens>, also display the Syntax Object.
+  In <DisplayTokens>, also display the Syntax Object.

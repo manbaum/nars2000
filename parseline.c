@@ -1067,6 +1067,8 @@ LPPL_YYSTYPE plRedA_HY
 
     // Convert the token type of the last right object to an immediate function
     lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
+    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+    lpplYYLstRht->tkToken.tkSynObj        = soF;
 
     // If the last right object is in the process of stranding, ...
     if (lpplYYLstRht->YYStranding)
@@ -1273,6 +1275,8 @@ LPPL_YYSTYPE plRedDOP_HY
 
     // Convert the token type of the last right object to an immediate function
     lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
+    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+    lpplYYLstRht->tkToken.tkSynObj        = soF;
 
     return plRedDOP_RhtOper (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedDOP_HY
@@ -1295,6 +1299,8 @@ LPPL_YYSTYPE plRedJ_HY
 
     // Convert the token type of the last right object to an immediate function
     lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
+    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+    lpplYYLstRht->tkToken.tkSynObj        = soF;
 
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedJ_HY
@@ -1850,8 +1856,11 @@ LPPL_YYSTYPE plRedMF_A
         YYFree (lpplLocalVars->lpplYYArgCurry); lpplLocalVars->lpplYYArgCurry = NULL;
     } // End IF
 
+    // Free YYCopyArray'ed elements
+    YYFreeArray (lpplYYCurObj);
+
     // Free the function (including YYFree)
-    YYFreeArray (lpplYYCurObj); FreeYYFcn1  (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    FreeYYFcn1  (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // Free and YYFree the last right arg
     FreeResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -2375,6 +2384,8 @@ LPPL_YYSTYPE plRedF_HY
 
     // Convert the token type of the last right object to an immediate monadic operator
     lpplYYLstRht->tkToken.tkFlags.TknType = TKT_OP1IMMED;
+    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
+    lpplYYLstRht->tkToken.tkSynObj        = soMOP;
 
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedF_HY
@@ -5431,8 +5442,6 @@ PL_YYLEX_START:
 
         case TKT_FCNNAMED:
 PL_YYLEX_FCNNAMED:
-////        // If we should not restore the token stack ptr, ...
-////        if (!bRestoreStk
             if (IsTknNamedFcnOpr (&lpplYYLval->tkToken)             // Is a named function/operator
              && !lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)  // Not a direct fcn/opr
             {
@@ -5480,7 +5489,7 @@ PL_YYLEX_FCNNAMED:
                             // Copy to the current object
                             lpplYYLval = lpYYFcn;
                             lpYYFcn = NULL;
-                        } // End IF
+                } // End IF
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
@@ -5594,9 +5603,7 @@ PL_YYLEX_FCNNAMED:
                         // Mark it as an Array so it can't be re-assigned.
                         lpplYYLval->tkToken.tkSynObj = soA;
                     } else
-                    {
-                        Assert (lpplYYLval->tkToken.tkSynObj EQ soNAM);
-                    } // End IF/ELSE
+                        lpplYYLval->tkToken.tkSynObj = soNAM;
 
                     break;
 

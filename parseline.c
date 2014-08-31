@@ -1077,6 +1077,8 @@ LPPL_YYSTYPE plRedA_HY
 
         // Convert the token type of the last right object to an immediate function
         lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.TknType = TKT_FCNIMMED;
+        lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+        lpplYYLstRht->lpYYFcnBase->tkToken.tkSynObj        = soF;
     } // End IF
 
     return plRedA_F (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -1698,6 +1700,8 @@ LPPL_YYSTYPE plRedA_HR
 
     // Convert the token type of the last right object to an immediate function
     lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
+    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+    lpplYYLstRht->tkToken.tkSynObj        = soF;
 
     return plRedA_F (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedA_HR
@@ -4224,6 +4228,7 @@ PARSELINE_REDUCE:
                         // Change it to a primitive function
                         lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
                         lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+                        lpplYYLstRht->tkToken.tkSynObj        = soF;
 
                         // If the last right object is in the process of stranding, ...
                         if (lpplYYLstRht->YYStranding)
@@ -4245,6 +4250,7 @@ PARSELINE_REDUCE:
                                 // Change it to a primitive function
                                 lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.TknType = TKT_FCNIMMED;
                                 lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+                                lpplYYLstRht->lpYYFcnBase->tkToken.tkSynObj        = soF;
                             } else
                             // If the function base is a monadic or dyadic operator, ...
                             if ((bOp1 || bOp2)
@@ -4254,6 +4260,7 @@ PARSELINE_REDUCE:
                                 // Change it to a primitive function
                                 lpplYYLstRht->lpYYFcnBase[1].tkToken.tkFlags.TknType = TKT_FCNIMMED;
                                 lpplYYLstRht->lpYYFcnBase[1].tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+                                lpplYYLstRht->lpYYFcnBase[1].tkToken.tkSynObj        = soF;
                             } else
                             // If the function base is a dyadic operator, ...
                             if (bOp2
@@ -4263,6 +4270,7 @@ PARSELINE_REDUCE:
                                 // Change it to a primitive function
                                 lpplYYLstRht->lpYYFcnBase[2].tkToken.tkFlags.TknType = TKT_FCNIMMED;
                                 lpplYYLstRht->lpYYFcnBase[2].tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+                                lpplYYLstRht->lpYYFcnBase[2].tkToken.tkSynObj        = soF;
                             } // End IF/ELSE/...
                         } // End IF
                     } // End IF/ELSE
@@ -4519,11 +4527,29 @@ PARSELINE_ERROR:
                 // Get the next item from the right stack
                 lpYYRes = POPRIGHT;
 
-                // If it's a
-
                 // If it's a function/operator, ...
                 if (IsTknFcnOpr (&lpYYRes->tkToken))
                 {
+                    // If this function is in the process of being stranded, ...
+                    if (lpYYRes->YYStranding)
+                    {
+                        LPPL_YYSTYPE lpYYRes2;
+
+                        // Turn this function strand into a function
+                        lpYYRes2 =
+                          DbgMakeFcnStrand_EM_YY (lpYYRes, NAMETYPE_FN12, FALSE);
+                        // YYFree the function
+                        YYFree (lpYYRes); lpYYRes = NULL;
+
+                        // If not defined, ...
+                        if (!lpYYRes2)
+                            goto PARSELINE_ERROR;
+
+                        // Copy to the function
+                        lpYYRes = lpYYRes2;
+                        lpYYRes2 = NULL;
+                    } // End IF
+
                     // Free the function (including YYFree)
                     YYFreeArray (lpYYRes); FreeYYFcn1 (lpYYRes); lpYYRes = NULL;
                 } else
@@ -4580,8 +4606,18 @@ PARSELINE_ERROR:
                 YYFree (plLocalVars.lpplYYArgCurry); plLocalVars.lpplYYArgCurry = NULL;
             } // End IF
 
-            // Set the exit type
-            plLocalVars.ExitType = EXITTYPE_ERROR;
+            // Check for ResetFlag
+            if (lpMemPTD->lpSISCur
+             && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
+            {
+                // Set the exit type
+                plLocalVars.ExitType = TranslateResetFlagToExitType (lpMemPTD->lpSISCur->ResetFlag);
+
+                // Clear this flag so we don't execute []ELX
+                bActOnErrors = FALSE;
+            } else
+                // Set the exit type
+                plLocalVars.ExitType = EXITTYPE_ERROR;
 
             // Mark as in error
             uRet = 1;

@@ -301,6 +301,8 @@ UINT YYCountFcnStr
     // Loop through the tokens associated with this symbol
     for (uCnt = TknCount = 0; uCnt < uLen; uCnt++)
     {
+        Assert (lpYYArg[uCnt].tkToken.tkFlags.TknType NE TKT_UNUSED);
+
         // If the function is indirect, recurse
         if (lpYYArg[uCnt].YYIndirect)
             TknCount += YYCountFcnStr (lpYYArg[uCnt].lpYYFcnBase);
@@ -416,92 +418,6 @@ UINT YYCountFcnGlb
 
 
 //***************************************************************************
-//  $YYIsFcnStrAxis
-//
-//  Check for an axis operator in a function strand
-//***************************************************************************
-
-UBOOL YYIsFcnStrAxis
-    (LPPL_YYSTYPE lpYYArg)          // Ptr to function strand
-
-{
-    UBOOL             bRet;         // TRUE iff the result is valid
-    HGLOBAL           hGlbFcn;      // Function array global memory handle
-    LPFCNARRAY_HEADER lpMemHdrFcn;  // Ptr to function array header global memory
-    LPPL_YYSTYPE      lpMemFcn;     // Ptr to function array global memory
-
-    /*
-        The only cases we need to consider are as follows:
-
-            Token           Type        Imm/Glb     TknCount
-
-        1.  TKT_FCNIMMED    /           Imm             2
-            TKT_AXISIMMED   [2]         Imm             1
-
-        2.  TKT_FCNNAMED    /           Imm             2
-            TKT_AXISIMMED   [2]         Imm             1
-
-        3.  TKT_FCNARRAY    /[2]        Glb             1
-
-        4.  TKT_FCNNAMED    /[2]        Glb             1
-
-     */
-
-    // SPlit cases based upon the token type
-    switch (lpYYArg->tkToken.tkFlags.TknType)
-    {
-        case TKT_FCNIMMED:
-            // Is there another token?
-            if (lpYYArg->TknCount > 1)
-                // Is the next token an axis value?
-                return (lpYYArg[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-                     || lpYYArg[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY);
-            else
-                return FALSE;
-
-        case TKT_FCNNAMED:
-            // If the named op is immediate, ...
-            if (lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
-            {
-                // Is there another token?
-                if (lpYYArg->TknCount > 1)
-                    // Is the next token an axis value?
-                    return (lpYYArg[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-                         || lpYYArg[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY);
-                else
-                    return FALSE;
-            } // End IF
-
-            // Fall through to common global case
-
-        case TKT_FCNARRAY:
-            // Get the global memory handle
-            hGlbFcn = lpYYArg->tkToken.tkData.tkSym->stData.stGlbData;
-
-            // Lock the memory to get a ptr to it
-            lpMemHdrFcn = MyGlobalLock (hGlbFcn);
-
-            Assert (lpMemHdrFcn->tknNELM > 1);
-
-            // Skip over the header to the data
-            lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
-
-            // Is the next token an axis value?
-            bRet = (((LPPL_YYSTYPE) lpMemFcn)[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-                 || ((LPPL_YYSTYPE) lpMemFcn)[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL; lpMemFcn = NULL;
-
-            return bRet;
-
-        defstop
-            return FALSE;
-    } // End SWITCH
-} // End YYIsFcnStrAxis
-
-
-//***************************************************************************
 //  $YYCopyFcn
 //
 //  Copy one or more PL_YYSTYPE functions to a memory object
@@ -543,6 +459,8 @@ LPPL_YYSTYPE YYCopyFcn
         lpYYArgI = &lpYYArg[i];
 #endif
         Assert (YYCheckInuse (&lpYYArg[i]));
+
+        Assert (lpYYArg[i].tkToken.tkFlags.TknType NE TKT_UNUSED);
 
         // If the function base is valid, ...
         if (lpYYArg[i].lpYYFcnBase)
@@ -1021,6 +939,8 @@ void YYFreeGlbFcn
             // Loop through the function array
             for (uCnt = 0; uCnt < uLen; uCnt++, lpMemFcn++)
             {
+                Assert (lpMemFcn->tkToken.tkFlags.TknType NE TKT_UNUSED);
+
                 // If the token is named, ...
                 //   and it's a direct function, ...
                 if (IsTknNamed (&lpMemFcn->tkToken)

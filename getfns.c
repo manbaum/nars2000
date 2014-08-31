@@ -2995,7 +2995,7 @@ UINT GetSignatureGlb_PTB
 
             Assert (lpSymEntry->stFlags.Imm EQ FALSE);
 
-            // Clear the ptr type bits
+            // Copy the HGLOBAL
             hGlbLcl = lpSymEntry->stData.stGlbData;
 
             break;

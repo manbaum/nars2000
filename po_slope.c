@@ -845,7 +845,7 @@ RESTART_EXCEPTION:
                     AttrsOfToken (&tkLftArg, &aplTypeTmp, NULL, NULL, NULL);
 
                     // Check for blow up
-                    if (aplTypeTmp NE aplTypeRes)
+                    if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeTmp])
                     {
                         // It's now a aplTypeTmp result
                         aplTypeRes = aplTypeTmp;
@@ -1136,7 +1136,7 @@ RESTART_EXCEPTION:
                     AttrsOfToken (&tkRhtArg, &aplTypeTmp, NULL, NULL, NULL);
 
                     // Check for blow up
-                    if (aplTypeTmp NE aplTypeRes)
+                    if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeTmp])
                     {
                         // It's now a aplTypeTmp result
                         aplTypeRes = aplTypeTmp;

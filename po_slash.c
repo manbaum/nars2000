@@ -1085,7 +1085,7 @@ RESTART_EXCEPTION:
                          || IsGlbNum (aplTypeRes));
 
                     // If we blew up from RAT to VFP, ...
-                    if (aplTypeRes NE aplTypeNew)
+                    if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeNew])
                     {
                         // Initialize the temp
                         mpfr_init0 (&aplVfpRht);

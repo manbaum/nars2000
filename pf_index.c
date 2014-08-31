@@ -3009,7 +3009,7 @@ UBOOL ArrayIndexSetSingLst_EM
         lpMemNam = VarArrayDataFmBase (lpMemNam);
 
         // If the types are different, we need to type promote the name arg
-        if (aplTypeRes NE aplTypeNam)
+        if (aplTypeNam NE aTypePromote[aplTypeNam][aplTypeRes])
         {
             Assert (!bSysVar);
 
@@ -3130,9 +3130,9 @@ UBOOL ArrayIndexSetSingLst_EM
     if (!*lphGlbRes)
         goto ERROR_EXIT;
 
-    // If the types are different, we need to type promote the result
-    if (aplTypeRes NE aplTypeNam                        // Type are different,
-      && (!(bSysVar && IsEmpty (aplNELMSubLst))         // and not an empty []var
+    // If the types are different, we need to type promote the name
+    if (aplTypeNam NE aTypePromote[aplTypeNam][aplTypeRes]  // Type are different,
+      && (!(bSysVar && IsEmpty (aplNELMSubLst))             // and not an empty []var
       && !TypePromoteGlb_EM (lphGlbRes, aplTypeRes, lptkFunc)))
           goto ERROR_EXIT;
 

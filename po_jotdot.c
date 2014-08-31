@@ -662,7 +662,7 @@ RESTART_JOTDOT:
                                               lpPrimSpec))
                 {
                     // Check for type promotion
-                    if (aplTypeRes NE aplTypeNew)
+                    if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeNew])
                     {
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

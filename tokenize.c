@@ -2070,9 +2070,15 @@ UBOOL scClnDone
     // Putative start of label
     uLblIni = uVar;
 
-    // If the tokens up to this point have all been alpha, ...
+    // If the chars up to this point have all been alpha, ...
     for (        ; uVar < uLen; uVar++)
     if (lptkLocalVars->lpMemClrIni[uVar].colIndex NE TKCOL_ALPHA)
+        break;
+
+    // If we're not at the end and the remaining chars are spaces, ...
+    if (uVar < uLen)
+    for (        ; uVar < uLen; uVar++)
+    if (lptkLocalVars->lpMemClrIni[uVar].colIndex NE TKCOL_SPACE)
         break;
 
     // Save the column index

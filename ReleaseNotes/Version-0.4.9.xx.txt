@@ -1,6 +1,17 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1269 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug In Displayability Of Assignment Of Name
+
+Directory trunk:
+
+ASSIGN.C:
+  In <AssignName_EM>, mark the source as non-displayable, not the name.
+
+
 Build #1268 -- Version 0.4.9.xx
 -------------------------------
 

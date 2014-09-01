@@ -242,11 +242,11 @@ UBOOL AssignName_EM
 
             // Include the source's .ImmType flags
             lptkNam->tkData.tkSym->stFlags.ImmType =
-                           lptkSrc->tkFlags.ImmType;
+                          lptkSrc->tkFlags.ImmType;
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
-                           lptkSrc->tkData.tkLongest;
+                          lptkSrc->tkData.tkLongest;
             break;
 
         case TKT_FCNIMMED:
@@ -260,7 +260,7 @@ UBOOL AssignName_EM
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
-                           lptkSrc->tkData.tkLongest;
+                          lptkSrc->tkData.tkLongest;
             break;
 
         case TKT_OP1IMMED:
@@ -274,7 +274,7 @@ UBOOL AssignName_EM
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
-                           lptkSrc->tkData.tkLongest;
+                          lptkSrc->tkData.tkLongest;
             break;
 
         case TKT_OP2IMMED:
@@ -288,7 +288,7 @@ UBOOL AssignName_EM
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
-                           lptkSrc->tkData.tkLongest;
+                          lptkSrc->tkData.tkLongest;
             break;
 
         case TKT_OP3IMMED:
@@ -302,7 +302,7 @@ UBOOL AssignName_EM
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
-                           lptkSrc->tkData.tkLongest;
+                          lptkSrc->tkData.tkLongest;
             break;
 
         case TKT_VARARRAY:
@@ -396,7 +396,7 @@ UBOOL AssignName_EM
         lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_VAR;
 
     // Mark as not displayable
-    lptkNam->tkFlags.NoDisplay = TRUE;
+    lptkSrc->tkFlags.NoDisplay = TRUE;
 
 #ifdef DEBUG
 {

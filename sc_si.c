@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ UBOOL CmdSiSinlCom_EM
             case DFNTYPE_FCN:
 #ifndef DEBUG
                 // If it's a Magic Function/Operator, skip it
-                if (lpSISCur->PermFn)
+                if (lpSISCur->bMFO)
                     break;
 #endif
                 // Lock the memory to get a ptr to it

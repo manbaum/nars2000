@@ -80,43 +80,40 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     LPTOKEN        lptkStart,           // 0C:  Ptr to first available entry after the header
                    lptkNext,            // 10:  Ptr to next  ...
                    lptkEnd,             // 14:  Ptr to end of token stream
-                   lptkEOS,             // 18:  ...    EOS ...
-                   lptkStop;            // 1C:  Ptr to stop token if LookAhead
-    LPAPLCHAR      lpwszLine;           // 20:  Ptr to line text (zero-terminated)
-    UINT           tkErrorCharIndex,    // 24:  Error char index
-                   tkLACharIndex;       // 28:  LookAhead char index
-    UINT           plNameType:4,        // 2C:  0000000F:  Object name type (see NAME_TYPES)
-                   bLookAhead:1,        //      00000010:  TRUE iff looking for object type within surrounding parens
-                   ExitType:4,          //      000001E0:  Exit Type (see EXIT_TYPES)
-                   bRet:1,              //      00000200   Various function results
-                   bStopExec:1,         //      00000400   TRUE iff we're to stop executing this line
-                   bRestart:1,          //      00000800   TRUE iff we're to restart from a Control Structure
-                   bExec1Stmt:1,        //      00001000   TRUE iff we're to execute one stmt only
-                   bReturn:1,           //      00002000   TRUE iff we're faking a :return as {goto} 0
-                   bYYERROR:1,          //      00004000   TRUE iff there's been a YYERROR
-                   bSelSpec:1,          //      00008000   TRUE iff we're inside Selective Specification
-                   bIniSpec:1,          //      00010000   TRUE iff we have yet to see the first name inside Selective Specification
-                   bAFO:1,              //      00020000   TRUE iff we're parsing an AFO
-                   bAfoCtrlStruc:1,     //      00040000:  TRUE iff Ctrl Strucs in AFO
-                   bMFO:1,              //      00080000:  TRUE iff this is an MFO
-                   :12;                 //      FFF00000:  Available bits
-    UBOOL          bCtrlBreak;          // 30:  TRUE iff Ctrl-Break pressed
-    LPPL_YYSTYPE   lpYYStrArrStart[STRAND_LEN],   // 34:  Strand stack start (static) (16 bytes)
-                   lpYYStrArrBase [STRAND_LEN],   // 44:  ...          base (dynamic) ...
-                   lpYYStrArrNext [STRAND_LEN];   // 54:  ...          next token (dynamic)
-    struct tagPERTABDATA *lpMemPTD;     // 5C:  Ptr to PerTabData global memory
-    HWND           hWndSM;              // 64:  Window handle to Session Manager
-    LPPL_YYSTYPE   lpplYYArgCurry,      // 68:  Ptr to left argument curry
-                   lpplYYFcnCurry,      // 6C:  ...         function ...
-                   lpplYYIdxCurry;      // 70:  ...         index    ...
+                   lptkEOS;             // 18:  ...    EOS ...
+    LPAPLCHAR      lpwszLine;           // 1C:  Ptr to line text (zero-terminated)
+    UINT           tkErrorCharIndex;    // 20:  Error char index
+    UINT           plNameType:4,        // 24:  0000000F:  Object name type (see NAME_TYPES)
+                   ExitType:4,          //      000000F0:  Exit Type (see EXIT_TYPES)
+                   bRet:1,              //      00000100   Various function results
+                   bStopExec:1,         //      00000200   TRUE iff we're to stop executing this line
+                   bRestart:1,          //      00000400   TRUE iff we're to restart from a Control Structure
+                   bExec1Stmt:1,        //      00000800   TRUE iff we're to execute one stmt only
+                   bReturn:1,           //      00001000   TRUE iff we're faking a :return as {goto} 0
+                   bYYERROR:1,          //      00002000   TRUE iff there's been a YYERROR
+                   bSelSpec:1,          //      00004000   TRUE iff we're inside Selective Specification
+                   bIniSpec:1,          //      00008000   TRUE iff we have yet to see the first name inside Selective Specification
+                   bAFO:1,              //      00010000   TRUE iff we're parsing an AFO
+                   bAfoCtrlStruc:1,     //      00020000:  TRUE iff Ctrl Strucs in AFO
+                   bMFO:1,              //      00040000:  TRUE iff this is an MFO
+                   :13;                 //      FFF80000:  Available bits
+    UBOOL          bCtrlBreak;          // 28:  TRUE iff Ctrl-Break pressed
+    LPPL_YYSTYPE   lpYYStrArrStart[STRAND_LEN],   // 2C:  Strand stack start (static) (16 bytes)
+                   lpYYStrArrBase [STRAND_LEN],   // 3C:  ...          base (dynamic) ...
+                   lpYYStrArrNext [STRAND_LEN];   // 4C:  ...          next token (dynamic)
+    HWND           hWndSM;              // 5C:  Window handle to Session Manager
+    LPPL_YYSTYPE   lpplYYArgCurry,      // 60:  Ptr to left argument curry
+                   lpplYYFcnCurry,      // 64:  ...         function ...
+                   lpplYYIdxCurry;      // 68:  ...         index    ...
     struct tagPLLOCALVARS
-                  *lpPLPrev;            // 74:  Ptr to previous PLLOCALVARS struct
+                  *lpPLPrev;            // 6C:  Ptr to previous PLLOCALVARS struct
                                         //      in thread creation order (NULL = none)
-    UINT           uLineNum,            // 78:  Function line # (1 for execute or immexec)
-                   uTokenCnt;           // 7C:  # tokens in the function line
-    HGLOBAL        hGlbDfnHdr;          // 80:  User-defined function/operator global memory handle (NULL = execute/immexec)
-    TOKEN          tkSelSpec;           // 84:  TOKEN for Selective Specification (28 bytes)
-                                        // A0:  Length
+    UINT           uLineNum,            // 70:  Function line # (1 for execute or immexec)
+                   uTokenCnt;           // 74:  # tokens in the function line
+    HGLOBAL        hGlbDfnHdr;          // 78:  User-defined function/operator global memory handle (NULL = execute/immexec)
+    TOKEN          tkSelSpec;           // 7C:  TOKEN for Selective Specification (28 bytes)
+    struct tagPERTABDATA *lpMemPTD;     // 98:  Ptr to PerTabData global memory
+                                        // 9C:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

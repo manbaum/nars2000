@@ -3112,26 +3112,32 @@ void FillSISNxt
 ////lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;           // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;           // Already zero from ZeroMemory
     lpMemPTD->lpSISNxt->hGlbQuadEM    = hGlbQuadEM_DEF;
+////lpMemPTD->lpSISNxt->lpSymGlbGoto  = NULL;           // ALready zero from ZeroMemory
     lpMemPTD->lpSISNxt->DfnType       = DfnType;
     lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
 ////lpMemPTD->lpSISNxt->DfnAxis       = FALSE;          // Already zero from ZeroMemory
     lpMemPTD->lpSISNxt->Suspended     = Suspended;
 ////lpMemPTD->lpSISNxt->ResetFlag     = RESETFLAG_NONE; // Already zero from ZeroMemory
-////lpMemPTD->lpSISNxt->PermFn        = FALSE;          // Already zero from ZeroMemory
     lpMemPTD->lpSISNxt->Restartable   = Restartable;
 ////lpMemPTD->lpSISNxt->Unwind        = FALSE;          // Already zero from ZeroMemory
-////lpMemPTD->lpSISNxt->Avail         = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->bItsEC        = FALSE;          // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->bAFO          = FALSE;          // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->bMFO          = FALSE;          // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->EventType     = MAKE_ET (0, 0); // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->CurLineNum    = 0;              // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->NxtLineNum    = 0;              // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->NxtTknNum     = 0;              // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->numLabels     = 0;              // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->numFcnLines   = 0;              // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->numSymEntries = 0;              // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->QQPromptLen   = 0;              // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->ErrorCode     = ERRORCODE_NONE; // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->lpSISErrCtrl  =                 // Set in the code below
     lpMemPTD->lpSISNxt->lpSISPrv      = lpMemPTD->lpSISCur;
     lpMemPTD->lpSISNxt->lpSISNxt      = (LPSIS_HEADER) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
 ////lpMemPTD->lpSISNxt->lptkFunc      = NULL;           // Already zero from ZeroMemory
+////lpMemPTD->lpSISNxt->lpForStmtBase =                 // Set in the code below
+////lpMemPTD->lpSISNxt->lpForStmtNext =                 // Set in the code below
 
     // If the outgoing header is from []EA/[]EC,
     //   and this header is not []EA/[]EC, ...

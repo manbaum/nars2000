@@ -429,8 +429,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
     lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
     lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
-    lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
     lpMemPTD->lpSISNxt->bAFO         = lpMemDfnHdr->bAFO;
+    lpMemPTD->lpSISNxt->bMFO         = lpMemDfnHdr->bMFO;
     lpMemPTD->lpSISNxt->CurLineNum   = 1;
     lpMemPTD->lpSISNxt->NxtLineNum   = 2;
     lpMemPTD->lpSISNxt->numLabels    = lpMemDfnHdr->numLblLines;
@@ -1033,12 +1033,14 @@ NEXTLINE:
             // Change the reset flag as we're done with it
             lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
+            // Fall through to common code
+
+        case EXITTYPE_RESET_ALL:
             // Make a PL_YYSTYPE NoValue entry
             lpYYRes = MakeNoValue_YY (lptkFunc);
 
             break;
 
-        case EXITTYPE_RESET_ALL:
         case EXITTYPE_GOTO_ZILDE:
         case EXITTYPE_GOTO_LINE:
         case EXITTYPE_QUADERROR_INIT:
@@ -1102,7 +1104,8 @@ NEXTLINE:
     // Close the semaphore handle as it isn't used anymore
     MyCloseSemaphore (hSemaphore); hSemaphore = lpMemPTD->lpSISCur->hSemaphore = NULL;
 
-    // If we're initially resetting through []ERROR/[]ES,
+    // If we're initially resetting through []ERROR/[]ES
+    //   or popping out of an error in an MFO or AFO,
     //   convert to execute resetting
     if (exitType EQ EXITTYPE_QUADERROR_INIT)
     {
@@ -1118,7 +1121,7 @@ NEXTLINE:
     if (lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
         goto NORMAL_EXIT;
 
-    // If we're suspended, don't Unlocalize
+    // If we're suspended, don't return a result
     if (lpMemPTD->lpSISCur->Suspended)
         goto ERROR_EXIT;
 
@@ -1442,12 +1445,15 @@ ERROR_EXIT:
     // Get a ptr to the current SIS
     lpSISCur = lpMemPTD->lpSISCur;
 
-    // If the current level is Immediate Execution Mode, Execute, or Quad Input
-    //   back off until it isn't
+    // If the current level is not suspendable
+    //   back off until it is
     while (lpSISCur
         && (lpSISCur->DfnType EQ DFNTYPE_IMM
          || lpSISCur->DfnType EQ DFNTYPE_EXEC
-         || lpSISCur->DfnType EQ DFNTYPE_QUAD))
+         || lpSISCur->DfnType EQ DFNTYPE_QUAD
+         || lpSISCur->bAFO
+         || lpSISCur->bMFO
+         || lpSISCur->bItsEC))
     {
         // Mark as unwinding
         lpSISCur->Unwind = TRUE;
@@ -1694,7 +1700,7 @@ LPSYMENTRY LocalizeLabels
 
                 // Clear the STE flags & data
                 *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
-////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
+////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
 
                 // Initialize the SYMENTRY to an integer constant
                 lpSymEntrySrc->stFlags.Imm        = TRUE;

@@ -1846,6 +1846,9 @@ LPPL_YYSTYPE plRedMF_A
 
     Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->YYStranding);
 
+    // Save the caret position of this function
+    GetMemPTD ()->lpSISCur->iCharIndex = lpplYYCurObj->tkToken.tkCharIndex;
+
     // Execute the function between the curried left arg and the last right arg
     lpYYRes =
       ExecFunc_EM_YY (lptkLftArg, lpplYYCurObj, &lpplYYLstRht->tkToken);
@@ -3752,6 +3755,11 @@ EXIT_TYPES ParseLine
     // Link this plLocalVars into the chain of such objects
     plLocalVars.lpPLPrev = lpMemPTD->lpPLCur;
 
+    // If it's valid, ...
+    if (lpMemPTD->lpSISCur)
+        // Save a ptr to this struc in the SIS header
+        lpMemPTD->lpSISCur->lpplLocalVars = &plLocalVars;
+
     // If there's a previous ptr, transfer its Ctrl-Break flag
     if (lpMemPTD->lpPLCur)
         plLocalVars.bCtrlBreak = lpMemPTD->lpPLCur->bCtrlBreak;
@@ -3762,8 +3770,8 @@ EXIT_TYPES ParseLine
     LeaveCriticalSection (&CSOPL);
 
     // Initialize the error & return codes
-    uError = ERRORCODE_NONE;
     uRet   = 0;
+    uError = ERRORCODE_NONE;
 
     // If we don't have a valid ptr, ...
     if (!lpMemTknHdr)
@@ -3798,7 +3806,6 @@ EXIT_TYPES ParseLine
     plLocalVars.hGlbTxtLine    = hGlbTxtLine;
     plLocalVars.lpMemTknHdr    = lpMemTknHdr;
     plLocalVars.lpwszLine      = lpwszLine;
-    plLocalVars.bLookAhead     = FALSE;
     plLocalVars.ExitType       = EXITTYPE_NONE;
     plLocalVars.uLineNum       = uLineNum;
     plLocalVars.hGlbDfnHdr     = hGlbDfnHdr;
@@ -3842,8 +3849,7 @@ EXIT_TYPES ParseLine
         plLocalVars.lptkNext  = &plLocalVars.lptkStart[plLocalVars.lptkStart->tkData.tkIndex];
 
     // Start off with no error
-    plLocalVars.tkErrorCharIndex =
-    plLocalVars.tkLACharIndex    = NEG1U;
+    plLocalVars.tkErrorCharIndex = NEG1U;
 
     // Initialize the strand starts
     if (oldTlsPlLocalVars)
@@ -4608,7 +4614,8 @@ PARSELINE_ERROR:
 
             // Check for ResetFlag
             if (lpMemPTD->lpSISCur
-             && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
+             && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE
+             && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_QUADERROR_EXEC)
             {
                 // Set the exit type
                 plLocalVars.ExitType = TranslateResetFlagToExitType (lpMemPTD->lpSISCur->ResetFlag);
@@ -4620,7 +4627,7 @@ PARSELINE_ERROR:
                 plLocalVars.ExitType = EXITTYPE_ERROR;
 
             // Mark as in error
-            uRet = 1;
+            uRet   = 1;
             uError = ERRORCODE_ELX;
 
             goto PARSELINE_END;
@@ -4873,7 +4880,7 @@ PARSELINE_DONE:
                 plLocalVars.ExitType = EXITTYPE_ERROR;
 
                 // Mark as in error
-                uRet = 1;
+                uRet   = 1;
                 uError = ERRORCODE_ELX;
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                            NULL);
@@ -4884,7 +4891,7 @@ PARSELINE_DONE:
                 DisplayException ();
 
                 // Mark as in error
-                uRet = 1;
+                uRet   = 1;
                 uError = ERRORCODE_ELX;
 
                 goto NORMAL_EXIT;
@@ -4896,8 +4903,7 @@ PARSELINE_END:
 
     Assert (YYResIsEmpty ());
 
-    if (!plLocalVars.bCtrlBreak
-     && !plLocalVars.bLookAhead)
+    if (!plLocalVars.bCtrlBreak)
     // Split cases based upon the exit type
     switch (plLocalVars.ExitType)
     {
@@ -4927,7 +4933,7 @@ PARSELINE_END:
             while (lpSISCur->DfnType EQ DFNTYPE_EXEC)
                lpSISCur = lpSISCur->lpSISPrv;
 
-            if (!lpSISCur->ItsEC)
+            if (!lpSISCur->bItsEC)
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ONE_INIT;
 
@@ -4949,7 +4955,7 @@ PARSELINE_END:
             if (plLocalVars.ExitType EQ EXITTYPE_STACK_FULL)
             {
                 // Mark as in error
-                uRet = 1;
+                uRet   = 1;
                 uError = ERRORCODE_NONE;
                 ErrorMessageIndirectToken (ERRMSG_STACK_FULL APPEND_NAME,
                                            NULL);
@@ -4960,11 +4966,11 @@ PARSELINE_END:
             // Get a ptr to the current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
 
-            // If it's a permanent function (i.e. Magic Function/Operator),
+            // If it's an MFO
             //   or an AFO,
             // but not STACK FULL, ...
-            if ((lpSISCur->PermFn
-              || plLocalVars.bAFO)
+            if ((lpSISCur->bMFO
+              || lpSISCur->bAFO)
              && plLocalVars.ExitType NE EXITTYPE_STACK_FULL)
             {
                 // Don't suspend at this level
@@ -4974,6 +4980,10 @@ PARSELINE_END:
 
                 // Set the reset flag
                 lpSISCur->ResetFlag  = RESETFLAG_QUADERROR_INIT;
+
+                // Reset the error codes so we don't execute []ELX at this level
+                uRet   = 0;
+                uError = ERRORCODE_NONE;
 
                 break;
             } // End IF
@@ -5006,8 +5016,8 @@ PARSELINE_END:
             if (CheckDfnExitError_EM (lpMemPTD))
             {
                 // Mark as an APL error
+                uRet                 = 1;
                 plLocalVars.ExitType = EXITTYPE_ERROR;
-                uRet = 1;
             } // End IF
 
             break;
@@ -5034,7 +5044,7 @@ PARSELINE_END:
         for (lpSISCur = lpMemPTD->lpSISCur;
              lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt;
              lpSISCur = lpSISCur->lpSISPrv)
-        if (!lpSISCur->PermFn
+        if (!lpSISCur->bMFO
          && !lpSISCur->bAFO
          && (lpSISCur->DfnType EQ DFNTYPE_OP1
           || lpSISCur->DfnType EQ DFNTYPE_OP2
@@ -5226,7 +5236,7 @@ NORMAL_EXIT:
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_STOP;
 
                     // If the Execute/Quad result is present, clear it
-                    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+                    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED)
                     {
                         // Free the result
                         FreeResult (&lpMemPTD->YYResExec);
@@ -5262,7 +5272,7 @@ NORMAL_EXIT:
             case EXITTYPE_NODISPLAY:    // Display the result (if any)
             case EXITTYPE_DISPLAY:      // ...
                 // If the Execute/Quad result is present, display it
-                if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+                if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED)
                 {
                     HGLOBAL hGlbDfnHdr;                 // AFO DfnHdr global memory handle
 

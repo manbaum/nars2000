@@ -802,7 +802,7 @@ EXIT_TYPES ActOnError
         case EXITTYPE_NODISPLAY:        // Display the result (if any)
         case EXITTYPE_DISPLAY:          // ...
             // If the Execute/Quad result is present, display it
-            if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType)
+            if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED)
             {
                 // Display the result
                 ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &bFALSE);

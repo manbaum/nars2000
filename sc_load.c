@@ -464,8 +464,8 @@ UBOOL LoadWorkspace_EM
                     lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
                     lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
                     lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
-                    lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
                     lpMemPTD->lpSISNxt->bAFO         = lpMemDfnHdr->bAFO;
+                    lpMemPTD->lpSISNxt->bMFO         = lpMemDfnHdr->bMFO;
                     lpMemPTD->lpSISNxt->CurLineNum   = uLineNum;
                     lpMemPTD->lpSISNxt->NxtLineNum   = uLineNum + 1;
                     lpMemPTD->lpSISNxt->numLabels    = lpMemDfnHdr->numLblLines;

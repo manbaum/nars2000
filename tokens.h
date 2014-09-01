@@ -171,7 +171,7 @@ typedef enum tagTOKEN_TYPES
 // N.B.:  Whenever changing the above enum (TOKEN_TYPES),
 //   be sure to make a corresponding change to
 //   <Untokenize> and <AppendNewToken_EM> in <tokenize.c>,
-//   <LookaheadAdjacent>, <LookaheadDyadicOp>, <LookbehindOp>, and <pl_yylex> in <pl_parse.y>,
+//   <pl_yylex> in <pl_parse.y>,
 //   <MakeVarStrand_EM_YY> and <CopyToken_EM> in <strand.c>,
 //   <GetTokenTypeName> in <dispdbg.c>,
 //   <GetNameType> in <assign.c>,

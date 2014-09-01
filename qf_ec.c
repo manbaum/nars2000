@@ -126,7 +126,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
                 TRUE,                   // Restartable
                 TRUE);                  // LinkIntoChain
     // Fill in the non-default SIS header entries
-    lpMemPTD->lpSISCur->ItsEC = TRUE;
+    lpMemPTD->lpSISCur->bItsEC = TRUE;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg

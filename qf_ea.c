@@ -134,7 +134,7 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
                 TRUE,                   // Restartable
                 TRUE);                  // LinkIntoChain
     // Fill in the non-default SIS header entries
-////lpMemPTD->lpSISCur->ItsEC = FALSE;  // Already zero from FillSISNxt
+////lpMemPTD->lpSISCur->bItsEC = FALSE; // Already zero from FillSISNxt
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args

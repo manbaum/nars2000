@@ -32,9 +32,9 @@ typedef struct tagINTMONINFO            // Internal function line monitoring inf
 
 typedef struct tagEXTMONINFO_INT        // External function line monitoring info as integers
 {
-    APLINT   IncSubFns,                 // 00:  Total time including subfunctions (8 bytes)
-             ExcSubFns,                 // 08:  ...        excluding ...          (8 bytes)
-             Count;                     // 10:  # times executed                  (8 bytes)
+    APLINT  IncSubFns,                  // 00:  Total time including subfunctions (8 bytes)
+            ExcSubFns,                  // 08:  ...        excluding ...          (8 bytes)
+            Count;                      // 10:  # times executed                  (8 bytes)
                                         // 18:  Length
 } EXTMONINFO_INT, *LPEXTMONINFO_INT;
 
@@ -108,18 +108,17 @@ typedef struct tagDFN_HEADER            // Function header structure
     UINT             DfnType:4,         // 08:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                      FcnValence:3,      //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                      DfnAxis:1,         //      00000080:  User-defined function/operator accepts axis value
-                     PermFn:1,          //      00000100:  Permanent function (i.e. Magic Function/Operator)
-                     NoDispRes:1,       //      00000200:  TRUE iff the result is non-displayable
-                     ListRes:1,         //      00000400:  TRUE iff the result is a list (unused so far)
-                     ListLft:1,         //      00000800:  TRUE iff the left arg is a list
-                     ListRht:1,         //      00001000:  TRUE iff the right arg is a list
-                     MonOn:1,           //      00002000:  TRUE iff function line monitoring is on for this function
-                     SaveSTEFlags:1,    //      00004000:  TRUE iff on free we are to save the function name STE flags
-                     bAFO:1,            //      00008000:  TRUE iff this is an AFO
-                     bAfoCtrlStruc:1,   //      00010000:  TRUE iff Ctrl Strucs in AFO
-                     bAfoNoDispRes:1,   //      00020000:  TRUE iff the AFO result is non-displayable
-                     bMFO:1,            //      00040000:  TRUE iff this is an MFO
-                     :13;               //      FFF80000:  Available bits
+                     NoDispRes:1,       //      00000100:  TRUE iff the result is non-displayable
+                     ListRes:1,         //      00000200:  TRUE iff the result is a list (unused so far)
+                     ListLft:1,         //      00000400:  TRUE iff the left arg is a list
+                     ListRht:1,         //      00000800:  TRUE iff the right arg is a list
+                     MonOn:1,           //      00001000:  TRUE iff function line monitoring is on for this function
+                     SaveSTEFlags:1,    //      00002000:  TRUE iff on free we are to save the function name STE flags
+                     bAFO:1,            //      00004000:  TRUE iff this is an AFO
+                     bAfoCtrlStruc:1,   //      00008000:  TRUE iff Ctrl Strucs in AFO
+                     bAfoNoDispRes:1,   //      00010000:  TRUE iff the AFO result is non-displayable
+                     bMFO:1,            //      00020000:  TRUE iff this is an MFO
+                     :14;               //      FFFC0000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
                      nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
                      nSysLblId,         // 14:  Line # of the []INV label (0 if not present)

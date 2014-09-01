@@ -485,7 +485,6 @@ HGLOBAL Init1MagicFunction
         lpMemDfnHdr->ListRes      = fhLocalVars.ListRes;
         lpMemDfnHdr->ListLft      = fhLocalVars.ListLft;
         lpMemDfnHdr->ListRht      = fhLocalVars.ListRht;
-        lpMemDfnHdr->PermFn       = TRUE;
         lpMemDfnHdr->RefCnt       = 1;
         lpMemDfnHdr->numFcnLines  = numFcnLines;
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr

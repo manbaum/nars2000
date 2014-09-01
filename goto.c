@@ -417,7 +417,7 @@ UBOOL SaveGotoTarget
      && lpSISCur->DfnType EQ DFNTYPE_ERRCTRL)
     {
         // If we're executing under []EC but not []EA, ...
-        if (lpSISCur->ItsEC)
+        if (lpSISCur->bItsEC)
         // Split cases based upon the token type
         switch (lptkGoto->tkFlags.TknType)
         {

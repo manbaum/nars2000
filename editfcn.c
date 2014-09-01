@@ -44,6 +44,7 @@
 //#define DEBUG_WM_CHAR
 #endif
 
+extern UBOOL bMainDestroy;
 extern TKACTSTR fsaActTableTK [][TKCOL_LENGTH];
 char szCloseMessage[] = "You have changed the body of this function;"
                         " save the changes?";
@@ -3759,11 +3760,16 @@ void ForceSendCursorMsg
     // Get the cursor position in screen coords
     GetCursorPos (&ptCursor);
 
-    // Get the hit test value relative to the Edit Ctrl window
-    hitTest = (UINT) SendMessageW (hWndEC, WM_NCHITTEST, 0, MAKELPARAM (ptCursor.x, ptCursor.y));
+    // If we're not in the process of destroying the Main window, ...
+    // This is necessary sometimes for shutdown
+    if (!bMainDestroy)
+    {
+        // Get the hit test value relative to the Edit Ctrl window
+        hitTest = (UINT) SendMessageW (hWndEC, WM_NCHITTEST, 0, MAKELPARAM (ptCursor.x, ptCursor.y));
 
-    // Set the cursor to indicate that we're executing
-    SendMessageW (hWndEC, WM_SETCURSOR, (WPARAM) hWndEC, MAKELPARAM (hitTest, WM_MOUSEMOVE));
+        // Set the cursor to indicate that we're executing
+        SendMessageW (hWndEC, WM_SETCURSOR, (WPARAM) hWndEC, MAKELPARAM (hitTest, WM_MOUSEMOVE));
+    } // End IF
 
     // Restore the previous executing state
     SetExecuting (lpMemPTD, bOldExecuting);

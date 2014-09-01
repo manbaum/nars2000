@@ -115,6 +115,8 @@ char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateSTWnd[]     = "Unable to create Status window",
      pszNoCreateCCWnd[]     = "Unable to create Crash Control window";
 
+UBOOL bMainDestroy = FALSE;     // TRUE iff we're destroying the Main window
+
 extern
 WNDPROC lpfnOldStatusBarWndProc;            // Save area for old StatusBar Window procedure
 
@@ -2841,6 +2843,9 @@ LRESULT APIENTRY MFWndProc
                 return FALSE;           // Not OK to terminate/we handled the msg
 
         case WM_DESTROY:
+            // Mark as in the process of being destroyed
+            bMainDestroy = TRUE;
+
             // If the Customize dialog box is still active, ...
             if (ghDlgCustomize)
                 // Destroy it

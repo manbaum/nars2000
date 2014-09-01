@@ -120,7 +120,7 @@ LPPL_YYSTYPE ExecDfnGlbIdent_EM_YY
     // Execute the user-defined function/operator on the arg using the []ID entry point
     lpYYRes =
       ExecDfnGlb_EM_YY (hGlbUDFO,               // User-defined function/operator global memory handle
-                        lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+                        NULL,                   // Ptr to left arg token (may be NULL if monadic)
          (LPPL_YYSTYPE) lptkFcnStr,             // Ptr to function strand
                         NULL,                   // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                         lptkRhtArg,             // Ptr to right arg token
@@ -202,7 +202,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     if (lpYYFcnStrOpr NE NULL
      && IsTknOp2 (&lpYYFcnStrOpr->tkToken))
     {
-        // Set ptr to right operand
+            // Set ptr to right operand
         lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
 
         // Set ptr to left operand
@@ -518,7 +518,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // Setup the left arg STEs
     if (!InitVarSTEs (lptkLftTmp,
-                      lpMemDfnHdr->numLftArgSTE,
+                 lpMemDfnHdr->numLftArgSTE,
                       (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE)))
         goto WSFULL_EXIT;
     // Setup the left operand STE
@@ -529,7 +529,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         if (!IsTknFcnOpr (&lpYYFcnTmpLft->tkToken))
         {
             if (!InitVarSTEs (&lpYYFcnTmpLft->tkToken,
-                               lpMemDfnHdr->steLftOpr NE NULL,
+                          lpMemDfnHdr->steLftOpr NE NULL,
                               &lpMemDfnHdr->steLftOpr))
                 goto WSFULL_EXIT;
         } else
@@ -541,7 +541,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // Setup the axis operand STE
     if (!InitVarSTEs (lptkAxis,
-                      lpMemDfnHdr->steAxisOpr NE NULL,
+                 lpMemDfnHdr->steAxisOpr NE NULL,
                      &lpMemDfnHdr->steAxisOpr))
         goto WSFULL_EXIT;
     // Setup the right operand STE
@@ -552,7 +552,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         if (!IsTknFcnOpr (&lpYYFcnTmpRht->tkToken))
         {
             if (!InitVarSTEs (&lpYYFcnTmpRht->tkToken,
-                               lpMemDfnHdr->steRhtOpr NE NULL,
+                          lpMemDfnHdr->steRhtOpr NE NULL,
                               &lpMemDfnHdr->steRhtOpr))
             goto WSFULL_EXIT;
         } else
@@ -564,7 +564,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // Setup the right arg STEs
     if (!InitVarSTEs (lptkRhtTmp,
-                      lpMemDfnHdr->numRhtArgSTE,
+                 lpMemDfnHdr->numRhtArgSTE,
                       (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE)))
         goto WSFULL_EXIT;
     // We no longer need this ptr
@@ -1138,8 +1138,8 @@ NEXTLINE:
             // If it's not already NoValue, ...
             if (lpYYRes EQ NULL
              || !IsTokenNoValue (&lpYYRes->tkToken))
-                // Make a PL_YYSTYPE NoValue entry
-                lpYYRes = MakeNoValue_YY (lptkFunc);
+            // Make a PL_YYSTYPE NoValue entry
+            lpYYRes = MakeNoValue_YY (lptkFunc);
 
             break;
 
@@ -1605,7 +1605,7 @@ void UnlocalizeSTEs
             // If this var is []FPC, set the VFP constants and PTD vars
             if (lpSymEntryCur->stFlags.ObjName EQ OBJNAME_SYS
              && IsThisSysName (lpSymEntryCur, $QUAD_FPC))
-            {
+        {
                 // Initialize the precision-specific VFP constants
                 InitVfpPrecision (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);
 
@@ -1643,17 +1643,17 @@ void UnlocalizeSTEs
 //***************************************************************************
 
 LPSYMENTRY LocalizeLabels
-    (LPSYMENTRY   lpSymEntryNxt,        // Ptr to next SYMENTRY save area
-     LPDFN_HEADER lpMemDfnHdr,          // Ptr to user-defined function/operator header
-     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+    (LPSYMENTRY   lpSymEntryNxt,    // Ptr to next SYMENTRY save area
+     LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header
+     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
     UINT           numLblLines,         // # labeled lines in the function
                    uLineNum1;           // Line # (origin-1)
-    LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numFcnLines])
-    LPTOKEN_HEADER lptkHdr;             // Ptr to header of tokenized line
-    LPTOKEN        lptkLine;            // Ptr to tokenized line
-    STFLAGS        stFlagsClr = {0};    // Flags for clearing an STE
+    LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;        // Ptr to tokenized line
+    STFLAGS stFlagsClr = {0};       // Flags for clearing an STE
 
     // Set the Inuse flag
     stFlagsClr.Inuse = TRUE;
@@ -1683,40 +1683,40 @@ LPSYMENTRY LocalizeLabels
              && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED
              && lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP);
 
-        // Get the source LPSYMENTRY
-        lpSymEntrySrc = lptkLine[1].tkData.tkSym;
+                // Get the source LPSYMENTRY
+                lpSymEntrySrc = lptkLine[1].tkData.tkSym;
 
-        // stData is an LPSYMENTRY
-        Assert (GetPtrTypeDir (lpSymEntrySrc) EQ PTRTYPE_STCONST);
+                // stData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lpSymEntrySrc) EQ PTRTYPE_STCONST);
 
-        // Copy the old SYMENTRY to the SIS
-        *lpSymEntryNxt = *lpSymEntrySrc;
+                // Copy the old SYMENTRY to the SIS
+                *lpSymEntryNxt = *lpSymEntrySrc;
 
-        // Clear the STE flags & data
-        *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
+                // Clear the STE flags & data
+                *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
 ////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
 
-        // Initialize the SYMENTRY to an integer constant
-        lpSymEntrySrc->stFlags.Imm        = TRUE;
-        lpSymEntrySrc->stFlags.ImmType    = IMMTYPE_INT;
-        lpSymEntrySrc->stFlags.Inuse      = TRUE;
-        lpSymEntrySrc->stFlags.Value      = TRUE;
-        lpSymEntrySrc->stFlags.ObjName    = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
-                                          ? OBJNAME_SYS
-                                          : OBJNAME_USR;
-        lpSymEntrySrc->stFlags.stNameType = NAMETYPE_VAR;
-        lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
+                // Initialize the SYMENTRY to an integer constant
+                lpSymEntrySrc->stFlags.Imm        = TRUE;
+                lpSymEntrySrc->stFlags.ImmType    = IMMTYPE_INT;
+                lpSymEntrySrc->stFlags.Inuse      = TRUE;
+                lpSymEntrySrc->stFlags.Value      = TRUE;
+                lpSymEntrySrc->stFlags.ObjName    = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
+                                                  ? OBJNAME_SYS
+                                                  : OBJNAME_USR;
+                lpSymEntrySrc->stFlags.stNameType = NAMETYPE_VAR;
+                lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
         lpSymEntrySrc->stData.stInteger   = uLineNum1;
 
-        // Set the ptr to the previous entry to the STE in its shadow chain
-        lpSymEntrySrc->stPrvEntry         = lpSymEntryNxt;
+                // Set the ptr to the previous entry to the STE in its shadow chain
+                lpSymEntrySrc->stPrvEntry         = lpSymEntryNxt;
 
-        // Save the SI level for this SYMENTRY
-        Assert (lpMemPTD->SILevel);
-        lpSymEntrySrc->stSILevel          = lpMemPTD->SILevel - 1;
+                // Save the SI level for this SYMENTRY
+                Assert (lpMemPTD->SILevel);
+                lpSymEntrySrc->stSILevel          = lpMemPTD->SILevel - 1;
 
-        // Skip to the next SYMENTRY
-        lpSymEntryNxt++;
+                // Skip to the next SYMENTRY
+                lpSymEntryNxt++;
     } // End FOR
 
     return lpSymEntryNxt;
@@ -2132,18 +2132,18 @@ UBOOL InitFcnSTEs
             {
                 case TKT_FCNIMMED:
                 case TKT_OP3IMMED:
-                    // Clear the STE flags
-                    *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
+                // Clear the STE flags
+                *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 
-                    (*lplpSymEntry)->stFlags.Imm        = TRUE;
-                    (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
-                    (*lplpSymEntry)->stFlags.Value      = TRUE;
-                    (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
-                    (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
+                (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
+                (*lplpSymEntry)->stFlags.Value      = TRUE;
+                (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
 ////////////////////(*lplpSymEntry)->stFlags.UsrDfn     = FALSE;            // Already zero from above
 ////////////////////(*lplpSymEntry)->stFlags.DfnAxis    = FALSE;            // Already zero from above
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
-                    (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
+                (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
 
                     break;
 
@@ -2155,7 +2155,7 @@ UBOOL InitFcnSTEs
 
                 case TKT_FCNARRAY:
                 case TKT_FCNAFO:
-                {
+            {
                     HGLOBAL      hGlbDfnHdr;
                     LPDFN_HEADER lpMemDfnHdr;
 

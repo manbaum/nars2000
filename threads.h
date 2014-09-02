@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,6 +51,15 @@ typedef struct tagCDB_THREAD        // Thread strucr for CreateDebuggerInThread
     LPPERTABDATA lpMemPTD;          // 00:  Ptr to PerTabData global memory
                                     // 04:  Length
 } CDB_THREAD, *LPCDB_THREAD;
+
+
+typedef struct tagCR_THREAD         // Thread struct for CreateResetInThread
+{
+    LPPERTABDATA lpMemPTD;          // 00:  Ptr to PerTabData global memory
+    HANDLE       hThread;           // 04:  Handle to the current thread
+    DWORD        dwThreadId;        // 08:  Thread Id
+                                    // 0C:  Length
+} CR_THREAD, *LPCR_THREAD;
 
 
 //***************************************************************************

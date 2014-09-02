@@ -38,6 +38,7 @@
 #define TABNUMBER_START     L'\x2460'
 
 CNT_THREAD cntThread;           // Temporary storage for CreateNewTabInThread
+CR_THREAD  crThread;            // Temporary storage for CreateResetInThread
 
 // 1s mark the indices in use
 UCHAR crIndices[32] = {0};      // This supports 256 (=32x8) open WSs
@@ -912,31 +913,22 @@ void FreeGlobalStorage
         // If there's something suspended, ...
         if (lpMemPTD->lpSISCur)
         {
-            // Reset the SI stack
+            HANDLE hThread;             // Thread handle
 
-            // If the current thread's lpMemPTD is NULL, ...
-            if (TlsGetValue (dwTlsPerTabData) EQ NULL)
-                TlsSetValue (dwTlsPerTabData, lpMemPTD);
+            // Create a new thread
+            hThread =
+              CreateThread (NULL,                   // No security attrs
+                            0,                      // Use default stack size
+                           &CreateResetInThread,    // Starting routine
+                           &crThread,               // Param to thread func
+                            CREATE_SUSPENDED,       // Creation flag
+                           &crThread.dwThreadId);   // Returns thread id
+            // Save the thread struc values
+////////////crThread.hThread  = hThread;
+            crThread.lpMemPTD = lpMemPTD;
 
-            // Create a semaphore for ourselves
-            lpMemPTD->hExitphore =
-              MyCreateSemaphoreW (NULL,         // No security attrs
-                                  0,            // Initial count (non-signalled)
-                                  64*1024,      // Maximum count
-                                  NULL);        // No name
-            // Call )RESET
-            CmdReset_EM (L"");
-
-            dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
-
-            // Wait for the semaphore to trigger
-            WaitForSingleObject (lpMemPTD->hExitphore,  // Ptr to handle to wait for
-                                 INFINITE);             // Timeout value in milliseconds
-
-            dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"TCM_DELETEITEM", FNLN);
-
-            // Close the semaphore handle as it isn't used anymore
-            MyCloseSemaphore (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
+            if (hThread)
+                ResumeThread (hThread);
         } // End IF
 
         // Get a ptr to the HTS
@@ -948,7 +940,7 @@ void FreeGlobalStorage
              lpSymEntry++)
         if (lpSymEntry->stFlags.Inuse
          && lpSymEntry->stFlags.Value
-         && lpSymEntry->stFlags.Imm  EQ FALSE)
+         && lpSymEntry->stFlags.Imm EQ FALSE)
         {
             HGLOBAL hGlbData;               // User-defined function/operator global memory handle
 
@@ -1002,6 +994,60 @@ void FreeGlobalStorage
         FreeResultGlobalVar (lpMemPTD->hGlbQuadEM); lpMemPTD->hGlbQuadEM = NULL;
     } // End IF
 } // End FreeGlobalStorage
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CreateResetInThread
+//
+//  Create a )RESET within a thread
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CreateResetInThread"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL WINAPI CreateResetInThread
+    (LPCR_THREAD lpcrThread)
+
+{
+////HANDLE       hThread;           // Handle to this thread
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Extract values from the arg struc
+////hThread  = lpcrThread->hThread;
+    lpMemPTD = lpcrThread->lpMemPTD;
+
+    // Reset the SI stack
+
+    // If the current thread's lpMemPTD is NULL, ...
+    if (TlsGetValue (dwTlsPerTabData) EQ NULL)
+        TlsSetValue (dwTlsPerTabData, lpMemPTD);
+
+    // Create a semaphore for ourselves
+    lpMemPTD->hExitphore =
+      MyCreateSemaphoreW (NULL,         // No security attrs
+                          0,            // Initial count (non-signalled)
+                          64*1024,      // Maximum count
+                          NULL);        // No name
+    // Call )RESET
+    CmdReset_EM (L"");
+
+    dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"CreateResetInThread", FNLN);
+
+    // Wait for the semaphore to trigger
+    WaitForSingleObject (lpMemPTD->hExitphore,  // Ptr to handle to wait for
+                         INFINITE);             // Timeout value in milliseconds
+
+    dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"CreateResetInThread", FNLN);
+
+    // Close the semaphore handle as it isn't used anymore
+    MyCloseSemaphore (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
+
+    return TRUE;
+} // End CreateResetInThread
 #undef  APPEND_NAME
 
 

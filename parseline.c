@@ -4189,7 +4189,7 @@ PARSELINE_MP_DONE:
             } else
             // If the current object is a soGO, ...
             if (curSynObj EQ soGO)
-                plLocalVars.ExitType = EXITTYPE_RESET_ONE;
+                plLocalVars.ExitType = EXITTYPE_RESET_ONE_INIT;
             else
                 // Unstrand the current object if necessary
                 UnStrand (lpplYYCurObj);

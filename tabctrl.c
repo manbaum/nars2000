@@ -1035,14 +1035,10 @@ UBOOL WINAPI CreateResetInThread
     // Call )RESET
     CmdReset_EM (L"");
 
-    dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"CreateResetInThread", FNLN);
-
     // Wait for the semaphore to trigger
-    WaitForSingleObject (lpMemPTD->hExitphore,  // Ptr to handle to wait for
-                         INFINITE);             // Timeout value in milliseconds
-
-    dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"CreateResetInThread", FNLN);
-
+    MyWaitForSemaphore (lpMemPTD->hExitphore,   // Ptr to handle to wait for
+                        INFINITE,               // Timeout value in milliseconds
+                       L"CreateResetInThread"); // Caller identification
     // Close the semaphore handle as it isn't used anymore
     MyCloseSemaphore (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
 

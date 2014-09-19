@@ -53,6 +53,7 @@
   #define MyLoadImage(a,b,c,d,e,f)        _MyLoadImage(a,b,c,d,e,f,__LINE__)
   #define MyQueryObject(a,b)              _MyQueryObject(a,b,__LINE__)
   #define MyReleaseDC(a,b)                _MyReleaseDC(a,b,__LINE__)
+  #define MyWaitForSemaphore(a,b,c)       _MyWaitForSemaphore (a,b,c,FNLN)
 
   #define OBJ_GLBLOCK     15
   #define OBJ_GLBALLOC    16
@@ -90,6 +91,7 @@
   #define MyLoadImage(a,b,c,d,e,f)        LoadImage(a,b,c,d,e,f)
   #define MyQueryObject(a,b)
   #define MyReleaseDC(a,b)                ReleaseDC(a,b)
+  #define MyWaitForSemaphore(a,b,c)       WaitForSingleObject (a,b)
 #endif
 
 //***************************************************************************

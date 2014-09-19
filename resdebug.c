@@ -1655,6 +1655,73 @@ HANDLE _MyQueryObject
 } // End _MyQueryObject
 
 
+//***************************************************************************
+//  $_MyWaitForSemaphore
+//
+//  Wait for a semaphore
+//***************************************************************************
+
+DWORD _MyWaitForSemaphore
+    (HANDLE  hSemaphore,                            // Semaphore handle
+     DWORD   dwMilliseconds,                        // Time-out interval
+     LPWCHAR lpCallerIdent,                         // Ptr to caller identification
+     LPCHAR  lpFileName,                            // Ptr to filename
+     UINT    uLine)                                 // Line #
+
+{
+    DWORD   dwWaitRes;
+#ifdef DEBUG_SEMAPHORE
+    WCHAR   wszTemp[1024];
+    LPWCHAR lpwszWaitRes;
+
+    dprintfWL0 (L"~~WaitForSemaphore (ENTRY):  %p %s (%S#%d)", hSemaphore, lpCallerIdent, lpFileName, uLine);
+#endif
+    dwWaitRes =
+      WaitForSingleObject (hSemaphore, dwMilliseconds);
+#ifdef DEBUG_SEMAPHORE
+    switch (dwWaitRes)
+    {
+        case WAIT_FAILED:
+            lpwszWaitRes = L"WAIT_FAILED";
+
+            break;
+
+        case WAIT_OBJECT_0:
+            lpwszWaitRes = L"WAIT_OBJCET_0";
+
+            break;
+
+        case WAIT_ABANDONED:
+            lpwszWaitRes = L"WAIT_ABANDONED";
+
+            break;
+
+        case WAIT_TIMEOUT:
+            lpwszWaitRes = L"WAIT_TIMEOUT";
+
+            break;
+
+        case WAIT_IO_COMPLETION:
+            lpwszWaitRes = L"WAIT_IO_COMPLETION";
+
+            break;
+
+        default:
+            wsprintfW (wszTemp,
+                      L"***Unknown Wait Reason (%08X)***",
+                       dwWaitRes);
+            lpwszWaitRes = wszTemp;
+
+            break;
+    } // End SWITCH
+
+    dprintfWL0 (L"~~WaitForSemaphore (EXIT ):  %p %s %s (%S#%d)", hSemaphore, lpCallerIdent, lpwszWaitRes, lpFileName, uLine);
+#endif
+
+    return dwWaitRes;
+} // _MyWaitForSemaphore
+
+
 #ifdef DEBUG
 //***************************************************************************
 //  $_CheckMemStat

@@ -994,13 +994,10 @@ RESTART_AFTER_ERROR:
             // Display the default prompt
             DisplayPrompt (hWndEC, 2);
 
-            dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
-
             // Wait for the semaphore to trigger
-            WaitForSingleObject (hSemaphore,            // Ptr to handle to wait for
-                                 INFINITE);             // Timeout value in milliseconds
-            dprintfWL9 (L"~~WaitForSingleObject (EXIT):  %s (%S#%d)", L"ExecuteFunction_EM_YY", FNLN);
-
+            MyWaitForSemaphore (hSemaphore,                 // Ptr to handle to wait for
+                                INFINITE,                   // Timeout value in milliseconds
+                               L"ExecuteFunction_EM_YY");   // Ptr to caller identification
             // Get the exit type from the semaphore restart
             exitType = lpMemPTD->ImmExecExitType;
         } // End IF

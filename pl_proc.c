@@ -79,15 +79,11 @@ LPPL_YYSTYPE WaitForInput
 
     // Tell the Session Manager to display the appropriate prompt
     PostMessageW (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 14);
-#ifdef DEBUG
-    dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"WaitForInput", FNLN);
-#endif
+
     // Wait for the semaphore to trigger
-    WaitForSingleObject (hSemaphore,    // Handle to wait for
-                         INFINITE);     // Timeout value in milliseconds
-#ifdef DEBUG
-    dprintfWL9 (L"~~WaitForSingleObject (EXIT):   %s (%S#%d)", L"WaitForInput", FNLN);
-#endif
+    MyWaitForSemaphore (hSemaphore,         // Handle to wait for
+                        INFINITE,           // Timeout value in milliseconds
+                       L"WaitForInput");    // Ptr to caller identification
     // Close the semaphore handle as it is no longer needed
     MyCloseSemaphore (hSemaphore); hSemaphore = NULL;
 

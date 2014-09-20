@@ -784,9 +784,14 @@ LRESULT WINAPI LclTabCtrlWndProc
             if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
                 break;
 
-            // If this tab is still executing, ignore this action
+            // If this tab is still executing, ...
             if (lpMemPTD->bExecuting)
-                break;
+            {
+                MBW (L"Can't close tab -- still executing.  First, use Ctrl-Break to stop execution.");
+
+                // Ignore this action
+                return FALSE;
+            } // End IF
 
             // If gOverTabIndex is this tab or to the right of it, ...
             if (gOverTabIndex && gOverTabIndex >= iDelTabIndex)
@@ -912,24 +917,8 @@ void FreeGlobalStorage
     {
         // If there's something suspended, ...
         if (lpMemPTD->lpSISCur)
-        {
-            HANDLE hThread;             // Thread handle
-
             // Create a new thread
-            hThread =
-              CreateThread (NULL,                   // No security attrs
-                            0,                      // Use default stack size
-                           &CreateResetInThread,    // Starting routine
-                           &crThread,               // Param to thread func
-                            CREATE_SUSPENDED,       // Creation flag
-                           &crThread.dwThreadId);   // Returns thread id
-            // Save the thread struc values
-////////////crThread.hThread  = hThread;
-            crThread.lpMemPTD = lpMemPTD;
-
-            if (hThread)
-                ResumeThread (hThread);
-        } // End IF
+            CreateResetThread (lpMemPTD);
 
         // Get a ptr to the HTS
         lphtsPTD = lpMemPTD->lphtsPTD;
@@ -995,6 +984,32 @@ void FreeGlobalStorage
     } // End IF
 } // End FreeGlobalStorage
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CreateResetThread
+//
+//  Create a Reset thread
+//***************************************************************************
+
+void CreateResetThread
+    (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+
+{
+    // Create a new thread
+    crThread.hThread =
+      CreateThread (NULL,                   // No security attrs
+                    0,                      // Use default stack size
+                   &CreateResetInThread,    // Starting routine
+                   &crThread,               // Param to thread func
+                    CREATE_SUSPENDED,       // Creation flag
+                   &crThread.dwThreadId);   // Returns thread id
+    // Save the thread struc values
+    crThread.lpMemPTD = lpMemPTD;
+
+    if (crThread.hThread)
+        ResumeThread (crThread.hThread);
+} // End CreateResetThread
 
 
 //***************************************************************************

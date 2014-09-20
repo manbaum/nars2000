@@ -46,7 +46,7 @@ typedef struct tagIE_THREAD         // Thread struct for ImmExecStmtInThread
 } IE_THREAD, *LPIE_THREAD;
 
 
-typedef struct tagCDB_THREAD        // Thread strucr for CreateDebuggerInThread
+typedef struct tagCDB_THREAD        // Thread struct for CreateDebuggerInThread
 {
     LPPERTABDATA lpMemPTD;          // 00:  Ptr to PerTabData global memory
                                     // 04:  Length

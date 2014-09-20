@@ -87,8 +87,7 @@ typedef enum tagSYSLBL_CON
 {
     SYSLBL_CON_ID = 0,                  // 00:  System Label Context:  []ID
     SYSLBL_CON_PRO,                     // 01:  ...                    []PRO
-    SYSLBL_CON_SGL,                     // 02:  ...                    []SGL
-    SYSLBL_CON_LENGTH                   // 03:  # entries in this enum
+    SYSLBL_CON_LENGTH                   // 02:  # entries in this enum
 } SYSLBL_CON, *LPSYSLBL_CON;
 
 typedef enum tagSYSLBL_VAR              // System Label Variant
@@ -124,35 +123,34 @@ typedef struct tagDFN_HEADER            // Function header structure
                      nSysLblId,         // 14:  Line # of the []INV label (0 if not present)
                      nSysLblMs,         // 18:  Line # of the []MS  label (0 if not present)
                      nSysLblPro,        // 1C:  Line # of the []PRO label (0 if not present)
-                     nSysLblSgl,        // 20:  Line # of the []SGL label (0 if not present)
-                     nSysLblPair        // 24:  Line # of the System Label pairs (Context vs. Variant) (12 bytes)
+                     nSysLblPair        // 20:  Line # of the System Label pairs (Context vs. Variant) (12 bytes)
                        [SYSLBL_CON_LENGTH][SYSLBL_VAR_LENGTH],
-                     numResultSTE,      // 30:  # result STEs (may be zero if no result)
-                     offResultSTE,      // 34:  Offset to result STEs (ignored if numResultSTE is zero)
-                     numLftArgSTE,      // 38:  # left arg STEs (may be zero if niladic/monadic)
-                     offLftArgSTE,      // 3C:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
-                     numRhtArgSTE,      // 40:  # right arg STEs (may be zero if niladic)
-                     offRhtArgSTE,      // 44:  Offset to right arg STEs (ignored if numRhtArgSTE is zero)
-                     numLocalsSTE,      // 48:  # right arg STEs (may be zero if niladic)
-                     offLocalsSTE,      // 4C:  Offset to start of function lines (FCNLINE[nLines])
-                     numFcnLines,       // 50:  # lines in the function (not counting the header)
-                     offFcnLines,       // 54:  Offset to start of function lines (FCNLINE[nLines])
-                     offTknLines,       // 58:  Offset to start of tokenized function lines
-                     numLblLines,       // 5C:  # labeled lines in the function
-                     num1stLabel1;      // 60:  Line # of 1st labeled line (origin-1)
-    LPSYMENTRY       steLftOpr,         // 64:  Left operand STE (may be NULL if not an operator)
-                     steFcnName,        // 68:  Function name STE
-                     steAxisOpr,        // 6C:  Axis operator STE
-                     steRhtOpr;         // 70:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,        // 74:  Text of function header (APLCHAR) global memory handle
-                     hGlbTknHdr,        // 78:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff,      // 7C:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-                     hGlbMonInfo;       // 80:  Function line monitor info (MONINFO)
-    FILETIME         ftCreation,        // 84:  Time of creation (8 bytes)
-                     ftLastMod;         // 8C:  Time of last modification (8 bytes)
-    HSHTABSTR        htsDFN;            // 94:  Local HTS (htsDFN.lpHshTab may be NULL if none) (124 bytes)
-                                        //110:  Length
-                                        //110:  Array of function line structures (FCNLINE[nLines])
+                     numResultSTE,      // 2C:  # result STEs (may be zero if no result)
+                     offResultSTE,      // 30:  Offset to result STEs (ignored if numResultSTE is zero)
+                     numLftArgSTE,      // 34:  # left arg STEs (may be zero if niladic/monadic)
+                     offLftArgSTE,      // 38:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
+                     numRhtArgSTE,      // 3C:  # right arg STEs (may be zero if niladic)
+                     offRhtArgSTE,      // 40:  Offset to right arg STEs (ignored if numRhtArgSTE is zero)
+                     numLocalsSTE,      // 44:  # right arg STEs (may be zero if niladic)
+                     offLocalsSTE,      // 48:  Offset to start of function lines (FCNLINE[nLines])
+                     numFcnLines,       // 4C:  # lines in the function (not counting the header)
+                     offFcnLines,       // 50:  Offset to start of function lines (FCNLINE[nLines])
+                     offTknLines,       // 54:  Offset to start of tokenized function lines
+                     numLblLines,       // 58:  # labeled lines in the function
+                     num1stLabel1;      // 5C:  Line # of 1st labeled line (origin-1)
+    LPSYMENTRY       steLftOpr,         // 60:  Left operand STE (may be NULL if not an operator)
+                     steFcnName,        // 64:  Function name STE
+                     steAxisOpr,        // 68:  Axis operator STE
+                     steRhtOpr;         // 6C:  Right operand STE (may be NULL if monadic operator or not an operator)
+    HGLOBAL          hGlbTxtHdr,        // 70:  Text of function header (APLCHAR) global memory handle
+                     hGlbTknHdr,        // 74:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff,      // 78:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo;       // 7C:  Function line monitor info (MONINFO)
+    FILETIME         ftCreation,        // 80:  Time of creation (8 bytes)
+                     ftLastMod;         // 88:  Time of last modification (8 bytes)
+    HSHTABSTR        htsDFN;            // 90:  Local HTS (htsDFN.lpHshTab may be NULL if none) (124 bytes)
+                                        //10C:  Length
+                                        //10C:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a

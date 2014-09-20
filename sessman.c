@@ -1648,7 +1648,7 @@ NORMAL_EXIT:
                 {
                     EnterCriticalSection (&CSOPL);
 
-                    // Mark as Ctrl-Break
+                    // If there's a current SIS level, ...
                     if (lpMemPTD->lpPLCur)
                     {
                         HANDLE hWaitEvent = lpMemPTD->hWaitEvent;

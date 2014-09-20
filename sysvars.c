@@ -53,7 +53,6 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD SYSLBL_INV  , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []INV = inverse
     {WS_UTF16_QUAD SYSLBL_MS   , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []MS  = multiset
     {WS_UTF16_QUAD SYSLBL_PRO  , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []PRO = prototype
-    {WS_UTF16_QUAD SYSLBL_SGL  , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []SGL = singleton
 
 // Niladic system functions
     {WS_UTF16_QUAD L"a"        ,      0,      FALSE, FALSE, SysFnA_EM_YY        , 0              },    // Alphabet
@@ -174,7 +173,7 @@ void MakePermVars
     CopyMemoryW (lpHeader, ALPHABET, ALPHANELM);
 
     // We no longer need this ptr
-     MyGlobalUnlock (hGlbQuadA); lpHeader = NULL;
+    MyGlobalUnlock (hGlbQuadA); lpHeader = NULL;
 
     //***************************************************************
     // Create []D

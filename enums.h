@@ -127,7 +127,7 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
 
 typedef enum tagEXCEPTION_CODES // Exception Codes
 {
-    EXCEPTION_SUCCESS = 0  ,    // 00:  All OK
+    EXCEPTION_SUCCESS = 0 ,     // 00:  All OK
     EXCEPTION_RESULT_FLOAT ,    // 01:  Result should be Float
     EXCEPTION_RESULT_RAT   ,    // 02:  Result should be RAT
     EXCEPTION_RESULT_VFP   ,    // 03:  Result should be VFP
@@ -193,7 +193,6 @@ typedef enum tagLINE_NUMS       // Starting line #s
     LINENUM_INV,                // 02:  Line []INV
     LINENUM_MS ,                // 03:  Line []MS
     LINENUM_PRO,                // 04:  Line []PRO
-    LINENUM_SGL,                // 05:  Line []SGL
 } LINE_NUMS, *LPLINE_NUMS;
 
 
@@ -206,6 +205,10 @@ typedef enum tagFLT_DISP_FMT    // Floating Point Display Formats
                                 //      to E-format if more than []PP digits required
     FLTDISPFMT_LENGTH,          // 04:  # entries in this enum
 } FLTDISPFMT, *LPFLTDISPFMT;
+
+// N.B.:  Whenever changing the above enum (FLT_DISP_FMT),
+//   be sure to make a corresponding change to
+//   <gDTOA_Mode> in <display.c>.
 
 
 typedef enum tagTIMER_SOURCE

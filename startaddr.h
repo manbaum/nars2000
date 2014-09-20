@@ -248,6 +248,9 @@ typedef struct tagSTART_ADDRESSES
     "LocalizeAll"               , (LPUCHAR) &LocalizeAll                ,
     "_CheckSymEntries"          , (LPUCHAR) &_CheckSymEntries           ,
     "ExecuteFunction_EM_YY"     , (LPUCHAR) &ExecuteFunction_EM_YY      ,
+  #ifdef DEBUG
+    "DisplayFcnLine"            , (LPUCHAR) &DisplayFcnLine             ,
+  #endif
     "CheckDfnExitError_EM"      , (LPUCHAR) &CheckDfnExitError_EM       ,
     "UnlocalizeSTEs"            , (LPUCHAR) &UnlocalizeSTEs             ,
     "LocalizeLabels"            , (LPUCHAR) &LocalizeLabels             ,
@@ -321,7 +324,7 @@ typedef struct tagSTART_ADDRESSES
     "GetNextValueMem"           , (LPUCHAR) &GetNextValueMem            ,
     "GetNextItemMem"            , (LPUCHAR) &GetNextItemMem             ,
     "GetNextValueMemSub"        , (LPUCHAR) &GetNextValueMemSub         ,
-    "GetGlbHandle"          , (LPUCHAR) &GetGlbHandle           ,
+    "GetGlbHandle"              , (LPUCHAR) &GetGlbHandle               ,
     "GetGlbPtrs"                , (LPUCHAR) &GetGlbPtrs                 ,
     "GetGlbPtrs_LOCK"           , (LPUCHAR) &GetGlbPtrs_LOCK            ,
     "GetSteZero"                , (LPUCHAR) &GetSteZero                 ,
@@ -681,7 +684,7 @@ typedef struct tagSTART_ADDRESSES
     "PrimProtoOpSlash_EM_YY"    , (LPUCHAR) &PrimProtoOpSlash_EM_YY     ,
     "PrimOpMonSlash_EM_YY"      , (LPUCHAR) &PrimOpMonSlash_EM_YY       ,
     "PrimOpMonSlashCommon_EM_YY", (LPUCHAR) &PrimOpMonSlashCommon_EM_YY ,
-    "PrimOpMonSlashScalar_EM_YY", (LPUCHAR) &PrimOpMonSlashScalar_EM_YY ,
+    "PrimOpRedOfSing_EM_YY"     , (LPUCHAR) &PrimOpRedOfSing_EM_YY      ,
     "PrimOpDydSlash_EM_YY"      , (LPUCHAR) &PrimOpDydSlash_EM_YY       ,
     "PrimOpDydSlashCommon_EM_YY", (LPUCHAR) &PrimOpDydSlashCommon_EM_YY ,
     "PrimOpDydSlashInsertDim_EM", (LPUCHAR) &PrimOpDydSlashInsertDim_EM ,
@@ -772,6 +775,9 @@ typedef struct tagSTART_ADDRESSES
     // qf_cr.c
     "SysFnCR_EM_YY"             , (LPUCHAR) &SysFnCR_EM_YY              ,
     "CopySteName"               , (LPUCHAR) &CopySteName                ,
+
+    // qf_d.c
+    "SysFnD_EM_YY"              , (LPUCHAR) &SysFnD_EM_YY               ,
 
     // qf_dl.c
     "SysFnDL_EM_YY"             , (LPUCHAR) &SysFnDL_EM_YY              ,

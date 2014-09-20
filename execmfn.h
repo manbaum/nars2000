@@ -23,31 +23,31 @@
 // Magic Function/Operator Enum
 typedef enum tagMFO
 {
-    MFOE_MonIota         ,      // 00:  Extended Monadic Iota
-    MFOE_DydIota         ,      // 01:  Extended Dyadic Iota
-    MFOE_MonDnShoe       ,      // 02:  Monadic Down Shoe
-    MFOE_MonRank         ,      // 03:  Monadic Derived Function from Rank Operator
-    MFOE_DydRank         ,      // 04:  Dyadic  ...
-    MFOE_Conform         ,      // 05:  Conform  (for Rank Operator)
-    MFOE_MonFMT          ,      // 06:  Monadic []FMT
+    MFOE_MonIota      ,         // 00:  Extended Monadic Iota
+    MFOE_DydIota      ,         // 01:  Extended Dyadic Iota
+    MFOE_MonDnShoe    ,         // 02:  Monadic Down Shoe
+    MFOE_MonRank      ,         // 03:  Monadic Derived Function from Rank Operator
+    MFOE_DydRank      ,         // 04:  Dyadic  ...
+    MFOE_Conform      ,         // 05:  Conform  (for Rank Operator)
+    MFOE_MonFMT       ,         // 06:  Monadic []FMT
     MFOE_BoxFMT          ,      // 07:  Box (for monadic []FMT)
-    MFOE_MonVR           ,      // 08:  Monadic []VR
-    MFOE_IdnDot          ,      // 09:  Identity function for Inner Product
-    MFOE_IdnJotDot       ,      // 0A:  Identity function for Outer Product
-    MFOE_MAD             ,      // 0B:  Multiset Asymmetric Difference
-    MFOE_MSD             ,      // 0C:  Multiset Symmetric Difference
-    MFOE_MU              ,      // 0D:  Multiset Union
-    MFOE_MI              ,      // 0E:  Multiset Intersection
-    MFOE_MIO             ,      // 0F:  Multiset Index Of
-    MFOE_MEO             ,      // 10:  Multiset Element Of
-    MFOE_MM              ,      // 11:  Multiset Match
-    MFOE_MLRS            ,      // 12:  Multiset LeftShoe
-    MFOE_MLRSU           ,      // 13:  Multiset LeftShoeUnderbar
-    MFOE_MMUL            ,      // 14:  Multiset Multiplicities
-    MFOE_DydDnShoe       ,      // 15:  Dyadic Down Shoe
-    MFOE_DydUpShoe       ,      // 16:  Dyadic Up Shoe
-    MFOE_DydLRShoeUnd    ,      // 17:  Dyadic Left/Right Shoe Underbar
-    MFOE_SD              ,      // 18:  Symmetric Difference
+    MFOE_MonVR        ,         // 08:  Monadic []VR
+    MFOE_IdnDot       ,         // 09:  Identity function for Inner Product
+    MFOE_IdnJotDot    ,         // 0A:  Identity function for Outer Product
+    MFOE_MAD          ,         // 0B:  Multiset Asymmetric Difference
+    MFOE_MSD          ,         // 0C:  Multiset Symmetric Difference
+    MFOE_MU           ,         // 0D:  Multiset Union
+    MFOE_MI           ,         // 0E:  Multiset Intersection
+    MFOE_MIO          ,         // 0F:  Multiset Index Of
+    MFOE_MEO          ,         // 10:  Multiset Element Of
+    MFOE_MM           ,         // 11:  Multiset Match
+    MFOE_MLRS         ,         // 12:  Multiset LeftShoe
+    MFOE_MLRSU        ,         // 13:  Multiset LeftShoeUnderbar
+    MFOE_MMUL         ,         // 14:  Multiset Multiplicities
+    MFOE_DydDnShoe    ,         // 15:  Dyadic Down Shoe
+    MFOE_DydUpShoe    ,         // 16:  Dyadic Up Shoe
+    MFOE_DydLRShoeUnd ,         // 17:  Dyadic Left/Right Shoe Underbar
+    MFOE_SD           ,         // 18:  Symmetric Difference
     MFOE_MonDomino       ,      // 19:  Monadic Domino for global numerics
     MFOE_DydDomino       ,      // 1A:  Dyadic  ...
     MFOE_DydDotDot       ,      // 1B:  Dyadic DotDot
@@ -63,35 +63,38 @@ typedef enum tagMFO
     MFOE_IdnConv         ,      // 25:  Identity function for Convolution
     MFOE_DydScan         ,      // 26:  Dyadic Scan
     MFOE_DydScan1        ,      // 27:  Dyadic Scan, first dimension
-    MFOE_LENGTH                 // 28:  # entries in this enum
+    MFOE_RoS1L        ,         // 28:  Reduction of Singletons, type #1, left identity element
+    MFOE_RoS1R        ,         // 29:  ...                           #1, right ...
+    MFOE_RoS2         ,         // 2A:  ...                           #2
+    MFOE_LENGTH                 // 2B:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
-#define MFON_MonIota            L"#MonIota"
-#define MFON_DydIota            L"#DydIota"
-#define MFON_MonDnShoe          L"#MonDnShoe"
-#define MFON_MonRank            L"#MonRank"
-#define MFON_DydRank            L"#DydRank"
-#define MFON_Conform            L"#Conform"
-#define MFON_MonFMT             L"#MonFMT"
+#define MFON_MonIota        	L"#MonIota"
+#define MFON_DydIota        	L"#DydIota"
+#define MFON_MonDnShoe      	L"#MonDnShoe"
+#define MFON_MonRank        	L"#MonRank"
+#define MFON_DydRank        	L"#DydRank"
+#define MFON_Conform        	L"#Conform"
+#define MFON_MonFMT         	L"#MonFMT"
 #define MFON_BoxFMT             L"#BoxFMT"
-#define MFON_MonVR              L"#MonVR"
-#define MFON_IdnDot             L"#IdnDot"
-#define MFON_IdnJotDot          L"#IdnJotDot"
-#define MFON_MAD                L"#MAD"
-#define MFON_MSD                L"#MSD"
-#define MFON_MU                 L"#MU"
-#define MFON_MI                 L"#MI"
-#define MFON_MIO                L"#MIO"
-#define MFON_MEO                L"#MEO"
-#define MFON_MM                 L"#MM"
-#define MFON_MLRS               L"#MLRS"
-#define MFON_MLRSU              L"#MLRSU"
-#define MFON_MMUL               L"#MMUL"
-#define MFON_DydDnShoe          L"#DydDnShoe"
-#define MFON_DydUpShoe          L"#DydUpShoe"
-#define MFON_DydLRShoeUnd       L"#DydLRShoeUnd"
-#define MFON_SD                 L"#SD"
+#define MFON_MonVR          	L"#MonVR"
+#define MFON_IdnDot         	L"#IdnDot"
+#define MFON_IdnJotDot      	L"#IdnJotDot"
+#define MFON_MAD            	L"#MAD"
+#define MFON_MSD            	L"#MSD"
+#define MFON_MU             	L"#MU"
+#define MFON_MI             	L"#MI"
+#define MFON_MIO            	L"#MIO"
+#define MFON_MEO            	L"#MEO"
+#define MFON_MM             	L"#MM"
+#define MFON_MLRS           	L"#MLRS"
+#define MFON_MLRSU          	L"#MLRSU"
+#define MFON_MMUL           	L"#MMUL"
+#define MFON_DydDnShoe      	L"#DydDnShoe"
+#define MFON_DydUpShoe      	L"#DydUpShoe"
+#define MFON_DydLRShoeUnd   	L"#DydLRShoeUnd"
+#define MFON_SD             	L"#SD"
 #define MFON_MonDomino          L"#MonDomino"
 #define MFON_DydDomino          L"#DydDomino"
 #define MFON_DydDotDot          L"#DydDotDot"
@@ -107,6 +110,9 @@ typedef enum tagMFO
 #define MFON_IdnConv            L"#IdnConv"
 #define MFON_DydScan            L"#DydScan"
 #define MFON_DydScan1           L"#DydScan1"
+#define MFON_RoS1L          	L"#RoS1L"
+#define MFON_RoS1R          	L"#RoS1R"
+#define MFON_RoS2           	L"#RoS2"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA
@@ -191,7 +197,6 @@ typedef enum tagMFO
 #define $QUAD_MS        WS_UTF16_QUAD SYSLBL_MS
 #define $QUAD_NC        WS_UTF16_QUAD L"NC"
 #define $QUAD_PRO       WS_UTF16_QUAD SYSLBL_PRO
-#define $QUAD_SGL       WS_UTF16_QUAD SYSLBL_SGL
 #define $QUAD_TCNL      WS_UTF16_QUAD L"TCNL"
 #define $QUAD_WSID      WS_UTF16_QUAD L"WSID"
 #define $RANK           WS_UTF16_DIERESISJOT

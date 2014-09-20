@@ -1687,7 +1687,7 @@ DWORD _MyWaitForSemaphore
             break;
 
         case WAIT_OBJECT_0:
-            lpwszWaitRes = L"WAIT_OBJCET_0";
+            lpwszWaitRes = L"WAIT_OBJECT_0";
 
             break;
 

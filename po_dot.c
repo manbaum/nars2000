@@ -2307,20 +2307,20 @@ RESTART_INNERPROD_RES:
     // If the result is simple non-hetero or global numeric, ...
     if (IsSimpleNHGlbNum (aplTypeRes))
     {
-        APLUINT  uInnLft,               // Index into left arg
-                 uInnRht;               // ...        right ...
-        TOKEN    tkRes = {0};           // Temporary token result
-        APLINT   aplIntegerLft,         // Left arg integer
-                 aplIntegerRht,         // Right ...
-                 aplIntegerCmpLft,      // Left comparison arg integer
-                 aplIntegerCmpRht;      // Right ...
-        APLFLOAT aplFloatLft,           // Left arg float
-                 aplFloatRht,           // Right ...
-                 aplFloatCmpLft,        // Left comparison arg float
-                 aplFloatCmpRht;        // Right ...
-        APLCHAR  aplCharLft,            // Left arg char
-                 aplCharRht;            // Right ...
-        UINT     uBitIndex;             // Bit index for looping through Boolean result
+        APLUINT  uInnLft,           // Index into left arg
+                 uInnRht;           // ...        right ...
+        TOKEN    tkRes = {0};       // Temporary token result
+        APLINT   aplIntegerLft,     // Left arg integer
+                 aplIntegerRht,     // Right ...
+                 aplIntegerCmpLft,  // Left comparison arg integer
+                 aplIntegerCmpRht;  // Right ...
+        APLFLOAT aplFloatLft,       // Left arg float
+                 aplFloatRht,       // Right ...
+                 aplFloatCmpLft,    // Left comparison arg float
+                 aplFloatCmpRht;    // Right ...
+        APLCHAR  aplCharLft,        // Left arg char
+                 aplCharRht;        // Right ...
+        UINT     uBitIndex;         // Bit index for looping through Boolean result
         HGLOBAL  lpSymGlbLft = NULL,    // Ptr to left arg global numeric
                  lpSymGlbRht = NULL,    // ...    right ...
                  lpSymGlbCmpLft = NULL, // ...    Left  comparison arg global numeric
@@ -2505,6 +2505,44 @@ RESTART_INNERPROD_RES:
                 } else
                     goto ERROR_EXIT;
 
+                // If the reduction is on a singleton, ...
+                if (IsSingleton (aplInnrMax))
+                {
+                    // Reduce it
+                    lpYYRes2 =
+                      PrimOpRedOfSing_EM_YY (&tkRes,                // Ptr to right arg token
+                                              lpYYFcnStrOpr,        // Ptr to operator function strand
+                                              lpYYFcnStrLft,        // Ptr to left operand
+                                              NULL,                 // Ptr to the reduction axis value (may be NULL if scan)
+                                              FALSE,                // TRUE iff we should treat as Scan
+                                              TRUE,                 // TRUE iff the item must be enclosed before reducing it
+                                              bPrototyping);        // TRUE iff prototyping
+                    // If it succeeded, ...
+                    if (lpYYRes2)
+                    {
+                        // Check for NoValue
+                        if (IsTokenNoValue (&lpYYRes2->tkToken))
+                        {
+                            // Free the YYRes (but not the storage)
+                            YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+                            goto VALUE_EXIT;
+                        } // End IF
+
+                        Assert (lpYYRes2->tkToken.tkFlags.TknType EQ TKT_VARIMMED
+                             || lpYYRes2->tkToken.tkFlags.TknType EQ TKT_VARARRAY);
+
+                        // Free the previous tkRes before overwriting it
+                        FreeResultTkn (&tkRes);
+
+                        // Copy the result to local storage
+                        tkRes = *CopyToken_EM (&lpYYRes2->tkToken, FALSE);
+
+                        // Free the result item
+                        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
+                    } else
+                        goto ERROR_EXIT;
+                } else
                 // If this is not the first time, do the reduction
                 if (iInnMax NE (APLINT) (aplInnrMax - 1))
                 {
@@ -2625,7 +2663,7 @@ RESTART_INNERPROD_RES:
                         } // End IF
                     } else
                         goto ERROR_EXIT;
-                } // End IF
+                } // End IF/ELSE/...
 
                 // Copy the last reduction result as the new reduction right arg
 
@@ -2863,6 +2901,44 @@ RESTART_INNERPROD_RES:
                         goto VALUE_EXIT;
                     } // End IF
 
+                    // If the reduction is on a singleton, ...
+                    if (IsSingleton (aplInnrMax))
+                    {
+                        // Reduce it
+                        lpYYRes2 =
+                          PrimOpRedOfSing_EM_YY (&lpYYRes->tkToken,     // Ptr to right arg token
+                                                  lpYYFcnStrOpr,        // Ptr to operator function strand
+                                                  lpYYFcnStrLft,        // Ptr to left operand
+                                                  NULL,                 // Ptr to the reduction axis value (may be NULL if scan)
+                                                  FALSE,                // TRUE iff we should treat as Scan
+                                                  TRUE,                 // TRUE iff the item must be enclosed before reducing it
+                                                  bPrototyping);        // TRUE iff prototyping
+                        // Free the result item
+                        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                        // If it succeeded, ...
+                        if (lpYYRes2)
+                        {
+                            // Check for NoValue
+                            if (IsTokenNoValue (&lpYYRes2->tkToken))
+                            {
+                                // Free the YYRes (but not the storage)
+                                YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+                                goto VALUE_EXIT;
+                            } // End IF
+
+                            Assert (lpYYRes2->tkToken.tkFlags.TknType EQ TKT_VARIMMED
+                                 || lpYYRes2->tkToken.tkFlags.TknType EQ TKT_VARARRAY);
+
+                            // Copy the result to the accumulated reduction token
+                            tkItmRed = *CopyToken_EM (&lpYYRes2->tkToken, FALSE);
+
+                            // Free the result item (but not the storage)
+                            YYFree (lpYYRes2); lpYYRes2 = NULL;
+                        } else
+                            goto ERROR_EXIT;
+                    } else
                     // If this is the first time, there's no reduction
                     if (iInnMax EQ (APLINT) (aplInnrMax - 1))
                     {
@@ -2913,7 +2989,7 @@ RESTART_INNERPROD_RES:
                             YYFree (lpYYRes2); lpYYRes2 = NULL;
                         } else
                             goto ERROR_EXIT;
-                    } // End IF/ELSE
+                    } // End IF/ELSE/...
                 } else
                 {
                     // If this is not the first time, free the reduction result

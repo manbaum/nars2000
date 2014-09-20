@@ -1984,10 +1984,6 @@ typedef void (*LPERRHANDFN) (LPWCHAR lpwszMsg,
                              LPWCHAR lpwszLine,
                              UINT uCaret);
 
-// N.B.:  Whenever changing the above enum (FLT_DISP_FMT),
-//   be sure to make a corresponding change to
-//   <gDTOA_Mode> in <display.c>.
-
 
 //***************************************************************************
 //  Recent Files

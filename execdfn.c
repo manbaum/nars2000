@@ -404,11 +404,6 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
             break;
 
-        case LINENUM_SGL:
-            startLineNum = lpMemDfnHdr->nSysLblSgl;
-
-            break;
-
         defstop
             break;
     } // End SWITCH

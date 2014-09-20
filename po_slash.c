@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include "mf_ros.h"
 
 
 //***************************************************************************
@@ -239,7 +240,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     } else
     {
         // No axis specified:
-        //   if Slash, use last dimension
+        // if Slash, use last dimension
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = max (aplRankRht, 1) - 1;
@@ -250,38 +251,66 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
             // Otherwise, it's SlashBar on the first dimension
             aplAxis = 0;
-        } // End IF/ELSE
+    } // End IF/ELSE
     } // End IF/ELSE
 
     // Get right arg's global ptr
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // If the right arg is a scalar, return it
-    if (IsScalar (aplRankRht))
+    // If the argument is not a scalar, ...
+    if (!IsScalar (aplRankRht))
     {
+        // The rank of the result is one less than that of the right arg
+        aplRankRes = aplRankRht - 1;
+
+        // Skip over the header to the dimensions
+        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
+
+        //***************************************************************
+        // Calculate product of dimensions before, at, and after the axis dimension
+        //***************************************************************
+
+        // Calculate the product of the right arg's dimensions below the axis dimension
+        uDimLo = 1;
+        for (uDim = 0; uDim < aplAxis; uDim++)
+            uDimLo *= lpMemDimRht[uDim];
+
+        // Get the length of the axis dimension
+        uDimAxRht = lpMemDimRht[uDim++];
+
+        // Calculate the product of the right arg's dimensions above the axis dimension
+        uDimHi = 1;
+        for (; uDim < aplRankRht; uDim++)
+            uDimHi *= lpMemDimRht[uDim];
+
+        // Calculate the result NELM
+        aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
+        if (!bRet)
+            goto WSFULL_EXIT;
+    } else
+        uDimAxRht = 1;
+
+    // If the reduction axis length is 1, ...
+    if (IsUnitDim (uDimAxRht))
+    {
+        // Reduce it
         lpYYRes =
-          PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
-                                      aplTypeRht,       // Right arg storage type
-                                      aplLongestRht,    // Right arg immediate value
-                                      hGlbRht,          // Right arg global memory handle
-                                      lpYYFcnStrOpr,     // Ptr to operator function strand
-                                      lpYYFcnStrLft,     // Ptr to left operand
-                                      bPrototyping);     // TRUE iff prototyping
+          PrimOpRedOfSing_EM_YY (lptkRhtArg,        // Ptr to right arg token
+                                 lpYYFcnStrOpr,     // Ptr to operator function strand
+                                 lpYYFcnStrLft,     // Ptr to left operand
+                                &aplAxis,           // Ptr to the reduction axis value (may be NULL if scan)
+                                 FALSE,             // TRUE iff we should treat as Scan
+                                 FALSE,             // TRUE iff the item must be enclosed before reducing it
+                                 bPrototyping);     // TRUE iff prototyping
         goto NORMAL_EXIT;
     } // End IF
 
     //***************************************************************
     // From here on, the right arg is a vector or higher rank array
     //***************************************************************
-
-    // The rank of the result is one less than that of the right arg
-    aplRankRes = aplRankRht - 1;
-
-    // Skip over the header to the dimensions
-    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
-
-    // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayDataFmBase (lpMemRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (aplTypeRht))
@@ -292,28 +321,6 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
     } // End IF
-
-    //***************************************************************
-    // Calculate product of dimensions before, at, and after the axis dimension
-    //***************************************************************
-
-    // Calculate the product of the right arg's dimensions below the axis dimension
-    uDimLo = 1;
-    for (uDim = 0; uDim < aplAxis; uDim++)
-        uDimLo *= lpMemDimRht[uDim];
-
-    // Get the length of the axis dimension
-    uDimAxRht = lpMemDimRht[uDim++];
-
-    // Calculate the product of the right arg's dimensions above the axis dimension
-    uDimHi = 1;
-    for (; uDim < aplRankRht; uDim++)
-        uDimHi *= lpMemDimRht[uDim];
-
-    // Calculate the result NELM
-    aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
-    if (!bRet)
-        goto WSFULL_EXIT;
 
     // Handle prototypes specially
     if (IsEmpty (aplNELMRes)
@@ -456,7 +463,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
          && !IsSimpleBool (aplTypeRht))
             aplTypeRes = ARRAY_NESTED;
         else
-        {
+    {
             // Get the corresponding lpPrimSpecLft
             lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 
@@ -648,7 +655,7 @@ RESTART_EXCEPTION_APA:
 ////////////////////*((LPAPLINT) lpMemRes)++ = uDimAxRht * (apaOffRht + apaMulRht * uDimRht)
 ////////////////////                         + apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2;
                     *((LPAPLINT) lpMemRes)++ = iadd64_RE (imul64_RE (uDimAxRht, iadd64_RE (apaOffRht, imul64_RE (apaMulRht, uDimRht))),
-                                                          imul64_RE (apaMulRht, imul64_RE (uDimHi   , imul64_RE (uDimAxRht, isub64_RE (uDimAxRht, 1)) / 2)));
+                                                          imul64_RE (apaMulRht, imul64_RE (uDimHi,    imul64_RE (uDimAxRht, isub64_RE (uDimAxRht, 1)) / 2)));
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
                 {
                     dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -986,8 +993,8 @@ RESTART_EXCEPTION:
                     case ARRAY_BOOL:
                     case ARRAY_INT:
                     case ARRAY_FLOAT:
-                        // Set the token & immediate types in case uDimAxRht EQ 1
-                        tkRhtArg.tkFlags.TknType = TKT_VARIMMED;
+                // Set the token & immediate types in case uDimAxRht EQ 1
+                tkRhtArg.tkFlags.TknType = TKT_VARIMMED;
 
                         break;
 
@@ -1522,95 +1529,93 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PrimOpMonSlashScalar_EM_YY
+//  $PrimOpRedOfSing_EM_YY
 //
-//  Handle the case where the right arg is a scalar
+//  Handle reduction of a singleton
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonSlashScalar_EM_YY"
+#define APPEND_NAME     L" -- PrimOpRedOfSing_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
+LPPL_YYSTYPE PrimOpRedOfSing_EM_YY
     (LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     APLSTYPE     aplTypeRht,           // Right arg storage type
-     APLLONGEST   aplLongestRht,        // Right arg immediate value
-     HGLOBAL      hGlbRht,              // Right arg global memory handle
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand
+     LPAPLUINT    lpaplAxis,            // Ptr to reduction axis value (may be NULL if scan)
+     UBOOL        bScan,                // TRUE iff we should treat as Scan
+     UBOOL        bEnclose1st,          // TRUE iff the item must be enclosed before reducing it
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    HGLOBAL      hGlbPro = NULL;        // Prototype global memory handle
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
+    LPPRIMFLAGS  lpPrimFlagsLft;        // Ptr to left operand primitive flags
+    TOKEN        tkLft = {0},           // Left arg token
+                 tkAxis = {0};          // Axis token
+    LPTOKEN      lptkLft,               // Ptr to left arg token
+                 lptkAxis;              // Ptr to Axis token
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    HGLOBAL      hGlbMFO;               // Magic function/operator global memory handle
 
-    // If it's a global, ...
-    if (hGlbRht)
-    {
-        // If we're prototyping, ...
-        if (bPrototyping)
-        {
-            // Make a copy of the right arg
-            hGlbPro =
-            hGlbRht =
-              MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbRht),    // Proto arg global memory handle
-                                  &lpYYFcnStrOpr->tkToken,  // Ptr to function token
-                                       MP_NUMONLY);                 // Numerics only
-            if (hGlbRht EQ NULL)
-                goto WSFULL_EXIT;
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
-            Assert (GetPtrTypeDir (hGlbRht) EQ PTRTYPE_HGLOBAL);
-        } else
-            DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbRht));
-    } else  // It's an immediate
+    // If we should treat as Scan, ...
+    if (bScan)
     {
-        // If we're prototyping, ...
-        if (bPrototyping)
-            aplLongestRht = IsSimpleChar (aplTypeRht) ? L' ' : 0;
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_RoS2];
+
+        // Zap the left arg and axis token ptrs
+        lptkLft = lptkAxis = NULL;
+    } else
+    {
+        // Get a ptr to the Primitive Function Flags
+        lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
+
+        // Fill in the left arg token
+        tkLft.tkFlags.TknType   = TKT_VARIMMED;
+        tkLft.tkFlags.ImmType   = IMMTYPE_BOOL;
+////////tkLft.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+        tkLft.tkData.tkLongest  = bEnclose1st;
+////////tkLft.tkCharIndex       =                   // Ignored
+
+        // Fill in the axis token
+        tkAxis.tkFlags.TknType   = TKT_VARIMMED;
+        tkAxis.tkFlags.ImmType   = IMMTYPE_INT;
+////////tkAxis.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+////////tkAxis.tkData.tkLongest  =                   // Filled in below
+////////tkAxis.tkCharIndex       =                   // Ignored
+
+        // If there's an axis value, ...
+        if (lpaplAxis)
+            tkAxis.tkData.tkInteger = GetQuadIO () + *lpaplAxis;
+        else
+            tkAxis.tkData.tkInteger = -1;
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[lpPrimFlagsLft->bLftIdent ? MFOE_RoS1L : MFOE_RoS1R];
+
+        // Set the left arg and axis token ptrs
+        lptkLft  = &tkLft;
+        lptkAxis = &tkAxis;
     } // End IF/ELSE
 
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // If it's a global, ...
-    if (hGlbRht)
-    {
-        // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRht);
-////////lpYYRes->tkToken.tkCharIndex       =                // Filled in below
-    } else  // It's an immediate
-    {
-        // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-        lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeRht);
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
-////////lpYYRes->tkToken.tkCharIndex       =                // Filled in below
-    } // End IF/ELSE
-
-    lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
-
-    goto NORMAL_EXIT;
-
-WSFULL_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                              &lpYYFcnStrOpr->tkToken);
-    goto ERROR_EXIT;
-
-ERROR_EXIT:
-    if (hGlbPro)
-    {
-        // We no longer need this storage
-        FreeResultGlobalVar (hGlbPro); hGlbPro = NULL;
-    } // End IF
-NORMAL_EXIT:
-    return lpYYRes;
-} // End PrimOpMonSlashScalar_EM_YY
+    return
+      ExecuteMagicOperator_EM_YY (lptkLft,                  // Ptr to left arg token
+                                 &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
+                                  lpYYFcnStrLft,            // Ptr to left operand function strand
+                                  lpYYFcnStrOpr,            // Ptr to function strand
+                                  NULL,                     // Ptr to right operand function strand (may be NULL)
+                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkAxis,                 // Ptr to axis token (may be NULL)
+                                  hGlbMFO,                  // Magic function/operator global memory handle
+                                  NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                  bPrototyping
+                                ? LINENUM_PRO
+                                : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+} // End PrimOpRedOfSing_EM_YY
 #undef  APPEND_NAME
 
 
@@ -1776,7 +1781,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
         case ARRAY_FLOAT:
             // Attempt to convert the float to an integer using System []CT
-            aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
+        aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
 
             break;
 
@@ -1820,7 +1825,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     } else
     {
         // No axis specified:
-        //   if Slash, use last dimension
+        // if Slash, use last dimension
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = max (aplRankRht, 1) - 1;
@@ -1831,7 +1836,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
             // Otherwise, it's SlashBar on the first dimension
             aplAxis = 0;
-        } // End IF/ELSE
+    } // End IF/ELSE
     } // End IF/ELSE
 
     //***************************************************************
@@ -2173,33 +2178,31 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
         } // End IF/ELSE
     } else
-    // If the absolute value of the left arg is one, the result is
-    //   1/R
+    // If the absolute value of the left arg is one, ...
     if (aplIntegerLftAbs EQ 1 && hGlbRht)
     {
-        TOKEN tkFcn = {0};          // The function token
+        LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+        HGLOBAL      hGlbMFO;               // Magic function/operator global memory handle
 
-        // Fill in the left arg token
-        tkLftArg.tkFlags.TknType   = TKT_VARIMMED;
-        tkLftArg.tkFlags.ImmType   = IMMTYPE_BOOL;
-////////tkLftArg.tkFlags.NoDisplay = FALSE;     // Already zero from {0}
-        tkLftArg.tkData.tkBoolean  = 1;
-        tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
 
-        // Setup the function token
-        tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
-        tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
-////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
-        tkFcn.tkData.tkChar     = (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR) ? UTF16_SLASHBAR
-                                                                                             : UTF16_SLASH;
-        tkFcn.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_RoS2];
 
-        // Compress the right arg
+        // The result is {disclose} {each} LftOpr / {each}                  R  (R simple)
+        // The result is {disclose} {each} LftOpr / {each} {enclose} {each} R  (R nested)
         lpYYRes =
-          PrimFnDydSlash_EM_YY(&tkLftArg,
-                               &tkFcn,
-                                lptkRhtArg,
-                                NULL);
+          ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token
+                                     &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                      lpYYFcnStrLft,            // Ptr to left operand function strand
+                                      lpYYFcnStrOpr,            // Ptr to function strand
+                                      NULL,                     // Ptr to right operand function strand (may be NULL)
+                                      lptkRhtArg,               // Ptr to right arg token
+                                      NULL,                     // Ptr to axis token
+                                      hGlbMFO,                  // Magic function/operator global memory handle
+                                      NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                      LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
         else
@@ -2215,6 +2218,39 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         lpYYRes = PrimOpMonSlashCommon_EM_YY (lpYYFcnStrOpr,    // Ptr to operator function strand
                                               lptkRhtArg,       // Ptr to right arg
                                               bPrototyping);    // TRUE iff prototyping
+        // Insert a unit dimension into the result
+        if (!PrimOpDydSlashInsertDim_EM (lpYYRes,       // Ptr to the result
+                                         aplAxis,       // The (one and only) axis value
+                                         uDimAxRes,     // Result axis dimension length
+                                        &hGlbRes,       // Ptr to the result global memory handle
+                                         lpYYFcnStrOpr))// Ptr to operator function strand
+            goto ERROR_EXIT;
+        else
+            goto NORMAL_EXIT;
+    } else
+    // If the left arg is -uDimAxRht, the result is
+    //   ({rho} Result) {rho} LeftOperand /[X] {reverse}[X] RightArg
+    //   where ({rho} Result) is ({rho} RightArg) with
+    //   ({rho} RightArg})[X] set to one
+    if (aplIntegerLft EQ -(APLINT) uDimAxRht)
+    {
+        LPPL_YYSTYPE lpYYRes2;
+
+        // Reverse the right arg along the specified axis
+        lpYYRes2 = PrimFnMonCircleStile_EM_YY (&lpYYFcnStrOpr->tkToken, // Ptr to function token
+                                                lptkRhtArg,             // Ptr to right arg token
+                                                lptkAxisOpr);           // Ptr to operator axis token (may be NULL)
+        // If it failed, ...
+        if (!lpYYRes2)
+            goto ERROR_EXIT;
+
+        // Reduce the reversed right arg along the specified axis
+        lpYYRes = PrimOpMonSlashCommon_EM_YY (lpYYFcnStrOpr,        // Ptr to operator function strand
+                                             &lpYYRes2->tkToken,    // Ptr to right arg
+                                              bPrototyping);        // TRUE iff prototyping
+        // Free the result of the function execution
+        FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
+
         // Insert a unit dimension into the result
         if (!PrimOpDydSlashInsertDim_EM (lpYYRes,       // Ptr to the result
                                          aplAxis,       // The (one and only) axis value
@@ -2815,7 +2851,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
     *lphGlbRes = MakePtrTypeGlb (*lphGlbRes);
 
     // Check to see if GlobalReAlloc returns the same handle
-    if (hGlbTmp NE *lphGlbRes)
+    if (ClrPtrTypeDir (hGlbTmp) NE *lphGlbRes)
         // Save back into the result
         lpYYRes->tkToken.tkData.tkGlbData = *lphGlbRes;
 

@@ -227,7 +227,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     } else
     {
         // No axis specified:
-        //   if Slope, use last dimension
+        // if Slope, use last dimension
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE)
             aplAxis = aplRankRht - 1;
@@ -238,41 +238,11 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
             // Otherwise, it's SlopeBar on the first dimension
             aplAxis = 0;
-        } // End IF/ELSE
+    } // End IF/ELSE
     } // End IF/ELSE
 
     // Get right arg's global ptr
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-
-    // If the right arg is a scalar, return it
-    if (IsScalar (aplRankRht))
-    {
-        lpYYRes =
-          PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
-                                      aplTypeRht,       // Right arg storage type
-                                      aplLongestRht,    // Right arg immediate value
-                                      hGlbRht,          // Right arg global memory handle
-                                      lpYYFcnStrOpr,    // Ptr to operator function strand
-                                      lpYYFcnStrLft,    // Ptr to left operand
-                                      bPrototyping);    // TRUE iff prototyping
-        goto NORMAL_EXIT;
-    } // End IF
-
-    //***************************************************************
-    // From here on, the right arg is a vector or higher rank array
-    //***************************************************************
-
-    // If the function is right tack, return the right arg unchanged
-    if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_RIGHTTACK)
-    {
-        // Increment the right arg reference count so we can copy it
-        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbRht));
-
-        // Copy the right arg
-        hGlbRes = hGlbRht;
-
-        goto YYALLOC_EXIT;
-    } // End IF
 
     // The rank of the result is the same as that of the right arg
     aplRankRes = aplRankRht;
@@ -297,25 +267,61 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     // Calculate product of dimensions before, at, and after the axis dimension
     //***************************************************************
 
-    // Calculate the product of the right arg's dimensions below the axis dimension
-    uDimLo = 1;
-    for (uDim = 0; uDim < aplAxis; uDim++)
-        uDimLo *= lpMemDimRht[uDim];
+    // If the argument is not a scalar, ...
+    if (!IsScalar (aplRankRht))
+    {
+        // Calculate the product of the right arg's dimensions below the axis dimension
+        uDimLo = 1;
+        for (uDim = 0; uDim < aplAxis; uDim++)
+            uDimLo *= lpMemDimRht[uDim];
 
-    // Get the length of the axis dimension
-    uDimAxRht = lpMemDimRht[uDim++];
+        // Get the length of the axis dimension
+        uDimAxRht = lpMemDimRht[uDim++];
 
-    // Calculate the product of the right arg's dimensions above the axis dimension
-    uDimHi = 1;
-    for (; uDim < aplRankRht; uDim++)
-        uDimHi *= lpMemDimRht[uDim];
+        // Calculate the product of the right arg's dimensions above the axis dimension
+        uDimHi = 1;
+        for (; uDim < aplRankRht; uDim++)
+            uDimHi *= lpMemDimRht[uDim];
 
-    // Calculate the result NELM
-    aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
-    if (bRet || IsZeroDim (uDimAxRht))
-        aplNELMRes = imul64 (aplNELMRes, uDimAxRht, &bRet);
-    if (!bRet)
-        goto WSFULL_EXIT;
+        // Calculate the result NELM
+        aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
+        if (bRet || IsZeroDim (uDimAxRht))
+            aplNELMRes = imul64 (aplNELMRes, uDimAxRht, &bRet);
+        if (!bRet)
+            goto WSFULL_EXIT;
+    } else
+        uDimAxRht = 1;
+
+    // If the scan axis length is 1, ...
+    if (IsUnitDim (uDimAxRht))
+    {
+        // Reduce it
+        lpYYRes =
+          PrimOpRedOfSing_EM_YY (lptkRhtArg,        // Ptr to right arg token
+                                 lpYYFcnStrOpr,     // Ptr to operator function strand
+                                 lpYYFcnStrLft,     // Ptr to left operand
+                                 NULL,              // Ptr to the reduction axis value (may be NULL if scan)
+                                 TRUE,              // TRUE iff we should treat as Scan
+                                 FALSE,             // TRUE iff the item must be enclosed before reducing it
+                                 bPrototyping);     // TRUE iff prototyping
+        goto NORMAL_EXIT;
+    } // End IF
+
+    //***************************************************************
+    // From here on, the right arg is a vector or higher rank array
+    //***************************************************************
+
+    // If the function is right tack, return the right arg unchanged
+    if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_RIGHTTACK)
+    {
+        // Increment the right arg reference count so we can copy it
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbRht));
+
+        // Copy the right arg
+        hGlbRes = hGlbRht;
+
+        goto YYALLOC_EXIT;
+    } // End IF
 
     // If the right arg is empty, return it
     if (IsEmpty (aplNELMRht))
@@ -327,6 +333,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
     // Get a ptr to the Primitive Function Flags
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
+
+    // If this function has no identity element, ...
+    if (!lpPrimFlagsLft->IdentElem)
+        goto DOMAIN_EXIT;
 
     // If the product of the dimensions above
     //   the axis dimension is one, and
@@ -1039,11 +1049,11 @@ RESTART_EXCEPTION:
                             case UTF16_TIMES:
                                 YYFcnStrLft.tkToken.tkData.tkChar = UTF16_COLONBAR;
 
-                                break;
+                            break;
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                        defstop
+                            break;
+                    } // End SWITCH
                     } // End IF
                 } // End FOR
 
@@ -1076,6 +1086,41 @@ RESTART_EXCEPTION:
                 if (aplTypeRes NE aplTypeRht)
                     (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkRhtArg);
 
+                // Check for Reduction of a Singleton
+                if (uAx EQ 0)
+                {
+                    // Reduce it
+                    lpYYRes =
+                      PrimOpRedOfSing_EM_YY (&tkRhtArg,         // Ptr to right arg token
+                                              lpYYFcnStrOpr,    // Ptr to operator function strand
+                                              lpYYFcnStrLft,    // Ptr to left operand
+                                              NULL,             // Ptr to the reduction axis value (may be NULL if scan)
+                                              FALSE,            // TRUE iff we should treat as Scan
+                                              TRUE,             // TRUE iff the item must be enclosed before reducing it
+                                              bPrototyping);    // TRUE iff prototyping
+                    // Free the right arg token
+                    FreeResultTkn (&tkRhtArg);
+
+                    // If it succeeded, ...
+                    if (lpYYRes)
+                    {
+                        // Check for NoValue
+                        if (IsTokenNoValue (&lpYYRes->tkToken))
+                        {
+                            // Free the YYRes (but not the storage)
+                            YYFree (lpYYRes); lpYYRes = NULL;
+
+                            goto VALUE_EXIT;
+                        } // End IF
+
+                        // Copy the result to the right arg token
+                        tkRhtArg = lpYYRes->tkToken;
+
+                        // Free the YYRes (but not the storage)
+                        YYFree (lpYYRes); lpYYRes = NULL;
+                    } else
+                        goto ERROR_EXIT;
+                } else
                 // Loop backwards through the elements along the specified axis
                 for (iDim = uAx - 1; iDim >= 0; iDim--)
                 {
@@ -1299,11 +1344,11 @@ RESTART_EXCEPTION:
                                 // Save in the result as an HGLOBAL
                                 ((LPAPLNESTED) lpMemRes)[uRht] = CopySymGlbDir_PTB (tkRhtArg.tkData.tkGlbData);
 
-                                break;
+                        break;
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                    defstop
+                        break;
+                } // End SWITCH
 
                         break;
 

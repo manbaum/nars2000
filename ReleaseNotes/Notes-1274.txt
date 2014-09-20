@@ -1,7 +1,7 @@
 Build #1274 -- Version 0.4.9.xx
 -------------------------------
 
-* Include DEUG Stmts For Semaphore Waits
+* Include DEBUG Stmts For Semaphore Waits
 
 Directory trunk:
 

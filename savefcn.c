@@ -1201,7 +1201,7 @@ UBOOL SaveFunctionCom
     LPTOKEN        lptkCSBeg;               // Ptr to next token on the CS stack
 
     // Fill in common values
-    lpSF_Fcns->bRet     = FALSE;
+    lpSF_Fcns->bRet = FALSE;
     lpSF_Fcns->uErrLine = NEG1U;
 
     Assert ((hWndFE EQ NULL) ? TRUE : IzitFE (hWndFE));
@@ -1307,13 +1307,13 @@ UBOOL SaveFunctionCom
 
         // Tokenize the function header
         hGlbTknHdr =
-          Tokenize_EM (&lpMemTxtLine->C,        // The line to tokenize (not necessarily zero-terminated)
-                        uLineLen,               // NELM of lpwszLine
-                        hWndEC,                 // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                        0,                      // Function line # (0 = header)
-                       &ErrorHandler,           // Ptr to error handling function (may be NULL)
+          Tokenize_EM (&lpMemTxtLine->C,    // The line to tokenize (not necessarily zero-terminated)
+                        uLineLen,           // NELM of lpwszLine
+                        hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
+                        0,                  // Function line # (0 = header)
+                       &ErrorHandler,       // Ptr to error handling function (may be NULL)
                         lpSF_Fcns,              // Ptr to common struc (may be NULL if unused)
-                        FALSE);                 // TRUE iff we're tokenizing a Magic Function/Operator
+                        FALSE);             // TRUE iff we're tokenizing a Magic Function/Operator
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } // End IF
@@ -1410,11 +1410,11 @@ UBOOL SaveFunctionCom
         // If this is not an AFO, ...
         if (!fhLocalVars.bAFO)
         {
-            // Check to see if this function is already in global memory
-            lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
+        // Check to see if this function is already in global memory
+        lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
 
-            // Get the old Dfn global memory handle
-            hGlbOldDfn = lpSymName->stData.stGlbData;
+        // Get the old Dfn global memory handle
+        hGlbOldDfn = lpSymName->stData.stGlbData;
         } // End IF
 
         // If it's already in memory, get its creation time
@@ -1430,7 +1430,7 @@ UBOOL SaveFunctionCom
             for (;
                  lpSISCur;
                  lpSISCur = lpSISCur->lpSISPrv)
-            if (lpSISCur->hGlbDfnHdr EQ hGlbOldDfn)
+            if (ClrPtrTypeDir (lpSISCur->hGlbDfnHdr) EQ ClrPtrTypeDir (hGlbOldDfn))
             {
                 if (hWndFE)
                 {
@@ -1836,60 +1836,60 @@ UBOOL SaveFunctionCom
             } // End SWITCH
         } else
         {
-            // Save the global memory handle in the STE
-            lpSymName->stData.stGlbData = MakePtrTypeGlb (hGlbDfnHdr);
+        // Save the global memory handle in the STE
+        lpSymName->stData.stGlbData = MakePtrTypeGlb (hGlbDfnHdr);
 
-            // Mark as valued and user-defined function/operator
-            lpSymName->stFlags.Value  =
-            lpSymName->stFlags.UsrDfn = TRUE;
+        // Mark as valued and user-defined function/operator
+        lpSymName->stFlags.Value  =
+        lpSymName->stFlags.UsrDfn = TRUE;
 
-            // Copy the "Accepts Axis Operator" flag
-            lpSymName->stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
+        // Copy the "Accepts Axis Operator" flag
+        lpSymName->stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
 
-            // Set the object name
-            lpSymName->stFlags.ObjName = OBJNAME_USR;
+        // Set the object name
+        lpSymName->stFlags.ObjName = OBJNAME_USR;
 
-            // Mark as with the proper type and valence
+        // Mark as with the proper type and valence
 
-            // Split cases based upon the function type
-            switch (lpMemDfnHdr->DfnType)
-            {
-                case DFNTYPE_OP1:   // Monadic operator
-                    lpSymName->stFlags.stNameType = NAMETYPE_OP1;
+        // Split cases based upon the function type
+        switch (lpMemDfnHdr->DfnType)
+        {
+            case DFNTYPE_OP1:   // Monadic operator
+                lpSymName->stFlags.stNameType = NAMETYPE_OP1;
 
-                    break;
+                break;
 
-                case DFNTYPE_OP2:   // Dyadic operator
-                    lpSymName->stFlags.stNameType = NAMETYPE_OP2;
+            case DFNTYPE_OP2:   // Dyadic operator
+                lpSymName->stFlags.stNameType = NAMETYPE_OP2;
 
-                    break;
+                break;
 
-                case DFNTYPE_FCN:   // Function
-                    // Split cases based upon the function valence
-                    switch (lpMemDfnHdr->FcnValence)
-                    {
-                        case FCNVALENCE_NIL:    // Niladic function
-                            lpSymName->stFlags.stNameType = NAMETYPE_FN0;
+            case DFNTYPE_FCN:   // Function
+                // Split cases based upon the function valence
+                switch (lpMemDfnHdr->FcnValence)
+                {
+                    case FCNVALENCE_NIL:    // Niladic function
+                        lpSymName->stFlags.stNameType = NAMETYPE_FN0;
 
-                            break;
+                        break;
 
-                        case FCNVALENCE_MON:    // Monadic function
-                        case FCNVALENCE_DYD:    // Dyadic function
-                        case FCNVALENCE_AMB:    // Ambivalent function
-                            lpSymName->stFlags.stNameType = NAMETYPE_FN12;
+                    case FCNVALENCE_MON:    // Monadic function
+                    case FCNVALENCE_DYD:    // Dyadic function
+                    case FCNVALENCE_AMB:    // Ambivalent function
+                        lpSymName->stFlags.stNameType = NAMETYPE_FN12;
 
-                            break;
+                        break;
 
-                        defstop
-                            break;
-                    } // End SWITCH
+                    defstop
+                        break;
+                } // End SWITCH
 
-                    break;
+                break;
 
-                case DFNTYPE_UNK:   // Unknown
-                defstop
-                    break;
-            } // End SWITCH
+            case DFNTYPE_UNK:   // Unknown
+            defstop
+                break;
+        } // End SWITCH
         } // End IF/ELSE
 
         // If the caller is the Function Editor, ...
@@ -1905,7 +1905,7 @@ UBOOL SaveFunctionCom
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-        lpSF_Fcns->bRet      = TRUE;
+        lpSF_Fcns->bRet = TRUE;
         lpSF_Fcns->lpSymName = lpSymName;
 
         goto NORMAL_EXIT;
@@ -2295,13 +2295,13 @@ UBOOL IsLineEmpty
 #endif
 
 UBOOL GetLabelNums
-    (LPDFN_HEADER  lpMemDfnHdr,         // Ptr to user-defined function/operator header
-     HWND          hWndEC,              // Edit Ctrl window handle (FE only)
+    (LPDFN_HEADER  lpMemDfnHdr,     // Ptr to user-defined function/operator header
+     HWND          hWndEC,          // Edit Ctrl window handle (FE only)
      UBOOL         bDispErrMsg,         // TRUE iff we may display error messages
      LPSF_FCNS     lpSF_Fcns)           // Ptr to common struc (may be NULL)
 
 {
-    UINT           numFcnLines,         // # lines in the function
+    UINT           numFcnLines,     // # lines in the function
                    uDupLineNum1,        // Line # of duplicate label (origin-1)
                    uCnt,                // Loop counter
                    uLineNum0;           // Line # (origin-0)
@@ -2309,8 +2309,8 @@ UBOOL GetLabelNums
                    lpLblEntry;          // Ptr to an individual LBLENTRY
     LPFCNLINE      lpFcnLines,          // Ptr to array of function line structs (FCNLINE[numFcnLines])
                    lpLstLabel;          // Ptr to the last labeled line
-    LPTOKEN_HEADER lptkHdr;             // Ptr to header of tokenized line
-    LPTOKEN        lptkLine;            // Ptr to tokenized line
+    LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;        // Ptr to tokenized line
     UBOOL          bRet;                // TRUE iff the result is valid
     HGLOBAL        hGlbName;            // Name's global memory handle
 
@@ -2400,13 +2400,6 @@ UBOOL GetLabelNums
                             goto SYSDUP_EXIT;
                         // Save line # in origin-1
                         lpMemDfnHdr->nSysLblPro = uLineNum0 + 1;
-                    } else
-                    if (lstrcmpiW (lpMemName, $QUAD_SGL) EQ 0)
-                    {
-                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblSgl)
-                            goto SYSDUP_EXIT;
-                        // Save line # in origin-1
-                        lpMemDfnHdr->nSysLblSgl = uLineNum0 + 1;
                     } else
                     {
                         // If there's a previous label, ...
@@ -2519,7 +2512,7 @@ void ErrLabelNums
      UBOOL        bDispErrMsg)      // TRUE iff we may display error messages
 
 {
-    WCHAR     wszTemp[1024];        // Save area for error message text
+        WCHAR wszTemp[1024];            // Save area for error message text
     LPAPLCHAR lpMem,                // Ptr to LPSYMENTRY global memory name
               lpMemName;            // Ptr to function name
 
@@ -2529,8 +2522,8 @@ void ErrLabelNums
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName);
 
-    // Format the error message
-    wsprintfW (wszTemp,
+        // Format the error message
+        wsprintfW (wszTemp,
                L"Duplicate label <%s> in <%s> on line # %d",
                lpMem,
                lpMemName,

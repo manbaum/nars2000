@@ -70,7 +70,7 @@ void InitVarStrand
 
 
 //***************************************************************************
-//  $_DbgPushVarStrand_YY
+//  $DbgPushVarStrand_YY
 //
 //  Push a variable token onto the strand stack.
 //
@@ -78,7 +78,7 @@ void InitVarStrand
 //      No change in RefCnt.
 //***************************************************************************
 
-LPPL_YYSTYPE _DbgPushVarStrand_YY
+LPPL_YYSTYPE DbgPushVarStrand_YY
     (LPPL_YYSTYPE lpplYYCurObj)     // Ptr to the incoming argument
 
 {
@@ -92,7 +92,7 @@ LPPL_YYSTYPE _DbgPushVarStrand_YY
                     soNames[lpplYYCurObj->tkToken.tkSynObj]);
 #endif
     return PushVarStrand_YY (lpplYYCurObj);
-} // End _DbgPushVarStrand_YY
+} // End DbgPushVarStrand_YY
 
 
 //***************************************************************************
@@ -155,12 +155,12 @@ LPPL_YYSTYPE PushVarStrand_YY
 
 
 //***************************************************************************
-//  $_DbgPushFcnStrand_YY
+//  $DbgPushFcnStrand_YY
 //
 //  Local debugging version of <PushFcnStrand>
 //***************************************************************************
 
-LPPL_YYSTYPE _DbgPushFcnStrand_YY
+LPPL_YYSTYPE DbgPushFcnStrand_YY
     (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to the incoming argument
      int          TknCount,         // Token count
      UBOOL        bIndirect)        // TRUE iff lpYYArg is indirect
@@ -172,7 +172,7 @@ LPPL_YYSTYPE _DbgPushFcnStrand_YY
                 bIndirect ? L"INDIRECT"
                           : L"DIRECT");
     return PushFcnStrand_YY (lpplYYCurObj, TknCount, bIndirect);
-} // End _DbgPushFcnStrand_YY
+} // End DbgPushFcnStrand_YY
 
 
 //***************************************************************************
@@ -383,7 +383,7 @@ void FreeStrand
 
 
 //***************************************************************************
-//  $_DbgMakeVarStrand_EM_YY
+//  $DbgMakeVarStrand_EM_YY
 //
 //  Make the variable strand into an immediate token or a global memory array.
 //
@@ -391,7 +391,7 @@ void FreeStrand
 //      RefCnt++ at the top level.
 //***************************************************************************
 
-LPPL_YYSTYPE _DbgMakeVarStrand_EM_YY
+LPPL_YYSTYPE DbgMakeVarStrand_EM_YY
     (LPPL_YYSTYPE lpplYYCurObj)         // Ptr to incoming token
 
 {
@@ -399,7 +399,7 @@ LPPL_YYSTYPE _DbgMakeVarStrand_EM_YY
                 soNames[lpplYYCurObj->tkToken.tkSynObj]);
 
     return MakeVarStrand_EM_YY (lpplYYCurObj);
-} // End _DgMakeVarStrand_EM_YY
+} // End DgMakeVarStrand_EM_YY
 
 
 //***************************************************************************
@@ -1812,12 +1812,12 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $_DbgMakeFcnStrand_EM_YY
+//  $DbgMakeFcnStrand_EM_YY
 //
 //  Local debugging version of <MakeFcnStrand>
 //***************************************************************************
 
-LPPL_YYSTYPE _DbgMakeFcnStrand_EM_YY
+LPPL_YYSTYPE DbgMakeFcnStrand_EM_YY
     (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to incoming token
      NAME_TYPES   fnNameType,       // Type of the strand
      UBOOL        bSaveTxtLine)     // TRUE iff we should save the line text
@@ -1829,7 +1829,7 @@ LPPL_YYSTYPE _DbgMakeFcnStrand_EM_YY
                 bSaveTxtLine ? L"TRUE"
                              : L"FALSE");
     return MakeFcnStrand_EM_YY (lpplYYCurObj, fnNameType, bSaveTxtLine);
-} // End _DbgMakeFcnStrand_EM_YY
+} // End DbgMakeFcnStrand_EM_YY
 
 
 //***************************************************************************

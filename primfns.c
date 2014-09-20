@@ -2830,13 +2830,13 @@ APLINT abs64
 
 
 //***************************************************************************
-//  $_iadd64
+//  $iadd64
 //
 //  Add two 64-bit integers retaining maximum precision
 //    while handling overflow.
 //***************************************************************************
 
-APLINT _iadd64
+APLINT iadd64
     (APLINT  aplLft,            // Left arg
      APLINT  aplRht,            // Right ...
      LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
@@ -2857,17 +2857,17 @@ APLINT _iadd64
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     return aplRes;
-} // End _iadd64
+} // End iadd64
 
 
 //***************************************************************************
-//  $_isub64
+//  $isub64
 //
 //  Subtract two 64-bit integers retaining maximum precision
 //    while handling overflow.
 //***************************************************************************
 
-APLINT _isub64
+APLINT isub64
     (APLINT  aplLft,            // Left arg
      APLINT  aplRht,            // Right ...
      LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
@@ -2888,17 +2888,17 @@ APLINT _isub64
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     return aplRes;
-} // End _isub64
+} // End isub64
 
 
 //***************************************************************************
-//  $_imul64
+//  $imul64
 //
 //  Multiply two 64-bit integers retaining maximum precision
 //    while handling overflow.
 //***************************************************************************
 
-APLINT _imul64
+APLINT imul64
     (APLINT  aplLft,            // Left arg
      APLINT  aplRht,            // Right ...
      LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
@@ -2918,7 +2918,7 @@ APLINT _imul64
     if (!bRet)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     return aplRes;
-} // End _imul64
+} // End imul64
 
 
 //***************************************************************************
@@ -2939,40 +2939,40 @@ APLUINT CalcDataSize
     switch (aplType)
     {
         case ARRAY_BOOL:
-            return _imul64 (sizeof (APLBOOL)   , RoundUpBitsInArray (aplNELM), lpbRet);
+            return imul64 (sizeof (APLBOOL)   , RoundUpBitsInArray (aplNELM), lpbRet);
 
         case ARRAY_INT:
-            return _imul64 (sizeof (APLINT)    , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLINT)    , aplNELM                     , lpbRet);
 
         case ARRAY_FLOAT:
-            return _imul64 (sizeof (APLFLOAT)  , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLFLOAT)  , aplNELM                     , lpbRet);
 
         case ARRAY_CHAR:
             // Add in one element so we always have
             //   a zero-terminated string
-            return _imul64 (sizeof (APLCHAR)   , aplNELM + 1                 , lpbRet);
+            return imul64 (sizeof (APLCHAR)   , aplNELM + 1                 , lpbRet);
 
         case ARRAY_APA:
-            return _imul64 (sizeof (APLAPA)    , 1                           , lpbRet);
+            return imul64 (sizeof (APLAPA)    , 1                           , lpbRet);
 
         case ARRAY_HETERO:
-            return _imul64 (sizeof (APLHETERO) , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLHETERO) , aplNELM                     , lpbRet);
 
         case ARRAY_LIST:
-            ByteRes = _imul64 (sizeof (APLLIST)   , aplNELM                  , lpbRet);
+            ByteRes = imul64 (sizeof (APLLIST)   , aplNELM                  , lpbRet);
             if (*lpbRet)
-                ByteRes = _iadd64 (ByteRes, sizeof (LSTARRAY_HEADER)         , lpbRet);
+                ByteRes = iadd64 (ByteRes, sizeof (LSTARRAY_HEADER)         , lpbRet);
             return ByteRes;
 
         case ARRAY_NESTED:
             // Make room for the prototype
-            return _imul64 (sizeof (APLNESTED) , max (aplNELM, 1)            , lpbRet);
+            return imul64 (sizeof (APLNESTED) , max (aplNELM, 1)            , lpbRet);
 
         case ARRAY_RAT:
-            return _imul64 (sizeof (APLRAT)    , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLRAT)    , aplNELM                     , lpbRet);
 
         case ARRAY_VFP:
-            return _imul64 (sizeof (APLVFP)    , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLVFP)    , aplNELM                     , lpbRet);
 
         defstop
             return MAX_APLINT;
@@ -3000,7 +3000,7 @@ APLUINT CalcArraySize
 
     if (bRet && aplType NE ARRAY_LIST)
         // Add in the size of the header and dimension
-        ByteRes = _iadd64 (ByteRes, CalcHeaderSize (aplRank), &bRet);
+        ByteRes = iadd64 (ByteRes, CalcHeaderSize (aplRank), &bRet);
 
     return bRet ? ByteRes : MAX_APLINT;
 } // End CalcArraySize

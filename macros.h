@@ -162,9 +162,9 @@
   #define dprintfWL9(a,...)
 #endif
 
-#define imul64(a,b)         _imul64 ((a), (b), NULL)
-#define iadd64(a,b)         _iadd64 ((a), (b), NULL)
-#define isub64(a,b)         _isub64 ((a), (b), NULL)
+#define imul64_RE(a,b)      imul64 ((a), (b), NULL)
+#define iadd64_RE(a,b)      iadd64 ((a), (b), NULL)
+#define isub64_RE(a,b)      isub64 ((a), (b), NULL)
 
 #define SIGN_APLNELM(a)     ((a) >> 63)     // Sign bit of an APLNELM
 #define SIGN_APLRANK(a)     ((a) >> 63)     // ...            APLRANK
@@ -464,7 +464,7 @@
 // Define macros for extracting the left and right operands from operators
 #define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]
 #define GetDydLftOper(lpYYFcnStrRht)                &lpYYFcnStrRht[lpYYFcnStrRht->TknCount]
-#define GetDydRhtOper(lpYYFcnStrOpr,lptkAxisOpr)    GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)
+#define GetDydRhtOper(lpYYFcnStrOpr,lptkAxisOpr)    GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr)
 
 // Define macro to free (and set to NULL) a global name
 #define FreeGlbName(hGlb)                           \
@@ -486,6 +486,15 @@
         /* We no longer need this storage */        \
         DbgGlobalFree (hGlb); (hGlb) = NULL;        \
     } /* End IF */
+
+// Define macros that expand to another function
+#define FloatToAplint_CT(a,b,c)     _FloatToAplint_CT (a, b, c, FALSE)
+#define CompareCT(a,b,c,d)          _CompareCT (a, b, c, d, FALSE)
+
+#define mpq_get_sctsx(a,b)          _mpq_get_ctsx (a, SYS_CT, b, TRUE)
+#define mpq_get_ctsx(a,b,c)         _mpq_get_ctsx (a, b, c, FALSE)
+#define mpfr_get_ctsx(a,b,c)        _mpfr_get_ctsx (a, b, c, FALSE)
+#define mpfr_cmp_ct(a,b,c)          _mpfr_cmp_ct (&a, &b, c, FALSE)
 
 
 //***************************************************************************

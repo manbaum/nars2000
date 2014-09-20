@@ -1779,7 +1779,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     aplRankRes = max (aplRankLft, 1) + max (aplRankRht, 1) - 2;
 
     // Calc result NELM
-    aplNELMRes = _imul64 (aplRestLft, aplRestRht, &bRet);
+    aplNELMRes = imul64 (aplRestLft, aplRestRht, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 

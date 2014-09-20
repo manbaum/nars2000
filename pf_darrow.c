@@ -1118,7 +1118,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
             } // End IF/ELSE
 
             // Multiply the two numbers as APLINTs so we can check for overflow
-            aplIntTmp = _imul64 (*lpaplNELMRes, aplIntLft, &bRet);
+            aplIntTmp = imul64 (*lpaplNELMRes, aplIntLft, &bRet);
 
             // Ensure the value fits into a dimension
             bRet = bRet && (aplIntTmp <= MAX_APLDIM);

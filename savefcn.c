@@ -1243,7 +1243,7 @@ UBOOL SaveFunctionCom
         SymTabAppendAllSysNames_EM (&((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN);
 
         // Assign default values to the system vars
-        _AssignDefaultSysVars (lpMemPTD, &((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN);
+        AssignDefaultHTSSysVars (lpMemPTD, &((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN);
 
         // Link the current HshTab & SymTabs to the new
         // This link is what provides static scoping

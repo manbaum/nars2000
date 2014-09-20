@@ -2049,7 +2049,7 @@ UBOOL PrimFnDydIotaPvN_EM
                                   aplTypeRht,
                                   uRht);
                 // Convert to same origin as the inverse indices
-                aplIntegerRht = _isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
+                aplIntegerRht = isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
 
                 break;
 
@@ -2063,7 +2063,7 @@ UBOOL PrimFnDydIotaPvN_EM
                 // If it succeeded, ...
                 if (bRet)
                     // Convert to same origin as the inverse indices
-                    aplIntegerRht = _isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
+                    aplIntegerRht = isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
                 break;
 
             case ARRAY_RAT:
@@ -2074,7 +2074,7 @@ UBOOL PrimFnDydIotaPvN_EM
                 // If it succeeded, ...
                 if (bRet)
                     // Convert to same origin as the inverse indices
-                    aplIntegerRht = _isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
+                    aplIntegerRht = isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
                 break;
 
             case ARRAY_VFP:
@@ -2084,7 +2084,7 @@ UBOOL PrimFnDydIotaPvN_EM
                 // If it succeeded, ...
                 if (bRet)
                     // Convert to same origin as the inverse indices
-                    aplIntegerRht = _isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
+                    aplIntegerRht = isub64 (aplIntegerRht,  lpHeaderLft->PV1, &bRet);
                 break;
 
             defstop

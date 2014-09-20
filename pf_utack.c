@@ -508,7 +508,7 @@ RESTART_EXCEPTION:
                     __try
                     {
                         // Add into accumulator
-                        aplIntAcc = iadd64 (aplIntAcc, imul64 (InnValInt, aplLongestRht));
+                        aplIntAcc = iadd64_RE (aplIntAcc, imul64_RE (InnValInt, aplLongestRht));
 
                         // Get the next left arg value
                         if (hGlbLft)
@@ -525,7 +525,7 @@ RESTART_EXCEPTION:
                         } // End IF
 
                         // Multiply into the weighting value
-                        InnValInt = imul64 (InnValInt, aplLongestLft);
+                        InnValInt = imul64_RE (InnValInt, aplLongestLft);
                     } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
                     {
                         switch (MyGetExceptionCode ())

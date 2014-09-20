@@ -496,7 +496,7 @@ UBOOL SymTabAppendOneSysName_EM
 
     // Append the name as new
     lpSymEntry =
-      _SymTabAppendNewName_EM (lpSysName->lpwszName, &stFlags, lpHTS);
+      SymTabHTSAppendNewName_EM (lpSysName->lpwszName, &stFlags, lpHTS);
 
     // Check for error
     if (lpSymEntry EQ NULL)
@@ -4090,17 +4090,17 @@ void AssignDefaultSysVars
     (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    _AssignDefaultSysVars (lpMemPTD, NULL);
-} // End AssignDefaultSysvars
+    AssignDefaultHTSSysVars (lpMemPTD, NULL);
+} // End AssignDefaultSysVars
 
 
 //***************************************************************************
-//  $_AssignDefaultSysVars
+//  $AssignDefaultHTSSysVars
 //
 //  Assign default values to the system vars using a specific HTS
 //***************************************************************************
 
-void _AssignDefaultSysVars
+void AssignDefaultHTSSysVars
     (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      LPHSHTABSTR  lphtsPTD)             // Ptr to HshTabStr (may be NULL)
 
@@ -4139,7 +4139,7 @@ void _AssignDefaultSysVars
     lpSymQuad[SYSVAR_Z]->stFlags = lphtsPTD->steNoValue->stFlags;
     lpSymQuad[SYSVAR_Z]->stFlags.Inuse       = TRUE;
     lpSymQuad[SYSVAR_Z]->stFlags.SysVarValid = SYSVAR_Z;
-} // End _AssignDefaultSysVars
+} // End AssignDefaultHTSSysVars
 
 
 //***************************************************************************

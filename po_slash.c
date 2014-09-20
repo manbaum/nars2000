@@ -311,7 +311,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         uDimHi *= lpMemDimRht[uDim];
 
     // Calculate the result NELM
-    aplNELMRes = _imul64 (uDimLo, uDimHi, &bRet);
+    aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 
@@ -647,8 +647,8 @@ RESTART_EXCEPTION_APA:
                 {
 ////////////////////*((LPAPLINT) lpMemRes)++ = uDimAxRht * (apaOffRht + apaMulRht * uDimRht)
 ////////////////////                         + apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2;
-                    *((LPAPLINT) lpMemRes)++ = iadd64 (imul64 (uDimAxRht, iadd64 (apaOffRht, imul64 (apaMulRht, uDimRht))),
-                                                       imul64 (apaMulRht, imul64 (uDimHi, imul64 (uDimAxRht, isub64 (uDimAxRht, 1)) / 2)));
+                    *((LPAPLINT) lpMemRes)++ = iadd64_RE (imul64_RE (uDimAxRht, iadd64_RE (apaOffRht, imul64_RE (apaMulRht, uDimRht))),
+                                                          imul64_RE (apaMulRht, imul64_RE (uDimHi   , imul64_RE (uDimAxRht, isub64_RE (uDimAxRht, 1)) / 2)));
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
                 {
                     dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -1966,9 +1966,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         aplTypeRes = ARRAY_NESTED;
 
     // Calculate the result NELM
-    aplNELMRes = _imul64 (uDimLo, uDimHi, &bRet);
+    aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
     if (bRet || IsZeroDim (uDimAxRes))
-        aplNELMRes = _imul64 (aplNELMRes, uDimAxRes, &bRet);
+        aplNELMRes = imul64 (aplNELMRes, uDimAxRes, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 

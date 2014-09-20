@@ -250,7 +250,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
             case ARRAY_RAT:
             case ARRAY_VFP:
                 // Calculate space needed for the normalized right arg
-                ByteRes = _imul64 (aplNELMRht , sizeof (APLINT), &bRet);
+                ByteRes = imul64 (aplNELMRht , sizeof (APLINT), &bRet);
 
                 // Check for overflow
                 if (!bRet || ByteRes NE (APLU3264) ByteRes)
@@ -346,13 +346,13 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                     // Check the first and last values to validate the entire APA
                     if ((apaOff < 0)
 /////////////////////|| (apaOff + apaMul * ((APLINT) aplNELMRht - 1)) < 0)
-                     || iadd64 (apaOff, imul64 (apaMul, isub64 (aplNELMRht, 1))) < 0)
+                     || iadd64_RE (apaOff, imul64_RE (apaMul, isub64_RE (aplNELMRht, 1))) < 0)
                         goto DOMAIN_EXIT;
 
                     // Calculate the sum of the APA as
                     //  (apaOff * aplNELMRht) + (apaMul * aplNELMRht * (aplNELMRht - 1)) / 2
-                    aplNELMRes = imul64 (apaOff,         aplNELMRht)
-                               + imul64 (apaMul, imul64 (aplNELMRht,  aplNELMRht - 1) / 2);
+                    aplNELMRes = imul64_RE (apaOff,            aplNELMRht)
+                               + imul64_RE (apaMul, imul64_RE (aplNELMRht,  aplNELMRht - 1) / 2);
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnMonIotaUnderbar_EM_YY"))
                 {
                     dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);

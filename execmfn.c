@@ -284,7 +284,7 @@ HGLOBAL Init1MagicFunction
 ////        SymTabAppendAllSysNames_EM (lpInitMFO->lphtsMFO);
 ////
 ////        // Assign default values to the system vars
-////        _AssignDefaultSysVars (lpMemPTD, lpInitMFO->lphtsMFO);
+////        AssignDefaultHTSSysVars (lpMemPTD, lpInitMFO->lphtsMFO);
 ////
 ////        // Mark as appended so as to avoid doing this the next time
 ////        lpInitMFO->lphtsMFO->bSysNames = TRUE;

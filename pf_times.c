@@ -292,7 +292,7 @@ APLINT PrimFnDydTimesIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return imul64 (aplIntegerLft, aplIntegerRht);
+    return imul64_RE (aplIntegerLft, aplIntegerRht);
 } // End PrimFnDydTimesIisIvI
 
 
@@ -311,7 +311,7 @@ APLFLOAT PrimFnDydTimesFisIvI
     UBOOL  bRet = TRUE;
     APLINT aplRes;
 
-    aplRes = _imul64 (aplIntegerLft, aplIntegerRht, &bRet);
+    aplRes = imul64 (aplIntegerLft, aplIntegerRht, &bRet);
     if (bRet)
         return (APLFLOAT) aplRes;
 

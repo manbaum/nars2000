@@ -749,7 +749,7 @@ void LocalizeAll
 
 
 //***************************************************************************
-//  $_CheckSymEntries
+//  $CheckSymEntries
 //
 //  Debug routine to check on localized SYMENTRYs
 //***************************************************************************

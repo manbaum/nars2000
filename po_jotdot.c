@@ -335,7 +335,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
         goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // The result NELM is the product of the left & right NELMs
-    aplNELMRes = _imul64 (aplNELMLft, aplNELMRht, &bRet);
+    aplNELMRes = imul64 (aplNELMLft, aplNELMRht, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 

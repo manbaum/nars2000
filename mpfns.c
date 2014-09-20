@@ -848,38 +848,7 @@ APLINT mpq_get_sx
 
 
 //***************************************************************************
-//  $mpq_get_sctsx
-//
-//  Convert an APLRAT to an APLINT within system []CT
-//***************************************************************************
-
-APLINT mpq_get_sctsx
-    (mpq_ptr  src,          // Ptr to source value
-     LPUBOOL  lpbRet)       // TRUE iff the result is valid (may be NULL)
-
-{
-    return _mpq_get_ctsx (src, SYS_CT, lpbRet, TRUE);
-} // End mpq_get_sctsx
-
-
-//***************************************************************************
 //  $mpq_get_ctsx
-//
-//  Convert an APLRAT to an APLINT within []CT
-//***************************************************************************
-
-APLINT mpq_get_ctsx
-    (mpq_ptr  src,          // Ptr to source value
-     APLFLOAT fQuadCT,      // []CT
-     LPUBOOL  lpbRet)       // TRUE iff the result is valid (may be NULL)
-
-{
-    return _mpq_get_ctsx (src, fQuadCT, lpbRet, FALSE);
-} // End mpq_get_ctsx
-
-
-//***************************************************************************
-//  $_mpq_get_ctsx
 //
 //  Convert an APLRAT to an APLINT within []CT
 //***************************************************************************
@@ -1416,22 +1385,6 @@ APLINT mpfr_get_sctsx
 //  Convert an APLVFP to an APLINT within []CT
 //***************************************************************************
 
-APLINT mpfr_get_ctsx
-    (mpfr_ptr src,          // Ptr to source value
-     APLFLOAT fQuadCT,      // []CT
-     LPUBOOL  lpbRet)       // TRUE iff the result is valid (may be NULL)
-
-{
-    return _mpfr_get_ctsx (src, fQuadCT, lpbRet, FALSE);
-} // End mpfr_get_ctsx
-
-
-//***************************************************************************
-//  $_mpfr_get_ctsx
-//
-//  Convert an APLVFP to an APLINT within []CT
-//***************************************************************************
-
 APLINT _mpfr_get_ctsx
     (mpfr_ptr src,          // Ptr to source value
      APLFLOAT fQuadCT,      // []CT
@@ -1636,26 +1589,6 @@ void mpfr_mod_sub
 
 //***************************************************************************
 //  $mpfr_cmp_ct
-//
-//  Compare two VFPs relative to a given comparison tolerance
-//
-//  Return +1 if Lft >  Rht
-//          0 if Lft EQ Rht
-//         -1 if Lft <  Rht
-//***************************************************************************
-
-int mpfr_cmp_ct
-    (APLVFP   aplVfpLft,
-     APLVFP   aplVfpRht,
-     APLFLOAT fQuadCT)
-
-{
-    return _mpfr_cmp_ct (&aplVfpLft, &aplVfpRht, fQuadCT, FALSE);
-} // End mpfr_cmp_ct
-
-
-//***************************************************************************
-//  $_mpfr_cmp_ct
 //
 //  Compare two VFPs relative to a given comparison tolerance
 //

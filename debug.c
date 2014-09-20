@@ -36,7 +36,7 @@ WNDPROC    lpfnOldListboxWndProc;   // Save area for old Listbox window proc
 
 #ifdef DEBUG
 //***************************************************************************
-//  $_CheckCtrlBreak
+//  $CheckCtrlBreak
 //
 //  Check for Ctrl-Break, thus providing a place to put
 //    a breakpoint to catch when it is first checked.

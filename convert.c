@@ -34,23 +34,6 @@
 //    using Comparison Tolerance
 //***************************************************************************
 
-APLINT FloatToAplint_CT
-    (APLFLOAT fFloat,       // The number to convert
-     APLFLOAT fQuadCT,      // Comparison tolerance to use
-     LPUBOOL  lpbRet)       // TRUE iff successful conversion
-                            // (may be NULL if the caller isn't interested)
-{
-    return _FloatToAplint_CT (fFloat, fQuadCT, lpbRet, FALSE);
-} // End FloatToAplint_CT
-
-
-//***************************************************************************
-//  $_FloatToAplint_CT
-//
-//  Attempt to convert a Floating Point number to an APLINT
-//    using Comparison Tolerance
-//***************************************************************************
-
 APLINT _FloatToAplint_CT
     (APLFLOAT fFloat,       // The number to convert
      APLFLOAT fQuadCT,      // Comparison tolerance to use
@@ -122,27 +105,6 @@ APLINT FloatToAplint_SCT
 
 //***************************************************************************
 //  $CompareCT
-//
-//  Compare two floating point values with a Comparison Tolerance
-//***************************************************************************
-
-APLBOOL CompareCT
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     APLFLOAT   fCompTol,
-     LPPRIMSPEC lpPrimSpec)
-
-{
-    return _CompareCT (aplFloatLft,
-                       aplFloatRht,
-                       fCompTol,
-                       lpPrimSpec,
-                       FALSE);
-} // End CompareCT
-
-
-//***************************************************************************
-//  $_CompareCT
 //
 //  Compare two floating point values with a Comparison Tolerance
 //***************************************************************************

@@ -273,22 +273,22 @@
                           RBIND (soType, rhtSynObj),              \
                           RSTACK (&plLocalVars, lpplOrgRhtStk),   \
                           EVENT)
-  #define DbgPushVarStrand_YY(a)            _DbgPushVarStrand_YY    (a)
-  #define DbgMakeVarStrand_EM_YY(a)         _DbgMakeVarStrand_EM_YY (a)
-  #define DbgPushFcnStrand_YY(a,b,c)        _DbgPushFcnStrand_YY    (a,b,c)
-  #define DbgMakeFcnStrand_EM_YY(a,b,c)     _DbgMakeFcnStrand_EM_YY (a,b,c)
+  #define PushVarStrand_YY(a)               DbgPushVarStrand_YY    (a)
+  #define MakeVarStrand_EM_YY(a)            DbgMakeVarStrand_EM_YY (a)
+  #define PushFcnStrand_YY(a,b,c)           DbgPushFcnStrand_YY    (a,b,c)
+  #define MakeFcnStrand_EM_YY(a,b,c)        DbgMakeFcnStrand_EM_YY (a,b,c)
 #else
   #define TRACE(a,EVENT,soType,rhtSynObj)
   #define TRACE2(a,EVENT,soType,rhtSynObj)
-  #define DbgPushVarStrand_YY(a)            PushVarStrand_YY    (a)
-  #define DbgMakeVarStrand_EM_YY(a)         MakeVarStrand_EM_YY (a)
-  #define DbgPushFcnStrand_YY(a,b,c)        PushFcnStrand_YY    (a,b,c)
-  #define DbgMakeFcnStrand_EM_YY(a,b,c)     MakeFcnStrand_EM_YY (a,b,c)
+//#define PushVarStrand_YY(a)               PushVarStrand_YY    (a)
+//#define MakeVarStrand_EM_YY(a)            MakeVarStrand_EM_YY (a)
+//#define PushFcnStrand_YY(a,b,c)           PushFcnStrand_YY    (a,b,c)
+//#define MakeFcnStrand_EM_YY(a,b,c)        MakeFcnStrand_EM_YY (a,b,c)
 #endif
 
 
 //***************************************************************************
-//  $_BIND
+//  $BIND
 //***************************************************************************
 
 #ifdef DEBUG
@@ -606,7 +606,7 @@ LPPL_YYSTYPE plRedA_RBK
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYCurObj);
+          MakeVarStrand_EM_YY (lpplYYCurObj);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -662,7 +662,7 @@ LPPL_YYSTYPE plRedA_SRBK
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYCurObj);
+          MakeVarStrand_EM_YY (lpplYYCurObj);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -907,7 +907,7 @@ LPPL_YYSTYPE plRedA_A
 
     // Append the current object to the strand
     lpYYRes =
-      DbgPushVarStrand_YY (lpplYYCurObj);
+      PushVarStrand_YY (lpplYYCurObj);
 
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -970,7 +970,7 @@ LPPL_YYSTYPE plRedSA_A
 
     // Append the last right object to the strand
     lpYYRes =
-      DbgPushVarStrand_YY (lpplYYLstRht);
+      PushVarStrand_YY (lpplYYLstRht);
 
     // If not defined, ...
     if (!lpYYRes)
@@ -1021,7 +1021,7 @@ LPPL_YYSTYPE plRedA_F
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYCurObj);
+          MakeVarStrand_EM_YY (lpplYYCurObj);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -1197,10 +1197,10 @@ LPPL_YYSTYPE plRedDOP_RhtOper
 
     // The result is always the root of the function tree
     lpYYRes =
-      DbgPushFcnStrand_YY (lpplYYCurObj,
-                           2,
-                           (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                           : INDIRECT); // Dyadic operator
+      PushFcnStrand_YY (lpplYYCurObj,
+                        2,
+                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
+                                                        : INDIRECT);  // Dyadic operator
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -1218,7 +1218,7 @@ LPPL_YYSTYPE plRedDOP_RhtOper
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -1235,10 +1235,10 @@ LPPL_YYSTYPE plRedDOP_RhtOper
 
     // Append the right operand to the function strand
     lpYYRht =
-      DbgPushFcnStrand_YY (lpplYYLstRht,
-                           1,
-                           (IsFcnStrDirect (lpplYYLstRht)) ? DIRECT
-                                                           : INDIRECT); // Right operand
+      PushFcnStrand_YY (lpplYYLstRht,
+                        1,
+                        (IsFcnStrDirect (lpplYYLstRht)) ? DIRECT
+                                                        : INDIRECT);  // Right operand
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -1336,7 +1336,7 @@ LPPL_YYSTYPE plRedGO_A
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -1475,7 +1475,7 @@ LPPL_YYSTYPE plRedA_FFR
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYCurObj);
+          MakeVarStrand_EM_YY (lpplYYCurObj);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -1492,10 +1492,10 @@ LPPL_YYSTYPE plRedA_FFR
 
     // Append the current object to the function strand
     lpYYVar =
-      DbgPushFcnStrand_YY (lpplYYCurObj,
-                           1,
-                           (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                           : INDIRECT); // Left operand
+      PushFcnStrand_YY (lpplYYCurObj,
+                        1,
+                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
+                                                        : INDIRECT);  // Left operand
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -1539,7 +1539,7 @@ LPPL_YYSTYPE plRedCSI_A
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -1728,7 +1728,7 @@ LPPL_YYSTYPE plRedA_IDX
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYCurObj);
+          MakeVarStrand_EM_YY (lpplYYCurObj);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -1796,7 +1796,7 @@ LPPL_YYSTYPE plRedMF_A
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
+          MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -1822,7 +1822,7 @@ LPPL_YYSTYPE plRedMF_A
     {
         // Turn this strand into a var
         lpYYRes =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -1917,7 +1917,7 @@ LPPL_YYSTYPE plRedMF_ARBK
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
+          MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -2012,7 +2012,7 @@ LPPL_YYSTYPE plRedCS1_A
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -2208,7 +2208,7 @@ LPPL_YYSTYPE plRedMF_NF
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
+          MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -2261,10 +2261,10 @@ LPPL_YYSTYPE plRedF_IDX
     {
         // The result is always the root of the function tree
         lpYYRes =
-          DbgPushFcnStrand_YY (lpplYYCurObj,
-                               2,
-                               (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                               : INDIRECT); // Any function
+          PushFcnStrand_YY (lpplYYCurObj,
+                            2,
+                            (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
+                                                            : INDIRECT);  // Any function
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -2283,7 +2283,7 @@ LPPL_YYSTYPE plRedF_IDX
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -2306,10 +2306,10 @@ LPPL_YYSTYPE plRedF_IDX
 
     // Append the index to the function strand
     lpYYRes =
-      DbgPushFcnStrand_YY (lpYYVar,
-                           1,
-                           (IsFcnStrDirect (lpYYVar)) ? DIRECT
-                                                      : INDIRECT);  // Right operand
+      PushFcnStrand_YY (lpYYVar,
+                        1,
+                        (IsFcnStrDirect (lpYYVar)) ? DIRECT
+                                                   : INDIRECT);   // Right operand
     // YYFree the temp var
     YYFree (lpYYVar); lpYYVar = NULL;
 
@@ -2361,10 +2361,10 @@ LPPL_YYSTYPE plRedLBC_RBC
 
     // The result is always the root of the function tree
     lpYYRes =
-      DbgPushFcnStrand_YY (lpYYRes2,
-                           1,
-                           (IsFcnStrDirect (lpYYRes2)) ? DIRECT
-                                                       : INDIRECT); // Function or operator
+      PushFcnStrand_YY (lpYYRes2,
+                        1,
+                        (IsFcnStrDirect (lpYYRes2)) ? DIRECT
+                                                    : INDIRECT);  // Function or operator
     // YYFree the temp, last right, and current objects
     YYFree (lpYYRes2);     lpYYRes2     = NULL;
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstRhtObj = soNONE
@@ -2440,10 +2440,10 @@ LPPL_YYSTYPE plRedLftOper_MOP
 
     // The result is always the root of the function tree
     lpYYRes =
-      DbgPushFcnStrand_YY (lpplYYLstRht,
-                           2,
-                           (IsFcnStrDirect (lpplYYLstRht)) ? DIRECT
-                                                           : INDIRECT); // Monadic operator
+      PushFcnStrand_YY (lpplYYLstRht,
+                        2,
+                        (IsFcnStrDirect (lpplYYLstRht)) ? DIRECT
+                                                        : INDIRECT);  // Monadic operator
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -2461,7 +2461,7 @@ LPPL_YYSTYPE plRedLftOper_MOP
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYCurObj);
+          MakeVarStrand_EM_YY (lpplYYCurObj);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -2478,10 +2478,10 @@ LPPL_YYSTYPE plRedLftOper_MOP
 
     // Append the left operand to the function strand
     lpYYLft =
-      DbgPushFcnStrand_YY (lpplYYCurObj,
-                           1,
-                           (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                           : INDIRECT); // Left operand
+      PushFcnStrand_YY (lpplYYCurObj,
+                        1,
+                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
+                                                        : INDIRECT);  // Left operand
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -2530,7 +2530,7 @@ LPPL_YYSTYPE plRedF_FR
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
+          MakeFcnStrand_EM_YY (lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -2550,7 +2550,7 @@ LPPL_YYSTYPE plRedF_FR
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), FALSE);
+          MakeFcnStrand_EM_YY (lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), FALSE);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -2566,15 +2566,15 @@ LPPL_YYSTYPE plRedF_FR
         UnStrand (lpplYYLstRht);
 
     lpYYRes =
-      DbgPushFcnStrand_YY (lpYYOp1, 3, DIRECT);             // Monadic operator (Direct)
+      PushFcnStrand_YY (lpYYOp1, 3, DIRECT);              	// Monadic operator (Direct)
     YYFree (lpYYOp1); lpYYOp1 = NULL;
 
     lpYYVarR =
-      DbgPushFcnStrand_YY (lpplYYLstRht, 1, DIRECT);        // Righthand function (Direct)
+      PushFcnStrand_YY (lpplYYLstRht, 1, DIRECT);           // Righthand function (Direct)
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
 
     lpYYVarL =
-      DbgPushFcnStrand_YY (lpplYYCurObj, 1, DIRECT);        // Lefthand function (Direct)
+      PushFcnStrand_YY (lpplYYCurObj, 1, DIRECT);           // Lefthand function (Direct)
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL;
 
     // YYFree the temp vars
@@ -2620,7 +2620,7 @@ LPPL_YYSTYPE plRedF_FFR
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
+          MakeFcnStrand_EM_YY (lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -2636,7 +2636,7 @@ LPPL_YYSTYPE plRedF_FFR
         UnStrand (lpplYYCurObj);
 
     lpYYRes =
-      DbgPushFcnStrand_YY (lpplYYCurObj, 1, DIRECT);        // Lefthand function (Direct)
+      PushFcnStrand_YY (lpplYYCurObj, 1, DIRECT);           // Lefthand function (Direct)
 
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -2745,7 +2745,7 @@ LPPL_YYSTYPE plRedNF_F
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYLstRht, NAMETYPE_FN12, FALSE);
+          MakeFcnStrand_EM_YY (lpplYYLstRht, NAMETYPE_FN12, FALSE);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // curSynObj = soNONE;
 
@@ -2950,7 +2950,7 @@ LPPL_YYSTYPE plRedMOP_IDX
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -3003,7 +3003,7 @@ LPPL_YYSTYPE plRedSP_A
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // curSynObj = soNONE;
 
@@ -3233,7 +3233,7 @@ LPPL_YYSTYPE plRedF_SPA
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
+          MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -3400,7 +3400,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
     {
         // Turn this strand into a var
         lpYYRes =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -3418,7 +3418,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), TRUE);
+          MakeFcnStrand_EM_YY (lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), TRUE);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -3528,7 +3528,7 @@ LPPL_YYSTYPE plRedAFOG_A
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -3596,7 +3596,7 @@ LPPL_YYSTYPE plRedAFOR_A
     {
         // Turn this strand into a var
         lpYYVar =
-          DbgMakeVarStrand_EM_YY (lpplYYLstRht);
+          MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
@@ -3943,10 +3943,10 @@ PARSELINE_START:
                 {
                     // The result is always the root of the function tree
                     lpYYRes =
-                      DbgPushFcnStrand_YY (lpplYYCurObj,
-                                           1,
-                                           (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                                           : INDIRECT); // Niladic function
+                      PushFcnStrand_YY (lpplYYCurObj,
+                                        1,
+                                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
+                                                                        : INDIRECT);  // Niladic function
                     // YYFree the current object
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
 
@@ -4077,7 +4077,7 @@ PARSELINE_MP_PAREN:
             {
                 // Turn this strand into a var
                 lpYYRes =
-                  DbgMakeVarStrand_EM_YY (lpplYYCurObj);
+                  MakeVarStrand_EM_YY (lpplYYCurObj);
                 // YYFree the current object
                 YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
 
@@ -4135,7 +4135,7 @@ PARSELINE_MP_DONE:
                 {
                     // Turn this function strand into a function
                     lpYYRes =
-                      DbgMakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN0, FALSE);
+                      MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN0, FALSE);
                     // YYFree the current object
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
 
@@ -4543,7 +4543,7 @@ PARSELINE_ERROR:
 
                         // Turn this function strand into a function
                         lpYYRes2 =
-                          DbgMakeFcnStrand_EM_YY (lpYYRes, NAMETYPE_FN12, FALSE);
+                          MakeFcnStrand_EM_YY (lpYYRes, NAMETYPE_FN12, FALSE);
                         // YYFree the function
                         YYFree (lpYYRes); lpYYRes = NULL;
 
@@ -4698,7 +4698,7 @@ PARSELINE_DONE:
                     {
                         // Turn this strand into a var
                         lpYYRes =
-                          DbgMakeVarStrand_EM_YY (lpplYYCurObj);
+                          MakeVarStrand_EM_YY (lpplYYCurObj);
                         // YYFree the current object
                         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
 
@@ -5376,7 +5376,7 @@ LPPL_YYSTYPE pl_yylex
 {
     Assert (!lpplLocalVars->bRestart);
 
-    return _pl_yylex (lpplLocalVars, FALSE);
+    return pl_yylexCOM (lpplLocalVars, FALSE);
 } // End pl_yylex
 
 
@@ -5397,7 +5397,7 @@ SO_ENUM GetLftSynObj
         return soEOS;
 
     // Get the PL_YYSTYPE result
-    lpplYYLval = _pl_yylex (lpplLocalVars, TRUE);
+    lpplYYLval = pl_yylexCOM (lpplLocalVars, TRUE);
 
     if (lpplYYLval)
     {
@@ -5415,18 +5415,19 @@ SO_ENUM GetLftSynObj
 
 
 //***************************************************************************
-//  $_pl_yylex
+//  $pl_yylexCOM
 //
 //  Lexical analyzer for Bison
+//  Common routine to <pl_yylex> and <GetLftSynObj>.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- _pl_yylex"
+#define APPEND_NAME     L" -- pl_yylexCOM"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE _pl_yylex
+LPPL_YYSTYPE pl_yylexCOM
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
      UBOOL         bRestoreStk)     // TRUE iff we restore the token stack upon exit
 
@@ -5521,10 +5522,10 @@ PL_YYLEX_FCNNAMED:
                         {
                             // The result is always the root of the function tree
                             lpYYFcn =
-                              DbgPushFcnStrand_YY (lpplYYLval,
-                                                   1,
-                                                   (IsFcnStrDirect (lpplYYLval)) ? DIRECT
-                                                                                 : INDIRECT); // Named function
+                              PushFcnStrand_YY (lpplYYLval,
+                                                1,
+                                                (IsFcnStrDirect (lpplYYLval)) ? DIRECT
+                                                                              : INDIRECT);  // Named function
                             // YYFree the current object
                             YYFree (lpplYYLval); lpplYYLval = NULL;
 
@@ -5569,10 +5570,10 @@ PL_YYLEX_FCNNAMED:
 ////                    {
 ////                        // The result is always the root of the function tree
 ////                        lpYYFcn =
-////                          DbgPushFcnStrand_YY (lpplYYLval,
-////                                               1,
-////                                               (IsFcnStrDirect (lpplYYLval)) ? DIRECT
-////                                                                             : INDIRECT); // Named function
+////                          PushFcnStrand_YY (lpplYYLval,
+////                                            1,
+////                                            (IsFcnStrDirect (lpplYYLval)) ? DIRECT
+////                                                                          : INDIRECT);  // Named function
 ////                        // YYFree the current object
 ////                        YYFree (lpplYYLval); lpplYYLval = NULL;
 ////
@@ -6216,7 +6217,7 @@ ERROR_EXIT:
     } // End IF
 
     return NULL;
-} // End _pl_yylex
+} // End pl_yylexCOM
 #undef  APPEND_NAME
 
 
@@ -6873,7 +6874,7 @@ LPPL_YYSTYPE plExecuteFn0
     {
         // Turn this function strand into a function
         lpYYRes =
-          DbgMakeFcnStrand_EM_YY (lpYYFn0, NAMETYPE_FN0, FALSE);
+          MakeFcnStrand_EM_YY (lpYYFn0, NAMETYPE_FN0, FALSE);
         // YYFree the argument object
         YYFree (lpYYFn0); lpYYFn0 = NULL; // curSynObj = soNONE;
 

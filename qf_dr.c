@@ -454,7 +454,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
                 goto RIGHT_DOMAIN_EXIT;
 
             // Save in NELM
-            aplNELMRes = _imul64 (aplNELMRes, iAccum, &bRet);
+            aplNELMRes = imul64 (aplNELMRes, iAccum, &bRet);
 
             // Check for overflow
             if (!bRet)

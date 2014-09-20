@@ -313,13 +313,13 @@ void OverLapMemory
 
 
 //***************************************************************************
-//  $_LastTouch
+//  $LastTouch
 //
 //  Format a message about the last place a global memory handle was locked
 //    and allocated.
 //***************************************************************************
 
-void _LastTouch
+void LastTouch
     (char   *szTemp,
      HGLOBAL hMem,
      UBOOL   bLocked)               // TRUE iff the hMem is currently locked
@@ -367,7 +367,7 @@ void _LastTouch
                   hMem,
                   lpaaFileName[OBJ_GLBALLOC - 1][j],
                   lpaauLinNum [OBJ_GLBALLOC - 1][j]);
-} // End _LastTouch
+} // End LastTouch
 
 
 //***************************************************************************
@@ -1220,7 +1220,7 @@ UBOOL _MyGlobalUnlock
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) EQ 0)
     {
         // Format a message about the last lock & alloc
-        _LastTouch (szTemp, hMem, FALSE);
+        LastTouch (szTemp, hMem, FALSE);
         DbgBrk ();
     } // End IF
 
@@ -1337,7 +1337,7 @@ HGLOBAL _MyGlobalReAlloc
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
         // Format a message about the last lock & alloc
-        _LastTouch (szTemp, hMem, TRUE);
+        LastTouch (szTemp, hMem, TRUE);
         DbgBrk ();
     } // End IF
 
@@ -1386,7 +1386,7 @@ HGLOBAL _MyGlobalFree
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
         // Format a message about the last lock & alloc
-        _LastTouch (szTemp, hMem, TRUE);
+        LastTouch (szTemp, hMem, TRUE);
         DbgBrk ();
     } else
     if (gbResDebug)
@@ -1656,7 +1656,7 @@ HANDLE _MyQueryObject
 
 
 //***************************************************************************
-//  $_MyWaitForSemaphore
+//  $MyWaitForSemaphore
 //
 //  Wait for a semaphore
 //***************************************************************************
@@ -1724,7 +1724,7 @@ DWORD _MyWaitForSemaphore
 
 #ifdef DEBUG
 //***************************************************************************
-//  $_CheckMemStat
+//  $CheckMemStat
 //
 //  Check on memory status
 //***************************************************************************

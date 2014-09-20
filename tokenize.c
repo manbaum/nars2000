@@ -1439,11 +1439,11 @@ UBOOL fnAlpDone
 
             // Lookup in the symbol table
             lpSymEntry =
-              _SymTabLookupNameLength (lpwszStr,                // Ptr to the name to lookup
-                                       lptkLocalVars->iStrLen,  // Length of the name
-                                      &stFlags,                 // Ptr to flags filter
-                                       FALSE,                   // TRUE iff the name is to be local to the given HTS
-                                       lptkLocalVars->lpHTS);   // Ptr to HshTab struc (may be NULL)
+              SymTabHTSLookupNameLength (lpwszStr,                  // Ptr to the name to lookup
+                                         lptkLocalVars->iStrLen,    // Length of the name
+                                        &stFlags,                   // Ptr to flags filter
+                                         FALSE,                     // TRUE iff the name is to be local to the given HTS
+                                         lptkLocalVars->lpHTS);     // Ptr to HshTab struc (may be NULL)
             // If it's not found, ...
             if (lpSymEntry EQ NULL)
                 lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
@@ -1461,11 +1461,11 @@ UBOOL fnAlpDone
 
             // Lookup in the symbol table
             lpSymEntry =
-              _SymTabLookupNameLength (lpwszStr,                // Ptr to the name to lookup
-                                       lptkLocalVars->iStrLen,  // Length of the name
-                                      &stFlags,                 // Ptr to flags filter
-                                       FALSE,                   // TRUE iff the name is to be local to the given HTS
-                                       lpHTS);                  // Ptr to HshTab struc (may be NULL)
+              SymTabHTSLookupNameLength (lpwszStr,                  // Ptr to the name to lookup
+                                         lptkLocalVars->iStrLen,    // Length of the name
+                                        &stFlags,                   // Ptr to flags filter
+                                         FALSE,                     // TRUE iff the name is to be local to the given HTS
+                                         lpHTS);                    // Ptr to HshTab struc (may be NULL)
             // If it's not found, ...
             if (lpSymEntry EQ NULL)
             {
@@ -1478,10 +1478,10 @@ UBOOL fnAlpDone
             {
                 // Lookup in or append to the symbol table
                 lpSymEntry =
-                  _SymTabAppendName_EM (lpwszStr,               // Ptr to name
-                                        NULL,                   // Ptr to incoming stFlags (may be NULL)
-                                        FALSE,                  // TRUE iff the name is to be local to the given HTS
-                                        lpHTS);                 // Ptr to HshTab struc (may be NULL)
+                  SymTabHTSAppendName_EM (lpwszStr,         // Ptr to name
+                                          NULL,             // Ptr to incoming stFlags (may be NULL)
+                                          FALSE,            // TRUE iff the name is to be local to the given HTS
+                                          lpHTS);           // Ptr to HshTab struc (may be NULL)
                 break;
             } // End IF/ELSE
         } // End WHILE
@@ -1490,17 +1490,17 @@ UBOOL fnAlpDone
         if (lpHTS EQ NULL)
             // Lookup in or append to the symbol table
             lpSymEntry =
-              _SymTabAppendName_EM (lpwszStr,               // Ptr to name
-                                    NULL,                   // Ptr to incoming stFlags (may be NULL)
-                                    FALSE,                  // TRUE iff the name is to be local to the given HTS
-                                    lpLastHTS);             // Ptr to HshTab struc (may be NULL)
+              SymTabHTSAppendName_EM (lpwszStr,             // Ptr to name
+                                      NULL,                 // Ptr to incoming stFlags (may be NULL)
+                                      FALSE,                // TRUE iff the name is to be local to the given HTS
+                                      lpLastHTS);           // Ptr to HshTab struc (may be NULL)
     } else
         // Lookup in or append to the symbol table
         lpSymEntry =
-          _SymTabAppendName_EM (lpwszStr,               // Ptr to name
-                                NULL,                   // Ptr to incoming stFlags (may be NULL)
-                                FALSE,                  // TRUE iff the name is to be local to the given HTS
-                                lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
+          SymTabHTSAppendName_EM (lpwszStr,                 // Ptr to name
+                                  NULL,                     // Ptr to incoming stFlags (may be NULL)
+                                  FALSE,                    // TRUE iff the name is to be local to the given HTS
+                                  lptkLocalVars->lpHTS);    // Ptr to HshTab struc (may be NULL)
     // If it's not found, ...
     if (lpSymEntry EQ NULL)
         bRet = FALSE;
@@ -1630,10 +1630,10 @@ UBOOL fnDirIdent
 
     // Lookup in or append to the symbol table
     lpSymEntry =
-      _SymTabAppendName_EM (lpwszStr,               // Ptr to name
-                            NULL,                   // Ptr to incoming stFlags (may be NULL)
-                            bAFO,                   // TRUE iff the name is to be local to the given HTS
-                            lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
+      SymTabHTSAppendName_EM (lpwszStr,                 // Ptr to name
+                              NULL,                     // Ptr to incoming stFlags (may be NULL)
+                              bAFO,                     // TRUE iff the name is to be local to the given HTS
+                              lptkLocalVars->lpHTS);    // Ptr to HshTab struc (may be NULL)
     // If it's not found, ...
     if (lpSymEntry EQ NULL)
         bRet = FALSE;
@@ -1777,10 +1777,10 @@ UBOOL fnAsnDone
 
                     // Ensure that the SymEntry is local to lptkLocalVars->lpHTS
                     lptkCur->tkData.tkSym =
-                      _SymTabAppendName_EM (lpwszName,              // Ptr to name
-                                            NULL,                   // Ptr to incoming stFlags (may be NULL)
-                                            TRUE,                   // TRUE iff the name is to be local to the given HTS
-                                            lptkLocalVars->lpHTS);  // Ptr to HshTab struc (may be NULL)
+                      SymTabHTSAppendName_EM (lpwszName,                // Ptr to name
+                                              NULL,                     // Ptr to incoming stFlags (may be NULL)
+                                              TRUE,                     // TRUE iff the name is to be local to the given HTS
+                                              lptkLocalVars->lpHTS);    // Ptr to HshTab struc (may be NULL)
                     if (lptkLocalVars->lpSF_Fcns->lplpLocalSTEs)
                         // Save the LPSYMENTRY
                         *lptkLocalVars->lpSF_Fcns->lplpLocalSTEs++ = lptkCur->tkData.tkSym;

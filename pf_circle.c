@@ -306,7 +306,7 @@ APLFLOAT PrimFnDydCircleFisIvI
     {
         case  4:        // (1 + R * 2) * 0.5
 #ifdef _WIN64
-            return sqrt ((APLFLOAT) (1 + imul64 (aplIntegerRht, aplIntegerRht)));
+            return sqrt ((APLFLOAT) (1 + imul64_RE (aplIntegerRht, aplIntegerRht)));
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
@@ -387,7 +387,7 @@ APLFLOAT PrimFnDydCircleFisIvI
 
         case  0:        // (1 - R * 2) * 0.5
 #ifdef _WIN64
-            return sqrt ((APLFLOAT) (1 - imul64 (aplIntegerRht, aplIntegerRht)));
+            return sqrt ((APLFLOAT) (1 - imul64_RE (aplIntegerRht, aplIntegerRht)));
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
@@ -411,7 +411,7 @@ APLFLOAT PrimFnDydCircleFisIvI
 
         case -4:        // R x (1 - R * -2) * 0.5 a.k.a. ((-1) + R * 2) * 0.5
 #ifdef _WIN64
-            return sqrt ((APLFLOAT) (imul64 (aplIntegerRht, aplIntegerRht) - 1));
+            return sqrt ((APLFLOAT) (imul64_RE (aplIntegerRht, aplIntegerRht) - 1));
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1

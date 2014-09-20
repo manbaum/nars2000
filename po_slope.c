@@ -311,9 +311,9 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         uDimHi *= lpMemDimRht[uDim];
 
     // Calculate the result NELM
-    aplNELMRes = _imul64 (uDimLo, uDimHi, &bRet);
+    aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
     if (bRet || IsZeroDim (uDimAxRht))
-        aplNELMRes = _imul64 (aplNELMRes, uDimAxRht, &bRet);
+        aplNELMRes = imul64 (aplNELMRes, uDimAxRht, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 

@@ -380,8 +380,8 @@ APLINT PrimFnDydBarIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Subtract the two integers and signal overflow execption in <isub64>
-    return isub64 (aplIntegerLft, aplIntegerRht);
+    // Subtract the two integers and signal overflow execption in <isub64_RE>
+    return isub64_RE (aplIntegerLft, aplIntegerRht);
 } // End PrimFnDydBarIisIvI
 
 

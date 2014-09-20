@@ -1573,21 +1573,21 @@ LPSYMENTRY SymTabLookupChar
      LPSTFLAGS lpstFlags)                   // Ptr to flags filter
 
 {
-    return _SymTabLookupChar (uHash,        // The hashed value
-                              aplChar,      // The value to lookup
-                              lpstFlags,    // Ptr to flags filter
-                              NULL);        // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSLookupChar (uHash,      // The hashed value
+                                aplChar,    // The value to lookup
+                                lpstFlags,  // Ptr to flags filter
+                                NULL);      // Ptr to HshTab struc (may be NULL)
 } // End SymTabLookupChar
 
 
 //***************************************************************************
-//  $_SymTabLookupChar
+//  $SymTabHTSLookupChar
 //
 //  Lookup a char based upon hash, flags, and value
 //    using a specific HTS
 //***************************************************************************
 
-LPSYMENTRY _SymTabLookupChar
+LPSYMENTRY SymTabHTSLookupChar
     (UINT        uHash,             // The hashed value
      APLCHAR     aplChar,           // The value to lookup
      LPSTFLAGS   lpstFlags,         // Ptr to flags filter
@@ -1652,7 +1652,7 @@ LPSYMENTRY _SymTabLookupChar
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
-} // End _SymTabLookupChar
+} // End SymTabLookupCharHTS
 
 
 //***************************************************************************
@@ -1667,21 +1667,21 @@ LPSYMENTRY SymTabLookupNumber
      LPSTFLAGS lpstNeedFlags)   // The flags we require
 
 {
-    return _SymTabLookupNumber (uHash,          // The hashed value
-                                aplInteger,     // The integer/Boolean to lookup
-                                lpstNeedFlags,  // The flags we require
-                                NULL);          // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSLookupNumber (uHash,            // The hashed value
+                                  aplInteger,       // The integer/Boolean to lookup
+                                  lpstNeedFlags,    // The flags we require
+                                  NULL);            // Ptr to HshTab struc (may be NULL)
 } // End SymTabLookupNumber
 
 
 //***************************************************************************
-//  $_SymTabLookupNumber
+//  $SymTabHTSLookupNumber
 //
 //  Lookup a number based upon hash, flags, and value
 //    using a specific HTS
 //***************************************************************************
 
-LPSYMENTRY _SymTabLookupNumber
+LPSYMENTRY SymTabHTSLookupNumber
     (UINT        uHash,             // The hashed value
      APLINT      aplInteger,        // The integer/Boolean to lookup
      LPSTFLAGS   lpstNeedFlags,     // The flags we require
@@ -1749,7 +1749,7 @@ LPSYMENTRY _SymTabLookupNumber
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
-} // End _SymTabLookupNumber
+} // End SymTabHTSLookupNumber
 
 
 //***************************************************************************
@@ -1764,21 +1764,21 @@ LPSYMENTRY SymTabLookupFloat
      LPSTFLAGS lpstFlags)                   // Ptr to flags filter
 
 {
-    return _SymTabLookupFloat (uHash,       // The hashed value
-                               fFloat,      // The value to lookup
-                               lpstFlags,   // Ptr to flags filter
-                               NULL);       // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSLookupFloat (uHash,     // The hashed value
+                                 fFloat,    // The value to lookup
+                                 lpstFlags, // Ptr to flags filter
+                                 NULL);     // Ptr to HshTab struc (may be NULL)
 } // End SymTabLookupFloat
 
 
 //***************************************************************************
-//  $_SymTabLookupFloat
+//  $SymTabHTSLookupFloat
 //
 //  Lookup a Floating Point number based upon hash, flags, and value
 //    using a specific HTS
 //***************************************************************************
 
-LPSYMENTRY _SymTabLookupFloat
+LPSYMENTRY SymTabHTSLookupFloat
     (UINT        uHash,             // The hashed value
      APLFLOAT    fFloat,            // The value to lookup
      LPSTFLAGS   lpstFlags,         // Ptr to flags filter
@@ -1843,7 +1843,7 @@ LPSYMENTRY _SymTabLookupFloat
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
-} // End _SymTabLookupFloat
+} // End SymTabHTSLookupFloat
 
 
 //***************************************************************************
@@ -1858,21 +1858,21 @@ LPSYMENTRY SymTabLookupName
 
 {
     return
-      _SymTabLookupNameLength (lpwszString,             // Ptr to the name to lookup
-                               lstrlenW (lpwszString),  // Length of the name
-                               lpstFlags,               // Ptr to flags filter
-                               FALSE,                   // TRUE iff the name is to be local to the given HTS
-                               NULL);                   // Ptr to HshTab struc (may be NULL)
+      SymTabHTSLookupNameLength (lpwszString,               // Ptr to the name to lookup
+                                 lstrlenW (lpwszString),    // Length of the name
+                                 lpstFlags,                 // Ptr to flags filter
+                                 FALSE,                     // TRUE iff the name is to be local to the given HTS
+                                 NULL);                     // Ptr to HshTab struc (may be NULL)
 } // End SymTabLookupName
 
 
 //***************************************************************************
-//  $_SymTabLookupName
+//  $SymTabHTSLookupName
 //
 //  Lookup a named entry based upon hash, flags, and value
 //***************************************************************************
 
-LPSYMENTRY _SymTabLookupName
+LPSYMENTRY SymTabHTSLookupName
     (LPWCHAR     lpwszString,                           // Ptr to the name to lookup
      LPSTFLAGS   lpstFlags,                             // Ptr to flags filter
      UBOOL       bLocalName,                            // TRUE iff the name is to be local to the given HTS
@@ -1880,12 +1880,12 @@ LPSYMENTRY _SymTabLookupName
 
 {
     return
-      _SymTabLookupNameLength (lpwszString,             // Ptr to the name to lookup
-                               lstrlenW (lpwszString),  // Length of the name
-                               lpstFlags,               // Ptr to flags filter
-                               bLocalName,              // TRUE iff the name is to be local to the given HTS
-                               lpHTS);                  // Ptr to HshTab struc (may be NULL)
-} // End _SymTabLookupName
+      SymTabHTSLookupNameLength (lpwszString,             // Ptr to the name to lookup
+                                 lstrlenW (lpwszString),  // Length of the name
+                                 lpstFlags,               // Ptr to flags filter
+                                 bLocalName,              // TRUE iff the name is to be local to the given HTS
+                                 lpHTS);                  // Ptr to HshTab struc (may be NULL)
+} // End SymTabHTSLookupName
 
 
 //***************************************************************************
@@ -1948,22 +1948,22 @@ LPSYMENTRY SymTabLookupNameLength
      LPSTFLAGS lpstFlags)           // Ptr to flags filter
 
 {
-    return _SymTabLookupNameLength (lpwString,  // Ptr to the name to lookup (not necessarily zero-terminated)
-                                    iLen,       // Length of the name
-                                    lpstFlags,  // Ptr to flags filter
-                                    FALSE,      // TRUE iff the name is to be local to the given HTS
-                                    NULL);      // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSLookupNameLength (lpwString,    // Ptr to the name to lookup (not necessarily zero-terminated)
+                                      iLen,         // Length of the name
+                                      lpstFlags,    // Ptr to flags filter
+                                      FALSE,        // TRUE iff the name is to be local to the given HTS
+                                      NULL);        // Ptr to HshTab struc (may be NULL)
 } // End SymTabLookupNameLength
 
 
 //***************************************************************************
-//  $_SymTabLookupNameLength
+//  $SymTabHTSLookupNameLength
 //
 //  Lookup a named entry based upon hash, flags, and value
 //    using a specific HTS
 //***************************************************************************
 
-LPSYMENTRY _SymTabLookupNameLength
+LPSYMENTRY SymTabHTSLookupNameLength
     (LPWCHAR     lpwString,         // Ptr to the name to lookup (not necessarily zero-terminated)
      APLU3264    iLen,              // Length of the name
      LPSTFLAGS   lpstFlags,         // Ptr to flags filter
@@ -2108,7 +2108,7 @@ LPSYMENTRY _SymTabLookupNameLength
     MyLeaveCriticalSection (&CSOHshTab);
 ERROR_EXIT:
     return lpSymEntry;
-} // End _SymTabLookupNameLength
+} // End SymTabHTSLookupNameLength
 
 
 //***************************************************************************
@@ -2229,20 +2229,20 @@ LPSYMENTRY SymTabAppendInteger_EM
      UBOOL       bUseCommon)        // TRUE iff we may use common cases
 
 {
-    return _SymTabAppendInteger_EM (aplInteger, // The integer to append
-                                    bUseCommon, // TRUE iff we may use common cases
-                                    NULL);      // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSAppendInteger_EM (aplInteger,   // The integer to append
+                                      bUseCommon,   // TRUE iff we may use common cases
+                                      NULL);        // Ptr to HshTab struc (may be NULL)
 } // End SymTabAppendInteger_EM
 
 
 //***************************************************************************
-//  $_SymTabAppendInteger_EM
+//  $SymTabHTSAppendInteger_EM
 //
 //  Append a Boolean or long long integer to the symbol table
 //    using a specific HTS
 //***************************************************************************
 
-LPSYMENTRY _SymTabAppendInteger_EM
+LPSYMENTRY SymTabHTSAppendInteger_EM
     (APLINT      aplInteger,        // The integer to append
      UBOOL       bUseCommon,        // TRUE iff we may use common cases
      LPHSHTABSTR lphtsPTD)          // Ptr to HshTab struc (may be NULL)
@@ -2301,7 +2301,7 @@ LPSYMENTRY _SymTabAppendInteger_EM
     // Use common cases?
     if (bUseCommon)
         // Lookup the number in the symbol table
-        lpSymEntryDest = _SymTabLookupNumber (uHash, aplInteger, &stNeedFlags, lphtsPTD);
+        lpSymEntryDest = SymTabHTSLookupNumber (uHash, aplInteger, &stNeedFlags, lphtsPTD);
     else
         lpSymEntryDest = NULL;
 
@@ -2369,7 +2369,7 @@ NORMAL_EXIT:
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntryDest;
-} // End _SymTabAppendInteger_EM
+} // End SymTabHTSAppendInteger_EM
 
 
 //***************************************************************************
@@ -2382,19 +2382,19 @@ LPSYMENTRY SymTabAppendFloat_EM
     (APLFLOAT aplFloat)             // The float to append
 
 {
-    return _SymTabAppendFloat_EM (aplFloat, // The float to append
-                                  NULL);    // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSAppendFloat_EM (aplFloat,   // The float to append
+                                    NULL);      // Ptr to HshTab struc (may be NULL)
 } // End SymTabAppendFloat_EM
 
 
 //***************************************************************************
-//  $_SymTabAppendFloat_EM
+//  $SymTabHTSAppendFloat_EM
 //
 //  Append a Floating Point number to the symbol table
 //    using a specific HTS
 //***************************************************************************
 
-LPSYMENTRY _SymTabAppendFloat_EM
+LPSYMENTRY SymTabHTSAppendFloat_EM
     (APLFLOAT    aplFloat,          // The float to append
      LPHSHTABSTR lphtsPTD)          // Ptr to HshTab struc (may be NULL)
 
@@ -2423,7 +2423,7 @@ LPSYMENTRY _SymTabAppendFloat_EM
     stNeedFlags.ImmType = IMMTYPE_FLOAT;
 
     // Lookup the number in the symbol table
-    lpSymEntryDest = _SymTabLookupFloat (uHash, aplFloat, &stNeedFlags, lphtsPTD);
+    lpSymEntryDest = SymTabHTSLookupFloat (uHash, aplFloat, &stNeedFlags, lphtsPTD);
     if (lpSymEntryDest EQ NULL)
     {
         LPHSHENTRY lpHshEntryHash;
@@ -2486,7 +2486,7 @@ ERROR_EXIT:
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntryDest;
-} // End _SymTabAppendFloat_EM
+} // End SymTabHTSAppendFloat_EM
 
 
 //***************************************************************************
@@ -2500,20 +2500,20 @@ LPSYMENTRY SymTabAppendChar_EM
      UBOOL       bUseCommon)        // TRUE iff we may use common cases
 
 {
-    return _SymTabAppendChar_EM (aplChar,       // The char to append
-                                 bUseCommon,    // TRUE iff we may use common cases
-                                 NULL);         // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSAppendChar_EM (aplChar,     // The char to append
+                                   bUseCommon,  // TRUE iff we may use common cases
+                                   NULL);       // Ptr to HshTab struc (may be NULL)
 } // End SymTabAppendChar_EM
 
 
 //***************************************************************************
-//  $_SymTabAppendChar_EM
+//  $SymTabHTSAppendChar_EM
 //
 //  Append a character to the symbol table
 //    using a specific HTS
 //***************************************************************************
 
-LPSYMENTRY _SymTabAppendChar_EM
+LPSYMENTRY SymTabHTSAppendChar_EM
     (APLCHAR     aplChar,           // The char to append
      UBOOL       bUseCommon,        // TRUE iff we may use common cases
      LPHSHTABSTR lphtsPTD)          // Ptr to HshTab struc (may be NULL)
@@ -2561,7 +2561,7 @@ LPSYMENTRY _SymTabAppendChar_EM
     // Use common cases?
     if (bUseCommon)
         // Lookup the char in the symbol table
-        lpSymEntryDest = _SymTabLookupChar (uHash, aplChar, &stNeedFlags, lphtsPTD);
+        lpSymEntryDest = SymTabHTSLookupChar (uHash, aplChar, &stNeedFlags, lphtsPTD);
     else
         lpSymEntryDest = NULL;
 
@@ -2629,7 +2629,7 @@ NORMAL_EXIT:
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntryDest;
-} // End _SymTabAppendChar_EM
+} // End SymTabHTSAppendChar_EM
 
 
 //***************************************************************************
@@ -2643,27 +2643,27 @@ LPSYMENTRY SymTabAppendName_EM
      LPSTFLAGS   lpstFlags)             // Ptr to incoming stFlags (may be NULL)
 
 {
-    return _SymTabAppendName_EM (lpwszString,   // Ptr to name
-                                 lpstFlags,     // Ptr to incoming stFlags (may be NULL)
-                                 FALSE,         // TRUE iff the name is to be local to the given HTS
-                                 NULL);         // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSAppendName_EM (lpwszString, // Ptr to name
+                                   lpstFlags,   // Ptr to incoming stFlags (may be NULL)
+                                   FALSE,       // TRUE iff the name is to be local to the given HTS
+                                   NULL);       // Ptr to HshTab struc (may be NULL)
 } // End SymTabAppendName_EM
 
 
 //***************************************************************************
-//  $_SymTabAppendName_EM
+//  $SymTabHTSAppendName_EM
 //
 //  Append a name to the symbol table
 //    using a specific HTS
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- _SymTabAppendName_EM"
+#define APPEND_NAME     L" -- SymTabHTSAppendName_EM"
 #else
 #define APPEND_NAME
 #endif
 
-LPSYMENTRY _SymTabAppendName_EM
+LPSYMENTRY SymTabHTSAppendName_EM
     (LPWCHAR     lpwszString,           // Ptr to name
      LPSTFLAGS   lpstFlags,             // Ptr to incoming stFlags (may be NULL)
      UBOOL       bLocalName,            // TRUE iff the name is to be local to the given HTS
@@ -2687,7 +2687,7 @@ LPSYMENTRY _SymTabAppendName_EM
     // Lookup the name in the symbol table
     // SymTabLookupName sets the .ObjName enum,
     //   and the .Inuse flag
-    lpSymEntry = _SymTabLookupName (lpwszString, lpstFlags, bLocalName, lphtsPTD);
+    lpSymEntry = SymTabHTSLookupName (lpwszString, lpstFlags, bLocalName, lphtsPTD);
 
     // If not found and it's a system name, fail
     //    as we don't handle unknown system names
@@ -2697,7 +2697,7 @@ LPSYMENTRY _SymTabAppendName_EM
             goto SYNTAX_EXIT;
         else
             lpSymEntry =
-              _SymTabAppendNewName_EM (lpwszString, lpstFlags, lphtsPTD);
+              SymTabHTSAppendNewName_EM (lpwszString, lpstFlags, lphtsPTD);
         if (lpSymEntry EQ NULL)
             goto ERROR_EXIT;
     } // End IF
@@ -2715,7 +2715,7 @@ NORMAL_EXIT:
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
-} // End _SymTabAppendName_EM
+} // End SymTabHTSAppendName_EM
 #undef  APPEND_NAME
 
 
@@ -2731,14 +2731,14 @@ LPSYMENTRY SymTabAppendNewName_EM
      LPSTFLAGS   lpstFlags)             // Ptr to incoming stFlags (may be NULL)
 
 {
-    return _SymTabAppendNewName_EM (lpwszString,    // Ptr to name
-                                    lpstFlags,      // Ptr to incoming stFlags (may be NULL)
-                                    NULL);          // Ptr to HshTab struc (may be NULL)
+    return SymTabHTSAppendNewName_EM (lpwszString,  // Ptr to name
+                                      lpstFlags,    // Ptr to incoming stFlags (may be NULL)
+                                      NULL);        // Ptr to HshTab struc (may be NULL)
 } // End SymTabAppendNewname_EM
 
 
 //***************************************************************************
-//  $_SymTabAppendNewName_EM
+//  $SymTabHTSAppendNewName_EM
 //
 //  Append a new name to the symbol table
 //    (no need to look it up as we know it isn't there)
@@ -2746,12 +2746,12 @@ LPSYMENTRY SymTabAppendNewName_EM
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- _SymTabAppendNewName_EM"
+#define APPEND_NAME     L" -- SymTabHTSAppendNewName_EM"
 #else
 #define APPEND_NAME
 #endif
 
-LPSYMENTRY _SymTabAppendNewName_EM
+LPSYMENTRY SymTabHTSAppendNewName_EM
     (LPWCHAR     lpwszString,           // Ptr to name
      LPSTFLAGS   lpstFlags,             // Ptr to incoming stFlags (may be NULL)
      LPHSHTABSTR lphtsPTD)              // Ptr to HshTab struc (may be NULL)
@@ -2872,7 +2872,7 @@ NORMAL_EXIT:
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntryDest;
-} // End _SymTabAppendNewName_EM
+} // End SymTabHTSAppendNewName_EM
 #undef  APPEND_NAME
 
 
@@ -3064,15 +3064,15 @@ UBOOL AllocSymTab
     lpHTS->lpSymTabNext = lpHTS->lpSymTab;
 
     // Initialize the Symbol Table Entry for the special constants and names
-    lpHTS->steZero      = _SymTabAppendInteger_EM (0                      , FALSE, lpHTS);
-    lpHTS->steOne       = _SymTabAppendInteger_EM (1                      , FALSE, lpHTS);
-    lpHTS->steBlank     = _SymTabAppendChar_EM    (L' '                   , FALSE, lpHTS);
-    lpHTS->steAlpha     = _SymTabAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE , lpHTS);
-    lpHTS->steDel       = _SymTabAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE , lpHTS);
-    lpHTS->steOmega     = _SymTabAppendName_EM    (WS_UTF16_OMEGA  , NULL , TRUE , lpHTS);
-    lpHTS->steLftOper   = _SymTabAppendName_EM    (WS_UTF16_LFTOPER, NULL , TRUE , lpHTS);
-    lpHTS->steDelDel    = _SymTabAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE , lpHTS);
-    lpHTS->steRhtOper   = _SymTabAppendName_EM    (WS_UTF16_RHTOPER, NULL , TRUE , lpHTS);
+    lpHTS->steZero      = SymTabHTSAppendInteger_EM (0                      , FALSE, lpHTS);
+    lpHTS->steOne       = SymTabHTSAppendInteger_EM (1                      , FALSE, lpHTS);
+    lpHTS->steBlank     = SymTabHTSAppendChar_EM    (L' '                   , FALSE, lpHTS);
+    lpHTS->steAlpha     = SymTabHTSAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE , lpHTS);
+    lpHTS->steDel       = SymTabHTSAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE , lpHTS);
+    lpHTS->steOmega     = SymTabHTSAppendName_EM    (WS_UTF16_OMEGA  , NULL , TRUE , lpHTS);
+    lpHTS->steLftOper   = SymTabHTSAppendName_EM    (WS_UTF16_LFTOPER, NULL , TRUE , lpHTS);
+    lpHTS->steDelDel    = SymTabHTSAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE , lpHTS);
+    lpHTS->steRhtOper   = SymTabHTSAppendName_EM    (WS_UTF16_RHTOPER, NULL , TRUE , lpHTS);
     lpHTS->steNoValue   = lpHTS->lpSymTabNext++;
 #ifdef DEBUG
     // Save the header signature

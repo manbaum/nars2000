@@ -336,7 +336,7 @@ UINT GetRefCntGlb
 
 #ifdef DEBUG_REFCNT
 //***************************************************************************
-//  $_DbgIncrRefCntDir_PTB
+//  $DbgIncrRefCntDir_PTB
 //
 //  Increment the reference count of a direct reference
 //    to an LPSYMENTRY or an HGLOBAL.
@@ -357,7 +357,7 @@ int _DbgIncrRefCntDir_PTB
 
 #ifdef DEBUG_REFCNT
 //***************************************************************************
-//  $_DbgIncrRefCntInd_PTB
+//  $DbgIncrRefCntInd_PTB
 //
 //  Increment the reference count of an indirect reference
 //    to an LPSYMENTRY or an HGLOBAL.
@@ -378,7 +378,7 @@ int _DbgIncrRefCntInd_PTB
 
 #ifdef DEBUG_REFCNT
 //***************************************************************************
-//  $_DbgIncrRefCntTkn
+//  $DbgIncrRefCntTkn
 //
 //  Increment the reference count of a token
 //***************************************************************************
@@ -398,7 +398,7 @@ int _DbgIncrRefCntTkn
 
 #ifdef DEBUG_REFCNT
 //***************************************************************************
-//  $_DbgDecrRefCntDir_PTB
+//  $DbgDecrRefCntDir_PTB
 //
 //  Decrement the reference count of a direct reference
 //    to an LPSYMENTRY or an HGLOBAL.
@@ -419,7 +419,7 @@ int _DbgDecrRefCntDir_PTB
 
 #ifdef DEBUG_REFCNT
 //***************************************************************************
-//  $_DbgDecrRefCntInd_PTB
+//  $DbgDecrRefCntInd_PTB
 //
 //  Decrement the reference count of an indirect reference
 //    to an LPSYMENTRY or an HGLOBAL.
@@ -440,7 +440,7 @@ int _DbgDecrRefCntInd_PTB
 
 #ifdef DEBUG_REFCNT
 //***************************************************************************
-//  $_DbgDecrRefCntTkn
+//  $DbgDecrRefCntTkn
 //
 //  Decrement the reference count of a token
 //***************************************************************************

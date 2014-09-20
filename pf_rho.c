@@ -1351,7 +1351,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         goto DOMAIN_EXIT;
 
                     // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = _imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
 
                     // Check for overflow
                     bRet = bRet && (aplIntTmp <= MAX_APLNELM);
@@ -1393,7 +1393,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         goto DOMAIN_EXIT;
 
                     // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = _imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
 
                     // Check for overflow
                     bRet = bRet && (aplIntTmp <= MAX_APLNELM);
@@ -1495,7 +1495,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         goto DOMAIN_EXIT;
 
                     // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = _imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
 
                     // Check for overflow
                     bRet = bRet && (aplIntTmp <= MAX_APLNELM);
@@ -1540,7 +1540,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         goto DOMAIN_EXIT;
 
                     // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = _imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
 
                     // Check for overflow
                     bRet = bRet && (aplIntTmp <= MAX_APLNELM);

@@ -108,17 +108,17 @@ void PN_NumCalc
                     // Loop through the digits
                     for (; bRet && uAcc < uLen; uAcc++)
                     {
-                        aplInteger = _imul64 (aplInteger, 10, &bRet);
+                        aplInteger = imul64 (aplInteger, 10, &bRet);
                         if (bRet)
-                            aplInteger = _isub64 (aplInteger, lppnLocalVars->lpszNumAccum[uNumAcc + uAcc] - '0', &bRet);
+                            aplInteger = isub64 (aplInteger, lppnLocalVars->lpszNumAccum[uNumAcc + uAcc] - '0', &bRet);
                     } // End FOR
                 else
                     // Loop through the digits
                     for (; bRet && uAcc < uLen; uAcc++)
                     {
-                        aplInteger = _imul64 (aplInteger, 10, &bRet);
+                        aplInteger = imul64 (aplInteger, 10, &bRet);
                         if (bRet)
-                            aplInteger = _iadd64 (aplInteger, lppnLocalVars->lpszNumAccum[uNumAcc + uAcc] - '0', &bRet);
+                            aplInteger = iadd64 (aplInteger, lppnLocalVars->lpszNumAccum[uNumAcc + uAcc] - '0', &bRet);
                     } // End FOR
                 if (bRet)
                 {
@@ -299,17 +299,17 @@ LPPN_YYSTYPE PN_MakeBasePoint
                     chCur -= 'a' - 10;
 
                 // Times the power base
-                aplIntTmp = _imul64 (chCur, aplIntPowBase, &bRet);
+                aplIntTmp = imul64 (chCur, aplIntPowBase, &bRet);
                 if (!bRet)
                     break;
 
                 // Accumulate
-                aplIntAcc = _iadd64 (aplIntAcc, aplIntTmp, &bRet);
+                aplIntAcc = iadd64 (aplIntAcc, aplIntTmp, &bRet);
                 if (!bRet)
                     break;
 
                 // Shift over the power base
-                aplIntPowBase = _imul64 (aplIntPowBase, aplIntBase, &bRet);
+                aplIntPowBase = imul64 (aplIntPowBase, aplIntBase, &bRet);
 
                 // Ignore spurious overflow on last digit
                 bRet |= (uAcc EQ (uLen - 1));

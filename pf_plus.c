@@ -327,8 +327,8 @@ APLINT PrimFnDydPlusIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Add the two integers and signal overflow exception in <iadd64>
-    return iadd64 (aplIntegerLft, aplIntegerRht);
+    // Add the two integers and signal overflow exception in <iadd64_RE>
+    return iadd64_RE (aplIntegerLft, aplIntegerRht);
 } // End PrimFnDydPlusIisIvI
 
 

@@ -3288,7 +3288,7 @@ UBOOL ArrayIndexSetSingLst_EM
                         MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
 
                         // We no longer need this storage
-                        DbgGlobalFree (*lphGlbRes); *lphGlbRes = NULL;
+                        FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
 
                         // If the list is a singleton, ...
                         if (IsSingleton (aplNELMSubLst))

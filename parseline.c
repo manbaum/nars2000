@@ -273,10 +273,10 @@
                           RBIND (soType, rhtSynObj),              \
                           RSTACK (&plLocalVars, lpplOrgRhtStk),   \
                           EVENT)
-  #define PushVarStrand_YY(a)               DbgPushVarStrand_YY    (a)
-  #define MakeVarStrand_EM_YY(a)            DbgMakeVarStrand_EM_YY (a)
-  #define PushFcnStrand_YY(a,b,c)           DbgPushFcnStrand_YY    (a,b,c)
-  #define MakeFcnStrand_EM_YY(a,b,c)        DbgMakeFcnStrand_EM_YY (a,b,c)
+  #define PushVarStrand_YY(a)               DbgPushVarStrand_YY    (a, FNLN)
+  #define MakeVarStrand_EM_YY(a)            DbgMakeVarStrand_EM_YY (a, FNLN)
+  #define PushFcnStrand_YY(a,b,c)           DbgPushFcnStrand_YY    (a, b, c, FNLN)
+  #define MakeFcnStrand_EM_YY(a,b,c)        DbgMakeFcnStrand_EM_YY (a, b, c, FNLN)
 #else
   #define TRACE(a,EVENT,soType,rhtSynObj)
   #define TRACE2(a,EVENT,soType,rhtSynObj)
@@ -2566,7 +2566,7 @@ LPPL_YYSTYPE plRedF_FR
         UnStrand (lpplYYLstRht);
 
     lpYYRes =
-      PushFcnStrand_YY (lpYYOp1, 3, DIRECT);              	// Monadic operator (Direct)
+      PushFcnStrand_YY (lpYYOp1, 3, DIRECT);                // Monadic operator (Direct)
     YYFree (lpYYOp1); lpYYOp1 = NULL;
 
     lpYYVarR =

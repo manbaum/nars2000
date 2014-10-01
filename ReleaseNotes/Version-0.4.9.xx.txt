@@ -1,6 +1,18 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1280 -- Version 0.4.9.xx
+-------------------------------
+
+* Display More Information In ParseLine DEBUG Stmts
+
+Directory trunk:
+
+PARSELINE.C:
+STRAND.C:
+  Display filename and line # for <DbgMake,,,> and <DbgPush...> stmts.
+
+
 Build #1279 -- Version 0.4.9.xx
 -------------------------------
 

@@ -79,17 +79,23 @@ void InitVarStrand
 //***************************************************************************
 
 LPPL_YYSTYPE DbgPushVarStrand_YY
-    (LPPL_YYSTYPE lpplYYCurObj)     // Ptr to the incoming argument
+    (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to the incoming argument
+     LPCHAR       lpFileName,       // Ptr to filename
+     UINT         uLine)            // Line #
 
 {
 #ifdef DEBUG
     if (IsTknNamed (&lpplYYCurObj->tkToken))
-        dprintfWL0 (L"PushVarStrand:  (%s) (%s)",
+        dprintfWL0 (L"PushVarStrand:  (%s) (%s) (%S#%d)",
                     soNames[lpplYYCurObj->tkToken.tkSynObj],
-                    lpplYYCurObj->tkToken.tkData.tkSym->stHshEntry->lpwCharName);
+                    lpplYYCurObj->tkToken.tkData.tkSym->stHshEntry->lpwCharName,
+                    lpFileName,
+                    uLine);
     else
-        dprintfWL0 (L"PushVarStrand:  (%s)",
-                    soNames[lpplYYCurObj->tkToken.tkSynObj]);
+        dprintfWL0 (L"PushVarStrand:  (%s) (%S#%d)",
+                    soNames[lpplYYCurObj->tkToken.tkSynObj],
+                    lpFileName,
+                    uLine);
 #endif
     return PushVarStrand_YY (lpplYYCurObj);
 } // End DbgPushVarStrand_YY
@@ -163,14 +169,19 @@ LPPL_YYSTYPE PushVarStrand_YY
 LPPL_YYSTYPE DbgPushFcnStrand_YY
     (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to the incoming argument
      int          TknCount,         // Token count
-     UBOOL        bIndirect)        // TRUE iff lpYYArg is indirect
+     UBOOL        bIndirect,        // TRUE iff lpYYArg is indirect
+     LPCHAR       lpFileName,       // Ptr to filename
+     UINT         uLine)            // Line #
 
 {
-    dprintfWL0 (L"PushFcnStrand:  (%s) TknCount (%d) %s",
+    dprintfWL0 (L"PushFcnStrand:  (%s) TknCount (%d) %s (%S#%d)",
                 soNames[lpplYYCurObj->tkToken.tkSynObj],
                 TknCount,
                 bIndirect ? L"INDIRECT"
-                          : L"DIRECT");
+                          : L"DIRECT",
+                lpFileName,
+                uLine);
+
     return PushFcnStrand_YY (lpplYYCurObj, TknCount, bIndirect);
 } // End DbgPushFcnStrand_YY
 
@@ -392,12 +403,15 @@ void FreeStrand
 //***************************************************************************
 
 LPPL_YYSTYPE DbgMakeVarStrand_EM_YY
-    (LPPL_YYSTYPE lpplYYCurObj)         // Ptr to incoming token
+    (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to incoming token
+     LPCHAR       lpFileName,       // Ptr to filename
+     UINT         uLine)            // Line #
 
 {
-    dprintfWL0 (L"MakeVarStrand:  (%s)",
-                soNames[lpplYYCurObj->tkToken.tkSynObj]);
-
+    dprintfWL0 (L"MakeVarStrand:  (%s) (%S#%d)",
+                soNames[lpplYYCurObj->tkToken.tkSynObj],
+                lpFileName,
+                uLine);
     return MakeVarStrand_EM_YY (lpplYYCurObj);
 } // End DgMakeVarStrand_EM_YY
 
@@ -1820,14 +1834,18 @@ NORMAL_EXIT:
 LPPL_YYSTYPE DbgMakeFcnStrand_EM_YY
     (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to incoming token
      NAME_TYPES   fnNameType,       // Type of the strand
-     UBOOL        bSaveTxtLine)     // TRUE iff we should save the line text
+     UBOOL        bSaveTxtLine,     // TRUE iff we should save the line text
+     LPCHAR       lpFileName,       // Ptr to filename
+     UINT         uLine)            // Line #
 
 {
-    dprintfWL0 (L"MakeFcnStrand:  (%s) fnNameType (%s) bSaveTxtLine (%s)",
+    dprintfWL0 (L"MakeFcnStrand:  (%s) fnNameType (%s) bSaveTxtLine (%s) (%S#%d)",
                 soNames[lpplYYCurObj->tkToken.tkSynObj],
                 lpwNameTypeStr[fnNameType],
                 bSaveTxtLine ? L"TRUE"
-                             : L"FALSE");
+                             : L"FALSE",
+                lpFileName,
+                uLine);
     return MakeFcnStrand_EM_YY (lpplYYCurObj, fnNameType, bSaveTxtLine);
 } // End DbgMakeFcnStrand_EM_YY
 

@@ -3927,41 +3927,6 @@ PARSELINE_START:
                 } // End IF
             }
 #endif
-            // If this is a niladic function, ...
-            if (CURSYNOBJ EQ soNF
-             && !lpplYYCurObj->YYStranding                              // Not in stranding
-             && IsTknNamedFcnOpr (&lpplYYCurObj->tkToken)               // Is a named function/operator
-             && !lpplYYCurObj->tkToken.tkData.tkSym->stFlags.FcnDir)    // Not a direct fcn/opr
-            {
-                // Ensure this is not an AFO
-
-                // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (lpplYYCurObj->tkToken.tkData.tkSym->stData.stGlbData);
-
-                // If it's not an AFO, ...
-                if (!lpMemDfnHdr->bAFO)
-                {
-                    // The result is always the root of the function tree
-                    lpYYRes =
-                      PushFcnStrand_YY (lpplYYCurObj,
-                                        1,
-                                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                                        : INDIRECT);  // Niladic function
-                    // YYFree the current object
-                    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
-
-                    // If not defined, ...
-                    if (!lpYYRes)
-                        goto PARSELINE_ERROR;
-
-                    // Copy to the current object
-                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
-                    lpYYRes = NULL;
-                } // End IF
-
-                // We no longer need this tr
-                MyGlobalUnlock (lpplYYCurObj->tkToken.tkData.tkSym->stData.stGlbData); lpMemDfnHdr = NULL;
-            } else
             // If this is an EOS, ...
             if (CURSYNOBJ EQ soEOS)
             {
@@ -5437,7 +5402,6 @@ LPPL_YYSTYPE pl_yylexCOM
     LPPL_YYSTYPE lpplYYLval;        // Ptr to current object
     LPTOKEN      lptkOrigNext;      // Ptr to original token stack
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to UDFO/AFO header
-    HGLOBAL      hGlbData;          // Global memory handle
 
     // Save the original token stack ptr
     lptkOrigNext = lpplLocalVars->lptkNext;
@@ -5499,97 +5463,7 @@ PL_YYLEX_FCNNAMED:
                     if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType EQ IMMTYPE_PRIMOP3)
                         // Mark is as a hybrid
                         lpplYYLval->tkToken.tkSynObj = soHY;
-                } else
-                // If it's a niladic UDFO, ...
-                if (lpplYYLval->tkToken.tkData.tkSym->stFlags.UsrDfn
-                 && lpplYYLval->tkToken.tkData.tkSym->stFlags.stNameType EQ NAMETYPE_FN0)
-                {
-                    // If we should not restore the token stack ptr, ...
-                    if (!bRestoreStk)
-                    {
-                        LPPL_YYSTYPE lpYYFcn;           // Ptr to temp fcn
-
-                        // Get the global memory handle
-                        hGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-
-                        // Ensure this is not an AFO
-
-                        // Lock the memory to get a ptr to it
-                        lpMemDfnHdr = MyGlobalLock (hGlbData);
-
-                        // If it's not an AFO, ...
-                        if (!lpMemDfnHdr->bAFO)
-                        {
-                            // The result is always the root of the function tree
-                            lpYYFcn =
-                              PushFcnStrand_YY (lpplYYLval,
-                                                1,
-                                                (IsFcnStrDirect (lpplYYLval)) ? DIRECT
-                                                                              : INDIRECT);  // Named function
-                            // YYFree the current object
-                            YYFree (lpplYYLval); lpplYYLval = NULL;
-
-                            // If not defined, ...
-                            if (!lpYYFcn)
-                                goto ERROR_EXIT;
-
-                            // Copy to the current object
-                            lpplYYLval = lpYYFcn;
-                            lpYYFcn = NULL;
                 } // End IF
-
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
-                    } // End IF
-                } // End IF
-////////////////{
-////////////////    // If we should not restore the token stack ptr, ...
-////////////////    if (!bRestoreStk)
-////////////////        nop ();
-////////////////
-////////////////    // Convert to an unnamed function
-////////////////    lpplYYLval->tkToken.tkFlags.TknType  = TKT_FCNAFO;
-////////////////    lpplYYLval->tkToken.tkData.tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-////////////////} else
-////            {
-////                // If we should not restore the token stack ptr, ...
-////                if (!bRestoreStk)
-////                {
-////                    LPPL_YYSTYPE lpYYFcn;           // Ptr to temp fcn
-////
-////                    // Get the global memory handle
-////                    hGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-////
-////                    // Ensure this is not an AFO
-////
-////                    // Lock the memory to get a ptr to it
-////                    lpMemDfnHdr = MyGlobalLock (hGlbData);
-////
-////                    // If it's not an AFO, ...
-////                    if (!lpMemDfnHdr->bAFO)
-////                    {
-////                        // The result is always the root of the function tree
-////                        lpYYFcn =
-////                          PushFcnStrand_YY (lpplYYLval,
-////                                            1,
-////                                            (IsFcnStrDirect (lpplYYLval)) ? DIRECT
-////                                                                          : INDIRECT);  // Named function
-////                        // YYFree the current object
-////                        YYFree (lpplYYLval); lpplYYLval = NULL;
-////
-////                        // If not defined, ...
-////                        if (!lpYYFcn)
-////                            goto ERROR_EXIT;
-////
-////                        // Copy to the current object
-////                        lpplYYLval = lpYYFcn;
-////                        lpYYFcn = NULL;
-////                    } // End IF
-////
-////                    // We no longer need this ptr
-////                    MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
-////                } // End IF
-////            } // End IF/ELSE
             } // End IF
 
             break;
@@ -5795,11 +5669,7 @@ PL_YYLEX_FCNNAMED:
             break;
 
         case TKT_AFOGUARD:          // AFO guard
-            break;
-
         case TKT_AFORETURN:         // AFO return
-            break;
-
         case TKT_DELAFO:            // Del Anon -- either a function, or a monadic or dyadic operator, bound to its operands
             break;
 
@@ -6051,32 +5921,14 @@ PL_YYLEX_OP3IMMED:
             break;
 
         case TKT_OPJOTDOT:
-            break;
-
         case TKT_LEFTPAREN:
-            break;
-
         case TKT_RIGHTPAREN:
-            break;
-
         case TKT_LEFTBRACKET:
-            break;
-
         case TKT_RIGHTBRACKET:
-            break;
-
         case TKT_LABELSEP:
-            // Fall through to common code
-
         case TKT_EOS:
-            break;
-
         case TKT_EOL:
-            break;
-
         case TKT_COLON:
-            break;
-
         case TKT_LEFTBRACE:
             break;
 
@@ -6099,84 +5951,32 @@ PL_YYLEX_OP3IMMED:
 
             break;
 
-        case TKT_SYS_NS:
-            break;
-
+        case TKT_SYS_NS:            // Namespace
         case TKT_CS_ANDIF:          // Control structure:  ANDIF
-            break;
-
         case TKT_CS_ASSERT:         // Control Structure:  ASSERT
-            break;
-
         case TKT_CS_CASE:           // Control Structure:  CASE
-            break;
-
         case TKT_CS_CASELIST:       // Control Structure:  CASELIST
-            break;
-
         case TKT_CS_CONTINUE:       // Control Structure:  CONTINUE
-            break;
-
         case TKT_CS_CONTINUEIF:     // Control Structure:  CONTINUEIF
-            break;
-
         case TKT_CS_ELSE:           // Control Structure:  ELSE
-            break;
-
         case TKT_CS_ELSEIF:         // Control Structure:  ELSEIF
-            break;
-
         case TKT_CS_ENDFOR:         // Control Structure:  ENDFOR
-            break;
-
         case TKT_CS_ENDFORLCL:      // Control Structure:  ENDFORLCL
-            break;
-
         case TKT_CS_ENDREPEAT:      // Control Structure:  ENDREPEAT
-            break;
-
         case TKT_CS_ENDWHILE:       // Control Structure:  ENDWHILE
-            break;
-
         case TKT_CS_FOR:            // Control Structure:  FOR
-            break;
-
         case TKT_CS_FORLCL:         // Control Structure:  FORLCL
-            break;
-
         case TKT_CS_GOTO:           // Control Structure:  GOTO
-            break;
-
         case TKT_CS_IF:             // Control Structure:  IF
-            break;
-
         case TKT_CS_IN:             // Control Structure:  IN
-            break;
-
         case TKT_CS_LEAVE:          // Control Structure:  LEAVE
-            break;
-
         case TKT_CS_LEAVEIF:        // Control Structure:  LEAVEIF
-            break;
-
         case TKT_CS_ORIF:           // Control Structure:  ORIF
-            break;
-
         case TKT_CS_RETURN:         // Control Structure:  RETURN
-            break;
-
         case TKT_CS_SELECT:         // Control Structure:  SELECT
-            break;
-
         case TKT_CS_SKIPCASE:       // Control Structure:  Special token
-            break;
-
         case TKT_CS_SKIPEND:        // Control Structure:  Special token
-            break;
-
         case TKT_CS_UNTIL:          // Control Structure:  UNTIL
-            break;
-
         case TKT_CS_WHILE:          // Control Structure:  WHILE
             break;
 
@@ -6207,16 +6007,6 @@ PL_YYLEX_OP3IMMED:
         lpplLocalVars->lptkNext = lptkOrigNext;
 
     return lpplYYLval;
-
-ERROR_EXIT:
-    // If the result is defined, ...
-    if (lpplYYLval)
-    {
-        // YYFree the result
-        YYFree (lpplYYLval); lpplYYLval = NULL;
-    } // End IF
-
-    return NULL;
 } // End pl_yylexCOM
 #undef  APPEND_NAME
 
@@ -6875,6 +6665,7 @@ LPPL_YYSTYPE plExecuteFn0
         // Turn this function strand into a function
         lpYYRes =
           MakeFcnStrand_EM_YY (lpYYFn0, NAMETYPE_FN0, FALSE);
+
         // YYFree the argument object
         YYFree (lpYYFn0); lpYYFn0 = NULL; // curSynObj = soNONE;
 
@@ -6885,7 +6676,28 @@ LPPL_YYSTYPE plExecuteFn0
         // Copy to the argument ptr
         lpYYFn0 = lpYYRes;
         lpYYRes = NULL;
-    } // End IF
+    } else
+    {
+        HGLOBAL      hGlbData;          // Global memory handle
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to UDFO/AFO header
+
+        // Get the global memory handle
+        hGlbData = GetGlbHandle (&lpYYFn0->tkToken);
+
+        // Increment the RefCnt iff this function is not an AFO
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbData);
+
+        // If it's not an AFO, ...
+        if (!lpMemDfnHdr->bAFO)
+        {
+            DbgIncrRefCntDir_PTB (hGlbData);
+        } // End IF
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
+    } // End IF/ELSE
 
     // Execute the Niladic Function and replace the argument object with the result
     lpYYRes =

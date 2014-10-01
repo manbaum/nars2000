@@ -2024,8 +2024,10 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
                 // Lock the memory to get a ptr to it
                 lpFcnHdr = MyGlobalLock (hGlbFcn);
 
-                // If the function array is a train, ...
-                if (lpFcnHdr->fnNameType EQ NAMETYPE_TRN)
+                // If the function array is a train,
+                //   or the arg is a train, ...
+                if (lpFcnHdr->fnNameType EQ NAMETYPE_TRN
+                 ||           fnNameType EQ NAMETYPE_TRN)
                     // Copy the entire token w/o changing the RefCnt
                     lpYYTmp = CopyPL_YYSTYPE_YY (&lpYYStrand[uCnt]);
                 else

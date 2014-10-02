@@ -84,6 +84,14 @@ UBOOL AssignName_EM
     // Note that we have to wait until all errors have been
     //   resolved before calling FreeResultName.
 
+    // If the target is a user-defined function/operator label, signal a SYNTAX ERROR
+    if (lptkNam->tkData.tkSym->stFlags.DfnLabel)
+        goto SYNTAX_EXIT;
+
+    // If the name is suspended or pendent, it's not eraseable
+    if (IzitSusPendent (lptkNam->tkData.tkSym))
+        goto SYNTAX_EXIT;
+
     // Split cases based upon the source token type
     switch (lptkSrc->tkFlags.TknType)
     {
@@ -142,10 +150,6 @@ UBOOL AssignName_EM
             // Ensure there's a value (could have come from a{is}{execute}'')
             if (IsSymNoValue (lptkSrc->tkData.tkSym))
                 goto VALUE_EXIT;
-
-            // If the target is a user-defined function/operator label, signal a SYNTAX ERROR
-            if (lptkNam->tkData.tkSym->stFlags.DfnLabel)
-                goto SYNTAX_EXIT;
 
             // If the source is immediate, ...
             if (lptkSrc->tkData.tkSym->stFlags.Imm)

@@ -3459,7 +3459,8 @@ LPPL_YYSTYPE plRedNAM_SPCom
     } // End IF
 
     // Assign this token to this name
-    AssignName_EM (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken);
+    if (!AssignName_EM (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken))
+        goto ERROR_EXIT;
 #ifdef DEBUG2
     dprintfWL0 (L"AssignName_EM %s = %p",
                 lpplYYCurObj->tkToken.tkData.tkSym->stHshEntry->lpwCharName,
@@ -3470,9 +3471,16 @@ LPPL_YYSTYPE plRedNAM_SPCom
 
     // Mark as assigned
     lpplYYLstRht->tkToken.tkFlags.NoDisplay = TRUE;
-ERROR_EXIT:
+
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+
+    return lpplYYLstRht;
+
+ERROR_EXIT:
+    // YYFree the current & lasy right objects
+    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
     return lpplYYLstRht;
 } // End plRedNAM_SPCom

@@ -1957,7 +1957,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (!IsVector (aplRankLft))
+    if (IsMultiRank (aplRankLft))
         goto RANK_EXIT;
 
     // If the left arg is simple, it must be empty (i.e., {zilde} or '')

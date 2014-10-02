@@ -482,7 +482,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
         lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // Confirm that the prototype in the left arg is {zilde}
-        bRet = ArrayIndexValidZilde_EM (lpMemLft, 1, lptkFunc);
+        bRet = ArrayIndexValidZilde_EM (lpMemLft, 0, NULL, lptkFunc);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;

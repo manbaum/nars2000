@@ -26,6 +26,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 #ifdef DEBUG
 // Resource debugging variables
@@ -798,6 +799,235 @@ void DisplayGlobals
 
     UpdateDBWindow ();
 } // End DisplayGlobals
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $DisplayGlbVar
+//
+//  Display a global memory var
+//***************************************************************************
+
+void DisplayGlbVar
+    (LPWCHAR lpwLabel,
+     HGLOBAL hGlb)
+
+{
+    LPPERTABDATA      lpMemPTD;     // Ptr to PerTabData global memory
+    LPWCHAR           lpwszTemp;    // Ptr to output save area
+    VARS_TEMP_OPEN
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    lpwszTemp   = lpMemPTD->lpwszTemp;
+    CHECK_TEMP_OPEN
+
+    // Start with the label
+    lstrcpyW (lpwszTemp, lpwLabel);
+
+    // Skip over it
+    lpwszTemp += lstrlenW (lpwLabel);
+
+    // Do the rest in a subroutine so we may use it recursively
+    lpwszTemp =
+      DisplayGlbVarSub (hGlb, lpwszTemp);
+
+    // Ensure properly terminated
+    *lpwszTemp++ = WC_EOS;
+
+    // Display it
+    DbgMsgW (lpMemPTD->lpwszTemp);
+
+    UpdateDBWindow ();
+
+    EXIT_TEMP_OPEN
+} // End DisplayGlbVar
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $DisplayGlbVarSub
+//
+//  Display a global memory var
+//***************************************************************************
+
+LPWCHAR DisplayGlbVarSub
+    (HGLOBAL hGlb,
+     LPWCHAR lpwszTemp)
+
+{
+    UINT              uCnt;         // Loop counter
+    LPVARARRAY_HEADER lpHdrGlb;     // Ptr to global memory header
+    LPAPLNESTED       lpMemGlb;     // Ptr to global memory data
+    IMM_TYPES         immType;      // Immediate type
+
+    // Lock the memory to get a ptr to it
+    lpHdrGlb = MyGlobalLock (hGlb);
+
+    immType = TranslateArrayTypeToImmType (lpHdrGlb->ArrType);
+
+    // Skip over the header & dimensions to the data
+    lpMemGlb = VarArrayDataFmBase (lpHdrGlb);
+
+    // Split case based upon the storage type
+    switch (lpHdrGlb->ArrType)
+    {
+        case ARRAY_BOOL:
+            if (IsEmpty (lpHdrGlb->NELM))
+            {
+                *lpwszTemp++ = UTF16_ZILDE;
+                *lpwszTemp++ = L' ';
+            } else
+            {
+                UINT       uBitMask = BIT0;
+                APLLONGEST aplZero = 0,
+                           aplOne  = 1;
+
+                for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+                {
+                    lpwszTemp =
+                      FormatImmed (lpwszTemp,
+                                   immType,
+                                   (LPAPLLONGEST) ((uBitMask & *(LPAPLBOOL) lpMemGlb)) ? &aplOne : &aplZero);
+                    uBitMask <<= 1;
+                } // End FOR
+            } // End IF/ELSE
+
+            break;
+
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+            if (IsEmpty (lpHdrGlb->NELM))
+            {
+                *lpwszTemp++ = UTF16_ZILDE;
+                *lpwszTemp++ = L' ';
+            } else
+            for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+                lpwszTemp =
+                  FormatImmed (lpwszTemp,
+                               immType,
+                              &((LPAPLLONGEST) lpMemGlb)[uCnt]);
+            break;
+
+        case ARRAY_APA:
+        {
+            APLINT apaOff,
+                   apaMul;
+
+            // Get the APA parameters
+            apaOff = ((LPAPLAPA) lpMemGlb)->Off;
+            apaMul = ((LPAPLAPA) lpMemGlb)->Mul;
+
+            lpwszTemp =
+              FormatAplInt (lpwszTemp,          // Ptr to output save area
+                            apaOff);            // The value to format
+            lpwszTemp[-1] = L'+';
+            lpwszTemp =
+              FormatAplInt (lpwszTemp,          // Ptr to output save area
+                            apaMul);            // The value to format
+            lpwszTemp[-1] = UTF16_TIMES;
+           *lpwszTemp++   = UTF16_IOTA;
+            lpwszTemp =
+              FormatAplInt (lpwszTemp,          // Ptr to output save area
+                            lpHdrGlb->NELM);    // The value to format
+            break;
+        } // End ARRAY_APA
+
+        case ARRAY_CHAR:
+            // Leading single quote
+            *lpwszTemp++ = L'\'';
+
+            // Copy the data
+            CopyMemory (lpwszTemp, lpMemGlb, (APLU3264) (lpHdrGlb->NELM * sizeof (WCHAR)));
+
+            // Skip over it
+            lpwszTemp += lpHdrGlb->NELM;
+
+            // Trailing single quote
+            *lpwszTemp++ = L'\'';
+
+            break;
+
+        case ARRAY_RAT:
+            if (IsEmpty (lpHdrGlb->NELM))
+            {
+                *lpwszTemp++ = UTF16_ZILDE;
+                *lpwszTemp++ = L'x';
+                *lpwszTemp++ = L' ';
+            } else
+            for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+                lpwszTemp =
+                  FormatAplRat (lpwszTemp,                  // Ptr to output save area
+                               *((LPAPLRAT) lpMemGlb)++);   // The value to format
+            break;
+
+        case ARRAY_VFP:
+            if (IsEmpty (lpHdrGlb->NELM))
+            {
+                *lpwszTemp++ = UTF16_ZILDE;
+                *lpwszTemp++ = L'v';
+                *lpwszTemp++ = L' ';
+            } else
+            for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+                lpwszTemp =
+                  FormatAplVfp (lpwszTemp,                  // Ptr to output save area
+                              *((LPAPLVFP) lpMemGlb)++,     // The value to format
+                                0);                         // Use this many significant digits for VFP
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+            // Split cases based upon the item ptr bits
+            switch (GetPtrTypeDir (lpMemGlb[uCnt]))
+            {
+                case PTRTYPE_STCONST:
+                    lpwszTemp =
+                      FormatImmed (lpwszTemp,
+                                   ((LPSYMENTRY) lpMemGlb[uCnt])->stFlags.ImmType,
+                                  &((LPSYMENTRY) lpMemGlb[uCnt])->stData.stLongest);
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    // Start with left paren
+                    *lpwszTemp++ = L'(';
+
+                    // Recurse into the nested array
+                    lpwszTemp =
+                      DisplayGlbVarSub (lpMemGlb[uCnt], lpwszTemp);
+
+                    // Check for "({zilde}) "
+                    if (lpwszTemp[-3] EQ L'('
+                     && lpwszTemp[-2] EQ UTF16_ZILDE
+                     && lpwszTemp[-1] EQ L' ')
+                    {
+                        lpwszTemp[-3] = UTF16_ZILDE;
+                        lpwszTemp[-2] = L' ';
+                        lpwszTemp = &lpwszTemp[-1];
+                    } else
+                        // End with right paren
+                        *lpwszTemp++ = L')';
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlb); lpMemGlb = NULL;
+
+    return lpwszTemp;
+} // End DisplayGlbVarSub
 #endif
 
 
@@ -2729,32 +2959,6 @@ void DisplayFnHdr
     // Display it in the debug window
     DbgMsgW (wszTemp);
 } // End DisplayFnHdr
-#endif
-
-
-#ifdef DEBUG
-//***************************************************************************
-//  $DisplayYYRes
-//
-//  Display a YYRes
-//***************************************************************************
-
-void DisplayYYRes
-    (LPPL_YYSTYPE lpYYRes)
-
-{
-    LPDWORD lpdw;
-
-    lpdw = (DWORD *) &lpYYRes->tkToken;
-
-    wsprintfW (lpwszGlbTemp,
-               L"%08X-%08X-%08X-%08X",
-               lpdw[0],
-               lpdw[1],
-               lpdw[2],
-               lpdw[3]);
-    MBWC (lpwszGlbTemp)
-} // End DisplayYYRes
 #endif
 
 

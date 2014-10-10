@@ -226,7 +226,6 @@ void ImmExecLine
             ImmExecStmt (lpwszCompLine,             // Ptr to line to execute
                          lstrlenW (lpwszCompLine),  // NELM of lpwszCompLine
                          TRUE,                      // TRUE iff free lpwszCompLine on completion
-                         FALSE,                     // TRUE iff wait until finished
                          hWndEC,                    // Edit Ctrl window handle
                          TRUE);                     // TRUE iff errors are acted upon
             return;
@@ -262,7 +261,6 @@ EXIT_TYPES ImmExecStmt
     (LPWCHAR lpwszCompLine,     // Ptr to line to execute
      APLNELM aplNELM,           // NELM of lpwszCompLine
      UBOOL   bFreeLine,         // TRUE iff free lpwszCompLine on completion
-     UBOOL   bWaitUntilFini,    // TRUE iff wait until finished
      HWND    hWndEC,            // Edit Ctrl window handle
      UBOOL   bActOnErrors)      // TRUE iff errors are acted upon
 
@@ -284,7 +282,6 @@ EXIT_TYPES ImmExecStmt
     ieThread.aplNELM        = aplNELM;
     ieThread.hGlbWFSO       = hGlbWFSO;
     ieThread.bFreeLine      = bFreeLine;
-    ieThread.bWaitUntilFini = bWaitUntilFini;
     ieThread.bActOnErrors   = bActOnErrors;
 
     // Lock the memory to get a ptr to it
@@ -311,43 +308,25 @@ EXIT_TYPES ImmExecStmt
     if (hThread EQ NULL)
         goto LIMIT_EXIT;
 
-    // Should we wait until finished?
-    if (bWaitUntilFini)
-    {
-        // Start 'er up
-        ResumeThread (hThread);
+    dprintfWL9 (L"~~RegisterWaitForSingleObject (%p) (%S#%d)", hThread, FNLN);
 
-        dprintfWL9 (L"~~WaitForSingleObject (ENTRY):  %p -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
+    // Lock the memory to get a ptr to it
+    lpMemWFSO = MyGlobalLock (hGlbWFSO);
 
-        // Wait until this thread terminates
-        WaitForSingleObject (hThread,              // Handle to wait on
-                             INFINITE);            // Wait time in milliseconds
-        dprintfWL9 (L"~~WaitForSingleObject (EXIT):   %p -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
+    // Tell W to callback when this thread terminates
+    RegisterWaitForSingleObject (&lpMemWFSO->WaitHandle,// Return wait handle
+                                  hThread,              // Handle to wait on
+                                 &WaitForImmExecStmt,   // Callback function
+                                  hGlbWFSO,             // Callback function parameter
+                                  INFINITE,             // Wait time in milliseconds
+                                  WT_EXECUTEONLYONCE);  // Options
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
 
-        // Get the exit code
-        GetExitCodeThread (hThread, (LPDWORD) &exitType);
-    } else
-    {
-        dprintfWL9 (L"~~RegisterWaitForSingleObject (%p) (%S#%d)", hThread, FNLN);
+    // Start 'er up
+    ResumeThread (hThread);
 
-        // Lock the memory to get a ptr to it
-        lpMemWFSO = MyGlobalLock (hGlbWFSO);
-
-        // Tell W to callback when this thread terminates
-        RegisterWaitForSingleObject (&lpMemWFSO->WaitHandle,// Return wait handle
-                                      hThread,              // Handle to wait on
-                                     &WaitForImmExecStmt,   // Callback function
-                                      hGlbWFSO,             // Callback function parameter
-                                      INFINITE,             // Wait time in milliseconds
-                                      WT_EXECUTEONLYONCE);  // Options
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
-
-        // Start 'er up
-        ResumeThread (hThread);
-
-        exitType = EXITTYPE_NONE;
-    } // End IF/ELSE
+    exitType = EXITTYPE_NONE;
 
     goto NORMAL_EXIT;
 
@@ -392,7 +371,6 @@ DWORD WINAPI ImmExecStmtInThread
     LPPERTABDATA   lpMemPTD;            // Ptr to this window's PerTabData
     RESET_FLAGS    resetFlag;           // Reset flag (see RESET_FLAGS)
     UBOOL          bFreeLine,           // TRUE iff we should free lpszCompLine on completion
-                   bWaitUntilFini,      // TRUE iff wait until finished
                    bResetAll = FALSE,   // TRUE iff )RESET about to finish
                    bActOnErrors;        // TRUE iff errors are acted upon
     EXIT_TYPES     exitType;            // Return code from ParseLine
@@ -414,7 +392,6 @@ DWORD WINAPI ImmExecStmtInThread
         aplNELM        = lpieThread->aplNELM;
         hGlbWFSO       = lpieThread->hGlbWFSO;
         bFreeLine      = lpieThread->bFreeLine;
-        bWaitUntilFini = lpieThread->bWaitUntilFini;
         bActOnErrors   = lpieThread->bActOnErrors;
 
         // Save ptr to PerTabData global memory
@@ -490,12 +467,10 @@ DWORD WINAPI ImmExecStmtInThread
             goto UNTOKENIZE_EXIT;
         } // End IF
 
-        // If we're not waiting until finished, ...
-        // (in other words, we're called from LoadWorkspaceGlobal_EM
-        //  and we can't send a message to another thread.)
-        if (!bWaitUntilFini)
-            // Set the cursor to indicate the new state
-            ForceSendCursorMsg (hWndEC, TRUE);
+        // If we're called from LoadWorkspaceGlobal_EM
+        //  and we can't send a message to another thread.
+        // Set the cursor to indicate the new state
+        ForceSendCursorMsg (hWndEC, TRUE);
 
         // Lock the memory to get a ptr to it
         lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
@@ -558,13 +533,6 @@ DWORD WINAPI ImmExecStmtInThread
                                               TRUE,                                                         // TRUE iff last line has CR
                                              &bCtrlBreak,                                                   // Ptr to Ctrl-Break flag
                                               NULL);                                                        // Ptr to function token
-////////////////////////////// Execute the statement (display []DM)
-////////////////////////////ImmExecStmt (DISP_QUAD_DM_TXT,          // Ptr to line to execute
-////////////////////////////             DISP_QUAD_DM_LEN,          // NELM of lpwszCompLine
-////////////////////////////             FALSE,                     // TRUE iff free lpwszCompLine on completion
-////////////////////////////             TRUE,                      // TRUE iff wait until finished
-////////////////////////////             hWndEC,                    // Edit Ctrl window handle
-////////////////////////////             FALSE);                    // TRUE iff errors are acted upon
                         } else
                         {
                             // Execute []ELX

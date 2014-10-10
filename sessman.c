@@ -1496,7 +1496,6 @@ NORMAL_EXIT:
                 ImmExecStmt (WS_UTF16_UPTACKJOT $QUAD_LX,   // Ptr to line to execute
                              4,                             // NELM of line to execute
                              FALSE,                         // TRUE iff free the line on completion
-                             FALSE,                         // TRUE iff wait until finished
                              hWndEC,                        // Edit Ctrl window handle
                              TRUE);                         // TRUE iff errors are acted upon
             } else

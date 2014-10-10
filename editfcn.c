@@ -5094,7 +5094,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL CloseFunction
-    (HWND hWndFE)
+    (HWND hWndFE)               // The window handle of the function to close
 
 {
     UBOOL bRet;                 // TRUE iff we're to close
@@ -5104,8 +5104,13 @@ UBOOL CloseFunction
     // If it's OK to close the window, do so, else ignore
     bRet = QueryCloseFE (hWndFE);
     if (bRet)
+    {
+        Assert (GetParent (hWndFE) EQ GetMemPTD ()->hWndMC);
+
         // Close the Function Editor window
         SendMessageW (GetParent (hWndFE), WM_MDIDESTROY, (WPARAM) hWndFE, 0);
+    } // End IF
+
     return bRet;
 } // End CloseFunction
 

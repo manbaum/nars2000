@@ -773,6 +773,7 @@ LRESULT WINAPI LclTabCtrlWndProc
                     iDelTabIndex;               // Index of tab to delete
             LRESULT lResult;                    // Result from CallWindowProcW
             DWORD   dwThreadId;                 // Outgoing thread ID
+            HWND    hWndFENxt;                  // Next Function Editing window handle
 
             // Save the tab index to delete
             iDelTabIndex = (int) wParam;
@@ -793,6 +794,17 @@ LRESULT WINAPI LclTabCtrlWndProc
                 return FALSE;
             } // End IF
 
+            // While there are open FE windows, ...
+            while (hWndFENxt = lpMemPTD->hWndFENxt)
+            {
+                // If the user doesn't want the window to close, ...
+                if (!CloseFunction (hWndFENxt))
+                    // Ignore this action
+                    return FALSE;
+
+                Assert (hWndFENxt NE lpMemPTD->hWndFENxt);
+            } // End WHILE
+
             // If gOverTabIndex is this tab or to the right of it, ...
             if (gOverTabIndex && gOverTabIndex >= iDelTabIndex)
                 // Decrement it
@@ -801,7 +813,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Reset this tab's color index bit
             ResetTabColorIndex (lpMemPTD->crIndex);
 
-            // Save the outgoing MDI Child window handle
+            // Save the outgoing thread ID
             dwThreadId = lpMemPTD->dwThreadId;
 
             // The storage for lpMemPTD is freed in CreateNewTabInThread

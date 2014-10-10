@@ -1,6 +1,20 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1288 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug When Closing Tab With Open Function Editing Windows
+
+Directory trunk:
+
+EDITFCN.C:
+  Include more DEBUGging code in <CloseFunction>.
+
+TABCTRL.C:
+  In <LclTabCtrlWndProc/TCM_DELETEITEM>, attempt to close any open FEwindows before closing the tab,
+
+
 Build #1287 -- Version 0.4.9.xx
 -------------------------------
 

@@ -2090,11 +2090,7 @@ NORMAL_EXIT:
             {
                 IMLangFontLink_Release (lpMemPTD->lpFontLink); lpMemPTD->lpFontLink = NULL;
             } // End IF
-#endif
-            // Tell the thread to quit, too
-            PostQuitMessage (0);
 
-#ifndef UNISCRIBE
             // Uninitialize the OLE libraries
             CoUninitialize ();
 #endif

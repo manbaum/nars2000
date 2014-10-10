@@ -1,6 +1,17 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1285 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Memory Leak As In (a b c){is]...
+
+Directory trunk:
+
+ASSIGN.C:
+  Fix memory leak when assigning to a list of named vars.
+
+
 Build #1284 -- Version 0.4.9.xx
 -------------------------------
 

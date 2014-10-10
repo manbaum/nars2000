@@ -1008,11 +1008,8 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbVal); lpMemVal = NULL;
     } // End IF
 
-    if (hGlbStr && lpMemNam)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbStr); lpMemNam = NULL;
-    } // End IF
+    // Unlock and free (and set to NULL) a global name and ptr
+    UnlFreeGlbName (hGlbStr, lpMemNam);
 
     // Mark as not displayable
     lptkVal->tkFlags.NoDisplay = TRUE;

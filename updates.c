@@ -442,9 +442,7 @@ INT_PTR CALLBACK UpdatesDlgProc
                             SetEvent (dnlThrStr.hSuspend);
 
                             // Wait for the thread to terminate
-////////////////////////////oprintfW (L"%3d:  WaitForSingleObject start on %p (IDOK -- hThreadWork)\n", guCnt++, dnlThrStr.hThreadWork);
-                            WaitForSingleObject (dnlThrStr.hThreadWork, INFINITE);
-////////////////////////////oprintfW (L"%3d:  WaitForSingleObject end   on %p (IDOK -- hThreadWork)\n", guCnt++, dnlThrStr.hThreadWork);
+                            MyWaitForThread (dnlThrStr.hThreadWork, INFINITE, L"UpdatesDlgProc#WM_COMMAND/IDOK");
                         } else
                         {
                             // Restore the Progress Bar state
@@ -509,9 +507,7 @@ INT_PTR CALLBACK UpdatesDlgProc
                             SetEvent (dnlThrStr.hSuspend);
 
                             // Wait for the thread to terminate
-////////////////////////////oprintfW (L"%3d:  WaitForSingleObject start on %p (IDCANCEL -- hThreadWork)\n", guCnt++, dnlThrStr.hThreadWork);
-                            WaitForSingleObject (dnlThrStr.hThreadWork, INFINITE);
-////////////////////////////oprintfW (L"%3d:  WaitForSingleObject end   on %p (IDCANCEL -- hThreadWork)\n", guCnt++, dnlThrStr.hThreadWork);
+                            MyWaitForThread (dnlThrStr.hThreadWork, INFINITE, L"UpdatesDlgProc#WM_COMMAND/IDCANCEL");
 
                             // Disable the Pause & Cancel buttons
                             EnableWindow (GetDlgItem (hDlg, IDC_DNLPAUSE_BN), FALSE);
@@ -963,6 +959,9 @@ NORMAL_EXIT:
 //  $DownloadInThread
 //
 //  Download worker thread
+//
+//  Note that because we use WaitForSingleObject on this thread handle, this
+//    thread must not create any windows otherwise the message loop will hang.
 //***************************************************************************
 
 DWORD WINAPI DownloadInThread

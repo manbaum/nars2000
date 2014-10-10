@@ -40,9 +40,8 @@ typedef struct tagIE_THREAD         // Thread struct for ImmExecStmtInThread
     APLNELM      aplNELM;           // 0C:  NELM of lpwszCompLine
     HGLOBAL      hGlbWFSO;          // 10:  WaitForSingleObject callback global memory handle
     UBOOL        bFreeLine,         // 14:  TRUE iff we should free lpwszCompLine on completion
-                 bWaitUntilFini,    // 18:  TRUE iff wait until finished
-                 bActOnErrors;      // 1C:  TRUE iff errors are acted upon
-                                    // 20:  Length
+                 bActOnErrors;      // 18:  TRUE iff errors are acted upon
+                                    // 1C:  Length
 } IE_THREAD, *LPIE_THREAD;
 
 

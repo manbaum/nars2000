@@ -54,6 +54,7 @@
   #define MyQueryObject(a,b)              _MyQueryObject(a,b,__LINE__)
   #define MyReleaseDC(a,b)                _MyReleaseDC(a,b,__LINE__)
   #define MyWaitForSemaphore(a,b,c)       _MyWaitForSemaphore (a,b,c,FNLN)
+  #define MyWaitForThread(a,b,c)          _MyWaitForThread (a,b,c,FNLN)
 
   #define OBJ_GLBLOCK     15
   #define OBJ_GLBALLOC    16
@@ -92,6 +93,7 @@
   #define MyQueryObject(a,b)
   #define MyReleaseDC(a,b)                ReleaseDC(a,b)
   #define MyWaitForSemaphore(a,b,c)       WaitForSingleObject (a,b)
+  #define MyWaitForThread(a,b,c)          WaitForSingleObject (a,b)
 #endif
 
 //***************************************************************************

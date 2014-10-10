@@ -181,7 +181,6 @@ typedef struct tagSTART_ADDRESSES
     "DisplayStrand"             , (LPUCHAR) &DisplayStrand              ,
     "DisplayUndo"               , (LPUCHAR) &DisplayUndo                ,
     "DisplayFnHdr"              , (LPUCHAR) &DisplayFnHdr               ,
-    "DisplayYYRes"              , (LPUCHAR) &DisplayYYRes               ,
   #endif
 
     // display.c

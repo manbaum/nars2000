@@ -27,6 +27,7 @@
 
 #define DEBUG_HEAP
 //#define DEBUG_SEMAPHORE
+//#define DEBUG_THREAD
 
 #define OBJ_GLBLOCK     15
 #define OBJ_GLBALLOC    16
@@ -1720,6 +1721,73 @@ DWORD _MyWaitForSemaphore
 
     return dwWaitRes;
 } // _MyWaitForSemaphore
+
+
+//***************************************************************************
+//  $MyWaitForThread
+//
+//  Wait for a thread handle
+//***************************************************************************
+
+DWORD _MyWaitForThread
+    (HANDLE  hThread,                               // Thread handle
+     DWORD   dwMilliseconds,                        // Time-out interval
+     LPWCHAR lpCallerIdent,                         // Ptr to caller identification
+     LPCHAR  lpFileName,                            // Ptr to filename
+     UINT    uLine)                                 // Line #
+
+{
+    DWORD   dwWaitRes;
+#ifdef DEBUG_THREAD
+    WCHAR   wszTemp[1024];
+    LPWCHAR lpwszWaitRes;
+
+    dprintfWL0 (L"~~WaitForThread (ENTRY):  %p %s (%S#%d)", hThread, lpCallerIdent, lpFileName, uLine);
+#endif
+    dwWaitRes =
+      WaitForSingleObject (hThread, dwMilliseconds);
+#ifdef DEBUG_THREAD
+    switch (dwWaitRes)
+    {
+        case WAIT_FAILED:
+            lpwszWaitRes = L"WAIT_FAILED";
+
+            break;
+
+        case WAIT_OBJECT_0:
+            lpwszWaitRes = L"WAIT_OBJECT_0";
+
+            break;
+
+        case WAIT_ABANDONED:
+            lpwszWaitRes = L"WAIT_ABANDONED";
+
+            break;
+
+        case WAIT_TIMEOUT:
+            lpwszWaitRes = L"WAIT_TIMEOUT";
+
+            break;
+
+        case WAIT_IO_COMPLETION:
+            lpwszWaitRes = L"WAIT_IO_COMPLETION";
+
+            break;
+
+        default:
+            wsprintfW (wszTemp,
+                      L"***Unknown Wait Reason (%08X)***",
+                       dwWaitRes);
+            lpwszWaitRes = wszTemp;
+
+            break;
+    } // End SWITCH
+
+    dprintfWL0 (L"~~WaitForThread (EXIT ):  %p %s %s (%S#%d)", hThread, lpCallerIdent, lpwszWaitRes, lpFileName, uLine);
+#endif
+
+    return dwWaitRes;
+} // _MyWaitForThread
 
 
 #ifdef DEBUG

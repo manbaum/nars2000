@@ -1943,6 +1943,9 @@ LPPL_YYSTYPE plRedMF_ARBK
     lpYYVar2 =
       plRedMF_A (lpplLocalVars, lpplYYCurObj, lpYYVar1, soA);
 
+    // Note these vars have been freed by <plRedMF_A>
+    lpplYYCurObj = lpYYVar1 = NULL;
+
     // Check for error
     if (!lpYYVar2)
         goto ERROR_EXIT;
@@ -4152,7 +4155,17 @@ PARSELINE_MP_DONE:
 
                 // Check for error
                 if (!lpYYRes)
-                    goto PARSELINE_ERROR;
+                {
+                    // Check for stop execution of this line
+                    if (plLocalVars.bStopExec)
+                    {
+                        // Set the curSynObj to something harmless
+                        curSynObj = soEOS;
+
+                        goto PARSELINE_DONE;
+                    } else
+                        goto PARSELINE_ERROR;
+                } // End IF
 
                 // If it's NoValue, ...
 
@@ -6564,10 +6577,8 @@ LPPL_YYSTYPE ExecuteCS0
             lpYYTmp = YYAlloc ();
             lpYYVar = YYAlloc ();
 
-            // Manufacture a constant 0 in the last right object
-            lpYYTmp->tkToken.tkFlags.TknType = TKT_VARIMMED;
-            lpYYTmp->tkToken.tkFlags.ImmType = IMMTYPE_BOOL;
-            lpYYTmp->tkToken.tkData.tkBoolean = 0;
+            // Copy a constant 0 as the last right object
+            lpYYTmp->tkToken = tkZero;
 
             // Make the token into a YYSTYPE
             lpYYVar->tkToken = tkToken;
@@ -6575,9 +6586,7 @@ LPPL_YYSTYPE ExecuteCS0
             // Call common {goto} code
             lpYYRes = plRedGO_A (lpplLocalVars, lpYYVar, lpYYTmp, soEOS);
 
-            // YYFree the temps
-            YYFree (lpYYVar); lpYYVar = NULL;
-            YYFree (lpYYTmp); lpYYTmp = NULL;
+            // <plRedGO_A> YYFrees the temps
 
             break;
 

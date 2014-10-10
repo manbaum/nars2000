@@ -580,6 +580,7 @@ APLBOOL IzitSusPendent
             case DFNTYPE_IMM:
             case DFNTYPE_EXEC:
             case DFNTYPE_QUAD:
+            case DFNTYPE_ERRCTRL:
                 break;
 
             case DFNTYPE_OP1:
@@ -596,6 +597,7 @@ APLBOOL IzitSusPendent
 
                 break;
 
+            case DFNTYPE_QQUAD:
             case DFNTYPE_UNK:
             defstop
                 break;

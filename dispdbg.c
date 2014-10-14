@@ -830,9 +830,11 @@ void DisplayGlbVar
     // Skip over it
     lpwszTemp += lstrlenW (lpwLabel);
 
-    // Do the rest in a subroutine so we may use it recursively
-    lpwszTemp =
-      DisplayGlbVarSub (hGlb, lpwszTemp);
+    // If the global memory handle is valid, ...
+    if (hGlb)
+        // Do the rest in a subroutine so we may use it recursively
+        lpwszTemp =
+          DisplayGlbVarSub (hGlb, lpwszTemp);
 
     // Ensure properly terminated
     *lpwszTemp++ = WC_EOS;
@@ -863,20 +865,41 @@ LPWCHAR DisplayGlbVarSub
     LPVARARRAY_HEADER lpHdrGlb;     // Ptr to global memory header
     LPAPLNESTED       lpMemGlb;     // Ptr to global memory data
     IMM_TYPES         immType;      // Immediate type
+    APLSTYPE          aplType;      // Global memory storage type
+    APLNELM           aplNELM;      // Global memory NELM
+    APLRANK           aplRank;      // Global memory rank
 
-    // Lock the memory to get a ptr to it
-    lpHdrGlb = MyGlobalLock (hGlb);
+    // Split cases based upon the ptr type bits
+    if (GetPtrTypeDir (hGlb) EQ PTRTYPE_STCONST)
+    {
+        LPSYMENTRY lpSymEntry = hGlb;
 
-    immType = TranslateArrayTypeToImmType (lpHdrGlb->ArrType);
+        // Point to the data
+        lpMemGlb = (LPVOID) &lpSymEntry->stData.stLongest;
 
-    // Skip over the header & dimensions to the data
-    lpMemGlb = VarArrayDataFmBase (lpHdrGlb);
+        immType = lpSymEntry->stFlags.ImmType;
+        aplType = TranslateImmTypeToArrayType (immType);
+        aplNELM = 1;
+        aplRank = 0;
+    } else
+    {
+        // Lock the memory to get a ptr to it
+        lpHdrGlb = MyGlobalLock (hGlb);
+
+        // Skip over the header & dimensions to the data
+        lpMemGlb = VarArrayDataFmBase (lpHdrGlb);
+
+        immType = TranslateArrayTypeToImmType (lpHdrGlb->ArrType);
+        aplType = lpHdrGlb->ArrType;
+        aplNELM = lpHdrGlb->NELM;
+        aplRank = lpHdrGlb->Rank;
+    } // End IF/ELSE
 
     // Split case based upon the storage type
-    switch (lpHdrGlb->ArrType)
+    switch (aplType)
     {
         case ARRAY_BOOL:
-            if (IsEmpty (lpHdrGlb->NELM))
+            if (IsEmpty (aplNELM))
             {
                 *lpwszTemp++ = UTF16_ZILDE;
                 *lpwszTemp++ = L' ';
@@ -886,7 +909,7 @@ LPWCHAR DisplayGlbVarSub
                 APLLONGEST aplZero = 0,
                            aplOne  = 1;
 
-                for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+                for (uCnt = 0; uCnt < aplNELM; uCnt++)
                 {
                     lpwszTemp =
                       FormatImmed (lpwszTemp,
@@ -900,12 +923,12 @@ LPWCHAR DisplayGlbVarSub
 
         case ARRAY_INT:
         case ARRAY_FLOAT:
-            if (IsEmpty (lpHdrGlb->NELM))
+            if (IsEmpty (aplNELM))
             {
                 *lpwszTemp++ = UTF16_ZILDE;
                 *lpwszTemp++ = L' ';
             } else
-            for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+            for (uCnt = 0; uCnt < aplNELM; uCnt++)
                 lpwszTemp =
                   FormatImmed (lpwszTemp,
                                immType,
@@ -932,7 +955,7 @@ LPWCHAR DisplayGlbVarSub
            *lpwszTemp++   = UTF16_IOTA;
             lpwszTemp =
               FormatAplInt (lpwszTemp,          // Ptr to output save area
-                            lpHdrGlb->NELM);    // The value to format
+                            aplNELM);           // The value to format
             break;
         } // End ARRAY_APA
 
@@ -941,10 +964,10 @@ LPWCHAR DisplayGlbVarSub
             *lpwszTemp++ = L'\'';
 
             // Copy the data
-            CopyMemory (lpwszTemp, lpMemGlb, (APLU3264) (lpHdrGlb->NELM * sizeof (WCHAR)));
+            CopyMemory (lpwszTemp, lpMemGlb, (APLU3264) (aplNELM * sizeof (WCHAR)));
 
             // Skip over it
-            lpwszTemp += lpHdrGlb->NELM;
+            lpwszTemp += aplNELM;
 
             // Trailing single quote
             *lpwszTemp++ = L'\'';
@@ -952,35 +975,43 @@ LPWCHAR DisplayGlbVarSub
             break;
 
         case ARRAY_RAT:
-            if (IsEmpty (lpHdrGlb->NELM))
+            if (IsEmpty (aplNELM))
             {
                 *lpwszTemp++ = UTF16_ZILDE;
-                *lpwszTemp++ = L'x';
                 *lpwszTemp++ = L' ';
             } else
-            for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+            for (uCnt = 0; uCnt < aplNELM; uCnt++)
                 lpwszTemp =
                   FormatAplRat (lpwszTemp,                  // Ptr to output save area
                                *((LPAPLRAT) lpMemGlb)++);   // The value to format
+            Assert (lpwszTemp[-1] EQ L' ');
+
+            lpwszTemp[-1] = L'x';
+            *lpwszTemp++  = L' ';
+
             break;
 
         case ARRAY_VFP:
-            if (IsEmpty (lpHdrGlb->NELM))
+            if (IsEmpty (aplNELM))
             {
                 *lpwszTemp++ = UTF16_ZILDE;
-                *lpwszTemp++ = L'v';
                 *lpwszTemp++ = L' ';
             } else
-            for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+            for (uCnt = 0; uCnt < aplNELM; uCnt++)
                 lpwszTemp =
                   FormatAplVfp (lpwszTemp,                  // Ptr to output save area
                               *((LPAPLVFP) lpMemGlb)++,     // The value to format
                                 0);                         // Use this many significant digits for VFP
+            Assert (lpwszTemp[-1] EQ L' ');
+
+            lpwszTemp[-1] = L'v';
+            *lpwszTemp++  = L' ';
+
             break;
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            for (uCnt = 0; uCnt < lpHdrGlb->NELM; uCnt++)
+            for (uCnt = 0; uCnt < aplNELM; uCnt++)
             // Split cases based upon the item ptr bits
             switch (GetPtrTypeDir (lpMemGlb[uCnt]))
             {
@@ -1023,8 +1054,11 @@ LPWCHAR DisplayGlbVarSub
             break;
     } // End SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlb); lpMemGlb = NULL;
+    if (GetPtrTypeDir (hGlb) EQ PTRTYPE_HGLOBAL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlb); lpMemGlb = NULL;
+    } // End IF
 
     return lpwszTemp;
 } // End DisplayGlbVarSub

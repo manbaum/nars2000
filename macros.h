@@ -129,6 +129,7 @@
 
   #define Assert(a)                       ((a) || (DbgBrk (), nop (), 0))
   #define CheckCtrlBreak(a)               _CheckCtrlBreak(a)
+//#define DisplayGlbVar(a,b)              DisplayGlbVar (a, b)
 #else
   #define YYAlloc()     _YYAlloc()
 
@@ -157,6 +158,7 @@
   #define Assert(a)                       ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
   #define CheckCtrlBreak(a)               (a)
+  #define DisplayGlbVar(a,b)
 
   #define dprintfWL0(a,...)
   #define dprintfWL9(a,...)

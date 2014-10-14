@@ -81,12 +81,18 @@ Welcome to NARS2000</h1>
               <span class="APL">R[L]</span>,
               <span class="APL">R[L]{is}A</span>,
           and <span class="APL">R[L]<i>f</i>{is}A</span>
-          allow both Reach and Scatter indexing &mdash; that is, if
-          <span class="APL">L{pick}R</span> is valid, it is equivalent to
-          <span class="APL">{disclose}R[{enclose}L]</span>, and if
-          <span class="APL">L{squad}R</span> is valid, it is equivalent to
-          <span class="APL">R[{disclose}{jot}.,/L]</span> &mdash; Reach
-          and Scatter indexing may appear together within a single instance of
+          allow both Reach and Scatter indexing &mdash; that is,
+          <ul>
+            <li>if <span class="APL">L{pick}R</span> is valid, it is equivalent to
+                   <span class="APL">{disclose}R[{enclose}L]</span>, and</li>
+            <li>if <span class="APL">L{pick}{each}{enclose}R</span> is valid, it is equivalent to
+                   <span class="APL">R[L]</span>, and</li>
+            <li>if <span class="APL">L{squad}R</span> is valid, it is equivalent to
+                   <span class="APL">R[{disclose}{jot}.,/L]</span>, and</li>
+            <li>if <span class="APL">L{squad}{each}{enclose}R</span> is valid, it is equivalent to
+                   <span class="APL">{enclose}{each}R[{enclose}{each}L]</span></li>
+          </ul>
+          Reach and Scatter indexing may appear together within a single instance of
               <span class="APL">R[L]</span>,
               <span class="APL">R[L]{is}A</span>,
           and <span class="APL">R[L]<i>f</i>{is}A</span></li>

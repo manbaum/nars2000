@@ -2548,7 +2548,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             //   of the left arg item global
             AttrsOfGlb (hGlbSubLft, &aplTypeSubLft, &aplNELMSubLft, &aplRankSubLft, NULL);
 
-            // Check for left RANK ERROR
+            // Check for LEFT RANK ERROR
             if (IsMultiRank (aplRankSubLft))
                 goto RANK_EXIT;
 

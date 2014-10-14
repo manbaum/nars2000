@@ -129,7 +129,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
         } // End IF/ELSE
     } else
     //***************************************************************
-    // If the list arg is a singleton, ...
+    // If the list arg is a singleton (no semicolons), ...
     //***************************************************************
     if (IsSingleton (aplNELMLst) || TknTypeLst NE TKT_LSTMULT)
     {
@@ -150,6 +150,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplNELMSub    = 1;
             aplRankSub    = 0;
             aplLongestSub = lptkLstArg->tkData.tkLongest;
+            lpMemSub      = &aplLongestSub;
         } else
         {
             Assert (lptkLstArg->tkFlags.TknType EQ TKT_LSTARRAY
@@ -161,8 +162,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplNELMSub    = aplNELMLst;
             aplRankSub    = aplRankLst;
 
-            hGlbSub  = hGlbLst;
-            lpMemSub = MyGlobalLock (hGlbSub);
+            hGlbSub       = hGlbLst;
+            lpMemSub      = MyGlobalLock (hGlbSub);
         } // End IF/ELSE
 
         // Handle obvious DOMAIN ERRORs
@@ -240,7 +241,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             //   numeric vectors, do scatter indexing, in which case
             //   the name arg rank must be the same as the length of the
             //   list arg item sub items.
-            // If the list item arg is a nested array of nested vectors,
+            // If the list arg item is a nested array of nested vectors,
             //   do reach indexing, in which case
             //   the name arg rank must be the same as the length of the
             //   first element of each of the list arg sub items.
@@ -394,7 +395,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             switch (GetPtrTypeDir (((LPAPLNESTED) lpMemSub)[uSub]))
             {
                 case PTRTYPE_STCONST:       // Immediates are NELM 1, Rank 0
-                    // Check for LENGTH ERROR
+                    // Check for RANK ERROR
                     if (!IsVector (aplRankNam)) // Check Name rank vs. list item NELM
                         goto RANK_EXIT;
 
@@ -701,7 +702,8 @@ YYALLOC_EXIT:
         TypeDemote (&lpYYRes->tkToken);
     } else
     //***************************************************************
-    // The list arg list has multiple elements:  do rectangular indexing.
+    // The list arg list has multiple elements (semicolons):  do
+    //   rectangular indexing.
     // The name arg must be a matching rank array.
     //***************************************************************
         lpYYRes =
@@ -2097,11 +2099,10 @@ UBOOL ArrayIndexSet_EM
 
     // Split cases based upon whether or not the name
     //   var is immediate or scalar
-    if (hGlbNam EQ NULL
-     || IsScalar (aplRankNam))
+    if (hGlbNam EQ NULL)
     {
         //***************************************************************
-        // The name arg value is an immediate or scalar
+        // The name arg value is an immediate
         //***************************************************************
         if (!ArrayIndexSetNamImmed_EM (lptkNamArg,          // Ptr to name arg token
                                        lptkLstArg,          // Ptr to list ...
@@ -2109,8 +2110,6 @@ UBOOL ArrayIndexSet_EM
                                        bSysVar,             // TRUE iff indexed assignment into a SysVar
                                        lptkFunc))           // Ptr to function ...
             goto ERROR_EXIT;
-        else
-            goto NORMAL_EXIT;
     } else
     {
         //***************************************************************
@@ -2152,7 +2151,8 @@ UBOOL ArrayIndexSet_EM
                     goto NORMAL_EXIT;
             } else
             //***************************************************************
-            // The list arg list has multiple elements:  do rectangular indexing.
+            // The list arg list has multiple elements (semicolons):  do
+            //   rectangular indexing.
             // The name arg must be a matching rank array.
             //***************************************************************
             {
@@ -2216,7 +2216,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $ArrayIndexSetNamImmed_EM
 //
-//  Array index assignment where the name arg is an immediate or scalar
+//  Array index assignment where the name arg is an immediate
 //***************************************************************************
 
 #ifdef DEBUG
@@ -2233,59 +2233,49 @@ UBOOL ArrayIndexSetNamImmed_EM
      LPTOKEN    lptkFunc)           // Ptr to function token
 
 {
-    HGLOBAL    hGlbNam = NULL,      // Name arg global memory handle                  t
-               hGlbLst = NULL,      // List arg global memory handle
-               hGlbRht = NULL,      // Right arg global memory handle
-               hGlbSubRht = NULL,   // Right arg item ...
-               hGlbRes = NULL;      // Result        ...
-    LPVOID     lpMemNam = NULL,     // Ptr to name arg global memory
-               lpMemLst = NULL,     // Ptr to list arg gobal memory
-               lpMemRht = NULL,     // Ptr to right arg global memory
-               lpMemRes = NULL;     // Ptr to result        ...
-    UBOOL      bRet = TRUE;         // TRUE iff the result is valid
-    APLSTYPE   aplTypeRht,          // Right arg storage type
-               aplTypeLst;          // List  ...
-    APLNELM    aplNELMLst,          // List arg NELM
-               aplNELMZilde,        // Zilde count for enclosing
-               aplNELMRht,          // Right arg NELM
-               aplNELMRes;          // Result NELM
-    APLRANK    aplRankLst,          // List arg rank
-               aplRankRht,          // Right arg rank
-               aplRankRes;          // Result rank
-    LPAPLDIM   lpMemDim;            // Ptr to dimension vector
-    APLLONGEST aplLongestRht;       // Right arg immediate value
-    APLUINT    ByteRes,             // # bytes in the result
-               uNamDepth,           // Depth of the name arg
-               uRht;                // Loop counter
-    IMM_TYPES  immTypeRht;          // Right arg item immediate type
-    TOKEN      tkFunc;              // Save area for function token when calling {enclose}
+    HGLOBAL      hGlbNam = NULL,    // Name arg global memory handle
+                 hGlbLst = NULL,    // List arg global memory handle
+                 hGlbSubLst = NULL, // List arg item ...
+                 hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbSubRht = NULL, // Right arg item ...
+                 hGlbRes = NULL;    // Result        ...
+    LPVOID       lpMemNam = NULL,   // Ptr to name arg global memory
+                 lpMemLst = NULL,   // Ptr to list arg gobal memory
+                 lpMemRht = NULL;   // Ptr to right arg global memory
+    LPAPLNESTED  lpMemRes = NULL;   // Ptr to result        ...
+    UBOOL        bRet = TRUE;       // TRUE iff the result is valid
+    APLSTYPE     aplTypeRht,        // Right arg storage type
+                 aplTypeLst;        // List  ...
+    APLNELM      aplNELMLst,        // List arg NELM
+                 aplNELMRht,        // Right arg NELM
+                 aplNELMZilde;      // Zilde count for enclosing
+    APLRANK      aplRankLst,        // List arg rank
+                 aplRankRht;        // Right arg rank
+    APLLONGEST   aplLongestRht;     // Right arg immediate value
+    APLUINT      ByteRes,           // # bytes in the result
+                 uRht;              // Loop counter
+    IMM_TYPES    immTypeRht;        // Right arg item immediate type
+    TOKEN        tkFunc;            // Save area for function token when calling {enclose}
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     //***************************************************************
     // The name arg value is a scalar
     //***************************************************************
 
     // Get the attributes (Type, NELM, and Rank) of the name, list, and right args
-    AttrsOfToken (lptkNamArg,  NULL,        NULL      , NULL       , NULL);
+    AttrsOfToken (lptkNamArg,  NULL,        NULL      ,  NULL      , NULL);
     AttrsOfToken (lptkLstArg,  NULL,       &aplNELMLst, &aplRankLst, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Calculate the result NELM and rank taking into account scalar extension
-    aplNELMRes = max (aplNELMLst, aplNELMRht);
-    aplRankRes = max (aplRankLst, aplRankRht);
-
     // Get list and right arg global ptrs
-                    GetGlbPtrs_LOCK (lptkLstArg, &hGlbLst, NULL     );
+                    GetGlbPtrs_LOCK (lptkLstArg, &hGlbLst, &lpMemLst);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Get the name arg global handle
     hGlbNam = GetGlbHandle (lptkNamArg);
-
-    // If it's valid, get its depth
-    if (hGlbNam)
-        // Recursively run through the elements of the nested array
-        uNamDepth = PrimFnMonEqualUnderBarGlb_PTB (hGlbNam);
-    else
-        uNamDepth = 0;
 
     // If the list is non-empty, ...
     if (aplNELMLst)
@@ -2293,9 +2283,6 @@ UBOOL ArrayIndexSetNamImmed_EM
         // Check for RANK ERROR
         if (hGlbLst EQ NULL)
             goto RANK_EXIT;
-
-        // Lock the memory to get a ptr to it
-        lpMemLst = MyGlobalLock (hGlbLst);
 
         // Get the storage type
         aplTypeLst = ((LPVARARRAY_HEADER) lpMemLst)->ArrType;
@@ -2327,29 +2314,15 @@ UBOOL ArrayIndexSetNamImmed_EM
                 if (aplRankLst NE aplRankRht)
                     goto RANK_EXIT;
 
-                // Save as result rank and NELM
-                aplRankRes = aplRankLst;
-                aplNELMRes = aplNELMLst;
+                // Skip over the header and dimensions to the data
+                lpMemLst = VarArrayDataFmBase (lpMemLst);
+                lpMemRht = VarArrayDataFmBase (lpMemRht);
 
-                // Skip over the header to the dimensions
-                lpMemLst = VarArrayBaseToDim (lpMemLst);
-                lpMemRht = VarArrayBaseToDim (lpMemRht);
-
-                // Save ptr to dimensions
-                lpMemDim = lpMemLst;    // or lpMemRht
-
-                for (uRht = 0; uRht < aplRankRes; uRht++)
-                if (*((LPAPLDIM) lpMemLst)++ NE *((LPAPLDIM) lpMemRht)++)
-                    goto LENGTH_EXIT;
                 break;
 
             case 2 * 0 + 1 * 1:         // Lst multiple, Rht single
-                // Save as result rank and NELM
-                aplRankRes = aplRankLst;
-                aplNELMRes = aplNELMLst;
-
-                // Skip over the header to the dimensions
-                lpMemLst = VarArrayBaseToDim (lpMemLst);
+                // Skip over the header and dimensions to the data
+                lpMemLst = VarArrayDataFmBase (lpMemLst);
 
                 // If the right arg is not immediate, ...
                 if (hGlbRht NE NULL)
@@ -2358,29 +2331,12 @@ UBOOL ArrayIndexSetNamImmed_EM
                 else
                     lpMemRht = &aplLongestRht;
 
-                // Save ptr to dimensions
-                lpMemDim = lpMemLst;
-
-                for (uRht = 0; uRht < aplRankRes; uRht++)
-                if (*((LPAPLDIM) lpMemLst)++ NE 1)
-                    goto LENGTH_EXIT;
                 break;
 
             case 2 * 1 + 1 * 0:         // Lst single, Rht multiple
                 goto LENGTH_EXIT;
 
             case 2 * 1 + 1 * 1:         // Lst single, Rht single
-                // Save as result rank and NELM
-                aplRankRes = max (aplRankLst, aplRankRht);
-                aplNELMRes = aplNELMLst;
-
-                if (aplRankLst > aplRankRht)
-                    // Save ptr to dimensions
-                    lpMemDim = lpMemLst;
-                else
-                    // Save ptr to dimensions
-                    lpMemDim = lpMemRht;
-
                 // Skip over the header and dimensions to the data
                 lpMemLst = VarArrayDataFmBase (lpMemLst);
 
@@ -2400,12 +2356,8 @@ UBOOL ArrayIndexSetNamImmed_EM
     {
         // Check for RANK ERROR between the name and right args
         if (!IsSingleton (aplNELMRht)
-         && 0 NE aplRankRht)
-            goto RANK_EXIT;
-
-        // Save as result rank and NELM
-        aplRankRes = aplRankRht;
-        aplNELMRes = aplNELMRht;
+         && !IsScalar    (aplRankRht))
+            goto LENGTH_EXIT;
 
         // If the right arg is not immediate, ...
         if (hGlbRht NE NULL)
@@ -2413,10 +2365,12 @@ UBOOL ArrayIndexSetNamImmed_EM
             lpMemRht = VarArrayDataFmBase (lpMemRht);
         else
             lpMemRht = &aplLongestRht;
+        // An empty list is equivalent to {enclose}{zilde} which has a single {zilde} in it
+        aplNELMZilde = 1;
     } // End IF/ELSE
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRes, aplRankRes);
+    ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -2437,17 +2391,12 @@ UBOOL ArrayIndexSetNamImmed_EM
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
-    lpHeader->NELM       = aplNELMRes;
-    lpHeader->Rank       = aplRankRes;
+    lpHeader->NELM       = 1;
+    lpHeader->Rank       = 0;
 #undef  lpHeader
 
-    // Skip over the header to the dimensions
-    lpMemRes = VarArrayBaseToDim (lpMemRes);
-
-    // Loop through the result dimensions
-    for (uRht = 0; uRht < aplRankRes; uRht++)
-        // Copy the dimensions to the result
-        *((LPAPLDIM) lpMemRes)++ = *lpMemDim++;
+    // Skip over the header to the data
+    lpMemRes = VarArrayDataFmBase (lpMemRes);
 
     // Copy the function token in case we call {enclose}
     tkFunc = *lptkFunc;
@@ -2457,42 +2406,109 @@ UBOOL ArrayIndexSetNamImmed_EM
     tkFunc.tkSynObj        = soF;
 
     // Loop through the list and right arg
-    for (uRht = 0; uRht < aplNELMRes; uRht++)
+    for (uRht = 0; uRht < max (aplNELMLst, 1); uRht++)
     {
-        // Confirm that the current item in the list of indices is a vector of {zilde}s
-        if (!ArrayIndexValidZilde_EM (lpMemLst, uRht, &aplNELMZilde, lptkFunc))
-            goto ERROR_EXIT;
+        APLSTYPE     aplTypeSubRht,
+                     aplTypeSet;
+        APLRANK      aplRankSubRht;
+        APLNELM      uCnt;
+        LPPL_YYSTYPE lpYYItm;
 
         // Get the next item of the right arg
         GetNextValueMem (lpMemRht,              // Ptr to item global memory data
                          aplTypeRht,            // Item storage type
-     (aplNELMRht EQ 1) ? 0 : uRht,              // Index into item
+                         (IsSingleton (aplNELMRht)) // If it's a singleton, ...
+                         ? 0
+                         : uRht,                // Index into item
                         &hGlbSubRht,            // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                         &aplLongestRht,         // Ptr to result immediate value (may be NULL)
                         &immTypeRht);           // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-        // If the current item is not an immediate,
-        //   and not a global numeric, ...
-        if (hGlbSubRht NE NULL
-         && !IsGlbNum (aplTypeRht))
-        {
-            APLSTYPE aplTypeSubRht;
-            APLRANK  aplRankSubRht;
-            APLNELM  uCnt;
+        // Convert the right arg item immediate value
+        aplTypeSet = TranslateImmTypeToArrayType (immTypeRht);
 
+        // If the current item is an immediate,
+        //   or a global numeric, ...
+        if (hGlbSubRht EQ NULL
+         || IsGlbNum (aplTypeRht))
+        {
+            LPSYMENTRY lpSymTmp;
+
+            Assert (!IsImmErr (immTypeRht));
+
+            // If it's a GlbNum, ..
+            if (hGlbSubRht)
+                // Save an LPSYMENTRY in the result
+                lpSymTmp =
+                  MakeGlbEntry_EM (aplTypeRht,  // Entry type
+                                   hGlbSubRht,  // Ptr to the value
+                                   TRUE,        // TRUE iff we should initialize the target first
+                                   lptkFunc);   // Ptr to function token
+            else    // Rht is an immediate
+                // Save an LPSYMENTRY in the result
+                lpSymTmp =
+                  MakeSymEntry_EM (immTypeRht,                  // Immediate type
+                                  &aplLongestRht,               // Ptr to immediate value
+                                   lptkFunc);                   // Ptr to function token
+            // Check for error
+            if (lpSymTmp EQ NULL)
+                goto ERROR_EXIT;
+
+            // Copy as right arg item
+            hGlbSubRht = lpSymTmp;
+
+            // Set the attributes
+            aplTypeSubRht = aplTypeSet;
+            aplRankSubRht = 0;
+        } else
+        {
             // Get the attributes (Type, NELM, and Rank) of the right arg item
             AttrsOfGlb (hGlbSubRht, &aplTypeSubRht, NULL, &aplRankSubRht, NULL);
 
             // Copy the current item
             hGlbSubRht = CopySymGlbDir_PTB (hGlbSubRht);
+        } // End IF/ELSE
 
-            // If the name arg is not a simple (we already know it's a scalar), ...
-            if (uNamDepth)
+        // If the result is present, ...
+        //   and neither a simple nor global numeric, ...
+        if (lpMemRes[0]
+         && !IsSimpleGlbNum (aplTypeRht))
+        {
+#define lpMemLst2   ((LPAPLNESTED) lpMemLst)
+////////////DisplayGlbVar (L"Name = ", MakePtrTypeGlb (hGlbRes));
+////////////DisplayGlbVar (L"List = ", lpMemLst2[uRht]);
+////////////DisplayGlbVar (L"Set  = ", hGlbSubRht     );
+
+            // Set the corresponding element of the result
+            // Note the args get switched between indexing and pick
+            lpYYItm =
+              PrimFnDydRightShoeGlbGlb_EM_YY (lpMemLst2[uRht],  // Left arg global memory handle
+                                              hGlbRes,          // Right arg global memory handle
+                                              lptkFunc,         // Ptr to function token
+                                              TRUE,             // TRUE iff array assignment
+                                              aplTypeSet,       // Set arg storage type
+                                              hGlbSubRht,       // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+                                              aplLongestRht,    // Set arg immediate value
+                                              lpMemPTD);        // Ptr to PerTabData global memory
+#undef  lpMemLst2
+            if (!IsPtrSuccess (lpYYItm))
             {
-                // Ensure that the depth of the name arg
-                //   is deeper than aplNELMZilde
-                if (uNamDepth <= aplNELMZilde)
-                    goto LENGTH_EXIT;
+                // We no longer need this storage
+                FreeResultGlobalVar (lpMemRes[0]); lpMemRes[0] = NULL;
             } // End IF
+
+            if (lpYYItm EQ NULL)
+                goto ERROR_EXIT;
+
+            if (!IsPtrSuccess (lpYYItm))
+                // Save the global memory handle in the result
+                lpMemRes[0] = lpYYItm->tkToken.tkData.tkGlbData;
+        } else
+        {
+            // If the list is non-empty, ...
+            // Confirm that the current item in the list of indices is a vector of {zilde}s
+            if (aplNELMLst
+             && !ArrayIndexValidZilde_EM (lpMemLst, uRht, &aplNELMZilde, lptkFunc))
+                goto ERROR_EXIT;
 
             // If the current right arg item isn't a simple or global numeric salar, ...
             if (!(IsSimpleGlbNum (aplTypeSubRht)
@@ -2524,34 +2540,16 @@ UBOOL ArrayIndexSetNamImmed_EM
                 } // End FOR
             } // End IF
 
+            // If the existing global memory handle is valid, ...
+            if (lpMemRes[0]
+             && GetPtrTypeDir (lpMemRes[0]) NE PTRTYPE_STCONST)
+            {
+                FreeResultGlobalVar (lpMemRes[0]); lpMemRes[0] = NULL;
+            } // End IF
+
             // Save the global memory handle in the result
-            *((LPAPLNESTED) lpMemRes)++ = hGlbSubRht;
-        } else  // Rht is simple or GlbNum
-        {
-            LPSYMENTRY lpSymTmp;
-
-            Assert (IsSimpleGlbNum (aplTypeRht));
-
-            // If it's a GlbNum, ..
-            if (hGlbSubRht)
-                // Save an LPSYMENTRY in the result
-                *((LPAPLNESTED) lpMemRes)++ =
-                lpSymTmp                    =
-                  MakeGlbEntry_EM (aplTypeRht,  // Entry type
-                                   hGlbSubRht,  // Ptr to the value
-                                   TRUE,        // TRUE iff we should initialize the target first
-                                   lptkFunc);   // Ptr to function token
-            else    // Rht is an immediate
-                // Save an LPSYMENTRY in the result
-                *((LPAPLNESTED) lpMemRes)++ =
-                lpSymTmp                    =
-                  MakeSymEntry_EM (immTypeRht,                  // Immediate type
-                                  &aplLongestRht,               // Ptr to immediate value
-                                   lptkFunc);                   // Ptr to function token
-            // Check for error
-            if (lpSymTmp EQ NULL)
-                goto ERROR_EXIT;
-        } // End IF
+            lpMemRes[0] = hGlbSubRht;
+        } // End IF/ELSE
     } // End FOR
 
     // If the result is still locked, ...
@@ -2570,6 +2568,43 @@ UBOOL ArrayIndexSetNamImmed_EM
         FreeResultGlobalVar (hGlbNam); hGlbNam = NULL;
     } // End IF
 
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+            lpMemRht = &aplLongestRht;
+
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            // If the right arg is not a singleton, ...
+            if (!IsSingleton (aplNELMRht))
+                // Point to the last item in the right arg
+                lpMemRht = &((LPAPLNESTED) lpMemRht)[aplNELMRht - 1];
+            break;
+
+        case ARRAY_RAT:
+            // If the right arg is not a singleton, ...
+            if (!IsSingleton (aplNELMRht))
+                // Point to the last item in the right arg
+                lpMemRht = &((LPAPLRAT   ) lpMemRht)[aplNELMRht - 1];
+            break;
+
+        case ARRAY_VFP:
+            // If the right arg is not a singleton, ...
+            if (!IsSingleton (aplNELMRht))
+                // Point to the last item in the right arg
+                lpMemRht = &((LPAPLVFP   ) lpMemRht)[aplNELMRht - 1];
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
     // If the right arg is not an immediate, ...
     if (hGlbRht NE NULL)
     {
@@ -2582,7 +2617,7 @@ UBOOL ArrayIndexSetNamImmed_EM
             SysVarValidNdx = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
 
             // Validate the one (and only) element in the right arg
-            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, &immTypeRht, hGlbSubRht, lptkLstArg))
+            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, &immTypeRht, lpMemRht, lptkLstArg))
                 goto DOMAIN_EXIT;
         } // End IF
 
@@ -2617,7 +2652,7 @@ UBOOL ArrayIndexSetNamImmed_EM
             SysVarValidNdx = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
 
             // Validate the one (and only) element in the right arg
-            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, &immTypeRht, hGlbSubRht, lptkLstArg))
+            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, &immTypeRht, lpMemRht, lptkLstArg))
                 goto DOMAIN_EXIT;
         } // End IF
 
@@ -3010,6 +3045,10 @@ UBOOL ArrayIndexSetSingLst_EM
                     GetGlbPtrs_LOCK (lptkLstArg, &hGlbLst, &lpMemLst);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
+////DisplayGlbVar (L"hGlbNam = ", hGlbNam);
+////DisplayGlbVar (L"hGlbLst = ", hGlbLst);
+////DisplayGlbVar (L"hGlbRht = ", hGlbRht);
+
     // Split cases based upon the list token type
     switch (lptkLstArg->tkFlags.TknType)
     {
@@ -3373,11 +3412,12 @@ UBOOL ArrayIndexSetSingLst_EM
         {
             // Get the next item from the right arg
             if (!IsSingleton (aplNELMRht))
-                GetNextItemMem (lpMemRht,                   // Ptr to right arg global memory data
-                                aplTypeRht,                 // Right arg storage type
-                                uRes,                       // Index into right arg
-                               &hGlbSubRht,                 // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                               &aplLongestRht);             // Ptr to result immediate value (may be NULL)
+                GetNextValueMem (lpMemRht,                  // Ptr to right arg global memory data
+                                 aplTypeRht,                // Right arg storage type
+                                 uRes,                      // Index into right arg
+                                &hGlbSubRht,                // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                &aplLongestRht,             // Ptr to result immediate value (may be NULL)
+                                &immTypeRht);               // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
             // Index assignment into the top level of a vector
             bRet = ArrayIndexSetVector_EM (aplNELMNam,      // Name arg NELM
                                            lpMemSubLst,     // Ptr to list arg subitem
@@ -3390,6 +3430,7 @@ UBOOL ArrayIndexSetSingLst_EM
                                            hGlbSubRht,      // Right arg item global memory handle
                                            aplTypeRht,      // Right arg storage type
                                            aplLongestRht,   // Right arg immediate value
+                                           immTypeRht,      // Right arg item immediate type
                                            bQuadIO,         // []IO
                                            bSysVar,         // TRUE iff indexed assignment into a SysVar
                                            SysVarValidNdx,  // Ptr to the SysVar validation routine
@@ -3440,12 +3481,16 @@ UBOOL ArrayIndexSetSingLst_EM
         {
             // Get the next value from the right arg
             if (!IsSingleton (aplNELMRht))
-                GetNextValueMemSub (lpMemRht,                           // Ptr to right arg global memory data
-                                    aplTypeRht,                         // Right arg storage type
-                                    uRes,                               // Index into right arg
-                                   &hGlbSubRht,                         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                   &aplLongestRht,                      // Ptr to result immediate value (may be NULL)
-                                   &immTypeSet);                        // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+            {
+                GetNextValueMem (lpMemRht,                          // Ptr to right arg global memory data
+                                 aplTypeRht,                        // Right arg storage type
+                                 uRes,                              // Index into right arg
+                                &hGlbSubRht,                        // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                &aplLongestRht,                     // Ptr to result immediate value (may be NULL)
+                                &immTypeSet);                       // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+                immTypeRht = immTypeSet;
+            } // End IF
+
             // Split cases based upon the list arg subitem ptr type
             switch (GetPtrTypeDir (((LPAPLHETERO) lpMemSubLst)[uRes]))
             {
@@ -3472,6 +3517,7 @@ UBOOL ArrayIndexSetSingLst_EM
                                                    hGlbSubRht,      // Right arg item global memory handle
                                                    aplTypeRht,      // Right arg storage type
                                                    aplLongestRht,   // Right arg immediate value
+                                                   immTypeRht,      // Right arg item immediate type
                                                    bQuadIO,         // []IO
                                                    bSysVar,         // TRUE iff indexed assignment into a SysVar
                                                    SysVarValidNdx,  // Ptr to the SysVar validation routine
@@ -3510,7 +3556,8 @@ UBOOL ArrayIndexSetSingLst_EM
                                 goto ERROR_EXIT;
                         } else
                             goto INDEX_EXIT;
-                    } else
+                    } // End IF
+
                     // Because of the way RightShoe works, if this global is simple
                     //   or global numeric and its NELM matches the rank of the name arg,
                     //   we need to enclose it first
@@ -3661,6 +3708,7 @@ UBOOL ArrayIndexSetVector_EM
      HGLOBAL          hGlbSubRht,       // Right arg item global memory handle
      APLSTYPE         aplTypeRht,       // Right arg storage type
      APLLONGEST       aplLongestRht,    // Right arg immediate value
+     IMM_TYPES        immTypeRht,       // Right arg item immediate type
      UBOOL            bQuadIO,          // []IO
      UBOOL            bSysVar,          // TRUE iff indexed assignment into a SysVar
      ASYSVARVALIDNDX  SysVarValidNdx,   // Ptr to the SysVar validation routine
@@ -3673,8 +3721,7 @@ UBOOL ArrayIndexSetVector_EM
     UBOOL      bRet = TRUE;             // TRUE iff the result is valid
     APLLONGEST aplLongestSubLst;        // List arg subitem immediate value
     HGLOBAL    hGlbSubLst;              // Ptr to list arg subitem global memory handle/LPSYMENTRY
-    IMM_TYPES  immTypeRht,              // Right arg item immediate type
-               immTypeSubLst;           // List arg subitem immediate type
+    IMM_TYPES  immTypeSubLst;           // List arg subitem immediate type
     LPSYMENTRY lpSymTmp;                // Ptr to temporary LPSYMENTRY
 
     // Get next index from global memory
@@ -3891,8 +3938,7 @@ UBOOL ArrayIndexSetVector_EM
         // Validate the one (and only) item from the right arg
         if (!(*SysVarValidNdx) (aplLongestSubLst, aplTypeRht, &aplLongestRht, &immTypeRht, hGlbSubRht, lptkFunc))
             goto DOMAIN_EXIT;
-    } else
-        immTypeRht = TranslateArrayTypeToImmType (aplTypeRht);
+    } // End IF
 
     // Split cases based upon the result storage type
     switch (aplTypeRes)
@@ -3946,7 +3992,7 @@ UBOOL ArrayIndexSetVector_EM
 
                 defstop
                     break;
-            } // End SWITCH
+            } // End IF/SWITCH
 
             // If the right arg item is an HGLOBAL, ...
             if (hGlbSubRht)
@@ -4296,12 +4342,12 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $ArrayIndexReplace_EM
 //
-//  Replace a value in an array
+//  Replace a top level value in an array
 //***************************************************************************
 
 UBOOL ArrayIndexReplace_EM
     (APLSTYPE   aplTypeRht,             // Right arg storage type
-     LPVOID     lpMemRht,               // Ptr to right arg global memory
+     LPVOID     lpMemRht,               // Ptr to right arg global memory data
      APLUINT    aplIndex,               // Index into right arg
      APLSTYPE   aplTypeSet,             // Set arg storage type
      APLLONGEST aplLongestSet,          // Set arg immediate value
@@ -4353,7 +4399,7 @@ UBOOL ArrayIndexReplace_EM
             hGlbSubRht = ((LPAPLNESTED) lpMemRht)[aplIndex];
 
             // If the set arg is simple, ...
-            if (hGlbSet EQ NULL)
+            if (IsSimple (aplTypeSet))
             {
                 ((LPAPLNESTED) lpMemRht)[aplIndex] =
                 lpSymTmp =

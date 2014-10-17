@@ -2414,12 +2414,34 @@ LPPL_YYSTYPE plRedCom_RP
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
+    LPPL_YYSTYPE lpYYRes;
+
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstRhtObj = soNONE;
 
+    // If this function is in the process of being stranded, ...
+    if (lpplYYCurObj->YYStranding)
+    {
+        // Turn this function strand into a function
+        lpYYRes =
+          MakeFcnStrand_EM_YY (lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
+        // YYFree the current object
+        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+
+        // If not defined, ...
+        if (!lpYYRes)
+            goto ERROR_EXIT;
+
+        // Copy to the current object
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpYYRes = NULL;
+    } else
+        // Unstrand the current object if necessary
+        UnStrand (lpplYYCurObj);
+
     // Change the tkSynObj
     lpplYYCurObj->tkToken.tkSynObj = soType;
-
+ERROR_EXIT:
     return lpplYYCurObj;
 } // End plRedCom_RP
 

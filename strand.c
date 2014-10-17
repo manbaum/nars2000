@@ -205,6 +205,8 @@ LPPL_YYSTYPE PushFcnStrand_YY
                   lpYYCopy;         // Ptr to local copy
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
+    Assert (!lpYYArg->YYStranding);
+
     // Get this thread's LocalVars ptr
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 

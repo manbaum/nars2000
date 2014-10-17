@@ -67,6 +67,7 @@ SYSNAME aSystemNames[] =
 ////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, FALSE, SysFnSINL_EM_YY     , 0              },    // State Indicator w/Name List
     {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, FALSE, SysFnSYSID_EM_YY    , 0              },    // System Identifier
     {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, FALSE, SysFnSYSVER_EM_YY   , 0              },    // System Version
+    {WS_UTF16_QUAD L"t"        ,      0,      FALSE, FALSE, SysFnT_EM_YY        , 0              },    // Tick count
     {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, TRUE , SysFnTC_EM_YY       , 0              },    // Terminal Control Characters
     {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, FALSE, SysFnTCBEL_EM_YY    , 0              },    // Terminal Control Character, Bell
     {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, FALSE, SysFnTCBS_EM_YY     , 0              },    // Terminal Control Character, Backspace

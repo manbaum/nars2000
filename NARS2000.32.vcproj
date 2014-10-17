@@ -963,6 +963,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\qf_t.c"
+				>
+			</File>
+			<File
 				RelativePath=".\qf_tc.c"
 				>
 			</File>

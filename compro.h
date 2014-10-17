@@ -173,6 +173,7 @@
   #include "qf_nl.pro"
   #include "qf_sysid.pro"
   #include "qf_sysver.pro"
+  #include "qf_t.pro"
   #include "qf_tc.pro"
   #include "qf_tf.pro"
   #include "qf_ts.pro"

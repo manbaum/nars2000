@@ -3696,7 +3696,6 @@ EXIT_TYPES ParseLine
                   lpYYRes = NULL;           // Ptr to the result
     int           lftBndStr,                // Left binding strength
                   rhtBndStr;                // Right ...
-////HGLOBAL       hGlbPL_YY = NULL;         // Global memory handle for PL_YYSTYPEs
     SO_ENUM       lftSynObj,                // Left stack's current element Syntax Object value
                   curSynObj,                // Current ...
                   rhtSynObj,                // Right ...
@@ -4757,6 +4756,9 @@ PARSELINE_DONE:
                 {
                     // Free the function (including YYFree)
                     YYFreeArray (lpplYYCurObj); FreeYYFcn1  (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
+
+                    // Set the exit type
+                    plLocalVars.ExitType = EXITTYPE_NOVALUE;
                 } else
                 // If from an assigned name,
                 //   or naked goto, ...
@@ -5440,7 +5442,7 @@ PL_YYLEX_START:
     lpplLocalVars->lptkNext--;
 
 #if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
-    dprintfWL9 (L"==pl_yylex:  TknType = %S, CharIndex = %d",
+    dprintfWL0 (L"==pl_yylex:  TknType = %S, CharIndex = %d",
                  GetTokenTypeName (lpplLocalVars->lptkNext->tkFlags.TknType),
                  lpplLocalVars->lptkNext->tkCharIndex);
 #endif
@@ -6026,6 +6028,8 @@ PL_YYLEX_OP3IMMED:
     // If we should restore the token stack ptr, ...
     if (bRestoreStk)
         lpplLocalVars->lptkNext = lptkOrigNext;
+
+    Assert (lpplYYLval->tkToken.tkSynObj NE soNONE);
 
     return lpplYYLval;
 } // End pl_yylexCOM

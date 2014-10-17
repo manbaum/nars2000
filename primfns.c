@@ -3060,6 +3060,7 @@ LPPL_YYSTYPE MakeNoValue_YY
     lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
     lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->lphtsPTD->steNoValue;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkSynObj          = soNVAL;
 
     return lpYYRes;
 } // End MakeNoValue_YY

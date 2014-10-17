@@ -96,7 +96,8 @@ typedef enum tagSO_ENUM
 	soISPA   , 			// 3B:  IDX SPA                                                
 	soSYNR   , 			// 3C:  SYNTAX ERROR                                           
 	soVALR   , 			// 3D:  VALUE ERROR                                            
-	soEOS    , 			// 3E:  *MUST* be the highest numbered entry                   
+	soNVAL   , 			// 3E:  No Value                                               
+	soEOS    , 			// 3F:  *MUST* be the highest numbered entry                   
 	soNONE = 999,		//999:  Filler for no entry
 } SO_ENUM, *LPSO_ENUM;
 
@@ -170,7 +171,8 @@ LPWCHAR soNames[]
 	L"ISPA",			// 3B:  IDX SPA                                                
 	L"SYNR",			// 3C:  SYNTAX ERROR                                           
 	L"VALR",			// 3D:  VALUE ERROR                                            
-	L"EOS" ,			// 3E:  *MUST* be the highest numbered entry                   
+	L"NVAL",			// 3E:  No Value                                               
+	L"EOS" ,			// 3F:  *MUST* be the highest numbered entry                   
   }
 #endif
 ;

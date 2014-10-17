@@ -73,6 +73,9 @@ LPPL_YYSTYPE _YYAlloc
         // Mark as inuse
         lpYYRes->YYInuse = TRUE;
 #ifdef DEBUG
+        // Mark as no SynObj so as to catch cases where we miss setting it
+        lpYYRes->tkToken.tkSynObj = soNONE;
+
         // Save the ptr to the filename where allocated
         lpYYRes->lpFileName = lpFileName;
 

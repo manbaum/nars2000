@@ -111,8 +111,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     APLUINT            ByteRes,                 // # bytes in the result
                        aplRowsRes,              // # rows in the result
                        aplColsRes;              // # cols ...
-    LARGE_INTEGER      aplTickCnt,              // Current tick count
-                       aplTicksPerSec;          // # ticks per second
+    LARGE_INTEGER      aplTickCnt;              // Current tick count
     UINT               uCnt;                    // Loop counter
     LPPL_YYSTYPE       lpYYRes = NULL;          // Ptr to the result
     APLFLOAT           aplScale;                // Scale factor if TIMERSOURCE_PC2MS
@@ -308,13 +307,10 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
             lpMemResUnion->MI_Int[0].Count = lpMemMonInfo[0].Count;
         else
         {
-            // Get # ticks per second
-            QueryPerformanceFrequency (&aplTicksPerSec);
-
             // Copy the function counter
             lpMemResUnion->MI_Flt[0].Count = lpMemMonInfo[0].Count;
 
-            aplScale = 1000.0 / (APLFLOAT) (APLINT) aplTicksPerSec.QuadPart;
+            aplScale = 1000.0 / (APLFLOAT) (APLINT) liTicksPerSec.QuadPart;
         } // End IF/ELSE
 
         // Get the current tick count
@@ -434,7 +430,6 @@ LPPL_YYSTYPE SysFnMonMF_Numeric_EM
     APLINT        aplIntegerRes;            // Result as an immediate integer
     APLFLOAT      aplFloatRes;              // ...                    float
     LPPERTABDATA  lpMemPTD;                 // Ptr to PerTabData global memory
-    LARGE_INTEGER aplTicksPerSec;           // # ticks per second
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -459,11 +454,8 @@ LPPL_YYSTYPE SysFnMonMF_Numeric_EM
 
                 case TIMERSOURCE_PC:
                 case TIMERSOURCE_PC2MS:
-                    // Get # ticks per second
-                    QueryPerformanceFrequency (&aplTicksPerSec);
-
                     // Convert to milliseconds per tick
-                    aplFloatRes = 1000.0 / (APLFLOAT) (APLINT) aplTicksPerSec.QuadPart;
+                    aplFloatRes = 1000.0 / (APLFLOAT) (APLINT) liTicksPerSec.QuadPart;
 
                     break;
 

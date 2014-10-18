@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,8 +104,7 @@ void PerfMonShow
     HWND          hWndLB;           // ListBox window handle
     UINT          uCnt;             // Loop counter
     LARGE_INTEGER liLast = {0},     // Last value
-                  liCurrent,        // Current # ticks
-                  liTicksPerSec;    // Frequency (ticks per second)
+                  liCurrent;        // Current # ticks
     LPWCHAR       lpwszMicro = L"\x03BC" L"s";
 
     // If the Perfmonance Monitoring window is not created, do so now
@@ -117,9 +116,6 @@ void PerfMonShow
 
     // Clear the ListBox
     SendMessageW (hWndLB, LB_RESETCONTENT, 0, 0);
-
-    // Get # ticks per second
-    QueryPerformanceFrequency (&liTicksPerSec);
 
     // Insert the PM lines into the ListBox
     for (uCnt = 0; uCnt < uPerfMonData; uCnt++)

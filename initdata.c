@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,6 +113,10 @@ void InitConstants
     aplInteger = FLOAT2POW53;  Float2Pow53 = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATPI;      FloatPi     = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATE;       FloatE      = *(LPAPLFLOAT) &aplInteger;
+
+    // Get # ticks per second to be used as a conversion
+    //   factor for QueryPerformanceCounter into seconds
+    QueryPerformanceFrequency (&liTicksPerSec);
 } // End InitConstants
 
 

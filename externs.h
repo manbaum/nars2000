@@ -2095,6 +2095,9 @@ SYSTEMTIME gstUpdChk
 #endif
 ;
 
+EXTERN
+LARGE_INTEGER liTicksPerSec;        // Conversion factor for QueryPerformanceCounter into seconds
+
 
 //***************************************************************************
 //  Native File Function data structs

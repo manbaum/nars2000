@@ -409,15 +409,11 @@ void UpdateStatusTimer
     (LPPERTABDATA lpMemPTD)     // Ptr to PerTabData global memory
 
 {
-    LARGE_INTEGER liTickCnt,            // Current tick count
-                  liTicksPerSec;        // # ticks per second
+    LARGE_INTEGER liTickCnt;            // Current tick count
     APLFLOAT      aplScale;             // Scale factor
 
     // Get current tick count
     QueryPerformanceCounter (&liTickCnt);
-
-    // Get # ticks per second
-    QueryPerformanceFrequency (&liTicksPerSec);
 
     // Calculate the scale factor for milliseconds
     aplScale = 1000.0 / (APLFLOAT) (APLINT) liTicksPerSec.QuadPart;

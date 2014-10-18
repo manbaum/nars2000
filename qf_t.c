@@ -28,7 +28,7 @@
 //***************************************************************************
 //  $SysFnD_EM_YY
 //
-//  System function:  []T -- Tick count
+//  System function:  []T -- High Resolution Time
 //***************************************************************************
 
 #ifdef DEBUG
@@ -45,7 +45,8 @@ LPPL_YYSTYPE SysFnT_EM_YY
 
 {
     LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
-    LARGE_INTEGER liCount = {0};
+    LARGE_INTEGER liTickCount;      // Current tick count
+    APLFLOAT      aplFloatSec;      // # elapsed seconds
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -58,8 +59,12 @@ LPPL_YYSTYPE SysFnT_EM_YY
         goto AXIS_SYNTAX_EXIT;
 
     // Get the current performance counter value
-    QueryPerformanceCounter (&liCount);
+    //   (typically from the CPU's Time Stamp Counter)
+    QueryPerformanceCounter (&liTickCount);
 
+    // Convert to seconds
+    aplFloatSec = ((APLFLOAT) (APLINT) liTickCount.QuadPart)
+                 / (APLFLOAT) (APLINT) liTicksPerSec.QuadPart;
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -67,7 +72,7 @@ LPPL_YYSTYPE SysFnT_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkFloat    = (APLFLOAT) liCount.QuadPart;
+    lpYYRes->tkToken.tkData.tkFloat    = aplFloatSec;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;

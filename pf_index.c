@@ -3549,6 +3549,7 @@ UBOOL ArrayIndexSetSingLst_EM
                         if (IsSingleton (aplNELMSubLst))
                         {
                             // Assign the right arg to the name
+                            // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                             if (AssignName_EM (lptkNamArg,
                                                lptkRhtArg))
                                 goto NORMAL_EXIT;

@@ -234,6 +234,7 @@ LPPL_YYSTYPE PushFcnStrand_YY
 
     // Save this token on the strand stack
     //   and skip over it
+    // Copy the entire token w/o changing the RefCnt
     lpYYCopy = CopyPL_YYSTYPE_YY (lpYYArg);
     __try
     {
@@ -1935,7 +1936,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         //   will allocate a result
         YYFree (lpYYRes); lpYYRes = NULL;
 
-        // Copy the entire token
+        // Copy the function array incrementing the RefCnt
         lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg->lpYYFcnBase, FALSE);
 
 ///     // Copy the entire token w/o changing the RefCnt
@@ -2012,16 +2013,16 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         // Copy the individual function strands to the result
         for (uCnt = 0; uCnt < uIniLen; uCnt++)
         {
-            LPPL_YYSTYPE lpYYTmp;
+            LPPL_YYSTYPE lpYYTmp = &lpYYStrand[uCnt];
 
             // If this item is an array of functions, ...
-            if (lpYYStrand[uCnt].tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+            if (lpYYTmp->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
             {
                 LPFCNARRAY_HEADER lpFcnHdr;
                 HGLOBAL           hGlbFcn;
 
                 // Get the global memory handle
-                hGlbFcn = GetGlbDataToken (&lpYYStrand[uCnt].tkToken);
+                hGlbFcn = GetGlbDataToken (&lpYYTmp->tkToken);
 
                 // Lock the memory to get a ptr to it
                 lpFcnHdr = MyGlobalLock (hGlbFcn);
@@ -2031,15 +2032,15 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
                 if (lpFcnHdr->fnNameType EQ NAMETYPE_TRN
                  ||           fnNameType EQ NAMETYPE_TRN)
                     // Copy the entire token w/o changing the RefCnt
-                    lpYYTmp = CopyPL_YYSTYPE_YY (&lpYYStrand[uCnt]);
+                    lpYYTmp = CopyPL_YYSTYPE_YY (lpYYTmp);
                 else
-                    // Copy the function array
-                    lpYYTmp = CopyPL_YYSTYPE_EM_YY (&lpYYStrand[uCnt], FALSE);
+                    // Copy the function array incrementing the RefCnt
+                    lpYYTmp = CopyPL_YYSTYPE_EM_YY (lpYYTmp, FALSE);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbFcn); lpFcnHdr = NULL;
             } else
-                // Copy the function array
+                // Copy the function array incrementing the RefCnt
                 lpYYTmp = CopyPL_YYSTYPE_EM_YY (&lpYYStrand[uCnt], FALSE);
 
             // Save the result in memory
@@ -2341,242 +2342,6 @@ LPPL_YYSTYPE MakeAxis_YY
 #undef  APPEND_NAME
 
 
-/// //***************************************************************************
-/// //  $MakePrimFcn_YY
-/// //
-/// //  Make a token a primitive function
-/// //
-/// //  On exit:
-/// //      No change in RefCnt.
-/// //***************************************************************************
-///
-/// #ifdef DEBUG
-/// #define APPEND_NAME     L" -- MakePrimFcn_YY"
-/// #else
-/// #define APPEND_NAME
-/// #endif
-///
-/// LPPL_YYSTYPE MakePrimFcn_YY
-///     (LPPL_YYSTYPE lpYYFcn)
-///
-/// {
-///     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-///
-///     DBGENTER;
-///
-///     lpYYRes = CopyPL_YYSTYPE_YY (lpYYFcn);
-///     lpYYRes->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-///     lpYYRes->tkToken.tkFlags.ImmType = GetImmTypeFcn (lpYYFcn->tkToken.tkData.tkChar);
-///     lpYYRes->lpYYFcnBase = NULL;
-///     lpYYRes->TknCount = 1;
-///
-///     // Set the token type
-///     lpYYRes->tkToken.tkSynObj = soF;
-///
-///     DBGLEAVE;
-///
-///     return lpYYRes;
-/// } // End MakePrimFcn_YY
-/// #undef  APPEND_NAME
-
-
-/// //***************************************************************************
-/// //  $MakeFillJot_YY
-/// //
-/// //  Make a filljot token
-/// //***************************************************************************
-///
-/// #ifdef DEBUG
-/// #define APPEND_NAME     L" -- MakeFillJot_YY"
-/// #else
-/// #define APPEND_NAME
-/// #endif
-///
-/// LPPL_YYSTYPE MakeFillJot_YY
-///     (LPPL_YYSTYPE lpYYJot)
-///
-/// {
-///     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-///
-///     DBGENTER;
-///
-///     // Allocate a new YYRes
-///     lpYYRes = YYAlloc ();
-///
-///     // Fill in the result token
-///     lpYYRes->tkToken.tkFlags.TknType   = TKT_FILLJOT;
-/// ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR;     // Already zero from YYAlloc
-/// ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;             // Already zero from YYAlloc
-///     lpYYRes->tkToken.tkData.tkChar     = UTF16_JOT;
-///     lpYYRes->tkToken.tkCharIndex       = lpYYJot->tkToken.tkCharIndex;
-///     lpYYRes->TknCount = 1;
-///
-///     // Set the token type
-///     lpYYRes->tkToken.tkSynObj = soNF;
-///
-///     DBGLEAVE;
-///
-///     return lpYYRes;
-/// } // End MakeFillJot_YY
-/// #undef  APPEND_NAME
-
-
-/// //***************************************************************************
-/// //  $MakeNameFcnOpr_YY
-/// //
-/// //  Make a token for a named function, monadic/dyadic/ambiguous operator, and train
-/// //
-/// //  On exit:
-/// //      No change in RefCnt.
-/// //***************************************************************************
-///
-/// #ifdef DEBUG
-/// #define APPEND_NAME     L" -- MakeNameFcnOpr_YY"
-/// #else
-/// #define APPEND_NAME
-/// #endif
-///
-/// LPPL_YYSTYPE MakeNameFcnOpr_YY
-///     (LPPL_YYSTYPE lpYYFcnOpr,           // Ptr to the named function
-///      UBOOL        bResetBase)           // TRUE iff we're to reset the tkCharIndex base
-///
-/// {
-///     HGLOBAL           hGlbData;         // Named function global memory handle
-///     LPPL_YYSTYPE      lpYYRes;          // Ptr to the result
-///     LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to named function header
-///     LPPL_YYSTYPE      lpMemFcn;         // Ptr to named function data
-///
-///     // tkData is LPSYMENTRY
-///     Assert (GetPtrTypeDir (lpYYFcnOpr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
-///
-///     // If the SYMENTRY is an immediate, ...
-///     if (lpYYFcnOpr->tkToken.tkData.tkSym->stFlags.Imm)
-///     {
-///         // Allocate a new YYRes
-///         lpYYRes = YYAlloc ();
-///
-///         // Save the immediate type
-///         lpYYRes->tkToken.tkFlags.ImmType = lpYYFcnOpr->tkToken.tkData.tkSym->stFlags.ImmType;
-///
-///         // Split cases based upon the named function/operator immediate type
-///         switch (lpYYRes->tkToken.tkFlags.ImmType)
-///         {
-///             case IMMTYPE_PRIMFCN:
-///                 // Save the token type
-///                 lpYYRes->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-///
-///                 // Set the token type
-///                 lpYYRes->tkToken.tkSynObj = soF;
-///
-///                 break;
-///
-///             case IMMTYPE_PRIMOP1:
-///                 // Save the token type
-///                 lpYYRes->tkToken.tkFlags.TknType = TKT_OP1IMMED;
-///
-///                 // Set the token type
-///                 lpYYRes->tkToken.tkSynObj = soMOP;
-///
-///                 break;
-///
-///             case IMMTYPE_PRIMOP2:
-///                 // Save the token type
-///                 lpYYRes->tkToken.tkFlags.TknType = TKT_OP2IMMED;
-///
-///                 // Set the token type
-///                 lpYYRes->tkToken.tkSynObj = soDOP;
-///
-///                 break;
-///
-///             case IMMTYPE_PRIMOP3:
-///                 // Save the token type
-///                 lpYYRes->tkToken.tkFlags.TknType = TKT_OP3IMMED;
-///
-///                 // Set the token type
-///                 lpYYRes->tkToken.tkSynObj = soHY;
-///
-///                 break;
-///
-///             defstop
-///                 break;
-///         } // End SWITCH
-///
-///         // Save the character index and function/operator symbol
-///         lpYYRes->tkToken.tkCharIndex   = lpYYFcnOpr->tkToken.tkCharIndex;
-///         lpYYRes->tkToken.tkData.tkChar = lpYYFcnOpr->tkToken.tkData.tkSym->stData.stChar;
-///     } else
-///     {
-///         // Get the named function global memory handle
-///         hGlbData = lpYYFcnOpr->tkToken.tkData.tkSym->stData.stGlbData;
-///
-///         Assert (hGlbData NE NULL);
-///
-///         // If we're to reset the base of a function array, ...
-///         if (bResetBase
-///          && GetSignatureGlb_PTB (hGlbData) EQ FCNARRAY_HEADER_SIGNATURE)
-///         {
-///             UINT tknNELM,                   // # tokens in the named function
-///                  uCnt,                      // Loop counter
-///                  uInd;                      // Common tkCharIndex
-///
-///             // Allocate a new YYRes
-///             lpYYRes = YYAlloc ();
-///
-///             // Copy the PL_YYSTYPE
-///             YYCopy (lpYYRes, lpYYFcnOpr);
-///
-///             Assert (lpYYRes->tkToken.tkFlags.TknType EQ TKT_FCNNAMED);
-///
-///             // Make a copy of the array as we're changing parts of it
-///             hGlbData = CopyArray_EM (hGlbData, &lpYYRes->tkToken);
-///
-///             // Lock the memory to get a ptr to it
-///             lpMemHdrFcn = MyGlobalLock (hGlbData);
-///
-///             // Change the token type and data from a named function array
-///             //   to an unnamed function array
-///             lpYYRes->tkToken.tkFlags.TknType = TKT_FCNARRAY;
-///             lpYYRes->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbData);
-///
-///             // Mark as copied so it'll be freed later
-///             lpYYRes->YYCopyArray = TRUE;
-///
-///             // Get the # function tokens
-///             tknNELM = lpMemHdrFcn->tknNELM;
-///
-///             // Skip over the the header to the data
-///             lpMemFcn = FcnArrayBaseToData (lpMemHdrFcn);
-///
-///             // Get the current token's tkCharIndex
-///             uInd = lpYYFcnOpr->tkToken.tkCharIndex;
-///
-///             // Trundle through the arg rebasing each tkCharIndex
-///             for (uCnt = 0; uCnt < tknNELM; uCnt++, lpMemFcn++)
-///                 lpMemFcn->tkToken.tkCharIndex = uInd;
-///
-///             // We no longer need this ptr
-///             MyGlobalUnlock (hGlbData); lpMemHdrFcn = NULL; lpMemFcn = NULL;
-///
-///             // Save back so it may be freed
-///             *lpYYFcnOpr = *lpYYRes;
-///         } else
-///             lpYYRes = CopyPL_YYSTYPE_YY (lpYYFcnOpr);
-///
-///         // Set the token type
-///         lpYYRes->tkToken.tkSynObj = soF;
-///     } // End IF/ELSE
-///
-///     // Set common elements
-///     lpYYRes->lpYYFcnBase = NULL;
-///     lpYYRes->TknCount    = 0;
-/// #ifdef DEBUG
-///     lpYYRes->YYIndex     = NEG1U;
-/// #endif
-///     return lpYYRes;
-/// } // End MakeNameFcnOpr_YY
-/// #undef  APPEND_NAME
-
-
 //***************************************************************************
 //  $MakeTrainOp_YY
 //
@@ -2658,6 +2423,7 @@ LPPL_YYSTYPE MakePrimOp123_YY
 
     Assert (lpYYOp123->tkToken.tkFlags.ImmType EQ immType);
 
+    // Copy the entire token w/o changing the RefCnt
     lpYYRes = CopyPL_YYSTYPE_YY (lpYYOp123);
     lpYYRes->lpYYFcnBase = NULL;
     lpYYRes->TknCount    = 0;

@@ -237,12 +237,14 @@
 #define   DIRECT    FALSE           // Flags for PushFcnStrand_YY
 #define INDIRECT    TRUE            // ...
 
+#define IsValidSO(a)                (soUNK < (a) && (a) <= soLAST)
+
 #define POPLEFT                     ((lpplOrgLftStk < &lpMemPTD->lpplLftStk[-1]) ? *--lpMemPTD->lpplLftStk : pl_yylex (&plLocalVars))
 #define POPRIGHT                    *--lpMemPTD->lpplRhtStk
 #define PUSHLEFT(a)                 *lpMemPTD->lpplLftStk++ = (a)
 #define PUSHRIGHT(a)                *lpMemPTD->lpplRhtStk++ = (a)
-#define LBIND(lftSynObj,curSynObj)  _BIND (lftSynObj, curSynObj)    // (((lftSynObj <= soLAST) && (curSynObj <= soLAST)) ? plBndStr[lftSynObj][curSynObj] : (DbgBrk (), 0xCCC))
-#define RBIND(curSynObj,rhtSynObj)  _BIND (curSynObj, rhtSynObj)    // (((curSynObj <= soLAST) && (rhtSynObj <= soLAST)) ? plBndStr[curSynObj][rhtSynObj] : (DbgBrk (), 0xFFF))
+#define LBIND(lftSynObj,curSynObj)  _BIND (lftSynObj, curSynObj)    // ((IsValidSO (lftSynObj && IsValidSO (curSynObj)) ? plBndStr[lftSynObj][curSynObj] : (DbgBrk (), 0xCCC))
+#define RBIND(curSynObj,rhtSynObj)  _BIND (curSynObj, rhtSynObj)    // ((IsValidSO (curSynObj && IsValidSO (rhtSynObj)) ? plBndStr[curSynObj][rhtSynObj] : (DbgBrk (), 0xFFF))
 #define LFTSYNOBJ                   (lpplOrgLftStk < &lpMemPTD->lpplLftStk[-1]) ? lpMemPTD->lpplLftStk[-1]->tkToken.tkSynObj : GetLftSynObj (&plLocalVars)
 #define CURSYNOBJ                    lpplYYCurObj->tkToken.tkSynObj
 #define RHTSYNOBJ                    lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj
@@ -297,7 +299,7 @@ int _BIND
      SO_ENUM rhtSynObj)
 
 {
-    if ((lftSynObj <= soLAST) && (rhtSynObj <= soLAST))
+    if (IsValidSO (lftSynObj) && IsValidSO (rhtSynObj))
         return plBndStr[lftSynObj][rhtSynObj];
 
     DbgStop ();         // ***FIXME*** -- error in reduction/binding tables
@@ -615,7 +617,7 @@ LPPL_YYSTYPE plRedA_RBK
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
@@ -671,7 +673,7 @@ LPPL_YYSTYPE plRedA_SRBK
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj);
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
@@ -1030,7 +1032,7 @@ LPPL_YYSTYPE plRedA_F
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
@@ -1227,7 +1229,7 @@ LPPL_YYSTYPE plRedDOP_RhtOper
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -1345,7 +1347,7 @@ LPPL_YYSTYPE plRedGO_A
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -1484,7 +1486,7 @@ LPPL_YYSTYPE plRedA_FFR
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
@@ -1548,7 +1550,7 @@ LPPL_YYSTYPE plRedCSI_A
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -1737,7 +1739,7 @@ LPPL_YYSTYPE plRedA_IDX
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
@@ -1805,7 +1807,7 @@ LPPL_YYSTYPE plRedMF_A
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } else
     {
@@ -1831,7 +1833,7 @@ LPPL_YYSTYPE plRedMF_A
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYRes = NULL;
     } else
     {
@@ -1880,7 +1882,7 @@ LPPL_YYSTYPE plRedMF_A
     lpYYRes->tkToken.tkSynObj = soType;
 
     // Copy to the current object
-    lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+    lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 
     return lpplYYCurObj;
 
@@ -1926,7 +1928,7 @@ LPPL_YYSTYPE plRedMF_ARBK
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } // End IF
 
@@ -2024,7 +2026,7 @@ LPPL_YYSTYPE plRedCS1_A
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -2220,7 +2222,7 @@ LPPL_YYSTYPE plRedMF_NF
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } // End IF
 
@@ -2275,7 +2277,7 @@ LPPL_YYSTYPE plRedF_IDX
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } else
         // Unstrand the current object if necessary
@@ -2295,7 +2297,7 @@ LPPL_YYSTYPE plRedF_IDX
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -2359,7 +2361,9 @@ LPPL_YYSTYPE plRedLBC_RBC
     // Set the caret index to the left brace
     lpYYRes2->tkToken.tkCharIndex      = lpplYYCurObj->tkToken.tkCharIndex;
 
-    // Set the UDFO/AFO properties
+    // Set the UDFO/AFO properties including the proper <tkSynObj>
+    //   based upon the AFO's DFNTYPE_xxx as the caller can't predict
+    //   the DFNTYPE_xxx is based only on the two tokens {} it can see.
     plSetDfn (&lpYYRes2->tkToken, GetGlbDataToken (&lpYYRes2->tkToken));
 
     // The result is always the root of the function tree
@@ -2433,7 +2437,7 @@ LPPL_YYSTYPE plRedCom_RP
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } else
         // Unstrand the current object if necessary
@@ -2485,8 +2489,8 @@ LPPL_YYSTYPE plRedLftOper_MOP
      && lpplYYCurObj->YYStranding)
     {
         // Turn this strand into a var
-        lpYYVar =
-          MakeVarStrand_EM_YY (lpplYYCurObj);
+            lpYYVar =
+              MakeVarStrand_EM_YY (lpplYYCurObj);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -2495,7 +2499,7 @@ LPPL_YYSTYPE plRedLftOper_MOP
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the current object if necessary
@@ -2564,7 +2568,7 @@ LPPL_YYSTYPE plRedF_FR
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } else
         // Unstrand the current object if necessary
@@ -2584,7 +2588,7 @@ LPPL_YYSTYPE plRedF_FR
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYRes = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -2654,7 +2658,7 @@ LPPL_YYSTYPE plRedF_FFR
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } else
         // Unstrand the current object if necessary
@@ -2779,7 +2783,7 @@ LPPL_YYSTYPE plRedNF_F
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYRes = NULL;
     } // End IF
 
@@ -2984,7 +2988,7 @@ LPPL_YYSTYPE plRedMOP_IDX
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -3037,7 +3041,7 @@ LPPL_YYSTYPE plRedSP_A
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -3267,7 +3271,7 @@ LPPL_YYSTYPE plRedF_SPA
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } else
         // Unstrand the current object if necessary
@@ -3434,7 +3438,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+        lpplYYLstRht = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
         lpYYRes = NULL;
     } else
     // If the last right object is a function/operator in the process of being stranded, ...
@@ -3452,7 +3456,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYRes = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -3479,11 +3483,12 @@ LPPL_YYSTYPE plRedNAM_SPCom
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYRes = NULL;
     } // End IF
 
     // Assign this token to this name
+    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
     if (!AssignName_EM (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken))
         goto ERROR_EXIT;
 #ifdef DEBUG2
@@ -3570,7 +3575,7 @@ LPPL_YYSTYPE plRedAFOG_A
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -3638,7 +3643,7 @@ LPPL_YYSTYPE plRedAFOR_A
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
         lpYYVar = NULL;
     } else
         // Unstrand the last right object if necessary
@@ -3931,7 +3936,7 @@ EXIT_TYPES ParseLine
             //***************************************************************************
 
             // Initialize the lpplYYLstRht var
-            lpplYYLstRht = &plYYEOS; lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+            lpplYYLstRht = &plYYEOS; lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
 
             // Parse the line, check for errors
             //   0 = success
@@ -3940,7 +3945,7 @@ EXIT_TYPES ParseLine
             // uRet = pl_yyparse (&plLocalVars);
 PARSELINE_START:
             // Get the current object
-            lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+            lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 #ifdef DEBUG2
             {
                 LPWCHAR lpwszLine2;
@@ -3972,7 +3977,7 @@ PARSELINE_START:
                 YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
 
                 // Copy to the current object
-                lpplYYCurObj = lpYYRes; curSynObj = soEOS; Assert (curSynObj <= soLAST);
+                lpplYYCurObj = lpYYRes; curSynObj = soEOS; Assert (IsValidSO (curSynObj));
                 lpYYRes = NULL;
 
                 goto PARSELINE_DONE;
@@ -3984,14 +3989,14 @@ PARSELINE_START:
             goto PARSELINE_SCAN;
 
 PARSELINE_SHIFT:
-            PUSHRIGHT (lpplYYCurObj); lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+            PUSHRIGHT (lpplYYCurObj); lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 
             TRACE (L"Shifted: ", L"", CURSYNOBJ, RHTSYNOBJ);
 PARSELINE_SCAN:
             // Get the left, current, and right SynObj values
-            lftSynObj = LFTSYNOBJ; Assert (lftSynObj <= soLAST);
-            curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
-            rhtSynObj = RHTSYNOBJ; Assert (rhtSynObj <= soLAST);
+            lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
+            curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+            rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
 
             TRACE (L"Scanning:", L"", CURSYNOBJ, RHTSYNOBJ);
 PARSELINE_SCAN1:
@@ -4065,7 +4070,7 @@ PARSELINE_MP_PAREN:
                     goto PARSELINE_ERROR;
 
                 // Copy to the current object
-                lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                 lpYYRes = NULL;
             } // End IF
 
@@ -4083,7 +4088,7 @@ PARSELINE_MP_PAREN:
                     goto PARSELINE_ERROR;
 
                 // Copy to the current object
-                lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                 lpYYRes = NULL;
             } else
             // If the current object is a numeric/character strand, ...
@@ -4108,9 +4113,9 @@ PARSELINE_MP_PAREN:
             } // End IF
 
             // Get the left, current, and right SynObj values
-            lftSynObj = LFTSYNOBJ; Assert (lftSynObj <= soLAST);
-            curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
-            rhtSynObj = RHTSYNOBJ; Assert (rhtSynObj <= soLAST);
+            lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
+            curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+            rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
 
             goto PARSELINE_SCAN1;
 
@@ -4144,7 +4149,7 @@ PARSELINE_MP_DONE:
                     lpYYRes->tkToken.tkFlags.NoDisplay = NoDisplay;
 
                     // Copy to the current object
-                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                     lpYYRes = NULL;
 
                     // Set the tkSynObj
@@ -4163,7 +4168,7 @@ PARSELINE_MP_DONE:
                         goto PARSELINE_ERROR;
 
                     // Copy to the current object
-                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                     lpYYRes = NULL;
                 } // End IF
             } else
@@ -4191,7 +4196,7 @@ PARSELINE_MP_DONE:
                 // If it's NoValue, ...
 
                 // Copy to the current object
-                lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                 lpYYRes = NULL;
             } else
             // If the current object is a soGO, ...
@@ -4206,7 +4211,7 @@ PARSELINE_MP_DONE:
 PARSELINE_REDUCE:
             // CUROBJ = REDUCE
 
-            Assert (curSynObj EQ CURSYNOBJ); Assert (curSynObj <= soLAST);
+            Assert (curSynObj EQ CURSYNOBJ); Assert (IsValidSO (curSynObj));
 
             // Recurse into () or [] ?
             bRP_BRK = (curSynObj EQ soRP
@@ -4216,14 +4221,14 @@ PARSELINE_REDUCE:
             // If we should recurse into () or [], ...
             if (bRP_BRK)
             {
-                PUSHRIGHT (lpplYYCurObj); lpplYYCurObj = POPLEFT; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                PUSHRIGHT (lpplYYCurObj); lpplYYCurObj = POPLEFT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 
                 TRACE (L"Recursing", L"", CURSYNOBJ, RHTSYNOBJ);
             } else
             {
                 RESET_FLAGS  resetFlag;             // The current Reset Flag
 
-                lpplYYLstRht = POPRIGHT; lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+                lpplYYLstRht = POPRIGHT; lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
 
                 // If we're recursing into "A HY", instead change the HY to F, push it back onto RSTACK, and shift left
                 if (curSynObj EQ soA
@@ -4325,7 +4330,7 @@ PARSELINE_REDUCE:
                     lpYYRes->tkToken.tkSynObj = soA;
 
                     // Copy to the current object
-                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                     lpYYRes = NULL;
                 } // End IF
 
@@ -4357,7 +4362,7 @@ PARSELINE_REDUCE:
                     lpYYRes->tkToken.tkSynObj = soA;
 
                     // Copy to the current object
-                    lpplYYLstRht = lpYYRes;  lstSynObj = LSTSYNOBJ; Assert (lstSynObj <= soLAST);
+                    lpplYYLstRht = lpYYRes;  lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
                     lpYYRes = NULL;
                 } // End IF
 
@@ -4439,26 +4444,26 @@ PARSELINE_REDUCE:
                     goto PARSELINE_ERROR;
 
                 // Get the left, current, and right SynObj values
-                lftSynObj = LFTSYNOBJ; Assert (lftSynObj <= soLAST);
-                curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
-                rhtSynObj = RHTSYNOBJ; Assert (rhtSynObj <= soLAST);
+                lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
+                curSynObj = CURSYNOBJ; // Assert (IsValidSO (curSynObj)); // This item might be invalid
+                rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
 
                 // Check for NoValue
                 if (IsTokenNoValue (&lpYYRes->tkToken)
                  && lftSynObj EQ soEOS)
                 {
                     // Copy to the current object
-                    lpplYYCurObj = lpYYRes; lpplYYCurObj->tkToken.tkSynObj = curSynObj = soEOS; Assert (curSynObj <= soLAST);
+                    lpplYYCurObj = lpYYRes; lpplYYCurObj->tkToken.tkSynObj = curSynObj = soEOS; Assert (IsValidSO (curSynObj));
                     lpYYRes = NULL;
                 } else
                 {
                     // Copy to the current object
-                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                     lpYYRes = NULL;
                 } // End IF/ELSE
 
                 // If it's not a SYNTAX ERROR, ...
-                if (curSynObj <= soLAST)
+                if (IsValidSO (curSynObj))
                 {
                     // If a shift right is required, ...
 ////////////////////if (2 < RSTACKLEN && LBIND (lftSynObj, curSynObj) >= RBIND (curSynObj, rhtSynObj))
@@ -4471,7 +4476,7 @@ PARSELINE_REDUCE:
                     {
                         SO_ENUM rht2SynObj;
 
-                        rht2SynObj = RHT2SYNOBJ; Assert (rht2SynObj <= soLAST);
+                        rht2SynObj = RHT2SYNOBJ; Assert (IsValidSO (rht2SynObj));
 
                         // Check for left shift
                         if (RBIND (curSynObj, rhtSynObj) >= RBIND (rhtSynObj, rht2SynObj))
@@ -4491,10 +4496,10 @@ PARSELINE_REDUCE:
                             } // End IF/ELSE
                         } // End IF
 LEFTSHIFT:
-                        PUSHLEFT (lpplYYCurObj); lpplYYCurObj = POPRIGHT; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                        PUSHLEFT (lpplYYCurObj); lpplYYCurObj = POPRIGHT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 
-                        rhtSynObj  = RHTSYNOBJ; Assert (rhtSynObj <= soLAST);
-                        rht2SynObj = RHT2SYNOBJ;
+                        rhtSynObj  = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
+                        rht2SynObj = RHT2SYNOBJ; Assert (IsValidSO (rht2SynObj));
 
                         TRACE (L"PostRed: ", L"- LftShift", CURSYNOBJ, rhtSynObj);
                     } else
@@ -4503,12 +4508,12 @@ LEFTSHIFT:
             } // End IF/ELSE
 
             // Check for SYNTAX ERROR
-            if (curSynObj <= soLAST)
+            if (IsValidSO (curSynObj))
             {
                 // Get the left, current, and right SynObj values
-                lftSynObj = LFTSYNOBJ; Assert (lftSynObj <= soLAST);
-////////////////curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
-                rhtSynObj = RHTSYNOBJ; Assert (rhtSynObj <= soLAST);
+                lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
+////////////////curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+                rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
 
                 goto PARSELINE_SCAN1;
             } else
@@ -4717,7 +4722,7 @@ PARSELINE_DONE:
                         lpYYRes->tkToken.tkSynObj = soA;
 
                         // Copy to the current object
-                        lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (curSynObj <= soLAST);
+                        lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                         lpYYRes = NULL;
                     } else
                         // Unstrand the current object if necessary
@@ -6051,7 +6056,7 @@ PL_YYLEX_OP3IMMED:
     if (bRestoreStk)
         lpplLocalVars->lptkNext = lptkOrigNext;
 
-    Assert (lpplYYLval->tkToken.tkSynObj NE soNONE);
+    Assert (IsValidSO (lpplYYLval->tkToken.tkSynObj));
 
     return lpplYYLval;
 } // End pl_yylexCOM
@@ -6119,7 +6124,7 @@ LPWCHAR LSTACK
         // Get the token's syntax object
         tkSynObj = (*lplpYYNext)->tkToken.tkSynObj;
 
-        Assert (tkSynObj <= soLAST);
+        Assert (IsValidSO (tkSynObj));
 
         if (tkSynObj EQ soEOS)
             break;
@@ -6207,7 +6212,7 @@ LPWCHAR LSTACK
         // Get the token's syntax object
         tkSynObj = lptkNext->tkSynObj;
 
-        Assert (tkSynObj <= soLAST);
+        Assert (IsValidSO (tkSynObj));
 
         // Back off to the next text location
         lpwszTemp -= SONAMES_MAXLEN;
@@ -6271,7 +6276,7 @@ LPWCHAR RSTACK
     // Loop through the right stack
     while (--lplpYYNext > lpplOrgRhtStk)
     {
-        Assert ((*lplpYYNext)->tkToken.tkSynObj <= soLAST);
+        Assert (IsValidSO ((*lplpYYNext)->tkToken.tkSynObj));
 
         // Get ptr to name
         lpwszName = soNames[(*lplpYYNext)->tkToken.tkSynObj];

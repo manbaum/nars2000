@@ -159,7 +159,7 @@ void ArrExprCheckCaller
         // Increment the refcnt
         IncrRefCntTkn (&lpYYRes->tkToken);
     } else
-        // Copy the result
+        // Copy the function array incrementing the RefCnt
         lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
 
     // Set/clear the NoDisplay flag

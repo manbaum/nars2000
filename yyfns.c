@@ -46,9 +46,9 @@ LPPL_YYSTYPE _YYAlloc
 #endif
 
 {
-    UINT         u;             // Loop counter
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYRes = NULL;// Ptr to the result
+    UINT         u;                 // Loop counter
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
 #ifdef DEBUG
     static UINT YYIndex = 0;
@@ -73,8 +73,8 @@ LPPL_YYSTYPE _YYAlloc
         // Mark as inuse
         lpYYRes->YYInuse = TRUE;
 #ifdef DEBUG
-        // Mark as no SynObj so as to catch cases where we miss setting it
-        lpYYRes->tkToken.tkSynObj = soNONE;
+        // Mark as unknown SynObj so as to catch cases where we miss setting it
+        lpYYRes->tkToken.tkSynObj = soUNK;
 
         // Save the ptr to the filename where allocated
         lpYYRes->lpFileName = lpFileName;
@@ -588,6 +588,7 @@ LPPL_YYSTYPE YYCopyFcn
                     //   when the var array was created in MakeVarStrand
                     lpYYCopy = CopyPL_YYSTYPE_YY (&lpYYArg[i]);
                 else
+                    // Copy the function array incrementing the RefCnt
                     lpYYCopy = CopyPL_YYSTYPE_EM_YY (&lpYYArg[i], FALSE);
                 if (lpYYMem->YYInuse)
                     YYCopy (lpYYMem++, lpYYCopy);

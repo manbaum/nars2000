@@ -668,6 +668,7 @@ UBOOL AssignNamedVars_EM
     if (aplNELMNam EQ 1)
     {
         // Assign the entire value to the name
+        // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
         AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[0].tkToken, lptkVal);
 
         goto NORMAL_EXIT;
@@ -696,6 +697,7 @@ UBOOL AssignNamedVars_EM
         case TKT_VARIMMED:
             // Assign this immediate value to each name
             for (aplName = 0; aplName < aplNELMNam; aplName++)
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[aplName].tkToken, lptkVal);
             goto NORMAL_EXIT;
 
@@ -770,6 +772,7 @@ UBOOL AssignNamedVars_EM
                 tkToken.tkData.tkBoolean = (uBitMaskVal & *(LPAPLBOOL) lpMemVal) ? TRUE : FALSE;
 
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
 
                 // If there's more than one value, ...
@@ -801,6 +804,7 @@ UBOOL AssignNamedVars_EM
                 tkToken.tkData.tkInteger = ((LPAPLINT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
@@ -818,6 +822,7 @@ UBOOL AssignNamedVars_EM
                 tkToken.tkData.tkFloat = ((LPAPLFLOAT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
@@ -835,6 +840,7 @@ UBOOL AssignNamedVars_EM
                 tkToken.tkData.tkChar = ((LPAPLCHAR) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
@@ -861,6 +867,7 @@ UBOOL AssignNamedVars_EM
                 tkToken.tkData.tkLongest = lpSymVal->stData.stLongest;
 
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
@@ -911,6 +918,7 @@ UBOOL AssignNamedVars_EM
                 } // End SWITCH
 
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
@@ -928,6 +936,7 @@ UBOOL AssignNamedVars_EM
                 tkToken.tkData.tkInteger = apaOffVal + apaMulVal * (aplName % aplNELMVal);
 
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
@@ -951,7 +960,9 @@ UBOOL AssignNamedVars_EM
                                    TRUE,                    // TRUE iff we should initialize the target first
                                    lptkVal);                // Ptr to function token
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+
                 DbgDecrRefCntTkn (&tkToken);
             } // End FOR
 
@@ -975,7 +986,9 @@ UBOOL AssignNamedVars_EM
                                    TRUE,                    // TRUE iff we should initialize the target first
                                    lptkVal);                // Ptr to function token
                 // Assign this token to this name
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+
                 DbgDecrRefCntTkn (&tkToken);
             } // End FOR
 
@@ -1071,6 +1084,7 @@ UBOOL ModifyAssignNameVals_EM
 
         if (lpYYRes)
         {
+            // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
             bRet = AssignName_EM (&lpMemName[uName].tkToken, &lpYYRes->tkToken);
             YYFree (lpYYRes); lpYYRes = NULL;
 

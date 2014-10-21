@@ -293,6 +293,9 @@ UBOOL AfoDisplay_EM
 
     Assert (lpMemDfnHdr NE NULL);
 
+    // Transfer the NoDisplay flag from the incoming token
+    lpMemDfnHdr->bAfoNoDispRes = (lptkSrc->tkFlags.NoDisplay || bNoDisplay);
+
     // Lock the memory to get a ptr to it
     lpMemTknHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
 
@@ -300,11 +303,12 @@ UBOOL AfoDisplay_EM
     lpMemTknData = TokenBaseToStart (lpMemTknHdr);
 
     // Assign the result to $AFORESULT
+    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
     bRet = AssignName_EM (&lpMemTknData[1],
                            lptkSrc);
-    // Transfer the NoDisplay flag from the incoming token
-    lpMemDfnHdr->bAfoNoDispRes        =
-    lpMemTknData[1].tkFlags.NoDisplay = (lptkSrc->tkFlags.NoDisplay || bNoDisplay);
+    // Transfer the NoDisplay flag
+    bNoDisplay                       |=
+    lpMemTknData[1].tkFlags.NoDisplay = lpMemDfnHdr->bAfoNoDispRes;
 
     // We no longer need these ptrs
     MyGlobalUnlock (lpMemDfnHdr->hGlbTknHdr);   lpMemTknHdr = NULL;
@@ -313,7 +317,7 @@ UBOOL AfoDisplay_EM
     // If we succeeded,
     //   and we're displaying, ...
     if (bRet
-     && !lptkSrc->tkFlags.NoDisplay)
+     && !bNoDisplay)
     {
         // Tell the parser to stop executing this line
         lpplLocalVars->bStopExec = TRUE;

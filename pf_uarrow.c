@@ -783,13 +783,13 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
                     // Get the appropriate prototype
-                    aplProtoSym = lpMemPTD->lphtsPTD->steZero;
+                    aplProtoSym = lpMemPTD->lphtsGLB->steZero;
 
                     break;
 
                 case IMMTYPE_CHAR:
                     // Get the appropriate prototype
-                    aplProtoSym = lpMemPTD->lphtsPTD->steBlank;
+                    aplProtoSym = lpMemPTD->lphtsGLB->steBlank;
 
                     break;
 

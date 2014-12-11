@@ -355,10 +355,10 @@ UBOOL FillIdentityElement_EM
                         // If the identity element is numeric, ...
                         if (IsImmNum (hGlbSym.lpSym->stFlags.ImmType))
                             // Save the prototype of the identity element in the result
-                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->lphtsPTD->steZero;
+                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->lphtsGLB->steZero;
                         else
                             // Save the prototype of the identity element in the result
-                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->lphtsPTD->steBlank;
+                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->lphtsGLB->steBlank;
                     } else
                     {
                         // Save the identity element in the result

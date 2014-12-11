@@ -619,8 +619,8 @@ RESTART_ALLOC:
             for (uRes = 0; uRes < aplNELMNst; uRes++)
                 // Make & save a prototype of the right arg
                 *((LPAPLNESTED) lpMemRes)++ =
-                  (IsSimpleNum (aplTypeRht)) ? lpMemPTD->lphtsPTD->steZero
-                                             : lpMemPTD->lphtsPTD->steBlank;
+                  (IsSimpleNum (aplTypeRht)) ? lpMemPTD->lphtsGLB->steZero
+                                             : lpMemPTD->lphtsGLB->steBlank;
         } // End IF
     } else
     // If this is +/APA

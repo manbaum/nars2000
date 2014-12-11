@@ -1602,7 +1602,7 @@ LPSYMENTRY SymTabHTSLookupChar
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = GetMemPTD ()->lphtsPTD;
+        lphtsPTD = GetMemPTD ()->lphtsGLB;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -1696,7 +1696,7 @@ LPSYMENTRY SymTabHTSLookupNumber
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = GetMemPTD ()->lphtsPTD;
+        lphtsPTD = GetMemPTD ()->lphtsGLB;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -1793,7 +1793,7 @@ LPSYMENTRY SymTabHTSLookupFloat
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = GetMemPTD ()->lphtsPTD;
+        lphtsPTD = GetMemPTD ()->lphtsGLB;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -2260,7 +2260,7 @@ LPSYMENTRY SymTabHTSAppendInteger_EM
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = lpMemPTD->lphtsPTD;
+        lphtsPTD = lpMemPTD->lphtsGLB;
 
     MyEnterCriticalSection (&CSOHshTab);
 
@@ -2268,16 +2268,16 @@ LPSYMENTRY SymTabHTSAppendInteger_EM
     if (bUseCommon)
     {
         // Split off common Boolean cases
-        if (aplInteger EQ 0 && lpMemPTD->lphtsPTD->steZero)
+        if (aplInteger EQ 0 && lphtsPTD->steZero)
         {
-            lpSymEntryDest = lpMemPTD->lphtsPTD->steZero;
+            lpSymEntryDest = lphtsPTD->steZero;
 
             goto NORMAL_EXIT;
         } // End IF
 
-        if (aplInteger EQ 1 && lpMemPTD->lphtsPTD->steOne)
+        if (aplInteger EQ 1 && lphtsPTD->steOne)
         {
-            lpSymEntryDest = lpMemPTD->lphtsPTD->steOne;
+            lpSymEntryDest = lphtsPTD->steOne;
 
             goto NORMAL_EXIT;
         } // End IF
@@ -2407,7 +2407,7 @@ LPSYMENTRY SymTabHTSAppendFloat_EM
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = GetMemPTD ()->lphtsPTD;
+        lphtsPTD = GetMemPTD ()->lphtsGLB;
 
     MyEnterCriticalSection (&CSOHshTab);
 
@@ -2533,15 +2533,15 @@ LPSYMENTRY SymTabHTSAppendChar_EM
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = lpMemPTD->lphtsPTD;
+        lphtsPTD = lpMemPTD->lphtsGLB;
 
     // Use common cases?
     if (bUseCommon)
     {
         // Split off common blank case
-        if (aplChar EQ L' ' && lpMemPTD->lphtsPTD->steBlank)
+        if (aplChar EQ L' ' && lphtsPTD->steBlank)
         {
-            lpSymEntryDest = lpMemPTD->lphtsPTD->steBlank;
+            lpSymEntryDest = lphtsPTD->steBlank;
 
             goto NORMAL_EXIT;
         } // End IF

@@ -900,6 +900,7 @@ WM_NCCREATE_FAIL:
             lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].MaxSize  = sizeof (HSHTABSTR);
             lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].IniAddr  = (LPVOID)
             lpMemPTD->lphtsPTD =
+            lpMemPTD->lphtsGLB =
               GuardAlloc (NULL,             // Any address
                           lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].MaxSize,
                           MEM_COMMIT | MEM_RESERVE,

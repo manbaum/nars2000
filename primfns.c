@@ -820,9 +820,9 @@ HGLOBAL MakeMonPrototype_EM_PTB
         case PTRTYPE_STCONST:
             // If it's numeric, ...
             if (IsImmNum (((LPSYMENTRY) hGlbArr)->stFlags.ImmType))
-                return lpMemPTD->lphtsPTD->steZero;
+                return lpMemPTD->lphtsGLB->steZero;
             else
-                return lpMemPTD->lphtsPTD->steBlank;
+                return lpMemPTD->lphtsGLB->steBlank;
 
         case PTRTYPE_HGLOBAL:
             break;
@@ -983,7 +983,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
                         case IMMTYPE_FLOAT:
-                            lpSymRes = lpMemPTD->lphtsPTD->steZero;
+                            lpSymRes = lpMemPTD->lphtsGLB->steZero;
 
                             break;
 
@@ -992,7 +992,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                             switch (mpEnum)
                             {
                                 case MP_CHARS:
-                                    lpSymRes = lpMemPTD->lphtsPTD->steBlank;
+                                    lpSymRes = lpMemPTD->lphtsGLB->steBlank;
 
                                     break;
 
@@ -1002,7 +1002,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                                     break;
 
                                 case MP_NUMCONV:
-                                    lpSymRes = lpMemPTD->lphtsPTD->steZero;
+                                    lpSymRes = lpMemPTD->lphtsGLB->steZero;
 
                                     break;
 
@@ -2307,8 +2307,8 @@ HGLOBAL CopyGlbAsType_EM
                     // Get ptr to PerTabData global memory
                     lpMemPTD = GetMemPTD ();
 
-                    lpSym0 = lpMemPTD->lphtsPTD->steZero;
-                    lpSym1 = lpMemPTD->lphtsPTD->steOne;
+                    lpSym0 = lpMemPTD->lphtsGLB->steZero;
+                    lpSym1 = lpMemPTD->lphtsGLB->steOne;
 
                     uBitMask = BIT0;
 

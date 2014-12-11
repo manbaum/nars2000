@@ -66,7 +66,8 @@ typedef struct tagPERTABDATA
     UINT         numYYRes;                  // # YYRes elements in the array
                                             //   pointed to by lpYYRes
     // Symbol & hash table variables
-    LPHSHTABSTR  lphtsPTD;                  // Ptr to current HTS
+    LPHSHTABSTR  lphtsPTD,                  // Ptr to current HTS
+                 lphtsGLB;                  // ...    global  ...
     UINT         tkErrorCharIndex;          // Char index for lpwszQuadErrorMsg if ImmExec
 
     HWND         hWndMC,                    // MDI Client window handle

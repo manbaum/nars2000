@@ -36,13 +36,18 @@ HGLOBAL *GetPtrGlbDataToken
     (LPTOKEN lptkToken)                 // Ptr to the token
 
 {
+    static LPVOID Ptr2Null = NULL;
+
     // If it's named, ...
     if (IsTknNamed (lptkToken))
         // Get the xxGlbData value from the SYMENTRY
         return &lptkToken->tkData.tkSym->stData.stGlbData;
     else
+    if (!IsTknImmed (lptkToken))
         // Get the xxGlbData value from the TOKEN
         return &lptkToken->tkData.tkGlbData;
+    else
+        return &Ptr2Null;
 } // End GetPtrGlbDataToken
 
 
@@ -2457,7 +2462,7 @@ LPSYMENTRY GetSteZero
 
 {
     // Get the STE
-    return GetMemPTD ()->lphtsPTD->steZero;
+    return GetMemPTD ()->lphtsGLB->steZero;
 } // End GetSteZero
 
 
@@ -2472,7 +2477,7 @@ LPSYMENTRY GetSteOne
 
 {
     // Get the STE
-    return GetMemPTD ()->lphtsPTD->steOne;
+    return GetMemPTD ()->lphtsGLB->steOne;
 } // End GetSteOne
 
 
@@ -2487,7 +2492,7 @@ LPSYMENTRY GetSteBlank
 
 {
     // Get the STE
-    return GetMemPTD ()->lphtsPTD->steBlank;
+    return GetMemPTD ()->lphtsGLB->steBlank;
 } // End GetSteBlank
 
 

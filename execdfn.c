@@ -2146,14 +2146,19 @@ UBOOL InitFcnSTEs
                     break;
 
                 case TKT_FCNNAMED:
-                    (*lplpSymEntry)->stFlags            = lpYYArg->tkToken.tkData.tkSym->stFlags;
-                    (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
+                    // Copy the flags
+                    (*lplpSymEntry)->stFlags              = lpYYArg->tkToken.tkData.tkSym->stFlags;
 
+                    // If it's an internal function (e.g. []DL), ...
+                    if (lpYYArg->tkToken.tkData.tkSym->stFlags.FcnDir)
+                        (*lplpSymEntry)->stData           = lpYYArg->tkToken.tkData.tkSym->stData;
+                    else
+                        (*lplpSymEntry)->stData.stGlbData = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
                     break;
 
                 case TKT_FCNARRAY:
                 case TKT_FCNAFO:
-            {
+                {
                     HGLOBAL      hGlbDfnHdr;
                     LPDFN_HEADER lpMemDfnHdr;
 

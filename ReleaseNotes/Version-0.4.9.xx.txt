@@ -1,6 +1,17 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1299 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug With Copy From DEBUG Window
+
+Directory trunk:
+
+DEBUG.C:
+  An earlier build mistakenly replaced a code sequence with a macro, but shouldn't have done so in this case.
+
+
 Build #1298 -- Version 0.4.9.xx
 -------------------------------
 

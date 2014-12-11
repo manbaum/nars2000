@@ -775,7 +775,17 @@ LRESULT WINAPI LclListboxWndProc
                     GlobalUnlock (hGlbSel); lpSel = NULL;
 
                     // Unlock and free (and set to NULL) a global name and ptr
-                    UnlFreeGlbName (hGlbInd, lpMemInd);
+                    if (hGlbInd)
+                    {
+                        if (lpMemInd)
+                        {
+                            // We no longer need this ptr
+                            GlobalUnlock (lpMemInd); lpMemInd = NULL;
+                        } // End IF
+
+                        // We no longer need this storage
+                        GlobalFree (hGlbInd); hGlbInd = NULL;
+                    } // End IF
 
                     // Prepare to put the data onto the clipboard
                     OpenClipboard (hWnd);

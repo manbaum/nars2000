@@ -190,11 +190,11 @@ APLU3264 CALLBACK AboutDlgProc
             // Append the COMCTL32.DLL version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", wszComctl32FileVer);
 
-            // Copy the CRSHHNDL.DLL prefix to the text
+            // Copy the CRASHRPT.DLL prefix to the text
             lstrcatW (wszTemp, crsh_dll);
             lstrcatW (wszTemp, L" #");
 
-            // Append the CRSHHNDL.DLL version #
+            // Append the CRASHRPT.DLL version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", crsh_version);
 
             // Write out the secondary version string

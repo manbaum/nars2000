@@ -44,7 +44,7 @@ CRITICAL_SECTION CSOPthread;            // Critical Section Object for pthread
 #ifdef DEBUG
 extern int Debug = 1;
 #endif
-WCHAR crsh_dll[] = L"CRSHHNDL.DLL",
+WCHAR crsh_dll[] = L"CRASHRPT.DLL",
       crsh_version[32] = L" not loaded";
 
 
@@ -3870,7 +3870,7 @@ int PASCAL WinMain
 #ifndef DEBUG
     // Instantiate the Crash Server
     if (CrashServer ())
-        // Set the CRSHHNDL.DLL version #
+        // Set the CRASHRPT.DLL version #
         LclFileVersionStrW (crsh_dll, crsh_version);
     else
     {

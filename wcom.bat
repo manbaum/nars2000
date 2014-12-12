@@ -1,8 +1,8 @@
 REM Directory of the root of the NARS2000 project
 Set NARSROOT=R:\NARS2000^\
 
-REM Path to Crash Server SDK root
-Set CS_DIR=R:\CrashServerSDK^\
+REM Path to Doctor Dump SDK root
+Set CS_DIR=R:\DoctorDumpSDK^\
 
 REM Path and name of zip program (7-zip)
 Set ZIPPRG="%ProgramFiles%\7-Zip\7z"

@@ -1,6 +1,21 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1307 -- Version 0.4.9.xx
+-------------------------------
+
+* Move From CrashServer To DoctorDump
+
+Directory trunk:
+
+CRASHSERVER.CPP:
+MAIN.C:
+MAKEFILE.INC:
+VER.C:
+WCOM.BAT:
+  Rename files and dirs from CrashServer to DoctorDump.
+
+
 Build #1306 -- Version 0.4.9.xx
 -------------------------------
 

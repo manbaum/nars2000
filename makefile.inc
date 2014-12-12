@@ -149,11 +149,11 @@ CS_DLL=
 CS_LIB=
 !else
 !if "$(WIN)" == "64"
-CS_DLL=$(CS_DIR)bin\x64\crshhndl.dll
-CS_LIB=$(CS_DIR)lib\x64\crshhndl.lib
+CS_DLL=$(CS_DIR)bin\x64\crashrpt.dll
+CS_LIB=$(CS_DIR)lib\x64\crashrpt.lib
 !else
-CS_DLL=$(CS_DIR)bin\crshhndl.dll
-CS_LIB=$(CS_DIR)lib\crshhndl.lib
+CS_DLL=$(CS_DIR)bin\crashrpt.dll
+CS_LIB=$(CS_DIR)lib\crashrpt.lib
 !endif
 !endif
 
@@ -192,7 +192,6 @@ LIBS_WEXE = gdi32.lib           \
 !else
             libcmt.lib          \
 !endif
-            $(CS_LIB)           \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
             $(ECM_LIB)          \
@@ -671,7 +670,6 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(ECM_LIB)          \
                         $(GSL_LIB)          \
                         $(CS_DLL)           \
-                        $(CS_LIB)           \
                         makefile.inc        \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.crf

@@ -42,12 +42,20 @@ NAME_TYPES TranslateSOTypeToNameType
     // Split cases based upon the user-defined function/operator type
     switch (soType)
     {
+        // Flavors of vars
+        case soA:
+        case soSA:
+        case soSPA:
+        case soIDX:
+            return NAMETYPE_VAR;
+
         // Flavors of monadic/dyadic functions
         case soF:
         case soFR:
         case soFFR:
         case soSPF:
         case soSPFR:
+        case soMF:
             return NAMETYPE_FN12;
 
         // Flavors of niladic functions
@@ -58,6 +66,7 @@ NAME_TYPES TranslateSOTypeToNameType
         // Flavors of monadic operators
         case soMOP:
         case soMOPN:
+        case soJD:
         case soSPM:
         case soSPMN:
         case soSPMR:
@@ -81,6 +90,48 @@ NAME_TYPES TranslateSOTypeToNameType
             return NAMETYPE_UNK;
     } // End SWITCH
 } // End TranslateSOTypeToNameType
+
+
+//***************************************************************************
+//  $TranslateNameTypeToSOType
+//
+//  Translate a function type (see NAME_TYPES).
+//    to a SynObj type (see SO_ENUM)
+//***************************************************************************
+
+SO_ENUM TranslateNameTypeToSOType
+    (NAME_TYPES nameType)
+
+{
+    // Split cases based upon the user-defined function/operator type
+    switch (nameType)
+    {
+        case NAMETYPE_VAR:
+            return soA;
+
+        case NAMETYPE_FN0:
+            return soNF;
+
+        case NAMETYPE_FN12:
+        case NAMETYPE_TRN:
+            return soF;
+
+        case NAMETYPE_OP1:
+            return soMOP;
+
+        case NAMETYPE_OP2:
+            return soDOP;
+
+        case NAMETYPE_OP3:
+            return soHY;
+
+        case NAMETYPE_UNK:
+        case NAMETYPE_LST:
+
+        defstop
+            return soUNK;
+    } // End SWITCH
+} // End TranslateNameTypeToSOType
 
 
 //***************************************************************************
@@ -241,7 +292,7 @@ TOKEN_TYPES TranslateImmTypeToTknType
             return TKT_VARARRAY;
 
         defstop
-            return -1;              // To keep the compiler happy
+            return IMMTYPE_ERROR;   // To keep the compiler happy
     } // End SWITCH
 } // End TranslateImmTypeToTknType
 

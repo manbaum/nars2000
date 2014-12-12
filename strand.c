@@ -270,7 +270,7 @@ void StripStrand
     if (lpplLocalVars->lpYYStrArrBase[strType] NE lpplLocalVars->lpYYStrArrStart[strType])
     {
         Assert (lpplLocalVars->lpYYStrArrStart[strType] <= lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase);
-        Assert (                                           lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase < lpplLocalVars->lpYYStrArrNext[strType]);
+        Assert (                                           lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase <= lpplLocalVars->lpYYStrArrNext[strType]);
 
         lpplLocalVars->lpYYStrArrBase[strType] = lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase;
     } // End IF
@@ -504,6 +504,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
+
+    // Set the token type
+    lpYYRes->tkToken.tkSynObj = soA;
 
     // The strand needs to be saved to global memory
 
@@ -1945,6 +1948,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         lpYYRes->TknCount = 1;
         lpYYRes->tkToken.tkFlags.SysNSLvl = lpYYArg->tkToken.tkFlags.SysNSLvl;
 
+        lpYYRes->tkToken.tkSynObj = TranslateNameTypeToSOType (fnNameType);
+
         lpYYBase = lpYYArg->lpYYFcnBase;
         lpYYRes->lpYYFcnBase = NULL;            // No longer valid
 
@@ -1979,6 +1984,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
+    lpYYRes->tkToken.tkSynObj          = TranslateNameTypeToSOType (fnNameType);
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     Assert (YYCheckInuse (lpYYRes));
@@ -2077,20 +2083,16 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     if (bSaveTxtLine)
     {
-        HGLOBAL           hGlbFcnArr;       // Function array global memory handle
         LPFCNARRAY_HEADER lpHeader;         // Ptr to function array header
 
-        // Copy the HGLOBAL
-        hGlbFcnArr = hGlbStr;
-
         // Lock the memory to get a ptr to it
-        lpHeader = MyGlobalLock (hGlbFcnArr);
+        lpHeader = MyGlobalLock (hGlbStr);
 
         // Make a function array text line
         MakeTxtLine (lpHeader);
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbFcnArr); lpHeader = NULL;
+        MyGlobalUnlock (hGlbStr); lpHeader = NULL;
     } // End IF
 
     // We no longer need this ptr

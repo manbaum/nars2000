@@ -1337,7 +1337,7 @@ PN_YYSTYPE PN_SetInfinity
     {
         case PN_NUMTYPE_FLT:
             // Mark as +/- infinity
-            pnYYRes.at.aplFloat = (iInfSgn EQ 1) ? PosInfinity : NegInfinity;
+            pnYYRes.at.aplFloat = (iInfSgn EQ 1) ? fltPosInfinity : fltNegInfinity;
 
             break;
 

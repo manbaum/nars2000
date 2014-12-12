@@ -427,7 +427,7 @@ APLFLOAT PrimFnDydRootFisIvI
 
         // Check for special case:  0 {root} R where R > 1 <==> R * _ <==> _
         if (aplIntegerRht > 1)
-            return PosInfinity;
+            return fltPosInfinity;
     } // End IF
 
 ////// Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
@@ -496,7 +496,7 @@ APLFLOAT PrimFnDydRootFisFvF
 
         // Check for special case:  0 {root} R where R > 1 <==> R * _ <==> _
         if (aplFloatRht > 1)
-            return PosInfinity;
+            return fltPosInfinity;
     } // End IF
 
     // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0

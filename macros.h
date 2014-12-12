@@ -449,8 +449,8 @@
 
 // Define macro for detecting floating point infinity
 #define IsInfinity(a)       (!_finite (a) && !_isnan (a))
-#define IsPosInfinity(a)    (!_finite (a) && !_isnan (a) && !SIGN_APLFLOAT (a))
-#define IsNegInfinity(a)    (!_finite (a) && !_isnan (a) &&  SIGN_APLFLOAT (a))
+#define IsFltPosInfinity(a) (!_finite (a) && !_isnan (a) && !SIGN_APLFLOAT (a))
+#define IsFltNegInfinity(a) (!_finite (a) && !_isnan (a) &&  SIGN_APLFLOAT (a))
 
 // Define macro for detecting Rational or VFP infinity
 #define IsMpzInfinity(a)    (mpz_inf_p (a))

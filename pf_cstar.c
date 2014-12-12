@@ -201,11 +201,11 @@ APLFLOAT PrimFnMonCircleStarFisF
                                      aplFloatRht);
 
     // Check for special cases:  {log} _
-    if (IsPosInfinity (aplFloatRht))
-        return PosInfinity;
+    if (IsFltPosInfinity (aplFloatRht))
+        return fltPosInfinity;
 
     // Check for special cases:  {log} -_
-    if (IsNegInfinity (aplFloatRht))
+    if (IsFltNegInfinity (aplFloatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Check for Complex result

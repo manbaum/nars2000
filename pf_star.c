@@ -653,24 +653,24 @@ APLFLOAT PrimFnDydStarFisFvF
                                      aplFloatRht);
     // Check for indeterminates:  0 * +_
     if (aplFloatLft EQ 0
-     && aplFloatRht EQ PosInfinity)
+     && IsFltPosInfinity (aplFloatRht))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0EXPPi,
                                      aplFloatRht);
     // Check for indeterminates:  0 * -_
     if (aplFloatLft EQ 0
-     && aplFloatRht EQ NegInfinity)
+     && IsFltNegInfinity (aplFloatRht))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0EXPNi,
                                      aplFloatRht);
     // Check for indeterminates:  L * _ for L <= -1
     if (aplFloatLft <= -1
-     && aplFloatRht EQ PosInfinity)
+     && IsFltPosInfinity (aplFloatRht))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_NEXPPi,
                                      aplFloatRht);
     // Check for indeterminates:  L * -_ for -1 <= L < 0
-    if (aplFloatRht EQ NegInfinity
+    if (IsFltNegInfinity (aplFloatRht)
      && aplFloatLft >= -1
      && aplFloatLft <   0)
         return TranslateQuadICIndex (aplFloatLft,

@@ -347,7 +347,7 @@ APLFLOAT PrimFnDydStileFisFvF
         return aplFloatRht;
     else
     // If the right arg is negative infinity, ...
-    if (IsNegInfinity (aplFloatRht))
+    if (IsFltNegInfinity (aplFloatRht))
     {
         // If the left arg is positive, ...
         if (aplFloatLft > 0)
@@ -361,7 +361,7 @@ APLFLOAT PrimFnDydStileFisFvF
                                          aplFloatRht);
     } else
     // If the right arg is positive infinity, ...
-    if (IsPosInfinity (aplFloatRht))
+    if (IsFltPosInfinity (aplFloatRht))
     {
         // If the left arg is positive, ...
         if (aplFloatLft > 0)
@@ -375,7 +375,7 @@ APLFLOAT PrimFnDydStileFisFvF
                                          aplFloatRht);
     } else
     // If the left arg is negative infinity, ...
-    if (IsNegInfinity (aplFloatLft))
+    if (IsFltNegInfinity (aplFloatLft))
     {
         // If the right arg is positive, ...
         if (aplFloatRht > 0)
@@ -386,7 +386,7 @@ APLFLOAT PrimFnDydStileFisFvF
         return aplFloatRht;
     } else
     // If the left arg is positive infinity, ...
-    if (IsNegInfinity (aplFloatLft))
+    if (IsFltNegInfinity (aplFloatLft))
     {
         // If the right arg is negative, ...
         if (aplFloatRht < 0)

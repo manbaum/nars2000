@@ -1080,8 +1080,8 @@ HGLOBAL hGlbQuadA,                      // []A
 #define hGlbQuadEM_DEF      hGlb3by0
 
 EXTERN
-APLFLOAT PosInfinity,                   // Positive infinity
-         NegInfinity,                   // Negative ...
+APLFLOAT fltPosInfinity,                // Positive infinity
+         fltNegInfinity,                // Negative ...
          FloatPi,                       // Pi
          FloatE,                        // e
          Float2Pow53;                   // 2*53 in floating point

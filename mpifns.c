@@ -3552,7 +3552,7 @@ double mpifr_get_d
 
 {
     if (mpfr_inf_p (op))
-        return ((mpfr_sgn (op) > 0) ? PosInfinity : NegInfinity);
+        return ((mpfr_sgn (op) > 0) ? fltPosInfinity : fltNegInfinity);
     else
         return mpfr_get_d (op, rnd);
 } // End mpifr_get_d
@@ -3573,7 +3573,7 @@ double mpifr_get_d_2exp
     if (mpfr_inf_p (op))
     {
         *exp = 0;
-        return ((mpfr_sgn (op) > 0) ? PosInfinity : NegInfinity);
+        return ((mpfr_sgn (op) > 0) ? fltPosInfinity : fltNegInfinity);
     } else
         return mpfr_get_d_2exp (exp, op, rnd);
 } // End mpifr_get_d_2exp

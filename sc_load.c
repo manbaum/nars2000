@@ -1248,12 +1248,12 @@ LPWCHAR ParseSavedWsVar_EM
                 // Check for positive infinity
                 if (lstrcmp ((LPCHAR) lpwszFormat, TEXT_INFINITY) EQ 0)
                     // Save in the result and skip over it
-                    aplFloat = PosInfinity;
+                    aplFloat = fltPosInfinity;
                 else
                 // Check for negative infinity
                 if (lstrcmp ((LPCHAR) lpwszFormat, "-" TEXT_INFINITY) EQ 0)
                     // Save in the result and skip over it
-                    aplFloat = NegInfinity;
+                    aplFloat = fltNegInfinity;
                 else
                     aplFloat = strtod ((LPCHAR) lpwszFormat, NULL);
 
@@ -1595,12 +1595,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Check for positive infinity
                         if (lstrcmp ((LPCHAR) lpwszFormat, TEXT_INFINITY) EQ 0)
                             // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = PosInfinity;
+                            *((LPAPLFLOAT) lpMemObj)++ = fltPosInfinity;
                         else
                         // Check for negative infinity
                         if (lstrcmp ((LPCHAR) lpwszFormat, "-" TEXT_INFINITY) EQ 0)
                             // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = NegInfinity;
+                            *((LPAPLFLOAT) lpMemObj)++ = fltNegInfinity;
                         else
                             // Use David Gay's routines
                             // Save in the result and skip over it

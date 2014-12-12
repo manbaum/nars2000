@@ -333,16 +333,16 @@ APLFLOAT PrimFnDydTimesFisFvF
 {
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
     if ((aplFloatLft EQ 0
-      && aplFloatRht EQ PosInfinity)
-     || (aplFloatLft EQ PosInfinity
+      && IsFltPosInfinity (aplFloatRht))
+     || (IsFltPosInfinity (aplFloatLft)
       && aplFloatRht EQ 0))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0MULPi,
                                      aplFloatRht);
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((aplFloatLft EQ 0
-      && aplFloatRht EQ NegInfinity)
-     || (aplFloatLft EQ NegInfinity
+      && IsFltNegInfinity (aplFloatRht))
+     || (IsFltNegInfinity (aplFloatLft)
       && aplFloatRht EQ 0))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0MULNi,

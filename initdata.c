@@ -107,12 +107,12 @@ void InitConstants
     APLINT aplInteger;          // Temporary value
 
     // Create various floating point constants
-    aplInteger = POS_INFINITY; PosInfinity = *(LPAPLFLOAT) &aplInteger;
-                               __infinity  = PosInfinity;
-    aplInteger = NEG_INFINITY; NegInfinity = *(LPAPLFLOAT) &aplInteger;
-    aplInteger = FLOAT2POW53;  Float2Pow53 = *(LPAPLFLOAT) &aplInteger;
-    aplInteger = FLOATPI;      FloatPi     = *(LPAPLFLOAT) &aplInteger;
-    aplInteger = FLOATE;       FloatE      = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = POS_INFINITY; fltPosInfinity = *(LPAPLFLOAT) &aplInteger;
+                                  __infinity  = fltPosInfinity;
+    aplInteger = NEG_INFINITY; fltNegInfinity = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = FLOAT2POW53;  Float2Pow53    = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = FLOATPI;      FloatPi        = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = FLOATE;       FloatE         = *(LPAPLFLOAT) &aplInteger;
 
     // Get # ticks per second to be used as a conversion
     //   factor for QueryPerformanceCounter into seconds
@@ -886,8 +886,8 @@ void InitIdentityElements
     Init1IdentityElement (PF_INDEX_MINUS   , 0.0);
     Init1IdentityElement (PF_INDEX_DIVIDE  , 1.0);
 
-    Init1IdentityElement (PF_INDEX_MIN     , PosInfinity);
-    Init1IdentityElement (PF_INDEX_MAX     , NegInfinity);
+    Init1IdentityElement (PF_INDEX_MIN     , fltPosInfinity);
+    Init1IdentityElement (PF_INDEX_MAX     , fltNegInfinity);
 
     Init1IdentityElement (PF_INDEX_AND     , 1.0);
     Init1IdentityElement (PF_INDEX_OR      , 0.0);

@@ -901,10 +901,10 @@ APLFLOAT TranslateQuadICIndex
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
-            return PosInfinity;
+            return fltPosInfinity;
 
         case ICVAL_NEG_INFINITY:
-            return NegInfinity;
+            return fltNegInfinity;
 
         case ICVAL_LEFT:
             return aplFloatLft;

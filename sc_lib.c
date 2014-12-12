@@ -511,7 +511,7 @@ void DisplayLibNames
         if (uLineChar > LINE_INDENT)
         {
             // Ensure properly terminated
-            wszLine[uLineChar] = WC_EOS;
+            wszLine[min (uLineChar, uQuadPW)] = WC_EOS;
 
             // Output the current line
             AppendLine (wszLine, TRUE, TRUE);

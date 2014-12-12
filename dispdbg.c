@@ -1631,10 +1631,17 @@ LPWCHAR DisplayFcnSub
 {
     HGLOBAL      hGlbData;          // Function array global memory handle
     LPVOID       lpMemData;         // Ptr to function array global memory
-    UINT         TknCount;          // Token count
+    UINT         TknCount,          // Token count
+                 TknLftCount;       // Token count to the left operand
     NAME_TYPES   fnNameType;        // Function array name type
     LPPL_YYSTYPE lpMemFcnArr;       // Ptr to function array data
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to AFO global memory header
+    UBOOL        bAxisOper;         // TRUE iff there an axis operator
+
+    // Check for axis operator
+    bAxisOper = (tknNELM > 1
+              && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+               || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY));
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1764,10 +1771,32 @@ LPWCHAR DisplayFcnSub
                                  lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
             break;
 
-        case TKT_FCNNAMED:
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
         case TKT_OP3NAMED:
+            // Get the token count to the right operand
+            TknCount = 1 + bAxisOper;
+
+            // Get the token count to the left operand
+            TknLftCount = TknCount + lpYYMem[TknCount].TknCount;
+
+            // If there's a left operand, ...
+            if (tknNELM > TknLftCount)
+            {
+                lpaplChar =
+                  DisplayFcnSub (lpaplChar,                                             // Lfcn
+                                &lpYYMem[TknLftCount],
+                                 lpYYMem[TknLftCount].TknCount,
+                                 lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                 lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+                *lpaplChar++ = L' ';                                                    // Sep
+            } // End IF
+
+            // Fall through to the function name display
+
+        case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYMem->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -1824,9 +1853,7 @@ LPWCHAR DisplayFcnSub
                 *lpaplChar++ = lpYYMem->tkToken.tkData.tkSym->stData.stChar;
 
             // Check for axis operator
-            if (tknNELM > 1
-             && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-              || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+            if (bAxisOper)
                 lpaplChar =
                   DisplayFcnSub (lpaplChar,                                             // [X]
                                 &lpYYMem[1],
@@ -1835,6 +1862,26 @@ LPWCHAR DisplayFcnSub
                                  lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                                  lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                                  lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+            // If there's a right operand, ...
+            if (tknNELM > TknCount
+             && lpYYMem[0].tkToken.tkFlags.TknType EQ TKT_OP2NAMED)
+            {
+                if (lpYYMem[TknCount].TknCount > 1)
+                    *lpaplChar++ = L'(';
+                else
+                    *lpaplChar++ = L' ';
+                lpaplChar =
+                  DisplayFcnSub (lpaplChar,                                                 // Rfcn
+                                &lpYYMem[TknCount],
+                                 lpYYMem[TknCount].TknCount,
+                                 lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                 lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+                if (lpYYMem[TknCount].TknCount > 1)
+                    *lpaplChar++ = L')';
+            } // End IF
+
             break;
 
         case TKT_OPJOTDOT:

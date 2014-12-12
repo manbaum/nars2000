@@ -271,7 +271,7 @@ void ArrExprCheckCaller
 ///                       PrimFnMonIotaVector_EM_YY (&lpplLocalVars->tkSelSpec, // Ptr to function token
 ///                                                  &lpYYRes2->tkToken,        // Ptr to right arg token
 ///                                                   NULL);                    // Ptr to axis token (may be NULL)
-///                     FreeYYFcn1 (lpYYRes2); lpYYRes2 = NULL;
+///                     FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
 ///
 ///                     if (lpYYRes)
 ///                     {

@@ -255,7 +255,6 @@ void FreeResultSub
 
                 // The call to FreeResult after ArrayDisplay_EM needs the
                 //   following if-statement.
-
                 if (FreeResultGlobalDFLV (*lphGlbData))
                 {
 #ifdef DEBUG_ZAP
@@ -1025,45 +1024,6 @@ void FreeResultGlobalDfnStruc
     } // End WHILE
 } // End FreeResultGlobalDfnStruc
 #undef  APPEND_NAME
-
-
-//// //***************************************************************************
-//// //  $FreeYYFcn
-//// //
-//// //  Free a strand of YYFcns
-//// //***************************************************************************
-////
-//// void FreeYYFcn
-////     (LPPL_YYSTYPE lpYYFcn)
-////
-//// {
-////     UINT u, uCnt;
-////
-////     // Get the token count
-////     uCnt = lpYYFcn->TknCount;
-////
-////     Assert (uCnt NE 0);
-////
-////     for (u = 0; u < uCnt; u++)
-////     {
-////         FreeResult (&lpYYFcn[u]); YYFree (&lpYYFcn[u]);
-////     } // End FOR
-//// } // End FreeYYFcn
-
-
-//***************************************************************************
-//  $FreeYYFcn1
-//
-//  Free the HGLOBALs and LPSYMENTRYs in a result
-//    and free the YYRes
-//***************************************************************************
-
-void FreeYYFcn1
-    (LPPL_YYSTYPE lpYYFcn)
-
-{
-    FreeResult (lpYYFcn); YYFree (lpYYFcn);
-} // End FreeYYFcn1
 
 
 //***************************************************************************

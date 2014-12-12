@@ -304,7 +304,6 @@ typedef struct tagSTART_ADDRESSES
     "FreeResultGlobalFcn"       , (LPUCHAR) &FreeResultGlobalFcn        ,
     "FreeResultGlobalDfn"       , (LPUCHAR) &FreeResultGlobalDfn        ,
     "FreeResultGlobalDfnStruc"  , (LPUCHAR) &FreeResultGlobalDfnStruc   ,
-    "FreeYYFcn1"                , (LPUCHAR) &FreeYYFcn1                 ,
 
     // getfns.c
     "GetGlbDataToken"           , (LPUCHAR) &GetGlbDataToken            ,

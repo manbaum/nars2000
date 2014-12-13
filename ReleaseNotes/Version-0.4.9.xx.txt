@@ -1,6 +1,18 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1314 -- Version 0.4.9.xx
+-------------------------------
+
+* Handle Exceptions In Dyadic Scalar Function Error Checks With APA Result
+
+Directory trunk:
+
+PRIMSPEC.C:
+  Remove debug level restriction on exception DEBUG messages.
+  In <PrimFnDyd_EM_YY>, handle exceptions in calls to <ApaResultDyd_EM>.
+
+
 Build #1313 -- Version 0.4.9.xx
 -------------------------------
 

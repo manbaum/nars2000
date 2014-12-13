@@ -1224,7 +1224,7 @@ RESTART_EXCEPTION_VARNAMED:
             {
                 EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
                 switch (ExceptionCode)
@@ -1475,7 +1475,7 @@ RESTART_EXCEPTION_VARIMMED:
             {
                 EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #2: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #2: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
                 switch (ExceptionCode)
@@ -1725,7 +1725,7 @@ HGLOBAL PrimFnMonGlb_EM
         {
             EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-            dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #3: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+            dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #3: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
             // Split cases based upon the ExceptionCode
             switch (ExceptionCode)
@@ -2638,7 +2638,7 @@ RESTART_EXCEPTION:
     {
         EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #4: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #4: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
         // Split cases based upon the ExceptionCode
         switch (ExceptionCode)
@@ -2977,20 +2977,53 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
             aplInteger = aplLongestRht;
         else
             aplInteger = aplLongestLft;
-        if (!(*lpPrimSpec->ApaResultDyd_EM) (lpYYRes,
-                                             lptkFunc,
-                                             hGlbLft,
-                                             hGlbRht,
-                                            &hGlbRes,
-                                             aplRankLft,
-                                             aplRankRht,
-                                             aplNELMLft,
-                                             aplNELMRht,
-                                             aplInteger,
-                                            &LclPrimSpec))
-            goto ERROR_EXIT;
-        else
-            goto NORMAL_EXIT;
+        __try
+        {
+            if (!(*lpPrimSpec->ApaResultDyd_EM) (lpYYRes,
+                                                 lptkFunc,
+                                                 hGlbLft,
+                                                 hGlbRht,
+                                                &hGlbRes,
+                                                 aplRankLft,
+                                                 aplRankRht,
+                                                 aplNELMLft,
+                                                 aplNELMRht,
+                                                 aplInteger,
+                                                &LclPrimSpec))
+                goto ERROR_EXIT;
+            else
+                goto NORMAL_EXIT;
+        } __except (CheckException (GetExceptionInformation (), L"PrimFnDyd_EM_YY #1"))
+        {
+            EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+
+            dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #11: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+
+            // Split cases based upon the ExceptionCode
+            switch (ExceptionCode)
+            {
+                case EXCEPTION_RESULT_FLOAT:
+                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                    // It's now a FLOAT result
+                    aplTypeRes = ARRAY_FLOAT;
+
+                    if (hGlbRes)
+                    {
+                        // We need to start over with the result
+                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                    } // End IF
+
+                    dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #11: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+
+                    break;
+
+                defstop
+                    RaiseException (ExceptionCode, 0, 0, NULL);
+
+                    break;
+            } // End SWITCH
+        } // End __try/__except
     } // End IF
 
     // Allocate space for result
@@ -6753,7 +6786,7 @@ RESTART_EXCEPTION:
     {
         EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #5: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #5: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
         // Split cases based upon the ExceptionCode
         switch (ExceptionCode)
@@ -9369,7 +9402,7 @@ RESTART_EXCEPTION:
     {
         EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #6: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #6: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
         // Split cases based upon the ExceptionCode
         switch (ExceptionCode)
@@ -10561,7 +10594,7 @@ RESTART_EXCEPTION_IMMED:
     {
         EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-        dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
         // Split cases based upon the ExceptionCode
         switch (ExceptionCode)
@@ -11412,7 +11445,7 @@ RESTART_EXCEPTION_SINGLETON:
             {
                 EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
                 switch (ExceptionCode)
@@ -12979,7 +13012,7 @@ RESTART_EXCEPTION_AXIS:
             {
                 EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #9: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #9: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
                 switch (ExceptionCode)
@@ -14396,7 +14429,7 @@ RESTART_EXCEPTION_NOAXIS:
             {
                 EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-                dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #10: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #10: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                 // Split cases based upon the ExceptionCode
                 switch (ExceptionCode)

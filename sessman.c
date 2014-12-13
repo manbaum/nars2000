@@ -1848,8 +1848,8 @@ NORMAL_EXIT:
                     nHeightMC = rc.bottom - rc.top;
 
                     // Calculate the height of the DB & SM windows
-                    nHeightSM = 550;
-                    nHeightDB = nHeightMC - nHeightSM;
+                    nHeightDB = nHeightMC / 3;
+                    nHeightSM = nHeightMC - nHeightDB;
 
                     // Resize the Debugger window
                     //   to the top of the client area

@@ -91,7 +91,7 @@
                 LinkLibraryDependencies="false"
                 UseLibraryDependencyInputs="false"
                 AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib Shlwapi.lib"
-                AdditionalDependencies="mpir64d.lib mpfr64d.lib libgsl64d-double.lib ecm64d.lib crshhndl.lib"
+                AdditionalDependencies="mpir64d.lib mpfr64d.lib libgsl64d-double.lib ecm64d.lib"
                 AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;;&quot;$(CS_DIR)lib\x64&quot;"
                 GenerateManifest="false"
                 AdditionalManifestDependencies="NARS2000.exe.manifest64"
@@ -198,7 +198,7 @@
                 LinkLibraryDependencies="false"
                 UseLibraryDependencyInputs="false"
                 AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib dbghelp.lib Shlwapi.lib"
-                AdditionalDependencies="mpir64.lib mpfr64.lib libgsl64-double.lib ecm64.lib crshhndl.lib"
+                AdditionalDependencies="mpir64.lib mpfr64.lib libgsl64-double.lib ecm64.lib"
                 AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;;&quot;$(CS_DIR)lib\x64&quot;"
                 GenerateManifest="false"
                 AdditionalManifestDependencies="NARS2000.exe.manifest64"
@@ -1158,7 +1158,7 @@
                 </FileConfiguration>
             </File>
             <File
-                RelativePath="$(CS_DIR)include\CrashHandler.h"
+                RelativePath="$(CS_DIR)include\CrashRpt.h"
                 >
             </File>
             <File

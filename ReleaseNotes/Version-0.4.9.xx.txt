@@ -1,6 +1,18 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1310 -- Version 0.4.9.xx
+-------------------------------
+
+* Include Additional Files Omitted From Previous Build
+
+Directory trunk:
+
+NARS2000.32.VCPROJ:
+NARS2000.64.VCPROJ:
+  Include additional files omitted from Build #1307.
+
+
 Build #1309 -- Version 0.4.9.xx
 -------------------------------
 

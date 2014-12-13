@@ -770,7 +770,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
         case ARRAY_VFP:
             wsprintfW (wszTemp,
-                      L"Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                      L"VFP (%d):  variable precision mantissa, 32-bit exponent",
                       DR_VFP);
             break;
 

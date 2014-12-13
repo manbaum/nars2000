@@ -1419,7 +1419,7 @@ LPVOID _MyHeapAlloc
      UINT   uLine)          // Line #
 
 {
-#ifdef DEBUG_HEAP
+#if defined (DEBUG) && defined (DEBUG_HEAP)
     LPVOID lpMem;
 
     HeapValidate (hHeap, 0, NULL);
@@ -1481,7 +1481,7 @@ HGLOBAL _MyHeapReAlloc
      UINT   uLine)          // Line #
 
 {
-#ifdef DEBUG_HEAP
+#if defined (DEBUG) && defined (DEBUG_HEAP)
     HGLOBAL hGlb;
 
     HeapValidate (hHeap, 0, NULL);
@@ -1539,7 +1539,7 @@ UBOOL _MyHeapFree
      UINT   uLine)          // Line #
 
 {
-#ifdef DEBUG_HEAP
+#if defined (DEBUG) && defined (DEBUG_HEAP)
     if (gbResDebug)
     {
         HeapValidate (hHeap, 0, NULL);
@@ -1811,7 +1811,7 @@ void _CheckMemStat
 ////if (memStat.dwMemoryLoad EQ 100)
 ////    DbgBrk ();
 ////
-#ifdef DEBUG_HEAP
+#if defined (DEBUG) && defined (DEBUG_HEAP)
     if (!HeapValidate (GetProcessHeap (), 0, NULL))
         DbgBrk ();
 #endif

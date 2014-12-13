@@ -1117,6 +1117,7 @@ void DisplayHeap
          || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrE ._mpfr_d, 4)
          || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrPi._mpfr_d, 4)
          || hGlb EQ (HGLOBAL) ByteDiff (mpfHalf         ._mpfr_d, 4)
+         || hGlb EQ lpMemPTD->randState->_mp_seed->_mp_d
            )
             continue;
         // Loop through NthPowerTab

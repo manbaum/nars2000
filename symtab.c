@@ -946,7 +946,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $FindNextFreeUsingHash_SPLIT_EM
 //
-//  Find the next free hash table entry after a give one.
+//  Find the next free hash table entry after a given one.
 //  The search is first within the same block from low to high,
 //    then within each following block from high to low within
 //    the block, except for the principal hash (first) entry in
@@ -1062,7 +1062,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $FindNextFreeUsingHTE_EM
 //
-//  Find the next free hash table entry after a give one.
+//  Find the next free hash table entry after a given one.
 //  The search is first within the same block from low to high,
 //    then within each following block from high to low within
 //    the block, except for the principal hash (first) entry in

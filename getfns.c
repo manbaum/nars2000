@@ -2701,7 +2701,7 @@ void RestPrimSpecRL
 //  $GetPrototypeFcnPtr
 //
 //  Return a ptr to the appropriate prototype function
-//    corresponding to a give function token type.
+//    corresponding to a given function token type.
 //***************************************************************************
 
 LPPRIMFNS GetPrototypeFcnPtr

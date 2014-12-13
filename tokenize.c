@@ -808,7 +808,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $IsLocalName
 //
-//  Determine whether or not a give name is local to a function header
+//  Determine whether or not a given name is local to a function header
 //***************************************************************************
 
 UBOOL IsLocalName

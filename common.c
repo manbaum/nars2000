@@ -627,7 +627,7 @@ void DrawBitmap
 //***************************************************************************
 //  $signum
 //
-//  Return -1, 0, +1 depending upon the sign of a give integer
+//  Return -1, 0, +1 depending upon the sign of a given integer
 //***************************************************************************
 
 int signum
@@ -644,7 +644,7 @@ int signum
 //***************************************************************************
 //  $signumf
 //
-//  Return -1, 0, +1 depending upon the sign of a give float
+//  Return -1, 0, +1 depending upon the sign of a given float
 //***************************************************************************
 
 int signumf

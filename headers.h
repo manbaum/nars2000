@@ -89,10 +89,10 @@
 #undef  mpfr_init_set       // The mpfr_init_set* functions are implemented
 #undef  mpfr_init_set_ui    //   as macros which causes a problem when used
 #undef  mpfr_init_set_si    //   as mpfr_init_set_q ((LPAPLVFP) lpMemRes)++, ...
-#undef  mpfr_init_set_d     //   so we must implement then ourselves as fns.
+#undef  mpfr_init_set_d     //   so we must implement them ourselves as fns.
 #undef  mpfr_init_set_z
 #undef  mpfr_init_set_q
-#define mpfr_init0(a)   mpfr_init_set_ui (a, 0, MPFR_RNDN)
+#define mpfr_init0(a)   mpfr_init_set_ui ((a), 0, MPFR_RNDN)
 
 #ifndef __ATTR_SAL
  /* used for msvc code analysis */

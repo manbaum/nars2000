@@ -111,35 +111,35 @@ typedef enum tagIC_INDICES
 EXTERN
 APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
 #ifdef DEFINE_VALUES
- = {ICVAL_POS_INFINITY ,    // 00:    {div} 0 and L {div} 0 for L != 0
-    ICVAL_NEG_INFINITY ,    // 01:    {log} 0
-    ICVAL_POS_INFINITY ,    // 02:      !N for integer N < 0
-    ICVAL_DOMAIN_ERROR ,    // 03:  0 {times} _
-    ICVAL_DOMAIN_ERROR ,    // 04:  0 {times} {neg}_
-    ICVAL_ONE          ,    // 05:  0 {div} 0
-    ICVAL_DOMAIN_ERROR ,    // 06:  _ {div} _   (same sign)
-    ICVAL_DOMAIN_ERROR ,    // 07:  _ {div} _   (different sign)
-    ICVAL_DOMAIN_ERROR ,    // 08:  _ - _ or _ + -_ or ...
-    ICVAL_DOMAIN_ERROR ,    // 09:  L   |    _  for L > 0
-    ICVAL_DOMAIN_ERROR ,    // 0A:  L   |   -_  for L > 0
-    ICVAL_DOMAIN_ERROR ,    // 0B:  L   |    _  for L < 0
-    ICVAL_DOMAIN_ERROR ,    // 0C:  L   |   -_  for L < 0
-    ICVAL_NEG_INFINITY ,    // 0D:  -_  |   R   for R > 0
-    ICVAL_POS_INFINITY ,    // 0E:   _  |   R   for R < 0
-    ICVAL_ONE          ,    // 0F:  0   *   0
-    ICVAL_DOMAIN_ERROR ,    // 10:  L   *   _   for L <= -1
-    ICVAL_ZERO         ,    // 11:  0   *   +_
-    ICVAL_POS_INFINITY ,    // 12:  0   *   -_
-    ICVAL_DOMAIN_ERROR ,    // 13:  PoM_  *   0
-    ICVAL_DOMAIN_ERROR ,    // 14:  L   *   R   for L < 0 and R != floor (R)
-    ICVAL_ONE          ,    // 15:  0 {log} 0
-    ICVAL_DOMAIN_ERROR ,    // 16:  0 {log} 1
-    ICVAL_DOMAIN_ERROR ,    // 17:  1 {log} 0
-    ICVAL_ONE          ,    // 18:  1 {log} 1
-    ICVAL_LEFT         ,    // 19:  0 {gcd} PoM_  or  PoM_ {gcd} 0
-    ICVAL_DOMAIN_ERROR ,    // 1A:  0 {lcm} PoM_  or  PoM_ {lcm} 0
-    ICVAL_DOMAIN_ERROR ,    // 1B:  0 {log} N  (N NE 0 or 1)
-    ICVAL_DOMAIN_ERROR ,    // 1C:  L   *  -_   for -1 <= L < 0
+ = {ICVAL_POS_INFINITY ,    // 00:  DIV0          {div} 0 and L {div} 0 for L != 0
+    ICVAL_NEG_INFINITY ,    // 01:  LOG0          {log} 0
+    ICVAL_POS_INFINITY ,    // 02:  QDOTn           !N for integer N < 0
+    ICVAL_DOMAIN_ERROR ,    // 03:  0MULPi      0 {times} _
+    ICVAL_DOMAIN_ERROR ,    // 04:  0MULNi      0 {times} {neg}_
+    ICVAL_ONE          ,    // 05:  0DIV0       0 {div} 0
+    ICVAL_DOMAIN_ERROR ,    // 06:  PiDIVPi     _ {div} _   (same sign)
+    ICVAL_DOMAIN_ERROR ,    // 07:  NiDIVPi     _ {div} _   (different sign)
+    ICVAL_DOMAIN_ERROR ,    // 08:  InfSUBInf   _ - _ or _ + -_ or ...
+    ICVAL_DOMAIN_ERROR ,    // 09:  PosMODPi    L   |    _  for L > 0
+    ICVAL_DOMAIN_ERROR ,    // 0A:  PosMODNi    L   |   -_  for L > 0
+    ICVAL_DOMAIN_ERROR ,    // 0B:  NegMODPi    L   |    _  for L < 0
+    ICVAL_DOMAIN_ERROR ,    // 0C:  NegMODNi    L   |   -_  for L < 0
+    ICVAL_NEG_INFINITY ,    // 0D:  NiMODPos    -_  |   R   for R > 0
+    ICVAL_POS_INFINITY ,    // 0E:  PiMODNeg     _  |   R   for R < 0
+    ICVAL_ONE          ,    // 0F:  0EXP0       0   *   0
+    ICVAL_DOMAIN_ERROR ,    // 10:  NEXPPi      L   *   _   for L <= -1
+    ICVAL_ZERO         ,    // 11:  0EXPPi      0   *   +_
+    ICVAL_POS_INFINITY ,    // 12:  0EXPNi      0   *   -_
+    ICVAL_DOMAIN_ERROR ,    // 13:  InfEXP0     PoM_  *   0
+    ICVAL_DOMAIN_ERROR ,    // 14:  NegEXPFrc   L   *   R   for L < 0 and R != floor (R)
+    ICVAL_ONE          ,    // 15:  0LOG0       0 {log} 0
+    ICVAL_DOMAIN_ERROR ,    // 16:  0LOG1       0 {log} 1
+    ICVAL_DOMAIN_ERROR ,    // 17:  1LOG0       1 {log} 0
+    ICVAL_ONE          ,    // 18:  1LOG1       1 {log} 1
+    ICVAL_LEFT         ,    // 19:  0GCDInf     0 {gcd} PoM_  or  PoM_ {gcd} 0
+    ICVAL_DOMAIN_ERROR ,    // 1A:  0LCMInf     0 {lcm} PoM_  or  PoM_ {lcm} 0
+    ICVAL_DOMAIN_ERROR ,    // 1B:  0LOGN       0 {log} N  (N NE 0 or 1)
+    ICVAL_DOMAIN_ERROR ,    // 1C:  N1to0EXPNi  L   *  -_   for -1 <= L < 0
    }
 #endif
 ;

@@ -263,7 +263,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $FillIdentityElement_EM
 //
-//  Fill in the result with the identity element for a give function and array
+//  Fill in the result with the identity element for a given function and array
 //***************************************************************************
 
 #ifdef DEBUG

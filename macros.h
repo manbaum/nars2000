@@ -448,7 +448,7 @@
 #define DLG_MSGNODEFFOCUS           FALSE           // ...               do not set focus
 
 // Define macro for detecting floating point infinity
-#define IsInfinity(a)       (!_finite (a) && !_isnan (a))
+#define IsFltInfinity(a)    (!_finite (a) && !_isnan (a))
 #define IsFltPosInfinity(a) (!_finite (a) && !_isnan (a) && !SIGN_APLFLOAT (a))
 #define IsFltNegInfinity(a) (!_finite (a) && !_isnan (a) &&  SIGN_APLFLOAT (a))
 

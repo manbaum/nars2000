@@ -362,8 +362,8 @@ APLFLOAT PrimFnDydPlusFisFvF
 
 {
     // If the args are both infinite and of opposite signs, ...
-    if (IsInfinity (aplFloatLft)
-     && IsInfinity (aplFloatRht)
+    if (IsFltInfinity (aplFloatLft)
+     && IsFltInfinity (aplFloatRht)
      && SIGN_APLFLOAT (aplFloatLft) NE SIGN_APLFLOAT (aplFloatRht))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_InfSUBInf,

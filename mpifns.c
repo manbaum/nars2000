@@ -34,8 +34,6 @@ MPZ_INVALID  gmpz_invalid  = &mpz_exit;
 MPQ_INVALID  gmpq_invalid  = &mpq_exit;
 MPFR_INVALID gmpfr_invalid = &mpfr_exit;
 
-#define IsInfinity(a)       (!_finite (a) && !_isnan (a))
-
 #define mpfr_clr_inf(a)     (a)
 
 
@@ -276,7 +274,7 @@ void mpiz_set_d
      double op)                 // Source
 
 {
-    if (IsInfinity (op))
+    if (IsFltInfinity (op))
         mpz_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
     else
         mpz_set_d (mpz_clr_inf (rop), op);
@@ -416,7 +414,7 @@ void mpiz_init_set_d
      double op)                 // Source
 
 {
-    if (IsInfinity (op))
+    if (IsFltInfinity (op))
     {
         mpz_init (rop);
         mpz_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
@@ -2026,7 +2024,7 @@ int mpiz_cmp_d
 
 {
     // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpz_inf_p (op1) + IsInfinity (op2))
+    switch (2 * mpz_inf_p (op1) + IsFltInfinity (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
             // Call the original function
@@ -2144,7 +2142,7 @@ int mpiz_cmpabs_d
 
 {
     // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpz_inf_p (op1) + IsInfinity (op2))
+    switch (2 * mpz_inf_p (op1) + IsFltInfinity (op2))
     {
         case 2 * 0 + 0:     // Neither arg is an infinity
             // Call the original function
@@ -2851,7 +2849,7 @@ void mpiq_set_d
      double op)                 // Source
 
 {
-    if (IsInfinity (op))
+    if (IsFltInfinity (op))
         mpq_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
     else
         mpq_set_d (mpq_clr_inf (rop), op);
@@ -3408,7 +3406,7 @@ void mpifr_set_d
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (IsInfinity (op))
+    if (IsFltInfinity (op))
         mpfr_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
     else
         mpfr_set_d (mpfr_clr_inf (rop), op, rnd);
@@ -3515,7 +3513,7 @@ void mpifr_init_set_d
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (IsInfinity (op))
+    if (IsFltInfinity (op))
         mpfr_set_inf (rop, (op EQ fabs (op)) ? 1 : -1);
     else
         mpfr_init_set_d (rop, op, rnd);

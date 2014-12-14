@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -501,9 +501,9 @@ APLFLOAT PrimFnDydCircleStarFisFvF
     // Check for special cases:  0 {log} PoM_
     // Check for special cases:  PoM_ {log} 0
     // Check for special cases:  PoM_ {log} PoM_
-    if ((aplFloatLft EQ 0 && IsInfinity (aplFloatRht))
-     || (IsInfinity (aplFloatLft) && aplFloatRht EQ 0)
-     || (IsInfinity (aplFloatLft) && IsInfinity (aplFloatRht)))
+    if ((aplFloatLft EQ 0 && IsFltInfinity (aplFloatRht))
+     || (IsFltInfinity (aplFloatLft) && aplFloatRht EQ 0)
+     || (IsFltInfinity (aplFloatLft) && IsFltInfinity (aplFloatRht)))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Check for indeterminates:  B {log} B

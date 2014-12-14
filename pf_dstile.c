@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,7 +200,7 @@ APLINT PrimFnMonDownStileIisF
 {
     // Check for PoM infinity and numbers whose
     //   absolute value is >= 2*53
-    if (IsInfinity (aplFloatRht)
+    if (IsFltInfinity (aplFloatRht)
      || fabs (aplFloatRht) >= Float2Pow53)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
@@ -224,7 +224,7 @@ APLFLOAT PrimFnMonDownStileFisF
              aplNear;
 
     // Check for PoM infinity
-    if (IsInfinity (aplFloatRht))
+    if (IsFltInfinity (aplFloatRht))
         return aplFloatRht;
 
     // Get the exact floor and ceiling

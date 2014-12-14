@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -458,7 +458,6 @@ APLFLOAT PrimFnDydCircleFisFvF
     APLINT   aplLft;
     APLFLOAT aplFloatTmp;
 
-
     // Attempt to convert the float to an integer using System []CT
     aplLft = FloatToAplint_SCT (aplFloatLft, &bRet);
 
@@ -479,25 +478,25 @@ APLFLOAT PrimFnDydCircleFisFvF
             return sqrt (1 + pow (aplFloatRht, 2));
 
         case  3:        // tan (R)
-            if (IsInfinity (aplFloatRht))
+            if (IsFltInfinity (aplFloatRht))
                 break;
 
             return tan (aplFloatRht);
 
         case  2:        // cos (R)
-            if (IsInfinity (aplFloatRht))
+            if (IsFltInfinity (aplFloatRht))
                 break;
 
             return cos (aplFloatRht);
 
         case  1:        // sin (R)
-            if (IsInfinity (aplFloatRht))
+            if (IsFltInfinity (aplFloatRht))
                 break;
 
             return sin (aplFloatRht);
 
         case  0:        // (1 - R * 2) * 0.5
-            if (IsInfinity (aplFloatRht))
+            if (IsFltInfinity (aplFloatRht))
                 break;
 
             return sqrt (1 - pow (aplFloatRht, 2));
@@ -551,7 +550,7 @@ APLFLOAT PrimFnDydCircleFisFvF
 
         case -7:        // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
-            if (IsInfinity (aplFloatRht))
+            if (IsFltInfinity (aplFloatRht))
                 break;
 
             // Check for Complex result

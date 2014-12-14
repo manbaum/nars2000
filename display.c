@@ -925,9 +925,9 @@ LPAPLCHAR FormatImmed
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatAplFlt (lpaplChar,                	// Ptr to output save area
-                           *(LPAPLFLOAT) lpaplLongest,	// The value to format
-                            0);                        	// Use default significant digits
+              FormatAplFlt (lpaplChar,                  // Ptr to output save area
+                           *(LPAPLFLOAT) lpaplLongest,  // The value to format
+                            0);                         // Use default significant digits
             break;
 
         case IMMTYPE_RAT:
@@ -1069,13 +1069,13 @@ LPAPLCHAR FormatImmedFC
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatAplFltFC (lpaplChar,              		// Ptr to output save area
-                             *(LPAPLFLOAT) lpaplLongest,	// The value to format
-                              nDigits,                   	// # significant digits
-                              aplCharDecimal,            	// Char to use as decimal separator
-                              aplCharOverbar,            	// Char to use as overbar
-                              fltDispFmt,                	// Float display format
-                              bSubstInf);                	// TRUE iff we're to substitute text for infinity
+              FormatAplFltFC (lpaplChar,                    // Ptr to output save area
+                             *(LPAPLFLOAT) lpaplLongest,    // The value to format
+                              nDigits,                      // # significant digits
+                              aplCharDecimal,               // Char to use as decimal separator
+                              aplCharOverbar,               // Char to use as overbar
+                              fltDispFmt,                   // Float display format
+                              bSubstInf);                   // TRUE iff we're to substitute text for infinity
             break;
 
         defstop
@@ -1323,7 +1323,7 @@ LPAPLCHAR FormatAplFltFC
      UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
 
 {
-    if (IsInfinity (aplFloat))
+    if (IsFltInfinity (aplFloat))
     {
         if (aplFloat < 0)
             *lpaplChar++ = aplCharOverbar;

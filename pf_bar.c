@@ -417,8 +417,8 @@ APLFLOAT PrimFnDydBarFisFvF
     // Check for indeterminates:  _ - _  or  -_ - -_
 
     // If the args are both infinite and of the same signs, ...
-    if (IsInfinity (aplFloatLft)
-     && IsInfinity (aplFloatRht)
+    if (IsFltInfinity (aplFloatLft)
+     && IsFltInfinity (aplFloatRht)
      && SIGN_APLFLOAT (aplFloatLft) EQ SIGN_APLFLOAT (aplFloatRht))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_InfSUBInf,

@@ -188,7 +188,7 @@ APLFLOAT PrimFnMonColonBarFisF
     // If the arg is PoM infinity, just return 0.
     // If we don't, then the reciprocal of {neg}infinity
     //   is {neg}0.
-    if (IsInfinity (aplFloatRht))
+    if (IsFltInfinity (aplFloatRht))
         return 0;
 
     // The FPU handles overflow and underflow for us
@@ -375,8 +375,8 @@ APLFLOAT PrimFnDydColonBarFisFvF
                                      ICNDX_DIV0,
                                      aplFloatRht);
     // Check for indeterminates:  _ {div} _ (same or different signs)
-    if (IsInfinity (aplFloatLft)
-     && IsInfinity (aplFloatRht))
+    if (IsFltInfinity (aplFloatLft)
+     && IsFltInfinity (aplFloatRht))
     {
         if (SIGN_APLFLOAT (aplFloatLft) EQ SIGN_APLFLOAT (aplFloatRht))
             return TranslateQuadICIndex (aplFloatLft,

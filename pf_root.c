@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -431,7 +431,7 @@ APLFLOAT PrimFnDydRootFisIvI
     } // End IF
 
 ////// Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
-////if (IsInfinity (aplIntegerLft)
+////if (IsFltInfinity (aplIntegerLft)
 //// && aplIntegerRht EQ 0)
 ////    return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
 ////                                 ICNDX_0EXP0,
@@ -500,7 +500,7 @@ APLFLOAT PrimFnDydRootFisFvF
     } // End IF
 
     // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
-    if (IsInfinity (aplFloatLft)
+    if (IsFltInfinity (aplFloatLft)
      && aplFloatRht EQ 0)
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0EXP0,

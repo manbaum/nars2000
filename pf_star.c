@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -688,14 +688,14 @@ APLFLOAT PrimFnDydStarFisFvF
         RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
     // Check for special cases:  _ * 0 and -_ * 0
-    if (IsInfinity (aplFloatLft)
+    if (IsFltInfinity (aplFloatLft)
      && aplFloatRht EQ 0)
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_InfEXP0,
                                      aplFloatRht);
     // Check for special cases:  1 * _ and 1 * -_
     if (aplFloatLft EQ 1
-     && IsInfinity (aplFloatRht))
+     && IsFltInfinity (aplFloatRht))
         return aplFloatLft;
 
     // Calculate the power

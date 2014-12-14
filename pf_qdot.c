@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -223,7 +223,7 @@ APLINT PrimFnMonQuoteDotIisI
                                             ICNDX_QDOTn,
                                             (APLFLOAT) aplIntegerRht);
         // If it's infinite, ...
-        if (IsInfinity (aplFloatRes))
+        if (IsFltInfinity (aplFloatRes))
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
         else
             return (APLINT) aplFloatRes;
@@ -583,7 +583,7 @@ APLFLOAT PrimFnDydQuoteDotFisIvI
                          II++, IF++)
                     {
                         ZF = (ZF * (IF + TF)) / IF;
-                        if (IsInfinity (ZF))
+                        if (IsFltInfinity (ZF))
                             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
                     } // End FOR
 

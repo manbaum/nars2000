@@ -1741,7 +1741,7 @@ void QFMT_CommonEFIR
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
                     // Izit an infinity?
-                    bInfinity = IsInfinity (aplFltItm);
+                    bInfinity = IsFltInfinity (aplFltItm);
 
                     lpwEnd =
                       FormatAplFltFC (lpwszFormat,          // Ptr to output save area
@@ -1814,7 +1814,7 @@ void QFMT_CommonEFIR
                 case IMMTYPE_INT:
                 case IMMTYPE_FLOAT:
                     // Izit an infinity?
-                    bInfinity = IsInfinity (aplFltItm);
+                    bInfinity = IsFltInfinity (aplFltItm);
 
                     lpwEnd =
                       FormatAplFltFC (lpwszFormat,          // Ptr to output save area

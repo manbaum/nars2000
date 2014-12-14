@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2014 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -434,15 +434,15 @@ APLFLOAT PrimFnDydDownCaretFisFvF
 
 {
     // Check for indeterminates:  gcd (PoM_, 0)  or  gcd (0, PoM_)
-    if ((IsInfinity (aplFloatLft) && (aplFloatRht EQ 0))
-     || (IsInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
+    if ((IsFltInfinity (aplFloatLft) && (aplFloatRht EQ 0))
+     || (IsFltInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0GCDInf,
                                      aplFloatRht);
 
     // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
-    if (IsInfinity (aplFloatLft)
-     || IsInfinity (aplFloatRht))
+    if (IsFltInfinity (aplFloatLft)
+     || IsFltInfinity (aplFloatRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return gcdAplFloat (aplFloatLft, aplFloatRht, lpPrimSpec);

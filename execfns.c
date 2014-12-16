@@ -451,6 +451,12 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             break;
     } // End SWITCH
 
+    // If the result is valid, ...
+    if (lpYYRes
+     && !IsTokenNoValue (&lpYYRes->tkToken))
+        // Change the tkSynObj
+        lpYYRes->tkToken.tkSynObj = soA;
+
     goto NORMAL_EXIT;
 
 SYNTAX_EXIT:

@@ -545,8 +545,7 @@ LPPL_YYSTYPE plRedNF_RBK
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_RBK (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_RBK (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -577,8 +576,7 @@ LPPL_YYSTYPE plRedNF_SRBK
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_SRBK (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_SRBK (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -1111,8 +1109,7 @@ LPPL_YYSTYPE plRedA_NF
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_A  (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -1144,8 +1141,7 @@ LPPL_YYSTYPE plRedSA_NF
     if (!lpplYYLstRht)
         goto ERROR_EXIT;
 
-    return
-      plRedSA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedSA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -1446,8 +1442,7 @@ LPPL_YYSTYPE plRedGO_NF
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedGO_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedGO_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -2235,8 +2230,7 @@ LPPL_YYSTYPE plRedMF_NF
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedMF_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedMF_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -2757,8 +2751,7 @@ LPPL_YYSTYPE plRedNF_A
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -2809,8 +2802,7 @@ LPPL_YYSTYPE plRedNF_F
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_F (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_F (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFreeArray (lpplYYLstRht); FreeResult (lpplYYLstRht); // ***FIXME***
 
@@ -2843,8 +2835,7 @@ LPPL_YYSTYPE plRedNF_MOP
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -2875,8 +2866,7 @@ LPPL_YYSTYPE plRedNF_HY
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_HY (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_HY (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -2907,8 +2897,7 @@ LPPL_YYSTYPE plRedNF_IDX
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_IDX (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_IDX (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -2955,8 +2944,7 @@ LPPL_YYSTYPE plRedNF_NF
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     if (lpplYYCurObj)
     {
@@ -3105,8 +3093,7 @@ LPPL_YYSTYPE plRedSP_NF
             goto ERROR_EXIT;
 
         // Call common code
-        return
-          plRedSP_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soSPA);
+        return plRedSP_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soSPA);
     } // End IF
 
     // Change the tkSynObj
@@ -3213,8 +3200,7 @@ LPPL_YYSTYPE plRedNAM_SPNF
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedNAM_SPA (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedNAM_SPA (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -3245,8 +3231,7 @@ LPPL_YYSTYPE plRedIO_SPNF
         goto ERROR_EXIT;
 
     // Call common code
-    return
-      plRedIO_SPA (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    return plRedIO_SPA (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -3394,15 +3379,80 @@ LPPL_YYSTYPE plRedNAM_ISPA
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    UBOOL bRet;                         // TRUE iff the result is valid
+    UBOOL        bRet = FALSE;          // TRUE iff the result is valid
+    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
+                 lpYYRes2;              // ...
 
     Assert (lpplLocalVars->lpplYYIdxCurry NE NULL);
+    Assert (IsTknNamed (&lpplYYCurObj->tkToken));
 
-    // Assign the value to the indexed name
-    bRet =
-      ArrayIndexSet_EM (&lpplYYCurObj->tkToken,
-                        &lpplLocalVars->lpplYYIdxCurry->tkToken,
-                        &lpplYYLstRht->tkToken);
+    if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+        lpYYRes = NULL;
+    else
+    {
+        // If the left fcn is present (select spec as in NAM[A] F {is} A), ...
+        if (lpplLocalVars->lpplYYFcnCurry)
+        {
+            LPPL_YYSTYPE lpYYTmp1,
+                         lpYYTmp2;
+
+            Assert (!lpplYYCurObj->YYStranding && !lpplLocalVars->lpplYYFcnCurry->YYStranding);
+
+            // Allocate a new YYRes for lpplYYCurObj so it can be freed in plRedA_IDX
+            lpYYTmp1 = YYAlloc ();
+
+            // Copy the current object to the temp
+            YYCopy2 (lpYYTmp1, lpplYYCurObj);
+
+            // Allocate a new YYRes for lpplYYIdxCurry so it can be freed in plRedA_IDX
+            lpYYTmp2 = YYAlloc ();
+
+            // Copy the current object to the temp
+            YYCopy2 (lpYYTmp2, lpplLocalVars->lpplYYIdxCurry);
+
+            // Compute NAM[A]
+            lpYYRes2 =
+              plRedA_IDX (lpplLocalVars, lpYYTmp1, lpYYTmp2, soA);
+
+            // Note these vars have been freed by <plRedA_IDX>
+            lpYYTmp1 = lpYYTmp2 = NULL;
+
+            // If not defined, ...
+            if (!lpYYRes2)
+                goto ERROR_EXIT;
+
+            // Compute NAM[A] F A
+            lpYYRes =
+              ExecFunc_EM_YY (&lpYYRes2->tkToken, lpplLocalVars->lpplYYFcnCurry, &lpplYYLstRht->tkToken);
+
+            // Free (unnamed) and YYFree the last right object
+            FreeTempResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+            // If not defined, ...
+            if (!lpYYRes)
+                goto ERROR_EXIT;
+
+            // Free the function (including YYFree)
+            YYFreeArray (lpplLocalVars->lpplYYFcnCurry); FreeResult (lpplLocalVars->lpplYYFcnCurry); YYFree (lpplLocalVars->lpplYYFcnCurry); lpplLocalVars->lpplYYFcnCurry = NULL;
+
+            // If not defined, ...
+            if (!lpYYRes)
+                goto ERROR_EXIT;
+            // Assign the value to the indexed name
+            bRet =
+              ArrayIndexSet_EM (&lpplYYCurObj->tkToken,
+                                &lpplLocalVars->lpplYYIdxCurry->tkToken,
+                                &lpYYRes->tkToken);
+            // Free (unnamed) and YYFree the last right object
+            FreeTempResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+        } else
+            // Assign the value to the indexed name
+            bRet =
+              ArrayIndexSet_EM (&lpplYYCurObj->tkToken,
+                                &lpplLocalVars->lpplYYIdxCurry->tkToken,
+                                &lpplYYLstRht->tkToken);
+    } // End IF/ELSE
+ERROR_EXIT:
     // YYFree the current & curried objects
                                                 YYFree (lpplYYCurObj);                  lpplYYCurObj = NULL; // curSynObj = soNONE;
     FreeResult (lpplLocalVars->lpplYYIdxCurry); YYFree (lpplLocalVars->lpplYYIdxCurry); lpplLocalVars->lpplYYIdxCurry = NULL;
@@ -4474,6 +4524,8 @@ PARSELINE_REDUCE:
                     lpYYRes = NULL;
                 } else
                 {
+                    Assert (IsValidSO (lpYYRes->tkToken.tkSynObj));
+
                     // Copy to the current object
                     lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                     lpYYRes = NULL;
@@ -5559,8 +5611,10 @@ PL_YYLEX_FCNNAMED:
                     break;
 
                 case NAMETYPE_VAR:
-                    // Late catch of NAM F {is} A
-                    if (lpplLocalVars->lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj EQ soSPA)
+                    // Late catch of NAM     F {is} A
+                    //   and         NAM [A] F {is} A
+                    if (lpplLocalVars->lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj EQ soSPA
+                     || lpplLocalVars->lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj EQ soISPA)
                         // Mark as being assigned into
                         lpplYYLval->tkToken.tkFlags.bAssignName = TRUE;
 
@@ -6634,7 +6688,8 @@ LPPL_YYSTYPE ExecuteCS0
             // Call common {goto} code
             lpYYRes = plRedGO_A (lpplLocalVars, lpYYVar, lpYYTmp, soEOS);
 
-            // <plRedGO_A> YYFrees the temps
+            // Note these vars have been freed by <plRedGO_A>
+            lpYYVar = lpYYTmp = NULL;
 
             break;
 

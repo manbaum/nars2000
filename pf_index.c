@@ -766,6 +766,11 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
     } // End IF
 
+    // If the result is valid, ...
+    if (lpYYRes)
+        // Change the tkSynObj
+        lpYYRes->tkToken.tkSynObj = soA;
+
     return lpYYRes;
 } // End ArrayIndexRef_EM_YY
 #undef  APPEND_NAME

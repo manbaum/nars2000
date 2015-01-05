@@ -3867,6 +3867,7 @@ int PASCAL WinMain
     UINT                 uCnt;          // Loop counter
     INITCOMMONCONTROLSEX icex;          // Common control class struc
     OSVERSIONINFO        osvi = {0};    // Version info
+
 #ifndef DEBUG
     // Instantiate the Crash Server
     if (CrashServer ())
@@ -3874,14 +3875,15 @@ int PASCAL WinMain
         LclFileVersionStrW (crsh_dll, crsh_version);
     else
     {
-        WCHAR wszTemp[128];
+        WCHAR wszTemp[512];
 
-        wsprintfW (wszTemp,
-                  L"The file <%s> was not found."
-                  L"  This file is part of the normal distribution of NARS2000, and should be in the same directory as the .exe file."
-                  L"  Without it, if the program encounters a problem, no record of the error will be created."
-                  L"  Are you sure you want to continue?",
-                   crsh_dll);
+        MySprintfW (wszTemp,                                // Ptr to buffer
+                    sizeof (wszTemp),                       // Size of buffer (in bytes)
+                   L"The file <%s> was not found."
+                   L"  This file is part of the normal distribution of NARS2000, and should be in the same directory as the .exe file."
+                   L"  Without it, if the program encounters a problem, no record of the error will be created."
+                   L"  Are you sure you want to continue?", // Ptr to format string
+                    crsh_dll);                              // The variable list
         if (MessageBoxW (hWndMF, wszTemp, WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL)
             return -1;
     } // End IF/ELSE

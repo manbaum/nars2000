@@ -768,5 +768,42 @@ void CharFromPos
 
 
 //***************************************************************************
+//  $MySprintfW
+//
+//  String safe version of <wsprintfW>
+//***************************************************************************
+
+int MySprintfW
+    (LPWCHAR lpwBuffer,     // Ptr to buffer
+     size_t  iCount,        // Size of buffer (in bytes)
+     LPWCHAR lpwszFmt,      // Ptr to format string
+             ...)           // The variable list
+
+{
+    HRESULT  hResult;       // The result of <StringCbVPrintfW>
+    va_list  vl;            // Ptr to variable list
+
+    // Initialize the variable list
+    va_start (vl, lpwszFmt);
+
+    // wsprintfW the list
+    hResult = StringCbVPrintfW (lpwBuffer,
+                                iCount,
+                                lpwszFmt,
+                                vl);
+    // End the variable list
+    va_end (vl);
+
+#ifdef DEBUG
+    // If it failed, ...
+    if (FAILED (hResult))
+        DbgBrk ();
+#endif
+
+    return lstrlenW (lpwBuffer);
+} // End MySprintfW
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

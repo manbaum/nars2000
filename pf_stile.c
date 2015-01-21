@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -353,12 +353,14 @@ APLFLOAT PrimFnDydStileFisFvF
         if (aplFloatLft > 0)
             return TranslateQuadICIndex (aplFloatLft,
                                          ICNDX_PosMODNi,
-                                         aplFloatRht);
+                                         aplFloatRht,
+                                         FALSE);
         // If the left arg is negative, ...
         if (aplFloatLft < 0)
             return TranslateQuadICIndex (aplFloatLft,
                                          ICNDX_NegMODNi,
-                                         aplFloatRht);
+                                         aplFloatRht,
+                                         FALSE);
     } else
     // If the right arg is positive infinity, ...
     if (IsFltPosInfinity (aplFloatRht))
@@ -367,12 +369,14 @@ APLFLOAT PrimFnDydStileFisFvF
         if (aplFloatLft > 0)
             return TranslateQuadICIndex (aplFloatLft,
                                          ICNDX_PosMODPi,
-                                         aplFloatRht);
+                                         aplFloatRht,
+                                         FALSE);
         // If the left arg is negative, ...
         if (aplFloatLft < 0)
             return TranslateQuadICIndex (aplFloatLft,
                                          ICNDX_NegMODPi,
-                                         aplFloatRht);
+                                         aplFloatRht,
+                                         FALSE);
     } else
     // If the left arg is negative infinity, ...
     if (IsFltNegInfinity (aplFloatLft))
@@ -381,7 +385,8 @@ APLFLOAT PrimFnDydStileFisFvF
         if (aplFloatRht > 0)
             return TranslateQuadICIndex (aplFloatLft,
                                          ICNDX_NiMODPos,
-                                         aplFloatRht);
+                                         aplFloatRht,
+                                         FALSE);
         // Return the right arg
         return aplFloatRht;
     } else
@@ -392,7 +397,8 @@ APLFLOAT PrimFnDydStileFisFvF
         if (aplFloatRht < 0)
             return TranslateQuadICIndex (aplFloatLft,
                                          ICNDX_PiMODNeg,
-                                         aplFloatRht);
+                                         aplFloatRht,
+                                         FALSE);
         // Return the right arg
         return aplFloatRht;
     } // End IF
@@ -463,13 +469,15 @@ APLRAT PrimFnDydStileRisRvR
             return *mpq_QuadICValue (&aplRatLft,
                                       ICNDX_PosMODNi,
                                      &aplRatRht,
-                                     &mpqRes);
+                                     &mpqRes,
+                                      FALSE);
         // If the left arg is negative, ...
         if (mpq_sgn (&aplRatLft) < 0)
             return *mpq_QuadICValue (&aplRatLft,
                                       ICNDX_NegMODNi,
                                      &aplRatRht,
-                                     &mpqRes);
+                                     &mpqRes,
+                                      FALSE);
     } else
     // If the right arg is positive infinity, ...
     if (IsMpqPosInfinity (&aplRatRht))
@@ -479,13 +487,15 @@ APLRAT PrimFnDydStileRisRvR
             return *mpq_QuadICValue (&aplRatLft,
                                       ICNDX_PosMODPi,
                                      &aplRatRht,
-                                     &mpqRes);
+                                     &mpqRes,
+                                      FALSE);
         // If the left arg is negative, ...
         if (mpq_sgn (&aplRatLft) < 0)
             return *mpq_QuadICValue (&aplRatLft,
                                       ICNDX_NegMODPi,
                                      &aplRatRht,
-                                     &mpqRes);
+                                     &mpqRes,
+                                      FALSE);
     } else
     // If the left arg is negative infinity, ...
     if (IsMpqNegInfinity (&aplRatLft))
@@ -495,7 +505,8 @@ APLRAT PrimFnDydStileRisRvR
             return *mpq_QuadICValue (&aplRatLft,
                                       ICNDX_NiMODPos,
                                      &aplRatRht,
-                                     &mpqRes);
+                                     &mpqRes,
+                                      FALSE);
         // Initialize the result with the right arg
         mpq_init_set (&mpqRes, &aplRatRht);
     } else
@@ -507,7 +518,8 @@ APLRAT PrimFnDydStileRisRvR
             return *mpq_QuadICValue (&aplRatLft,
                                       ICNDX_PiMODNeg,
                                      &aplRatRht,
-                                     &mpqRes);
+                                     &mpqRes,
+                                      FALSE);
         // Initialize the result with the right arg
         mpq_init_set (&mpqRes, &aplRatRht);
     } else
@@ -588,13 +600,15 @@ APLVFP PrimFnDydStileVisVvV
             return *mpfr_QuadICValue (&aplVfpLft,
                                        ICNDX_PosMODNi,
                                       &aplVfpRht,
-                                      &mpfRes);
+                                      &mpfRes,
+                                       FALSE);
         // If the left arg is negative, ...
         if (mpfr_sgn (&aplVfpLft) < 0)
             return *mpfr_QuadICValue (&aplVfpLft,
                                        ICNDX_NegMODNi,
                                       &aplVfpRht,
-                                      &mpfRes);
+                                      &mpfRes,
+                                       FALSE);
     } else
     // If the right arg is positive infinity, ...
     if (IsMpfPosInfinity (&aplVfpRht))
@@ -604,13 +618,15 @@ APLVFP PrimFnDydStileVisVvV
             return *mpfr_QuadICValue (&aplVfpLft,
                                        ICNDX_PosMODPi,
                                       &aplVfpRht,
-                                      &mpfRes);
+                                      &mpfRes,
+                                       FALSE);
         // If the left arg is negative, ...
         if (mpfr_sgn (&aplVfpLft) < 0)
             return *mpfr_QuadICValue (&aplVfpLft,
                                        ICNDX_NegMODPi,
                                       &aplVfpRht,
-                                      &mpfRes);
+                                      &mpfRes,
+                                       FALSE);
     } else
     // If the left arg is negative infinity, ...
     if (IsMpfNegInfinity (&aplVfpLft))
@@ -620,7 +636,8 @@ APLVFP PrimFnDydStileVisVvV
             return *mpfr_QuadICValue (&aplVfpLft,
                                        ICNDX_NiMODPos,
                                       &aplVfpRht,
-                                      &mpfRes);
+                                      &mpfRes,
+                                       FALSE);
         // Initialize the result with the right arg
         mpfr_init_copy (&mpfRes, &aplVfpRht);
     } else
@@ -632,12 +649,13 @@ APLVFP PrimFnDydStileVisVvV
             return *mpfr_QuadICValue (&aplVfpLft,
                                        ICNDX_PiMODNeg,
                                       &aplVfpRht,
-                                      &mpfRes);
+                                      &mpfRes,
+                                       FALSE);
         // Initialize the result with the right arg
         mpfr_init_copy (&mpfRes, &aplVfpRht);
     } else
     {
-        // Initialize the result
+        // Initialize the result to 0
         mpfr_init0 (&mpfRes);
 
         // Calculate the residue

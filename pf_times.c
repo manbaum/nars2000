@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -234,7 +234,11 @@ APLVFP PrimFnMonTimesVisV
 {
     APLVFP mpfRes = {0};
 
-    mpfr_init_set_si (&mpfRes, mpfr_sgn (&aplVfpRht), MPFR_RNDN);
+    // If the arg is 0, ...
+    if (IsMpf0 (&aplVfpRht))
+        mpfr_init_set_si (&mpfRes, SIGN_APLVFP (&aplVfpRht) ? -1 : 0, MPFR_RNDN);
+    else
+        mpfr_init_set_si (&mpfRes,    mpfr_sgn (&aplVfpRht)         , MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonTimesVisV
@@ -292,6 +296,12 @@ APLINT PrimFnDydTimesIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // If either arg is 0
+    //   and the other arg is negative, ...
+    if ((aplIntegerLft EQ 0 && aplIntegerRht < 0)
+     || (aplIntegerRht EQ 0 && aplIntegerLft < 0))
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
     return imul64_RE (aplIntegerLft, aplIntegerRht);
 } // End PrimFnDydTimesIisIvI
 
@@ -310,6 +320,12 @@ APLFLOAT PrimFnDydTimesFisIvI
 {
     UBOOL  bRet = TRUE;
     APLINT aplRes;
+
+    // If either arg is 0
+    //   and the other arg is negative, ...
+    if ((aplIntegerLft EQ 0 && aplIntegerRht < 0)
+     || (aplIntegerRht EQ 0 && aplIntegerLft < 0))
+        return -0.0;
 
     aplRes = imul64 (aplIntegerLft, aplIntegerRht, &bRet);
     if (bRet)
@@ -338,7 +354,9 @@ APLFLOAT PrimFnDydTimesFisFvF
       && aplFloatRht EQ 0))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0MULPi,
-                                     aplFloatRht);
+                                     aplFloatRht,
+                                     (aplFloatLft EQ 0) ? SIGN_APLFLOAT (aplFloatLft)
+                                                        : SIGN_APLFLOAT (aplFloatRht));
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((aplFloatLft EQ 0
       && IsFltNegInfinity (aplFloatRht))
@@ -346,7 +364,9 @@ APLFLOAT PrimFnDydTimesFisFvF
       && aplFloatRht EQ 0))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0MULNi,
-                                     aplFloatRht);
+                                     aplFloatRht,
+                                     (aplFloatLft EQ 0) ? SIGN_APLFLOAT (aplFloatLft)
+                                                        : SIGN_APLFLOAT (aplFloatRht));
     return (aplFloatLft * aplFloatRht);
 } // End PrimFnDydTimesFisFvF
 
@@ -373,7 +393,9 @@ APLRAT PrimFnDydTimesRisRvR
         return *mpq_QuadICValue (&aplRatLft,
                                   ICNDX_0MULPi,
                                  &aplRatRht,
-                                 &mpqRes);
+                                 &mpqRes,
+                                  IsMpq0 (&aplRatLft) ? (mpq_sgn (&aplRatLft) EQ -1)
+                                                      : (mpq_sgn (&aplRatRht) EQ -1));
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpq0 (&aplRatLft)
       && IsMpqNegInfinity (&aplRatRht))
@@ -382,8 +404,10 @@ APLRAT PrimFnDydTimesRisRvR
         return *mpq_QuadICValue (&aplRatLft,
                                   ICNDX_0MULNi,
                                  &aplRatRht,
-                                 &mpqRes);
-    // Initalize the result
+                                 &mpqRes,
+                                  IsMpq0 (&aplRatLft) ? (mpq_sgn (&aplRatLft) EQ -1)
+                                                      : (mpq_sgn (&aplRatRht) EQ -1));
+    // Initalize the result to 0/1
     mpq_init (&mpqRes);
 
     // Multiply two Rationals
@@ -415,7 +439,9 @@ APLVFP PrimFnDydTimesVisVvV
         return *mpfr_QuadICValue (&aplVfpLft,
                                    ICNDX_0MULPi,
                                   &aplVfpRht,
-                                  &mpfRes);
+                                  &mpfRes,
+                                   IsMpf0 (&aplVfpLft) ? SIGN_APLVFP (&aplVfpLft)
+                                                       : SIGN_APLVFP (&aplVfpRht));
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpf0 (&aplVfpLft)
       && IsMpfNegInfinity (&aplVfpRht))
@@ -424,8 +450,10 @@ APLVFP PrimFnDydTimesVisVvV
         return *mpfr_QuadICValue (&aplVfpLft,
                                    ICNDX_0MULNi,
                                   &aplVfpRht,
-                                  &mpfRes);
-    // Initalize the result
+                                  &mpfRes,
+                                   IsMpf0 (&aplVfpLft) ? SIGN_APLVFP (&aplVfpLft)
+                                                       : SIGN_APLVFP (&aplVfpRht));
+    // Initalize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Multiply two Variable FPs
@@ -466,6 +494,7 @@ UBOOL PrimFnDydTimesAPA_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
+    APLNELM aplNELMRes;             // Result NELM
     APLRANK aplRankRes;             // Result rank
     LPVOID  lpMemRes;               // Ptr to result global memory
     UBOOL   bRet = FALSE;           // TRUE iff the result is valid
@@ -507,10 +536,28 @@ UBOOL PrimFnDydTimesAPA_EM
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
 
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    aplNELMRes = lpHeader->NELM;
+#undef  lpHeader
+
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemRes);
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
+
+    // Check for negative integer {times} an APA that spans 0
+    if (aplInteger < 0
+     && (lpAPA->Off EQ 0
+      || (lpAPA->Off + aplNELMRes * lpAPA->Mul) EQ 0
+      || signumint (lpAPA->Off) NE signumint (lpAPA->Off + aplNELMRes * lpAPA->Mul)
+        )
+       )
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    } // End IF
 
     // Multiply the singleton's value to the result offset and multiplier
     lpAPA->Off *= aplInteger;

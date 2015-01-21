@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1339,6 +1339,10 @@ LPAPLCHAR FormatAplFltFC
     } else
     if (aplFloat EQ 0)
     {
+        // If it's negative, ...
+        if (SIGN_APLFLOAT (aplFloat))
+            *lpaplChar++ = aplCharOverbar;
+
         // Split cases based upon the float display format
         switch (fltDispFmt)
         {
@@ -1395,10 +1399,6 @@ LPAPLCHAR FormatAplFltFC
 
             case FLTDISPFMT_RAWINT:
             case FLTDISPFMT_RAWFLT:
-                // Display signed zero so that 6413 []DR {neg}64{take}1
-                //   displays with a sign
-                if (SIGN_APLFLOAT (aplFloat))
-                    *lpaplChar++ = aplCharOverbar;
                 // The result is "0"
                 *lpaplChar++ = L'0';
 
@@ -1520,13 +1520,9 @@ LPAPLCHAR FormatAplFltFC
                         decpt++;
                     } // End WHILE
 
-                    // If there are no more significant digits
-                    //   and the sign is negative, ...
-                    if (nDigits EQ 0
-                     && sign)
-                        // Move the number down over the sign so we don't return {neg}0
-                        CopyMemoryW (lpaplCharIni, &lpaplCharIni[1], lpaplChar-- - lpaplCharIni);
-                    else
+                    // If there are more significant digits, ...
+                    if (nDigits NE 0)
+                    {
                         // Copy the remaining digits (or underflow chars) to the result
                         //   converting from one-byte ASCII to two-byte UTF16
                         while (nDigits > 0
@@ -1544,6 +1540,7 @@ LPAPLCHAR FormatAplFltFC
                             nDigits--;
                             iSigDig--;
                         } // End WHILE
+                    } // End IF
                 } else
                 {
                     // Copy no more than decpt digits to the result
@@ -2064,8 +2061,12 @@ LPAPLCHAR FormatAplVfpFC
             iUnderflow = 0;
 
         // If the number is zero, ...
-        if (iLen EQ 0)
+        if (iLen EQ bNeg)
         {
+            // If the number is negative, ...
+            if (bNeg)
+                *lpaplChar++ = aplCharOverbar;
+
             // "Format" the number
             *lpaplChar++ = L'0';
 
@@ -2757,7 +2758,7 @@ APLCHAR GetQuadFCValue
 //***************************************************************************
 
 APLINT GetQuadICValue
-    (IC_INDICES uIndex)
+    (IC_INDICES icIndex)
 
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -2768,7 +2769,7 @@ APLINT GetQuadICValue
     APLRANK      aplRankQuadIC;     // []IC rank
     APLINT       aplIntQuadIC;      // []IC[uIndex]
 
-    Assert (uIndex < ICNDX_LENGTH);
+    Assert (icIndex < ICNDX_LENGTH);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -2790,13 +2791,13 @@ APLINT GetQuadICValue
     lpMemQuadIC = VarArrayDataFmBase (lpMemQuadIC);
 
     // Check for short []IC
-    if (uIndex >= aplNELMQuadIC)
-        aplIntQuadIC = aplDefaultIC[uIndex];
+    if (icIndex >= aplNELMQuadIC)
+        aplIntQuadIC = aplDefaultIC[icIndex];
     else
         // Get next item from global memory ([]IC can be BOOL, INT, or APA only)
         GetNextItemMem (lpMemQuadIC,        // Ptr to item global memory data
                         aplTypeQuadIC,      // Item storage type
-                        uIndex,             // Index into item
+                        icIndex,            // Index into item
                         NULL,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                        &aplIntQuadIC);      // Ptr to result immediate value (may be NULL)
     // We no longer need this ptr

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,7 +51,8 @@ typedef enum tagPN_NUMTYPE
 typedef struct tagPN_YYSTYPE        // YYSTYPE for Point Notation parser
 {
     ALLTYPES  at;                   // 00:  All datatypes as a union (64 bytes)
-    UINT      uNumAcc;              // 40:  Starting offset into lpszNumAccum
+    UINT      uNumAcc:31,           // 40:  7FFFFFFF:  Starting offset into lpszNumAccum
+              bSigned:1;            //      80000000:  TRUE iff the value is negative
     PNNUMTYPE chType;               // 44:  The numeric type (see PNNUMTYPE)
     UCHAR     chCur,                // 48:  A char for the accumulator
               chAlign[3];           // 49:  For alignment

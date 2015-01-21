@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -168,13 +168,15 @@
 #define iadd64_RE(a,b)      iadd64 ((a), (b), NULL)
 #define isub64_RE(a,b)      isub64 ((a), (b), NULL)
 
-#define SIGN_APLNELM(a)     ((a) >> 63)     // Sign bit of an APLNELM
-#define SIGN_APLRANK(a)     ((a) >> 63)     // ...            APLRANK
-#define SIGN_APLDIM(a)      ((a) >> 63)     // ...            APLDIM
-#define SIGN_APLINT(a)      (((APLUINT) (a)) >> 63) // ...      APLINT
-#define SIGN_APLUINT(a)     ((a) >> 63)     // ...            APLUINT
-#define SIGN_APLLONGEST(a)  ((a) >> 63)     // ...            APLLONGEST
-#define SIGN_APLFLOAT(a)    (((LPAPLFLOATSTR) &a)->bSign) // ... APLFLOAT
+#define SIGN_APLNELM(a)     ((UBOOL) ((a) >> 63))                   // Sign bit of an APLNELM
+#define SIGN_APLRANK(a)     ((UBOOL) ((a) >> 63))                   // ...            APLRANK
+#define SIGN_APLDIM(a)      ((UBOOL) ((a) >> 63))                   // ...            APLDIM
+#define SIGN_APLINT(a)      ((UBOOL) (((APLUINT) (a)) >> 63))       // ...            APLINT
+#define SIGN_APLUINT(a)     ((UBOOL) ((a) >> 63))                   // ...            APLUINT
+#define SIGN_APLLONGEST(a)  ((UBOOL) ((a) >> 63))                   // ...            APLLONGEST
+#define SIGN_APLFLOAT(a)    ((UBOOL) (((LPAPLFLOATSTR) &a)->bSign)) // ...            APLFLOAT
+#define SIGN_APLVFP(a)      (        ((a)->_mpfr_sign < 0))
+#define mpfr_sgn0(a)        (signumint ((a)->_mpfr_sign))
 
 // Define macros for detecting characters and their alternates
 #define IsAPLCharAlpha(a)           ((a) EQ UTF16_ALPHA              || (a) EQ UTF16_ALPHA2                                        )
@@ -458,10 +460,7 @@
 #define IsMpfInfinity(a)    (mpfr_inf_p (a))
 
 // Define macro for inverting VFP numbers
-#define mpfr_inv(rop,op,rnd)    mpfr_ui_div (rop, 1, op, rnd)
-
-// Define macro for negating VFP numbers
-#define mpfr_neg0(rop,op,rnd)  {mpfr_neg (rop, op, rnd); if (IsMpf0 (rop)) mpfr_set_ui (rop, 0, rnd);}
+#define mpfr_inv(rop,op,rnd)    mpfr_si_div (rop, 1, op, rnd)
 
 // Define macros for extracting the left and right operands from operators
 #define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]

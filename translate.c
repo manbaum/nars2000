@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -880,40 +880,41 @@ UINT TranslateExitTypeToReturnCode
 //***************************************************************************
 
 APLFLOAT TranslateQuadICIndex
-    (APLFLOAT   aplFloatLft,
-     IC_INDICES icIndex,
-     APLFLOAT   aplFloatRht)
+    (APLFLOAT   aplFloatLft,        // Left arg
+     IC_INDICES icIndex,            // []IC index
+     APLFLOAT   aplFloatRht,        // Right arg
+     UBOOL      bNegate)            // TRUE iff we should negate result
 
 {
     // Split cases based upon the []IC index value
     switch (GetQuadICValue (icIndex))
     {
         case ICVAL_NEG1:
-            return -1;
+            return bNegate ? 1 : -1;
 
         case ICVAL_ZERO:
-            return 0;
+            return bNegate ? -0.0 : 0.0;
 
         case ICVAL_ONE:
-            return 1;
+            return bNegate ? -1 : 1;
 
         case ICVAL_DOMAIN_ERROR:
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
-            return fltPosInfinity;
+            return bNegate ? fltNegInfinity : fltPosInfinity;
 
         case ICVAL_NEG_INFINITY:
-            return fltNegInfinity;
+            return bNegate ? fltPosInfinity : fltNegInfinity;
 
         case ICVAL_LEFT:
-            return aplFloatLft;
+            return bNegate ? -aplFloatLft : aplFloatLft;
 
         case ICVAL_RIGHT:
-            return aplFloatRht;
+            return bNegate ? -aplFloatRht : aplFloatRht;
 
         defstop
-            return 0;
+            return bNegate ? -0.0 : 0.0;
     } // End SWITCH
 } // TranslateQuadICIndex
 

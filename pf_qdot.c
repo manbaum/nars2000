@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -219,9 +219,11 @@ APLINT PrimFnMonQuoteDotIisI
     if (aplIntegerRht < 0)
     {
         // Get the result as float
-        aplFloatRes = TranslateQuadICIndex (0,
-                                            ICNDX_QDOTn,
-                                            (APLFLOAT) aplIntegerRht);
+        aplFloatRes =
+          TranslateQuadICIndex (0,
+                                ICNDX_QDOTn,
+                     (APLFLOAT) aplIntegerRht,
+                                FALSE);
         // If it's infinite, ...
         if (IsFltInfinity (aplFloatRes))
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
@@ -274,7 +276,8 @@ APLFLOAT PrimFnMonQuoteDotFisF
          || aplFloatRht EQ ceil  (aplFloatRht))
             return TranslateQuadICIndex (0,
                                          ICNDX_QDOTn,
-                                         aplFloatRht);
+                                         aplFloatRht,
+                                         FALSE);
     } // End IF
 
     // Check for too large for GSL
@@ -323,7 +326,8 @@ APLRAT PrimFnMonQuoteDotRisR
         return *mpq_QuadICValue (&aplRatRht,        // No left arg
                                   ICNDX_QDOTn,
                                  &aplRatRht,
-                                 &mpqRes);
+                                 &mpqRes,
+                                  FALSE);
     // If the denominator is 1,
     //   and the numerator fts in a UINT, ...
     if (mpq_integer_p (&aplRatRht)
@@ -364,7 +368,8 @@ APLVFP PrimFnMonQuoteDotVisV
         return *mpfr_QuadICValue (&aplVfpRht,       // No left arg
                                    ICNDX_QDOTn,
                                   &aplVfpRht,
-                                  &mpfRes);
+                                  &mpfRes,
+                                   FALSE);
     // If the arg is an integer,
     //   and it fits in a ULONG, ...
     if (mpfr_integer_p (&aplVfpRht)
@@ -710,14 +715,10 @@ APLFLOAT PrimFnDydQuoteDotFisFvF
     } else
     {
         // Z = (!R) / (!L) * !R-L
-        aplFloatRes =
+        return
                 PrimFnMonQuoteDotFisF (RF, NULL)
              / (PrimFnMonQuoteDotFisF (LF, NULL)
               * PrimFnMonQuoteDotFisF (RF - LF, NULL));
-        // Convert {neg}0 to 0
-        if (aplFloatRes EQ 0)
-            aplFloatRes = 0;
-        return aplFloatRes;
     } // End IF/ELSE
 
 #undef  IF

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -861,7 +861,7 @@ RESTART_EXCEPTION_APA:
                 break;
 
             case ARRAY_VFP:
-                // Initialize the temp
+                // Initialize the temp to 0
                 mpfr_init0 (&aplVfpRht);
 
                 break;
@@ -890,7 +890,7 @@ RESTART_EXCEPTION_APA:
                 break;
 
             case ARRAY_VFP:
-                // Initialize the temp
+                // Initialize the temp to 0
                 mpfr_init0 (&aplVfpRht);
 
                 break;
@@ -1094,7 +1094,7 @@ RESTART_EXCEPTION:
                     // If we blew up from RAT to VFP, ...
                     if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeNew])
                     {
-                        // Initialize the temp
+                        // Initialize the temp to 0
                         mpfr_init0 (&aplVfpRht);
 
                         // Copy the RAT value

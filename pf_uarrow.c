@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -848,7 +848,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                     goto ERROR_EXIT;
 
                 if (IsMpqNULL (&((LPAPLRAT) lpMemRes)[uRes]))
-                    // Initialize to 0/1
+                    // Initialize the result to 0/1
                     mpq_init (&((LPAPLRAT) lpMemRes)[uRes]);
             } // End FOR
 
@@ -863,7 +863,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                     goto ERROR_EXIT;
 
                 if (IsMpfNULL (&((LPAPLVFP) lpMemRes)[uRes]))
-                    // Initialize to 0/1
+                    // Initialize the result to 0
                     mpfr_init0 (&((LPAPLVFP) lpMemRes)[uRes]);
             } // End FOR
 

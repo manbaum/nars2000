@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -812,8 +812,8 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             if (!GaussJordanDet (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
                 goto RIGHT_DOMAIN_EXIT;
 
-            // Initialize the temp result
-            mpfr_init (&aplVfpRes);
+            // Initialize the VFP result to 0
+            mpfr_init0 (&aplVfpRes);
 
             // Convert the result (in lpMemTmp) back to VFP
             mpfr_set_q (&aplVfpRes,
@@ -1057,7 +1057,7 @@ MINDOTPLUS:
             {
                 APLRAT sumR = {0};
 
-                // Initialize to 0/1
+                // Initialize the result to 0/1
                 mpq_init (&sumR);
 
                 for (uRes = 0; uRes < aplDimRows; uRes++)
@@ -1138,7 +1138,7 @@ MINDOTPLUS:
             {
                 APLVFP sumV = {0};
 
-                // Initialize to 0
+                // Initialize the result to 0
                 mpfr_init0 (&sumV);
 
                 for (uRes = 0; uRes < aplDimRows; uRes++)
@@ -2768,14 +2768,12 @@ RESTART_INNERPROD_RES:
                 case ARRAY_RAT:
                     // Save the accumulated reduction in the result
                     mpq_init_set (((LPAPLRAT) lpMemRes)++, &aplRatRht);
-////////////////////             *((LPAPLRAT) lpMemRes)++= aplRatRht;
 
                     break;
 
                 case ARRAY_VFP:
                     // Save the accumulated reduction in the result
                     mpfr_init_copy (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
-////////////////////             *((LPAPLVFP) lpMemRes)++= aplVfpRht;
 
                     break;
 

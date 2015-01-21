@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,6 +80,9 @@ void PN_NumCalc
     // Get the numeric type
     chType = (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT) ? lpYYArg->chType : lppnLocalVars->chComType;
 
+    // Handle negative sign
+    bSigned = (lppnLocalVars->lpszNumAccum[uNumAcc] EQ OVERBAR1);
+
     // Split cases based upon the current numeric type
     switch (chType)
     {
@@ -100,13 +103,10 @@ void PN_NumCalc
                 // Initialize the loop length
                 uLen = lstrlen (&lppnLocalVars->lpszNumAccum[uNumAcc]);
 
-                // Handle negative sign
-                uAcc = bSigned = (lppnLocalVars->lpszNumAccum[uNumAcc] EQ OVERBAR1);
-
                 // If the number is negative, ...
                 if (bSigned)
                     // Loop through the digits
-                    for (; bRet && uAcc < uLen; uAcc++)
+                    for (uAcc = 1; bRet && uAcc < uLen; uAcc++)
                     {
                         aplInteger = imul64 (aplInteger, 10, &bRet);
                         if (bRet)
@@ -114,7 +114,7 @@ void PN_NumCalc
                     } // End FOR
                 else
                     // Loop through the digits
-                    for (; bRet && uAcc < uLen; uAcc++)
+                    for (uAcc = 0; bRet && uAcc < uLen; uAcc++)
                     {
                         aplInteger = imul64 (aplInteger, 10, &bRet);
                         if (bRet)
@@ -122,6 +122,18 @@ void PN_NumCalc
                     } // End FOR
                 if (bRet)
                 {
+                    // If it's -0, ...
+                    if (bSigned && aplInteger EQ 0)
+                    {
+                        // Save -0 as a float
+                        lpYYArg->at.aplFloat = -0.0;
+
+                        // Change the type to float
+                        lpYYArg->chType = PN_NUMTYPE_FLT;
+
+                        break;
+                    } // End IF
+
                     // Save in the result
                     lpYYArg->at.aplInteger = aplInteger;
 
@@ -155,19 +167,65 @@ void PN_NumCalc
                 // Convert the denominator to a GMP integer
                 mpz_init_set_str (mpq_denref (&lpYYArg->at.aplRat), &lppnLocalVars->lpszNumAccum[uNumAcc], 10);
 
+                // Save the sign of the result
+                bSigned = (lpYYArg->bSigned NE bSigned);
+
                 // If the denominator is zero, ...
                 if (IsMpz0 (mpq_denref (&lpYYArg->at.aplRat)))
                 {
-                    int iSgn;
+                    // If the numerator is zero, ...
+                    if (IsMpz0 (mpq_numref (&lpYYArg->at.aplRat)))
+                    {
+                        APLRAT mpqRes = {0};
 
-                    // Save the sign of the numerator
-                    iSgn = mpz_sgn (mpq_numref (&lpYYArg->at.aplRat));
+                        // See what the []IC oracle has to say
+                        mpq_QuadICValue (&lpYYArg->at.aplRat,
+                                          ICNDX_0DIV0,
+                                         &lpYYArg->at.aplRat,
+                                         &mpqRes,
+                                          (mpz_sgn (mpq_numref (&lpYYArg->at.aplRat)) EQ -1) NE
+                                          (mpz_sgn (mpq_denref (&lpYYArg->at.aplRat)) EQ -1));
+                        // We no longer need this storage
+                        Myq_clear (&lpYYArg->at.aplRat);
 
+                        // If the result is -0, ...
+                        if (bSigned && IsMpq0 (&mpqRes))
+                        {
+                            // Change the type to VFP
+                            lpYYArg->chType = PN_NUMTYPE_VFP;
+
+                            // Initialize the result and set to -0
+                            mpfr_init_set_str (&lpYYArg->at.aplVfp, "-0", 10, MPFR_RNDN);
+                        } else
+                        {
+                            // If the result is negative, ...
+                            if (bSigned)
+                                // Negate it
+                                mpq_neg (&mpqRes, &mpqRes);
+
+                            // Copy result to ALLTYPES
+                            lpYYArg->at.aplRat = mpqRes;
+                        } // End IF/ELSE
+                    } else
+                    {
+                        // We no longer need this storage
+                        Myq_clear (&lpYYArg->at.aplRat);
+
+                        // Set to the appropriate-signed infinity
+                        mpq_set_infsub (&lpYYArg->at.aplRat, bSigned ? -1 : 1);
+                    } // End IF/ELSE
+                } else
+                // If the result is -0, ...
+                if (bSigned && IsMpz0 (mpq_numref (&lpYYArg->at.aplRat)))
+                {
                     // We no longer need this storage
                     Myq_clear (&lpYYArg->at.aplRat);
 
-                    // Set to the appropriate-signed infinity
-                    mpq_set_infsub (&lpYYArg->at.aplRat, iSgn);
+                    // Change the type to VFP
+                    lpYYArg->chType = PN_NUMTYPE_VFP;
+
+                    // Initialize the result and set to -0
+                    mpfr_init_set_str (&lpYYArg->at.aplVfp, "-0", 10, MPFR_RNDN);
                 } else
                     // Canonicalize the arg
                     mpq_canonicalize (&lpYYArg->at.aplRat);
@@ -179,7 +237,7 @@ void PN_NumCalc
 
                 // Convert the string to a rational number
                 mpz_init_set_str (mpq_numref (&lpYYArg->at.aplRat), &lppnLocalVars->lpszNumAccum[uNumAcc], 10);
-                mpz_init_set_str (mpq_denref (&lpYYArg->at.aplRat), "1"                               , 10);
+                mpz_init_set_str (mpq_denref (&lpYYArg->at.aplRat), "1"                                  , 10);
 
                 // Change the type to Rational
                 lpYYArg->chType = PN_NUMTYPE_RAT;
@@ -207,6 +265,9 @@ void PN_NumCalc
         defstop
             break;
     } // End SWITCH
+
+    // Save the sign
+    lpYYArg->bSigned = bSigned;
 } // End PN_NumCalc
 
 
@@ -1044,7 +1105,11 @@ UBOOL PN_VectorAcc
 
     // Izit expressible as an integer?
     lppnVector[lppnLocalVars->uGlbVectorCurLen].bInteger =
-      (strspn (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789eE") EQ uNumLen);
+        (strspn  (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789eE") EQ uNumLen)
+     && (strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0)   // {neg}0     is FLT, not INT
+//// && (strncmp (lpStart, OVERBAR1_STR INFINITY1_STR, uNumLen) NE 0)   // {neg}{inf} is FLT, not INT
+//// && (strncmp (lpStart,              INFINITY1_STR, uNumLen) NE 0)   //      {inf} is FLT, not INT
+        ;
 
     // Set the new initial point
     lppnLocalVars->uNumIni = lppnLocalVars->uNumCur;

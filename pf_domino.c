@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -878,7 +878,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
             for (uRow = 0; uRow < uNumRows; uRow++)
             for (uCol = 0; uCol < uNumCols; uCol++)
             {
-                // Initialize the entry
+                // Initialize the entry to 0
                 mpfr_init0 (&((LPAPLVFP) lpMemRes)[uRow * uNumRows + uCol]);
 
                 // Copy and convert the entry

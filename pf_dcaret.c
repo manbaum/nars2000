@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -281,6 +281,7 @@ APLVFP gcdAplVfp
            aplLft,
            aplRht;
 
+    // Initialize the temp to 0
     mpfr_init0 (&aplTmp);
 
     // Ensure both arguments are non-negative
@@ -299,8 +300,8 @@ APLVFP gcdAplVfp
     } // End WHILE
 
     // The sign of the result is the sign of the left argument
-    if (mpfr_sgn (&aplVfpLft) < 0)
-        mpfr_neg0 (&aplRht, &aplRht, MPFR_RNDN);
+    if (SIGN_APLVFP (&aplVfpLft))
+        mpfr_neg (&aplRht, &aplRht, MPFR_RNDN);
 
     // We no longer need this storage
     Myf_clear (&aplTmp);
@@ -438,8 +439,8 @@ APLFLOAT PrimFnDydDownCaretFisFvF
      || (IsFltInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0GCDInf,
-                                     aplFloatRht);
-
+                                     aplFloatRht,
+                                     SIGN_APLFLOAT (aplFloatLft));
     // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
     if (IsFltInfinity (aplFloatLft)
      || IsFltInfinity (aplFloatRht))
@@ -469,7 +470,8 @@ APLRAT PrimFnDydDownCaretRisRvR
         return *mpq_QuadICValue (&aplRatLft,
                                   ICNDX_0GCDInf,
                                  &aplRatRht,
-                                 &aplTmp);
+                                 &aplTmp,
+                                  mpq_sgn (&aplRatLft) EQ -1);
     // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
     if (mpq_inf_p (&aplRatLft)
      || mpq_inf_p (&aplRatRht))
@@ -521,7 +523,8 @@ APLVFP PrimFnDydDownCaretVisVvV
         return *mpfr_QuadICValue (&aplVfpLft,
                                    ICNDX_0GCDInf,
                                   &aplVfpRht,
-                                  &aplTmp);
+                                  &aplTmp,
+                                   SIGN_APLVFP (&aplVfpLft));
     // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)
     if (mpfr_inf_p (&aplVfpLft)
      || mpfr_inf_p (&aplVfpRht))

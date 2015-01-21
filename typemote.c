@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -413,6 +413,10 @@ UNLOCK_EXIT:
             {
                 aplFloat = *((LPAPLFLOAT) lpMemRht)++;
 
+                // If it's -0, ...
+                if (SIGN_APLFLOAT (aplFloat) && aplFloat EQ 0)
+                    aplTypeSub = ARRAY_FLOAT;
+                else
                 // Check for Boolean value
                 if (IsBooleanValue (aplFloat))
                     aplTypeSub = ARRAY_BOOL;
@@ -465,6 +469,10 @@ UNLOCK_EXIT:
                         case ARRAY_FLOAT:   // Check for demotion from FLOAT to INT/BOOL
                             aplFloat = lpSymEntry->stData.stFloat;
 
+                            // If it's -0, ...
+                            if (SIGN_APLFLOAT (aplFloat) && aplFloat EQ 0)
+                                aplTypeSub = ARRAY_FLOAT;
+                            else
                             if (IsBooleanValue (aplFloat))
                                 aplTypeSub = ARRAY_BOOL;
                             else

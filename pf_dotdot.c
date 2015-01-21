@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -256,7 +256,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             break;
 
         case ARRAY_VFP:
-            // Initialize temp vars
+            // Initialize temp vars to 0
             mpfr_init0 (&atLft.aplVfp);
             mpfr_init0 (&atStp.aplVfp);
             mpfr_init0 (&atRht.aplVfp);
@@ -416,7 +416,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
             else
             {
                 mpfr_abs (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
-                mpfr_neg0 (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
+                mpfr_neg (&atStp.aplVfp, &atStp.aplVfp, MPFR_RNDN);
             } // End IF/ELSE
 
             // The NELM of the result is

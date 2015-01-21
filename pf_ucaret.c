@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -214,7 +214,7 @@ APLFLOAT lcmAplFloat
     aplTmp = aplLft * (aplRht / aplTmp);
 
     // The sign of the result is the sign of the left argument
-    if (aplFloatLft < 0)
+    if (SIGN_APLFLOAT (aplFloatLft))
         return -aplTmp;
     else
         return  aplTmp;
@@ -289,8 +289,8 @@ APLVFP lcmAplVfp
         mpfr_mul (&aplTmp, &aplLft, &aplTmp, MPFR_RNDN);
 
         // The sign of the result is the sign of the left argument
-        if (mpfr_sgn (&aplVfpLft) < 0)
-            mpfr_neg0 (&aplTmp, &aplTmp, MPFR_RNDN);
+        if (SIGN_APLVFP (&aplVfpLft))
+            mpfr_neg (&aplTmp, &aplTmp, MPFR_RNDN);
     } // End IF
 
     return aplTmp;
@@ -426,7 +426,8 @@ APLFLOAT PrimFnDydUpCaretFisFvF
      || (IsFltInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_0LCMInf,
-                                     aplFloatRht);
+                                     aplFloatRht,
+                                     SIGN_APLFLOAT (aplFloatLft));
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (IsFltInfinity (aplFloatLft)
      || IsFltInfinity (aplFloatRht))
@@ -456,7 +457,8 @@ APLRAT PrimFnDydUpCaretRisRvR
         return *mpq_QuadICValue (&aplRatLft,
                                   ICNDX_0LCMInf,
                                  &aplRatRht,
-                                 &aplTmp);
+                                 &aplTmp,
+                                  mpq_sgn (&aplRatLft) EQ -1);
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (mpq_inf_p (&aplRatLft)
      || mpq_inf_p (&aplRatRht))
@@ -507,7 +509,8 @@ APLVFP PrimFnDydUpCaretVisVvV
         return *mpfr_QuadICValue (&aplVfpLft,
                                    ICNDX_0LCMInf,
                                   &aplVfpRht,
-                                  &aplTmp);
+                                  &aplTmp,
+                                   SIGN_APLVFP (&aplVfpLft));
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (mpfr_inf_p (&aplVfpLft)
      || mpfr_inf_p (&aplVfpRht))

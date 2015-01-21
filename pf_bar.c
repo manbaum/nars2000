@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -157,8 +157,9 @@ APLINT PrimFnMonBarIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // Check for overflow
-    if (aplIntegerRht EQ MIN_APLINT)
+    // Check for overflow or -0
+    if (aplIntegerRht EQ MIN_APLINT
+     || aplIntegerRht EQ 0)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     return -aplIntegerRht;
@@ -191,11 +192,6 @@ APLFLOAT PrimFnMonBarFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // If the arg is zero, ...
-    if (aplFloatRht EQ 0)
-        // Avoid returning negative zero
-        return 0;
-
     return -aplFloatRht;
 } // End PrimFnMonBarFisF
 
@@ -213,7 +209,11 @@ APLRAT PrimFnMonBarRisR
 {
     APLRAT mpqRes = {0};
 
-    // Initialize the result
+    // Check for -0
+    if (IsMpq0 (&aplRatRht))
+        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+
+    // Initialize the result to 0/1
     mpq_init (&mpqRes);
 
     // Negate the Rational
@@ -236,11 +236,11 @@ APLVFP PrimFnMonBarVisV
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
-    // Negate the Variable FP
-    mpfr_neg0 (&mpfRes, &aplVfpRht, MPFR_RNDN);
+    // Negate the VFP
+    mpfr_neg (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonBarVisV
@@ -294,8 +294,17 @@ UBOOL PrimFnMonBarAPA_EM
     // Check for un-negatable integer
 #define lpAPA       ((LPAPLAPA) lpMemRes)
     if (lpAPA->Off EQ MIN_APLINT
-     || (lpAPA->Off + aplNELMRes * lpAPA->Mul) EQ MIN_APLINT)
+     || (lpAPA->Off + aplNELMRes * lpAPA->Mul) EQ MIN_APLINT
+     || lpAPA->Off EQ 0
+     || (lpAPA->Off + aplNELMRes * lpAPA->Mul) EQ 0
+     || signumint (lpAPA->Off) NE signumint (lpAPA->Off + aplNELMRes * lpAPA->Mul)
+       )
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    } // End IF
 
     // Negating the offset and multiplier negates the APA
     lpAPA->Off = -lpAPA->Off;
@@ -422,8 +431,8 @@ APLFLOAT PrimFnDydBarFisFvF
      && SIGN_APLFLOAT (aplFloatLft) EQ SIGN_APLFLOAT (aplFloatRht))
         return TranslateQuadICIndex (aplFloatLft,
                                      ICNDX_InfSUBInf,
-                                     aplFloatRht);
-
+                                     aplFloatRht,
+                                     FALSE);
     return (aplFloatLft - aplFloatRht);
 } // End PrimFnDydBarFisFvF
 
@@ -451,8 +460,9 @@ APLRAT PrimFnDydBarRisRvR
         return *mpq_QuadICValue (&aplRatRht,        // No left arg
                                   ICNDX_InfSUBInf,
                                  &aplRatRht,
-                                 &mpqRes);
-    // Initialize the result
+                                 &mpqRes,
+                                  FALSE);
+    // Initialize the result to 0/1
     mpq_init (&mpqRes);
 
     // Subtract the Rationals
@@ -485,11 +495,12 @@ APLVFP PrimFnDydBarVisVvV
         return *mpfr_QuadICValue (&aplVfpRht,       // No left arg
                                    ICNDX_InfSUBInf,
                                   &aplVfpRht,
-                                  &mpfRes);
-    // Initialize the result
+                                  &mpfRes,
+                                   FALSE);
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
-    // Subtract the Variable FP
+    // Subtract the VFPs
     mpfr_sub (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;

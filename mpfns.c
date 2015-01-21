@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -194,7 +194,8 @@ mpir_ui mpz_invalid
             mpz_QuadICValue (op1,
                              ICNDX_InfSUBInf,
                              op2,
-                             rop);
+                             rop,
+                             FALSE);
             break;
 
         case MP_DIV:        // op1 and op2 are infinite
@@ -204,7 +205,8 @@ mpir_ui mpz_invalid
                              bSameSign ? ICNDX_PiDIVPi
                                        : ICNDX_NiDIVPi,
                              op2,
-                             rop);
+                             rop,
+                             FALSE);
             break;
 
         case MP_MUL             :
@@ -284,7 +286,8 @@ mpir_ui mpq_invalid
             mpq_QuadICValue (op1,
                              ICNDX_InfSUBInf,
                              op2,
-                             rop);
+                             rop,
+                             FALSE);
             break;
 
         case MP_DIV:        // op1 and op2 are infinite
@@ -294,7 +297,8 @@ mpir_ui mpq_invalid
                              bSameSign ? ICNDX_PiDIVPi
                                        : ICNDX_NiDIVPi,
                              op2,
-                             rop);
+                             rop,
+                             FALSE);
             break;
 
         defstop
@@ -328,7 +332,8 @@ mpir_ui mpfr_invalid
             mpfr_QuadICValue (op1,
                               ICNDX_InfSUBInf,
                               op2,
-                              rop);
+                              rop,
+                              FALSE);
             break;
 
         case MP_DIV:        // op1 and op2 are infinite
@@ -338,7 +343,8 @@ mpir_ui mpfr_invalid
                               bSameSign ? ICNDX_PiDIVPi
                                         : ICNDX_NiDIVPi,
                               op2,
-                              rop);
+                              rop,
+                              FALSE);
             break;
 
         case MP_RELDIFF:    // op1 is infinite and op2 might be, too
@@ -352,6 +358,12 @@ mpir_ui mpfr_invalid
         case MP_SQRT:       // op1 is negative infinity
                             // Handled in <PrimFnMonRootVisV> and
                             //            <PrimFnMonRootVisVvV>
+            Myf_clear (op1);
+
+            RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -371,54 +383,65 @@ mpir_ui mpfr_invalid
 //***************************************************************************
 
 LPAPLMPI mpz_QuadICValue
-    (LPAPLMPI   aplMpiLft,
-     IC_INDICES icNdx,
-     LPAPLMPI   aplMpiRht,
-     LPAPLMPI   mpzRes)
+    (LPAPLMPI   aplMpiLft,          // Left arg
+     IC_INDICES icIndex,            // []IC index
+     LPAPLMPI   aplMpiRht,          // Right arg
+     LPAPLMPI   mpzRes,             // Result
+     UBOOL      bNegate)            // TRUE iff we should negate result
 
 {
-    switch (GetQuadICValue (icNdx))
+    switch (GetQuadICValue (icIndex))
     {
         case ICVAL_NEG1:
             // Initialize the result to -1
             mpz_init_set_si (mpzRes, -1);
 
-            return mpzRes;
+            break;
 
         case ICVAL_ZERO:
             // Initialize the result to 0
             mpz_init (mpzRes);
 
-            return mpzRes;
+            break;
 
         case ICVAL_ONE:
             // Initialize the result to 1
             mpz_init_set_si (mpzRes,  1);
 
-            return mpzRes;
+            break;
 
         case ICVAL_DOMAIN_ERROR:
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
-            return &mpzPosInfinity;
+            mpz_init_set (mpzRes, &mpzPosInfinity);
+
+            break;
 
         case ICVAL_NEG_INFINITY:
-            return &mpzNegInfinity;
+            mpz_init_set (mpzRes, &mpzNegInfinity);
+
+            break;
 
         case ICVAL_LEFT:
             mpz_init_set (mpzRes, aplMpiLft);
 
-            return mpzRes;
+            break;
 
         case ICVAL_RIGHT:
             mpz_init_set (mpzRes, aplMpiRht);
 
-            return mpzRes;
+            break;
 
         defstop
-            return mpzRes;
+            break;
     } // End SWITCH
+
+    // If we should negate, ...
+    if (bNegate)
+        mpz_neg (mpzRes, mpzRes);
+
+    return mpzRes;
 } // End mpz_QuadICValue
 
 
@@ -615,54 +638,65 @@ void Myz_clear
 //***************************************************************************
 
 LPAPLRAT mpq_QuadICValue
-    (LPAPLRAT   aplRatLft,
-     IC_INDICES icNdx,
-     LPAPLRAT   aplRatRht,
-     LPAPLRAT   mpqRes)
+    (LPAPLRAT   aplRatLft,          // Left arg
+     IC_INDICES icIndex,            // []IC index
+     LPAPLRAT   aplRatRht,          // Right arg
+     LPAPLRAT   mpqRes,             // Result
+     UBOOL      bNegate)            // TRUE iff we should negate result
 
 {
-    switch (GetQuadICValue (icNdx))
+    switch (GetQuadICValue (icIndex))
     {
         case ICVAL_NEG1:
             // Initialize the result to -1
             mpq_init_set_si (mpqRes, -1, 1);
 
-            return mpqRes;
+            break;
 
         case ICVAL_ZERO:
             // Initialize the result to 0
             mpq_init (mpqRes);
 
-            return mpqRes;
+            break;
 
         case ICVAL_ONE:
             // Initialize the result to 1
             mpq_init_set_si (mpqRes,  1, 1);
 
-            return mpqRes;
+            break;
 
         case ICVAL_DOMAIN_ERROR:
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
-            return &mpqPosInfinity;
+            mpq_init_set (mpqRes, &mpqPosInfinity);
+
+            break;
 
         case ICVAL_NEG_INFINITY:
-            return &mpqNegInfinity;
+            mpq_init_set (mpqRes, &mpqNegInfinity);
+
+            break;
 
         case ICVAL_LEFT:
             mpq_init_set (mpqRes, aplRatLft);
 
-            return mpqRes;
+            break;
 
         case ICVAL_RIGHT:
             mpq_init_set (mpqRes, aplRatRht);
 
-            return mpqRes;
+            break;
 
         defstop
-            return mpqRes;
+            break;
     } // End SWITCH
+
+    // If we should negate, ...
+    if (bNegate)
+        mpq_neg (mpqRes, mpqRes);
+
+    return mpqRes;
 } // End mpq_QuadICValue
 
 
@@ -1022,7 +1056,7 @@ int mpq_cmp_ct
     if (!IsMpq0 (&aplRatLft)
      && !IsMpq0 (&aplRatRht))
     {
-        // Initialize the temps
+        // Initialize the temps to 0
         mpfr_init0 (&mpfLft);
         mpfr_init0 (&mpfRht);
 
@@ -1103,54 +1137,65 @@ int mpq_integer_p
 //***************************************************************************
 
 LPAPLVFP mpfr_QuadICValue
-    (LPAPLVFP   aplVfpLft,
-     IC_INDICES icNdx,
-     LPAPLVFP   aplVfpRht,
-     LPAPLVFP   mpfRes)
+    (LPAPLVFP   aplVfpLft,          // Left arg
+     IC_INDICES icIndex,            // []IC index
+     LPAPLVFP   aplVfpRht,          // Right arg
+     LPAPLVFP   mpfRes,             // Result
+     UBOOL      bNegate)            // TRUE iff we should negate result
 
 {
-    switch (GetQuadICValue (icNdx))
+    switch (GetQuadICValue (icIndex))
     {
         case ICVAL_NEG1:
             // Initialize the result to -1
             mpfr_init_set_si (mpfRes, -1, MPFR_RNDN);
 
-            return mpfRes;
+            break;
 
         case ICVAL_ZERO:
             // Initialize the result to 0
             mpfr_init0 (mpfRes);
 
-            return mpfRes;
+            break;
 
         case ICVAL_ONE:
             // Initialize the result to 1
             mpfr_init_set_si (mpfRes,  1, MPFR_RNDN);
 
-            return mpfRes;
+            break;
 
         case ICVAL_DOMAIN_ERROR:
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
-            return &mpfPosInfinity;
+            mpfr_init_set (mpfRes, &mpfPosInfinity, MPFR_RNDN);
+
+            break;
 
         case ICVAL_NEG_INFINITY:
-            return &mpfNegInfinity;
+            mpfr_init_set (mpfRes, &mpfNegInfinity, MPFR_RNDN);
+
+            break;
 
         case ICVAL_LEFT:
             mpfr_init_copy (mpfRes, aplVfpLft);
 
-            return mpfRes;
+            break;
 
         case ICVAL_RIGHT:
             mpfr_init_copy (mpfRes, aplVfpRht);
 
-            return mpfRes;
+            break;
 
         defstop
-            return mpfRes;
+            break;
     } // End SWITCH
+
+    // If we should negate, ...
+    if (bNegate)
+        mpfr_neg (mpfRes, mpfRes, MPFR_RNDN);
+
+    return mpfRes;
 } // End mpfr_QuadICValue
 
 
@@ -1333,7 +1378,7 @@ void mpfr_set_sx
 
     // Adjust the sign
     if (signum (val) < 0)
-        mpfr_neg0 (dest, dest, MPFR_RNDN);
+        mpfr_neg (dest, dest, MPFR_RNDN);
 } // End mpfr_set_sx
 
 
@@ -1410,7 +1455,7 @@ APLINT _mpfr_get_ctsx
         longjmp (heapFull, 3);
     else
     {
-        // Initialize the temps
+        // Initialize the temps to 0
         mpfr_init0 (&mpfTmp1);
         mpfr_init0 (&mpfTmp2);
         mpfr_init0 (&mpfSrc);
@@ -1508,9 +1553,9 @@ void mpfr_mod
     mpfr_init_copy (mpfrMod, aplMod);
 
     if (mpfr_sgn (mpfrOpr) < 0)
-        mpfr_neg0 (mpfrOpr, mpfrOpr, MPFR_RNDZ);
+        mpfr_neg (mpfrOpr, mpfrOpr, MPFR_RNDZ);
     if (mpfr_sgn (mpfrMod) < 0)
-        mpfr_neg0 (mpfrMod, mpfrMod, MPFR_RNDZ);
+        mpfr_neg (mpfrMod, mpfrMod, MPFR_RNDZ);
 
     // Compute the modulus
     mpfr_fmod (dest, mpfrOpr, mpfrMod, MPFR_RNDZ);
@@ -1525,7 +1570,7 @@ void mpfr_mod
 
     // The sign of the result is the sign of the left arg
     if (mpfr_sgn (aplMod) < 0)
-        mpfr_neg0 (dest, dest, MPFR_RNDZ);
+        mpfr_neg (dest, dest, MPFR_RNDZ);
 #else
     // Due to precision limitations, the result of <mpfr_mod_sub>
     //   might not be less than the modulus, so we iterate until it is
@@ -1558,7 +1603,7 @@ void mpfr_mod_sub
          expptr2;
 #endif
 
-    // Initialize the temp
+    // Initialize the temp to 0
     mpfr_init0 (&aplTmp);
 
 #if defined (DEBUG) && defined (MOD_DEBUG)
@@ -1629,7 +1674,7 @@ int _mpfr_cmp_ct
 
         // Use an algorithm similar to the one in _CompareCT
 
-        // Initialize the temps
+        // Initialize the temps to 0
         mpfr_init0 (&mpfLftAbs);
         mpfr_init0 (&mpfRhtAbs);
 
@@ -1659,7 +1704,7 @@ int _mpfr_cmp_ct
             APLVFP mpfCT     = {0},
                    mpfHoodLo = {0};
 
-            // Initialize the temps
+            // Initialize the temps to 0
             mpfr_init0 (&mpfCT);
             mpfr_init0 (&mpfHoodLo);
 

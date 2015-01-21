@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -231,7 +231,7 @@ APLVFP PrimFnMonCircleVisV
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     mpfr_mul (&mpfRes, &aplVfpRht, &GetMemPTD ()->mpfrPi, MPFR_RNDN);
@@ -293,9 +293,8 @@ APLFLOAT PrimFnDydCircleFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-#ifndef _WIN64
     APLFLOAT aplFloatTmp;
-#endif
+
     // I coded these by hand because they are all easy,
     //   however, to be completely accurate, the sin, cos, and tan
     //   functions might need to have their arguments reduced to
@@ -306,7 +305,7 @@ APLFLOAT PrimFnDydCircleFisIvI
     {
         case  4:        // (1 + R * 2) * 0.5
 #ifdef _WIN64
-            return sqrt ((APLFLOAT) (1 + imul64_RE (aplIntegerRht, aplIntegerRht)));
+            aplFloatTmp = sqrt ((APLFLOAT) (1 + imul64_RE (aplIntegerRht, aplIntegerRht)));
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
@@ -318,18 +317,17 @@ APLFLOAT PrimFnDydCircleFisIvI
                 fsqrt;                  //  (1+Rht*Rht)*0.5
                 fstp    aplFloatTmp;
             }
-
+#else
+  #error Need code for this architecture.
+#endif
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
-#else
-  #error Need code for this architecture.
-#endif
 
         case  3:        // tan (R)
 #ifdef _WIN64
-            return tan ((APLFLOAT) aplIntegerRht);
+            aplFloatTmp = tan ((APLFLOAT) aplIntegerRht);
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
@@ -338,18 +336,17 @@ APLFLOAT PrimFnDydCircleFisIvI
                 fdivp   st(1),st(0);    //  tan (Rht)
                 fstp    aplFloatTmp;
             }
-
+#else
+  #error Need code for this architecture.
+#endif
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
-#else
-  #error Need code for this architecture.
-#endif
 
         case  2:        // cos (R)
 #ifdef _WIN64
-            return cos ((APLFLOAT) aplIntegerRht);
+            aplFloatTmp = cos ((APLFLOAT) aplIntegerRht);
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
@@ -357,18 +354,17 @@ APLFLOAT PrimFnDydCircleFisIvI
                 fcos;                   //  cos (Rht)
                 fstp    aplFloatTmp;
             }
-
+#else
+  #error Need code for this architecture.
+#endif
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
-#else
-  #error Need code for this architecture.
-#endif
 
         case  1:        // sin (R)
 #ifdef _WIN64
-            return sin ((APLFLOAT) aplIntegerRht);
+            aplFloatTmp = sin ((APLFLOAT) aplIntegerRht);
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
@@ -376,18 +372,17 @@ APLFLOAT PrimFnDydCircleFisIvI
                 fsin;                   //  sin (Rht)
                 fstp    aplFloatTmp;
             }
-
+#else
+  #error Need code for this architecture.
+#endif
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
-#else
-  #error Need code for this architecture.
-#endif
 
         case  0:        // (1 - R * 2) * 0.5
 #ifdef _WIN64
-            return sqrt ((APLFLOAT) (1 - imul64_RE (aplIntegerRht, aplIntegerRht)));
+            aplFloatTmp = sqrt ((APLFLOAT) (1 - imul64_RE (aplIntegerRht, aplIntegerRht)));
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
@@ -400,18 +395,17 @@ APLFLOAT PrimFnDydCircleFisIvI
                 fsqrt;                  //  (1-Rht*Rht)*0.5
                 fstp    aplFloatTmp;
             }
-
+#else
+  #error Need code for this architecture.
+#endif
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
-#else
-  #error Need code for this architecture.
-#endif
 
         case -4:        // R x (1 - R * -2) * 0.5 a.k.a. ((-1) + R * 2) * 0.5
 #ifdef _WIN64
-            return sqrt ((APLFLOAT) (imul64_RE (aplIntegerRht, aplIntegerRht) - 1));
+            aplFloatTmp = sqrt ((APLFLOAT) (imul64_RE (aplIntegerRht, aplIntegerRht) - 1));
 #elif defined (_WIN32)
             _asm
             {                           //  ST0     ST1
@@ -424,14 +418,14 @@ APLFLOAT PrimFnDydCircleFisIvI
                 fsqrt;                  //  (Rht*Rht-1)*0.5
                 fstp    aplFloatTmp;
             }
-
+#else
+  #error Need code for this architecture.
+#endif
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
-#else
-  #error Need code for this architecture.
-#endif
+
         default:
             return PrimFnDydCircleFisFvF ((APLFLOAT) aplIntegerLft,
                                           (APLFLOAT) aplIntegerRht,
@@ -439,6 +433,8 @@ APLFLOAT PrimFnDydCircleFisIvI
     } // End SWITCH
 
     RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    return 0;   // To keep the compiler happy
 } // End PrimFnDydCircleFisIvI
 
 
@@ -457,6 +453,7 @@ APLFLOAT PrimFnDydCircleFisFvF
     UINT     bRet = TRUE;
     APLINT   aplLft;
     APLFLOAT aplFloatTmp;
+    UBOOL    bNonce = FALSE;            // True iff the error is NONCE
 
     // Attempt to convert the float to an integer using System []CT
     aplLft = FloatToAplint_SCT (aplFloatLft, &bRet);
@@ -496,7 +493,7 @@ APLFLOAT PrimFnDydCircleFisFvF
             return sin (aplFloatRht);
 
         case  0:        // (1 - R * 2) * 0.5
-            if (IsFltInfinity (aplFloatRht))
+            if (bNonce = IsFltInfinity (aplFloatRht))
                 break;
 
             return sqrt (1 - pow (aplFloatRht, 2));
@@ -524,14 +521,19 @@ APLFLOAT PrimFnDydCircleFisFvF
              && aplFloatRht NE 0)
                 RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
-            return aplFloatRht * sqrt (1 - pow (aplFloatRht, -2));
+            aplFloatTmp = aplFloatRht * sqrt (1 - pow (aplFloatRht, -2));
+
+            // Check for NaN
+            if (bNonce = _isnan (aplFloatTmp))
+                break;
+            return aplFloatTmp;
 
         case -5:        // asinh (R)
                         // ln (R + sqrt (1 + R * 2))
             aplFloatTmp = gsl_asinh (aplFloatRht);
 
             // Check for NaN
-            if (_isnan (aplFloatTmp))
+            if (bNonce = _isnan (aplFloatTmp))
                 break;
             return aplFloatTmp;
 
@@ -544,7 +546,7 @@ APLFLOAT PrimFnDydCircleFisFvF
             aplFloatTmp = gsl_acosh (aplFloatRht);
 
             // Check for NaN
-            if (_isnan (aplFloatTmp))
+            if (bNonce = _isnan (aplFloatTmp))
                 break;
             return aplFloatTmp;
 
@@ -560,7 +562,7 @@ APLFLOAT PrimFnDydCircleFisFvF
             aplFloatTmp = gsl_atanh (aplFloatRht);
 
             // Check for NaN
-            if (_isnan (aplFloatTmp))
+            if (bNonce = _isnan (aplFloatTmp))
                 break;
             return aplFloatTmp;
 
@@ -568,7 +570,10 @@ APLFLOAT PrimFnDydCircleFisFvF
             break;
     } // End SWITCH
 
-    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    if (bNonce)
+        RaiseException (EXCEPTION_NONCE_ERROR , 0, 0, NULL);
+    else
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return 0;   // To keep the compiler happy
 } // End PrimFnDydCircleFisFvF
@@ -588,6 +593,7 @@ APLVFP PrimFnDydCircleVisVvV
 {
     APLVFP mpfRes = {0};
     APLINT aplLft;
+    UBOOL  bNonce = FALSE;              // True iff the error is NONCE
 
     // Ensure the left arg is valid
     if (mpfr_integer_p (&aplVfpLft)
@@ -610,10 +616,11 @@ APLVFP PrimFnDydCircleVisVvV
                 return sinhVfp (aplVfpRht);
 
             case  4:        // (1 + R * 2) * 0.5
-                mpfr_init0 (&mpfRes);
-                mpfr_mul (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
-                mpfr_add_ui (&mpfRes, &mpfRes, 1         , MPFR_RNDN);  // 1 + R * 2
-                mpfr_sqrt (&mpfRes, &mpfRes              , MPFR_RNDN);  // (1 + R * 2) * 0.5
+                // Initialize the result to 0
+                mpfr_init0  (&mpfRes);
+                mpfr_mul    (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
+                mpfr_add_si (&mpfRes, &mpfRes   , 1         , MPFR_RNDN);  // 1 + R * 2
+                mpfr_sqrt   (&mpfRes, &mpfRes               , MPFR_RNDN);  // (1 + R * 2) * 0.5
 
                 return mpfRes;      // sqrt (1 + pow (aplVfpRht, 2));
 
@@ -627,10 +634,11 @@ APLVFP PrimFnDydCircleVisVvV
                 return sinVfp (aplVfpRht);
 
             case  0:        // (1 - R * 2) * 0.5
-                mpfr_init0 (&mpfRes);
-                mpfr_mul (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
-                mpfr_ui_sub (&mpfRes, 1, &mpfRes         , MPFR_RNDN);  // 1 - R * 2
-                mpfr_sqrt (&mpfRes, &mpfRes              , MPFR_RNDN);  // (1 - R * 2) * 0.5
+                // Initialize the result to 0
+                mpfr_init0  (&mpfRes);
+                mpfr_mul    (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
+                mpfr_ui_sub (&mpfRes, 1         , &mpfRes   , MPFR_RNDN);  // 1 - R * 2
+                mpfr_sqrt   (&mpfRes,             &mpfRes   , MPFR_RNDN);  // (1 - R * 2) * 0.5
 
                 return mpfRes;      // sqrt (1 - pow (aplVfpRht, 2));
 
@@ -656,16 +664,20 @@ APLVFP PrimFnDydCircleVisVvV
             case -4:        // R x (1 - R * -2) * 0.5
                 // Check for Complex result
                 if (mpfr_cmp_si (&aplVfpRht,  1) < 0
-                 && mpfr_cmp_si (&aplVfpRht, -1) < 0
+                 && mpfr_cmp_si (&aplVfpRht, -1) > 0
                  && !mpfr_zero_p (&aplVfpRht))
                     RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
-                mpfr_init0 (&mpfRes);
-                mpfr_mul (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
-                mpfr_ui_div (&mpfRes, 1, &mpfRes         , MPFR_RNDN);          // R * -2
-                mpfr_ui_sub (&mpfRes, 1, &mpfRes         , MPFR_RNDN);          // 1 - R * -2
-                mpfr_sqrt (&mpfRes, &mpfRes              , MPFR_RNDN);               // (1 - R * -2) * 0.5
-                mpfr_mul (&mpfRes, &mpfRes, &aplVfpRht   , MPFR_RNDN);    // R x (1 - R * -2) * 0.5
+                // Initialize the result to 0
+                mpfr_init0  (&mpfRes);
+                mpfr_pow_si (&mpfRes, &aplVfpRht, -2        , MPFR_RNDN);   // R * -2
+                mpfr_si_sub (&mpfRes, 1         , &mpfRes   , MPFR_RNDN);   // 1 - R * -2
+                mpfr_sqrt   (&mpfRes, &mpfRes               , MPFR_RNDN);   // (1 - R * -2) * 0.5
+                mpfr_mul    (&mpfRes, &mpfRes   , &aplVfpRht, MPFR_RNDN);   // R x (1 - R * -2) * 0.5
+
+                // Check for NaN
+                if (bNonce = mpfr_nan_p (&mpfRes))
+                    break;
 
                 return mpfRes;      // aplVfpRht * sqrt (1 - pow (aplVfpRht, -2));
 
@@ -676,8 +688,8 @@ APLVFP PrimFnDydCircleVisVvV
             case -6:        // acosh (R)
                             // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
                 // Check for Complex result
-                if (mpfr_cmp_si (&aplVfpRht, 1) < 0)
-                    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+                if (bNonce = mpfr_cmp_si (&aplVfpRht, 1) < 0)
+                    break;
 
                 return acoshVfp (aplVfpRht);
 
@@ -695,7 +707,12 @@ APLVFP PrimFnDydCircleVisVvV
         } // End SWITCH
     } // End IF
 
-    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    Myf_clear (&mpfRes);
+
+    if (bNonce)
+        RaiseException (EXCEPTION_NONCE_ERROR , 0, 0, NULL);
+    else
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return mpfRes;      // To keep the compiler happy
 } // End PrimFnDydCircleVisVvV
@@ -711,7 +728,7 @@ APLVFP tanhVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -731,7 +748,7 @@ APLVFP coshVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -751,7 +768,7 @@ APLVFP sinhVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -771,7 +788,7 @@ APLVFP tanVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -791,7 +808,7 @@ APLVFP cosVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -811,7 +828,7 @@ APLVFP sinVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -836,7 +853,7 @@ APLVFP asinVfp
      || mpfr_cmp_si (&aplVfpRht,  1) > 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -861,7 +878,7 @@ APLVFP acosVfp
      || mpfr_cmp_si (&aplVfpRht,  1) > 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -881,7 +898,7 @@ APLVFP atanVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -901,7 +918,7 @@ APLVFP asinhVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -929,7 +946,7 @@ APLVFP acoshVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function
@@ -957,7 +974,7 @@ APLVFP atanhVfp
 {
     APLVFP mpfRes = {0};
 
-    // Initialize the result
+    // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
     // Calculate the function

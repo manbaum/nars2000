@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -539,7 +539,8 @@ RatConstants:
                                     }
     |     INF DEF_RATSEP Integer    {DbgMsgWP (L"%%RatConstants:  INF 'r' Integer");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT,  1);
+                                     //   taking into account negative integer and -0
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT,  1 - 2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1));
                                     }
     | OVR INF EXT                   {DbgMsgWP (L"%%RatConstants:  OVR INF 'x'");
                                      // Set constant infinity
@@ -547,25 +548,44 @@ RatConstants:
                                     }
     | OVR INF DEF_RATSEP Integer    {DbgMsgWP (L"%%RatConstants:  OVR INF 'r' Integer");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, -1);
+                                     //   taking into account negative integer and -0
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT,  (2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1)) - 1);
                                     }
     | Integer DEF_RATSEP INF        {DbgMsgWP (L"%%RatConstants:  Integer 'r' INF");
-                                     // Initialize to 0/1
-                                     mpq_init (&$1.at.aplRat);
+                                     // If the integer is signed, ...
+                                     if (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1)
+                                     {
+                                         // Initialize the result and set to -0
+                                         mpfr_init_set_str (&$$.at.aplVfp, "-0", 10, MPFR_RNDN);
 
-                                     // Mark the result as RAT
-                                     $1.chType = PN_NUMTYPE_RAT;
+                                         // Mark the result as VFP
+                                         $$.chType = PN_NUMTYPE_VFP;
+                                     } else
+                                     {
+                                         // Initialize the result to 0/1
+                                         mpq_init (&$$.at.aplRat);
 
-                                     $$ = $1;
+                                         // Mark the result as RAT
+                                         $$.chType = PN_NUMTYPE_RAT;
+                                     } // End IF/ELSE
                                     }
     | Integer DEF_RATSEP OVR INF    {DbgMsgWP (L"%%RatConstants:  Integer 'r' OVR INF");
-                                     // Initialize to 0/1
-                                     mpq_init (&$1.at.aplRat);
+                                     // If the integer is NOT signed, ...
+                                     if (lppnLocalVars->lpszNumAccum[0] NE OVERBAR1)
+                                     {
+                                         // Initialize the result and set to -0
+                                         mpfr_init_set_str (&$$.at.aplVfp, "-0", 10, MPFR_RNDN);
 
-                                     // Mark the result as RAT
-                                     $1.chType = PN_NUMTYPE_RAT;
+                                         // Mark the result as VFP
+                                         $$.chType = PN_NUMTYPE_VFP;
+                                     } else
+                                     {
+                                         // Initialize the result to 0/1
+                                         mpq_init (&$$.at.aplRat);
 
-                                     $$ = $1;
+                                         // Mark the result as RAT
+                                         $$.chType = PN_NUMTYPE_RAT;
+                                     } // End IF/ELSE
                                     }
     ;
 
@@ -580,11 +600,24 @@ ExtPoint:
                                      // Calculate the number
                                      PN_NumCalc (lppnLocalVars, &$1, TRUE);
 
-                                     // Set the denominator to 1
-                                     mpz_init_set_ui (mpq_denref (&$1.at.aplRat), 1);
+                                     // If the numerator is -0, ...
+                                     if ($1.bSigned && IsMpz0 (mpq_numref (&$1.at.aplRat)))
+                                     {
+                                         Myz_clear (mpq_numref (&$1.at.aplRat));
 
-                                     // Mark the result as rational
-                                     $1.chType = PN_NUMTYPE_RAT;
+                                         // Initialize the result and set to -0
+                                         mpfr_init_set_str (&$1.at.aplVfp, "-0", 10, MPFR_RNDN);
+
+                                         // Mark the result as VFP
+                                         $1.chType = PN_NUMTYPE_VFP;
+                                     } else
+                                     {
+                                         // Set the denominator to 1
+                                         mpz_init_set_ui (mpq_denref (&$1.at.aplRat), 1);
+
+                                         // Mark the result as rational
+                                         $1.chType = PN_NUMTYPE_RAT;
+                                     } // End IF/ELSE
 
                                      $$ = $1;
                                     }

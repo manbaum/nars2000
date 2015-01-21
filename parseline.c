@@ -4847,8 +4847,10 @@ PARSELINE_DONE:
                     // YYFree the current object
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
                 } else
-                // If the current object is a function, ...
-                if (IsTknTypeFcnOpr (lpplYYCurObj->tkToken.tkFlags.TknType))
+                // If the current object is a function (not naked GOTO), ...
+                if (!(curSynObj EQ soGO
+                   && rhtSynObj EQ soEOS)
+                 && IsTknTypeFcnOpr (lpplYYCurObj->tkToken.tkFlags.TknType))
                 {
                     // Free the function (including YYFree)
                     YYFreeArray (lpplYYCurObj); FreeResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1005,6 +1005,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                             // Get the next value from memory
                             GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                              aplTypeNum,        // Item storage type
+                                             aplNELMNum,        // Item NELM
                                              uNum,              // Index into item
                                              NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                             &aplLongestNum,     // Ptr to result immediate value (may be NULL)
@@ -1096,6 +1097,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Get the next value from memory
                         GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                          aplTypeNum,        // Item storage type
+                                         aplNELMNum,        // Item NELM
                                          uNum,              // Index into item
                                          NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNum,     // Ptr to result immediate value (may be NULL)
@@ -1263,6 +1265,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Get the next value from memory
                         GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                          aplTypeNum,        // Item storage type
+                                         aplNELMNum,        // Item NELM
                                          uNum,              // Index into item
                                          NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNum,     // Ptr to result immediate value (may be NULL)
@@ -1379,6 +1382,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                             // Get the next value from memory
                             GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                              aplTypeNum,        // Item storage type
+                                             aplNELMNum,        // Item NELM
                                              uNum,              // Index into item
                                              NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                             &aplLongestNum,     // Ptr to result immediate value (may be NULL)
@@ -1501,6 +1505,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Get the next value from memory
                         GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                          aplTypeNum,        // Item storage type
+                                         aplNELMNum,        // Item NELM
                                          uNum,              // Index into item
                                         &lpSymGlbNum,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNum,     // Ptr to result immediate value (may be NULL)
@@ -1633,6 +1638,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                         // Get the next value from memory
                         GetNextValueMem (lpMemNum,          // Ptr to item global memory data
                                          aplTypeNum,        // Item storage type
+                                         aplNELMNum,        // Item NELM
                                          uNum,              // Index into item
                                         &lpSymGlbNum,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestNum,     // Ptr to result immediate value (may be NULL)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1605,6 +1605,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
             // Get the next value from memory
             GetNextValueMem (lpMemLft,          // Ptr to item global memory data
                              aplTypeLft,        // Item storage type
+                             aplNELMLft,        // Item NELM
                              uCnt,              // Index into item
                             &lpSymGlbLft,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestLft,     // Ptr to result immediate value (may be NULL)
@@ -1891,6 +1892,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
             // Get the next value from memory
             GetNextValueMem (lpMemLft,          // Ptr to item global memory data
                              aplTypeLft,        // Item storage type
+                             aplNELMLft,        // Item NELM
                              uCnt,              // Index into item
                             &lpSymGlbLft,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestLft,     // Ptr to result immediate value (may be NULL)
@@ -1943,6 +1945,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                     //   and starts a new one
                     if (!PrimFnDydLeftShoeAppend_EM (lpMemRht,      // Ptr to right arg global memory
                                                      aplTypeRht,    // Right arg storage type
+                                                     aplNELMRht,    // Right arg NELM
                                                      uDimAxRht,     // Right arg axis length
                                                      uStartCnt,     // Starting index into right arg along axis dimension
                                                      uCnt,          // Ending ...
@@ -1974,6 +1977,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                 // This element ends the previous item
                 if (!PrimFnDydLeftShoeAppend_EM (lpMemRht,      // Ptr to right arg global memory
                                                  aplTypeRht,    // Right arg storage type
+                                                 aplNELMRht,    // Right arg NELM
                                                  uDimAxRht,     // Right arg axis length
                                                  uStartCnt,     // Starting index into right arg along axis dimension
                                                  uCnt,          // Ending ...
@@ -1998,6 +2002,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         // One last case
         if (!PrimFnDydLeftShoeAppend_EM (lpMemRht,      // Ptr to right arg global memory
                                          aplTypeRht,    // Right arg storage type
+                                         aplNELMRht,    // Right arg NELM
                                          uDimAxRht,     // Right arg axis length
                                          uStartCnt,     // Starting index into right arg along axis dimension
                                          uCnt,          // Ending ...
@@ -2107,6 +2112,7 @@ NORMAL_EXIT:
 UBOOL PrimFnDydLeftShoeAppend_EM
     (LPVOID       lpMemRht,             // Ptr to right arg global memory
      APLSTYPE     aplTypeRht,           // Right arg storage type
+     APLNELM      aplNELMRht,           // Right arg NELM
      APLDIM       uDimAxRht,            // Right arg axis length
      UINT         uStartCnt,            // Starting index into right arg along axis dimension
      UINT         uEndCnt,              // Ending ...
@@ -2206,6 +2212,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
                     // Get the next value from right arg global memory
                     GetNextValueMem (lpMemRht,          // Ptr to item global memory data
                                      aplTypeRht,        // Item storage type
+                                     aplNELMRht,        // Item NELM
                                      uRht,              // Index into item
                                     &lpSymGlbRht,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                     &aplLongestRht,     // Ptr to result immediate value (may be NULL)

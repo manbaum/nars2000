@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1560,8 +1560,6 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
             case ARRAY_BOOL:
             case ARRAY_INT:
             case ARRAY_FLOAT:
-            case ARRAY_RAT:
-            case ARRAY_VFP:
                 aplTypeRes = ARRAY_BOOL;
 
                 break;
@@ -1571,6 +1569,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                 break;
 
+            case ARRAY_RAT:
+            case ARRAY_VFP:
             case ARRAY_NESTED:
                 break;
 

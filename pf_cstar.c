@@ -138,21 +138,41 @@ APLSTYPE PrimSpecCircleStarStorageTypeMon
     if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
-    if (IsSimpleChar (*lpaplTypeRht)
-     || *lpaplTypeRht EQ ARRAY_LIST)
-        return ARRAY_ERROR;
-
     // The storage type of the result is
     //   the same as that of the right arg
     aplTypeRes = *lpaplTypeRht;
 
-    // Except that BOOL, INT and APA become FLOAT
-    if (IsSimpleInt (aplTypeRes))
-        aplTypeRes = ARRAY_FLOAT;
-    else
-    // Except that RAT becomes VFP
-    if (IsRat (aplTypeRes))
-        aplTypeRes = ARRAY_VFP;
+    // Split cases based upon the storage type
+    switch (aplTypeRes)
+    {
+        // Except that BOOL, INT and APA become FLOAT
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+            aplTypeRes = ARRAY_FLOAT;
+
+            break;
+
+        // Except that RAT becomes VFP
+        case ARRAY_RAT:
+            aplTypeRes = ARRAY_VFP;
+
+            break;
+
+        case ARRAY_VFP:
+        case ARRAY_NESTED:
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+            aplTypeRes = ARRAY_ERROR;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     return aplTypeRes;
 } // End PrimSpecCircleStarStorageTypeMon
@@ -443,9 +463,32 @@ APLSTYPE PrimSpecCircleStarStorageTypeDyd
         // Calculate the storage type of the result
         aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // Except that RAT becomes VFP
-    if (IsRat (aplTypeRes))
-        aplTypeRes = ARRAY_VFP;
+    // Split cases based upon the storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+        case ARRAY_VFP:
+        case ARRAY_NESTED:
+            break;
+
+        // Except that RAT becomes VFP
+        case ARRAY_RAT:
+            aplTypeRes = ARRAY_VFP;
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+            aplTypeRes = ARRAY_ERROR;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     return aplTypeRes;
 } // End PrimSpecCircleStarStorageTypeDyd

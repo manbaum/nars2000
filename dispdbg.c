@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -600,8 +600,16 @@ void DisplayGlobals
                             break;
 
                         case ARRAY_CHAR:
-                            lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (MAX_VAL_LEN, lpHeader->NELM));
-                            aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = WC_EOS;
+                            if (IsEmpty (lpHeader->NELM))
+                            {
+                                aplArrChar[0] = UTF16_LEFTSINGLEQUOTE;
+                                aplArrChar[1] = UTF16_RIGHTSINGLEQUOTE;
+                                aplArrChar[2] = WC_EOS;
+                            } else
+                            {
+                                lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (MAX_VAL_LEN, lpHeader->NELM));
+                                aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = WC_EOS;
+                            } // End IF/ELSE
 
                             break;
 
@@ -611,21 +619,37 @@ void DisplayGlobals
                             break;
 
                         case ARRAY_RAT:
-                            lpwsz =
-                              FormatAplRat (aplArrChar,             // Ptr to output save area
-                                           *(LPAPLRAT) lpData);     // The value to format
-                            // Zap the trailing blank
-                            lpwsz[-1] = WC_EOS;
+                            if (IsEmpty (lpHeader->NELM))
+                            {
+                                aplArrChar[0] = L'0';
+                                aplArrChar[1] = L'x';
+                                aplArrChar[2] = WC_EOS;
+                            } else
+                            {
+                                lpwsz =
+                                  FormatAplRat (aplArrChar,             // Ptr to output save area
+                                               *(LPAPLRAT) lpData);     // The value to format
+                                // Zap the trailing blank
+                                lpwsz[-1] = WC_EOS;
+                            } // End IF/ELSE
 
                             break;
 
                         case ARRAY_VFP:
-                            lpwsz =
-                              FormatAplVfp (aplArrChar,             // Ptr to output save area
-                                          *(LPAPLVFP) lpData,       // The value to format
-                                            0);                     // Use this many significant digits for VFP
-                            // Zap the trailing blank
-                            lpwsz[-1] = WC_EOS;
+                            if (IsEmpty (lpHeader->NELM))
+                            {
+                                aplArrChar[0] = L'0';
+                                aplArrChar[1] = L'v';
+                                aplArrChar[2] = WC_EOS;
+                            } else
+                            {
+                                lpwsz =
+                                  FormatAplVfp (aplArrChar,             // Ptr to output save area
+                                              *(LPAPLVFP) lpData,       // The value to format
+                                                0);                     // Use this many significant digits for VFP
+                                // Zap the trailing blank
+                                lpwsz[-1] = WC_EOS;
+                            } // End IF/ELSE
 
                             break;
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2183,6 +2183,10 @@ APLRAT mpqMinInt                // Minimum signed integer -2*63
 #ifdef DEFINE_VALUES
 = {0}
 #endif
+,      mpqZero                  // ...          0   ...
+#ifdef DEFINE_VALUES
+= {0}
+#endif
 ,      mpqPosInfinity           // Positive infniity
 #ifdef DEFINE_VALUES
 = {{0, INT_MAX, NULL},
@@ -2218,6 +2222,10 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 = {0}
 #endif
 ,      mpfHalf                  // 0.5
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,      mpfZero                  // 0
 #ifdef DEFINE_VALUES
 = {0}
 #endif

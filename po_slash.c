@@ -1218,6 +1218,7 @@ RESTART_EXCEPTION:
                 GetNextValueMemIntoToken (uRht,             // Index to use
                                           lpMemRht,         // Ptr to global memory object to index
                                           aplTypeRht,       // Storage type of the arg
+                                          aplNELMRht,       // NELM         ...
                                           apaOffRht,        // APA offset (if needed)
                                           apaMulRht,        // APA multiplier (if needed)
                                          &tkRhtArg);        // Ptr to token in which to place the value
@@ -1244,6 +1245,7 @@ RESTART_EXCEPTION:
                     GetNextValueMemIntoToken (uPrv,         // Index to use
                                               lpMemRht,     // Ptr to global memory object to index
                                               aplTypeRht,   // Storage type of the arg
+                                              aplNELMRht,   // NELM         ...
                                               apaOffRht,    // APA offset (if needed)
                                               apaMulRht,    // APA multiplier (if needed)
                                              &tkLftArg);    // Ptr to token in which to place the value
@@ -2335,6 +2337,7 @@ RESTART_EXCEPTION:
                     GetNextValueMemIntoToken (uRht,             // Index to use
                                               lpMemRht,         // Ptr to global memory object to index
                                               aplTypeRht,       // Storage type of the arg
+                                              aplNELMRht,       // NELM         ...
                                               apaOffRht,        // APA offset (if needed)
                                               apaMulRht,        // APA multiplier (if needed)
                                              &tkRhtArg);        // Ptr to token in which to place the value
@@ -2356,6 +2359,7 @@ RESTART_EXCEPTION:
                         GetNextValueMemIntoToken (uRht,         // Index to use
                                                   lpMemRht,     // Ptr to global memory object to index
                                                   aplTypeRht,   // Storage type of the arg
+                                                  aplNELMRht,   // NELM         ...
                                                   apaOffRht,    // APA offset (if needed)
                                                   apaMulRht,    // APA multiplier (if needed)
                                                  &tkLftArg);    // Ptr to token in which to place the value
@@ -2398,6 +2402,7 @@ RESTART_EXCEPTION:
                     GetNextValueMemIntoToken (uRht,             // Index to use
                                               lpMemRht,         // Ptr to global memory object to index
                                               aplTypeRht,       // Storage type of the arg
+                                              aplNELMRht,       // NELM         ...
                                               apaOffRht,        // APA offset (if needed)
                                               apaMulRht,        // APA multiplier (if needed)
                                              &tkRhtArg);        // Ptr to token in which to place the value
@@ -2424,6 +2429,7 @@ RESTART_EXCEPTION:
                         GetNextValueMemIntoToken (uRht,         // Index to use
                                                   lpMemRht,     // Ptr to global memory object to index
                                                   aplTypeRht,   // Storage type of the arg
+                                                  aplNELMRht,   // NELM         ...
                                                   apaOffRht,    // APA offset (if needed)
                                                   apaMulRht,    // APA multiplier (if needed)
                                                  &tkLftArg);    // Ptr to token in which to place the value

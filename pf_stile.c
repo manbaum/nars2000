@@ -140,17 +140,35 @@ APLSTYPE PrimSpecStileStorageTypeMon
     if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
-    if (IsSimpleChar (*lpaplTypeRht)
-     || *lpaplTypeRht EQ ARRAY_LIST)
-        return ARRAY_ERROR;
-
     // The storage type of the result is
     //   the same as that of the right arg
     aplTypeRes = *lpaplTypeRht;
 
-    // Except APA becomes INT
-    if (IsSimpleAPA (aplTypeRes))
-        aplTypeRes = ARRAY_INT;
+    // Split cases based upon the storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
+        case ARRAY_NESTED:
+            break;
+
+        case ARRAY_APA:
+            aplTypeRes = ARRAY_INT;
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+            aplTypeRes = ARRAY_ERROR;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     return aplTypeRes;
 } // End PrimSpecStileStorageTypeMon

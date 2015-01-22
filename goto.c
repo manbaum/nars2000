@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -169,7 +169,10 @@ EXIT_TYPES GotoLine_EM
             defstop
                 break;
         } // End SWITCH
-    } // End IF
+    } else
+    // If it's neither a simple nor global numeric, ...
+    if (!IsSimpleGlbNum (aplTypeRht))
+        goto DOMAIN_EXIT;
 
     // Copy ptr to current SI level
     lpSISCur = lpMemPTD->lpSISCur;

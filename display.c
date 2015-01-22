@@ -2797,6 +2797,7 @@ APLINT GetQuadICValue
         // Get next item from global memory ([]IC can be BOOL, INT, or APA only)
         GetNextItemMem (lpMemQuadIC,        // Ptr to item global memory data
                         aplTypeQuadIC,      // Item storage type
+                        aplNELMQuadIC,      // Item NELM
                         icIndex,            // Index into item
                         NULL,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                        &aplIntQuadIC);      // Ptr to result immediate value (may be NULL)

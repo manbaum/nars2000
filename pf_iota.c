@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2864,6 +2864,7 @@ UBOOL PrimFnDydIotaOther
         // Get the next value from the right arg
         GetNextValueMem (lpMemRht,              // Ptr to right arg global memory
                          aplTypeRht,            // Right arg storage type
+                         aplNELMRht,            // Right arg NELM
                          uRht,                  // Right arg index
                         &hGlbSubRht,            // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                         &aplLongestSubRht,      // Ptr to right arg immediate value
@@ -2885,6 +2886,7 @@ UBOOL PrimFnDydIotaOther
             // Get the next value from the left arg
             GetNextValueMem (lpMemLft,              // Ptr to left arg global memory
                              aplTypeLft,            // Left arg storage type
+                             aplNELMLft,            // Left arg NELM
                              uLft,                  // Left arg index
                             &hGlbSubLft,            // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestSubLft,      // Ptr to left arg immediate value

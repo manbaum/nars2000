@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -340,9 +340,9 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
 
         // Make the prototype
         hSymGlbRes =
-          MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbRht),    // Proto arg handle
-                                   lptkFunc,                    // Ptr to function token
-                                   MP_NUMONLY);                 // Numerics only
+          MakeMonPrototype_EM_PTB (hGlbRht,     // Proto arg handle
+                                   lptkFunc,    // Ptr to function token
+                                   MP_NUMONLY); // Numerics only
     } else
     {
         //***************************************************************
@@ -519,7 +519,7 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
-    Assert (IsSimpleNum (aplTypeRes)
+    Assert (IsSimpleGlbNum (aplTypeRes)
          || IsNested (aplTypeRes));
 
     // If the result is simple numeric, ...
@@ -622,22 +622,57 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     lpMemRht = VarArrayDataFmBase (lpMemRht);
     lpMemRes = VarArrayDataFmBase (lpMemRes);
 
-    // If the right arg (and result) is simple (numeric), ...
-    if (IsSimpleNum (aplTypeRht))
+    // If the right arg (and result) is simple or Global (numeric), ...
+    if (IsSimpleGlbNum (aplTypeRht))
     {
         // Fill in the result data
         if (lpPrimIdent->IsBool)
         {
-            Assert (IsSimpleBool (aplTypeRes));
+            // Split cases based upon the storage type
+            switch (aplTypeRes)
+            {
+                case ARRAY_BOOL:
+                    // If the identity element is 1, ...
+                    if (lpPrimIdent->bIdentElem)
+                        FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), 0xFF);
+                    break;
 
-            if (lpPrimIdent->bIdentElem)
-                FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), 0xFF);
+                case ARRAY_RAT:
+                    for (uRht = 0; uRht < aplNELMRes; uRht++)
+                        mpq_init   (((LPAPLRAT) lpMemRes)++);
+                    break;
+
+                case ARRAY_VFP:
+                    for (uRht = 0; uRht < aplNELMRes; uRht++)
+                        mpfr_init0 (((LPAPLVFP) lpMemRes)++);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
         } else
         {
-            Assert (IsSimpleFlt (aplTypeRes));
+            // Split cases based upon the storage type
+            switch (aplTypeRes)
+            {
+                case ARRAY_FLOAT:
+                    for (uRht = 0; uRht < aplNELMRes; uRht++)
+                        *((LPAPLFLOAT) lpMemRes)++ = lpPrimIdent->fIdentElem;
+                    break;
 
-            for (uRht = 0; uRht < aplNELMRes; uRht++)
-                *((LPAPLFLOAT) lpMemRes)++ = lpPrimIdent->fIdentElem;
+                case ARRAY_RAT:
+                    for (uRht = 0; uRht < aplNELMRes; uRht++)
+                        mpq_init_set_d  (((LPAPLRAT) lpMemRes)++, lpPrimIdent->fIdentElem);
+                    break;
+
+                case ARRAY_VFP:
+                    for (uRht = 0; uRht < aplNELMRes; uRht++)
+                        mpfr_init_set_d (((LPAPLVFP) lpMemRes)++, lpPrimIdent->fIdentElem, MPFR_RNDN);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
         } // End IF/ELSE
     } else
     {
@@ -12031,13 +12066,25 @@ RESTART_EXCEPTION_AXIS:
                             if (IsSimpleHet (aplTypeLft))
                                 aplTypeHetLft = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
                             else
-                                GetNextSimple (lpMemLft, aplTypeLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
-
+                                GetNextSimple (lpMemLft,        // Ptr to item global memory data
+                                               aplTypeLft,      // Item storage type
+                                               aplNELMLft,      // Item NELM
+                                               uLft,            // Index into item
+                                              &aplIntegerLft,   // Ptr to Boolean/Integer result
+                                              &aplFloatLft,     // Ptr to Float result
+                                              &aplCharLft,      // Ptr to Char result
+                                              &lpSymGlbLft);    // Ptr to global memory handle (may be NULL)
                             if (IsSimpleHet (aplTypeRht))
                                 aplTypeHetRht = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
                             else
-                                GetNextSimple (lpMemRht, aplTypeRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
-
+                                GetNextSimple (lpMemRht,        // Ptr to item global memory data
+                                               aplTypeRht,      // Item storage type
+                                               aplNELMRht,      // Item NELM
+                                               uRht,            // Index into item
+                                              &aplIntegerRht,   // Ptr to Boolean/Integer result
+                                              &aplFloatRht,     // Ptr to Float result
+                                              &aplCharRht,      // Ptr to Char result
+                                              &lpSymGlbRht);    // Ptr to global memory handle (may be NULL)
                             // Split cases based upon the left hetero's storage type
                             switch (aplTypeHetLft)
                             {
@@ -13577,13 +13624,25 @@ RESTART_EXCEPTION_NOAXIS:
                             if (IsSimpleHet (aplTypeLft))
                                 aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
                             else
-                                GetNextSimple (lpMemLft, aplTypeLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
-
+                                GetNextSimple (lpMemLft,        // Ptr to item global memory data
+                                               aplTypeLft,      // Item storage type
+                                               aplNELMLft,      // Item NELM
+                                               uRes,            // Index into item
+                                              &aplIntegerLft,   // Ptr to Boolean/Integer result
+                                              &aplFloatLft,     // Ptr to Float result
+                                              &aplCharLft,      // Ptr to Char result
+                                              &lpSymGlbLft);    // Ptr to global memory handle (may be NULL)
                             if (IsSimpleHet (aplTypeRht))
                                 aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
                             else
-                                GetNextSimple (lpMemRht, aplTypeRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
-
+                                GetNextSimple (lpMemRht,        // Ptr to item global memory data
+                                               aplTypeRht,      // Item storage type
+                                               aplNELMRht,      // Item NELM
+                                               uRes,            // Index into item
+                                              &aplIntegerRht,   // Ptr to Boolean/Integer result
+                                              &aplFloatRht,     // Ptr to Float result
+                                              &aplCharRht,      // Ptr to Char result
+                                              &lpSymGlbRht);    // Ptr to global memory handle (may be NULL)
                             // Split cases based upon the left hetero's storage type
                             switch (aplTypeHetLft)
                             {

@@ -623,7 +623,9 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = (aplNELMRes EQ 0) ? ARRAY_BOOL : aplTypeRes;
+    lpHeader->ArrType    = (IsEmpty (aplNELMRes) && IsSimpleNum (aplTypeRes))
+                         ? ARRAY_BOOL
+                         : aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -1200,6 +1202,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
     // If the args are overdetermined global numeric arrays, ...
     if (uNumRowsRht > uNumColsRht
+     && !IsEmpty (aplNELMRes)
      && (IsGlbNum (aplTypeLft)
       || IsGlbNum (aplTypeRht)))
     {
@@ -1247,7 +1250,9 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
             // Fill in the header values
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = (aplNELMRes EQ 0) ? ARRAY_BOOL : aplTypeRes;
+            lpHeader->ArrType    = (IsEmpty (aplNELMRes) && IsSimpleNum (aplTypeRes))
+                                 ? ARRAY_BOOL
+                                 : aplTypeRes;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
             lpHeader->RefCnt     = 1;
@@ -1275,7 +1280,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             lpMemRes = VarArrayDataFmBase (lpMemRes);
 
         // Check for no rows as gsl_linalg_SV_decomp doesn't handle it well
-        if (uNumRowsRht EQ 0)
+        if (IsEmpty (uNumRowsRht)
+         || IsEmpty (aplNELMRes))
             goto YYALLOC_EXIT;
 
         // Split cases based upon the result storage type

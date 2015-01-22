@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -787,6 +787,7 @@ RESTART_JOTDOT:
             GetNextValueMemIntoToken (uLft,         // Index to use
                                       lpMemLft,     // Ptr to global memory object to index
                                       aplTypeLft,   // Storage type of the arg
+                                      aplNELMLft,   // NELM         ...
                                       apaOffLft,    // APA offset (if needed)
                                       apaMulLft,    // APA multiplier (if needed)
                                      &tkLftArg);    // Ptr to token in which to place the result
@@ -796,6 +797,7 @@ RESTART_JOTDOT:
             GetNextValueMemIntoToken (uRht,         // Index to use
                                       lpMemRht,     // Ptr to global memory object to index
                                       aplTypeRht,   // Storage type of the arg
+                                      aplNELMRht,   // NELM         ...
                                       apaOffRht,    // APA offset (if needed)
                                       apaMulRht,    // APA multiplier (if needed)
                                      &tkRhtArg);    // Ptr to token in which to place the result

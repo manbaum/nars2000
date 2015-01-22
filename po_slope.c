@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -642,6 +642,7 @@ RESTART_EXCEPTION:
                 GetNextValueMemIntoToken (uRht,         // Index to use
                                           lpMemRht,     // Ptr to global memory object to index
                                           aplTypeRht,   // Storage type of the arg
+                                          aplNELMRht,   // NELM         ...
                                           apaOffRht,    // APA offset (if needed)
                                           apaMulRht,    // APA multiplier (if needed)
                                          &tkLftArg);    // Ptr to token in which to place the value
@@ -804,6 +805,7 @@ RESTART_EXCEPTION:
                     GetNextValueMemIntoToken (uRht,         // Index to use
                                               lpMemRht,     // Ptr to global memory object to index
                                               aplTypeRht,   // Storage type of the arg
+                                              aplNELMRht,   // NELM         ...
                                               apaOffRht,    // APA offset (if needed)
                                               apaMulRht,    // APA multiplier (if needed)
                                              &tkRhtArg);    // Ptr to token in which to place the value
@@ -855,7 +857,8 @@ RESTART_EXCEPTION:
                     AttrsOfToken (&tkLftArg, &aplTypeTmp, NULL, NULL, NULL);
 
                     // Check for blow up
-                    if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeTmp])
+                    if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeTmp]
+                     && !IsNested (aplTypeRes))
                     {
                         // It's now a aplTypeTmp result
                         aplTypeRes = aplTypeTmp;
@@ -1079,6 +1082,7 @@ RESTART_EXCEPTION:
                 GetNextValueMemIntoToken (uRht,             // Index to use
                                           lpMemRht,         // Ptr to global memory object to index
                                           aplTypeRht,       // Storage type of the arg
+                                          aplNELMRht,       // NELM         ...
                                           apaOffRht,        // APA offset (if needed)
                                           apaMulRht,        // APA multiplier (if needed)
                                          &tkRhtArg);        // Ptr to token in which to place the value
@@ -1135,6 +1139,7 @@ RESTART_EXCEPTION:
                     GetNextValueMemIntoToken (uRht,         // Index to use
                                               lpMemRht,     // Ptr to global memory object to index
                                               aplTypeRht,   // Storage type of the arg
+                                              aplNELMRht,   // NELM         ...
                                               apaOffRht,    // APA offset (if needed)
                                               apaMulRht,    // APA multiplier (if needed)
                                              &tkLftArg);    // Ptr to token in which to place the value
@@ -1181,7 +1186,8 @@ RESTART_EXCEPTION:
                     AttrsOfToken (&tkRhtArg, &aplTypeTmp, NULL, NULL, NULL);
 
                     // Check for blow up
-                    if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeTmp])
+                    if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeTmp]
+                     && !IsNested (aplTypeRes))
                     {
                         // It's now a aplTypeTmp result
                         aplTypeRes = aplTypeTmp;
@@ -1318,7 +1324,7 @@ RESTART_EXCEPTION:
                                 lpMemRat = VarArrayDataFmBase (lpMemRat);
 
                                 // Copy to the result
-                               mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
+                                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemRat = NULL;

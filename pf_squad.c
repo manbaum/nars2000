@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -705,6 +705,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 // Get next value from the left arg
                 GetNextValueMem (lpMemLft,      // Ptr to left arg global memory
                                  aplTypeLft,    // Left arg storage type
+                                 aplNELMLft,    // Left arg NELM
                                  0,             // Left arg index
                                 &hGlbSub,       // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                                  NULL,          // Ptr to left arg immediate value
@@ -728,6 +729,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             // Get next value from the left arg
             GetNextValueMem (lpMemLft,          // Ptr to left arg global memory
                              aplTypeLft,        // Left arg storage type
+                             aplNELMLft,        // Left arg NELM
                              uLft,              // Left arg index
                             &hGlbSub,           // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestSub,     // Ptr to left arg immediate value
@@ -916,6 +918,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 // Get next value from the left arg
                 GetNextValueMem (lpMemLft,      // Ptr to left arg global memory
                                  aplTypeLft,    // Left arg storage type
+                                 aplNELMLft,    // Left arg NELM
                                  uLft++,        // Left arg index
                                 &hGlbSub,       // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                                  NULL,          // Ptr to left arg immediate value (may be NULL)
@@ -1050,6 +1053,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 // Get the first item from the set arg
                 GetNextItemMem (lpMemSet,           // Ptr to item global memory data
                                 aplTypeSet,         // Item storage type
+                                aplNELMSet,         // Item NELM
                                 0,                  // Index into item
                                &hGlbSubSet,         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                &aplLongestSet);     // Ptr to result immediate value (may be NULL)
@@ -1158,6 +1162,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     // Get the array of indices from the left arg
                     GetNextValueMem (lpMemLft,          // Ptr to left arg global memory
                                      aplTypeLft,        // Left arg storage type
+                                     aplNELMLft,        // Left arg NELM
                                      iLft--,            // Left arg index
                                     &hGlbSub,           // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                                     &aplLongestSub,     // Ptr to left arg immediate value
@@ -1318,6 +1323,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 //   and save into the result
                 GetNextValueMem (lpMemRht,          // Ptr to right arg global memory
                                  aplTypeRht,        // Right arg storage type
+                                 aplNELMRht,        // Right arg NELM
                                  aplIntAcc,         // Right arg index
                                 &hGlbSub,           // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                                 &aplLongestSub,     // Ptr to right arg immediate value
@@ -1460,6 +1466,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 if (!IsSingleton (aplNELMSet))
                     GetNextItemMem (lpMemSet,               // Ptr to item global memory data
                                     aplTypeSet,             // Item storage type
+                                    aplNELMSet,             // Item NELM
                                     aplIndexSet++,          // Index into item
                                    &hGlbSubSet,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                    &aplLongestSet);         // Ptr to result immediate value (may be NULL)

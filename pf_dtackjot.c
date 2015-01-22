@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4178,6 +4178,7 @@ __try
                     if (lpMemRht)
                         GetNextValueMem (lpMemRht,                              // Ptr to right arg global memory data
                                          aplTypeRht,                            // Right arg  storage type
+                                         aplNELMRht,                            // Right arg  NELM
                                          aplDimCol + aplDimRow * aplDimNCols,   // Index into right arg
                                         &hGlbItmRht,                            // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                         &aplLongestRht,                         // Ptr to result immediate value (may be NULL)

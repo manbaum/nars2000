@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -302,15 +302,16 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     // Calc result NELM
     aplNELMRes = aplRestLft * aplRestRht;
 
-    // Check for empty result
-    if (IsEmpty (aplNELMRes))
+    // Calc result Type
+    aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
+
+    // Check for empty and non-global numeric result
+    if (IsEmpty (aplNELMRes)
+     && !IsGlbNum (aplTypeRes))
         // Calc result Type
         aplTypeRes = ARRAY_BOOL;
     else
     {
-        // Calc result Type
-        aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
-
         // Promote Boolean to integer
         if (IsSimpleBool (aplTypeRes))
             aplTypeRes = ARRAY_INT;

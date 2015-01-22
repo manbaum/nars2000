@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -521,6 +521,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     if (IsSimpleNHGlbNum (aplTypeRht))
         // Format the right arg into the result
         SysFnDydFMTSimp (aplTypeRht,            // Item storage type
+                         aplNELMRht,            // Item NELM
                          aplNumCols,            // Item # cols
                          aplNumRows,            // Item # rows
                          aplColsRes,            // Result # cols
@@ -560,6 +561,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
 
                     // Format the item into the result
                     SysFnDydFMTSimp (aplTypeItm,            // Item storage type
+                                     aplNELMItm,            // Item NELM
                                      1,                     // Item # cols
                                      1,                     // Item # rows
                                      aplColsRes,            // Result # cols
@@ -644,6 +646,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                                 // Format the item into the result
                                 fmtSpecRes =
                                   SysFnDydFMTSimp (aplTypeItm,                      // Item storage type
+                                                   aplNELMItm,                      // Item NELM
                                                    1,                               // Item # cols
                                                    1,                               // Item # rows
                                                    aplColsRes,                      // Result # cols
@@ -667,6 +670,7 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                     } else
                         // Format the item into the result
                         SysFnDydFMTSimp (aplTypeItm,            // Item storage type
+                                         aplNELMItm,            // Item NELM
                                          aplNumCols,            // Item # cols
                                          aplNumRows,            // Item # rows
                                          aplColsRes,            // Result # cols
@@ -779,6 +783,7 @@ NORMAL_EXIT:
 
 FMTSPECVAL SysFnDydFMTSimp
     (APLSTYPE      aplTypeItm,              // Item storage type
+     APLSTYPE      aplNELMItm,              // Item NELM
      APLDIM        aplColsItm,              // Item # cols
      APLDIM        aplRowsItm,              // Item # rows
      APLDIM        aplColsRes,              // Result # cols
@@ -881,6 +886,7 @@ FMTSPECVAL SysFnDydFMTSimp
                                     // Continue with code common to G-format spec
                                     QFMT_CommonG (*lplpfsNxt,                                       // Ptr to FMTSPECSTR
                                                    aplTypeItm,                                      // Item storage type
+                                                   aplNELMItm,                                      // Item NELM
                                                    fmtSpecRes,                                      // Result format spec
                                                    lpMemItm,                                        // Ptr to item global memory
                                                    uRow,                                            // Row #
@@ -903,6 +909,7 @@ FMTSPECVAL SysFnDydFMTSimp
                                     // Continue with code common to E- F- I- R-format specs
                                     QFMT_CommonEFIR (*lplpfsNxt,                                    // Ptr to FMTSPECSTR
                                                       aplTypeItm,                                   // Item storage type
+                                                      aplNELMItm,                                   // Item NELM
                                                       fmtSpecRes,                                   // Result format spec
                                                       lpMemItm,                                     // Ptr to item global memory
                                                       uRow,                                         // Row #
@@ -1192,6 +1199,7 @@ FMTSPECVAL SysFnDydFMTSimp
 void QFMT_CommonG
     (LPFMTSPECSTR lpfsNxt,                  // Ptr to FMTSPECSTR
      APLSTYPE     aplTypeItm,               // Item storage type
+     APLNELM      aplNELMItm,               // Item NELM
      FMTSPECVAL   fmtSpecRes,               // Result format spec
      LPVOID       lpMemItm,                 // Ptr to item global memory
      APLDIM       uRow,                     // Row #
@@ -1235,6 +1243,7 @@ void QFMT_CommonG
     // Get the next value
     GetNextValueMem (lpMemItm,                              // Ptr to item global memory data
                      aplTypeItm,                            // Item storage type
+                     aplNELMItm,                            // Item NELM
                      (uRow * aplColsItm) + aplCurColItm,    // Index into item
                      NULL,                                  // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                     &aplLongestItm,                         // Ptr to result immediate value (may be NULL)
@@ -1476,6 +1485,7 @@ void QFMT_CommonG
 void QFMT_CommonEFIR
     (LPFMTSPECSTR lpfsNxt,                  // Ptr to FMTSPECSTR
      APLSTYPE     aplTypeItm,               // Item storage type
+     APLNELM      aplNELMItm,               // Item NELM
      FMTSPECVAL   fmtSpecRes,               // Result format spec
      LPVOID       lpMemItm,                 // Ptr to item global memory
      APLDIM       uRow,                     // Row #
@@ -1533,6 +1543,7 @@ void QFMT_CommonEFIR
     // Get the next value
     GetNextValueMem (lpMemItm,                              // Ptr to item global memory data
                      aplTypeItm,                            // Item storage type
+                     aplNELMItm,                            // Item NELM
                      (uRow * aplColsItm) + aplCurColItm,    // Index into item
                     &lpSymGlbItm,                           // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                     &aplLongestItm,                         // Ptr to result immediate value (may be NULL)

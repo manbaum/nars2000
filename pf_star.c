@@ -151,13 +151,37 @@ APLSTYPE PrimSpecStarStorageTypeMon
     //   the same as that of the right arg
     aplTypeRes = *lpaplTypeRht;
 
-    // Except that BOOL, INT and APA become FLOAT
-    if (IsSimpleInt (aplTypeRes))
-        aplTypeRes = ARRAY_FLOAT;
-    else
-    // Except that RAT becomes VFP
-    if (IsRat (aplTypeRes))
-        return ARRAY_VFP;
+    // Split cases based upon the storage type
+    switch (aplTypeRes)
+    {
+        // Except that BOOL, INT and APA become FLOAT
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            aplTypeRes = ARRAY_FLOAT;
+
+            break;
+
+        // Except that RAT becomes VFP
+        case ARRAY_RAT:
+            aplTypeRes = ARRAY_VFP;
+
+            break;
+
+        case ARRAY_FLOAT:
+        case ARRAY_VFP:
+        case ARRAY_NESTED:
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+            aplTypeRes = ARRAY_ERROR;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     return aplTypeRes;
 } // End PrimSpecStarStorageTypeMon

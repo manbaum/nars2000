@@ -1816,6 +1816,11 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
             // Get the identity element
             aplFloatIdent = lpPrimIdentLft->fIdentElem;
 
+            // If either arg is a global numeric, ...
+            if (IsGlbNum (aplTypeLft)
+             || IsGlbNum (aplTypeRht))
+                aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
+            else
             // If the identity element is Boolean or we're prototyping,
             //   the result is, too
             if (lpPrimIdentLft->IsBool
@@ -2289,16 +2294,35 @@ RESTART_INNERPROD_RES:
             if (lpPrimIdentLft->IsBool)
             {
                 // Check for identity element 1
-                if (lpPrimIdentLft->bIdentElem)
+                //  or is a global numeric
+                if (lpPrimIdentLft->bIdentElem
+                 || IsGlbNum (aplTypeRes))
+                // Split cases based upon the result storage type
+                switch (aplTypeRes)
                 {
                     APLNELM uNELMRes;
 
-                    // Calculate the # bytes in the result, rounding up
-                    uNELMRes = (aplNELMRes + (NBIB - 1)) >> LOG2NBIB;
+                    case ARRAY_BOOL:
+                        // Calculate the # bytes in the result, rounding up
+                        uNELMRes = (aplNELMRes + (NBIB - 1)) >> LOG2NBIB;
 
-                    for (uRes = 0; uRes < uNELMRes; uRes++)
-                        *((LPAPLBOOL) lpMemRes)++ = 0xFF;
-                } // End IF
+                        for (uRes = 0; uRes < uNELMRes; uRes++)
+                            *((LPAPLBOOL) lpMemRes)++ = 0xFF;
+                        break;
+
+                    case ARRAY_RAT:
+                        for (uRes = 0; uRes < aplNELMRes; uRes++)
+                            mpq_init_set_ui (((LPAPLRAT) lpMemRes)++, lpPrimIdentLft->bIdentElem, 1);
+                        break;
+
+                    case ARRAY_VFP:
+                        for (uRes = 0; uRes < aplNELMRes; uRes++)
+                            mpfr_init_set_ui (((LPAPLVFP) lpMemRes)++, lpPrimIdentLft->bIdentElem, MPFR_RNDN);
+                        break;
+
+                    defstop
+                        break;
+                } // End IF/SWITCH
             } else
             for (uRes = 0; uRes < aplNELMRes; uRes++)
                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;

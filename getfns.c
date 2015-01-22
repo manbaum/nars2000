@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1364,11 +1364,22 @@ void GetFirstValueGlb
             if (IsEmpty (aplNELM))
             {
                 if (lpSymGlb)
-                    *lpSymGlb  = NULL;
-                if (lpImmType)
-                    *lpImmType = IMMTYPE_BOOL;
-                if (lpArrType)
-                    *lpArrType = ARRAY_BOOL;
+                // Split cases based upon the storage type
+                switch (aplType)
+                {
+                    case ARRAY_RAT:
+                        *lpSymGlb = &mpqZero;
+
+                        break;
+
+                    case ARRAY_VFP:
+                        *lpSymGlb = &mpfZero;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End IF/SWITCH
             } else
                 if (lpSymGlb)
                     *lpSymGlb  = lpMem;
@@ -1394,6 +1405,7 @@ UBOOL GetNextValueMemIntoToken
     (APLUINT  uArg,                         // Index to use
      LPVOID   lpMemArg,                     // Ptr to global memory object to index
      APLSTYPE aplTypeArg,                   // Storage type of the arg
+     APLNELM  aplNELMArg,                   // NELM         ...
      APLINT   apaOff,                       // APA offset (if needed)
      APLINT   apaMul,                       // APA multiplier (if needed)
      LPTOKEN  lptkArg)                      // Ptr to token in which to place the value
@@ -1402,6 +1414,72 @@ UBOOL GetNextValueMemIntoToken
     // Clear the NoDisplay flag
     lptkArg->tkFlags.NoDisplay = FALSE;
 
+    // If the arg is empty,
+    //   and not a ptr array, ...
+    if (IsEmpty (aplNELMArg)
+     && !IsPtrArray (aplTypeArg))
+    {
+        APLRAT aplRat = {0};
+        APLVFP aplVfp = {0};
+
+        Assert (uArg EQ 0);
+
+        // Split cases based upon the arg storage type
+        switch (aplTypeArg)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_APA:
+                lptkArg->tkFlags.TknType  = TKT_VARIMMED;
+                lptkArg->tkFlags.ImmType  = IMMTYPE_BOOL;
+                lptkArg->tkData.tkInteger = 0;
+
+                break;
+
+            case ARRAY_CHAR:
+                lptkArg->tkFlags.TknType  = TKT_VARIMMED;
+                lptkArg->tkFlags.ImmType  = IMMTYPE_CHAR;
+                lptkArg->tkData.tkChar    = L' ';
+
+                break;
+
+            case ARRAY_RAT:
+                // Initialize to 0/1
+                mpq_init (&aplRat);
+
+                lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+                lptkArg->tkFlags.ImmType  = IMMTYPE_RAT;
+                lptkArg->tkData.tkGlbData =
+                  MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                                  &aplRat,                          // Ptr to the value
+                                   FALSE,                           // TRUE iff we should initialize the target first
+                                   lptkArg);                        // Ptr to function token
+                if (lptkArg->tkData.tkGlbData EQ NULL)
+                    goto ERROR_EXIT;
+                break;
+
+            case ARRAY_VFP:
+                // Initialize to 0
+                mpfr_init0 (&aplVfp);
+
+                lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+                lptkArg->tkFlags.ImmType  = IMMTYPE_VFP;
+                lptkArg->tkData.tkGlbData =
+                  MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                                  &aplVfp,                          // Ptr to the value
+                                   FALSE,                           // TRUE iff we should initialize the target first
+                                   lptkArg);                        // Ptr to function token
+                if (lptkArg->tkData.tkGlbData EQ NULL)
+                    goto ERROR_EXIT;
+                break;
+
+            case ARRAY_HETERO:
+            case ARRAY_NESTED:
+            defstop
+                break;
+        } // End SWITCH
+    } else
     // Split cases based upon the arg storage type
     switch (aplTypeArg)
     {
@@ -1491,7 +1569,7 @@ UBOOL GetNextValueMemIntoToken
 
         defstop
             break;
-    } // End SWITCH
+    } // End IF/ELSE/SWITCH
 
     return TRUE;
 
@@ -1864,9 +1942,7 @@ void GetNextItemGlb
 
 {
     APLSTYPE  aplTypeSub;                   // Item storage type
-#ifdef DEBUG
     APLNELM   aplNELMSub;                   // Item NELM
-#endif
     APLRANK   aplRankSub;                   // Item rank
     LPVOID    lpMemSub;                     // Ptr to item global memory
 
@@ -1876,9 +1952,7 @@ void GetNextItemGlb
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
     // Get the Array Type and Rank
     aplTypeSub = lpHeader->ArrType;
-#ifdef DEBUG
     aplNELMSub = lpHeader->NELM;
-#endif
     aplRankSub = lpHeader->Rank;
 #undef  lpHeader
 
@@ -1890,6 +1964,7 @@ void GetNextItemGlb
     // Get next item from global memory
     GetNextItemMem (lpMemSub,               // Ptr to item global memory data
                     aplTypeSub,             // Item storage type
+                    aplNELMSub,             // Item NELM
                     uSub,                   // Index into item
                     lphGlbRes,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                     lpaplLongestRes);       // Ptr to result immediate value (may be NULL)
@@ -1914,9 +1989,7 @@ void GetNextValueGlb
 
 {
     APLSTYPE  aplTypeSub;                   // Item storage type
-#ifdef DEBUG
     APLNELM   aplNELMSub;                   // Item NELM
-#endif
     APLRANK   aplRankSub;                   // Item rank
     LPVOID    lpMemSub;                     // Ptr to item global memory
 
@@ -1930,9 +2003,7 @@ void GetNextValueGlb
 #define lpHeader        ((LPLSTARRAY_HEADER) lpMemSub)
             // Get the Array Type and Rank
             aplTypeSub = ARRAY_LIST;
-#ifdef DEBUG
             aplNELMSub = lpHeader->NELM;
-#endif
             aplRankSub = 1;
 #undef  lpHeader
             // Skip over the header and dimensions to the data
@@ -1944,9 +2015,7 @@ void GetNextValueGlb
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
             // Get the Array Type and Rank
             aplTypeSub = lpHeader->ArrType;
-#ifdef DEBUG
             aplNELMSub = lpHeader->NELM;
-#endif
             aplRankSub = lpHeader->Rank;
 #undef  lpHeader
             // Skip over the header and dimensions to the data
@@ -1966,6 +2035,7 @@ void GetNextValueGlb
     // Get next value from global memory
     GetNextValueMem (lpMemSub,              // Ptr to item global memory data
                      aplTypeSub,            // Item storage type
+                     aplNELMSub,            // Item NELM
                      uSub,                  // Index into item
                      lphGlbRes,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                      lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
@@ -1985,6 +2055,7 @@ void GetNextValueGlb
 void GetNextValueMem
     (LPVOID      lpMemSub,                  // Ptr to item global memory data
      APLSTYPE    aplTypeSub,                // Item storage type
+     APLNELM     aplNELMSub,                // Item NELM
      APLUINT     uSub,                      // Index into item
      HGLOBAL    *lphGlbRes,                 // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
      APLLONGEST *lpaplLongestRes,           // Ptr to result immediate value (may be NULL)
@@ -1993,6 +2064,7 @@ void GetNextValueMem
 {
     GetNextValueMemSub (lpMemSub,           // Ptr to item global memory data
                         aplTypeSub,         // Item storage type
+                        aplNELMSub,         // Item NELM
                         uSub,               // Index into item
                         lphGlbRes,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                         lpaplLongestRes,    // Ptr to result immediate value (may be NULL)
@@ -2010,6 +2082,7 @@ void GetNextValueMem
 void GetNextItemMem
     (LPVOID      lpMemSub,              // Ptr to item global memory data
      APLSTYPE    aplTypeSub,            // Item storage type
+     APLSTYPE    aplNELMSub,            // Item NELM
      APLUINT     uSub,                  // Index into item
      HGLOBAL    *lphGlbRes,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
      APLLONGEST *lpaplLongestRes)       // Ptr to result immediate value (may be NULL)
@@ -2017,6 +2090,7 @@ void GetNextItemMem
 {
     GetNextValueMemSub (lpMemSub,           // Ptr to item global memory data
                         aplTypeSub,         // Item storage type
+                        aplNELMSub,         // Item NELM
                         uSub,               // Index into item
                         lphGlbRes,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                         lpaplLongestRes,    // Ptr to result immediate value (may be NULL)
@@ -2033,6 +2107,7 @@ void GetNextItemMem
 void GetNextSimple
     (LPVOID      lpMemSub,                  // Ptr to item global memory data
      APLSTYPE    aplTypeSub,                // Item storage type
+     APLSTYPE    aplNELMSub,                // Item NELM
      APLUINT     uSub,                      // Index into item
      LPAPLINT    lpaplInteger,              // Ptr to Boolean/Integer result
      LPAPLFLOAT  lpaplFloat,                // Ptr to Float result
@@ -2044,6 +2119,7 @@ void GetNextSimple
 
     GetNextValueMemSub (lpMemSub,           // Ptr to item global memory data
                         aplTypeSub,         // Item storage type
+                        aplNELMSub,         // Item NELM
                         uSub,               // Index into item
                         lplpSymGlb,         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                        &aplLongest,         // Ptr to result immediate value (may be NULL)
@@ -2070,6 +2146,7 @@ void GetNextSimple
 void GetNextValueMemSub
     (LPVOID      lpMemSub,              // Ptr to item global memory data
      APLSTYPE    aplTypeSub,            // Item storage type
+     APLNELM     aplNELMSub,            // Item NELM
      APLUINT     uSub,                  // Index into item
      HGLOBAL    *lphGlbRes,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
      APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
@@ -2083,6 +2160,79 @@ void GetNextValueMemSub
     if (lphGlbRes)
         *lphGlbRes = NULL;
 
+    // If the item is empty,
+    //   and not a ptr array, ...
+    if (IsEmpty (aplNELMSub)
+     && !IsPtrArray (aplTypeSub))
+    {
+        APLRAT aplRat = {0};
+        APLVFP aplVfp = {0};
+
+        Assert (uSub EQ 0);
+
+        // Split cases based upon the right arg storage type
+        switch (aplTypeSub)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_APA:
+            case ARRAY_LIST:
+                if (lpaplLongestRes)
+                    *lpaplLongestRes = 0;
+                if (lpimmTypeRes)
+                    *lpimmTypeRes    = IMMTYPE_BOOL;
+                break;
+
+            case ARRAY_CHAR:
+                if (lpaplLongestRes)
+                    *lpaplLongestRes = L' ';
+                if (lpimmTypeRes)
+                    *lpimmTypeRes    = IMMTYPE_CHAR;
+                break;
+
+            case ARRAY_RAT:
+                // Initialize to 0/1
+                mpq_init (&aplRat);
+
+                if (lphGlbRes)
+                {
+                    *lphGlbRes       =
+                      MakeGlbEntry_EM (aplTypeSub,                      // Entry type
+                                      &aplRat,                          // Ptr to the value
+                                       FALSE,                           // TRUE iff we should initialize the target first
+                                       NULL);                           // Ptr to function token
+                    if (*lphGlbRes EQ NULL)
+                        goto ERROR_EXIT;
+                } // End IF
+
+                if (lpimmTypeRes)
+                    *lpimmTypeRes    = IMMTYPE_RAT;
+                break;
+
+            case ARRAY_VFP:
+                // Initialize to 0
+                mpfr_init0 (&aplVfp);
+
+                if (lphGlbRes)
+                {
+                    *lphGlbRes       =
+                      MakeGlbEntry_EM (aplTypeSub,                      // Entry type
+                                      &aplVfp,                          // Ptr to the value
+                                       FALSE,                           // TRUE iff we should initialize the target first
+                                       NULL);                           // Ptr to function token
+                    if (*lphGlbRes EQ NULL)
+                        goto ERROR_EXIT;
+                } // End IF
+
+                if (lpimmTypeRes)
+                    *lpimmTypeRes    = IMMTYPE_VFP;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
     // Split cases based upon the right arg storage type
     switch (aplTypeSub)
     {
@@ -2209,7 +2359,17 @@ void GetNextValueMemSub
 
         defstop
             break;
-    } // End SWITCH
+    } // End IF/ELSE/SWITCH
+
+    return;
+
+ERROR_EXIT:
+    if (lpaplLongestRes)
+        *lpaplLongestRes = 0;
+    if (lpimmTypeRes)
+        *lpimmTypeRes    = IMMTYPE_ERROR;
+    if (lphGlbRes)
+        *lphGlbRes       = NULL;
 } // End GetNextValueMemSub
 
 

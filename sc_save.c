@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1690,9 +1690,11 @@ LPAPLCHAR AppendArrayHeader
             *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF
 
-        // If common VFP array precision requested, ...
+        // If common VFP array precision requested,
+        //   and the array is non-empty, ...
         if (lpuCommPrec
-         && IsVfp (lpHeader->ArrType))
+         && IsVfp (lpHeader->ArrType)
+         && !IsEmpty (aplNELMObj))
         {
             LPAPLVFP lpaplVfp;
 

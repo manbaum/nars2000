@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1651,7 +1651,7 @@ UBOOL ArrayIndexValidZilde_EM
                     goto LENGTH_EXIT;
 
                 // Check for DOMAIN ERROR
-                if (!IsSimple (aplTypeSub))
+                if (!IsNumeric (aplTypeSub))
                     goto DOMAIN_EXIT;
             } // End IF/ELSE
 
@@ -2422,6 +2422,7 @@ UBOOL ArrayIndexSetNamImmed_EM
         // Get the next item of the right arg
         GetNextValueMem (lpMemRht,              // Ptr to item global memory data
                          aplTypeRht,            // Item storage type
+                         aplNELMRht,            // Item NELM
                          (IsSingleton (aplNELMRht)) // If it's a singleton, ...
                          ? 0
                          : uRht,                // Index into item
@@ -2844,6 +2845,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
                 // Get the next right arg value
                 GetNextValueMem (lpMemRht,          // Ptr to item global memory data
                                  aplTypeRht,        // Item storage type
+                                 aplNELMRht,        // Item NELM
                                  uRht,              // Index into item
                                 &hGlbSubRht,        // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                 &aplLongestRht,     // Ptr to result immediate value (may be NULL)
@@ -3419,6 +3421,7 @@ UBOOL ArrayIndexSetSingLst_EM
             if (!IsSingleton (aplNELMRht))
                 GetNextValueMem (lpMemRht,                  // Ptr to right arg global memory data
                                  aplTypeRht,                // Right arg storage type
+                                 aplNELMRht,                // Right arg NELM
                                  uRes,                      // Index into right arg
                                 &hGlbSubRht,                // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                 &aplLongestRht,             // Ptr to result immediate value (may be NULL)
@@ -3427,6 +3430,7 @@ UBOOL ArrayIndexSetSingLst_EM
             bRet = ArrayIndexSetVector_EM (aplNELMNam,      // Name arg NELM
                                            lpMemSubLst,     // Ptr to list arg subitem
                                            aplTypeSubLst,   // List arg subitem storage type
+                                           aplNELMSubLst,   // List arg subitem NELM
                                            aplTypeRes,      // Result storage type
                                            lpMemRes,        // Ptr to result global memory
                                            uRes,            // Index into the list arg subitem
@@ -3489,6 +3493,7 @@ UBOOL ArrayIndexSetSingLst_EM
             {
                 GetNextValueMem (lpMemRht,                          // Ptr to right arg global memory data
                                  aplTypeRht,                        // Right arg storage type
+                                 aplNELMRht,                        // Right arg NELM
                                  uRes,                              // Index into right arg
                                 &hGlbSubRht,                        // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                 &aplLongestRht,                     // Ptr to result immediate value (may be NULL)
@@ -3514,6 +3519,7 @@ UBOOL ArrayIndexSetSingLst_EM
                     bRet = ArrayIndexSetVector_EM (aplNELMNam,      // Name arg NELM
                                                    lpMemSubLst,     // Ptr to list arg subitem
                                                    aplTypeSubLst,   // List arg subitem storage type
+                                                   aplNELMSubLst,   // List arg subitem NELM
                                                    aplTypeRes,      // Result storage type
                                                    lpMemRes,        // Ptr to result global memory
                                                    uRes,            // Index into the list arg subitem
@@ -3706,6 +3712,7 @@ UBOOL ArrayIndexSetVector_EM
     (APLNELM          aplNELMNam,       // Name arg NELM
      LPVOID           lpMemSubLst,      // Ptr to list arg subitem
      APLSTYPE         aplTypeSubLst,    // List arg subitem storage type
+     APLNELM          aplNELMSubLst,    // List arg subitem NELM
      APLSTYPE         aplTypeRes,       // Result storage type
      LPVOID           lpMemRes,         // Ptr to result global memory
      APLUINT          uRes,             // Index into the list arg subitem
@@ -3733,6 +3740,7 @@ UBOOL ArrayIndexSetVector_EM
     // Get next index from global memory
     GetNextValueMem (lpMemSubLst,       // Ptr to item global memory data
                      aplTypeSubLst,     // Item storage type
+                     aplNELMSubLst,     // Item NELM
                      uRes,              // Index into item
                     &hGlbSubLst,        // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                     &aplLongestSubLst,  // Ptr to result immediate value (may be NULL)

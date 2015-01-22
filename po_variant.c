@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1400,6 +1400,7 @@ UBOOL PrimOpVariantValidateGlb_EM
     // Get the first value from the right operand
     GetNextValueMem (lpMemRhtOpr,               // Ptr to right operand global memory
                       aplTypeRhtOpr,            // Right operand storage type
+                      aplNELMRhtOpr,            // Right operand NELM
                       0,                        // Index to use
                      &hGlbItm,                  // Ptr to the LPSYMENTRY or HGLOBAL (may be NULL)
                      &aplLongestItm,            // ...        immediate value (may be NULL)
@@ -1439,6 +1440,7 @@ UBOOL PrimOpVariantValidateGlb_EM
             // Get the second value from the right operand
             GetNextValueMem (lpMemRhtOpr,               // Ptr to right operand global memory
                               aplTypeRhtOpr,            // Right operand storage type
+                              aplNELMRhtOpr,            // Right operand NELM
                               1,                        // Index to use
                              &hGlbItm,                  // Ptr to the LPSYMENTRY or HGLOBAL (may be NULL)
                              &aplLongestItm,            // ...        immediate value (may be NULL)
@@ -1511,6 +1513,7 @@ UBOOL PrimOpVariantValidateGlb_EM
     // Get the second value from the right operand
     GetNextValueMem (lpMemRhtOpr,               // Ptr to right operand global memory
                       aplTypeRhtOpr,            // Right operand storage type
+                      aplNELMRhtOpr,            // Right operand NELM
                       1,                        // Index to use
                      &hGlbItm,                  // Ptr to the LPSYMENTRY or HGLOBAL (may be NULL)
                      &aplLongestItm,            // ...        immediate value (may be NULL)

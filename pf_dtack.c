@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -398,13 +398,15 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     // Calc result NELM, Rank, & Type
     aplNELMRes = aplNELMLft * aplNELMRht;
     aplRankRes = aplRankLft + aplRankRht;
-    if (IsEmpty (aplNELMRes))
+
+    // Calculate the result storage type
+    aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
+
+    if (IsEmpty (aplNELMRes)
+     && !IsGlbNum (aplTypeRes))
         aplTypeRes = ARRAY_BOOL;
     else
     {
-        // Calculate the result storage type
-        aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
-
         // Check for exceptions
         if ((IsAll2s ((LPVARARRAY_HEADER) lpMemLft) && IsSimpleInt (aplTypeRht))
          || (lpMemLft EQ NULL && aplLongestLft EQ 2 && !IsGlbNum (aplTypeRht)))

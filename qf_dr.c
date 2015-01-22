@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -815,7 +815,10 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         lstrcatW (wszTemp, L" " AP_ALL2S);
     } // End IF
 
-    if (IsVfp (aplTypeRht))
+    // If the array is VFP,
+    //   and it's non-empty, ...
+    if (IsVfp (aplTypeRht)
+     && !IsEmpty (aplNELMRht))
     {
         LPAPLVFP lpaplVfp;          // Ptr to VFP value
         APLUINT  uCommPrec;         // Ptr to common VFP array precision (0 if none) (may be NULL)
@@ -1118,6 +1121,7 @@ HGLOBAL SysFnDR_IntFloatToChar_EM
             // Get the next value from the right arg
             GetNextValueMem (lpMemRht,      // Ptr to item global memory data
                              aplTypeRht,    // Item storage type
+                             aplNELMRht,    // Item NELM
                              uRes,          // Index into item
                              NULL,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestRht, // Ptr to result immediate value (may be NULL)

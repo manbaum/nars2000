@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1052,7 +1052,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
         case ARRAY_RAT:
         case ARRAY_VFP:
             // Calculate space needed for the result
-            ByteRes = CalcArraySize (ARRAY_BOOL, aplNELM, aplRank);
+            ByteRes = CalcArraySize (aplType, aplNELM, aplRank);
 
             // Check for overflow
             if (ByteRes NE (APLU3264) ByteRes)
@@ -1069,7 +1069,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = ARRAY_BOOL;
+            lpHeader->ArrType    = aplType;
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
             lpHeader->RefCnt     = 1;
@@ -1082,7 +1082,29 @@ HGLOBAL MakeMonPrototype_EM_PTB
             // Copy the dimensions
             CopyMemory (lpMemRes, VarArrayBaseToDim (lpHeader), (APLU3264) aplRank * sizeof (APLRANK));
 
-            // The data is already zero from GHND
+            // Skip over the dimensions to the data
+            lpMemRes = VarArrayDimToData (lpMemRes, aplRank);
+
+            // Loop through the result setting it to zero
+            for (u = 0; u < aplNELM; u++)
+            // Split cases based upon the storage type
+            switch (aplType)
+            {
+                case ARRAY_RAT:
+                    // Initialize to 0/1
+                    mpq_init   (((LPAPLRAT) lpMemRes)++);
+
+                    break;
+
+                case ARRAY_VFP:
+                    // Initialize to 0
+                    mpfr_init0 (((LPAPLVFP) lpMemRes)++);
+
+                    break;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
 
             // We no longer need these ptrs
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1464,10 +1486,10 @@ HGLOBAL MakeDydPrototype_EM_PTB
         lpMemRht = VarArrayDataFmBase (lpMemRht);
         lpMemRes = VarArrayDataFmBase (lpMemRes);
 
-        // If either arg is not simple, loop through the result
+        // If either arg is neither simple nor global numeric, loop through the result
         // Otherwise, the result is all zero (already filled in by GHND).
-        if (!IsSimple (aplTypeLft)
-         || !IsSimple (aplTypeRht))
+        if (!IsSimpleGlbNum (aplTypeLft)
+         || !IsSimpleGlbNum (aplTypeRht))
         {
             // Handle axis if present
             if (aplNELMAxis NE aplRankRes)

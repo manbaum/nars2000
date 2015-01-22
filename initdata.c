@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -147,12 +147,14 @@ void InitGlbNumConstants
     mpq_init_set_str  (&mpqMaxInt  ,  "9223372036854775807", 10);
     mpq_init_set_str  (&mpqMaxUInt , "18446744073709551615", 10);
     mpq_init_set_ui   (&mpqHalf    , 1, 2);
+    mpq_init          (&mpqZero);
     mpfr_init_set_str (&mpfMinInt  , "-9223372036854775808", 10, MPFR_RNDN);
     mpfr_init_set_str (&mpfMaxInt  ,  "9223372036854775807", 10, MPFR_RNDN);
     mpfr_init_set_str (&mpfMaxUInt , "18446744073709551615", 10, MPFR_RNDN);
     mpfr_set_inf      (&mpfPosInfinity                     ,  1);
     mpfr_set_inf      (&mpfNegInfinity                     , -1);
     mpfr_init_set_d   (&mpfHalf    , 0.5                       , MPFR_RNDN);
+    mpfr_init0        (&mpfZero);
 
     // Use our own invalid operation functions for MPIR/MPFR
     mp_set_invalid_functions (mpz_invalid, mpq_invalid, mpfr_invalid);
@@ -170,12 +172,14 @@ void UninitGlbNumConstants
 
 {
     // Uninitialize the MPI, RAT, and VFP constants
+    Myf_clear (&mpfZero    );
     Myf_clear (&mpfHalf    );
     Myf_clear (&mpfNegInfinity );
     Myf_clear (&mpfPosInfinity );
     Myf_clear (&mpfMaxUInt );
     Myf_clear (&mpfMaxInt  );
     Myf_clear (&mpfMinInt  );
+    Myq_clear (&mpqZero    );
     Myq_clear (&mpqHalf    );
     Myq_clear (&mpqMaxUInt );
     Myq_clear (&mpqMaxInt  );

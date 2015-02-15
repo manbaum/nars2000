@@ -92,7 +92,7 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 %}
 
 %pure-parser
-%name-prefix="pn_yy"
+%name-prefix "pn_yy"
 %parse-param {LPPNLOCALVARS lppnLocalVars}
 %lex-param   {LPPNLOCALVARS lppnLocalVars}
 %token EXT INF OVR
@@ -1173,13 +1173,13 @@ int pn_yylex
 
 void pn_yyerror                     // Called for Bison syntax error
     (LPPNLOCALVARS lppnLocalVars,   // Ptr to local pnLocalVars
-     LPCHAR        s)               // Ptr to error msg
+     const char   *s)               // Ptr to error msg
 
 {
     char    szTemp[1024];
     LPWCHAR lpwszTemp;
 
-    DbgMsg (s);
+    DbgMsg ((char *) s);
 
     // Check for SYNTAX ERROR
 #define ERR     "syntax error"

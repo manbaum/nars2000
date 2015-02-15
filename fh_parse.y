@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ void fh_yyprint     (FILE *yyoutput, unsigned short int yytoknum, FH_YYSTYPE con
 %}
 
 %pure-parser
-%name-prefix="fh_yy"
+%name-prefix "fh_yy"
 %parse-param {LPFHLOCALVARS lpfhLocalVars}
 %lex-param   {LPFHLOCALVARS lpfhLocalVars}
 %token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK SOS NOMORE
@@ -808,7 +808,7 @@ FH_YYLEX_START:
 
 void fh_yyerror                         // Called for Bison syntax error
     (LPFHLOCALVARS lpfhLocalVars,       // Ptr to Function Header local vars
-     LPCHAR        s)                   // Ptr to error msg
+     const char   *s)                   // Ptr to error msg
 
 {
     char  szTemp[1024];
@@ -816,7 +816,7 @@ void fh_yyerror                         // Called for Bison syntax error
     UINT  uCharIndex;
 
 #ifdef DEBUG
-    DbgMsg (s);
+    DbgMsg ((char *) s);
 #endif
     // Check for stopping point
     if (lpfhLocalVars->lptkStop EQ lpfhLocalVars->lptkNext)

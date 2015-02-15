@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ TOKEN       tkTmp;
 %}
 
 %pure-parser
-%name-prefix="cs_yy"
+%name-prefix "cs_yy"
 %parse-param {LPCSLOCALVARS lpcsLocalVars}
 %lex-param   {LPCSLOCALVARS lpcsLocalVars}
 %token  ANDIF
@@ -2630,7 +2630,7 @@ CS_YYLEX_START:
 
 void cs_yyerror                         // Called for Bison syntax error
     (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc Local vars
-     LPCHAR        s)                   // Ptr to error msg
+     const char   *s)                   // Ptr to error msg
 
 {
     char szTemp[1024], *p;
@@ -2638,7 +2638,7 @@ void cs_yyerror                         // Called for Bison syntax error
          uLinePos;
 
 #ifdef DEBUG
-    DbgMsg (s);
+    DbgMsg ((char *) s);
 #endif
 
     // If the error token is not already set, ...
@@ -2712,7 +2712,7 @@ void cs_yyerror                         // Called for Bison syntax error
     } // End IF
 
     // Use the error message as given
-    p = s;
+    p = (char *) s;
 
     goto DISPLAY;
 

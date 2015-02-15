@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -262,10 +262,10 @@ SYNTAX_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    // Free the Hshtab & SymTab
+    // Free the HshTab & SymTab
     FreeHshSymTabs (&LW_Params.htsDFN, FALSE);
 NORMAL_EXIT:
-    nop ();
+    return;
 } // End MakeAfo_EM_YY
 #undef  APPEND_NAME
 

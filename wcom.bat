@@ -9,7 +9,7 @@ Set ZIPPRG="%ProgramFiles%\7-Zip\7z"
 
 REM CygWin flag to suppress DOS file warning message
 Set CYGWIN=nodosfilewarning
-Set CYGWIN_DIR=C:\Cygwin^\
+Set CYGWIN_DIR=C:\Cygwin64^\
 
 REM Path and name of parser generator (bison)
 Set PARGEN=%CYGWIN_DIR%bin\bison

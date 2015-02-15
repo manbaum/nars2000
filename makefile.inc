@@ -285,7 +285,7 @@ INITIAL_EXE:
 
 {}.y{$(O)}.c:
         @Set INCLUDE=$(I98);$(O)
-        $(PARGEN) -o$(O)$(@B).c -v -r all -l %s
+        @$(PARGEN) -o$(O)$(@B).c -v -r all -l %s
 
 {}.c{$(O)}.obj:
         @Set INCLUDE=$(I98);$(O)

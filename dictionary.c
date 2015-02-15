@@ -69,7 +69,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "bjhash.pro"
 
 typedef unsigned int   uint32_t;
+#ifdef DEBUG
 extern void nop (void);
+#endif
 
 /** Minimal allocated number of entries in a dictionary */
 #define DICTMINSZ   128

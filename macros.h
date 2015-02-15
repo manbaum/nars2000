@@ -128,6 +128,8 @@
   #define CheckMemStat()                  _CheckMemStat ()
 
   #define Assert(a)                       ((a) || (DbgBrk (), nop (), 0))
+//#define nop()                           // Use already defined function
+//#define DbgNop()                        // Use already defined function
   #define CheckCtrlBreak(a)               _CheckCtrlBreak(a)
 //#define DisplayGlbVar(a,b)              DisplayGlbVar (a, b)
 #else
@@ -157,6 +159,8 @@
 
   #define Assert(a)                       ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
+  #define nop()                           // Nothing
+  #define DbgNop()                        // Nothing
   #define CheckCtrlBreak(a)               (a)
   #define DisplayGlbVar(a,b)
 

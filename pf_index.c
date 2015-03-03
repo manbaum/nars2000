@@ -509,7 +509,9 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                         // The result is the name arg
                         hGlbRes = hGlbNam;
-                        DbgIncrRefCntDir_PTB (hGlbNam);
+
+                        // Increment the refcnt
+                        DbgIncrRefCntDir_PTB (hGlbNam); // EXAMPLE:  A[{enclose}{zilde}]
 
                         goto YYALLOC_EXIT;
                     } else
@@ -1793,7 +1795,9 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
 
             case TKT_VARARRAY:
                 *lpMemLstNew++ = lpMemLst[uLst];
-                DbgIncrRefCntDir_PTB (lpMemLst[uLst].tkData.tkGlbData);
+
+                // Increment the refcnt
+                DbgIncrRefCntDir_PTB (lpMemLst[uLst].tkData.tkGlbData); // EXAMPLE:  A[;1 2]
 
                 break;
 
@@ -2153,7 +2157,7 @@ UBOOL ArrayIndexSet_EM
                 if (!bRet)
                     goto ERROR_EXIT;
                 if (hGlbRes EQ NULL)
-                    goto NORMAL_EXIT;
+                    goto DEMOTE_EXIT;
             } else
             //***************************************************************
             // The list arg list has multiple elements (semicolons):  do
@@ -2170,7 +2174,7 @@ UBOOL ArrayIndexSet_EM
                                           lptkRhtArg,           // Ptr to right ...
                                           bSysVar,              // TRUE iff indexed assignment into a SysVar
                                           lptkFunc))            // Ptr to function ...
-                    goto NORMAL_EXIT;
+                    goto DEMOTE_EXIT;
                 else
                     goto ERROR_EXIT;
             } // End IF/ELSE/...
@@ -2185,11 +2189,11 @@ UBOOL ArrayIndexSet_EM
             // Save the new global memory handle in the STE
             lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
         } // End IF
-
-        // See if it fits into a lower (but not necessarily smaller) datatype
-        if (!bSysVar)
-            TypeDemote (lptkNamArg);
     } // End IF/ELSE
+DEMOTE_EXIT:
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    if (!bSysVar)
+        TypeDemote (lptkNamArg);
 
     goto NORMAL_EXIT;
 
@@ -4200,7 +4204,9 @@ UBOOL ArrayIndexSetRect_EM
 
             case TKT_VARARRAY:
                 *lpMemLstNew++ = lpMemLst[uLst];
-                DbgIncrRefCntDir_PTB (lpMemLst[uLst].tkData.tkGlbData);
+
+                // Increment the refcnt
+                DbgIncrRefCntDir_PTB (lpMemLst[uLst].tkData.tkGlbData); // EXAMPLE:  a{is}2 3{rho}{iota}6 {diamond} a[;1 2]{is}10 20
 
                 break;
 

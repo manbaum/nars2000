@@ -1,6 +1,18 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1323 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug Of Not Demoting Hetero To Lower Type During Indexed Assignment
+
+Directory trunk:
+
+PF_INDEX.C:
+  Improve comments for Reference Counts.
+  In <ArrayIndexSet_EM>, ensure the result is type demoted as appropriate.
+
+
 Build #1322 -- Version 0.4.9.xx
 -------------------------------
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1131,12 +1131,6 @@ typedef struct tagSTART_ADDRESSES
     "YYCountFcnGlb"             , (LPUCHAR) &YYCountFcnGlb              ,
     "YYCopyFcn"                 , (LPUCHAR) YYCopyFcn                   ,
     "YYCopyGlbFcn_PTB"          , (LPUCHAR) YYCopyGlbFcn_PTB            ,
-    "YYFreeArray"               , (LPUCHAR) YYFreeArray                 ,
-    "YYFreeGlbFcn"              , (LPUCHAR) YYFreeGlbFcn                ,
-  #if 0
-    "IncrFcnTkn"                , (LPUCHAR) IncrFcnTkn                  ,
-    "IncrFcnMem"                , (LPUCHAR) IncrFcnMem                  ,
-  #endif
   #ifdef DEBUG
     "YYCheckInuse"              , (LPUCHAR) YYCheckInuse                ,
   #endif

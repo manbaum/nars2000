@@ -1243,7 +1243,7 @@ LPPL_YYSTYPE plRedDOP_RhtOper
     if (!lpYYRht)                       // If not defined, free args and YYERROR
     {
         // Free the function (including YYFree)
-        YYFreeArray (lpYYRes); FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
         goto ERROR_EXIT;
     } // End IF
@@ -1859,9 +1859,6 @@ LPPL_YYSTYPE plRedMF_A
         // YYFree the curried object
         YYFree (lpplLocalVars->lpplYYArgCurry); lpplLocalVars->lpplYYArgCurry = NULL;
     } // End IF
-
-    // Free elements recursively
-    YYFreeArray (lpplYYCurObj);
 
     // Free the function (including YYFree)
     FreeResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -2511,7 +2508,7 @@ LPPL_YYSTYPE plRedLftOper_MOP
     if (!lpYYLft)                       // If not defined, free args and YYERROR
     {
         // Free the function (including YYFree)
-        YYFreeArray (lpYYRes); FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
         goto ERROR_EXIT;
     } // End IF
@@ -2804,7 +2801,7 @@ LPPL_YYSTYPE plRedNF_F
     // Call common code
     return plRedA_F (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
-    // YYFreeArray (lpplYYLstRht); FreeResult (lpplYYLstRht); // ***FIXME***
+    // FreeResult (lpplYYLstRht); // ***FIXME***
 
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -3433,7 +3430,7 @@ LPPL_YYSTYPE plRedNAM_ISPA
                 goto ERROR_EXIT;
 
             // Free the function (including YYFree)
-            YYFreeArray (lpplLocalVars->lpplYYFcnCurry); FreeResult (lpplLocalVars->lpplYYFcnCurry); YYFree (lpplLocalVars->lpplYYFcnCurry); lpplLocalVars->lpplYYFcnCurry = NULL;
+            FreeResult (lpplLocalVars->lpplYYFcnCurry); YYFree (lpplLocalVars->lpplYYFcnCurry); lpplLocalVars->lpplYYFcnCurry = NULL;
 
             // If not defined, ...
             if (!lpYYRes)
@@ -3538,7 +3535,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
             lpYYRes =
               ExecFunc_EM_YY (&lpplYYCurObj->tkToken, lpplLocalVars->lpplYYFcnCurry, &lpplYYLstRht->tkToken);
         // Free the function (including YYFree)
-        YYFreeArray (lpplLocalVars->lpplYYFcnCurry); FreeResult (lpplLocalVars->lpplYYFcnCurry); YYFree (lpplLocalVars->lpplYYFcnCurry); lpplLocalVars->lpplYYFcnCurry = NULL;
+        FreeResult (lpplLocalVars->lpplYYFcnCurry); YYFree (lpplLocalVars->lpplYYFcnCurry); lpplLocalVars->lpplYYFcnCurry = NULL;
 
         // Free (unnamed) and YYFree the last right object
         FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
@@ -4638,7 +4635,7 @@ PARSELINE_ERROR:
                     } // End IF
 
                     // Free the function (including YYFree)
-                    YYFreeArray (lpYYRes); FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
                 } else
                 // If it's a var, ...
                 if (IsTknTypeVar (lpYYRes->tkToken.tkFlags.TknType))
@@ -4675,14 +4672,14 @@ PARSELINE_ERROR:
             if (plLocalVars.lpplYYFcnCurry)
             {
                 // Free the function (including YYFree)
-                YYFreeArray (plLocalVars.lpplYYFcnCurry); FreeResult (plLocalVars.lpplYYFcnCurry); YYFree (plLocalVars.lpplYYFcnCurry); plLocalVars.lpplYYFcnCurry = NULL;
+                FreeResult (plLocalVars.lpplYYFcnCurry); YYFree (plLocalVars.lpplYYFcnCurry); plLocalVars.lpplYYFcnCurry = NULL;
             } // End IF
 
             // If a curried index is in use
             if (plLocalVars.lpplYYIdxCurry)
             {
                 // Free the function (including YYFree)
-                YYFreeArray (plLocalVars.lpplYYIdxCurry); FreeResult (plLocalVars.lpplYYIdxCurry); YYFree (plLocalVars.lpplYYIdxCurry); plLocalVars.lpplYYIdxCurry = NULL;
+                FreeResult (plLocalVars.lpplYYIdxCurry); YYFree (plLocalVars.lpplYYIdxCurry); plLocalVars.lpplYYIdxCurry = NULL;
             } // End IF
 
             // If a curried left arg is in use, ...
@@ -4853,7 +4850,7 @@ PARSELINE_DONE:
                  && IsTknTypeFcnOpr (lpplYYCurObj->tkToken.tkFlags.TknType))
                 {
                     // Free the function (including YYFree)
-                    YYFreeArray (lpplYYCurObj); FreeResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
+                    FreeResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
 
                     // Set the exit type
                     plLocalVars.ExitType = EXITTYPE_NOVALUE;
@@ -6826,7 +6823,7 @@ LPPL_YYSTYPE plExecuteFn0
       ExecuteFn0 (lpYYFn0);
 
     // Free the function (including YYFree)
-    YYFreeArray (lpYYFn0); FreeResult (lpYYFn0); YYFree (lpYYFn0); lpYYFn0 = NULL;
+    FreeResult (lpYYFn0); YYFree (lpYYFn0); lpYYFn0 = NULL;
 
     // Check for error
     if (lpYYRes)

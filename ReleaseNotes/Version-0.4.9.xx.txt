@@ -1,6 +1,23 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1324 -- Version 0.4.9.xx
+-------------------------------
+
+* Remove Unused Functions
+
+Directory trunk:
+
+PARSELINE.C:
+STARTADDR.H:
+YYFNS.C:
+  Update copyright notice.
+  Remove unused functions.
+
+WCOM.BAT:
+  Fix bug in path usage.
+
+
 Build #1323 -- Version 0.4.9.xx
 -------------------------------
 

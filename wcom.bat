@@ -29,7 +29,7 @@ Set MSVC=V:\VC^\
 Set VSINSTALLDIR=V:^\
 Set VCINSTALLDIR=%MSVC%
 
-if "%ORIGPATH%" == "" Set ORIGPATH=%PATH%
+if not defined ORIGPATH Set ORIGPATH=%PATH%
 
 Set MS_DIR=%NARSROOT%msieve^\
 Set MPIR_DIR=%NARSROOT%mpir^\

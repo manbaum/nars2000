@@ -179,11 +179,8 @@ APLINT gcdAplInt
         aplRht = aplTmp;
     } // End WHILE
 
-    // The sign of the result is the sign of the left argument
-    if (aplIntegerLft < 0)
-        return -aplRht;
-    else
-        return  aplRht;
+    // The sign of the result is non-negative
+    return  abs64 (aplRht);
 } // End gcdAplInt
 
 
@@ -212,11 +209,8 @@ APLFLOAT gcdAplFloat
         aplRht = aplTmp;
     } // End WHILE
 
-    // The sign of the result is the sign of the left argument
-    if (aplFloatLft > 0)
-        return  aplRht;
-    else
-        return -aplRht;
+    // The sign of the result is non-negative
+    return fabs (aplRht);
 } // End gcdAplFloat
 
 
@@ -254,9 +248,8 @@ APLRAT gcdAplRat
         mpq_set (&aplRht, &aplTmp);
     } // End WHILE
 
-    // The sign of the result is the sign of the left argument
-    if (mpq_sgn (&aplRatLft) < 0)
-        mpq_neg (&aplRht, &aplRht);
+    // The sign of the result is non-negative
+    mpq_abs (&aplRht, &aplRht);
 
     // We no longer need this storage
     Myq_clear (&aplTmp);
@@ -299,9 +292,8 @@ APLVFP gcdAplVfp
         mpfr_copy (&aplRht, &aplTmp);
     } // End WHILE
 
-    // The sign of the result is the sign of the left argument
-    if (SIGN_APLVFP (&aplVfpLft))
-        mpfr_neg (&aplRht, &aplRht, MPFR_RNDN);
+    // The sign of the result is non-negative
+    mpfr_abs (&aplRht, &aplRht, MPFR_RNDN);
 
     // We no longer need this storage
     Myf_clear (&aplTmp);

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -414,6 +414,11 @@ int CopyWsVars
                  uCnt;                      // Loop counter
     LPSYMENTRY   lpSymEntry;                // Ptr to name in cmd SYMENTRY
     STFLAGS      stFlags = {0};             // STE flags
+
+    // In case <lpwNameInCmd> is that of a system var, ...
+    if (IsSysName (lpwNameInCmd))
+        // Convert it to lowercase
+        CharLowerBuffW (lpwNameInCmd, lstrlenW (lpwNameInCmd));
 
     // Get the [Vars.0] count
     uSymVar =

@@ -507,6 +507,15 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     else
         aplTypeRes = aplTypeRht;
 
+    // If the right arg is a singleton,
+    //   and the result is non-empty,
+    //   and the result is integer-like, ...
+    if (IsSingleton (aplNELMRht)
+     && !IsEmpty (aplNELMRes)
+     && IsSimpleInt (aplTypeRes))
+        // Store it in an APA
+        aplTypeRes = ARRAY_APA;
+
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -644,6 +653,13 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                             NULL);          // Ptr to array type ...
     // Copy the data to the result
 
+    // If the result is an APA, ...
+    if (IsSimpleAPA (aplTypeRes))
+    {
+        ((LPAPLAPA) lpMemRes)->Off = aplIntegerRep;
+        ((LPAPLAPA) lpMemRes)->Mul = 0;
+        lpMemHdrRes->All2s         = (aplIntegerRep EQ 2);
+    } else
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {

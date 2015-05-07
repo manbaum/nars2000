@@ -596,7 +596,8 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     LPVOID            lpMemLft = NULL,  // Ptr to left arg global memory
                       lpMemRht = NULL;  // Ptr to right ...
     LPAPLUINT         lpMemRes = NULL;  // Ptr to result   ...
-    UBOOL             bQuadIO;          // []IO
+    UBOOL             bQuadIO,          // []IO
+                      bFltFound;        // TRUE iff the NotFound value is a FLT
     APLFLOAT          fQuadCT;          // []CT
     APLUINT           NotFound;         // Not found value
     APLUINT           ByteRes;          // # bytes in the result
@@ -709,7 +710,10 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     fQuadCT = GetQuadCT ();
 
     // Calculate the NotFound value
-    NotFound = bQuadIO + aplNELMLft;
+    NotFound = iadd64 (bQuadIO, aplNELMLft, &bFltFound);
+
+    // Complement as iadd64 returns 1 for valid, 0 for not
+    bFltFound = !bFltFound;
 
     // If the left arg is non-empty, and
     //    the right arg is non-empty, and
@@ -723,176 +727,188 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
         if (IsSimpleBool (aplTypeLft) && IsSimpleBool (aplTypeRht))
         {
             // Handle APLBOOL vs. APLBOOL
-            if (!PrimFnDydIotaBvB (lpMemRes,        // Ptr to result global memory data
-                                   aplNELMLft,      // Left arg NELM
-                                   lpMemLft,        // Ptr to left arg global memory data
-                                   aplNELMRht,      // Right arg NELM
-                                   lpMemRht,        // Ptr to right arg global memory data
-                                   bQuadIO,         // []IO
-                                   NotFound,        // Not found value
-                                   lpbCtrlBreak))   // Ptr to Ctrl-Break flag
+            if (!PrimFnDydIotaBvB_EM (lpMemRes,         // Ptr to result global memory data
+                                      aplNELMLft,       // Left arg NELM
+                                      lpMemLft,         // Ptr to left arg global memory data
+                                      aplNELMRht,       // Right arg NELM
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsSimpleBool (aplTypeLft) && IsNumeric (aplTypeRht))
         {
             // Handle APLBOOL vs. APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
-            if (!PrimFnDydIotaBvN (lpMemRes,        // Ptr to result global memory data
-                                   aplNELMLft,      // Left arg NELM
-                                   lpMemLft,        // Ptr to left arg global memory data
-                                   aplTypeRht,      // Right arg storage type
-                                   aplNELMRht,      // Right arg NELM
-                                   lpMemRht,        // Ptr to right arg global memory data
-                                   bQuadIO,         // []IO
-                                   fQuadCT,         // []CT
-                                   NotFound,        // Not found value
-                                   lpbCtrlBreak))   // Ptr to Ctrl-Break flag
+            if (!PrimFnDydIotaBvN_EM (lpMemRes,         // Ptr to result global memory data
+                                      aplNELMLft,       // Left arg NELM
+                                      lpMemLft,         // Ptr to left arg global memory data
+                                      aplTypeRht,       // Right arg storage type
+                                      aplNELMRht,       // Right arg NELM
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      fQuadCT,          // []CT
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsPermVector (lpHeaderLft) && IsNumeric (aplTypeRht))
         {
             // Handle PV vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
-            if (!PrimFnDydIotaPvN_EM (lpMemRes,     // Ptr to result global memory data
-                                      lpHeaderLft,  // Ptr to left arg header
-                                      aplTypeLft,   // Left arg storage type
-                                      aplNELMLft,   // Left arg NELM
-                                      lpMemLft,     // Ptr to left arg global memory data
-                                      aplTypeRht,   // Right arg storage type
-                                      aplNELMRht,   // Right arg NELM
-                                      lpMemRht,     // Ptr to right arg global memory data
-                                      bQuadIO,      // []IO
-                                      fQuadCT,      // []CT
-                                      NotFound,     // Not found value
-                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
-                                      lptkFunc))    // Ptr to function token
+            if (!PrimFnDydIotaPvN_EM (lpMemRes,         // Ptr to result global memory data
+                                      lpHeaderLft,      // Ptr to left arg header
+                                      aplTypeLft,       // Left arg storage type
+                                      aplNELMLft,       // Left arg NELM
+                                      lpMemLft,         // Ptr to left arg global memory data
+                                      aplTypeRht,       // Right arg storage type
+                                      aplNELMRht,       // Right arg NELM
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      fQuadCT,          // []CT
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsSimpleAPA (aplTypeLft) && IsNumeric (aplTypeRht))
         {
             // Handle APLAPA vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
-            if (!PrimFnDydIotaAvN_EM (lpMemRes,     // Ptr to result global memory data
-                                      aplNELMLft,   // Left arg NELM
-                                      lpMemLft,     // Ptr to left arg global memory data
-                                      aplTypeRht,   // Right arg storage type
-                                      aplNELMRht,   // Right arg NELM
-                                      lpMemRht,     // Ptr to right arg global memory data
-                                      bQuadIO,      // []IO
-                                      fQuadCT,      // []CT
-                                      NotFound,     // Not found value
-                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
-                                      lptkFunc))    // Ptr to function token
+            if (!PrimFnDydIotaAvN_EM (lpMemRes,         // Ptr to result global memory data
+                                      aplNELMLft,       // Left arg NELM
+                                      lpMemLft,         // Ptr to left arg global memory data
+                                      aplTypeRht,       // Right arg storage type
+                                      aplNELMRht,       // Right arg NELM
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      fQuadCT,          // []CT
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsSimpleInt (aplTypeLft) && IsNumeric (aplTypeRht))
         {
             // Handle APLINT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
-            if (!PrimFnDydIotaIvN_EM (lpMemRes,     // Ptr to result global memory data
-                                      lptkLftArg,   // Ptr to left arg token
-                                      aplTypeLft,   // Left arg storage type
-                                      aplNELMLft,   // Left arg NELM
-                                      aplRankLft,   // Left arg rank
-                                      lpMemLft,     // Ptr to left arg global memory data
-                                      lptkRhtArg,   // Ptr to right arg token
-                                      aplTypeRht,   // Right arg storage type
-                                      aplNELMRht,   // Right arg NELM
-                                      aplRankRht,   // Right arg rank
-                                      lpMemRht,     // Ptr to right arg global memory data
-                                      bQuadIO,      // []IO
-                                      fQuadCT,      // []CT
-                                      NotFound,     // Not found value
-                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
-                                      lptkFunc))    // Ptr to function token
+            if (!PrimFnDydIotaIvN_EM (lpMemRes,         // Ptr to result global memory data
+                                      lptkLftArg,       // Ptr to left arg token
+                                      aplTypeLft,       // Left arg storage type
+                                      aplNELMLft,       // Left arg NELM
+                                      aplRankLft,       // Left arg rank
+                                      lpMemLft,         // Ptr to left arg global memory data
+                                      lptkRhtArg,       // Ptr to right arg token
+                                      aplTypeRht,       // Right arg storage type
+                                      aplNELMRht,       // Right arg NELM
+                                      aplRankRht,       // Right arg rank
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      fQuadCT,          // []CT
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsSimpleNum (aplTypeLft) && IsNumeric (aplTypeRht))
         {
             // Handle APLFLOAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
-            if (!PrimFnDydIotaFvN_EM (lpMemRes,     // Ptr to result global memory data
-                                      lptkLftArg,   // Ptr to left arg token
-                                      aplTypeLft,   // Left arg storage type
-                                      aplNELMLft,   // Left arg NELM
-                                      lpMemLft,     // Ptr to left arg global memory data
-                                      lptkRhtArg,   // Ptr to right arg token
-                                      aplTypeRht,   // Right arg storage type
-                                      aplNELMRht,   // Right arg NELM
-                                      aplRankRht,   // Right arg rank
-                                      lpMemRht,     // Ptr to right arg global memory data
-                                      bQuadIO,      // []IO
-                                      fQuadCT,      // []CT
-                                      NotFound,     // Not found value
-                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
-                                      lptkFunc))    // Ptr to function token
+            if (!PrimFnDydIotaFvN_EM (lpMemRes,         // Ptr to result global memory data
+                                      lptkLftArg,       // Ptr to left arg token
+                                      aplTypeLft,       // Left arg storage type
+                                      aplNELMLft,       // Left arg NELM
+                                      lpMemLft,         // Ptr to left arg global memory data
+                                      lptkRhtArg,       // Ptr to right arg token
+                                      aplTypeRht,       // Right arg storage type
+                                      aplNELMRht,       // Right arg NELM
+                                      aplRankRht,       // Right arg rank
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      fQuadCT,          // []CT
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsRat (aplTypeLft) && IsNumeric (aplTypeRht))
         {
             // Handle APLRAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
-            if (!PrimFnDydIotaRvN_EM (lpMemRes,     // Ptr to result global memory data
-                                      lptkLftArg,   // Ptr to left arg token
-                                      aplTypeLft,   // Left arg storage type
-                                      aplNELMLft,   // Left arg NELM
-                           (LPAPLRAT) lpMemLft,     // Ptr to left arg global memory data
-                                      lptkRhtArg,   // Ptr to right arg token
-                                      aplTypeRht,   // Right arg storage type
-                                      aplNELMRht,   // Right arg NELM
-                                      aplRankRht,   // Right arg rank
-                                      lpMemRht,     // Ptr to right arg global memory data
-                                      bQuadIO,      // []IO
-                                      fQuadCT,      // []CT
-                                      NotFound,     // Not found value
-                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
-                                      lptkFunc))    // Ptr to function token
+            if (!PrimFnDydIotaRvN_EM (lpMemRes,         // Ptr to result global memory data
+                                      lptkLftArg,       // Ptr to left arg token
+                                      aplTypeLft,       // Left arg storage type
+                                      aplNELMLft,       // Left arg NELM
+                           (LPAPLRAT) lpMemLft,         // Ptr to left arg global memory data
+                                      lptkRhtArg,       // Ptr to right arg token
+                                      aplTypeRht,       // Right arg storage type
+                                      aplNELMRht,       // Right arg NELM
+                                      aplRankRht,       // Right arg rank
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      fQuadCT,          // []CT
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsVfp (aplTypeLft) && IsNumeric (aplTypeRht))
         {
             // Handle APLVFP vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
-            if (!PrimFnDydIotaVvN_EM (lpMemRes,     // Ptr to result global memory data
-                                      lptkLftArg,   // Ptr to left arg token
-                                      aplTypeLft,   // Left arg storage type
-                                      aplNELMLft,   // Left arg NELM
-                           (LPAPLVFP) lpMemLft,     // Ptr to left arg global memory data
-                                      lptkRhtArg,   // Ptr to right arg token
-                                      aplTypeRht,   // Right arg storage type
-                                      aplNELMRht,   // Right arg NELM
-                                      aplRankRht,   // Right arg rank
-                                      lpMemRht,     // Ptr to right arg global memory data
-                                      bQuadIO,      // []IO
-                                      fQuadCT,      // []CT
-                                      NotFound,     // Not found value
-                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
-                                      lptkFunc))    // Ptr to function token
+            if (!PrimFnDydIotaVvN_EM (lpMemRes,         // Ptr to result global memory data
+                                      lptkLftArg,       // Ptr to left arg token
+                                      aplTypeLft,       // Left arg storage type
+                                      aplNELMLft,       // Left arg NELM
+                           (LPAPLVFP) lpMemLft,         // Ptr to left arg global memory data
+                                      lptkRhtArg,       // Ptr to right arg token
+                                      aplTypeRht,       // Right arg storage type
+                                      aplNELMRht,       // Right arg NELM
+                                      aplRankRht,       // Right arg rank
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      fQuadCT,          // []CT
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         if (IsSimpleChar (aplTypeLft) && IsSimpleChar (aplTypeRht))
         {
             // Handle APLCHAR vs. APLCHAR
-            if (!PrimFnDydIotaCvC_EM (lpMemRes,     // Ptr to result global memory data
-                                      aplNELMLft,   // Left arg NELM
-                                      lpMemLft,     // Ptr to left arg global memory data
-                                      aplNELMRht,   // Right arg NELM
-                                      lpMemRht,     // Ptr to right arg global memory data
-                                      bQuadIO,      // []IO
-                                      NotFound,     // Not found value
-                                      lpbCtrlBreak, // Ptr to Ctrl-Break flag
-                                      lptkFunc))    // Ptr to function token
+            if (!PrimFnDydIotaCvC_EM (lpMemRes,         // Ptr to result global memory data
+                                      aplNELMLft,       // Left arg NELM
+                                      lpMemLft,         // Ptr to left arg global memory data
+                                      aplNELMRht,       // Right arg NELM
+                                      lpMemRht,         // Ptr to right arg global memory data
+                                      bQuadIO,          // []IO
+                                      NotFound,         // Not found value
+                                      bFltFound,        // TRUE iff the NotFound value is a FLT
+                                      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                                      lptkFunc))        // Ptr to function token
                 goto ERROR_EXIT;
         } else
         {
             // Handle all other combinations
             // APLHETERO/APLNESTED vs. anything
             // anything            vs. APLHETERO/APLNESTED
-            if (!PrimFnDydIotaOther (lpMemRes,      // Ptr to result global memory data
-                                     aplTypeLft,    // Left arg storage type
-                                     aplNELMLft,    // Left arg NELM
-                                     lpMemLft,      // Ptr to left arg global memory data
-                                     aplTypeRht,    // Right arg storage type
-                                     aplNELMRht,    // Right arg NELM
-                                     lpMemRht,      // Ptr to right arg global memory data
-                                     bQuadIO,       // []IO
-                                     fQuadCT,       // []CT
-                                     NotFound,      // Not found value
-                                     lpbCtrlBreak,  // Ptr to Ctrl-Break flag
-                                     lptkFunc))     // Ptr to function token
+            if (!PrimFnDydIotaOther_EM (lpMemRes,       // Ptr to result global memory data
+                                        aplTypeLft,     // Left arg storage type
+                                        aplNELMLft,     // Left arg NELM
+                                        lpMemLft,       // Ptr to left arg global memory data
+                                        aplTypeRht,     // Right arg storage type
+                                        aplNELMRht,     // Right arg NELM
+                                        lpMemRht,       // Ptr to right arg global memory data
+                                        bQuadIO,        // []IO
+                                        fQuadCT,        // []CT
+                                        NotFound,       // Not found value
+                                        bFltFound,      // TRUE iff the NotFound value is a FLT
+                                        lpbCtrlBreak,   // Ptr to Ctrl-Break flag
+                                        lptkFunc))      // Ptr to function token
                 goto ERROR_EXIT;
         } // End IF/ELSE/...
     } else
@@ -964,12 +980,18 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnDydIotaBvB
+//  $PrimFnDydIotaBvB_EM
 //
 //  Dyadic iota of APLBOOL vs. APLBOOL
 //***************************************************************************
 
-UBOOL PrimFnDydIotaBvB
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaBvB_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL PrimFnDydIotaBvB_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
      APLNELM   aplNELMLft,          // Left arg NELM
      LPAPLBOOL lpMemLft,            // Ptr to left arg global memory data
@@ -977,7 +999,9 @@ UBOOL PrimFnDydIotaBvB
      LPAPLBOOL lpMemRht,            // Ptr to right arg global memory data
      UBOOL     bQuadIO,             // []IO
      APLUINT   NotFound,            // Not found value
-     LPUBOOL   lpbCtrlBreak)        // Ptr to Ctrl-Break flag
+     UBOOL     bFltFound,           // TRUE iff the NotFound value is a FLT
+     LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
+     LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
     UBOOL   Found[2];               // TRUE iff there is at least one [0,1] in the right arg
@@ -1043,9 +1067,13 @@ UBOOL PrimFnDydIotaBvB
 
         // If the bit is not found, ...
         if (uTmp EQ NBIB)
-            // Use the NotFound value
-            Index[uBit]  = NotFound;
-        else
+        {
+            if (bFltFound)
+                goto DOMAIN_EXIT;
+            else
+                // Use the NotFound value
+                Index[uBit]  = NotFound;
+        } else
             Index[uBit] += uTmp;
     } // End IF
 
@@ -1076,18 +1104,31 @@ UBOOL PrimFnDydIotaBvB
     } // End FOR
 
     return TRUE;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     return FALSE;
-} // End PrimFnDydIotaBvB
+} // End PrimFnDydIotaBvB_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $PrimFnDydIotaBvN
+//  $PrimFnDydIotaBvN_EM
 //
 //  Dyadic iota of APLBOOL vs. APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
 //***************************************************************************
 
-UBOOL PrimFnDydIotaBvN
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaBvN_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL PrimFnDydIotaBvN_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
      APLNELM   aplNELMLft,          // Left arg NELM
      LPAPLBOOL lpMemLft,            // Ptr to left arg global memory data
@@ -1097,7 +1138,9 @@ UBOOL PrimFnDydIotaBvN
      UBOOL     bQuadIO,             // []IO
      APLFLOAT  fQuadCT,             // []CT
      APLUINT   NotFound,            // Not found value
-     LPUBOOL   lpbCtrlBreak)        // Ptr to Ctrl-Break flag
+     UBOOL     bFltFound,           // TRUE iff the NotFound value is a FLT
+     LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
+     LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
     UBOOL    Found[2];              // TRUE iff there is at least one [0,1] in the right arg
@@ -1157,9 +1200,13 @@ UBOOL PrimFnDydIotaBvN
 
         // If the bit is not found, ...
         if (uTmp EQ NBIB)
-            // Use the NotFound value
-            Index[uBit]  = NotFound;
-        else
+        {
+            if (bFltFound)
+                goto DOMAIN_EXIT;
+            else
+                // Use the NotFound value
+                Index[uBit]  = NotFound;
+        } else
             Index[uBit] += uTmp;
     } // End IF
 
@@ -1194,6 +1241,9 @@ UBOOL PrimFnDydIotaBvN
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[uTmp];
                 else
+                if (bFltFound)
+                    goto DOMAIN_EXIT;
+                else
                     // Save the appropriate value in the result
                     *lpMemRes++ = NotFound;
                 break;
@@ -1206,6 +1256,9 @@ UBOOL PrimFnDydIotaBvN
                 if (IsBooleanValue (uTmp))
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[uTmp];
+                else
+                if (bFltFound)
+                    goto DOMAIN_EXIT;
                 else
                     // Save the appropriate value in the result
                     *lpMemRes++ = NotFound;
@@ -1223,6 +1276,9 @@ UBOOL PrimFnDydIotaBvN
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[1];
                 else
+                if (bFltFound)
+                    goto DOMAIN_EXIT;
+                else
                     // Save the appropriate value in the result
                     *lpMemRes++ = NotFound;
                 break;
@@ -1235,6 +1291,9 @@ UBOOL PrimFnDydIotaBvN
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[uTmp];
                 else
+                if (bFltFound)
+                    goto DOMAIN_EXIT;
+                else
                     // Save the appropriate value in the result
                     *lpMemRes++ = NotFound;
                 break;
@@ -1246,6 +1305,9 @@ UBOOL PrimFnDydIotaBvN
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[uTmp];
                 else
+                if (bFltFound)
+                    goto DOMAIN_EXIT;
+                else
                     // Save the appropriate value in the result
                     *lpMemRes++ = NotFound;
                 break;
@@ -1256,9 +1318,15 @@ UBOOL PrimFnDydIotaBvN
     } // End FOR
 
     return TRUE;
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     return FALSE;
-} // End PrimFnDydIotaBvN
+} // End PrimFnDydIotaBvN_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1266,6 +1334,12 @@ ERROR_EXIT:
 //
 //  Dyadic iota of APLAPA vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaAvN_EM"
+#else
+#define APPEND_NAME
+#endif
 
 UBOOL PrimFnDydIotaAvN_EM
     (LPAPLUINT lpMemRes,                // Ptr to result global memory data
@@ -1275,8 +1349,9 @@ UBOOL PrimFnDydIotaAvN_EM
      APLNELM   aplNELMRht,              // Right arg NELM
      LPVOID    lpMemRht,                // Ptr to right arg global memory data
      UBOOL     bQuadIO,                 // []IO
-     APLFLOAT  fQuadCT,             // []CT
+     APLFLOAT  fQuadCT,                 // []CT
      APLUINT   NotFound,                // Not found value
+     UBOOL     bFltFound,               // TRUE iff the NotFound value is a FLT
      LPUBOOL   lpbCtrlBreak,            // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)                // Ptr to function token
 
@@ -1357,18 +1432,34 @@ UBOOL PrimFnDydIotaAvN_EM
          &&              aplIntegerRht <= apaMaxLft
          && (0 EQ apaMulLft
           || 0 EQ (aplIntegerRht - apaOffLft) % apaMulLft))
-            // Save in the result
-            *lpMemRes++ = bQuadIO + (aplIntegerRht - apaOffLft) / apaMulLft;
+        {
+            // If the left arg is a repeated constant, ...
+            if (apaMulLft EQ 0)
+                // Save in the result
+                *lpMemRes++ = bQuadIO;
+            else
+                // Save in the result
+                *lpMemRes++ = bQuadIO + (aplIntegerRht - apaOffLft) / apaMulLft;
+        } else
+        if (bFltFound)
+            goto DOMAIN_EXIT;
         else
             // Save in the result
             *lpMemRes++ = NotFound;
     } // End FOR
 
     // Mark as successful
-    bRet = TRUE;
+    return TRUE;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
-    return bRet;
+    return FALSE;
 } // End PrimFnDydIotaAvN_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1376,6 +1467,12 @@ ERROR_EXIT:
 //
 //  Dyadic iota of APLINT/APLAPA vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaIvN_EM"
+#else
+#define APPEND_NAME
+#endif
 
 UBOOL PrimFnDydIotaIvN_EM
     (LPAPLUINT lpMemRes,                // Ptr to result global memory data
@@ -1392,6 +1489,7 @@ UBOOL PrimFnDydIotaIvN_EM
      UBOOL     bQuadIO,                 // []IO
      APLFLOAT  fQuadCT,                 // []CT
      APLUINT   NotFound,                // Not found value
+     UBOOL     bFltFound,               // TRUE iff the NotFound value is a FLT
      LPUBOOL   lpbCtrlBreak,            // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)                // Ptr to function token
 
@@ -1638,20 +1736,34 @@ UBOOL PrimFnDydIotaIvN_EM
 
         // If we didn't find a match, ...
         if (iMin > iMax)
+        {
 NOMATCH:
+            if (bFltFound)
+                goto DOMAIN_EXIT;
+            else
 #ifdef GRADE2ND
-            // Save in the result
-            uLastVal       =
-            lpMemRes[iRes] = NotFound;
+                // Save in the result
+                uLastVal       =
+                lpMemRes[iRes] = NotFound;
 #else
-            // Save in the result
-            lpMemRes[iRht] = NotFound;
+                // Save in the result
+                lpMemRes[iRht] = NotFound;
 #endif
+        } // End IF
     } // End FOR
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbGupLft && lpMemGupLft)
     {
         if (lpMemGupLft)
@@ -1678,6 +1790,7 @@ ERROR_EXIT:
 #endif
     return bRet;
 } // End PrimFnDydIotaIvN_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1685,6 +1798,12 @@ ERROR_EXIT:
 //
 //  Dyadic iota of APLFLOAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP and
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaFvN_EM"
+#else
+#define APPEND_NAME
+#endif
 
 UBOOL PrimFnDydIotaFvN_EM
     (LPAPLUINT lpMemRes,                // Ptr to result global memory data
@@ -1700,6 +1819,7 @@ UBOOL PrimFnDydIotaFvN_EM
      UBOOL     bQuadIO,                 // []IO
      APLFLOAT  fQuadCT,                 // []CT
      APLUINT   NotFound,                // Not found value
+     UBOOL     bFltFound,               // TRUE iff the NotFound value is a FLT
      LPUBOOL   lpbCtrlBreak,            // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)                // Ptr to function token
 
@@ -1921,19 +2041,33 @@ UBOOL PrimFnDydIotaFvN_EM
 
         // If we didn't find a match, ...
         if (iMin > iMax)
+        {
+            if (bFltFound)
+                goto DOMAIN_EXIT;
+            else
 #ifdef GRADE2ND
-            // Save in the result
-            uLastVal       =
-            lpMemRes[iRes] = NotFound;
+                // Save in the result
+                uLastVal       =
+                lpMemRes[iRes] = NotFound;
 #else
-            // Save in the result
-            lpMemRes[iRht] = NotFound;
+                // Save in the result
+                lpMemRes[iRht] = NotFound;
 #endif
+        } // End IF
     } // End FOR
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbGupLft && lpMemGupLft)
     {
         if (lpMemGupLft)
@@ -1960,6 +2094,7 @@ ERROR_EXIT:
 #endif
     return bRet;
 } // End PrimFnDydIotaFvN_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1986,6 +2121,7 @@ UBOOL PrimFnDydIotaPvN_EM
      UBOOL             bQuadIO,         // []IO
      APLFLOAT          fQuadCT,         // []CT
      APLUINT           NotFound,        // Not found value
+     UBOOL             bFltFound,       // TRUE iff the NotFound value is a FLT
      LPUBOOL           lpbCtrlBreak,    // Ptr to Ctrl-Break flag
      LPTOKEN           lptkFunc)        // Ptr to function token
 
@@ -2098,6 +2234,9 @@ UBOOL PrimFnDydIotaPvN_EM
             // Lookup in the inverse indices
             *lpMemRes++ = lpMemInv[aplIntegerRht];
         else
+        if (bFltFound)
+            goto DOMAIN_EXIT;
+        else
             // It's out of range
             *lpMemRes++ = NotFound;
     } // End FOR
@@ -2109,6 +2248,11 @@ UBOOL PrimFnDydIotaPvN_EM
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 
@@ -2142,6 +2286,7 @@ UBOOL PrimFnDydIotaCvC_EM
      LPAPLCHAR lpMemRht,            // Ptr to right arg global memory data
      UBOOL     bQuadIO,             // []IO
      APLUINT   NotFound,            // Not found value
+     UBOOL     bFltFound,           // TRUE iff the NotFound value is a FLT
      LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)            // Ptr to function token
 
@@ -2165,6 +2310,8 @@ UBOOL PrimFnDydIotaCvC_EM
     // Trundle through the TT setting each value to NotFound
     for (uRht = 0; uRht < APLCHAR_SIZE; uRht++)
         lpMemTT[uRht] = NotFound;
+
+    Assert (!bFltFound);    // ***FIXME*** -- We ignore bFltFound here as it's not easy to catch
 
     // Trundle through the left arg backwards marking the TT
     for (iLft = aplNELMLft - 1, lpMemLft += iLft;
@@ -2213,6 +2360,12 @@ NORMAL_EXIT:
 //  Dyadic iota of APLRAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaRvN_EM"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL PrimFnDydIotaRvN_EM
     (LPAPLUINT lpMemRes,                // Ptr to result global memory data
      LPTOKEN   lptkLftArg,              // Ptr to left arg token
@@ -2227,6 +2380,7 @@ UBOOL PrimFnDydIotaRvN_EM
      UBOOL     bQuadIO,                 // []IO
      APLFLOAT  fQuadCT,                 // []CT
      APLUINT   NotFound,                // Not found value
+     UBOOL     bFltFound,               // TRUE iff the NotFound value is a FLT
      LPUBOOL   lpbCtrlBreak,            // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)                // Ptr to function token
 
@@ -2469,19 +2623,33 @@ UBOOL PrimFnDydIotaRvN_EM
 
         // If we didn't find a match, ...
         if (iMin > iMax)
+        {
+            if (bFltFound)
+                goto DOMAIN_EXIT;
+            else
 #ifdef GRADE2ND
-            // Save in the result
-            uLastVal       =
-            lpMemRes[iRes] = NotFound;
+                // Save in the result
+                uLastVal       =
+                lpMemRes[iRes] = NotFound;
 #else
-            // Save in the result
-            lpMemRes[iRht] = NotFound;
+                // Save in the result
+                lpMemRes[iRht] = NotFound;
 #endif
+        } // End IF
     } // End FOR
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbGupLft && lpMemGupLft)
     {
         if (lpMemGupLft)
@@ -2512,6 +2680,7 @@ ERROR_EXIT:
 
     return bRet;
 } // End PrimFnDydIotaRvN_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2519,6 +2688,12 @@ ERROR_EXIT:
 //
 //  Dyadic iota of APLVFP vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaVvN_EM"
+#else
+#define APPEND_NAME
+#endif
 
 UBOOL PrimFnDydIotaVvN_EM
     (LPAPLUINT lpMemRes,                // Ptr to result global memory data
@@ -2534,6 +2709,7 @@ UBOOL PrimFnDydIotaVvN_EM
      UBOOL     bQuadIO,                 // []IO
      APLFLOAT  fQuadCT,                 // []CT
      APLUINT   NotFound,                // Not found value
+     UBOOL     bFltFound,               // TRUE iff the NotFound value is a FLT
      LPUBOOL   lpbCtrlBreak,            // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)                // Ptr to function token
 
@@ -2767,19 +2943,33 @@ UBOOL PrimFnDydIotaVvN_EM
 
         // If we didn't find a match, ...
         if (iMin > iMax)
+        {
+            if (bFltFound)
+                goto DOMAIN_EXIT;
+            else
 #ifdef GRADE2ND
-            // Save in the result
-            uLastVal       =
-            lpMemRes[iRes] = NotFound;
+                // Save in the result
+                uLastVal       =
+                lpMemRes[iRes] = NotFound;
 #else
-            // Save in the result
-            lpMemRes[iRht] = NotFound;
+                // Save in the result
+                lpMemRes[iRht] = NotFound;
 #endif
+        } // End IF
     } // End FOR
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbGupLft && lpMemGupLft)
     {
         if (lpMemGupLft)
@@ -2810,15 +3000,22 @@ ERROR_EXIT:
 
     return bRet;
 } // End PrimFnDydIotaVvN_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $PrimFnDydIotaOther
+//  $PrimFnDydIotaOther_EM
 //
 //  Dyadic iota between all other arg combinations
 //***************************************************************************
 
-UBOOL PrimFnDydIotaOther
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaOther_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL PrimFnDydIotaOther_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
      APLSTYPE  aplTypeLft,          // Left arg storage type
      APLNELM   aplNELMLft,          // Left arg NELM
@@ -2827,8 +3024,9 @@ UBOOL PrimFnDydIotaOther
      APLNELM   aplNELMRht,          // Right arg NELM
      LPVOID    lpMemRht,            // Ptr to right arg global memory data
      UBOOL     bQuadIO,             // []IO
-     APLFLOAT  fQuadCT,                 // []CT
+     APLFLOAT  fQuadCT,             // []CT
      APLUINT   NotFound,            // Not found value
+     UBOOL     bFltFound,           // TRUE iff the NotFound value is a FLT
      LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
      LPTOKEN   lptkFunc)            // Ptr to function token
 
@@ -3018,9 +3216,12 @@ UBOOL PrimFnDydIotaOther
             } // End IF/ELSE/...
         } // End FOR
 
-        // We didn't find the it, so
-        //   set the result value to NotFound
-        *lpMemRes ++ = NotFound;
+        if (bFltFound)
+            goto DOMAIN_EXIT;
+        else
+            // We didn't find the it, so
+            //   set the result value to NotFound
+            *lpMemRes ++ = NotFound;
 
         continue;
 
@@ -3030,9 +3231,16 @@ SET_RESULT_VALUE:
     } // End FOR
 
     return TRUE;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     return FALSE;
-} // End PrimFnDydIotaOther
+} // End PrimFnDydIotaOther_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

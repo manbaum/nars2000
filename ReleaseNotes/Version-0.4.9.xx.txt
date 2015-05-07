@@ -1,6 +1,20 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1329 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug In Assembler Routines For Add, Subtract, and Multiply
+
+Directory trunk:
+
+DBGBRK.ASM:
+  Fix bug in Add, Subtract, and Multiply routines which fail to catch all cases of overflow.
+
+PRIMFNS.C:
+  Include commented out lines for overflow-detecting add and subtract in C.
+
+
 Build #1328 -- Version 0.4.9.xx
 -------------------------------
 

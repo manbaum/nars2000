@@ -76,20 +76,27 @@ ADD64_STR ends
         push    ebp             ; Prepare to address the stack
         mov     ebp,esp         ; Hello, Mr. Stack
 
+        push    ebx             ; Save register
+
         finit                   ; Initialize the FPU
 
         fild    [ebp].ADD64_LFT ; Load the left arg
         fild    [ebp].ADD64_RHT ; ...      right ...
         faddp   st(1),st(0)     ; Add 'em
+        fstsw   ax              ; Save the FPU Status Word from the FADDP
 
-        mov     eax,[ebp].ADD64_RES ; EAX => result
-        fistp   qword ptr [eax] ; Save in result
+        mov     ebx,[ebp].ADD64_RES ; EBX => result
+        fistp   qword ptr [ebx] ; Save in result
 
-        fstsw   ax              ; Save the FPU Status Word
+        mov     ebx,eax         ; Copy the FSTSW word from the FADDP
+        fstsw   ax              ; Save the FPU Status Word from the FISTP
+        or      eax,ebx         ; Merge the two FSTSW flags
 
-        test    ax,mask $XFIOP  ; Test the Invalid Operation flag
+        test    eax,(mask $XFPRC) OR (mask $XFOVF) OR (mask $XFIOP) ; Test the Precision Exception, Overflow, and Invalid Operation flags
         mov     eax,0           ; Clear the result
         setz    al              ; Return 0 or 1 from the <add>
+
+        pop     ebx             ; Restore register
 
         pop     ebp             ; Restore
 
@@ -129,20 +136,27 @@ SUB64_STR ends
         push    ebp             ; Prepare to address the stack
         mov     ebp,esp         ; Hello, Mr. Stack
 
+        push    ebx             ; Save register
+
         finit                   ; Initialize the FPU
 
         fild    [ebp].SUB64_LFT ; Load the left arg
         fild    [ebp].SUB64_RHT ; ...      right ...
         fsubp   st(1),st(0)     ; Subtract 'em
+        fstsw   ax              ; Save the FPU Status Word from the FSUBP
 
-        mov     eax,[ebp].SUB64_RES ; EAX => result
-        fistp   qword ptr [eax] ; Save in result
+        mov     ebx,[ebp].SUB64_RES ; EBX => result
+        fistp   qword ptr [ebx] ; Save in result
 
-        fstsw   ax              ; Save the FPU Status Word
+        mov     ebx,eax         ; Copy the FSTSW word from the FSUBP
+        fstsw   ax              ; Save the FPU Status Word from the FISTP
+        or      eax,ebx         ; Merge the two FSTSW flags
 
-        test    ax,mask $XFIOP  ; Test the Invalid Operation flag
+        test    eax,(mask $XFPRC) OR (mask $XFOVF) OR (mask $XFIOP) ; Test the Precision Exception, Overflow, and Invalid Operation flags
         mov     eax,0           ; Clear the result
         setz    al              ; Return 0 or 1 from the <add>
+
+        pop     ebx             ; Restore register
 
         pop     ebp             ; Restore
 
@@ -182,27 +196,36 @@ MUL64_STR ends
         push    ebp             ; Prepare to address the stack
         mov     ebp,esp         ; Hello, Mr. Stack
 
+        push    ebx             ; Save register
+
         finit                   ; Initialize the FPU
 
         fild    [ebp].MUL64_LFT ; Load the left arg
         fild    [ebp].MUL64_RHT ; ...      right ...
         fmulp   st(1),st(0)     ; Multiply 'em
+        fstsw   ax              ; Save the FPU Status Word from the FMULP
 
-        mov     eax,[ebp].MUL64_RES ; EAX => result
-        fistp   qword ptr [eax] ; Save in result
+        mov     ebx,[ebp].MUL64_RES ; EBX => result
+        fistp   qword ptr [ebx] ; Save in result
 
-        fstsw   ax              ; Save the FPU Status Word
+        mov     ebx,eax         ; Copy the FSTSW word from the FMULP
+        fstsw   ax              ; Save the FPU Status Word from the FISTP
+        or      eax,ebx         ; Merge the two FSTSW flags
 
-        test    ax,mask $XFIOP  ; Test the Invalid Operation flag
+        test    eax,(mask $XFPRC) OR (mask $XFOVF) OR (mask $XFIOP) ; Test the Precision Exception, Overflow, and Invalid Operation flags
         mov     eax,0           ; Clear the result
-        setz    al              ; Return 0 or 1 from the <add>
+        setz    al              ; Return 0 or 1 from the <mul>
 
-        pop     ebp             ; Restore
+        pop     ebx             ; Restore register
+
+        pop     ebp             ; Restore register
 
         ret                     ; Return to caller
 
 iAsmMul64 endp                  ; End iAsmMul64 procedure
+
 else
+
 ifdef IS_64
         .code
 
@@ -333,6 +356,7 @@ Rax     =       1 if successful
         ret                     ; Return to caller
 
 iAsmMul64 endp                  ; End iAsmMul64 procedure
+
 else
 echo Need code for this architecture
 .err

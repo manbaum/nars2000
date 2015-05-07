@@ -27,6 +27,27 @@
 
 static APLINT mod64 (APLINT, APLINT);
 
+/// // These macros were taken (and adapted) from
+/// //   http://www.fefe.de/intof.html
+///
+/// #define __HALF_MAX_SIGNED_APLINT ((APLINT)1 << (sizeof(APLINT)*8-2))
+/// #define __MAX_SIGNED_APLINT (__HALF_MAX_SIGNED_APLINT - 1 + __HALF_MAX_SIGNED_APLINT)
+/// #define __MIN_SIGNED_APLINT (-1 - __MAX_SIGNED_APLINT)
+///
+/// #define __MIN_APLINT ((APLINT)-1 < 1?__MIN_SIGNED_APLINT:(APLINT)0)
+/// #define __MAX_APLINT ((APLINT)~__MIN_APLINT)
+///
+/// #define add_of(c,__a,__b)  \
+///   ((__b) < 1) ? \
+///     ((__MIN_APLINT - (__b)) <= (__a) ? c = __a + __b, 1 : 0) : \
+///     ((__MAX_APLINT - (__b)) >= (__a) ? c = __a + __b, 1 : 0);
+///
+///
+/// #define sub_of(c,__a,__b)  \
+///   ((__b) < 1) ? \
+///     ((__MAX_APLINT + (__b)) >= (__a) ? c = __a - __b, 1 : 0) : \
+///     ((__MIN_APLINT + (__b)) <= (__a) ? c = __a - __b, 1 : 0);
+
 
 //***************************************************************************
 //  $IsTknOp1
@@ -2867,6 +2888,8 @@ APLINT iadd64
     APLINT aplRes;              // The result
     UBOOL  bRet;                // TRUE iff the result is valid
 
+////// Call a routine to detect inexact precision result
+////bRet = add_of (aplRes, aplLft, aplRht);
     // Call an assembler routine
     bRet = iAsmAdd64 (&aplRes, aplLft, aplRht);
 
@@ -2898,6 +2921,8 @@ APLINT isub64
     APLINT aplRes;              // The result
     UBOOL  bRet;                // TRUE iff the result is valid
 
+////// Call a routine to detect inexact precision result
+////bRet = sub_of (aplRes, aplLft, aplRht);
     // Call an assembler routine
     bRet = iAsmSub64 (&aplRes, aplLft, aplRht);
 
@@ -3267,7 +3292,7 @@ UBOOL IsFcnStrDirect
                 return FALSE;
         } // End SWITCH
     else
-    // If it's a Function Array, ...
+        // If it's a Function Array, ...
     if (lpYYFcnStr->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
     {
         LPFCNARRAY_HEADER lpMemFcn;

@@ -1,6 +1,20 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1330 -- Version 0.4.9.xx
+-------------------------------
+
+* Add New Tags <aplx> And <aplxx> To Wiki
+
+Directory MediWiki\extensions:
+
+APL.CSS:
+  Define new tags <aplx> and <aplxx>.
+
+RENDERAPL.PHP:
+  Define hooks for new tags.
+
+
 Build #1329 -- Version 0.4.9.xx
 -------------------------------
 

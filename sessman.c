@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1493,9 +1493,11 @@ NORMAL_EXIT:
                 // Reset the flag
                 lpMemPTD->bExecLX = FALSE;
 
+#define EXECUTE_QUADLX  WS_UTF16_UPTACKJOT $QUAD_LX
+
                 // Execute the statement in immediate execution mode
-                ImmExecStmt (WS_UTF16_UPTACKJOT $QUAD_LX,   // Ptr to line to execute
-                             4,                             // NELM of line to execute
+                ImmExecStmt (EXECUTE_QUADLX,                // Ptr to line to execute
+                             strcountof (EXECUTE_QUADLX),   // NELM of line to execute
                              FALSE,                         // TRUE iff free the line on completion
                              hWndEC,                        // Edit Ctrl window handle
                              TRUE);                         // TRUE iff errors are acted upon
@@ -1784,11 +1786,32 @@ NORMAL_EXIT:
 #endif
 #ifdef DEBUG
                 case VK_F2:             // Display hash table entries
+                {
+                    LPSYMENTRY lpSymEntry;
+                    STFLAGS    stFlags = {0};
+                    static WCHAR wFcn[32] = L"test";
+                    extern HGLOBAL hGlbRC1,
+                                   hGlbRC2;
                     DbgBrk ();
-                    DisplayHshTab (lpMemPTD->lphtsPTD);
-                    DisplayHshTab (&htsGLB);
+
+                    // Set the flags for what we're looking up
+                    stFlags.Inuse   = TRUE;
+                    stFlags.ObjName = OBJNAME_USR;
+
+                    // Look up the function name
+                    lpSymEntry =
+                      SymTabLookupName (wFcn, &stFlags);
+                    if (lpSymEntry NE NULL)
+                    {
+                        // Save so as to monitor RefCnt changes
+                        hGlbRC1 = ClrPtrTypeDir (lpSymEntry->stData.stGlbData);
+                    } // End IF
+
+////                DisplayHshTab (lpMemPTD->lphtsPTD);
+////                DisplayHshTab (&htsGLB);
 
                     return FALSE;
+                } // VK_F2
 #endif
 ////#ifdef DEBUG
 ////                case VK_F3:             // Display current token entries
@@ -1891,6 +1914,8 @@ NORMAL_EXIT:
                     DbgBrk ();
 
                     HeapCompact (GetProcessHeap (), 0);
+
+                    CheckMemStat ();
 
                     return FALSE;
 

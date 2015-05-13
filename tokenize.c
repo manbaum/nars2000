@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -157,7 +157,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnPointDone , fnCtrlDone  , scPointDone , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnPointDone , fnOp1Done   , scPointDone , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnPointDone , fnOp1Done   , scPointDone , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnPointDone , fnOp2Done   , scPointDone , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnPointDone , NULL        , scPointDone , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnPointDone , fnParInit   , scPointDone , scParInit   },     // Left paren
@@ -191,7 +191,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnPointDone , fnCtrlDone  , scPointDone , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnPointDone , fnPrmDone   , scPointDone , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnPointDone , fnOp1Done   , scPointDone , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnPointDone , fnOp1Done   , scPointDone , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnPointDone , fnOp2Done   , scPointDone , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnPointDone , NULL        , scPointDone , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnPointDone , fnParInit   , scPointDone , scParInit   },     // Left paren
@@ -225,7 +225,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnAlpDone   , fnCtrlDone  , scAlpDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnAlpDone   , fnPrmDone   , scAlpDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnAlpDone   , fnPrmDone   , scAlpDone   , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnAlpDone   , fnOp1Done   , scAlpDone   , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnAlpDone   , fnOp1Done   , scAlpDone   , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnAlpDone   , fnOp2Done   , scAlpDone   , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnAlpDone   , NULL        , scAlpDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnAlpDone   , fnParInit   , scAlpDone   , scParInit   },     // Left paren
@@ -259,7 +259,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnSysDone   , fnCtrlDone  , scSysDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnSysDone   , fnPrmDone   , scSysDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnSysDone   , fnPrmDone   , scSysDone   , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnSysDone   , fnOp1Done   , scSysDone   , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnSysDone   , fnOp1Done   , scSysDone   , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnSysDone   , fnOp2Done   , scSysDone   , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnSysDone   , NULL        , scSysDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnSysDone   , fnParInit   , scSysDone   , scParInit   },     // Left paren
@@ -293,7 +293,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Control Structure
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Primitive monadic or dyadic function
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // ...       niladic           ...
-  {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // ...       monadic operator
+  {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // ...       monadic/ambiguous operator
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // ...       dyadic  ...
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Jot
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Left paren
@@ -319,7 +319,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnQuo1Done  , fnDirIdent  , scQuo1Done  , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnQuo1Done  , fnSysInit   , scQuo1Done  , scSysInit   },     // Quad
-  {TKROW_INIT      , fnQuo1Done  , fnAlpInit   , scQuo1Done  , scAlpInit   },     // Underbar
+  {TKROW_ALPHA     , fnQuo1Done  , fnAlpInit   , scQuo1Done  , scAlpInit   },     // Underbar
   {TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnQuo1Done  , fnAsnDone   , scQuo1Done  , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnQuo1Done  , fnLstDone   , scQuo1Done  , scLstDone   },     // Semicolon  ...
@@ -327,7 +327,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnQuo1Done  , fnCtrlDone  , scQuo1Done  , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnQuo1Done  , fnPrmDone   , scQuo1Done  , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnQuo1Done  , fnPrmDone   , scQuo1Done  , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnQuo1Done  , fnOp1Done   , scQuo1Done  , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnQuo1Done  , fnOp1Done   , scQuo1Done  , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnQuo1Done  , fnOp2Done   , scQuo1Done  , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnQuo1Done  , NULL        , scQuo1Done  , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnQuo1Done  , fnParInit   , scQuo1Done  , scParInit   },     // Left paren
@@ -361,7 +361,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Control Structure
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Primitive monadic or dyadic function
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // ...       niladic           ...
-  {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // ...       monadic operator
+  {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // ...       monadic/ambiguous operator
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // ...       dyadic  ...
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Jot
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Left paren
@@ -387,7 +387,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnQuo2Done  , fnDirIdent  , scQuo2Done  , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnQuo2Done  , fnSysInit   , scQuo2Done  , scSysInit   },     // Quad
-  {TKROW_INIT      , fnQuo2Done  , fnAlpInit   , scQuo2Done  , scAlpInit   },     // Underbar
+  {TKROW_ALPHA     , fnQuo2Done  , fnAlpInit   , scQuo2Done  , scAlpInit   },     // Underbar
   {TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnQuo2Done  , fnAsnDone   , scQuo2Done  , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnQuo2Done  , fnLstDone   , scQuo2Done  , scLstDone   },     // Semicolon  ...
@@ -395,7 +395,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnQuo2Done  , fnCtrlDone  , scQuo2Done  , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnQuo2Done  , fnPrmDone   , scQuo2Done  , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnQuo2Done  , fnPrmDone   , scQuo2Done  , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnQuo2Done  , fnOp1Done   , scQuo2Done  , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnQuo2Done  , fnOp1Done   , scQuo2Done  , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnQuo2Done  , fnOp2Done   , scQuo2Done  , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnQuo2Done  , NULL        , scQuo2Done  , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnQuo2Done  , fnParInit   , scQuo2Done  , scParInit   },     // Left paren
@@ -421,7 +421,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnDotDone   , fnDirIdent  , scDotDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnDotDone   , fnSysInit   , scDotDone   , scSysInit   },     // Quad
-  {TKROW_INIT      , fnDotDone   , fnAlpInit   , scDotDone   , scAlpInit   },     // Underbar
+  {TKROW_ALPHA     , fnDotDone   , fnAlpInit   , scDotDone   , scAlpInit   },     // Underbar
   {TKROW_POINTNOT1 , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnDotDone   , fnAsnDone   , scDotDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnDotDone   , fnLstDone   , scDotDone   , scLstDone   },     // Semicolon  ...
@@ -429,7 +429,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnDotDone   , fnCtrlDone  , scDotDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnDotDone   , fnPrmDone   , scDotDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnDotDone   , fnPrmDone   , scDotDone   , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnDotDone   , fnOp1Done   , scDotDone   , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnDotDone   , fnOp1Done   , scDotDone   , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnDotDone   , fnOp2Done   , scDotDone   , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnDotDone   , NULL        , scDotDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnDotDone   , fnParInit   , scDotDone   , scParInit   },     // Left paren
@@ -455,7 +455,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnJotDone   , fnDirIdent  , scJotDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnJotDone   , fnSysInit   , scJotDone   , scSysInit   },     // Quad
-  {TKROW_INIT      , fnJotDone   , fnAlpInit   , scJotDone   , scAlpInit   },     // Underbar
+  {TKROW_ALPHA     , fnJotDone   , fnAlpInit   , scJotDone   , scAlpInit   },     // Underbar
   {TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnJotDone   , fnAsnDone   , scJotDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnJotDone   , fnLstDone   , scJotDone   , scLstDone   },     // Semicolon  ...
@@ -463,7 +463,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnJotDone   , fnCtrlDone  , scJotDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnJotDone   , fnPrmDone   , scJotDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnJotDone   , fnPrmDone   , scJotDone   , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnJotDone   , fnOp1Done   , scJotDone   , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnJotDone   , fnOp1Done   , scJotDone   , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnJotDone   , fnOp2Done   , scJotDone   , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnJotDone   , NULL        , scJotDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnJotDone   , fnParInit   , scJotDone   , scParInit   },     // Left paren
@@ -489,7 +489,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnOutDone   , fnDirIdent  , scOutDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnOutDone   , fnSysInit   , scOutDone   , scSysInit   },     // Quad
-  {TKROW_INIT      , fnOutDone   , fnAlpInit   , scOutDone   , scAlpInit   },     // Underbar
+  {TKROW_ALPHA     , fnOutDone   , fnAlpInit   , scOutDone   , scAlpInit   },     // Underbar
   {TKROW_POINTNOT1 , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnOutDone   , fnAsnDone   , scOutDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnOutDone   , fnLstDone   , scOutDone   , scLstDone   },     // Semicolon  ...
@@ -497,7 +497,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , fnOutDone   , fnCtrlDone  , scOutDone   , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , fnOutDone   , fnPrmDone   , scOutDone   , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , fnOutDone   , fnPrmDone   , scOutDone   , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , fnOutDone   , fnOp1Done   , scOutDone   , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , fnOutDone   , fnOp1Done   , scOutDone   , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , fnOutDone   , fnOp2Done   , scOutDone   , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , fnOutDone   , NULL        , scOutDone   , scOp2DoneX  },     // Jot
   {TKROW_INIT      , fnOutDone   , fnParInit   , scOutDone   , scParInit   },     // Left paren
@@ -523,7 +523,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , NULL        , fnDirIdent  , NULL        , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , NULL        , fnSysInit   , NULL        , scSysInit   },     // Quad
-  {TKROW_INIT      , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // Underbar
+  {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // Underbar
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , NULL        , fnAsnDone   , NULL        , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , NULL        , fnLstDone   , NULL        , scLstDone   },     // Semicolon  ...
@@ -531,7 +531,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_INIT      , NULL        , fnCtrlDone  , NULL        , scCtrlDone  },     // Control Structure
   {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // Primitive monadic or dyadic function
   {TKROW_INIT      , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // ...       niladic           ...
-  {TKROW_INIT      , NULL        , fnOp1Done   , NULL        , scOp1Done   },     // ...       monadic operator
+  {TKROW_INIT      , NULL        , fnOp1Done   , NULL        , scOp1Done   },     // ...       monadic/ambiguous operator
   {TKROW_INIT      , NULL        , fnOp2Done   , NULL        , scOp2Done   },     // ...       dyadic  ...
   {TKROW_JOTAMBIG  , NULL        , fnPrmDone   , NULL        , scPrmDone   },     // Jot
   {TKROW_INIT      , NULL        , fnParInit   , NULL        , scParInit   },     // Left paren
@@ -565,7 +565,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Control Structure
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Primitive monadic or dyadic function
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // ...       niladic           ...
-  {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // ...       monadic operator
+  {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // ...       monadic/ambiguous operator
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // ...       dyadic  ...
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Jot
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Left paren
@@ -599,7 +599,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Control Structure
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Primitive monadic or dyadic function
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // ...       niladic           ...
-  {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // ...       monadic operator
+  {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // ...       monadic/ambiguous operator
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // ...       dyadic  ...
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Jot
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Left paren
@@ -633,7 +633,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Control Structure
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Primitive monadic or dyadic function
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // ...       niladic           ...
-  {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // ...       monadic operator
+  {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // ...       monadic/ambiguous operator
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // ...       dyadic  ...
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Jot
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Left paren
@@ -1986,7 +1986,7 @@ UBOOL fnClnDone
         // Mark the data as a label separator
         tkFlags.TknType = TKT_LABELSEP;
 
-        // Set the new state to TKROW_SOS so we can accept Control Strucures
+        // Set the new state to TKROW_SOS so we can accept Control Structures
         SetTokenStatesTK (lptkLocalVars, TKROW_SOS);
 
         // Save as index of new initial char
@@ -2097,7 +2097,7 @@ UBOOL scClnDone
             // Save the color (label separator)
             lptkLocalVars->lpMemClrIni[uVar].syntClr =
               gSyntaxColorName[SC_LABEL].syntClr;
-        // Set the new state to TKROW_SOS so we can accept Control Strucures
+        // Set the new state to TKROW_SOS so we can accept Control Structures
         SetTokenStatesTK (lptkLocalVars, TKROW_SOS);
     } else
     {
@@ -2566,108 +2566,121 @@ UBOOL fnPointDone
     bRet = ParsePointNotation (&pnLocalVars);
     if (bRet)
     {
-        // Get the attrs of a global
-        AttrsOfGlb (pnLocalVars.hGlbRes, &aplTypeRes, NULL, &aplRankRes, NULL);
-
-        // If the value is a scalar, ...
-        if (IsScalar (aplRankRes))
+        // Check for :CONSTANT during )COPY/)LOAD
+        if (!CheckConstantCopyLoad (lptkLocalVars, &pnLocalVars))
         {
-            LPVOID lpMemRes;
+            // Get the attrs of a global
+            AttrsOfGlb (pnLocalVars.hGlbRes, &aplTypeRes, NULL, &aplRankRes, NULL);
 
-            // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (pnLocalVars.hGlbRes);
-
-            // Skip over the header and dimensions
-            lpMemRes = VarArrayDataFmBase (lpMemRes);
-
-            // Split cases based upon the result type
-            switch (aplTypeRes)
+            // If the value is a scalar, ...
+            if (IsScalar (aplRankRes))
             {
-                case ARRAY_BOOL:
-                    // Mark the data as an immediate Boolean variable
-                    tkFlags.TknType  = TKT_VARIMMED;
-                    tkFlags.ImmType  = IMMTYPE_BOOL;
+                LPVOID lpMemRes;
 
-                    // Get the value
-                    tkData.tkBoolean = *(LPAPLBOOL) lpMemRes;
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (pnLocalVars.hGlbRes);
 
-                    break;
+                // Skip over the header and dimensions
+                lpMemRes = VarArrayDataFmBase (lpMemRes);
 
-                case ARRAY_INT:
-                    // Mark the data as an immediate integer variable
-                    tkFlags.TknType  = TKT_VARIMMED;
-                    tkFlags.ImmType  = IMMTYPE_INT;
+                // Split cases based upon the result type
+                switch (aplTypeRes)
+                {
+                    case ARRAY_BOOL:
+                        // Mark the data as an immediate Boolean variable
+                        tkFlags.TknType  = TKT_VARIMMED;
+                        tkFlags.ImmType  = IMMTYPE_BOOL;
 
-                    // Get the value
-                    tkData.tkInteger = *(LPAPLINT) lpMemRes;
+                        // Get the value
+                        tkData.tkBoolean = *(LPAPLBOOL) lpMemRes;
 
-                    break;
+                        break;
 
-                case ARRAY_FLOAT:
-                    // Mark the data as an immediate float variable
-                    tkFlags.TknType  = TKT_VARIMMED;
-                    tkFlags.ImmType  = IMMTYPE_FLOAT;
+                    case ARRAY_INT:
+                        // Mark the data as an immediate integer variable
+                        tkFlags.TknType  = TKT_VARIMMED;
+                        tkFlags.ImmType  = IMMTYPE_INT;
 
-                    // Get the value
-                    tkData.tkFloat   = *(LPAPLFLOAT) lpMemRes;
+                        // Get the value
+                        tkData.tkInteger = *(LPAPLINT) lpMemRes;
 
-                    break;
+                        break;
 
-                case ARRAY_RAT:
-                    hGlbData =
-                      MakeGlbEntry_EM (ARRAY_RAT,               // Entry type
-                                       lpMemRes,                // Ptr to the value
-                                       FALSE,                   // TRUE iff we should initialize the target first
-                                       NULL);                   // Ptr to function token
-                    // If the allocate failed, ...
-                    if (hGlbData EQ NULL)
-                        goto ERROR_EXIT;
+                    case ARRAY_FLOAT:
+                        // Mark the data as an immediate float variable
+                        tkFlags.TknType  = TKT_VARIMMED;
+                        tkFlags.ImmType  = IMMTYPE_FLOAT;
 
-                    // Mark the data as a (scalar) array
-                    tkFlags.TknType  = TKT_NUMSCALAR;
-                    tkData.tkGlbData = hGlbData;
+                        // Get the value
+                        tkData.tkFloat   = *(LPAPLFLOAT) lpMemRes;
 
-                    break;
+                        break;
 
-                case ARRAY_VFP:
-                    hGlbData =
-                      MakeGlbEntry_EM (ARRAY_VFP,               // Entry type
-                                       lpMemRes,                // Ptr to the value
-                                       FALSE,                   // TRUE iff we should initialize the target first
-                                       NULL);                   // Ptr to function token
-                    // If the allocate failed, ...
-                    if (hGlbData EQ NULL)
-                        goto ERROR_EXIT;
+                    case ARRAY_RAT:
+                        hGlbData =
+                          MakeGlbEntry_EM (ARRAY_RAT,               // Entry type
+                                           lpMemRes,                // Ptr to the value
+                                           FALSE,                   // TRUE iff we should initialize the target first
+                                           NULL);                   // Ptr to function token
+                        // If the allocate failed, ...
+                        if (hGlbData EQ NULL)
+                            goto ERROR_EXIT;
 
-                    // Mark the data as a (scalar) array
-                    tkFlags.TknType  = TKT_NUMSCALAR;
-                    tkData.tkGlbData = hGlbData;
+                        // Mark the data as a (scalar) array
+                        tkFlags.TknType  = TKT_NUMSCALAR;
+                        tkData.tkGlbData = hGlbData;
 
-                    break;
+                        break;
 
-                defstop
-                    break;
-            } // End SWITCH
+                    case ARRAY_VFP:
+                        hGlbData =
+                          MakeGlbEntry_EM (ARRAY_VFP,               // Entry type
+                                           lpMemRes,                // Ptr to the value
+                                           FALSE,                   // TRUE iff we should initialize the target first
+                                           NULL);                   // Ptr to function token
+                        // If the allocate failed, ...
+                        if (hGlbData EQ NULL)
+                            goto ERROR_EXIT;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (pnLocalVars.hGlbRes); lpMemRes = NULL;
+                        // Mark the data as a (scalar) array
+                        tkFlags.TknType  = TKT_NUMSCALAR;
+                        tkData.tkGlbData = hGlbData;
 
-            // We no longer need this storage
-            DbgGlobalFree (pnLocalVars.hGlbRes); pnLocalVars.hGlbRes = NULL;
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // We no longer need this ptr
+                MyGlobalUnlock (pnLocalVars.hGlbRes); lpMemRes = NULL;
+
+                // We no longer need this storage
+                DbgGlobalFree (pnLocalVars.hGlbRes); pnLocalVars.hGlbRes = NULL;
+            } else
+            {
+                // Setup the flags and global data handle
+                tkFlags.TknType  = TKT_NUMSTRAND;
+                tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
+                tkData.tkGlbData = MakePtrTypeGlb (pnLocalVars.hGlbRes);
+            } // End IF/ELSE
+
+            // Attempt to append as new token, check for TOKEN TABLE FULL,
+            //   and resize as necessary.
+            bRet = AppendNewToken_EM (lptkLocalVars,
+                                     &tkFlags,
+                                     &tkData,
+                                      0);
         } else
         {
-            // Setup the flags and global data handle
-            tkFlags.TknType  = TKT_NUMSTRAND;
-            tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
-            tkData.tkGlbData = MakePtrTypeGlb (pnLocalVars.hGlbRes);
-        } // End IF/ELSE
+            // Get the attrs of a global
+            AttrsOfGlb (pnLocalVars.hGlbRes, &aplTypeRes, NULL, &aplRankRes, NULL);
 
-        // Attempt to append as new token, check for TOKEN TABLE FULL,
-        //   and resize as necessary.
-        bRet = AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &tkData,
-                                  0);
+            // If the value is a scalar, ...
+            if (IsScalar (aplRankRes))
+                // We no longer need this storage
+                DbgGlobalFree (pnLocalVars.hGlbRes); pnLocalVars.hGlbRes = NULL;
+        } // End IF/ELSE/...
     } else
         // Mark as a SYNTAX ERROR
         bRet =
@@ -2686,6 +2699,125 @@ ERROR_EXIT:
     return bRet;
 } // End fnPointDone
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CheckConstantCopyLoad
+//
+//  Check for :CONSTANT during )COPY/)LOAD
+//***************************************************************************
+
+UBOOL CheckConstantCopyLoad
+    (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to PNLOCALVARS global memory
+
+{
+    LPTOKEN lptkPrv;                    // Ptr to previous token
+
+    // Get a ptr to the previous token (if any)
+    lptkPrv = &lptkLocalVars->lptkNext[-1];
+
+    // Check for :CONSTANT during )COPY/)LOAD
+    if (lptkLocalVars->lpHeader->TokenCnt
+     && lptkPrv->tkFlags.TknType EQ TKT_COLON
+     && lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv)
+    {
+        HGLOBAL      hGlbObj;           // Object global memory handle
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+
+        // Convert the :CONSTANT to an HGLOBAL
+        hGlbObj =
+          (*lpMemPTD->lpLoadWsGlbVarConv) ((UINT) lppnLocalVars->at.aplInteger,
+                                           lpMemPTD->lpLoadWsGlbVarParm);
+        // Split cases based upon the global memory signature
+        switch (GetSignatureGlb (hGlbObj))
+        {
+            case VARARRAY_HEADER_SIGNATURE:
+                // Fill in the result token
+                lptkPrv->tkFlags.TknType   = TKT_VARARRAY;
+////////////////lptkPrv->tkFlags.ImmType   =        // Same as for TKT_COLON
+                lptkPrv->tkFlags.NoDisplay = FALSE;
+                lptkPrv->tkData.tkGlbData  = MakePtrTypeGlb (hGlbObj);
+////////////////lptkPrv->tkCharIndex       =        // Same as for TKT_COLON
+                lptkPrv->tkSynObj          = soA;
+
+                break;
+
+            case FCNARRAY_HEADER_SIGNATURE:
+                // This DEBUG stmt probably never is triggered because
+                //    UnFcnStrand converts all named or unnamed function array items to inline items
+#ifdef DEBUG
+                DbgStop ();         // ***Probably never executed***
+#endif
+                break;
+
+            case DFN_HEADER_SIGNATURE:
+            {
+                LPDFN_HEADER lpMemDfnHdr;
+                UBOOL        bNF;
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (hGlbObj);
+
+                // Izit niladic?
+                bNF = (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL);
+
+                // Split cases based upon the Dfn type
+                switch (lpMemDfnHdr->DfnType)
+                {
+                    case DFNTYPE_OP1:
+                        // Fill in the result token
+                        lptkPrv->tkFlags.TknType   = TKT_OP1NAMED;
+                        lptkPrv->tkSynObj          = bNF ? soMOPN : soMOP;
+
+                        break;
+
+                    case DFNTYPE_OP2:
+                        // Fill in the result token
+                        lptkPrv->tkFlags.TknType   = TKT_OP2NAMED;
+                        lptkPrv->tkSynObj          = bNF ? soDOPN : soDOP;
+
+                        break;
+
+                    case DFNTYPE_FCN:
+                        // Fill in the result token
+                        lptkPrv->tkFlags.TknType   = TKT_FCNNAMED;
+                        lptkPrv->tkSynObj          = bNF ? soNF : soF;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Fill in the result token
+////////////////lptkPrv->tkFlags.ImmType   =        // Same as for TKT_COLON
+                lptkPrv->tkFlags.NoDisplay = FALSE;
+////            lptkPrv->tkData.tkGlbData  = lpMemDfnHdr->steFcnName;
+                lptkPrv->tkData.tkGlbData  = MakePtrTypeGlb (hGlbObj);
+////////////////lptkPrv->tkCharIndex       =        // Same as for TKT_COLON
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbObj); lpMemDfnHdr = NULL;
+
+                break;
+            } // End DFN_HEADER_SIGNATURE
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Count in two more references to this object
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbObj));    // Matched by Untokenize
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbObj));    // Matched by DeleteGlolbalLinks
+
+        return TRUE;
+    } else
+        return FALSE;
+} // End CheckConstantCopyLoad
 
 
 //***************************************************************************
@@ -2941,18 +3073,7 @@ UBOOL fnDelDone
 #endif
 
     // Check for Syntax Coloring
-    if (lptkLocalVars->lpMemClrNxt)
-    {
-        // Save the column index
-        lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_DEL;
-
-        // Save the color
-        lptkLocalVars->lpMemClrNxt++->syntClr =
-          gSyntaxColorName[SC_PRIMFCN].syntClr;
-
-        // Mark as successful
-        return TRUE;
-    } // End IF
+    Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
@@ -5897,7 +6018,7 @@ UBOOL AppendNewToken_EM
 
     // If this token is a right arrow, ...
     if (lptkFlags->TknType EQ TKT_FCNIMMED
-     && lptkData ->tkIndex EQ UTF16_RIGHTARROW)
+     && lptkData ->tkChar  EQ UTF16_RIGHTARROW)
         // Set the appropriate Syntax Object value
         lptkLocalVars->lptkNext->tkSynObj = soGO;
     else

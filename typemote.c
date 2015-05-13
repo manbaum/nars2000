@@ -1597,8 +1597,8 @@ UBOOL TypePromoteGlb_EM
 
             break;
 
-        case ARRAY_FLOAT:               // B/I/A -> F
-            Assert (IsSimpleInt (aplTypeArg));
+        case ARRAY_FLOAT:               // B/I/A/F -> F
+            Assert (IsSimpleNum (aplTypeArg));
 
             // Split cases based upon the arg storage type
             switch (aplTypeArg)
@@ -1643,6 +1643,13 @@ UBOOL TypePromoteGlb_EM
                     for (uRes = 0; uRes < aplNELMArg; uRes++)
                         *((LPAPLFLOAT) lpMemRes)++ =
                           (APLFLOAT) *((LPAPLINT) lpMemArg)++;
+                    break;
+
+                case ARRAY_FLOAT:
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLFLOAT) lpMemRes)++ =
+                          *((LPAPLFLOAT) lpMemArg)++;
                     break;
 
                 defstop

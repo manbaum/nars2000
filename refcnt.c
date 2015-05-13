@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -252,6 +252,11 @@ int IncrRefCntTkn
 {
     HGLOBAL hGlbVar;
 
+    // If the token is a named direct fcn/opr, ...
+    if (IsTknNamedFcnOpr (lptkVar)
+     && lptkVar->tkData.tkSym->stFlags.FcnDir)
+        return -1;
+
     // Get the global memory handle (if it's a global)
     hGlbVar = GetGlbHandle (lptkVar);
 
@@ -275,6 +280,11 @@ int DecrRefCntTkn
 {
     HGLOBAL hGlbVar;
 
+    // If the token is a named direct fcn/opr, ...
+    if (IsTknNamedFcnOpr (lptkVar)
+     && lptkVar->tkData.tkSym->stFlags.FcnDir)
+        return -1;
+
     // Get the global memory handle (if it's a global)
     hGlbVar = GetGlbHandle (lptkVar);
 
@@ -287,6 +297,130 @@ int DecrRefCntTkn
 
 
 //***************************************************************************
+//  $IncrRefCntFcnArray
+//
+//  Increment the reference count of each item in a Function Array
+//***************************************************************************
+
+int IncrRefCntFcnArray
+    (HGLOBAL hGlbFcn)
+
+{
+    LPFCNARRAY_HEADER lpMemHdr;     // Ptr to Function Array header
+    UINT              tknNELM,      // The # tokens in the function array
+                      u,            // Loop counter
+                      RefCnt;       // Reference count
+    LPPL_YYSTYPE      lpYYToken;    // Ptr to function array token
+
+    // Data is an valid HGLOBAL function array
+    Assert (IsGlbTypeFcnDir_PTB (hGlbFcn));
+
+#ifdef DEBUG
+    if (hGlbFcn && hGlbRC1 && ClrPtrTypeDir (hGlbFcn) EQ ClrPtrTypeDir (hGlbRC1))
+        DbgBrk ();
+
+    if (hGlbFcn && hGlbRC2 && ClrPtrTypeDir (hGlbFcn) EQ ClrPtrTypeDir (hGlbRC2))
+        DbgBrk ();
+#endif
+    // Lock the memory to get a ptr to it
+    lpMemHdr = MyGlobalLock (hGlbFcn);
+
+    // Get the Type, RefCnt, NELM, and line text handle
+    RefCnt      = ++lpMemHdr->RefCnt;
+    tknNELM     =   lpMemHdr->tknNELM;
+
+    // Skip over the header to the data (PL_YYSTYPEs)
+    lpYYToken = FcnArrayBaseToData (lpMemHdr);
+
+    // Loop through the PL_YYSTYPEs
+    for (u = 0; u < tknNELM; u++, lpYYToken++)
+    // Split cases based upon the token type
+    switch (lpYYToken->tkToken.tkFlags.TknType)
+    {
+        case TKT_FCNIMMED:      // Nothing to do
+        case TKT_VARIMMED:      // ...
+        case TKT_OP1IMMED:      // ...
+        case TKT_OP2IMMED:      // ...
+        case TKT_OP3IMMED:      // ...
+        case TKT_AXISIMMED:     // ...
+        case TKT_OPJOTDOT:      // ...
+        case TKT_FILLJOT:       // ...
+            break;              // Ignore immediates
+
+        case TKT_FCNNAMED:      // Increment the RefCnt in the named function array
+        case TKT_OP1NAMED:      // ...
+        case TKT_OP2NAMED:      // ...
+        case TKT_OP3NAMED:      // ...
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // Check for internal functions
+            if (lpYYToken->tkToken.tkData.tkSym->stFlags.FcnDir)
+                break;          // Ignore internal functions
+
+            // Increment the RefCnt
+            DbgIncrRefCntTkn (&lpYYToken->tkToken);
+
+            break;
+
+        case TKT_FCNARRAY:      // Increment the RefCnt in the the function array
+            // This DEBUG stmt probably never is triggered because
+            //    YYCopyFcnStr converts all Function Arrays to items
+#ifdef DEBUG
+            DbgStop ();         // ***Probably never executed***
+#endif
+            // Increment the RefCnt
+            DbgIncrRefCntTkn (&lpYYToken->tkToken); // EXAMPLE:  ***Probably never executed***
+
+            break;
+
+        case TKT_FCNAFO:
+        case TKT_OP1AFO:
+        case TKT_OP2AFO:
+        case TKT_DELAFO:
+            // Increment the RefCnt
+            DbgIncrRefCntTkn (&lpYYToken->tkToken); // EXAMPLE:  f{is}{-omega}{jot}{divide} {diamond} f 3
+
+            break;
+
+        case TKT_VARARRAY:      // Increment the var array (strand arg to dyadic op)
+        case TKT_AXISARRAY:     // ...           axis array
+        case TKT_CHRSTRAND:     // ...           character strand
+        case TKT_NUMSTRAND:     // ...           numeric strand
+        case TKT_NUMSCALAR:     // ...           numeric scalar
+            // Increment the RefCnt
+            DbgIncrRefCntTkn (&lpYYToken->tkToken); // EXAMPLE:  A f {each} [1 2] B
+
+            break;
+
+        case TKT_VARNAMED:
+            // This DEBUG stmt probably never is triggered because
+            //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+            DbgStop ();         // ***Probably never executed***
+#endif
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not an immediate, ...
+            if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
+                // Increment the RefCnt
+                DbgIncrRefCntTkn (&lpYYToken->tkToken);
+
+            break;
+
+        defstop
+            break;
+    } // End FOR/SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbFcn); lpMemHdr = NULL;
+
+    return RefCnt;
+} // End IncrRefCntFcnArray
+
+
+//***************************************************************************
 //  $GetRefCntGlb
 //
 //  Get the reference count from a global memory handle
@@ -296,30 +430,30 @@ UINT GetRefCntGlb
     (HGLOBAL hGlbArg)           // Arg global memory handle
 
 {
-    LPVOID lpMemHdr;            // Ptr to global memory header
-    UINT   uRefCnt;             // The array reference count
+    VFOHDRPTRS vfoHdrPtrs;      // Ptr to global memory header
+    UINT       uRefCnt;         // The array reference count
 
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlbArg);
+    vfoHdrPtrs.lpMemVFO = MyGlobalLock (hGlbArg);
 
     // Split cases based upon the signature
-    switch (GetSignatureMem (lpMemHdr))
+    switch (GetSignatureMem (vfoHdrPtrs.lpMemVFO))
     {
         case DFN_HEADER_SIGNATURE:
             // Get the reference count
-            uRefCnt = ((LPDFN_HEADER) lpMemHdr)->RefCnt;
+            uRefCnt = vfoHdrPtrs.lpMemDfn->RefCnt;
 
             break;
 
         case FCNARRAY_HEADER_SIGNATURE:
             // Get the reference count
-            uRefCnt = ((LPFCNARRAY_HEADER) lpMemHdr)->RefCnt;
+            uRefCnt = vfoHdrPtrs.lpMemFcn->RefCnt;
 
             break;
 
         case VARARRAY_HEADER_SIGNATURE:
             // Get the reference count
-            uRefCnt = ((LPVARARRAY_HEADER) lpMemHdr)->RefCnt;
+            uRefCnt = vfoHdrPtrs.lpMemVar->RefCnt;
 
             break;
 
@@ -328,10 +462,56 @@ UINT GetRefCntGlb
     } // End SWITCH
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbArg); lpMemHdr = NULL;
+    MyGlobalUnlock (hGlbArg); vfoHdrPtrs.lpMemVFO = NULL;
 
     return uRefCnt;
 } // End GetRefCntGlb
+
+
+//***************************************************************************
+//  $SetRefCntGlb
+//
+//  Set the reference count from a global memory handle to a given value
+//***************************************************************************
+
+void SetRefCntGlb
+    (HGLOBAL hGlbArg,           // Arg global memory handle
+     UINT    uRefCnt)           // New value for RefCnt (typically 1)
+
+{
+    VFOHDRPTRS vfoHdrPtrs;      // Ptr to global memory header
+
+    // Lock the memory to get a ptr to it
+    vfoHdrPtrs.lpMemVFO = MyGlobalLock (hGlbArg);
+
+    // Split cases based upon the signature
+    switch (GetSignatureMem (vfoHdrPtrs.lpMemVFO))
+    {
+        case DFN_HEADER_SIGNATURE:
+            // Set the reference count
+            vfoHdrPtrs.lpMemDfn->RefCnt = uRefCnt;
+
+            break;
+
+        case FCNARRAY_HEADER_SIGNATURE:
+            // Set the reference count
+            vfoHdrPtrs.lpMemFcn->RefCnt = uRefCnt;
+
+            break;
+
+        case VARARRAY_HEADER_SIGNATURE:
+            // Set the reference count
+            vfoHdrPtrs.lpMemVar->RefCnt = uRefCnt;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbArg); vfoHdrPtrs.lpMemVFO = NULL;
+} // End SetRefCntGlb
 
 
 #ifdef DEBUG_REFCNT
@@ -393,6 +573,26 @@ int _DbgIncrRefCntTkn
     dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (GetGlbHandle (lptkVar)), lpFileName, uLineNum);
     return IncrRefCntTkn (lptkVar);
 } // End _DbgIncrRefCntTkn
+#endif
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
+//  $DbgIncrRefCntFcnArray
+//
+//  Increment the reference count of a Function Array
+//***************************************************************************
+
+int _DbgIncrRefCntFcnArray
+    (HGLOBAL hGlbFcn,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (hGlbFcn), lpFileName, uLineNum);
+    return IncrRefCntFcnArray (hGlbFcn);
+} // End _DbgIncrRefCntFcnArray
 #endif
 
 

@@ -1345,6 +1345,10 @@ UBOOL PN_VectorRes
         lppnLocalVars->hGlbRes = lppnLocalVars->hGlbVector;
     } // End IF/ELSE
 
+    // Copy the last result back to <lppnLocalVars->at> in case it's a scalar
+    //   and we need its value for :CONSTANT on )LOAD or )COPY
+    lppnLocalVars->at = pnType.at;
+
     // Mark as successful
     bRet = TRUE;
 

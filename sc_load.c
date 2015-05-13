@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -927,7 +927,7 @@ UBOOL ParseSavedWsFcn_EM
         if (hGlbOld)
             // Increment its reference count to keep it around
             //   in case it gets freed by LoadWorkspaceGlobal_EM
-            DbgIncrRefCntDir_PTB (hGlbOld);
+            DbgIncrRefCntDir_PTB (hGlbOld); // EXAMPLE:  )copy tests\64bit lx
 
         // Find the trailing L' '
         lpwCharEnd = SkipToCharW (lpwSrc, L' ');
@@ -2105,10 +2105,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 // Copy the HGLOBAL
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
-            // If it's not a function/operator/train/, ...
-            if (!IsNameTypeFnOp (lpSymEntry->stFlags.stNameType))
-                // Increment the reference count
-                DbgIncrRefCntDir_PTB (hGlbObj);
+            // Ensure it's a function/operator/train.
+            Assert (IsNameTypeFnOp (lpSymEntry->stFlags.stNameType));
+
             break;
 
         defstop

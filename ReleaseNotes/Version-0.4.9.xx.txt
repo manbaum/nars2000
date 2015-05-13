@@ -1,6 +1,19 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1339 -- Version 0.4.9.xx
+-------------------------------
+
+* DEBUG Code In )LOAD
+
+Directory trunk:
+
+SC_LOAD.C:
+  Update copyright year.
+  Improve comments.
+  In <LoadWorkspaceGlobal_EM>/Load Function Array, remove check for function/operator/train as it can't be anything else.
+
+
 Build #1338 -- Version 0.4.9.xx
 -------------------------------
 

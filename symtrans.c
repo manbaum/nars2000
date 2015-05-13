@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,15 +102,27 @@ UINT SymTrans
 
             break;
 
+        case TKT_FCNNAMED:
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
         case TKT_OP3NAMED:
             Assert (GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // Get the operator
-            lpMemFcn = (LPPL_YYSTYPE) lptkFunc->tkData.tkSym->stData.stGlbData;
+            // If the named function/operator is immediate, ...
+            if (lptkFunc->tkData.tkSym->stFlags.Imm)
+            {
+                // Get the function/operator symbol
+                wch = lptkFunc->tkData.tkSym->stData.stChar;
 
-            DbgBrk ();
+                // If the name is a function, ...
+                if (lptkFunc->tkFlags.TknType EQ TKT_FCNNAMED)
+                    return FcnTrans (wch);
+                else
+                    return OprTrans (wch);
+            } else
+                // Get a ptr to the function/operator
+                lpMemFcn = (LPPL_YYSTYPE) lptkFunc->tkData.tkSym->stData.stGlbData;
+            break;
 
         case TKT_FCNARRAY:
             // Get the function array global memory handle

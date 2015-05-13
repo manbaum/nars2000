@@ -1,6 +1,18 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1337 -- Version 0.4.9.xx
+-------------------------------
+
+* Finish Symbol Translate Code
+
+Directory trunk:
+
+SYMTRANS.C:
+  Update copyright year.
+  In <SymTrans>, include TKT_FCNNAMED case and finish the other named cases.
+
+
 Build #1336 -- Version 0.4.9.xx
 -------------------------------
 

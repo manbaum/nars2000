@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ GLBSYM GetIdentityElement_EM
         tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
         tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from tkZero
-        tkFcn.tkData.tkIndex    = UTF16_RHO;
+        tkFcn.tkData.tkChar     = UTF16_RHO;
         tkFcn.tkCharIndex       = lpYYFcnStrRht->tkToken.tkCharIndex;
 
         // Check for right operand axis operator
@@ -119,7 +119,7 @@ GLBSYM GetIdentityElement_EM
 ////////tkFcn.tkFlags.TknType   = TKT_FCNIMMED;         // Already set above
 ////////tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;      // Already set above
 ////////tkFcn.tkFlags.NoDisplay = FALSE;                // Already zero from = {0}
-        tkFcn.tkData.tkIndex    = UTF16_UPARROW;
+        tkFcn.tkData.tkChar     = UTF16_UPARROW;
 ////////tkFcn.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
         // Execute monadic UpArrow on the last two results to extract the first item
@@ -157,7 +157,7 @@ GLBSYM GetIdentityElement_EM
         tkFcn.tkFlags.TknType   = TKT_FCNIMMED;         // Already set above
         tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;      // Already set above
 ////////tkFcn.tkFlags.NoDisplay = FALSE;                // Already zero from = {0}
-        tkFcn.tkData.tkIndex    = UTF16_UPARROW;
+        tkFcn.tkData.tkChar     = UTF16_UPARROW;
         tkFcn.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
         // Execute monadic UpArrow on the right arg to extract the first item

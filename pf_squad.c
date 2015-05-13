@@ -135,7 +135,7 @@ LPPL_YYSTYPE PrimIdentFnSquad_EM_YY
     tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
     tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
-    tkFcn.tkData.tkIndex    = UTF16_RHO;
+    tkFcn.tkData.tkChar     = UTF16_RHO;
     tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Compute {rho} R
@@ -249,7 +249,7 @@ LPPL_YYSTYPE PrimIdentFnSquad_EM_YY
     tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
     tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
-    tkFcn.tkData.tkIndex    = UTF16_IOTA;
+    tkFcn.tkData.tkChar     = UTF16_IOTA;
     tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // As the result is nested, we need to be sure we process its prototype

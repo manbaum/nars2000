@@ -835,7 +835,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////        tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
 ////////        tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////////////////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
-////////        tkFcn.tkData.tkIndex    = UTF16_STILE;
+////////        tkFcn.tkData.tkChar     = UTF16_STILE;
 ////////        tkFcn.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 ////////
 ////////        // Execute the function

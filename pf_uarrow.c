@@ -121,7 +121,7 @@ LPPL_YYSTYPE PrimIdentFnUpArrow_EM_YY
     tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
     tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
-    tkFcn.tkData.tkIndex    = UTF16_RHO;
+    tkFcn.tkData.tkChar     = UTF16_RHO;
     tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Compute {rho} R

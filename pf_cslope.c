@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@ LPPL_YYSTYPE PrimIdentFnCircleSlope_EM_YY
     tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
     tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////tkFcn.tkFlags.NoDisplay = FALSE;           // Already zero from = {0}
-    tkFcn.tkData.tkIndex    = UTF16_IOTA;
+    tkFcn.tkData.tkChar     = UTF16_IOTA;
     tkFcn.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // The (left) identity function for dyadic CircleSlope

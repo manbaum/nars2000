@@ -3424,27 +3424,65 @@ UBOOL IsTknTypeAxis
 
 
 //***************************************************************************
-//  $IsTknTypeAFO
+//  $IsTknAFO
 //
-//  Return TRUE iff the given token type is an AFO
+//  Return TRUE iff the given token is an AFO
 //***************************************************************************
 
-UBOOL IsTknTypeAFO
-    (TOKEN_TYPES tknType)
+UBOOL IsTknAFO
+    (LPTOKEN lpToken)           // Ptr to the token to test
 
 {
+    HGLOBAL      hGlbFcn;       // Global memory handle
+    LPDFN_HEADER lpMemFcn;      // Ptr to global memory
+    UBOOL        bRet;          // TRUE iff the function is an AFO
+
     // Split cases based upon the token type
-    switch (tknType)
+    switch (lpToken->tkFlags.TknType)
     {
+        case TKT_DELAFO:
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
             return TRUE;
 
+        case TKT_OP1NAMED:
+        case TKT_OP2NAMED:
+            // Get the global memory handle
+            hGlbFcn = GetGlbHandle (lpToken);
+
+            Assert (hGlbFcn NE NULL);
+
+            // Lock the memory to get a ptr to it
+            lpMemFcn = MyGlobalLock (hGlbFcn);
+
+            switch (GetSignatureMem (lpMemFcn))
+            {
+                case DFN_HEADER_SIGNATURE:
+                    // Copy the AFO flag
+                    bRet = lpMemFcn->bAFO;
+
+                    break;
+
+                case FCNARRAY_HEADER_SIGNATURE:
+                    // Mark as not an AFO
+                    bRet = FALSE;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+
+            return bRet;
+
         default:
             return FALSE;
     } // End SWITCH
-} // End IsTknTypeAFO
+} // End IsTknAFO
 
 
 //***************************************************************************

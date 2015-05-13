@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ void FreeResNNU
     DBGENTER;
 
     if (!IsTknNamedFcnOpr (&lpYYRes->tkToken)
-     && !IsTknTypeAFO     ( lpYYRes->tkToken.tkFlags.TknType))
+     && !IsTknAFO         (&lpYYRes->tkToken))
     {
 #ifdef DEBUG
         // If the arg was YYCopyArray'ed, ...

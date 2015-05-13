@@ -299,6 +299,10 @@ APLFLOAT PrimFnMonQuoteDotFisF
                                          FALSE);
     } // End IF
 
+    // Check for PosInfinity
+    if (IsFltPosInfinity (aplFloatRht))
+        return fltPosInfinity;
+
     // Check for too large for GSL
     if ((aplFloatRht + 1) > GSL_SF_GAMMA_XMAX)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -347,6 +351,10 @@ APLRAT PrimFnMonQuoteDotRisR
                                  &aplRatRht,
                                  &mpqRes,
                                   FALSE);
+    // Check for PosInfinity
+    if (IsMpqPosInfinity (&aplRatRht))
+        return mpqPosInfinity;
+
     // If the denominator is 1,
     //   and the numerator fts in a UINT, ...
     if (mpq_integer_p (&aplRatRht)
@@ -389,6 +397,10 @@ APLVFP PrimFnMonQuoteDotVisV
                                   &aplVfpRht,
                                   &mpfRes,
                                    FALSE);
+    // Check for PosInfinity
+    if (IsMpfPosInfinity (&aplVfpRht))
+        return mpfPosInfinity;
+
     // If the arg is an integer,
     //   and it fits in a ULONG, ...
     if (mpfr_integer_p (&aplVfpRht)

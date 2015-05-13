@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1072,7 +1072,9 @@ LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
     {
         // Increment the right arg ref cnt so we can return it as the result
         hGlbRht = MakePtrTypeGlb (hGlbRht);
-        DbgIncrRefCntDir_PTB (hGlbRht);
+
+        // Increment the refcnt
+        DbgIncrRefCntDir_PTB (hGlbRht); // []NLOCK with 2- or 3-element right arg
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -4796,7 +4798,9 @@ UBOOL NfnsSaveData_EM
         lpNfnsMem->aplTypeWs     = aplTypeWs;
         lpNfnsMem->hFile         = hFile;
         lpNfnsMem->hGlbFileName  = MakePtrTypeGlb (hGlbFileName);
-        DbgIncrRefCntDir_PTB (lpNfnsMem->hGlbFileName);
+
+        // Increment the refcnt
+        DbgIncrRefCntDir_PTB (lpNfnsMem->hGlbFileName); // EXAMPLE:  open same file twice or more
 
         // Manage the linked list
         lpNfnsHdr->offFirstFree  = lpNfnsMem->offNextFree;
@@ -5334,7 +5338,7 @@ UBOOL NfnsWriteData_EM
                             lpOverLapped->Offset     = LOAPLINT (aplFileOff);
                             lpOverLapped->OffsetHigh = HIAPLINT (aplFileOff);
                         } /* End IF */
-                    } // Wnd WHILE
+                    } // End WHILE
 
                     break;
 

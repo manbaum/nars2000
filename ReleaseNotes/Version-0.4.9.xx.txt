@@ -1,6 +1,18 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1341 -- Version 0.4.9.xx
+-------------------------------
+
+* Minor Comment Changes
+
+Directory trunk:
+
+QF_NFNS.C:
+  Update copyright year.
+  Improve Comments.
+
+
 Build #1340 -- Version 0.4.9.xx
 -------------------------------
 

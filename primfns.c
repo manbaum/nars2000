@@ -3401,6 +3401,29 @@ UBOOL IsTknNamedFcnOpr
 
 
 //***************************************************************************
+//  $IsTknTypeAxis
+//
+//  Return TRUE iff the given token type is an Axis operand
+//***************************************************************************
+
+UBOOL IsTknTypeAxis
+    (TOKEN_TYPES tknType)
+
+{
+    // Split cases based upon the token type
+    switch (tknType)
+    {
+        case TKT_AXISIMMED:
+        case TKT_AXISARRAY:
+            return TRUE;
+
+        default:
+            return FALSE;
+    } // End SWITCH
+} // End IsTknTypeAxis
+
+
+//***************************************************************************
 //  $IsTknTypeAFO
 //
 //  Return TRUE iff the given token type is an AFO

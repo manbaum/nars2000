@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -217,16 +217,14 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
 
     // Check for axis operator in the left operand
     if (lpYYFcnStrLft->TknCount > 1
-     && (lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+     && IsTknTypeAxis (lpYYFcnStrLft[1].tkToken.tkFlags.TknType))
         lptkAxisLft = &lpYYFcnStrLft[1].tkToken;
     else
         lptkAxisLft = NULL;
 
     // Check for axis operator in the right operand
     if (lpYYFcnStrRht->TknCount > 1
-     && (lpYYFcnStrRht[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStrRht[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+     && IsTknTypeAxis (lpYYFcnStrRht[1].tkToken.tkFlags.TknType))
         lptkAxisRht = &lpYYFcnStrRht[1].tkToken;
     else
         lptkAxisRht = NULL;

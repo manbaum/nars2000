@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,8 +37,7 @@ LPTOKEN CheckAxisOper
 {
     if (lpYYFcnStr
      && lpYYFcnStr->TknCount > 1
-     && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+     && IsTknTypeAxis (lpYYFcnStr[1].tkToken.tkFlags.TknType))
         return &lpYYFcnStr[1].tkToken;
     else
         return NULL;

@@ -1,6 +1,21 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1331 -- Version 0.4.9.xx
+-------------------------------
+
+* Use Macro To Check For Axis Tokens
+
+Directory trunk:
+
+AXISFNS.C:
+DISPDBG.C:
+PO_DICIRCLE.C:
+PO_JOT.C:
+PRIMFNS.C:
+  Define and use a macro to check for axis tokens.
+
+
 Build #1330 -- Version 0.4.9.xx
 -------------------------------
 

@@ -749,10 +749,10 @@ void DisplayGlobals
                 // If not a Magic Function/Operator, ...
                 if (!lpHeader->bMFO || lpHeader->RefCnt NE 1)
                 {
-                    // Copy the user-defined function/operator name
-                    CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
-                                 lpHeader->steFcnName,      // Ptr to function symbol table entry
-                                &uNameLen);                 // Ptr to name length (may be NULL)
+                        // Copy the user-defined function/operator name
+                        CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
+                                     lpHeader->steFcnName,      // Ptr to function symbol table entry
+                                    &uNameLen);                 // Ptr to name length (may be NULL)
 
                     // If we're to display all globals or
                     //   this one is not a Magic Function/Operator, ...
@@ -1665,8 +1665,7 @@ LPWCHAR DisplayFcnSub
 
     // Check for axis operator
     bAxisOper = (tknNELM > 1
-              && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-               || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY));
+              && IsTknTypeAxis (lpYYMem[1].tkToken.tkFlags.TknType));
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -1675,8 +1674,7 @@ LPWCHAR DisplayFcnSub
         case TKT_OP3IMMED:
             // Check for axis operator
             if (tknNELM > 1
-             && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-              || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+             && IsTknTypeAxis (lpYYMem[1].tkToken.tkFlags.TknType))
             {
                 // If there's a function, ...
                 if (tknNELM > 2)
@@ -1753,14 +1751,14 @@ LPWCHAR DisplayFcnSub
 
         case TKT_OP2IMMED:
             TknCount = 1 + lpYYMem[1].TknCount;
-            lpaplChar =
-              DisplayFcnSub (lpaplChar,                                                 // Lfcn
-                            &lpYYMem[TknCount],
-                             lpYYMem[TknCount].TknCount,
-                             lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
-                             lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
-                             lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
-                             lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
+                lpaplChar =
+                  DisplayFcnSub (lpaplChar,                                                 // Lfcn
+                                &lpYYMem[TknCount],
+                                 lpYYMem[TknCount].TknCount,
+                                 lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                 lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                                 lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
             // Translate from INDEX_xxx to UTF16_xxx
             *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);    // Op2
             if (lpYYMem[TknCount].TknCount > 1)
@@ -1784,8 +1782,7 @@ LPWCHAR DisplayFcnSub
 
             // Check for axis operator
             if (tknNELM > 1
-             && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-              || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+             && IsTknTypeAxis (lpYYMem[1].tkToken.tkFlags.TknType))
                 lpaplChar =
                   DisplayFcnSub (lpaplChar,                                             // [X]
                                 &lpYYMem[1],
@@ -2018,8 +2015,7 @@ LPWCHAR DisplayFcnSub
                         case DFNTYPE_OP1:
                             // Check for axis operator
                             if (tknNELM > 1
-                             && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-                              || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+                             && IsTknTypeAxis (lpYYMem[1].tkToken.tkFlags.TknType))
                             {
                                 // If there's a function, ...
                                 if (tknNELM > 2)
@@ -2123,8 +2119,7 @@ LPWCHAR DisplayFcnSub
                                            lpSavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
                             // Check for axis operator
                             if (tknNELM > 1
-                             && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-                              || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+                             && IsTknTypeAxis (lpYYMem[1].tkToken.tkFlags.TknType))
                                 lpaplChar =
                                   DisplayFcnSub (lpaplChar,                                             // [X]
                                                 &lpYYMem[1],
@@ -2176,8 +2171,7 @@ LPWCHAR DisplayFcnSub
                            lpSavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
             // Check for axis operator
             if (tknNELM > 1
-             && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-              || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+             && IsTknTypeAxis (lpYYMem[1].tkToken.tkFlags.TknType))
                 lpaplChar =
                   DisplayFcnSub (lpaplChar,                                             // [X]
                                 &lpYYMem[1],

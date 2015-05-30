@@ -182,26 +182,12 @@ APLFLOAT PrimFnMonCircleFisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-#ifdef _WIN64
-    return PrimFnMonCircleFisF ((APLFLOAT) aplIntegerRht, lpPrimSpec);
-#elif defined (_WIN32)
     APLFLOAT aplTmp;
 
-    // The following code is slightly more accurate
-    //   than multiplying by a decimal constant
-    //   as it uses the 80-bit representation of pi
-    //   but it isn't very portable
-    _asm
-    {
-        fldpi;
-        fild    aplIntegerRht;
-        fmulp   st(1),st(0);
-        fstp    aplTmp;
-    }
+    // Call assembler function
+    iAsmMulPiInt (&aplTmp, &aplIntegerRht);
+
     return aplTmp;
-#else
-  #error Need code for this architecture.
-#endif
 } // End PrimFnMonCircleFisI
 
 
@@ -216,25 +202,12 @@ APLFLOAT PrimFnMonCircleFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-#ifdef _WIN64
-    return aplFloatRht * 3.1415926535897932384626433832795028;
-#elif defined (_WIN32)
     APLFLOAT aplTmp;
 
-    // The following code is slightly more accurate
-    //   than multiplying by a decimal constant
-    //   as it uses the 80-bit representation of pi
-    //   but it isn't very portable
-    _asm
-    {
-        fldpi;
-        fmul    aplFloatRht;
-        fstp    aplTmp;
-    }
+    // Call assembler function
+    iAsmMulPiFlt (&aplTmp, &aplFloatRht);
+
     return aplTmp;
-#else
-  #error Need code for this architecture.
-#endif
 } // End PrimFnMonCircleFisF
 
 
@@ -339,132 +312,66 @@ APLFLOAT PrimFnDydCircleFisIvI
 {
     APLFLOAT aplFloatTmp;
 
-    // I coded these by hand because they are all easy,
-    //   however, to be completely accurate, the sin, cos, and tan
-    //   functions might need to have their arguments reduced to
-    //   be in range.
-
     // Split cases based upon the value of the integer left argument
     switch (aplIntegerLft)
     {
         case  4:        // (1 + R * 2) * 0.5
-#ifdef _WIN64
-            aplFloatTmp = sqrt ((APLFLOAT) (1 + imul64_RE (aplIntegerRht, aplIntegerRht)));
-#elif defined (_WIN32)
-            _asm
-            {                           //  ST0     ST1
-                fild    aplIntegerRht;  //  Rht
-                fild    aplIntegerRht;  //  Rht     Rht
-                fmulp   st(1),st(0);    //  Rht*Rht
-                fld1;                   //  1       Rht*Rht
-                faddp   st(1),st(0);    //  1+Rht*Rht
-                fsqrt;                  //  (1+Rht*Rht)*0.5
-                fstp    aplFloatTmp;
-            }
-#else
-  #error Need code for this architecture.
-#endif
+            // Call assembler function
+            iAsmCircle4Int (&aplFloatTmp, &aplIntegerRht);
+
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
 
         case  3:        // tan (R)
-#ifdef _WIN64
-            aplFloatTmp = tan ((APLFLOAT) aplIntegerRht);
-#elif defined (_WIN32)
-            _asm
-            {                           //  ST0     ST1
-                fild    aplIntegerRht;  //  Rht
-                fsincos;                //  cos (Rht) sin(Rht)
-                fdivp   st(1),st(0);    //  tan (Rht)
-                fstp    aplFloatTmp;
-            }
-#else
-  #error Need code for this architecture.
-#endif
+            // Call assembler function
+            iAsmCircle3Int (&aplFloatTmp, &aplIntegerRht);
+
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
 
         case  2:        // cos (R)
-#ifdef _WIN64
-            aplFloatTmp = cos ((APLFLOAT) aplIntegerRht);
-#elif defined (_WIN32)
-            _asm
-            {                           //  ST0     ST1
-                fild    aplIntegerRht;  //  Rht
-                fcos;                   //  cos (Rht)
-                fstp    aplFloatTmp;
-            }
-#else
-  #error Need code for this architecture.
-#endif
+            // Call assembler function
+            iAsmCircle2Int (&aplFloatTmp, &aplIntegerRht);
+
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
 
         case  1:        // sin (R)
-#ifdef _WIN64
-            aplFloatTmp = sin ((APLFLOAT) aplIntegerRht);
-#elif defined (_WIN32)
-            _asm
-            {                           //  ST0     ST1
-                fild    aplIntegerRht;  //  Rht
-                fsin;                   //  sin (Rht)
-                fstp    aplFloatTmp;
-            }
-#else
-  #error Need code for this architecture.
-#endif
+            // Call assembler function
+            iAsmCircle1Int (&aplFloatTmp, &aplIntegerRht);
+
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
 
         case  0:        // (1 - R * 2) * 0.5
-#ifdef _WIN64
-            aplFloatTmp = sqrt ((APLFLOAT) (1 - imul64_RE (aplIntegerRht, aplIntegerRht)));
-#elif defined (_WIN32)
-            _asm
-            {                           //  ST0     ST1
-                fild    aplIntegerRht;  //  Rht
-                fild    aplIntegerRht;  //  Rht     Rht
-                fmulp   st(1),st(0);    //  Rht*Rht
-                fchs;                   //  -Rht*Rht
-                fld1;                   //  1       -Rht*Rht
-                faddp   st(1),st(0);    //  1-Rht*Rht
-                fsqrt;                  //  (1-Rht*Rht)*0.5
-                fstp    aplFloatTmp;
-            }
-#else
-  #error Need code for this architecture.
-#endif
+            // Check for Complex result
+            if (abs64 (aplIntegerRht) > 1)
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
+            // Call assembler function
+            iAsmCircle0Int (&aplFloatTmp, &aplIntegerRht);
+
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
             break;
 
-        case -4:        // R x (1 - R * -2) * 0.5 a.k.a. ((-1) + R * 2) * 0.5
-#ifdef _WIN64
-            aplFloatTmp = sqrt ((APLFLOAT) (imul64_RE (aplIntegerRht, aplIntegerRht) - 1));
-#elif defined (_WIN32)
-            _asm
-            {                           //  ST0     ST1
-                fild    aplIntegerRht;  //  Rht
-                fild    aplIntegerRht;  //  Rht     Rht
-                fmulp   st(1),st(0);    //  Rht*Rht
-                fld1;                   //  1       Rht*Rht
-                fchs;                   //  -1      Rht*Rht
-                faddp   st(1),st(0);    //  Rht*Rht-1
-                fsqrt;                  //  (Rht*Rht-1)*0.5
-                fstp    aplFloatTmp;
-            }
-#else
-  #error Need code for this architecture.
-#endif
+        case -4:        // R x (1 - R * -2) * 0.5   a.k.a. ((-1) + R * 2) * 0.5
+            // Check for Complex result
+            if (abs64 (aplIntegerRht) < 1)
+                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
+            // Call assembler function
+            iAsmCircleN4Int (&aplFloatTmp, &aplIntegerRht);
+
             // Check for NaN
             if (!_isnan (aplFloatTmp))
                 return aplFloatTmp;
@@ -516,56 +423,94 @@ APLFLOAT PrimFnDydCircleFisFvF
             return sinh (aplFloatRht);
 
         case  4:        // (1 + R * 2) * 0.5
-            return sqrt (1 + pow (aplFloatRht, 2));
+            // Get absolute value to avoid duplicate in comparison and result
+            aplFloatRht = fabs (aplFloatRht);
+
+            // Values at or above this limit when squared
+            //   return infinity, so we return the arg unchanged.
+            // Also, 2*26 = 67108864 is the smallest positive number such that
+            //   a=sqrt (1 + a * 2)
+            if (aplFloatRht >= 1.3407807929942596E154)
+                return aplFloatRht;
+            else
+            {
+                // Call assembler function
+                iAsmCircle4Flt (&aplFloatTmp, &aplFloatRht);
+
+                // Check for NaN
+                if (!_isnan (aplFloatTmp))
+                    return aplFloatTmp;
+                break;
+            } // End IF/ELSE
 
         case  3:        // tan (R)
-            if (IsFltInfinity (aplFloatRht))
-                break;
+            // Call assembler function
+            iAsmCircle3Flt (&aplFloatTmp, &aplFloatRht);
 
-            return tan (aplFloatRht);
+            // Check for NaN
+            if (!_isnan (aplFloatRht))
+                return aplFloatRht;
+            else
+                break;
 
         case  2:        // cos (R)
-            if (IsFltInfinity (aplFloatRht))
-                break;
+            // Call assembler function
+            iAsmCircle2Flt (&aplFloatTmp, &aplFloatRht);
 
-            return cos (aplFloatRht);
+            // Check for NaN
+            if (!_isnan (aplFloatRht))
+                return aplFloatRht;
+            else
+                break;
 
         case  1:        // sin (R)
-            if (IsFltInfinity (aplFloatRht))
-                break;
+            // Call assembler function
+            iAsmCircle1Flt (&aplFloatTmp, &aplFloatRht);
 
-            return sin (aplFloatRht);
+            // Check for NaN
+            if (!_isnan (aplFloatRht))
+                return aplFloatRht;
+            else
+                break;
 
         case  0:        // (1 - R * 2) * 0.5
-            if (bNonce = IsFltInfinity (aplFloatRht))
+            // Check for Complex result
+            if (bNonce = fabs (aplFloatRht) > 1)
                 break;
 
-            return sqrt (1 - pow (aplFloatRht, 2));
+            // Call assembler function
+            iAsmCircle0Flt (&aplFloatTmp, &aplFloatRht);
+
+            // Check for NaN
+            if (!_isnan (aplFloatRht))
+                return aplFloatRht;
+            else
+                break;
 
         case -1:        // asin (R)
             // Check for Complex result
-            if (fabs (aplFloatRht) > 1)
-                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+            if (bNonce = fabs (aplFloatRht) > 1)
+                break;
 
             return asin (aplFloatRht);
 
         case -2:        // acos (R)
             // Check for Complex result
-            if (fabs (aplFloatRht) > 1)
-                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+            if (bNonce = fabs (aplFloatRht) > 1)
+                break;
 
             return acos (aplFloatRht);
 
         case -3:        // atan (R)
             return atan (aplFloatRht);
 
-        case -4:        // R x (1 - R * -2) * 0.5
+        case -4:        // R x (1 - R * -2) * 0.5   a.k.a. ((-1) + R * 2) * 0.5
             // Check for Complex result
-            if (fabs (aplFloatRht) < 1
-             && aplFloatRht NE 0)
-                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+            if (bNonce = fabs (aplFloatRht) < 1)
+                break;
 
-            aplFloatTmp = aplFloatRht * sqrt (1 - pow (aplFloatRht, -2));
+            // Call assembler function
+            iAsmCircleN4Flt (&aplFloatTmp, &aplFloatRht);
 
             // Check for NaN
             if (bNonce = _isnan (aplFloatTmp))
@@ -596,12 +541,9 @@ APLFLOAT PrimFnDydCircleFisFvF
 
         case -7:        // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
-            if (IsFltInfinity (aplFloatRht))
-                break;
-
             // Check for Complex result
-            if (fabs (aplFloatRht) > 1)
-                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+            if (bNonce = fabs (aplFloatRht) > 1)
+                break;
 
             aplFloatTmp = gsl_atanh (aplFloatRht);
 
@@ -678,6 +620,11 @@ APLVFP PrimFnDydCircleVisVvV
                 return sinVfp (aplVfpRht);
 
             case  0:        // (1 - R * 2) * 0.5
+                // Check for Complex result
+                if (mpfr_cmp_si (&aplVfpRht,  1) > 0
+                 || mpfr_cmp_si (&aplVfpRht, -1) < 0)
+                    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+
                 // Initialize the result to 0
                 mpfr_init0  (&mpfRes);
                 mpfr_mul    (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);  // R * 2
@@ -705,25 +652,23 @@ APLVFP PrimFnDydCircleVisVvV
             case -3:        // atan (R)
                 return atanVfp (aplVfpRht);
 
-            case -4:        // R x (1 - R * -2) * 0.5
+            case -4:        // R x (1 - R * -2) * 0.5   a.k.a. ((-1) + R * 2) * 0.5
                 // Check for Complex result
                 if (mpfr_cmp_si (&aplVfpRht,  1) < 0
-                 && mpfr_cmp_si (&aplVfpRht, -1) > 0
-                 && !mpfr_zero_p (&aplVfpRht))
+                 && mpfr_cmp_si (&aplVfpRht, -1) > 0)
                     RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
                 // Initialize the result to 0
                 mpfr_init0  (&mpfRes);
-                mpfr_pow_si (&mpfRes, &aplVfpRht, -2        , MPFR_RNDN);   // R * -2
-                mpfr_si_sub (&mpfRes, 1         , &mpfRes   , MPFR_RNDN);   // 1 - R * -2
-                mpfr_sqrt   (&mpfRes, &mpfRes               , MPFR_RNDN);   // (1 - R * -2) * 0.5
-                mpfr_mul    (&mpfRes, &mpfRes   , &aplVfpRht, MPFR_RNDN);   // R x (1 - R * -2) * 0.5
+                mpfr_mul    (&mpfRes, &aplVfpRht, &aplVfpRht, MPFR_RNDN);   // R * 2
+                mpfr_sub_si (&mpfRes, &mpfRes   , 1         , MPFR_RNDN);   // (-1) + R * 2
+                mpfr_sqrt   (&mpfRes, &mpfRes               , MPFR_RNDN);   // ((-1) + R * 2) * 0.5
 
                 // Check for NaN
                 if (bNonce = mpfr_nan_p (&mpfRes))
                     break;
 
-                return mpfRes;      // aplVfpRht * sqrt (1 - pow (aplVfpRht, -2));
+                return mpfRes;      // sqrt ((-1) + pow (aplVfpRht, 2));
 
             case -5:        // asinh (R)
                             // ln (R + sqrt (1 + R * 2))
@@ -732,8 +677,8 @@ APLVFP PrimFnDydCircleVisVvV
             case -6:        // acosh (R)
                             // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
                 // Check for Complex result
-                if (bNonce = mpfr_cmp_si (&aplVfpRht, 1) < 0)
-                    break;
+                if (mpfr_cmp_si (&aplVfpRht, 1) < 0)
+                    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
                 return acoshVfp (aplVfpRht);
 
@@ -749,9 +694,9 @@ APLVFP PrimFnDydCircleVisVvV
             default:
                 break;
         } // End SWITCH
-    } // End IF
 
-    Myf_clear (&mpfRes);
+        Myf_clear (&mpfRes);
+    } // End IF
 
     if (bNonce)
         RaiseException (EXCEPTION_NONCE_ERROR , 0, 0, NULL);

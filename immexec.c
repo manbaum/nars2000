@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -103,7 +103,12 @@ VOID CALLBACK WaitForImmExecStmt
         // Signal the next level
         MyReleaseSemaphore (lpMemWFSO->hSigaphore, 1, NULL);
     else
+    // If the current SIS level is not Quad input, ...
+    if (lpMemPTD->lpSISCur EQ NULL
+     || lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD)
+        // Display the default prompt
         DisplayPrompt (lpMemWFSO->hWndEC, 10);
+
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbWFSO, lpMemWFSO);
 #undef  hGlbWFSO
@@ -703,7 +708,7 @@ UNTOKENIZE_EXIT:
 ERROR_EXIT:
         // Unlocalize the STEs on the innermost level
         //   and strip off one level
-        UnlocalizeSTEs ();
+        UnlocalizeSTEs (NULL);
 
         dprintfWL9 (L"--Ending   thread in <ImmExecStmtInThread>.");
 

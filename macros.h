@@ -69,7 +69,8 @@
 #ifdef DEBUG
 //#define DEBUG_ALLOCFREE
 
-  #define YYAlloc()     _YYAlloc(FNLN)
+  #define YYAlloc()     _YYAlloc (FNLN)
+  #define YYFree(a)     _YYFree (a, FNLN)
 
   #ifdef DEBUG_ALLOCFREE
     #define DbgGlobalAlloc(uFlags,ByteRes) \
@@ -95,6 +96,15 @@
     #define DbgIncrRefCntTkn(lptkVar)      \
     _DbgIncrRefCntTkn     (lptkVar,  L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
+    #define DbgChangeRefCntTkn(lptkVar,iChangeRefCnt) \
+    _DbgChangeRefCntTkn   (lptkVar,  iChangeRefCnt, L"##RefCnt%d in " APPEND_NAME L": %p (%S#%d)", FNLN)
+
+    #define DbgIncrRefCntFcnArray(hGlbFcn) \
+    _DbgIncrRefCntFcnArray(hGlbFcn,  L"##RefCnt++ in " APPEND_NAME L": %p (%S#%d)", FNLN)
+
+    #define DbgDecrRefCntFcnArray(hGlbFcn) \
+    _DbgDecrRefCntFcnArray(hGlbFcn,  L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", FNLN)
+
     #define DbgDecrRefCntDir_PTB(hGlbData) \
     _DbgDecrRefCntDir_PTB (hGlbData, L"##RefCnt-- in " APPEND_NAME L": %p (%S#%d)", FNLN)
 
@@ -113,6 +123,15 @@
     #define DbgIncrRefCntTkn(lptkVar) \
     IncrRefCntTkn (lptkVar)
 
+    #define DbgChangeRefCntTkn(lptkVar,iChangeRefCnt) \
+    ChangeRefCntTkn (lptkVar, iChangeRefCnt)
+
+    #define DbgIncrRefCntFcnArray(hGlbFcn) \
+    IncrRefCntFcnArray (hGlbFcn)
+
+    #define DbgDecrRefCntFcnArray(hGlbFcn) \
+    DecrRefCntFcnArray (hGlbFcn)
+
     #define DbgDecrRefCntDir_PTB(hGlbData) \
     DecrRefCntDir_PTB (hGlbData)
 
@@ -130,10 +149,12 @@
   #define Assert(a)                       ((a) || (DbgBrk (), nop (), 0))
 //#define nop()                           // Use already defined function
 //#define DbgNop()                        // Use already defined function
+  #define YYCheckInuse(a)                 _YYCheckInuse (a, FNLN)
   #define CheckCtrlBreak(a)               _CheckCtrlBreak(a)
 //#define DisplayGlbVar(a,b)              DisplayGlbVar (a, b)
 #else
-  #define YYAlloc()     _YYAlloc()
+  #define YYAlloc()     _YYAlloc ()
+  #define YYFree(a)     _YYFree (a)
 
   #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc ((uFlags), (ByteRes))
 
@@ -144,6 +165,12 @@
   #define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData)
 
   #define DbgIncrRefCntTkn(lptkVar)       IncrRefCntTkn (lptkVar)
+
+  #define DbgChangeRefCntTkn(lptkVar,iChangeRefCnt)  ChangeRefCntTkn (lptkVar, iChangeRefCnt)
+
+  #define DbgIncrRefCntFcnArray(hGlbFcn)  IncrRefCntFcnArray (hGlbFcn)
+
+  #define DbgDecrRefCntFcnArray(hGlbFcn)  DecrRefCntFcnArray (hGlbFcn)
 
   #define DbgDecrRefCntDir_PTB(hGlbData)  DecrRefCntDir_PTB (hGlbData)
 
@@ -159,8 +186,9 @@
 
   #define Assert(a)                       ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
-  #define nop()                           // Nothing
-  #define DbgNop()                        // Nothing
+  #define nop()                           {}    // Nothing
+  #define DbgNop()                        {}    // Nothing
+  #define YYCheckInuse(a)                 {}    // Nothing
   #define CheckCtrlBreak(a)               (a)
   #define DisplayGlbVar(a,b)
 
@@ -351,6 +379,9 @@
 // Define macro for detecting a Fill Jot token
 #define IsTknFillJot(Tkn)               ((Tkn)->tkFlags.TknType EQ TKT_FILLJOT)
 
+// Define macro for detecting a Function Array
+#define IsTknFcnArray(Tkn)              ((Tkn)->tkFlags.TknType EQ TKT_FCNARRAY)
+
 // Macro to skip over the TOKEN_HEADER
 #define TokenBaseToStart(base)  (LPTOKEN) (ByteAddr (base, sizeof (TOKEN_HEADER)))
 
@@ -473,16 +504,16 @@
 
 // Define macro to free (and set to NULL) a global name
 #define FreeGlbName(hGlb)                           \
-    if (hGlb)                                       \
+    if (hGlb NE NULL)                               \
     {                                               \
         DbgGlobalFree (hGlb); (hGlb) = NULL;        \
     } /* End IF */
 
 // Define macro to unlock and free (and set to NULL) a global name and ptr
 #define UnlFreeGlbName(hGlb,lpMem)                  \
-    if (hGlb)                                       \
+    if (hGlb NE NULL)                               \
     {                                               \
-        if (lpMem)                                  \
+        if (lpMem NE NULL)                          \
         {                                           \
             /* We no longer need this ptr */        \
             MyGlobalUnlock (lpMem); (lpMem) = NULL; \

@@ -829,7 +829,8 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELM; uRht++)
-                    DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);
+                    // Increment the refcnt
+                    DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRht]);  // EXAMPLE:  ,NestedMarix
 
                 // Account for the header and dimensions
                 ByteRes -= sizeof (VARARRAY_HEADER)
@@ -852,7 +853,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
                     case PTRTYPE_HGLOBAL:
                         // Increment the reference count
-                        DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRes]);
+                        DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemRht)[uRes]);  // EXAMPLE:  ,1 2{rho}'a' 1x
 
                         // Copy the ptr
                         ((LPAPLHETERO *) lpMemRes)[uRes] = ((LPAPLHETERO *) lpMemRht)[uRes];

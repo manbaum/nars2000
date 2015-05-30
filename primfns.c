@@ -243,7 +243,6 @@ char TokenTypeFV
 
             return '?';
 
-        defstop
         case TKT_SYNTERR:
         case TKT_SETALPHA:
         case TKT_GLBDFN:
@@ -266,6 +265,7 @@ char TokenTypeFV
         case TKT_LSTMULT:
         case TKT_STRNAMED:
         case TKT_CS_ANDIF:                  // Control structure:  ANDIF     (Data is Line/Stmt #)
+        case TKT_CS_ASSERT:                 // ...                 ASSERT
         case TKT_CS_CASE:                   // ...                 CASE
         case TKT_CS_CASELIST:               // ...                 CASELIST
         case TKT_CS_CONTINUE:               // ...                 CONTINUE
@@ -302,6 +302,9 @@ char TokenTypeFV
         case TKT_NOP:                       // NOP
         case TKT_AFOGUARD:                  // AFO guard
         case TKT_AFORETURN:                 // AFO return
+            return '?';
+
+        defstop
             return '?';
     } // End SWITCH
 } // End TokenTypeFV
@@ -1816,7 +1819,7 @@ HGLOBAL CopySymGlbDir_PTB
 
         case PTRTYPE_HGLOBAL:
             // Increment the reference count in global memory
-            DbgIncrRefCntDir_PTB ((HGLOBAL) lpSymGlb);
+            DbgIncrRefCntDir_PTB ((HGLOBAL) lpSymGlb);  // EXAMPLE:  {iota}2 3
 
             return lpSymGlb;
 
@@ -1878,7 +1881,7 @@ HGLOBAL CopySymGlbNumDir_PTB
 
         case PTRTYPE_HGLOBAL:
             // Increment the reference count in global memory
-            DbgIncrRefCntDir_PTB ((HGLOBAL) lpSymGlb);
+            DbgIncrRefCntDir_PTB ((HGLOBAL) lpSymGlb);  // EXAMPLE:  {disclose} NestedArray
 
             return MakePtrTypeGlb (lpSymGlb);
 
@@ -1932,7 +1935,7 @@ HGLOBAL CopyArray_EM
         VFOHDRPTRS vfoHdrPtrs;
 #endif
 #ifdef DEBUG
-        vfoHdrPtrs.lpMemVar =
+        vfoHdrPtrs.lpMemVFO =
 #endif
         // Lock both memory blocks
         lpMemDst = MyGlobalLock (hGlbDst);
@@ -2111,9 +2114,15 @@ HGLOBAL CopyArray_EM
 
                         // If it's a UDFO, ...
                         if (GetSignatureGlb (hGlbItm) EQ DFN_HEADER_SIGNATURE)
+                        {
+                            // This DEBUG stmt probably never is triggered because
+                            //    CopyArray_EM is never used on any form of function.
+#ifdef DEBUG
+                            DbgStop ();         // ***Probably never executed***
+#endif
                             // No need to copy the UDFO body, just increment the RefCnt
-                            DbgIncrRefCntDir_PTB (hGlbItm);
-                        else
+                            DbgIncrRefCntDir_PTB (hGlbItm); // EXAMPLE:  ***Probably never executed***
+                        } else
                             // Copy the array
                             hGlbItm = CopyArray_EM (hGlbItm,
                                                     lptkFunc);
@@ -2138,6 +2147,11 @@ HGLOBAL CopyArray_EM
                         // tkData is a LPSYMENTRY
                         Assert (GetPtrTypeDir (lpMemFcn->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
+                        // This DEBUG stmt probably never is triggered because
+                        //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+                        DbgStop ();             // ***Probably never executed***
+#endif
                         // If the named var is not immediate, ...
                         if (!lpMemFcn->tkToken.tkData.tkSym->stFlags.Imm)
                         {
@@ -2145,7 +2159,7 @@ HGLOBAL CopyArray_EM
                             hGlbItm = lpMemFcn->tkToken.tkData.tkSym->stData.stGlbData;
 
                             // It's a var, so just increment the RefCnt
-                            DbgIncrRefCntDir_PTB (hGlbItm);
+                            DbgIncrRefCntDir_PTB (hGlbItm); // EXAMPLE:  ***Probably never executed***
                         } // End IF/ELSE
 
                         break;
@@ -2159,9 +2173,15 @@ HGLOBAL CopyArray_EM
 
                         // If it's a UDFO, ...
                         if (lpMemFcn->tkToken.tkData.tkSym->stFlags.UsrDfn)
+                        {
+                            // This DEBUG stmt probably never is triggered because
+                            //    CopyArray_EM is never used on any form of function.
+#ifdef DEBUG
+                            DbgStop ();         // ***Probably never executed***
+#endif
                             // No need to copy the UDFO body, just increment the RefCnt
-                            DbgIncrRefCntDir_PTB (hGlbItm);
-                        else
+                            DbgIncrRefCntDir_PTB (hGlbItm); // EXAMPLE:  ***Probably never executed***
+                        } else
                             // Copy the array
                             hGlbItm = CopyArray_EM (hGlbItm,
                                                     lptkFunc);
@@ -2184,8 +2204,13 @@ HGLOBAL CopyArray_EM
                 break;
 
             case DFN_HEADER_SIGNATURE:
+                // This DEBUG stmt probably never is triggered because
+                //    CopyArray_EM is never used on any form of function.
+#ifdef DEBUG
+                DbgStop ();         // ***Probably never executed***
+#endif
                 // Increment the reference count
-                DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbDst));
+                DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbDst));    // EXAMPLE:  ***Probably never executed***
 
                 break;
 
@@ -2466,7 +2491,7 @@ HGLOBAL CopyGlbAsType_EM
 
                             // Because we just made a copy, we need to increment the RefCnt
                             // Increment the reference count in global memory
-                            DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemArg)[uArg]);
+                            DbgIncrRefCntDir_PTB (((LPAPLNESTED) lpMemArg)[uArg]);  // EXAMPLE a{is}1 2x 'a' {diamond} a[1]{is}{enclose}'abc;
 
                             break;
 
@@ -2573,6 +2598,12 @@ UBOOL IsGlobalTypeArray_PTB
 
     if (bRet)
     {
+#ifdef DEBUG
+        VFOHDRPTRS vfoHdrPtrs;
+#endif
+#ifdef DEBUG
+        vfoHdrPtrs.lpMemVFO =
+#endif
         // Lock the memory to get a ptr to it
         lpMem = MyGlobalLock (hGlb); Assert (lpMem NE NULL);
 
@@ -2580,7 +2611,11 @@ UBOOL IsGlobalTypeArray_PTB
         switch (GetSignatureMem (lpMem))
         {
             case DFN_HEADER_SIGNATURE:
-#define lpHeader    ((LPDFN_HEADER) lpMem)
+#ifdef DEBUG
+  #define lpHeader vfoHdrPtrs.lpMemDfn
+#else
+  #define lpHeader    ((LPDFN_HEADER) lpMem)
+#endif
                 // Ensure it has the correct signature
                 bRet = (lpHeader->Sig.nature EQ Signature
                      && lpHeader->RefCnt > 0);
@@ -2588,7 +2623,11 @@ UBOOL IsGlobalTypeArray_PTB
                 break;
 
             case FCNARRAY_HEADER_SIGNATURE:
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
+#ifdef DEBUG
+  #define lpHeader vfoHdrPtrs.lpMemFcn
+#else
+  #define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
+#endif
                 // Ensure it has the correct signature
                 bRet = (lpHeader->Sig.nature EQ Signature
                      && lpHeader->RefCnt > 0);
@@ -2596,14 +2635,22 @@ UBOOL IsGlobalTypeArray_PTB
                 break;
 
             case LSTARRAY_HEADER_SIGNATURE:
-#define lpHeader    ((LPLSTARRAY_HEADER) lpMem)
+#ifdef DEBUG
+  #define lpHeader vfoHdrPtrs.lpMemLst
+#else
+  #define lpHeader    ((LPLSTARRAY_HEADER) lpMem)
+#endif
                 // Ensure it has the correct signature
                 bRet = (lpHeader->Sig.nature EQ Signature);
 #undef  lpHeader
                 break;
 
             case VARARRAY_HEADER_SIGNATURE:
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#ifdef DEBUG
+  #define lpHeader vfoHdrPtrs.lpMemVar
+#else
+  #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#endif
                 // Ensure it has the correct signature
                 bRet = (lpHeader->Sig.nature EQ Signature)
                     && ((lpHeader->PermNdx NE PERMNDX_NONE) || (lpHeader->RefCnt > 0));
@@ -2611,7 +2658,11 @@ UBOOL IsGlobalTypeArray_PTB
                 break;
 
             case VARNAMED_HEADER_SIGNATURE:
-#define lpHeader    ((LPVARNAMED_HEADER) lpMem)
+#ifdef DEBUG
+  #define lpHeader vfoHdrPtrs.lpMemNam
+#else
+  #define lpHeader    ((LPVARNAMED_HEADER) lpMem)
+#endif
                 // Ensure it has the correct signature
                 bRet = (lpHeader->Sig.nature EQ Signature);
 #undef  lpHeader
@@ -2627,6 +2678,20 @@ UBOOL IsGlobalTypeArray_PTB
 
     return bRet;
 } // End IsGlobalTypeArray_PTB
+
+
+//***************************************************************************
+//  $IsGlbFcnArray
+//
+//  Determine if a global memory handle is that of a function array
+//***************************************************************************
+
+UBOOL IsGlbFcnArray
+    (HGLOBAL hGlbFcn)
+
+{
+    return (GetSignatureGlb (hGlbFcn) EQ FCNARRAY_HEADER_SIGNATURE);
+} // End IsGlbFcnArray
 
 
 //***************************************************************************
@@ -3249,71 +3314,6 @@ LPSIS_HEADER PassSigaphore
 
 
 //***************************************************************************
-//  $IsFcnStrDirect
-//
-//  Return TRUE iff the given function strand is DIRECT
-//    (immediate fcn or a var) or an unnamed Train.
-//***************************************************************************
-
-UBOOL IsFcnStrDirect
-    (LPPL_YYSTYPE lpYYFcnStr)               // Ptr to function strand
-
-{
-    // If the token count is <= 1, ...
-    if (lpYYFcnStr->TknCount <= 1)
-        // Split cases based upon the token type
-        switch (lpYYFcnStr->tkToken.tkFlags.TknType)
-        {
-            case TKT_VARIMMED:
-            case TKT_FCNIMMED:
-            case TKT_OP1IMMED:
-            case TKT_OP2IMMED:
-            case TKT_OP3IMMED:
-            case TKT_AXISIMMED:
-            case TKT_AXISARRAY:
-            case TKT_LSTIMMED:
-            case TKT_OPJOTDOT:
-            case TKT_FILLJOT:
-            case TKT_VARARRAY:
-            case TKT_VARNAMED:
-            case TKT_DEL:
-            case TKT_DELDEL:
-            case TKT_DELAFO:
-            case TKT_FCNAFO:
-            case TKT_OP1AFO:
-            case TKT_OP2AFO:
-            case TKT_GLBDFN:
-            case TKT_FCNNAMED:
-            case TKT_OP1NAMED:
-            case TKT_OP2NAMED:
-                return TRUE;
-
-            default:
-                return FALSE;
-        } // End SWITCH
-    else
-        // If it's a Function Array, ...
-    if (lpYYFcnStr->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
-    {
-        LPFCNARRAY_HEADER lpMemFcn;
-        UBOOL             bRet;
-
-        // Lock the memory to get a ptr to it
-        lpMemFcn = MyGlobalLock (lpYYFcnStr->tkToken.tkData.tkGlbData);
-
-        // Set if it's a Train
-        bRet = (lpMemFcn->fnNameType EQ NAMETYPE_TRN);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (lpYYFcnStr->tkToken.tkData.tkGlbData); lpMemFcn = NULL;
-
-        return bRet;
-    } else
-        return FALSE;
-} // End IsFcnStrDirect
-
-
-//***************************************************************************
 //  $IsTknNamed
 //
 //  Return TRUE iff the given token is named
@@ -3331,6 +3331,8 @@ UBOOL IsTknNamed
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
         case TKT_OP3NAMED:
+        case TKT_DEL:
+        case TKT_DELDEL:
             return TRUE;
 
         case TKT_FCNAFO:
@@ -3434,7 +3436,7 @@ UBOOL IsTknAFO
 
 {
     HGLOBAL      hGlbFcn;       // Global memory handle
-    LPDFN_HEADER lpMemFcn;      // Ptr to global memory
+    VFOHDRPTRS   vfoHdrPtrs;    // Ptr to global memory
     UBOOL        bRet;          // TRUE iff the function is an AFO
 
     // Split cases based upon the token type
@@ -3454,18 +3456,17 @@ UBOOL IsTknAFO
             Assert (hGlbFcn NE NULL);
 
             // Lock the memory to get a ptr to it
-            lpMemFcn = MyGlobalLock (hGlbFcn);
+            vfoHdrPtrs.lpMemVFO = MyGlobalLock (hGlbFcn);
 
-            switch (GetSignatureMem (lpMemFcn))
+            switch (GetSignatureMem (vfoHdrPtrs.lpMemVFO))
             {
                 case DFN_HEADER_SIGNATURE:
                     // Copy the AFO flag
-                    bRet = lpMemFcn->bAFO;
+                    bRet = vfoHdrPtrs.lpMemDfn->bAFO;
 
                     break;
 
                 case FCNARRAY_HEADER_SIGNATURE:
-                    // Mark as not an AFO
                     bRet = FALSE;
 
                     break;
@@ -3475,7 +3476,7 @@ UBOOL IsTknAFO
             } // End SWITCH
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+            MyGlobalUnlock (hGlbFcn); vfoHdrPtrs.lpMemVFO = NULL;
 
             return bRet;
 
@@ -3483,6 +3484,42 @@ UBOOL IsTknAFO
             return FALSE;
     } // End SWITCH
 } // End IsTknAFO
+
+
+//***************************************************************************
+//  $IsTknTrain
+//
+//  Return TRUE iff the given token is a Train
+//***************************************************************************
+
+UBOOL IsTknTrain
+    (LPTOKEN lpToken)           // Ptr to the token to test
+
+{
+    HGLOBAL           hGlbFcn;      // Global memory handle
+    LPFCNARRAY_HEADER lpMemFcn;     // Ptr to global memory
+    UBOOL             bRet;         // TRUE iff the token is a Train
+
+    // Get the global memory handle
+    hGlbFcn = GetGlbHandle (lpToken);
+
+    // If there is a global handle, ...
+    if (hGlbFcn)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemFcn = MyGlobalLock (hGlbFcn);
+
+        // Is the token a Train?
+        bRet = (lpMemFcn->fnNameType EQ NAMETYPE_TRN);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+    } else
+        // Mark as not a Train
+        bRet = FALSE;
+
+    return bRet;
+} // End IsTknTrain
 
 
 //***************************************************************************
@@ -3624,6 +3661,7 @@ UBOOL IsTknImmed
         case TKT_FCNNAMED:
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
+        case TKT_OP3NAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkVar->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -3633,6 +3671,29 @@ UBOOL IsTknImmed
             return FALSE;
     } // End SWITCH
 } // End IsTknImmed
+
+
+//***************************************************************************
+//  $IsTknHybrid
+//
+//  Return TRUE iff the given token is a hybrid
+//***************************************************************************
+
+UBOOL IsTknHybrid
+    (LPTOKEN lptkVar)                       // Ptr to token
+
+{
+    // Split cases based upon the token type
+    switch (lptkVar->tkFlags.TknType)
+    {
+        case TKT_OP3IMMED:
+        case TKT_OP3NAMED:
+            return TRUE;
+
+        default:
+            return FALSE;
+    } // End SWITCH
+} // End IsTknHybrid
 
 
 //***************************************************************************

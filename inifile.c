@@ -1365,8 +1365,14 @@ void DeleIniFileGlb
     (void)
 
 {
-    FreeGlbName (hGlbLibDirs);
-    FreeGlbName (hGlbRecentFiles);
+////FreeGlbName (hGlbQuadALX_CWS    ); hGlbQuadALX_CWS      = NULL; // Deleted in DelePermVars
+////FreeGlbName (hGlbQuadELX_CWS    ); hGlbQuadELX_CWS      = NULL; // ...
+//  FreeGlbName (hGlbQuadFC_CWS     ); hGlbQuadFC_CWS       = NULL;
+//  FreeGlbName (hGlbQuadLX_CWS     ); hGlbQuadLX_CWS       = NULL;
+//  FreeGlbName (hGlbQuadFEATURE_CWS); hGlbQuadFEATURE_CWS  = NULL;
+//  FreeGlbName (hGlbQuadIC_CWS     ); hGlbQuadIC_CWS       = NULL;
+    FreeGlbName (hGlbLibDirs        ); hGlbLibDirs          = NULL;
+    FreeGlbName (hGlbRecentFiles    ); hGlbRecentFiles      = NULL;
 } // End DeleIniFileGlb
 
 

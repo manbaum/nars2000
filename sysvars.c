@@ -338,24 +338,23 @@ void DelePermVars
     (void)
 
 {
-    FreeGlbName (hGlbQuadAV          );
-    FreeGlbName (hGlbQuadIC_SYS      );
-    FreeGlbName (hGlbQuadFEATURE_SYS );
-    FreeGlbName (hGlbQuadFC_SYS      );
+    FreeGlbName (hGlbQuadAV          );  hGlbQuadAV          = NULL;
+    FreeGlbName (hGlbQuadIC_SYS      );  hGlbQuadIC_SYS      = NULL;
+    FreeGlbName (hGlbQuadFEATURE_SYS );  hGlbQuadFEATURE_SYS = NULL;
+    FreeGlbName (hGlbQuadFC_SYS      );  hGlbQuadFC_SYS      = NULL;
 ////FreeGlbName (hGlbQuadWSID_CWS    ); EQ hGlbV0Char
-    FreeGlbName (hGlbSAOff           );
-    FreeGlbName (hGlbSAExit          );
-    FreeGlbName (hGlbSAError         );
-    FreeGlbName (hGlbSAClear         );
+    FreeGlbName (hGlbSAOff           );  hGlbSAOff           = NULL;
+    FreeGlbName (hGlbSAExit          );  hGlbSAExit          = NULL;
+    FreeGlbName (hGlbSAError         );  hGlbSAError         = NULL;
+    FreeGlbName (hGlbSAClear         );  hGlbSAClear         = NULL;
 ////FreeGlbName (hGlbSAEmpty         ); EQ hGlbV0Char
-    FreeGlbName (hGlbV0Char          );
-    FreeGlbName (hGlbQuadxLX         );
-    FreeGlbName (hGlb3by0            );
-    FreeGlbName (hGlb0by0            );
-    FreeGlbName (hGlbZilde           );
-    FreeGlbName (hGlbQuadD           );
-    FreeGlbName (hGlbQuadA           );
-#undef  FreeGlbName
+    FreeGlbName (hGlbV0Char          );  hGlbV0Char          = NULL;
+    FreeGlbName (hGlbQuadxLX         );  hGlbQuadxLX         = NULL;
+    FreeGlbName (hGlb3by0            );  hGlb3by0            = NULL;
+    FreeGlbName (hGlb0by0            );  hGlb0by0            = NULL;
+    FreeGlbName (hGlbZilde           );  hGlbZilde           = NULL;
+    FreeGlbName (hGlbQuadD           );  hGlbQuadD           = NULL;
+    FreeGlbName (hGlbQuadA           );  hGlbQuadA           = NULL;
 } // End DelePermVars
 
 

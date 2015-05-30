@@ -64,10 +64,10 @@ int ChangeRefCntDir_PTB
         case PTRTYPE_HGLOBAL:
 #ifdef DEBUG
             if (hGlb && hGlbRC1 && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC1))
-                DbgBrk ();
+                DbgBrk ();      // #ifdef DEBUG
 
             if (hGlb && hGlbRC2 && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC2))
-                DbgBrk ();
+                DbgBrk ();      // #ifdef DEBUG
 #endif
             // Lock the memory to get a ptr to it
 #ifdef DEBUG
@@ -191,7 +191,11 @@ int IncrRefCntDir_PTB
     (HGLOBAL hGlb)
 
 {
-    return ChangeRefCntDir_PTB (hGlb, 1);
+    // If the global memory handle is that of a function array, ...
+    if (IsGlbFcnArray (hGlb))
+        return ChangeRefCntFcnArray (hGlb, 1);
+    else
+        return ChangeRefCntDir_PTB (hGlb, 1);
 } // End IncrRefCntDir_PTB
 
 
@@ -206,7 +210,13 @@ int IncrRefCntInd_PTB
     (LPVOID lpMem)
 
 {
-    return ChangeRefCntDir_PTB (*(HGLOBAL *) lpMem, 1);
+    HGLOBAL hGlb = *(HGLOBAL *) lpMem;
+
+    // If the global memory handle is that of a function array, ...
+    if (IsGlbFcnArray (hGlb))
+        return ChangeRefCntFcnArray (hGlb, 1);
+    else
+        return ChangeRefCntDir_PTB (hGlb, 1);
 } // End IncrRefCntInd_PTB
 
 
@@ -221,7 +231,11 @@ int DecrRefCntDir_PTB
     (HGLOBAL hGlb)
 
 {
-    return ChangeRefCntDir_PTB (hGlb, -1);
+    // If the global memory handle is that of a function array, ...
+    if (IsGlbFcnArray (hGlb))
+        return ChangeRefCntFcnArray (hGlb, -1);
+    else
+        return ChangeRefCntDir_PTB (hGlb, -1);
 } // End DecrRefCntDir_PTB
 
 
@@ -236,7 +250,13 @@ int DecrRefCntInd_PTB
     (LPVOID lpMem)
 
 {
-    return ChangeRefCntDir_PTB (*(HGLOBAL *) lpMem, -1);
+    HGLOBAL hGlb = *(HGLOBAL *) lpMem;
+
+    // If the global memory handle is that of a function array, ...
+    if (IsGlbFcnArray (hGlb))
+        return ChangeRefCntFcnArray (hGlb, -1);
+    else
+        return ChangeRefCntDir_PTB (hGlb, -1);
 } // End DecrRefCntInd_PTB
 
 
@@ -262,8 +282,13 @@ int IncrRefCntTkn
 
     // If it's a global, ...
     if (hGlbVar)
-        return ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbVar), 1);
-    else
+    {
+        // If the global memory handle is that of a function array, ...
+        if (IsGlbFcnArray (hGlbVar))
+            return ChangeRefCntFcnArray (hGlbVar, 1);
+        else
+            return ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbVar), 1);
+    } else
         return -1;
 } // End IncrRefCntTkn
 
@@ -290,10 +315,49 @@ int DecrRefCntTkn
 
     // If it's a global, ...
     if (hGlbVar)
-        return ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbVar), -1);
-    else
+    {
+        // If the global memory handle is that of a function array, ...
+        if (IsGlbFcnArray (hGlbVar))
+            return ChangeRefCntFcnArray (hGlbVar, -1);
+        else
+            return ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbVar), -1);
+    } else
         return -1;
 } // End DecrRefCntTkn
+
+
+//***************************************************************************
+//  $ChangeRefCntTkn
+//
+//  Incr/Decrement the reference count of a token
+//***************************************************************************
+
+int ChangeRefCntTkn
+    (LPTOKEN lptkVar,
+     int     iChangeRefCnt)
+
+{
+    HGLOBAL hGlbVar;
+
+    // If the token is a named direct fcn/opr, ...
+    if (IsTknNamedFcnOpr (lptkVar)
+     && lptkVar->tkData.tkSym->stFlags.FcnDir)
+        return -1;
+
+    // Get the global memory handle (if it's a global)
+    hGlbVar = GetGlbHandle (lptkVar);
+
+    // If it's a global, ...
+    if (hGlbVar)
+    {
+        // If the global memory handle is that of a function array, ...
+        if (IsGlbFcnArray (hGlbVar))
+            return ChangeRefCntFcnArray (hGlbVar, iChangeRefCnt);
+        else
+            return ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbVar), iChangeRefCnt);
+    } else
+        return -1;
+} // End ChangeRefCntTkn
 
 
 //***************************************************************************
@@ -304,6 +368,35 @@ int DecrRefCntTkn
 
 int IncrRefCntFcnArray
     (HGLOBAL hGlbFcn)
+
+{
+    return ChangeRefCntFcnArray (hGlbFcn, 1);
+} // End IncrRefCntFcnArray
+
+
+//***************************************************************************
+//  $DecrRefCntFcnArray
+//
+//  Decrement the reference count of each item in a Function Array
+//***************************************************************************
+
+int DecrRefCntFcnArray
+    (HGLOBAL hGlbFcn)
+
+{
+    return ChangeRefCntFcnArray (hGlbFcn, -1);
+} // End DecrRefCntFcnArray
+
+
+//***************************************************************************
+//  $ChangeRefCntFcnArray
+//
+//  Incr/Decrement the reference count of each item in a Function Array
+//***************************************************************************
+
+int ChangeRefCntFcnArray
+    (HGLOBAL hGlbFcn,
+     int     iChangeRefCnt)
 
 {
     LPFCNARRAY_HEADER lpMemHdr;     // Ptr to Function Array header
@@ -317,17 +410,18 @@ int IncrRefCntFcnArray
 
 #ifdef DEBUG
     if (hGlbFcn && hGlbRC1 && ClrPtrTypeDir (hGlbFcn) EQ ClrPtrTypeDir (hGlbRC1))
-        DbgBrk ();
+        DbgBrk ();      // #ifdef DEBUG
 
     if (hGlbFcn && hGlbRC2 && ClrPtrTypeDir (hGlbFcn) EQ ClrPtrTypeDir (hGlbRC2))
-        DbgBrk ();
+        DbgBrk ();      // #ifdef DEBUG
 #endif
     // Lock the memory to get a ptr to it
     lpMemHdr = MyGlobalLock (hGlbFcn);
 
     // Get the Type, RefCnt, NELM, and line text handle
-    RefCnt      = ++lpMemHdr->RefCnt;
-    tknNELM     =   lpMemHdr->tknNELM;
+    lpMemHdr->RefCnt += iChangeRefCnt;
+    RefCnt      = lpMemHdr->RefCnt;
+    tknNELM     = lpMemHdr->tknNELM;
 
     // Skip over the header to the data (PL_YYSTYPEs)
     lpYYToken = FcnArrayBaseToData (lpMemHdr);
@@ -359,7 +453,7 @@ int IncrRefCntFcnArray
                 break;          // Ignore internal functions
 
             // Increment the RefCnt
-            DbgIncrRefCntTkn (&lpYYToken->tkToken);
+            DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt);
 
             break;
 
@@ -370,7 +464,7 @@ int IncrRefCntFcnArray
             DbgStop ();         // ***Probably never executed***
 #endif
             // Increment the RefCnt
-            DbgIncrRefCntTkn (&lpYYToken->tkToken); // EXAMPLE:  ***Probably never executed***
+            DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt); // EXAMPLE:  ***Probably never executed***
 
             break;
 
@@ -379,7 +473,7 @@ int IncrRefCntFcnArray
         case TKT_OP2AFO:
         case TKT_DELAFO:
             // Increment the RefCnt
-            DbgIncrRefCntTkn (&lpYYToken->tkToken); // EXAMPLE:  f{is}{-omega}{jot}{divide} {diamond} f 3
+            DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt); // EXAMPLE:  f{is}{-omega}{jot}{divide} {diamond} f 3
 
             break;
 
@@ -389,7 +483,7 @@ int IncrRefCntFcnArray
         case TKT_NUMSTRAND:     // ...           numeric strand
         case TKT_NUMSCALAR:     // ...           numeric scalar
             // Increment the RefCnt
-            DbgIncrRefCntTkn (&lpYYToken->tkToken); // EXAMPLE:  A f {each} [1 2] B
+            DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt); // EXAMPLE:  A f {each} [1 2] B
 
             break;
 
@@ -405,7 +499,7 @@ int IncrRefCntFcnArray
             // If it's not an immediate, ...
             if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
                 // Increment the RefCnt
-                DbgIncrRefCntTkn (&lpYYToken->tkToken);
+                DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt);
 
             break;
 
@@ -417,7 +511,7 @@ int IncrRefCntFcnArray
     MyGlobalUnlock (hGlbFcn); lpMemHdr = NULL;
 
     return RefCnt;
-} // End IncrRefCntFcnArray
+} // End ChangeRefCntFcnArray
 
 
 //***************************************************************************
@@ -578,6 +672,27 @@ int _DbgIncrRefCntTkn
 
 #ifdef DEBUG_REFCNT
 //***************************************************************************
+//  $DbgChangeRefCntTkn
+//
+//  Increment the reference count of a token
+//***************************************************************************
+
+int _DbgChangeRefCntTkn
+    (LPTOKEN lptkVar,
+     int     iChangeRefCnt,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (GetGlbHandle (lptkVar)), iChangeRefCnt, lpFileName, uLineNum);
+    return ChangeRefCntTkn (lptkVar, iChangeRefCnt);
+} // End _DbgChangeRefCntTkn
+#endif
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
 //  $DbgIncrRefCntFcnArray
 //
 //  Increment the reference count of a Function Array
@@ -593,6 +708,26 @@ int _DbgIncrRefCntFcnArray
     dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (hGlbFcn), lpFileName, uLineNum);
     return IncrRefCntFcnArray (hGlbFcn);
 } // End _DbgIncrRefCntFcnArray
+#endif
+
+
+#ifdef DEBUG_REFCNT
+//***************************************************************************
+//  $DbgDecrRefCntFcnArray
+//
+//  Decrement the reference count of a Function Array
+//***************************************************************************
+
+int _DbgDecrRefCntFcnArray
+    (HGLOBAL hGlbFcn,
+     LPWCHAR lpwFmtStr,
+     LPSTR   lpFileName,
+     UINT    uLineNum)
+
+{
+    dprintfWL0 (lpwFmtStr, ClrPtrTypeDir (hGlbFcn), lpFileName, uLineNum);
+    return DecrRefCntFcnArray (hGlbFcn);
+} // End _DbgDecrRefCntFcnArray
 #endif
 
 

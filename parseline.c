@@ -61,6 +61,7 @@
 #define plRedF_SA       plRedMF_A
 #define plRedF_IO       plRedMF_A
 #define plRedMF_IO      plRedMF_A
+#define plRedMF_NF      plRedMF_A
 
 #define plRedNF_IO      plRedNF_A
 #define plRedNF_NAM     plRedNF_A
@@ -134,21 +135,19 @@
 #define plRedMF_MOP     plRedLftOper_MOP
 #define plRedMF_MOPN    plRedLftOper_MOP
 #define plRedF_MR       plRedLftOper_MOP
-#define plRedHY_MR      plRedLftOper_MOP
 #define plRedF_HR       plRedLftOper_MOP
 
+#define plRedHY_MOPN    plRedHY_MOP
 #define plRedNF_MOPN    plRedNF_MOP
 
-// Check the action of the following MOP vs. MOP
-#define plRedMOP_MOP    plRedLftOper_MOP
-#define plRedMOPN_MOP   plRedLftOper_MOP
-#define plRedMOP_MOPN   plRedLftOper_MOP
-#define plRedMOPN_MOPN  plRedLftOper_MOP
+#define plRedSPM_MOP    plRedLftOper_MOP
+#define plRedSPMN_MOP   plRedLftOper_MOP
+#define plRedSPM_MOPN   plRedLftOper_MOP
+#define plRedSPMN_MOPN  plRedLftOper_MOP
 
 #define plRedF_RP       plRedCom_RP
-#define plRedMOP_RP     plRedCom_RP
-#define plRedDOP_RP     plRedCom_RP
 #define plRedHY_RP      plRedCom_RP
+#define plRedDOP_RP     plRedCom_RP
 
 #define plRedSP_SA      plRedSP_A
 #define plRedMF_HY      plRedF_HY
@@ -187,7 +186,6 @@
 #define plRedNAM_SPHR   plRedNAM_SPCom
 #define plRedNAM_SPFR   plRedNAM_SPCom
 
-
 #define plRedA_ISPA     plRedNAM_ISPA
 
 #define plRedNAM_NNR    plRedNAM_NR
@@ -196,7 +194,8 @@
 #define plRedLP_MR      plRedLP_Com
 #define plRedLP_DR      plRedLP_Com
 #define plRedLP_HR      plRedLP_Com
-#define plRedLP_AFR     plRedLP_Com
+
+#define plRedLP_AFR     plRedLP_FFR
 
 #define plRedAFOG_SA    plRedAFOG_A
 #define plRedAFOG_SPA   plRedAFOG_A
@@ -234,9 +233,6 @@
 #undef  DEFINE_VALUES
 
 
-#define   DIRECT    FALSE           // Flags for PushFcnStrand_YY
-#define INDIRECT    TRUE            // ...
-
 #define IsValidSO(a)                (soUNK < (a) && (a) <= soLAST)
 
 #define POPLEFT                     ((lpplOrgLftStk < &lpMemPTD->lpplLftStk[-1]) ? *--lpMemPTD->lpplLftStk : pl_yylex (&plLocalVars))
@@ -254,6 +250,7 @@
 
 #ifdef DEBUG
 //#define DEBUG2
+  #define DEBUG_START
 #endif
 
 #ifdef DEBUG2
@@ -277,15 +274,11 @@
                           EVENT)
   #define PushVarStrand_YY(a)               DbgPushVarStrand_YY    (a, FNLN)
   #define MakeVarStrand_EM_YY(a)            DbgMakeVarStrand_EM_YY (a, FNLN)
-  #define PushFcnStrand_YY(a,b,c)           DbgPushFcnStrand_YY    (a, b, c, FNLN)
-  #define MakeFcnStrand_EM_YY(a,b,c)        DbgMakeFcnStrand_EM_YY (a, b, c, FNLN)
 #else
   #define TRACE(a,EVENT,soType,rhtSynObj)
   #define TRACE2(a,EVENT,soType,rhtSynObj)
 //#define PushVarStrand_YY(a)               PushVarStrand_YY    (a)
 //#define MakeVarStrand_EM_YY(a)            MakeVarStrand_EM_YY (a)
-//#define PushFcnStrand_YY(a,b,c)           PushFcnStrand_YY    (a,b,c)
-//#define MakeFcnStrand_EM_YY(a,b,c)        MakeFcnStrand_EM_YY (a,b,c)
 #endif
 
 
@@ -772,6 +765,7 @@ LPPL_YYSTYPE plRedLBK_SRBK
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
+    // Call common code
     return plRedLBK_ARBK (lpplLocalVars, lpplYYCurObj, lpYYRes, soType);
 } // End plRedLBK_SRBK
 
@@ -1014,8 +1008,6 @@ LPPL_YYSTYPE plRedA_F
 {
     LPPL_YYSTYPE lpYYVar;               // Ptr to a temp
 
-    Assert (lpplLocalVars->lpplYYArgCurry EQ NULL);
-
     // If the current object is in the process of stranding, ...
     if (lpplYYCurObj->YYStranding)
     {
@@ -1036,8 +1028,10 @@ LPPL_YYSTYPE plRedA_F
         // Unstrand the current object if necessary
         UnStrand (lpplYYCurObj);
 
+    Assert (lpplYYLstRht->lpplYYArgCurry EQ NULL);
+
     // Copy to the left curry object
-    lpplLocalVars->lpplYYArgCurry = lpplYYCurObj;
+    lpplYYLstRht->lpplYYArgCurry = lpplYYCurObj;
 
     // Change the tkSynObj
     lpplYYLstRht->tkToken.tkSynObj = soType;
@@ -1048,6 +1042,69 @@ LPPL_YYSTYPE plRedA_F
 ERROR_EXIT:
     return NULL;
 } // End plRedA_F
+
+
+//***************************************************************************
+//  $ConvertHY2PFO
+//
+//  Convert an HY to a primitive function or operator
+//***************************************************************************
+
+void ConvertHY2PFO
+    (LPPL_YYSTYPE lpYYArg,              // Ptr to current PL_YYSTYPE
+     TOKEN_TYPES  tknType,              // New token type
+     IMM_TYPES    immType,              // New immediate type
+     SO_ENUM      soEnum)               // New Syntax Object type
+
+{
+    HGLOBAL      hGlbFcn;
+    LPPL_YYSTYPE lpMemFcnStr;
+
+    // Split cases based upon the token type
+    switch (lpYYArg->tkToken.tkFlags.TknType)
+    {
+        case TKT_OP1IMMED:
+        case TKT_OP3IMMED:
+            // Convert the token properties to an immediate function/operator
+            lpYYArg->tkToken.tkFlags.TknType = tknType;
+            lpYYArg->tkToken.tkFlags.ImmType = immType;
+            lpYYArg->tkToken.tkSynObj        = soEnum;
+
+            break;
+
+        case TKT_FCNARRAY:
+            // Get the global memory handle
+            hGlbFcn = GetGlbHandle (&lpYYArg->tkToken);
+
+            // Lock the memory to get a ptr to it
+            lpMemFcnStr = MyGlobalLock (hGlbFcn);
+
+            Assert (((LPFCNARRAY_HEADER) lpMemFcnStr)->RefCnt EQ 1);
+
+            // Skip over the header to the YYSTYPEs
+            lpMemFcnStr = FcnArrayBaseToData (lpMemFcnStr);
+
+            Assert (lpMemFcnStr->tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
+
+            // Convert the token properties to an immediate function/operator
+            lpMemFcnStr->tkToken.tkFlags.TknType = tknType;
+            lpMemFcnStr->tkToken.tkFlags.ImmType = immType;
+            lpMemFcnStr->tkToken.tkSynObj        = soEnum;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbFcn); lpMemFcnStr = NULL;
+
+            // Change the tkSynObj in the outer token
+            lpYYArg->tkToken.tkSynObj = soEnum;
+
+            break;
+
+        case TKT_OP3NAMED:          // These cases can't happen as pl_yylex converts
+        case TKT_FCNNAMED:          //   them to unnamed objects.
+        defstop
+            break;
+    } // End SWITCH
+} // ConvertHY2PFO
 
 
 //***************************************************************************
@@ -1063,24 +1120,12 @@ LPPL_YYSTYPE plRedA_HY
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    Assert (lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
-
-    // Convert the token type of the last right object to an immediate function
-    lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-    lpplYYLstRht->tkToken.tkSynObj        = soF;
-
-    // If the last right object is in the process of stranding, ...
-    if (lpplYYLstRht->YYStranding)
-    {
-        Assert (lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
-
-        // Convert the token type of the last right object to an immediate function
-        lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-        lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-        lpplYYLstRht->lpYYFcnBase->tkToken.tkSynObj        = soF;
-    } // End IF
-
+    // Convert the HY to a primitive function
+    ConvertHY2PFO (lpplYYLstRht,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soF);
+    // Call common code
     return plRedA_F (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedA_HY
 
@@ -1141,6 +1186,7 @@ LPPL_YYSTYPE plRedSA_NF
     if (!lpplYYLstRht)
         goto ERROR_EXIT;
 
+    // Call common code
     return plRedSA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
     // YYFree the current object
@@ -1189,67 +1235,38 @@ LPPL_YYSTYPE plRedDOP_RhtOper
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
-                 lpYYRht,               // Ptr to a temp
-                 lpYYVar;               // ...
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+
+    // If the last right object is a var, ...
+    if (IsTknTypeVar (lpplYYLstRht->tkToken.tkFlags.TknType))
+    {
+        // If the last right object is in the process of stranding, ...
+        if (lpplYYLstRht->YYStranding)
+        {
+            // Turn this strand into a var
+            lpYYRes =
+              MakeVarStrand_EM_YY (lpplYYLstRht);
+            // YYFree the last right object
+            YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+
+            // If not defined, ...
+            if (!lpYYRes)
+                goto ERROR_EXIT;
+
+            // Copy to the last right object
+            lpplYYLstRht = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+            lpYYRes = NULL;
+        } else
+            // Unstrand the last right object if necessary
+            UnStrand (lpplYYLstRht);
+    } // End IF
 
     // The result is always the root of the function tree
-    lpYYRes =
-      PushFcnStrand_YY (lpplYYCurObj,
-                        2,
-                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                        : INDIRECT);  // Dyadic operator
-    // YYFree the current object
-    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
-
-    if (!lpYYRes)                           // If not defined, free args and YYERROR
-    {
-        // Free and YYFree the last right object
-        FreeResNNU1 (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
-
-        goto ERROR_EXIT;
-    } // End IF
-
-    // If the last right object is a var in the process of stranding, ...
-    if (IsTknTypeVar (lpplYYLstRht->tkToken.tkFlags.TknType)
-     && lpplYYLstRht->YYStranding)
-    {
-        // Turn this strand into a var
-        lpYYVar =
-          MakeVarStrand_EM_YY (lpplYYLstRht);
-        // YYFree the last right object
-        YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
-
-        // If not defined, ...
-        if (!lpYYVar)
-            goto ERROR_EXIT;
-
-        // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYVar = NULL;
-    } else
-        // Unstrand the last right object if necessary
-        UnStrand (lpplYYLstRht);
+    lpYYRes = lpplYYCurObj;
 
     // Append the right operand to the function strand
-    lpYYRht =
-      PushFcnStrand_YY (lpplYYLstRht,
-                        1,
-                        (IsFcnStrDirect (lpplYYLstRht)) ? DIRECT
-                                                        : INDIRECT);  // Right operand
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
-
-    if (!lpYYRht)                       // If not defined, free args and YYERROR
-    {
-        // Free the function (including YYFree)
-        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-
-        goto ERROR_EXIT;
-    } // End IF
-
-    // YYFree the right operand object
-    YYFree (lpYYRht); lpYYRht = NULL;
+    Assert (lpYYRes->lpplYYOpRCurry EQ NULL);
+    lpYYRes->lpplYYOpRCurry = lpplYYLstRht;
 
     // Change the tkSynObj
     lpYYRes->tkToken.tkSynObj = soType;
@@ -1271,13 +1288,12 @@ LPPL_YYSTYPE plRedDOP_HY
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    Assert (lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
-
-    // Convert the token type of the last right object to an immediate function
-    lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-    lpplYYLstRht->tkToken.tkSynObj        = soF;
-
+    // Convert the HY to a primitive function
+    ConvertHY2PFO (lpplYYLstRht,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soF);
+    // Call common code
     return plRedDOP_RhtOper (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedDOP_HY
 
@@ -1295,13 +1311,12 @@ LPPL_YYSTYPE plRedJ_HY
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    Assert (lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
-
-    // Convert the token type of the last right object to an immediate function
-    lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-    lpplYYLstRht->tkToken.tkSynObj        = soF;
-
+    // Convert the HY to a primitive function
+    ConvertHY2PFO (lpplYYLstRht,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soF);
+    // Call common code
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedJ_HY
 
@@ -1464,48 +1479,51 @@ LPPL_YYSTYPE plRedA_FFR
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
-                 lpYYVar;               // Ptr to a temp
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
     // If the curent object is in the process of stranding, ...
     if (lpplYYCurObj->YYStranding)
     {
         // Turn this strand into a var
-        lpYYVar =
+        lpYYRes =
           MakeVarStrand_EM_YY (lpplYYCurObj);
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (!lpYYRes)
             goto ERROR_EXIT;
 
         // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYVar = NULL;
+        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+        lpYYRes = NULL;
     } else
         // Unstrand the current object if necessary
         UnStrand (lpplYYCurObj);
 
-    // Append the current object to the function strand
-    lpYYVar =
-      PushFcnStrand_YY (lpplYYCurObj,
-                        1,
-                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                        : INDIRECT);  // Left operand
-    // YYFree the current object
-    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    // Start with the root
+    lpYYRes = lpplYYLstRht;
 
-    // If not defined, ...
-    if (!lpYYVar)
-        goto ERROR_EXIT;
+    // While the FcnCurry slot is in use, ...
+    while (lpYYRes->lpplYYFcnCurry NE NULL)
+        // Recurse through the root to the next available lpplYYFcnCurry
+        lpYYRes = lpYYRes->lpplYYFcnCurry;
 
-    // YYFree the left operand object
-    YYFree (lpYYVar); lpYYVar = NULL;
+    // Link in the new function
+    lpYYRes->lpplYYFcnCurry = lpplYYCurObj;
+
+    // The result is the root
+    lpYYRes = lpplYYLstRht;
 
     // Change the tkSynObj
-    lpplYYLstRht->tkToken.tkSynObj = soType;
+    lpYYRes->tkToken.tkSynObj = soType;
+
+    return lpYYRes;
+
 ERROR_EXIT:
+    // YYFree the last right object
+    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // curLstRht = soNONE;
+
     return lpplYYLstRht;
 } // End plRedA_FFR
 
@@ -1567,7 +1585,7 @@ SYNTAX_EXIT:
 
 ERROR_EXIT:
     // If the last right object is defined, ...
-    if (lpplYYLstRht)
+    if (lpplYYLstRht NE NULL)
     {
         // Free (unnamed) and YYFree the last right object
         FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // curSynObj = soNONE;
@@ -1693,14 +1711,13 @@ LPPL_YYSTYPE plRedA_HR
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    Assert (lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
-
-    // Convert the token type of the last right object to an immediate function
-    lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-    lpplYYLstRht->tkToken.tkSynObj        = soF;
-
-    return plRedA_F (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    // Convert the HY to a primitive function
+    ConvertHY2PFO (lpplYYLstRht,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soF);
+    // Call common code
+    return plRedA_FR (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedA_HR
 
 
@@ -1761,7 +1778,8 @@ ERROR_EXIT:
 //***************************************************************************
 //  $plRedMF_A
 //
-//  Reduce "MF A"  &  "MF SA"
+//  Reduce "MF A"  &  "MF SA"  &  "MF NF"
+//         " F A"  &  " F SA"  &  " F NF"
 //***************************************************************************
 
 LPPL_YYSTYPE plRedMF_A
@@ -1771,49 +1789,61 @@ LPPL_YYSTYPE plRedMF_A
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPTOKEN      lptkLftArg;            // Ptr to left arg token
+    TOKEN        tkLftArg = {0};        // Copy of left arg token
+    LPTOKEN      lptkLftArg;            // Ptr to copy of left arg token
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
+    // Ensure that the current object is a function
+    Assert (IsTknFcnOpr (&lpplYYCurObj->tkToken));
+
     // If the left arg is present, ...
-    if (lpplLocalVars->lpplYYArgCurry)
+    if (lpplYYCurObj->lpplYYArgCurry NE NULL)
     {
-        // Set the left arg token ptr
-        lptkLftArg = &lpplLocalVars->lpplYYArgCurry->tkToken;
+        // Copy the left arg token ptr
+        tkLftArg = lpplYYCurObj->lpplYYArgCurry->tkToken;
+        lptkLftArg = &tkLftArg;
+
+        // YYFree the curried arg
+        YYFree (lpplYYCurObj->lpplYYArgCurry); lpplYYCurObj->lpplYYArgCurry = NULL;
 
         // If the left arg is a named var, ...
         if (IsTknNamedVar (lptkLftArg))
+        {
+            // This DEBUG stmt probably never is triggered because
+            //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+            DbgStop ();         // ***Probably never executed***
+#endif
             // Increment the refcnt
-            IncrRefCntTkn (lptkLftArg);
+            DbgIncrRefCntTkn (lptkLftArg);      // EXAMPLE:  ***Probably never executed***
+        } // End IF
     } else
         // Set the left arg token ptr
         lptkLftArg = NULL;
 
-    // If this function is in the process of being stranded, ...
-    if (lpplYYCurObj->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpplYYCurObj, NAMETYPE_FN12, FALSE);
 
-        // If not defined, ...
-        if (!lpYYRes)
+    // Ensure that the current object is a function
+    Assert (IsTknFcnOpr (&lpplYYCurObj->tkToken));
+
+    // If the last right object is invalid, ...
+    if (lpplYYLstRht EQ NULL)
+        // This can occur if called by (say) plRedMF_ARBK without validating lpplYYLstRht
+        //   so we can call UnFcnStrand_EM on the current object before signalling an error.
+        goto ERROR_EXIT;
+
+    // If the last right object is a niladic function, ...
+    if (lpplYYLstRht->tkToken.tkSynObj EQ soNF)
+    {
+        // Execute the niladic function returning an array
+        lpplYYLstRht =
+          plExecuteFn0 (lpplYYLstRht);
+
+        // Check for error
+        if (!lpplYYLstRht)
             goto ERROR_EXIT;
-
-        // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
     } else
-    {
-        // If this is a named non-direct fcn/opr or a DEL, ...
-        if ((IsTknNamedFcnOpr (&lpplYYCurObj->tkToken)
-          && !lpplYYCurObj->tkToken.tkData.tkSym->stFlags.FcnDir)
-         || lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_DELAFO)
-            // Increment the refcnt
-            IncrRefCntTkn (&lpplYYCurObj->tkToken);
-    } // End IF/ELSE
-
     // If the last right object is in the process of stranding, ...
     if (lpplYYLstRht->YYStranding)
     {
@@ -1837,8 +1867,15 @@ LPPL_YYSTYPE plRedMF_A
 
         // If this is a named var, ...
         if (IsTknNamedVar (&lpplYYLstRht->tkToken))
+        {
+            // This DEBUG stmt probably never is triggered because
+            //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+            DbgStop ();             // ***Probably never executed***
+#endif
             // Increment the refcnt
-            IncrRefCntTkn (&lpplYYLstRht->tkToken);
+            DbgIncrRefCntTkn (&lpplYYLstRht->tkToken);  // EXAMPLE:  ***Probably never executed***
+        } // End IF
     } // End IF/ELSE
 
     Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->YYStranding);
@@ -1851,16 +1888,13 @@ LPPL_YYSTYPE plRedMF_A
       ExecFunc_EM_YY (lptkLftArg, lpplYYCurObj, &lpplYYLstRht->tkToken);
 
     // If the left arg is present, ...
-    if (lpplLocalVars->lpplYYArgCurry)
+    if (lptkLftArg NE NULL)
     {
         // Free the left arg
-        FreeResult (lpplLocalVars->lpplYYArgCurry);
-
-        // YYFree the curried object
-        YYFree (lpplLocalVars->lpplYYArgCurry); lpplLocalVars->lpplYYArgCurry = NULL;
+        FreeResultTkn (lptkLftArg);
     } // End IF
 
-    // Free the function (including YYFree)
+    // Free and YYFree the function
     FreeResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // Free and YYFree the last right arg
@@ -1873,13 +1907,10 @@ LPPL_YYSTYPE plRedMF_A
     // Change the tkSynObj
     lpYYRes->tkToken.tkSynObj = soType;
 
-    // Copy to the current object
-    lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-
-    return lpplYYCurObj;
+    return lpYYRes;
 
 ERROR_EXIT:
-    if (lpplYYCurObj)
+    if (lpplYYCurObj NE NULL)
     {
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -1906,32 +1937,15 @@ LPPL_YYSTYPE plRedMF_ARBK
                  lpYYVar1,              // Ptr to temp
                  lpYYVar2;              // ...
 
-    // If this function is in the process of being stranded, ...
-    if (lpplYYCurObj->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
-
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
-
-        // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
-    } // End IF
-
     // Pop the most recent item from the list
     //   returning the item and shortening the list in <lpplYYLstRht>
     lpYYVar1 =
       PopList_YY (lpplYYLstRht);
 
-    // Check for error
-    if (!lpYYVar1)
-        goto ERROR_EXIT;
+    // Check for error in plRedMF_A after calling UnFcnStrand_EM on the current object
+////// Check for error
+////if (!lpYYVar1)
+////    goto ERROR_EXIT;
 
     // Execute the function on the var
     lpYYVar2 =
@@ -1963,7 +1977,7 @@ LPPL_YYSTYPE plRedMF_ARBK
 
     return lpYYRes;
 ERROR_EXIT:
-    if (lpplYYCurObj)
+    if (lpplYYCurObj NE NULL)
     {
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -2124,6 +2138,7 @@ LPPL_YYSTYPE plRedCS1_A
             if (lpplLocalVars->bAfoCtrlStruc)
                 goto SYNTAX_EXIT;
 
+            // Call common code
             return plRedGO_A (lpplLocalVars, NULL, lpplYYLstRht, soType);
 
         case TKT_CS_LEAVEIF:
@@ -2186,57 +2201,6 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  $plRedMF_NF
-//
-//  Reduce "MF NF"
-//***************************************************************************
-
-LPPL_YYSTYPE plRedMF_NF
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
-     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
-     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
-     SO_ENUM       soType)              // Next SO_ENUM value
-
-{
-    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
-
-    // If this function is in the process of being stranded, ...
-    if (lpplYYCurObj->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
-
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
-
-        // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
-    } // End IF
-
-    // Execute the niladic function returning an array
-    lpplYYLstRht =
-      plExecuteFn0 (lpplYYLstRht);
-
-    // Check for error
-    if (!lpplYYLstRht)
-        goto ERROR_EXIT;
-
-    // Call common code
-    return plRedMF_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
-ERROR_EXIT:
-    // YYFree the current object
-    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
-
-    return NULL;
-} // End plRedMF_NF
-
-
-//***************************************************************************
 //  $plRedF_IDX
 //
 //  Reduce "F IDX"
@@ -2250,49 +2214,30 @@ LPPL_YYSTYPE plRedF_IDX
 
 {
     LPPL_YYSTYPE lpYYRes,               // Ptr to the result
-                 lpYYVar;               // Ptr to a temp
-
-    // If the current object is not in the process of stranding, ...
-    if (!lpplYYCurObj->YYStranding)
-    {
-        // The result is always the root of the function tree
-        lpYYRes =
-          PushFcnStrand_YY (lpplYYCurObj,
-                            2,
-                            (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                            : INDIRECT);  // Any function
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
-
-        if (!lpYYRes)                           // If not defined, free args and YYERROR
-            goto ERROR_EXIT;
-
-        // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
-    } else
-        // Unstrand the current object if necessary
-        UnStrand (lpplYYCurObj);
+                 lpYYVar;               // ...    temp
 
     // If the last right object is in the process of stranding, ...
     if (lpplYYLstRht->YYStranding)
     {
         // Turn this strand into a var
-        lpYYVar =
+        lpYYRes =
           MakeVarStrand_EM_YY (lpplYYLstRht);
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (!lpYYRes)
             goto ERROR_EXIT;
 
         // Copy to the last right object
-        lpplYYLstRht = lpYYVar; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
-        lpYYVar = NULL;
+        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
+        lpYYRes = NULL;
     } else
         // Unstrand the last right object if necessary
         UnStrand (lpplYYLstRht);
+
+    // The result is the current object
+    lpYYRes = lpplYYCurObj;
 
     // Make it into an axis operand
     lpYYVar = MakeAxis_YY (lpplYYLstRht);
@@ -2300,23 +2245,9 @@ LPPL_YYSTYPE plRedF_IDX
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
-    // Append the index to the function strand
-    lpYYRes =
-      PushFcnStrand_YY (lpYYVar,
-                        1,
-                        (IsFcnStrDirect (lpYYVar)) ? DIRECT
-                                                   : INDIRECT);   // Right operand
-    // YYFree the temp var
-    YYFree (lpYYVar); lpYYVar = NULL;
-
-    if (!lpYYRes)                       // If not defined, free args and YYERROR
-        goto ERROR_EXIT;
-
-    // YYFree the index object
-    YYFree (lpYYRes); lpYYRes = NULL;
-
-    // Return the current object
-    lpYYRes = lpplYYCurObj;
+    // Link it into the result
+    Assert (lpYYRes->lpplYYIdxCurry EQ NULL);
+    lpYYRes->lpplYYIdxCurry = lpYYVar;
 
     // Change the tkSynObj
     lpYYRes->tkToken.tkSynObj = soType;
@@ -2338,35 +2269,33 @@ LPPL_YYSTYPE plRedLBC_RBC
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
-                 lpYYRes2;              // ...
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
     // Allocate a new YYRes
-    lpYYRes2 = YYAlloc ();
+    lpYYRes = YYAlloc ();
 
     Assert (lpplYYLstRht->lptkLftBrace[1].tkFlags.TknType EQ TKT_GLBDFN );
 
     // Get the global memory handle
-    lpYYRes2->tkToken.tkData.tkGlbData = lpplYYLstRht->lptkLftBrace[1].tkData.tkGlbData;
+    lpYYRes->tkToken.tkData.tkGlbData = lpplYYLstRht->lptkLftBrace[1].tkData.tkGlbData;
 
     // Set the caret index to the left brace
-    lpYYRes2->tkToken.tkCharIndex      = lpplYYCurObj->tkToken.tkCharIndex;
+    lpYYRes->tkToken.tkCharIndex      = lpplYYCurObj->tkToken.tkCharIndex;
+
+    // YYFree the current and last right objects
+    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
     // Set the UDFO/AFO properties including the proper <tkSynObj>
     //   based upon the AFO's DFNTYPE_xxx as the caller can't predict
     //   the DFNTYPE_xxx is based only on the two tokens {} it can see.
-    plSetDfn (&lpYYRes2->tkToken, GetGlbDataToken (&lpYYRes2->tkToken));
+    plSetDfn (&lpYYRes->tkToken, GetGlbDataToken (&lpYYRes->tkToken));
 
-    // The result is always the root of the function tree
-    lpYYRes =
-      PushFcnStrand_YY (lpYYRes2,
-                        1,
-                        (IsFcnStrDirect (lpYYRes2)) ? DIRECT
-                                                    : INDIRECT);  // Function or operator
-    // YYFree the temp, last right, and current objects
-    YYFree (lpYYRes2);     lpYYRes2     = NULL;
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstRhtObj = soNONE
-    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    // Increment the RefCnt
+    DbgIncrRefCntTkn (&lpYYRes->tkToken);   // EXAMPLE:  {omega}23
+
+////// Change the tkSynObj (already set by <plSetDfn>, possibly to soNF)
+////lpYYRes->tkToken.tkSynObj = soType;
 
     return lpYYRes;
 } // End plRedLBC_RBC
@@ -2385,13 +2314,12 @@ LPPL_YYSTYPE plRedF_HY
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    Assert (lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
-
-    // Convert the token type of the last right object to an immediate monadic operator
-    lpplYYLstRht->tkToken.tkFlags.TknType = TKT_OP1IMMED;
-    lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
-    lpplYYLstRht->tkToken.tkSynObj        = soMOP;
-
+    // Convert the HY to a primitive operator
+    ConvertHY2PFO (lpplYYLstRht,
+                   TKT_OP1IMMED,
+                   IMMTYPE_PRIMOP1,
+                   soMOP);
+    // Call common code
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 } // End plRedF_HY
 
@@ -2409,36 +2337,83 @@ LPPL_YYSTYPE plRedCom_RP
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes;
-
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstRhtObj = soNONE;
 
-    // If this function is in the process of being stranded, ...
-    if (lpplYYCurObj->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    // Change the tkSynObj
+    lpplYYCurObj->tkToken.tkSynObj = soType;
 
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
+    return lpplYYCurObj;
+} // End plRedCom_RP
 
-        // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
-    } else
-        // Unstrand the current object if necessary
-        UnStrand (lpplYYCurObj);
+
+//***************************************************************************
+//  $plRedMOP_RP
+//
+//  Reduce "MOP RP"
+//***************************************************************************
+
+LPPL_YYSTYPE plRedMOP_RP
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+    // YYFree the last right object
+    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstRhtObj = soNONE;
 
     // Change the tkSynObj
     lpplYYCurObj->tkToken.tkSynObj = soType;
-ERROR_EXIT:
+
     return lpplYYCurObj;
-} // End plRedCom_RP
+} // End plRedMOP_RP
+
+
+//***************************************************************************
+//  $plRedHY_MR
+//
+//  Reduce "HY MR"
+//***************************************************************************
+
+LPPL_YYSTYPE plRedHY_MR
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+    // Convert the HY to a primitive function
+    ConvertHY2PFO (lpplYYCurObj,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soF);
+    // Call common code
+    return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+} // End plRedHY_MR
+
+
+//***************************************************************************
+//  $plRedHY_MOP
+//
+//  Reduce "HY MOP"
+//***************************************************************************
+
+LPPL_YYSTYPE plRedHY_MOP
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+    // Convert the HY to a primitive function
+    ConvertHY2PFO (lpplYYCurObj,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soF);
+    // Call common code
+    return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+} // End plRedHY_MOP
 
 
 //***************************************************************************
@@ -2454,73 +2429,78 @@ LPPL_YYSTYPE plRedLftOper_MOP
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
-                 lpYYLft,               // Ptr to a temp
-                 lpYYVar;               // ...
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+
+    // If the current object is a var, ...
+    if (IsTknTypeVar (lpplYYCurObj->tkToken.tkFlags.TknType))
+    {
+        // If the current object is in the process of stranding, ...
+        if (lpplYYCurObj->YYStranding)
+        {
+            // Turn this strand into a var
+            lpYYRes =
+              MakeVarStrand_EM_YY (lpplYYCurObj);
+            // YYFree the current object
+            YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+
+            // If not defined, ...
+            if (!lpYYRes)
+                goto ERROR_EXIT;
+
+            // Copy to the current object
+            lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+            lpYYRes = NULL;
+        } else
+            // Unstrand the current object if necessary
+            UnStrand (lpplYYCurObj);
+    } // End IF
 
     // The result is always the root of the function tree
-    lpYYRes =
-      PushFcnStrand_YY (lpplYYLstRht,
-                        2,
-                        (IsFcnStrDirect (lpplYYLstRht)) ? DIRECT
-                                                        : INDIRECT);    // Monadic operator
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+    lpYYRes = lpplYYLstRht;
 
-    if (!lpYYRes)                           // If not defined, free args and YYERROR
+    // If the current object is an axis operand, ...
+    if (IsTknTypeAxis (lpplYYCurObj->tkToken.tkFlags.TknType))
     {
-        // Free and YYFree the current object
-        FreeResNNU1 (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+        Assert (lpYYRes->lpplYYIdxCurry EQ NULL);
 
-        goto ERROR_EXIT;
-    } // End IF
-
-    // If the current object is in the process of stranding, ...
-    if (IsTknTypeVar (lpplYYCurObj->tkToken.tkFlags.TknType)
-     && lpplYYCurObj->YYStranding)
-    {
-        // Turn this strand into a var
-        lpYYVar =
-          MakeVarStrand_EM_YY (lpplYYCurObj);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
-
-        // If not defined, ...
-        if (!lpYYVar)
-            goto ERROR_EXIT;
-
-        // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYVar = NULL;
+        // Append the axis operand to the function strand
+        lpYYRes->lpplYYIdxCurry = lpplYYCurObj;
     } else
-        // Unstrand the current object if necessary
-        UnStrand (lpplYYCurObj);
-
-    // Append the left operand to the function strand
-    lpYYLft =
-      PushFcnStrand_YY (lpplYYCurObj,
-                        1,
-                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                        : INDIRECT);  // Left operand
-    // YYFree the current object
-    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
-
-    if (!lpYYLft)                       // If not defined, free args and YYERROR
     {
-        // Free the function (including YYFree)
-        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+        Assert (lpYYRes->lpplYYFcnCurry EQ NULL);
 
-        goto ERROR_EXIT;
-    } // End IF
-
-    // YYFree the left operand object
-    YYFree (lpYYLft); lpYYLft = NULL;
+        // Append the left operand to the function strand
+        lpYYRes->lpplYYFcnCurry = lpplYYCurObj;
+    } // End IF/ELSE
 
     // Change the tkSynObj
     lpYYRes->tkToken.tkSynObj = soType;
 ERROR_EXIT:
     return lpYYRes;
 } // End plRedLftOper_MOP
+
+
+//***************************************************************************
+//  $plRedHY_FR
+//
+//  Reduce "HY FR"
+//***************************************************************************
+
+LPPL_YYSTYPE plRedHY_FR
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+    // Convert the HY to a primitive function
+    ConvertHY2PFO (lpplYYCurObj,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soF);
+    // Call common code
+    return plRedF_FR (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+} // End plRedHY_FR
 
 
 //***************************************************************************
@@ -2536,99 +2516,62 @@ LPPL_YYSTYPE plRedF_FR
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
-                 lpYYOp1,               // Ptr to temp vars
-                 lpYYVarL,              // ...
-                 lpYYVarR;              // ...
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
-    // Make a pseudo train operator
-    lpYYOp1 =
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
+
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), FALSE);
+
+    // Make a pseudo train operator as the result
+    lpYYRes =
       MakeTrainOp_YY (lpplYYCurObj);
 
-    // If this function is in the process of being stranded, ...
-    if (lpplYYCurObj->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    Assert (lpplYYLstRht->lpplYYArgCurry EQ NULL);
+    Assert (lpplYYLstRht->lpplYYIdxCurry EQ NULL);
+    Assert (lpplYYLstRht->lpplYYOpRCurry EQ NULL);
 
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
+    Assert (lpplYYCurObj->lpplYYArgCurry EQ NULL);
+    Assert (lpplYYCurObj->lpplYYIdxCurry EQ NULL);
+    Assert (lpplYYCurObj->lpplYYOpRCurry EQ NULL);
 
-        // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
-    } else
-        // Unstrand the current object if necessary
-        UnStrand (lpplYYCurObj);
+    // Link in the functions
+    Assert (lpYYRes     ->lpplYYFcnCurry EQ NULL);
+    lpYYRes     ->lpplYYFcnCurry = lpplYYLstRht;
 
-    // If the last right object is in the process of stranding, ...
-    if (lpplYYLstRht->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), FALSE);
-        // YYFree the last right object
-        YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
-
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
-
-        // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
-        lpYYRes = NULL;
-    } else
-        // Unstrand the last right object if necessary
-        UnStrand (lpplYYLstRht);
-
-    lpYYRes =
-      PushFcnStrand_YY (lpYYOp1,
-                        3,
-                        DIRECT);                                        // Monadic operator (Direct)
-    // YYFree the Train op
-    YYFree (lpYYOp1); lpYYOp1 = NULL;
-
-    lpYYVarR =
-      PushFcnStrand_YY (lpplYYLstRht,
-                        1,
-                        (IsFcnStrDirect (lpplYYLstRht)) ? DIRECT
-                                                        : INDIRECT);    // Righthand function
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
-
-    lpYYVarL =
-      PushFcnStrand_YY (lpplYYCurObj,
-                        1,
-                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                        : INDIRECT);    // Lefthand function
-    // YYFree the current object
-    YYFree (lpplYYCurObj); lpplYYCurObj = NULL;
-
-    // YYFree the temp vars
-    YYFree (lpYYVarL); lpYYVarL = NULL;
-    YYFree (lpYYVarR); lpYYVarR = NULL;
+    Assert (lpplYYLstRht->lpplYYFcnCurry EQ NULL);
+    lpplYYLstRht->lpplYYFcnCurry = lpplYYCurObj;
 
     // Change the tkSynObj
     lpYYRes->tkToken.tkSynObj = soType;
-ERROR_EXIT:
-    if (lpplYYCurObj)
-    {
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL;
-    } // End IF
 
-    if (lpplYYLstRht)
-    {
-        // YYFree the last right object
-        YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
-    } // End IF
-
+    // Return the root
     return lpYYRes;
 } // End plRedF_FR
+
+
+//***************************************************************************
+//  $plRedHY_FFR
+//
+//  Reduce "HY FFR"
+//***************************************************************************
+
+LPPL_YYSTYPE plRedHY_FFR
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+    // Convert the HY to a primitive function
+    ConvertHY2PFO (lpplYYCurObj,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soF);
+    // Call common code
+    return plRedF_FFR (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+} // End plRedHY_FFR
 
 
 //***************************************************************************
@@ -2646,46 +2589,28 @@ LPPL_YYSTYPE plRedF_FFR
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
-    // If this function is in the process of being stranded, ...
-    if (lpplYYCurObj->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpplYYCurObj, TranslateSOTypeToNameType (lpplYYCurObj->tkToken.tkSynObj), FALSE);
 
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
+    // Start with the root
+    lpYYRes = lpplYYLstRht;
 
-        // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
-    } else
-        // Unstrand the current object if necessary
-        UnStrand (lpplYYCurObj);
+    // While the FcnCurry slot is in use, ...
+    while (lpYYRes->lpplYYFcnCurry NE NULL)
+        // Recurse through the root to the next available lpplYYFcnCurry
+        lpYYRes = lpYYRes->lpplYYFcnCurry;
 
-    lpYYRes =
-      PushFcnStrand_YY (lpplYYCurObj,
-                        1,
-                        (IsFcnStrDirect (lpplYYCurObj)) ? DIRECT
-                                                        : INDIRECT);    // Lefthand function
-    // YYFree the current object
-    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    // Link in the new function
+    lpYYRes->lpplYYFcnCurry = lpplYYCurObj;
 
-    // YYFree the temp vars
-    YYFree (lpYYRes); lpYYRes = NULL;
+    // The result is the root
+    lpYYRes = lpplYYLstRht;
 
     // Change the tkSynObj
-    lpplYYLstRht->tkToken.tkSynObj = soType;
+    lpYYRes->tkToken.tkSynObj = soType;
 
-    return lpplYYLstRht;
-ERROR_EXIT:
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
-
-    return NULL;
+    // Return the root
+    return lpYYRes;
 } // End plRedF_FFR
 
 
@@ -2702,28 +2627,48 @@ LPPL_YYSTYPE plRedLP_FFR
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
-
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // Initialize the function strand (Train) base
     lpplYYLstRht->lpYYStrandBase = lpplYYLstRht->lpYYFcnBase;
 
-    lpYYRes =
-      MakeFcnStrand_EM_YY (lpplYYLstRht, NAMETYPE_TRN, TRUE);
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpplYYLstRht, NAMETYPE_TRN, TRUE);
 
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
+    if (lpplYYLstRht NE NULL)       // If valid, ...
+        // Change the tkSynObj
+        lpplYYLstRht->tkToken.tkSynObj = soType;
 
-    if (!lpYYRes)                       // If not defined, free args and YYERROR
-        goto ERROR_EXIT;
-
-    // Change the tkSynObj
-    lpYYRes->tkToken.tkSynObj = soType;
-ERROR_EXIT:
-    return lpYYRes;
+    return lpplYYLstRht;
 } // End plRedLP_FFR
+
+
+//***************************************************************************
+//  $plRedLP_HFR
+//
+//  Reduce "LP HFR"
+//***************************************************************************
+
+LPPL_YYSTYPE plRedLP_HFR
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+    Assert (lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_OP1IMMED
+         && lpplYYLstRht->tkToken.tkData.tkChar   EQ INDEX_OPTRAIN
+         && lpplYYLstRht->tkToken.tkSynObj        EQ soHFR);
+
+    // Convert the OP1 to a primitive function
+    ConvertHY2PFO (lpplYYLstRht,
+                   TKT_FCNIMMED,
+                   IMMTYPE_PRIMFCN,
+                   soFFR);
+    // Call common code
+    return plRedLP_FFR (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+} // End plRedLP_HFR
 
 
 //***************************************************************************
@@ -2770,25 +2715,8 @@ LPPL_YYSTYPE plRedNF_F
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
-
-    // If the last right object is in the process of stranding, ...
-    if (lpplYYLstRht->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYLstRht, NAMETYPE_FN12, FALSE);
-        // YYFree the last right object
-        YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // curSynObj = soNONE;
-
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
-
-        // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
-        lpYYRes = NULL;
-    } // End IF
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpplYYLstRht, NAMETYPE_FN12, FALSE);
 
     // Execute the niladic function returning an array
     lpplYYCurObj =
@@ -2943,13 +2871,13 @@ LPPL_YYSTYPE plRedNF_NF
     // Call common code
     return plRedA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
-    if (lpplYYCurObj)
+    if (lpplYYCurObj NE NULL)
     {
         // YYFree the current object
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
     } // End IF
 
-    if (lpplYYLstRht)
+    if (lpplYYLstRht NE NULL)
     {
         // YYFree the last right object
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -3000,6 +2928,7 @@ LPPL_YYSTYPE plRedMOP_IDX
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
+    // Call common code
     return plRedLftOper_MOP (lpplLocalVars, lpYYVar, lpplYYCurObj, soType);
 ERROR_EXIT:
     // YYFree the current object
@@ -3252,40 +3181,21 @@ LPPL_YYSTYPE plRedF_SPA
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
-    Assert (lpplLocalVars->lpplYYFcnCurry EQ NULL);
+    Assert (lpplYYLstRht->lpplYYFcnCurry EQ NULL);
 
-    // If this function is in the process of being stranded, ...
-    if (lpplYYCurObj->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN12, FALSE);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpplYYCurObj, NAMETYPE_FN12, FALSE);
 
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
-
-        // Copy to the current object
-        lpplYYCurObj = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
-    } else
-        // Unstrand the current object if necessary
-        UnStrand (lpplYYCurObj);
+    // The result is the SPA
+    lpYYRes = lpplYYLstRht;
 
     // Copy to the function curry object
-    lpplLocalVars->lpplYYFcnCurry = lpplYYCurObj;
+    lpYYRes->lpplYYFcnCurry = lpplYYCurObj;
 
     // Change the tkSynObj
-    lpplYYLstRht->tkToken.tkSynObj = soType;
+    lpYYRes->tkToken.tkSynObj = soType;
 
-////YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;  // Do *NOT* free as it is still curried
-
-    return lpplYYLstRht;
-
-ERROR_EXIT:
-    return NULL;
+    return lpYYRes;
 } // End plRedF_SPA
 
 
@@ -3308,10 +3218,10 @@ LPPL_YYSTYPE plRedIDX_SPA
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    Assert (lpplLocalVars->lpplYYIdxCurry EQ NULL);
+    Assert (lpplYYLstRht->lpplYYIdxCurry EQ NULL);
 
     // Copy to the left curry object
-    lpplLocalVars->lpplYYIdxCurry = lpplYYCurObj;
+    lpplYYLstRht->lpplYYIdxCurry = lpplYYCurObj;
 
     // Change the tkSynObj
     lpplYYLstRht->tkToken.tkSynObj = soType;
@@ -3348,6 +3258,7 @@ LPPL_YYSTYPE plRedA_SPA
         // Change the tkSynObj
         lpplYYCurObj->tkToken.tkSynObj = soNAM;
 
+        // Call common code
         return plRedNAM_SPCom (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
     } // End IF
 
@@ -3376,83 +3287,33 @@ LPPL_YYSTYPE plRedNAM_ISPA
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    UBOOL        bRet = FALSE;          // TRUE iff the result is valid
-    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
-                 lpYYRes2;              // ...
+    UBOOL bRet;                         // TRUE iff the result is valid
 
-    Assert (lpplLocalVars->lpplYYIdxCurry NE NULL);
+    Assert (lpplYYLstRht->lpplYYIdxCurry NE NULL);
     Assert (IsTknNamed (&lpplYYCurObj->tkToken));
 
     if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-        lpYYRes = NULL;
+        bRet = FALSE;
     else
+    // If the left fcn is present (select spec as in NAM[A] F {is} A), ...
+    if (lpplYYLstRht->lpplYYFcnCurry)
     {
-        // If the left fcn is present (select spec as in NAM[A] F {is} A), ...
-        if (lpplLocalVars->lpplYYFcnCurry)
-        {
-            LPPL_YYSTYPE lpYYTmp1,
-                         lpYYTmp2;
+        // Assign the value to the indexed name via the modify function
+        bRet =
+          ArrayIndexFcnSet_EM (&lpplYYCurObj->tkToken,
+                               &lpplYYLstRht->lpplYYIdxCurry->tkToken,
+                                lpplYYLstRht->lpplYYFcnCurry,
+                               &lpplYYLstRht->tkToken);
+    } else
+        // Assign the value to the indexed name
+        bRet =
+          ArrayIndexSet_EM    (&lpplYYCurObj->tkToken,
+                               &lpplYYLstRht->lpplYYIdxCurry->tkToken,
+                               &lpplYYLstRht->tkToken);
 
-            Assert (!lpplYYCurObj->YYStranding && !lpplLocalVars->lpplYYFcnCurry->YYStranding);
-
-            // Allocate a new YYRes for lpplYYCurObj so it can be freed in plRedA_IDX
-            lpYYTmp1 = YYAlloc ();
-
-            // Copy the current object to the temp
-            YYCopy2 (lpYYTmp1, lpplYYCurObj);
-
-            // Allocate a new YYRes for lpplYYIdxCurry so it can be freed in plRedA_IDX
-            lpYYTmp2 = YYAlloc ();
-
-            // Copy the current object to the temp
-            YYCopy2 (lpYYTmp2, lpplLocalVars->lpplYYIdxCurry);
-
-            // Compute NAM[A]
-            lpYYRes2 =
-              plRedA_IDX (lpplLocalVars, lpYYTmp1, lpYYTmp2, soA);
-
-            // Note these vars have been freed by <plRedA_IDX>
-            lpYYTmp1 = lpYYTmp2 = NULL;
-
-            // If not defined, ...
-            if (!lpYYRes2)
-                goto ERROR_EXIT;
-
-            // Compute NAM[A] F A
-            lpYYRes =
-              ExecFunc_EM_YY (&lpYYRes2->tkToken, lpplLocalVars->lpplYYFcnCurry, &lpplYYLstRht->tkToken);
-
-            // Free (unnamed) and YYFree the last right object
-            FreeTempResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
-
-            // If not defined, ...
-            if (!lpYYRes)
-                goto ERROR_EXIT;
-
-            // Free the function (including YYFree)
-            FreeResult (lpplLocalVars->lpplYYFcnCurry); YYFree (lpplLocalVars->lpplYYFcnCurry); lpplLocalVars->lpplYYFcnCurry = NULL;
-
-            // If not defined, ...
-            if (!lpYYRes)
-                goto ERROR_EXIT;
-            // Assign the value to the indexed name
-            bRet =
-              ArrayIndexSet_EM (&lpplYYCurObj->tkToken,
-                                &lpplLocalVars->lpplYYIdxCurry->tkToken,
-                                &lpYYRes->tkToken);
-            // Free (unnamed) and YYFree the last right object
-            FreeTempResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-        } else
-            // Assign the value to the indexed name
-            bRet =
-              ArrayIndexSet_EM (&lpplYYCurObj->tkToken,
-                                &lpplLocalVars->lpplYYIdxCurry->tkToken,
-                                &lpplYYLstRht->tkToken);
-    } // End IF/ELSE
-ERROR_EXIT:
     // YYFree the current & curried objects
-                                                YYFree (lpplYYCurObj);                  lpplYYCurObj = NULL; // curSynObj = soNONE;
-    FreeResult (lpplLocalVars->lpplYYIdxCurry); YYFree (lpplLocalVars->lpplYYIdxCurry); lpplLocalVars->lpplYYIdxCurry = NULL;
+                                               YYFree (lpplYYCurObj);                 lpplYYCurObj = NULL; // curSynObj = soNONE;
+    FreeResult (lpplYYLstRht->lpplYYIdxCurry); YYFree (lpplYYLstRht->lpplYYIdxCurry); lpplYYLstRht->lpplYYIdxCurry = NULL;
 
     if (!bRet)
     {
@@ -3485,57 +3346,46 @@ LPPL_YYSTYPE plRedNAM_SPCom
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
-    // If the last right object is a var in the process of stranding, ...
-    if (IsTknTypeVar (lpplYYLstRht->tkToken.tkFlags.TknType)
-     && lpplYYLstRht->YYStranding)
+    // If the last right object is a var, ...
+    if (IsTknTypeVar (lpplYYLstRht->tkToken.tkFlags.TknType))
     {
-        // Turn this strand into a var
-        lpYYRes =
-          MakeVarStrand_EM_YY (lpplYYLstRht);
-        // YYFree the last right object
-        YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+        // If the last right object is in the process of stranding, ...
+        if (lpplYYLstRht->YYStranding)
+        {
+            // Turn this strand into a var
+            lpYYRes =
+              MakeVarStrand_EM_YY (lpplYYLstRht);
+            // YYFree the last right object
+            YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
+            // If not defined, ...
+            if (!lpYYRes)
+                goto ERROR_EXIT;
 
-        // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYRes = NULL;
+            // Copy to the last right object
+            lpplYYLstRht = lpYYRes; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+            lpYYRes = NULL;
+        } else
+            // Unstrand the last right object if necessary
+            UnStrand (lpplYYLstRht);
     } else
-    // If the last right object is a function/operator in the process of being stranded, ...
-    if (IsTknTypeFcnOpr (lpplYYLstRht->tkToken.tkFlags.TknType)
-     && lpplYYLstRht->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), TRUE);
-        // YYFree the last right object
-        YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
-
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
-
-        // Copy to the last right object
-        lpplYYLstRht = lpYYRes; // lstSynObj = LSTSYNOBJ; Assert (IsValidSO (lstSynObj));
-        lpYYRes = NULL;
-    } else
-        // Unstrand the last right object if necessary
-        UnStrand (lpplYYLstRht);
+    // If the last right object is a function/operator, ...
+    if (IsTknTypeFcnOpr (lpplYYLstRht->tkToken.tkFlags.TknType))
+        // Unstrand the function if appropriate
+        UnFcnStrand_EM (&lpplYYLstRht, TranslateSOTypeToNameType (lpplYYLstRht->tkToken.tkSynObj), TRUE);
 
     // If the left fcn is present (select spec as in NAM F {is} A), ...
-    if (lpplLocalVars->lpplYYFcnCurry)
+    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
     {
-        Assert (!lpplYYCurObj->YYStranding && !lpplLocalVars->lpplYYFcnCurry->YYStranding);
+        Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->lpplYYFcnCurry->YYStranding);
 
         if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
             lpYYRes = NULL;
         else
             lpYYRes =
-              ExecFunc_EM_YY (&lpplYYCurObj->tkToken, lpplLocalVars->lpplYYFcnCurry, &lpplYYLstRht->tkToken);
+              ExecFunc_EM_YY (&lpplYYCurObj->tkToken, lpplYYLstRht->lpplYYFcnCurry, &lpplYYLstRht->tkToken);
         // Free the function (including YYFree)
-        FreeResult (lpplLocalVars->lpplYYFcnCurry); YYFree (lpplLocalVars->lpplYYFcnCurry); lpplLocalVars->lpplYYFcnCurry = NULL;
+        FreeResult (lpplYYLstRht->lpplYYFcnCurry); YYFree (lpplYYLstRht->lpplYYFcnCurry); lpplYYLstRht->lpplYYFcnCurry = NULL;
 
         // Free (unnamed) and YYFree the last right object
         FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
@@ -3571,8 +3421,15 @@ LPPL_YYSTYPE plRedNAM_SPCom
 
 ERROR_EXIT:
     // YYFree the current & lasy right objects
-    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+    if (lpplYYCurObj NE NULL)
+    {
+        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+    } // End IF
+
+    if (lpplYYLstRht NE NULL)
+    {
+        YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+    } // End IF
 
     return lpplYYLstRht;
 } // End plRedNAM_SPCom
@@ -3788,7 +3645,8 @@ EXIT_TYPES ParseLine
     SO_ENUM       lftSynObj,                // Left stack's current element Syntax Object value
                   curSynObj,                // Current ...
                   rhtSynObj,                // Right ...
-                  lstSynObj;                // Last right ...
+                  lstSynObj,                // Last right ...
+                  oldLstSynObj = soUNK;     // Old ...
     LPPL_REDSTR   lpplCurStr;               // Ptr to current plRedStr
     LPPL_YYSTYPE  lpplYYCurObj,             // Ptr to the current token object
                   lpplYYLstRht;             // The last POPRIGHT token in REDUCE
@@ -3801,7 +3659,6 @@ EXIT_TYPES ParseLine
                                     1,              // TknCount
                                     FALSE,          // YYInuse
                                     FALSE,          // YYIndirect
-                                    FALSE,          // YYCopyArray
                                     TRUE ,          // YYPerm
                                 };  // EOS PL_YYSTYPE
 
@@ -3813,9 +3670,8 @@ EXIT_TYPES ParseLine
                                     1,              // TknCount
                                     FALSE,          // YYInuse
                                     FALSE,          // YYIndirect
-                                    FALSE,          // YYCopyArray
                                     TRUE ,          // YYPerm
-                                };  // EOS PL_YYSTYPE
+                                };  // SOS PL_YYSTYPE
 #ifdef DEBUG
     // Simplify certain names
     soNames[soSP] = WS_UTF16_LEFTARROW;
@@ -4010,7 +3866,7 @@ EXIT_TYPES ParseLine
 PARSELINE_START:
             // Get the current object
             lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-#ifdef DEBUG2
+#ifdef DEBUG_START
             {
                 LPWCHAR lpwszLine2;
 
@@ -4018,7 +3874,9 @@ PARSELINE_START:
                     lpwszLine2 = MyGlobalLock (hGlbTxtLine);
                 else
                     lpwszLine2 = lpwszLine - 2;
-                dprintfWL0 (L"Starting line:  %s",
+                dprintfWL0 (L"Starting line(%d/%d):  %s",
+                            uLineNum,
+                            uTknNum,
                            &lpwszLine2[2]);
                 TRACE (L"Starting:", L"", CURSYNOBJ, RHTSYNOBJ);
 
@@ -4174,6 +4032,53 @@ PARSELINE_MP_PAREN:
 
                 // Clear the flag
                 bPLBracket = FALSE;
+            } else
+            {
+                // Get the left, current, and right SynObj values
+                lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
+                curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+                rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
+
+                // If a shift left is required, ...
+                while (TRUE)
+                if (1 < RSTACKLEN
+                 && curSynObj NE soDOP
+                 && curSynObj NE soDOPN
+                 && curSynObj NE soRP
+                 && curSynObj NE soRBK
+                 && curSynObj NE soARBK
+                 && curSynObj NE soSRBK)
+                {
+                    SO_ENUM rht2SynObj;
+
+                    rht2SynObj = RHT2SYNOBJ; Assert (IsValidSO (rht2SynObj));
+
+                    if (RBIND (curSynObj, rhtSynObj) >= RBIND (rhtSynObj, rht2SynObj))
+                    {
+                        if (rhtSynObj NE soRP
+                         && rhtSynObj NE soRBK
+                         && rhtSynObj NE soARBK
+                         && rhtSynObj NE soSRBK)
+                        {
+                            if (LBIND (lftSynObj, curSynObj) <= RBIND (curSynObj, rhtSynObj))
+                                break;
+                        } else
+                        {
+                            if (LBIND (lftSynObj, curSynObj) <= RBIND (curSynObj, rhtSynObj)
+                             && RBIND (curSynObj, rhtSynObj) <= RBIND (rhtSynObj, rht2SynObj))
+                                break;
+                        } // End IF/ELSE
+                    } // End IF
+
+                    PUSHLEFT (lpplYYCurObj); lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
+                    lpplYYCurObj = POPRIGHT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+
+                    rhtSynObj  = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
+                    rht2SynObj = RHT2SYNOBJ; // Assert (IsValidSO (rht2SynObj)); // This item might be invalid
+
+                    TRACE (L"MatchPair", L"- LftShift", CURSYNOBJ, rhtSynObj);
+                } else
+                    break;
             } // End IF
 
             // Get the left, current, and right SynObj values
@@ -4196,25 +4101,11 @@ PARSELINE_MP_DONE:
                 // Save the NoDisplay flag
                 NoDisplay = lpplYYCurObj->tkToken.tkFlags.NoDisplay;
 
-                // If this function is in the process of being stranded, ...
-                if (lpplYYCurObj->YYStranding)
+                // Unstrand the function if appropriate
+                if (UnFcnStrand_EM (&lpplYYCurObj, NAMETYPE_FN0, FALSE))
                 {
-                    // Turn this function strand into a function
-                    lpYYRes =
-                      MakeFcnStrand_EM_YY (lpplYYCurObj, NAMETYPE_FN0, FALSE);
-                    // YYFree the current object
-                    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
-
-                    // If not defined, ...
-                    if (!lpYYRes)
-                        goto PARSELINE_ERROR;
-
                     // Transfer the NoDisplay flag
-                    lpYYRes->tkToken.tkFlags.NoDisplay = NoDisplay;
-
-                    // Copy to the current object
-                    lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-                    lpYYRes = NULL;
+                    lpplYYCurObj->tkToken.tkFlags.NoDisplay = NoDisplay;
 
                     // Set the tkSynObj
                     lpplYYCurObj->tkToken.tkSynObj = curSynObj;
@@ -4298,64 +4189,13 @@ PARSELINE_REDUCE:
                 if (curSynObj EQ soA
                  && lstSynObj EQ soHY)
                 {
-                    // Change the HY to F
-                    lpplYYLstRht->tkToken.tkSynObj = lstSynObj = soF;
-
-                    // If it's a named function/operator, ...
-                    if (IsTknNamedFcnOpr (&lpplYYLstRht->tkToken))
-                        // Change it to a primitive function
-                        lpplYYLstRht->tkToken.tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMFCN;
-                    else
-                    {
-                        // Change it to a primitive function
-                        lpplYYLstRht->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-                        lpplYYLstRht->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-                        lpplYYLstRht->tkToken.tkSynObj        = soF;
-
-                        // If the last right object is in the process of stranding, ...
-                        if (lpplYYLstRht->YYStranding)
-                        {
-                            UBOOL bOp1,             // TRUE iff the token is a monadic operator
-                                  bOp2;             // ...                     dyadic  ...
-
-                            Assert (lpplYYLstRht->TknCount > 1);
-                            Assert (lpplYYLstRht->lpYYFcnBase NE NULL);
-
-                            // Check the operator status
-                            bOp1 = IsTknOp1 (&lpplYYLstRht->lpYYFcnBase->tkToken);
-                            bOp2 = IsTknOp2 (&lpplYYLstRht->lpYYFcnBase->tkToken);
-
-                            // If the function base is a hybrid, ...
-                            if (lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.TknType EQ TKT_OP3IMMED
-                             && lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.ImmType EQ IMMTYPE_PRIMOP3)
-                            {
-                                // Change it to a primitive function
-                                lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.TknType = TKT_FCNIMMED;
-                                lpplYYLstRht->lpYYFcnBase->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-                                lpplYYLstRht->lpYYFcnBase->tkToken.tkSynObj        = soF;
-                            } else
-                            // If the function base is a monadic or dyadic operator, ...
-                            if ((bOp1 || bOp2)
-                             && lpplYYLstRht->lpYYFcnBase[1].tkToken.tkFlags.TknType EQ TKT_OP3IMMED
-                             && lpplYYLstRht->lpYYFcnBase[1].tkToken.tkFlags.ImmType EQ IMMTYPE_PRIMOP3)
-                            {
-                                // Change it to a primitive function
-                                lpplYYLstRht->lpYYFcnBase[1].tkToken.tkFlags.TknType = TKT_FCNIMMED;
-                                lpplYYLstRht->lpYYFcnBase[1].tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-                                lpplYYLstRht->lpYYFcnBase[1].tkToken.tkSynObj        = soF;
-                            } else
-                            // If the function base is a dyadic operator, ...
-                            if (bOp2
-                             && lpplYYLstRht->lpYYFcnBase[2].tkToken.tkFlags.TknType EQ TKT_OP3IMMED
-                             && lpplYYLstRht->lpYYFcnBase[2].tkToken.tkFlags.ImmType EQ IMMTYPE_PRIMOP3)
-                            {
-                                // Change it to a primitive function
-                                lpplYYLstRht->lpYYFcnBase[2].tkToken.tkFlags.TknType = TKT_FCNIMMED;
-                                lpplYYLstRht->lpYYFcnBase[2].tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-                                lpplYYLstRht->lpYYFcnBase[2].tkToken.tkSynObj        = soF;
-                            } // End IF/ELSE/...
-                        } // End IF
-                    } // End IF/ELSE
+                    // Convert the HY to a primitive function
+                    ConvertHY2PFO (lpplYYLstRht,
+                                   TKT_FCNIMMED,
+                                   IMMTYPE_PRIMFCN,
+                                   soF);
+                    // Change the soType
+                    lstSynObj = soF;
 
                     // Push it back onto RSTACK
                     PUSHRIGHT (lpplYYLstRht);
@@ -4439,7 +4279,7 @@ PARSELINE_REDUCE:
                                  L"ASSERTION ERROR",
                                  lpwszAppName,
                                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                    DbgStop ();     // ***FINISHME*** -- can this ever occur??
+                    DbgStop ();     // ***FINISHME*** -- Missing reduction in 2by2
                 } // End IF
 
                 {
@@ -4453,13 +4293,34 @@ PARSELINE_REDUCE:
                     TRACE2 (L"Reducing:", EVENT, lpplCurStr->soType, lstSynObj);
                 }
 #endif
+                // Save the value of lstSynObj so we may check it at PARSELINE_DONE
+                oldLstSynObj = lstSynObj;
+
                 // Reduce the stmt
-                // *** N.B.  This call might change the contents of lpplYYLstRht ***
+                // *** N.B.  This call might change the values pointed to by
+                //           lpplYYCurObj & lpplYYLstRht and it might invalidate
+                //           the values in curSynObj & lstSynObj ***
                 lpYYRes =
                   (*lpplCurStr->lpplRedFcn) (&plLocalVars,
                                               lpplYYCurObj,
                                               lpplYYLstRht,
                                               lpplCurStr->soType);
+                // Check for YYFreed current & last right objects
+                if (!lpplYYCurObj->YYInuse)
+                {
+                    // Zap it
+                    lpplYYCurObj = NULL; curSynObj = soNONE;
+                } // End IF
+
+                if (!lpplYYLstRht->YYInuse)
+                {
+                    // Zap it
+                    lpplYYLstRht = NULL; lstSynObj = soNONE;
+                } // End IF
+#ifdef DEBUG
+                // Ensure these get respecified
+                curSynObj = lstSynObj = soNONE;
+#endif
                 // Check for stop execution of this line
                 if (plLocalVars.bStopExec)
                 {
@@ -4509,7 +4370,11 @@ PARSELINE_REDUCE:
 
                 // Get the left, current, and right SynObj values
                 lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
-                curSynObj = CURSYNOBJ; // Assert (IsValidSO (curSynObj)); // This item might be invalid
+                if (lpplYYCurObj NE NULL)
+                {
+                    curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+                } else
+                    curSynObj = soNONE;
                 rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
 
                 // Check for NoValue
@@ -4531,10 +4396,12 @@ PARSELINE_REDUCE:
                 // If it's not a SYNTAX ERROR, ...
                 if (IsValidSO (curSynObj))
                 {
-                    // If a shift right is required, ...
+                    // If a shift left is required, ...
 ////////////////////if (2 < RSTACKLEN && LBIND (lftSynObj, curSynObj) >= RBIND (curSynObj, rhtSynObj))
                     while (TRUE)
                     if (1 < RSTACKLEN
+                     && curSynObj NE soDOP
+                     && curSynObj NE soDOPN
                      && curSynObj NE soRP
                      && curSynObj NE soRBK
                      && curSynObj NE soARBK
@@ -4562,7 +4429,8 @@ PARSELINE_REDUCE:
                             } // End IF/ELSE
                         } // End IF
 LEFTSHIFT:
-                        PUSHLEFT (lpplYYCurObj); lpplYYCurObj = POPRIGHT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+                        PUSHLEFT (lpplYYCurObj); lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
+                        lpplYYCurObj = POPRIGHT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 
                         rhtSynObj  = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
                         rht2SynObj = RHT2SYNOBJ; // Assert (IsValidSO (rht2SynObj)); // This item might be invalid
@@ -4614,25 +4482,8 @@ PARSELINE_ERROR:
                 // If it's a function/operator, ...
                 if (IsTknFcnOpr (&lpYYRes->tkToken))
                 {
-                    // If this function is in the process of being stranded, ...
-                    if (lpYYRes->YYStranding)
-                    {
-                        LPPL_YYSTYPE lpYYRes2;
-
-                        // Turn this function strand into a function
-                        lpYYRes2 =
-                          MakeFcnStrand_EM_YY (lpYYRes, NAMETYPE_FN12, FALSE);
-                        // YYFree the function
-                        YYFree (lpYYRes); lpYYRes = NULL;
-
-                        // If not defined, ...
-                        if (!lpYYRes2)
-                            goto PARSELINE_ERROR;
-
-                        // Copy to the function
-                        lpYYRes = lpYYRes2;
-                        lpYYRes2 = NULL;
-                    } // End IF
+                    // Unstrand the function if appropriate
+                    UnFcnStrand_EM (&lpYYRes, NAMETYPE_FN12, FALSE);
 
                     // Free the function (including YYFree)
                     FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
@@ -4652,42 +4503,28 @@ PARSELINE_ERROR:
                 } // End IF/ELSE/...
             } // End WHILE
 
-            // If the current object is in use, ...
-            if (lpplYYCurObj
-             && lpplYYCurObj->YYInuse)
+            // If it's valid, ...
+            if (lpplYYCurObj NE NULL)
             {
-                // YYFree the current object
-                YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
+                // If it's inuse, ...
+                if (lpplYYCurObj->YYInuse)
+                {
+                    // Free the object and its curries
+                    FreeResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
+                } else
+                    Assert (YYCheckInuse (lpplYYLstRht));
             } // End IF
 
-            // If the last right object is in use, ...
-            if (lpplYYLstRht
-             && lpplYYLstRht->YYInuse)
+            // If it's valid, ...
+            if (lpplYYLstRht NE NULL)
             {
-                // YYFree the last right object
-                YYFree (lpplYYLstRht); lpplYYLstRht = NULL; lstSynObj = soNONE;
-            } // End IF
-
-            // If a curried function is in use
-            if (plLocalVars.lpplYYFcnCurry)
-            {
-                // Free the function (including YYFree)
-                FreeResult (plLocalVars.lpplYYFcnCurry); YYFree (plLocalVars.lpplYYFcnCurry); plLocalVars.lpplYYFcnCurry = NULL;
-            } // End IF
-
-            // If a curried index is in use
-            if (plLocalVars.lpplYYIdxCurry)
-            {
-                // Free the function (including YYFree)
-                FreeResult (plLocalVars.lpplYYIdxCurry); YYFree (plLocalVars.lpplYYIdxCurry); plLocalVars.lpplYYIdxCurry = NULL;
-            } // End IF
-
-            // If a curried left arg is in use, ...
-            if (plLocalVars.lpplYYArgCurry
-             && plLocalVars.lpplYYArgCurry->YYInuse)
-            {
-                // YYFree the curried left arg
-                YYFree (plLocalVars.lpplYYArgCurry); plLocalVars.lpplYYArgCurry = NULL;
+                // If it's inuse, ...
+                if (lpplYYLstRht->YYInuse)
+                {
+                    // Free the object and its curries
+                    FreeResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL; lstSynObj = soNONE;
+                } else
+                    Assert (YYCheckInuse (lpplYYLstRht));
             } // End IF
 
             // Check for ResetFlag
@@ -4724,9 +4561,9 @@ PARSELINE_DONE:
 
             // N.B.:  DO NOT RELOAD lstSynObj as we are relying on the old value
 #ifdef DEBUG2
-            dprintfWL0 (L"Stmt Done:  curSynObj (%s), lstSynObj (%s)",
+            dprintfWL0 (L"Stmt Done:  curSynObj (%s), oldLstSynObj (%s)",
                         soNames[curSynObj],
-                        soNames[lstSynObj]);
+                        soNames[oldLstSynObj]);
 #endif
             // If we're restarting, ...
             if (plLocalVars.bRestart)
@@ -4738,15 +4575,15 @@ PARSELINE_DONE:
 
             // Set flag for assigned name
             bAssignName = 0
-             || (curSynObj EQ soA    && lstSynObj EQ soSPA )
-             || (curSynObj EQ soSA   && lstSynObj EQ soSPA )
-             || (curSynObj EQ soF    && lstSynObj EQ soSPF )
-             || (curSynObj EQ soNF   && lstSynObj EQ soSPNF)
-             || (curSynObj EQ soMOP  && lstSynObj EQ soSPM )
-             || (curSynObj EQ soMOPN && lstSynObj EQ soSPMN)
-             || (curSynObj EQ soDOP  && lstSynObj EQ soSPD )
-             || (curSynObj EQ soDOPN && lstSynObj EQ soSPDN)
-             || (curSynObj EQ soHY   && lstSynObj EQ soSPHY);
+             || (curSynObj EQ soA    && oldLstSynObj EQ soSPA )
+             || (curSynObj EQ soSA   && oldLstSynObj EQ soSPA )
+             || (curSynObj EQ soF    && oldLstSynObj EQ soSPF )
+             || (curSynObj EQ soNF   && oldLstSynObj EQ soSPNF)
+             || (curSynObj EQ soMOP  && oldLstSynObj EQ soSPM )
+             || (curSynObj EQ soMOPN && oldLstSynObj EQ soSPMN)
+             || (curSynObj EQ soDOP  && oldLstSynObj EQ soSPD )
+             || (curSynObj EQ soDOPN && oldLstSynObj EQ soSPDN)
+             || (curSynObj EQ soHY   && oldLstSynObj EQ soSPHY);
 
             // Set flag for sink
             bSink = (curSynObj EQ soSPA) && !bAssignName;
@@ -4769,7 +4606,8 @@ PARSELINE_DONE:
                 UBOOL bEOL;             // TRUE iff we're at the EOL (or equivalent)
 
                 // If the current object is a var, ...
-                if (IsTknTypeVar (lpplYYCurObj->tkToken.tkFlags.TknType))
+                if (lpplYYCurObj NE NULL
+                 && IsTknTypeVar (lpplYYCurObj->tkToken.tkFlags.TknType))
                 {
                     // If the var is in the process of stranding, ...
                     if (lpplYYCurObj->YYStranding)
@@ -4845,7 +4683,8 @@ PARSELINE_DONE:
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
                 } else
                 // If the current object is a function (not naked GOTO), ...
-                if (!(curSynObj EQ soGO
+                if (lpplYYCurObj NE NULL
+                 && !(curSynObj EQ soGO
                    && rhtSynObj EQ soEOS)
                  && IsTknTypeFcnOpr (lpplYYCurObj->tkToken.tkFlags.TknType))
                 {
@@ -4865,13 +4704,13 @@ PARSELINE_DONE:
 #ifdef DEBUG
                 } else
                 {
-                // If we didn't come from AFOR, EOS, {goto}, CS0, or CS1, ...
-                if (curSynObj NE soAFOR
-                 && curSynObj NE soEOS
-                 && curSynObj NE soGO
-                 && curSynObj NE soCS0
-                 && curSynObj NE soCS1)
-                    DbgStop ();     // Can this ever occur??
+                    // If we didn't come from AFOR, EOS, {goto}, CS0, or CS1, ...
+                    if (curSynObj NE soAFOR
+                     && curSynObj NE soEOS
+                     && curSynObj NE soGO
+                     && curSynObj NE soCS0
+                     && curSynObj NE soCS1)
+                        DbgStop ();     // Can this ever occur??
 #endif
                 } // End IF/ELSE/...
 
@@ -5036,6 +4875,7 @@ PARSELINE_END:
         case EXITTYPE_STOP:         // ...
             // If it's STACK FULL, ...
             if (plLocalVars.ExitType EQ EXITTYPE_STACK_FULL)
+////         || (plLocalVars.ExitType EQ EXITTYPE_LIMIT))   // ***FINISHME***
             {
                 // Mark as in error
                 uRet   = 1;
@@ -5457,9 +5297,17 @@ LPPL_YYSTYPE pl_yylex
     (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
+    LPPL_YYSTYPE lpplYYLval;        // Ptr to YYRes
+
     Assert (!lpplLocalVars->bRestart);
 
-    return pl_yylexCOM (lpplLocalVars, FALSE);
+    // Allocate a new YYRes
+    lpplYYLval = YYAlloc ();
+
+    // Call the lexical analyser
+    pl_yylexCOM (lpplLocalVars, lpplYYLval, FALSE);
+
+    return lpplYYLval;
 } // End pl_yylex
 
 
@@ -5473,25 +5321,29 @@ SO_ENUM GetLftSynObj
     (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    LPPL_YYSTYPE lpplYYLval;        // Ptr to current object
-    SO_ENUM      tkSynObj;          // The result
+    PL_YYSTYPE   plYYLval = {0};    // Temporary YYRes
+    SO_ENUM      tkSynObj = soEOS;  // The result
 
-    if (lpplLocalVars->lptkStart >= lpplLocalVars->lptkNext)
-        return soEOS;
-
-    // Get the PL_YYSTYPE result
-    lpplYYLval = pl_yylexCOM (lpplLocalVars, TRUE);
-
-    if (lpplYYLval)
+    if (lpplLocalVars->lptkStart < lpplLocalVars->lptkNext)
     {
-        // Get the result
-        tkSynObj = lpplYYLval->tkToken.tkSynObj;
+        // Get the PL_YYSTYPE result
+        pl_yylexCOM (lpplLocalVars, &plYYLval, TRUE);
 
-        // YYFree the YYRes
-        YYFree (lpplYYLval); lpplYYLval = NULL;
-    } else
-        // Return something harmless
-        tkSynObj = soEOS;
+        if (plYYLval.tkToken.tkSynObj NE soNONE)
+        {
+            // If the token is named,
+            //   and not assigned into, ...
+            if (IsTknNamed (&plYYLval.tkToken)
+             && !plYYLval.tkToken.tkFlags.bAssignName
+             &&  plYYLval.tkToken.tkSynObj NE soVALR
+             &&  plYYLval.tkToken.tkSynObj NE soSYNR)
+                // Get the matching tkSynObj
+                tkSynObj = TranslateNameTypeToSOType (plYYLval.tkToken.tkData.tkSym->stFlags.stNameType);
+            else
+                // Get the result
+                tkSynObj = plYYLval.tkToken.tkSynObj;
+        } // End IF
+    } // End IF
 
     return tkSynObj;
 } // End GetLftSynObj
@@ -5510,25 +5362,24 @@ SO_ENUM GetLftSynObj
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE pl_yylexCOM
+void pl_yylexCOM
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
+     LPPL_YYSTYPE  lpplYYLval,      // Ptr to YYRes
      UBOOL         bRestoreStk)     // TRUE iff we restore the token stack upon exit
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
-    LPPL_YYSTYPE lpplYYLval;        // Ptr to current object
-    LPTOKEN      lptkOrigNext;      // Ptr to original token stack
-    LPDFN_HEADER lpMemDfnHdr;       // Ptr to UDFO/AFO header
+    LPPERTABDATA      lpMemPTD;     // Ptr to PerTabData global memory
+    LPSIS_HEADER      lpSISCur;     // Ptr to current SIS layer
+    LPTOKEN           lptkOrigNext; // Ptr to original token stack
+    LPDFN_HEADER      lpMemDfnHdr;  // Ptr to UDFO/AFO header
+    LPFCNARRAY_HEADER lpMemHdrFcn;  // Ptr to FCNARRAY header
+    HGLOBAL           hGlbFcn;      // Global Fcn/Opr handle
 
     // Save the original token stack ptr
     lptkOrigNext = lpplLocalVars->lptkNext;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-
-    // Allocate a new YYRes
-    lpplYYLval = YYAlloc ();
 PL_YYLEX_START:
     Assert (IsValidPtr (lpplLocalVars->lptkNext, sizeof (lpplLocalVars->lptkNext[0])));
     Assert ((*(LPUINT) lpplLocalVars->lptkNext) NE 0xfeeefeee);
@@ -5549,7 +5400,6 @@ PL_YYLEX_START:
 ////lpplYYLval->TknCount        =               // Already zero from ZeroMemory
 ////lpplYYLval->YYInuse         =               // ...
 ////lpplYYLval->YYIndirect      = 0;            // ...
-////lpplYYLval->YYCopyArray     = FALSE;        // ...
 ////lpplYYLval->YYStranding     = FALSE;        // ...
 ////lpplYYLval->lpYYFcnBase     = NULL;         // ...
 ////lpplYYLval->lpYYStrandBase  = NULL;         // ...
@@ -5571,17 +5421,94 @@ PL_YYLEX_START:
 
         case TKT_FCNNAMED:
 PL_YYLEX_FCNNAMED:
-            if (IsTknNamedFcnOpr (&lpplYYLval->tkToken)             // Is a named function/operator
-             && !lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)  // Not a direct fcn/opr
+            Assert (GetPtrTypeDir (lpplYYLval->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)  // Not a direct fcn/opr
             {
-                // If it's an immediate function, ...
-                if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
+                // If we're not assigning into this name,
+                if (!lpplYYLval->tkToken.tkFlags.bAssignName)
                 {
-                    // If the function is a hybrid, ...
-                    if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType EQ IMMTYPE_PRIMOP3)
-                        // Mark is as a hybrid
-                        lpplYYLval->tkToken.tkSynObj = soHY;
-                } // End IF
+                    // If we should not restore the token stack ptr,
+                    if (!bRestoreStk)
+                    {
+                        // If it's an immediate, ...
+                        if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
+                        {
+                            // If the function is a hybrid, ...
+                            if (IsTknHybrid (&lpplYYLval->tkToken))
+                                // Mark is as a hybrid
+                                lpplYYLval->tkToken.tkSynObj = soHY;
+                            else
+                                // Mark it as a Fcn so it can't be re-assigned.
+                                lpplYYLval->tkToken.tkSynObj = soF;
+
+                            // Convert this to an unnamed immediate fcn
+                            lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNIMMED;
+                            lpplYYLval->tkToken.tkFlags.ImmType   = lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType;
+                            lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
+                        } else
+                        // If it's not a (named) direct function, ...
+                        if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
+                        {
+                            // Get the global memory handle
+                            hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
+
+                            // Split cases based upon the array signature
+                            switch (GetSignatureGlb_PTB (hGlbFcn))
+                            {
+                                case FCNARRAY_HEADER_SIGNATURE:
+                                    // Lock the memory to get a ptr to it
+                                    lpMemHdrFcn = MyGlobalLock (hGlbFcn);
+
+                                    // Convert this to an unnamed global fcn array
+                                    lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+                                    lpplYYLval->tkToken.tkData .tkGlbData = hGlbFcn;
+                                    lpplYYLval->tkToken.tkSynObj          = soF;        // ***FIXME*** -- can this ever be soNF ???
+
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
+
+                                    // Increment the RefCnt of each item
+                                    DbgIncrRefCntFcnArray (hGlbFcn);
+
+                                    break;
+
+                                case DFN_HEADER_SIGNATURE:
+                                    // Lock the memory to get a ptr to it
+                                    lpMemDfnHdr = MyGlobalLock (hGlbFcn);
+
+#if FALSE       // Enable this code when we have a TKT_FCNDFN
+                                    // Convert this to an unnamed global fcn array
+                                    lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_FCNAFO : TKT_FCNDFN;
+                                    lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
+                                    lpplYYLval->tkToken.tkSynObj          = soF;
+#endif
+                                    // Check the function valence
+                                    if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
+                                        lpplYYLval->tkToken.tkSynObj = soNF;
+                                    else
+                                        lpplYYLval->tkToken.tkSynObj = soF;
+
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
+
+                                    // Increment the refcnt
+                                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  any unassigned named non-UDFO
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+                        } // End IF/ELSE/...
+
+                        // If the SynObj is still the default, ...
+                        if (lpplYYLval->tkToken.tkSynObj EQ soA)
+                            // Mark it as a Fcn so it can't be re-assigned.
+                            lpplYYLval->tkToken.tkSynObj = soF;
+                    } // End IF
+                } else
+                    lpplYYLval->tkToken.tkSynObj = soNAM;
             } // End IF
 
             break;
@@ -5638,7 +5565,7 @@ PL_YYLEX_FCNNAMED:
                             lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
 
                             // Increment the refcnt
-                            IncrRefCntTkn (&lpplYYLval->tkToken);
+                            DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  any unassigned named var
                         } // End IF/ELSE
 
                         // Mark it as an Array so it can't be re-assigned.
@@ -5651,7 +5578,7 @@ PL_YYLEX_FCNNAMED:
                 case NAMETYPE_FN0:
                     // Call this one TKT_FCNNAMED
                     lpplYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
-                    lpplYYLval->tkToken.tkSynObj = soNF;
+                    lpplYYLval->tkToken.tkSynObj        = soNF;
 
                     // If we're not assigning into this name,
                     //   and we're not in the middle of "for I :in", ...
@@ -5664,8 +5591,8 @@ PL_YYLEX_FCNNAMED:
                     // Call this one TKT_FCNNAMED
                     lpplYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
 
-                    // If it's not an immediate, ...
-                    // If the function is not direct, ...
+                    // If it's not an immediate,
+                    //    and the function is not direct, ...
                     if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm
                      && !lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
                     {
@@ -5674,10 +5601,15 @@ PL_YYLEX_FCNNAMED:
                         // Get the global handle
                         hGlbUDFO = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
 
-                        // Set the UDFO/AFO properties
-                        plSetDfn (&lpplYYLval->tkToken, hGlbUDFO);
+                        // Allow a NULL hGlbUDFO if it's also being assigned
+                        if (hGlbUDFO NE NULL
+                         || !lpplYYLval->tkToken.tkFlags.bAssignName)
+                        {
+                            // Set the UDFO/AFO properties
+                            plSetDfn (&lpplYYLval->tkToken, hGlbUDFO);
 
-                        Assert (lpplYYLval->tkToken.tkSynObj EQ soF);
+                            Assert (lpplYYLval->tkToken.tkSynObj EQ soF);
+                        } // End IF
                     } else
                         lpplYYLval->tkToken.tkSynObj = soF;
 
@@ -5696,7 +5628,7 @@ PL_YYLEX_FCNNAMED:
                     //   and we're not in the middle of "for I :in", ...
                     if (!lpplYYLval->tkToken.tkFlags.bAssignName
                      &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
-                        goto PL_YYLEX_NAMEOP1;
+                        goto PL_YYLEX_OP1NAMED;
                     break;
 
                 case NAMETYPE_OP2:
@@ -5707,7 +5639,7 @@ PL_YYLEX_FCNNAMED:
                     //   and we're not in the middle of "for I :in", ...
                     if (!lpplYYLval->tkToken.tkFlags.bAssignName
                      &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
-                        goto PL_YYLEX_NAMEOP2;
+                        goto PL_YYLEX_OP2NAMED;
                     break;
 
                 case NAMETYPE_OP3:
@@ -5718,14 +5650,13 @@ PL_YYLEX_FCNNAMED:
                     //   and we're not in the middle of "for I :in", ...
                     if (!lpplYYLval->tkToken.tkFlags.bAssignName
                      &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
-                        goto PL_YYLEX_NAMEOP3;
+                        goto PL_YYLEX_OP3NAMED;
                     break;
 
                 case NAMETYPE_TRN:
                     // Call this one TKT_FCNNAMED
                     lpplYYLval->tkToken.tkFlags.TknType = TKT_FCNNAMED;
-
-                    lpplYYLval->tkToken.tkSynObj = soF;
+                    lpplYYLval->tkToken.tkSynObj        = soF;
 
                     // If we're not assigning into this name,
                     //   and we're not in the middle of "for I :in", ...
@@ -5756,7 +5687,7 @@ PL_YYLEX_FCNNAMED:
                 // If we're already doing Selective Specification, signal an error
                 if (lpplLocalVars->bSelSpec)
                 {
-                    break;          // ***FINISHME***
+                    break;          // ***FINISHME*** -- Selective Specification
                 } // End IF
 
                 // Mark as doing Selective Specification
@@ -5774,23 +5705,40 @@ PL_YYLEX_FCNNAMED:
             break;
 
         case TKT_FCNAFO:            // Anonymous function
-            Assert (lpplYYLval->tkToken.tkSynObj EQ soF);
+        case TKT_DELAFO:            // Del Anon -- either a function, or a monadic or dyadic operator, bound to its operands
+            Assert (lpplYYLval->tkToken.tkSynObj EQ soF
+                 || lpplYYLval->tkToken.tkSynObj EQ soNF);
 
+            // If we should not restore the token stack ptr, ...
+            if (!bRestoreStk)
+                // Increment the refcnt
+                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  {del}{each}
             break;
 
         case TKT_OP1AFO:            // Anonymous monadic operator
-            Assert (lpplYYLval->tkToken.tkSynObj EQ soMOP);
+            Assert (lpplYYLval->tkToken.tkSynObj EQ soMOP
+                 || lpplYYLval->tkToken.tkSynObj EQ soMOPN);
+
+            // If we should not restore the token stack ptr, ...
+            if (!bRestoreStk)
+                // Increment the refcnt twice
+                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  {del}{each}
 
             break;
 
         case TKT_OP2AFO:            // Anonymous dyadic operator
-            Assert (lpplYYLval->tkToken.tkSynObj EQ soDOP);
+            Assert (lpplYYLval->tkToken.tkSynObj EQ soDOP
+                 || lpplYYLval->tkToken.tkSynObj EQ soDOPN);
+
+            // If we should not restore the token stack ptr, ...
+            if (!bRestoreStk)
+                // Increment the refcnt twice
+                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  {del}{each}
 
             break;
 
         case TKT_AFOGUARD:          // AFO guard
         case TKT_AFORETURN:         // AFO return
-        case TKT_DELAFO:            // Del Anon -- either a function, or a monadic or dyadic operator, bound to its operands
             break;
 
         case TKT_DEL:               // Del -- always a function
@@ -5808,6 +5756,11 @@ PL_YYLEX_FCNNAMED:
                 lpplLocalVars->lptkNext->tkFlags.TknType = TKT_DELAFO;
                      lpplYYLval->tkToken.tkSynObj        =
                 lpplLocalVars->lptkNext->tkSynObj        = soF;
+
+                // If we should not restore the token stack ptr, ...
+                if (!bRestoreStk)
+                    // Increment the refcnt
+                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  {del}{each}
             } else
             {
                 // Mark it as a SYNTAX ERROR
@@ -5830,6 +5783,11 @@ PL_YYLEX_FCNNAMED:
                 //   in both the return value and the token stream
                      lpplYYLval->tkToken.tkData.tkVoid =
                 lpplLocalVars->lptkNext->tkData.tkVoid = MakePtrTypeGlb (lpSISCur->hGlbDfnHdr);
+
+                // If we should not restore the token stack ptr, ...
+                if (!bRestoreStk)
+                    // Increment the refcnt twice
+                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  {del}{del}{each}
 
                 // Split case based upon the function type
                 switch (lpSISCur->DfnType)
@@ -5916,76 +5874,243 @@ PL_YYLEX_FCNNAMED:
             break;
 
         case TKT_OP1NAMED:
-PL_YYLEX_NAMEOP1:
-            Assert (GetPtrTypeDir (lpplYYLval->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-            // If it's NOT an immediate value, ...
-            if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
+PL_YYLEX_OP1NAMED:
+            // If we're not assigning into this name,
+            if (!lpplYYLval->tkToken.tkFlags.bAssignName)
             {
-                // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData);
+                // If we should not restore the token stack ptr,
+                if (!bRestoreStk)
+                {
+                    // If it's an immediate, ...
+                    if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
+                    {
+////////////////////////// If the function is a hybrid, ...
+////////////////////////if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType EQ IMMTYPE_PRIMOP3)
+////////////////////////    // Mark is as a hybrid
+////////////////////////    lpplYYLval->tkToken.tkSynObj = soHY;
+////////////////////////else
+                            // Mark it as a MOP so it can't be re-assigned.
+                            lpplYYLval->tkToken.tkSynObj = soMOP;   // N.B.:  No immediate MOPNs
 
-                // Check the function valence
-                if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
-                    lpplYYLval->tkToken.tkSynObj = soMOPN;
-                else
-                    lpplYYLval->tkToken.tkSynObj = soMOP;
+                        // Convert this to an unnamed immediate op1
+                        lpplYYLval->tkToken.tkFlags.TknType   = TKT_OP1IMMED;
+                        lpplYYLval->tkToken.tkFlags.ImmType   = lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType;
+                        lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
+                    } else
+                    // If it's not a (named) direct fcn/opr ...
+                    if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
+                    {
+                        // Get the global memory handle
+                        hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
 
-                // We no longer need this ptr
-                MyGlobalUnlock (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData); lpMemDfnHdr = NULL;
+                        // Split cases based upon the array signature
+                        switch (GetSignatureGlb_PTB (hGlbFcn))
+                        {
+                            case FCNARRAY_HEADER_SIGNATURE:
+                                DbgBrk ();      // How do we ever get here?
+
+                                // Lock the memory to get a ptr to it
+                                lpMemHdrFcn = MyGlobalLock (hGlbFcn);
+
+                                // Convert this to an unnamed global fcn array
+                                lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+                                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
+                                lpplYYLval->tkToken.tkSynObj          = soMOP;      // ***FIXME*** -- can this ever be soMOPN ???
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
+
+                                // Increment the RefCnt of each item
+                                DbgIncrRefCntFcnArray (hGlbFcn);
+
+                                break;
+
+                            case DFN_HEADER_SIGNATURE:
+                                // Lock the memory to get a ptr to it
+                                lpMemDfnHdr = MyGlobalLock (hGlbFcn);
+
+#if FALSE       // Enable this code when we have a TKT_OP1DFN
+                                // Convert this to an unnamed global fcn array
+                                lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_OP1AFO : TKT_OP1DFN;
+                                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
+////////////////////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
+#endif
+                                // Check the function valence
+                                if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
+                                    lpplYYLval->tkToken.tkSynObj = soMOPN;
+                                else
+                                    lpplYYLval->tkToken.tkSynObj = soMOP;
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
+
+                                // Increment the refcnt
+                                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  Any named OP2
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+////                    // Increment the refcnt
+////                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  Any named OP1
+                    } // End IF/ELSE/...
+
+                    // If the SynObj is still the default, ...
+                    if (lpplYYLval->tkToken.tkSynObj EQ soA)
+                        // Mark it as a MOP so it can't be re-assigned.
+                        lpplYYLval->tkToken.tkSynObj = soMOP;
+                } // End IF
             } else
-                // Set the tkSynObj
-                lpplYYLval->tkToken.tkSynObj = soMOP;
-
-            // If the name is assigned into, ...
-            if (lpplLocalVars->lptkNext->tkFlags.bAssignName)
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 
             break;
 
         case TKT_OP2NAMED:
-PL_YYLEX_NAMEOP2:
+PL_YYLEX_OP2NAMED:
+            // If we're not assigning into this name,
+            if (!lpplYYLval->tkToken.tkFlags.bAssignName)
+            {
+                // If we should not restore the token stack ptr,
+                if (!bRestoreStk)
+                {
+                    // If it's an immediate, ...
+                    if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
+                    {
+////////////////////////// If the function is a hybrid, ...
+////////////////////////if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType EQ IMMTYPE_PRIMOP3)
+////////////////////////    // Mark is as a hybrid
+////////////////////////    lpplYYLval->tkToken.tkSynObj = soHY;
+////////////////////////else
+                            // Mark it as a DOP so it can't be re-assigned.
+                            lpplYYLval->tkToken.tkSynObj = soDOP;   // N.B.:  No immediate DOPNs
+
+                        // Convert this to an unnamed immediate op2
+                        lpplYYLval->tkToken.tkFlags.TknType   = TKT_OP2IMMED;
+                        lpplYYLval->tkToken.tkFlags.ImmType   = lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType;
+                        lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
+                    } else
+                    // If it's not a (named) direct fcn/opr, ...
+                    if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
+                    {
+                        // Get the global memory handle
+                        hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
+
+                        // Split cases based upon the array signature
+                        switch (GetSignatureGlb_PTB (hGlbFcn))
+                        {
+                            case FCNARRAY_HEADER_SIGNATURE:
+                                DbgBrk ();      // How do we ever get here?
+
+                                // Lock the memory to get a ptr to it
+                                lpMemHdrFcn = MyGlobalLock (hGlbFcn);
+
+                                // Convert this to an unnamed global fcn array
+                                lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+                                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
+                                lpplYYLval->tkToken.tkSynObj          = soDOP;      // ***FIXME*** -- can this ever be soDOPN ???
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
+
+                                // Increment the RefCnt of each item
+                                DbgIncrRefCntFcnArray (hGlbFcn);
+
+                                break;
+
+                            case DFN_HEADER_SIGNATURE:
+                                // Lock the memory to get a ptr to it
+                                lpMemDfnHdr = MyGlobalLock (hGlbFcn);
+
+#if FALSE       // Enable this code when we have a TKT_OP2DFN
+                                // Convert this to an unnamed global fcn array
+                                lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_OP2AFO : TKT_OP2DFN;
+                                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
+////////////////////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
+#endif
+                                // Check the function valence
+                                if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
+                                    lpplYYLval->tkToken.tkSynObj = soDOPN;
+                                else
+                                    lpplYYLval->tkToken.tkSynObj = soDOP;
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
+
+                                // Increment the refcnt
+                                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  Any named OP2
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End IF
+
+                    // If the SynObj is still the default, ...
+                    if (lpplYYLval->tkToken.tkSynObj EQ soA)
+                        // Mark it as an DOP so it can't be re-assigned.
+                        lpplYYLval->tkToken.tkSynObj = soDOP;
+                } // End IF
+            } else
+                lpplYYLval->tkToken.tkSynObj = soNAM;
+
+            break;
+
+        case TKT_OP3NAMED:
+PL_YYLEX_OP3NAMED:
             Assert (GetPtrTypeDir (lpplYYLval->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // If it's NOT an immediate value, ...
-            if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
+            // If it's not a direct fcn/opr, ...
+            if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
             {
-                // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData);
+                // If we're not assigning into this name,
+                if (!lpplYYLval->tkToken.tkFlags.bAssignName)
+                {
+                    // If we should not restore the token stack ptr,
+                    if (!bRestoreStk)
+                    {
+                        // If it's an immediate, ...
+                        if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
+                        {
+                            // Convert the named OP3 to an immediate OP3
+                            lpplYYLval->tkToken.tkFlags.TknType   = TKT_OP3IMMED;
+                            lpplYYLval->tkToken.tkFlags.ImmType   = IMMTYPE_PRIMOP3;
+                            lpplYYLval->tkToken.tkSynObj          = soHY;
+                            lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
+                        } else
+                        {
+                            // Convert this to an unnamed global fcn
+                            lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
 
-                // Check the function valence
-                if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
-                    lpplYYLval->tkToken.tkSynObj = soDOPN;
-                else
-                    lpplYYLval->tkToken.tkSynObj = soDOP;
+                            // Copy the memory in case the hybrid changes to a function or operator
+                            lpplYYLval->tkToken.tkData .tkGlbData = CopyArray_EM (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData, NULL);    //lptkFunc);
 
-                // We no longer need this ptr
-                MyGlobalUnlock (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData); lpMemDfnHdr = NULL;
-            } else
-                // Set the tkSynObj
-                lpplYYLval->tkToken.tkSynObj = soDOP;
+                            // If it succeeded, ...
+                            if (lpplYYLval->tkToken.tkData.tkGlbData NE NULL)
+                                // Make it a global ptr
+                                lpplYYLval->tkToken.tkData.tkGlbData = MakePtrTypeGlb (lpplYYLval->tkToken.tkData.tkGlbData);
+////                        else
+////                            goto WSFULL_EXIT;       // ***FIXME***
+
+                            //***************************************************************************
+                            // N.B.:  By not incrementing the RefCnt, this array will be deleted at the end
+                            //***************************************************************************
+                        } // End IF/ELSE
+
+                        // Mark it as a hybrid so it can't be re-assigned
+                        lpplYYLval->tkToken.tkSynObj = soHY;
+                    } // End IF
+                } else
+                    lpplYYLval->tkToken.tkSynObj = soNAM;
+            } // End IF
 
             // If the name is assigned into, ...
             if (lpplLocalVars->lptkNext->tkFlags.bAssignName)
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 
             break;
-
-        case TKT_OP3NAMED:
-PL_YYLEX_NAMEOP3:
-            Assert (GetPtrTypeDir (lpplYYLval->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-            // Convert the named OP3 to an immediate OP3
-            lpplYYLval->tkToken.tkFlags.TknType = TKT_OP3IMMED;
-            lpplYYLval->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP3;
-            lpplYYLval->tkToken.tkSynObj        = soHY;
-            lpplYYLval->tkToken.tkData.tkChar   = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
-
-            // If the name is assigned into, ...
-            if (lpplLocalVars->lptkNext->tkFlags.bAssignName)
-                lpplYYLval->tkToken.tkSynObj = soNAM;
-
-            goto PL_YYLEX_OP3IMMED;
 
         case TKT_OP1IMMED:
             Assert (lpplYYLval->tkToken.tkSynObj EQ soMOP);
@@ -6025,7 +6150,7 @@ PL_YYLEX_NAMEOP3:
                     {
                         // Change the token type
                         lpplYYLval->tkToken.tkFlags.TknType = TKT_FILLJOT;
-                        lpplYYLval->tkToken.tkSynObj = soF;
+                        lpplYYLval->tkToken.tkSynObj        = soF;
                     } // End IF
 
                     break;
@@ -6037,7 +6162,8 @@ PL_YYLEX_NAMEOP3:
             break;
 
         case TKT_OP3IMMED:
-PL_YYLEX_OP3IMMED:
+            Assert (lpplYYLval->tkToken.tkSynObj EQ soHY);
+
             break;
 
         case TKT_OPJOTDOT:
@@ -6127,8 +6253,6 @@ PL_YYLEX_OP3IMMED:
         lpplLocalVars->lptkNext = lptkOrigNext;
 
     Assert (IsValidSO (lpplYYLval->tkToken.tkSynObj));
-
-    return lpplYYLval;
 } // End pl_yylexCOM
 #undef  APPEND_NAME
 
@@ -6272,7 +6396,9 @@ LPWCHAR LSTACK
 
                     default:
                         // Mark it as a SYNTAX ERROR
-                        DbgStop ();
+                        lptkNext->tkSynObj = soSYNR;
+
+                        DbgStop ();         // #ifdef DEBUG
 
                         break;
                 } // End SWITCH
@@ -6778,45 +6904,13 @@ LPPL_YYSTYPE plExecuteFn0
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
-    // If this function is in the process of being stranded, ...
-    if (lpYYFn0->YYStranding)
-    {
-        // Turn this function strand into a function
-        lpYYRes =
-          MakeFcnStrand_EM_YY (lpYYFn0, NAMETYPE_FN0, FALSE);
+    Assert (lpYYFn0->lpplYYArgCurry EQ NULL);
+    Assert (lpYYFn0->lpplYYIdxCurry EQ NULL);
+    Assert (lpYYFn0->lpplYYFcnCurry EQ NULL);
+    Assert (lpYYFn0->lpplYYOpRCurry EQ NULL);
 
-        // YYFree the argument object
-        YYFree (lpYYFn0); lpYYFn0 = NULL; // curSynObj = soNONE;
-
-        // If not defined, ...
-        if (!lpYYRes)
-            goto ERROR_EXIT;
-
-        // Copy to the argument ptr
-        lpYYFn0 = lpYYRes;
-        lpYYRes = NULL;
-    } else
-    {
-        HGLOBAL      hGlbData;              // Global memory handle
-        LPDFN_HEADER lpMemDfnHdr;           // Ptr to UDFO/AFO header
-
-        // Get the global memory handle
-        hGlbData = GetGlbHandle (&lpYYFn0->tkToken);
-
-        // Increment the RefCnt iff this function is not an AFO
-
-        // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbData);
-
-        // If it's not an AFO, ...
-        if (!lpMemDfnHdr->bAFO)
-        {
-            DbgIncrRefCntDir_PTB (hGlbData);
-        } // End IF
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
-    } // End IF/ELSE
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpYYFn0, NAMETYPE_FN0, FALSE);
 
     // Execute the Niladic Function and replace the argument object with the result
     lpYYRes =
@@ -6828,7 +6922,7 @@ LPPL_YYSTYPE plExecuteFn0
     // Check for error
     if (lpYYRes)
         lpYYRes->tkToken.tkSynObj = soA;
-ERROR_EXIT:
+
     return lpYYRes;     // Might be NULL
 } // End plExecuteFn0
 

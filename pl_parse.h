@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,32 +27,35 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
     //   we might need it to be an LPPL_YYSTYPE (for a function strand)
     //   or an LPTOKEN (single function).
     TOKEN   tkToken;                // 00:  Token info (28 bytes)
-    UINT    TknCount;               // 1C:  Token count
+    UINT    TknCount;               // 1C:  Count of adjacent tokens including this one
     UINT    YYInuse:1,              // 20:  00000001:  This entry is in use
             YYIndirect:1,           //      00000002:  Arg is indirect
-            YYCopyArray:1,          //      00000004:  it's been copied, so it needs to be freed
-            YYPerm:1,               //      00000008:  Item is permanent, don't free
-            YYStranding:1,          //      00000010:  Item is in the process of being stranded
+            YYPerm:1,               //      00000004:  Item is permanent, don't free
+            YYStranding:1,          //      00000008:  Item is in the process of being stranded
 #ifdef DEBUG
-            :3,                     //      000000E0:  Available bits
-            YYIndex:24;             //      FFFFFF00:  Index #
+            :3,                     //      00000070:  Available bits
+            YYIndex:25;             //      FFFFFF80:  Index #
 #else
-            :27;                    //      FFFFFFE0:  Available bits
+            :28;                    //      FFFFFFF0:  Available bits
 #endif
     struct tagPL_YYSTYPE
            *lpYYFcnBase,            // 24:  Ptr to base function/operator
                                     //      Not valid outside the enclosing
                                     //        invocation of ParseLine
-           *lpYYStrandBase;         // 28:  Ptr to this token's strand base
-    LPTOKEN lptkLftBrace,           // 2C:  Ptr to the AFO's left brace token
-            lptkRhtBrace;           // 30:  ...                                      right ...
+           *lpYYStrandBase,         // 28:  Ptr to this token's strand base
+           *lpplYYArgCurry,         // 2C:  Ptr to left argument curry
+           *lpplYYIdxCurry,         // 30:  Ptr to axis curry
+           *lpplYYFcnCurry,         // 34:  ...         function ...
+           *lpplYYOpRCurry;         // 38:  ...    right operand ...
+    LPTOKEN lptkLftBrace,           // 3C:  Ptr to the AFO's left brace token
+            lptkRhtBrace;           // 40:  ...              right ...
 #ifdef DEBUG
-    UINT    SILevel;                // 34:  SI Level (needed for YYResIsEmpty)
-    LPCHAR  lpFileName;             // 38:  Ptr to filename where allocated
-    UINT    uLineNum;               // 3C:  Line # where allocated
-                                    // 40:  Length
+    UINT    SILevel;                // 44:  SI Level (needed for YYResIsEmpty)
+    LPCHAR  lpFileName;             // 48:  Ptr to filename where allocated
+    UINT    uLineNum;               // 4C:  Line # where allocated
+                                    // 50:  Length
 #else
-                                    // 34:  Length
+                                    // 44:  Length
 #endif
 } PL_YYSTYPE, *LPPL_YYSTYPE;        // Data type of yacc stack
 
@@ -102,18 +105,15 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                    lpYYStrArrBase [STRAND_LEN],   // 3C:  ...          base (dynamic) ...
                    lpYYStrArrNext [STRAND_LEN];   // 4C:  ...          next token (dynamic)
     HWND           hWndSM;              // 5C:  Window handle to Session Manager
-    LPPL_YYSTYPE   lpplYYArgCurry,      // 60:  Ptr to left argument curry
-                   lpplYYFcnCurry,      // 64:  ...         function ...
-                   lpplYYIdxCurry;      // 68:  ...         index    ...
     struct tagPLLOCALVARS
-                  *lpPLPrev;            // 6C:  Ptr to previous PLLOCALVARS struct
+                  *lpPLPrev;            // 60:  Ptr to previous PLLOCALVARS struct
                                         //      in thread creation order (NULL = none)
-    UINT           uLineNum,            // 70:  Function line # (1 for execute or immexec)
-                   uTokenCnt;           // 74:  # tokens in the function line
-    HGLOBAL        hGlbDfnHdr;          // 78:  User-defined function/operator global memory handle (NULL = execute/immexec)
-    TOKEN          tkSelSpec;           // 7C:  TOKEN for Selective Specification (28 bytes)
-    struct tagPERTABDATA *lpMemPTD;     // 98:  Ptr to PerTabData global memory
-                                        // 9C:  Length
+    UINT           uLineNum,            // 64:  Function line # (1 for execute or immexec)
+                   uTokenCnt;           // 68:  # tokens in the function line
+    HGLOBAL        hGlbDfnHdr;          // 6C:  User-defined function/operator global memory handle (NULL = execute/immexec)
+    TOKEN          tkSelSpec;           // 70:  TOKEN for Selective Specification (28 bytes)
+    struct tagPERTABDATA *lpMemPTD;     // 8C:  Ptr to PerTabData global memory
+                                        // 90:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

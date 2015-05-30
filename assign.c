@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -963,7 +963,7 @@ UBOOL AssignNamedVars_EM
                 // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
 
-                DbgDecrRefCntTkn (&tkToken);
+                DbgDecrRefCntTkn (&tkToken);    // EXAMPLE:  (a b c){is}1 2 3x
             } // End FOR
 
             break;
@@ -989,7 +989,7 @@ UBOOL AssignNamedVars_EM
                 // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
 
-                DbgDecrRefCntTkn (&tkToken);
+                DbgDecrRefCntTkn (&tkToken);    // EXAMPLE:  (a b c){is}1 2 3v
             } // End FOR
 
             break;

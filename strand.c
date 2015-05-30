@@ -161,99 +161,6 @@ LPPL_YYSTYPE PushVarStrand_YY
 
 
 //***************************************************************************
-//  $DbgPushFcnStrand_YY
-//
-//  Local debugging version of <PushFcnStrand>
-//***************************************************************************
-
-LPPL_YYSTYPE DbgPushFcnStrand_YY
-    (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to the incoming argument
-     int          TknCount,         // Token count
-     UBOOL        bIndirect,        // TRUE iff lpYYArg is indirect
-     LPCHAR       lpFileName,       // Ptr to filename
-     UINT         uLine)            // Line #
-
-{
-    dprintfWL0 (L"PushFcnStrand:  (%s) TknCount (%d) %s (%S#%d)",
-                soNames[lpplYYCurObj->tkToken.tkSynObj],
-                TknCount,
-                bIndirect ? L"INDIRECT"
-                          : L"DIRECT",
-                lpFileName,
-                uLine);
-
-    return PushFcnStrand_YY (lpplYYCurObj, TknCount, bIndirect);
-} // End DbgPushFcnStrand_YY
-
-
-//***************************************************************************
-//  $PushFcnStrand_YY
-//
-//  Push a function token onto the strand stack.
-//
-//  On exit:
-//      No change in RefCnt.
-//***************************************************************************
-
-LPPL_YYSTYPE PushFcnStrand_YY
-    (LPPL_YYSTYPE lpYYArg,          // Ptr to the incoming argument
-     int          TknCount,         // Token count
-     UBOOL        bIndirect)        // TRUE iff lpYYArg is indirect
-
-{
-    LPPL_YYSTYPE  lpYYRes,          // Ptr to the result
-                  lpYYCopy;         // Ptr to local copy
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
-
-    Assert (!lpYYArg->YYStranding);
-
-    // Get this thread's LocalVars ptr
-    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
-
-    lpYYArg->TknCount   = TknCount;
-    lpYYArg->YYIndirect = bIndirect;
-
-    // Copy the strand base to the result
-    lpYYArg->lpYYStrandBase = lpplLocalVars->lpYYStrArrBase[STRAND_FCN];
-    if (lpYYArg->lpYYFcnBase EQ NULL)
-        lpYYArg->lpYYFcnBase = lpplLocalVars->lpYYStrArrNext[STRAND_FCN];
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    YYCopy (lpYYRes, lpYYArg);
-
-    // Mark as in the process of being stranded and not
-    lpYYRes->YYStranding = TRUE;
-    lpYYArg->YYStranding = FALSE;
-
-    // Return our own position so the next user
-    //   of this token can refer to it.
-    lpYYRes->lpYYFcnBase = lpplLocalVars->lpYYStrArrNext[STRAND_FCN];
-
-    // Save this token on the strand stack
-    //   and skip over it
-    // Copy the entire token w/o changing the RefCnt
-    lpYYCopy = CopyPL_YYSTYPE_YY (lpYYArg);
-    __try
-    {
-        YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_FCN]++, lpYYCopy);
-    } __except (CheckException (GetExceptionInformation (), L"PushFcnStrand_YY"))
-    {
-        YYFree (lpYYRes); lpYYRes = NULL;
-    } // End __try/__except
-
-    YYFree (lpYYCopy); lpYYCopy = NULL;
-#ifdef DEBUG
-    // Display the strand stack
-    DisplayStrand (STRAND_FCN);
-#endif
-    return lpYYRes;
-} // End PushFcnStrand_YY
-
-
-//***************************************************************************
 //  $StripStrand
 //
 //  Strip a strand from the strand stack
@@ -270,7 +177,7 @@ void StripStrand
     if (lpplLocalVars->lpYYStrArrBase[strType] NE lpplLocalVars->lpYYStrArrStart[strType])
     {
         Assert (lpplLocalVars->lpYYStrArrStart[strType] <= lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase);
-        Assert (                                           lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase <= lpplLocalVars->lpYYStrArrNext[strType]);
+        Assert (                                           lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase < lpplLocalVars->lpYYStrArrNext[strType]);
 
         lpplLocalVars->lpYYStrArrBase[strType] = lpplLocalVars->lpYYStrArrBase[strType][-1].lpYYStrandBase;
     } // End IF
@@ -746,6 +653,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 switch (lpYYStrand->tkToken.tkFlags.TknType)
                 {
                     case TKT_VARNAMED:
+                        // This DEBUG stmt probably never is triggered because
+                        //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+                        DbgStop ();             // ***Probably never executed***
+#endif
                         // tkData is an LPSYMENTRY
                         Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -795,6 +707,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 switch (lpYYStrand->tkToken.tkFlags.TknType)
                 {
                     case TKT_VARNAMED:      // e.g., a named variable that is not a simple scalar
+                        // This DEBUG stmt probably never is triggered because
+                        //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+                        DbgStop ();             // ***Probably never executed***
+#endif
                         // tkData is an LPSYMENTRY
                         Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -1363,10 +1280,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // Get and lock the global ptrs
                     GetGlbPtrs_LOCK (&lpYYToken->tkToken, &hGlbNum, &lpMemNum);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemNum)
                     // Skip over the header and dimensions to the data
                     lpMemNum = VarArrayDataFmBase (lpMemNum);
-#undef  lpHeader
+
                     // Get the numeric strand immediate type
                     immTypeNum = TranslateArrayTypeToImmType (aplTypeNum);
 
@@ -1838,73 +1754,38 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $DbgMakeFcnStrand_EM_YY
+//  $UnFcnStrand_EM
 //
-//  Local debugging version of <MakeFcnStrand>
-//***************************************************************************
-
-LPPL_YYSTYPE DbgMakeFcnStrand_EM_YY
-    (LPPL_YYSTYPE lpplYYCurObj,     // Ptr to incoming token
-     NAME_TYPES   fnNameType,       // Type of the strand
-     UBOOL        bSaveTxtLine,     // TRUE iff we should save the line text
-     LPCHAR       lpFileName,       // Ptr to filename
-     UINT         uLine)            // Line #
-
-{
-    dprintfWL0 (L"MakeFcnStrand:  (%s) fnNameType (%s) bSaveTxtLine (%s) (%S#%d)",
-                soNames[lpplYYCurObj->tkToken.tkSynObj],
-                lpwNameTypeStr[fnNameType],
-                bSaveTxtLine ? L"TRUE"
-                             : L"FALSE",
-                lpFileName,
-                uLine);
-    return MakeFcnStrand_EM_YY (lpplYYCurObj, fnNameType, bSaveTxtLine);
-} // End DbgMakeFcnStrand_EM_YY
-
-
-//***************************************************************************
-//  $MakeFcnStrand_EM_YY
-//
-//  Make the function strand into an immediate token or a global memory array.
-//
-//  On exit:
-//      RefCnt++ at all levels.
+//  Unstrand a function into a function array or train
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeFcnStrand_EM_YY"
+#define APPEND_NAME     L" -- UnFcnStrand_EM"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE MakeFcnStrand_EM_YY
-    (LPPL_YYSTYPE lpYYArg,          // Ptr to incoming token
-     NAME_TYPES   fnNameType,       // Type of the strand
-     UBOOL        bSaveTxtLine)     // TRUE iff we should save the line text
+UBOOL UnFcnStrand_EM
+    (LPPL_YYSTYPE *lp2YYArg,        // Ptr to ptr to incoming token
+     NAME_TYPES    fnNameType,      // Type of the strand
+     UBOOL         bSaveTxtLine)    // TRUE iff we should save the line text
 
 {
-    NAME_TYPES    actNameType;      // Actual type of the strand
-    UINT          uIniLen,          // Initial strand length
-                  uActLen,          // Actual  ...
-                  uCnt,             // Loop counter
-                  TknCount;         // Token count
-    APLUINT       ByteRes;          // # bytes in the result
-    HGLOBAL       hGlbStr;
-    LPVOID        lpMemStr;
-    LPPL_YYSTYPE  lpYYStrand,
-                  lpYYMemStart,
-                  lpYYMemData,
-                  lpYYBase = (LPPL_YYSTYPE) -1,
-                  lpYYRes;          // Ptr to the result
-    UBOOL         bRet = TRUE;      // TRUE iff the result is valid
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
-    SYSTEMTIME    systemTime;       // Current system (UTC) time
+    LPPL_YYSTYPE      lpYYRes,          // Ptr to the result
+                      lpYYMemStart,     // Ptr to start of strand data
+                      lpYYMemData,      // ...
+                      lpYYArg = *lp2YYArg;
+    NAME_TYPES        actNameType;      // Actual type of the strand
+    UINT              uIniLen,          // Initial strand length
+                      TknCount;         // Token count
+    APLUINT           ByteRes;          // # bytes in the result
+    HGLOBAL           hGlbStr;          // Strand global memory handle
+    LPFCNARRAY_HEADER lpMemHdrStr;      // Ptr to strand global memory header
+    UBOOL             bRet = FALSE;     // TRUE iff the result is valid
+    LPPLLOCALVARS     lpplLocalVars;    // Ptr to local plLocalVars
+    SYSTEMTIME        systemTime;       // Current system (UTC) time
 
-    DBGENTER;
-
-    Assert (lpYYArg->YYStranding);
-
-    // Reset the stranding flag
+    // Mark as no longer stranding
     lpYYArg->YYStranding = FALSE;
 
     // Get the actual name type of the strand
@@ -1914,223 +1795,123 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     if (actNameType EQ NAMETYPE_TRN)
         fnNameType = NAMETYPE_TRN;
 
-    // Get this thread's LocalVars ptr
-    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    Assert (YYCheckInuse (lpYYRes));
-
-    // Save the base of this strand
-    lpYYStrand              =
-    lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
-
-    // If the arg is a Train, ...
-    if (fnNameType EQ NAMETYPE_TRN)
-        // Count the # elements in the Train
-        uIniLen = (UINT) (lpplLocalVars->lpYYStrArrNext[STRAND_FCN] - lpYYStrand);
-    else
-        // Count the # tokens in the strand
-        uIniLen = YYCountFcnStr (lpYYArg->lpYYFcnBase);
-
-    //***********************************************************************
-    //********** Single Element Case ****************************************
-    //***********************************************************************
-
-    // If there is a single element, pass through the entire token
-    if (IsSingleton (uIniLen))
+    // If it's not a function array, ...
+    if (!IsTknFcnArray (&lpYYArg->tkToken)
+     || lpYYArg->lpplYYIdxCurry NE NULL
+     || lpYYArg->lpplYYOpRCurry NE NULL
+     || lpYYArg->lpplYYFcnCurry NE NULL)
     {
-        // Free the allocated result as CopyPL_YYSTYPE_EM_YY
-        //   will allocate a result
-        YYFree (lpYYRes); lpYYRes = NULL;
+        // Get this thread's LocalVars ptr
+        lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
-        // Copy the function array incrementing the RefCnt
-        lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg->lpYYFcnBase, FALSE);
+        // If the arg is a Train, ...
+        if (fnNameType EQ NAMETYPE_TRN)
+            // Count the # elements in the Train
+            uIniLen = YYCountFcnTrn (lpYYArg);
+        else
+            // Count the # tokens in the strand
+            uIniLen = YYCountFcnStr (lpYYArg);
 
-///     // Copy the entire token w/o changing the RefCnt
-///     lpYYRes = CopyPL_YYSTYPE_YY (lpYYArg->lpYYFcnBase);
-
-        lpYYRes->TknCount = 1;
-        lpYYRes->tkToken.tkFlags.SysNSLvl = lpYYArg->tkToken.tkFlags.SysNSLvl;
-
-        lpYYRes->tkToken.tkSynObj = TranslateNameTypeToSOType (fnNameType);
-
-        lpYYBase = lpYYArg->lpYYFcnBase;
-        lpYYRes->lpYYFcnBase = NULL;            // No longer valid
-
-        Assert (YYCheckInuse (lpYYRes));
-
-        goto NORMAL_EXIT;
-    } // End IF
-
-    //***********************************************************************
-    //********** Multiple Element Case **************************************
-    //***********************************************************************
-
-    // In some cases, the following count (iLen) might be larger than needed
-    //   because it may count some elements of the result twice because of
-    //   calls to PushFcnStrand_YY on the same argument (perhaps once for PRIMFCN,
-    //   and later on once for LeftFunc).  The overcount is harmless and ignored.
-
-    // Calculate the # bytes we'll need for the header and data
-    ByteRes = CalcFcnSize (uIniLen);
-
-    // Check for overflow
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
-
-    // Allocate global memory for the function array
-    hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (hGlbStr EQ NULL)
-        goto WSFULL_EXIT;
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
-    lpYYRes->tkToken.tkSynObj          = TranslateNameTypeToSOType (fnNameType);
-    lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
-
-    Assert (YYCheckInuse (lpYYRes));
-
-    // Lock the memory to get a ptr to it
-    lpMemStr = MyGlobalLock (hGlbStr);
-
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
-    // Fill in the header
-    lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
-    lpHeader->fnNameType  = fnNameType;
-    lpHeader->RefCnt      = 1;
-    lpHeader->tknNELM     = uIniLen;
-
-    // Get the current system (UTC) time
-    GetSystemTime (&systemTime);
-
-    // Convert system time to file time and save as creation time
-    SystemTimeToFileTime (&systemTime, &lpHeader->ftCreation);
-
-    // Use the same time as the last modification time
-    lpHeader->ftLastMod = lpHeader->ftCreation;
-
-    Assert (YYCheckInuse (lpYYRes));
-
-    // Skip over the header to the data (PL_YYSTYPEs)
-    lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
-
-    // If it's a Train, ...
-    if (fnNameType EQ NAMETYPE_TRN)
-    {
-        // Copy the individual function strands to the result
-        for (uCnt = 0; uCnt < uIniLen; uCnt++)
+        // If there is a single element, pass through the entire token
+        if (IsSingleton (uIniLen))
         {
-            LPPL_YYSTYPE lpYYTmp = &lpYYStrand[uCnt];
+            //***********************************************************************
+            //********** Single Element Case ****************************************
+            //***********************************************************************
 
-            // If this item is an array of functions, ...
-            if (lpYYTmp->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
-            {
-                LPFCNARRAY_HEADER lpFcnHdr;
-                HGLOBAL           hGlbFcn;
+            // Copy the entire token w/o changing the RefCnt
+            lpYYRes = CopyPL_YYSTYPE_YY (lpYYArg);
 
-                // Get the global memory handle
-                hGlbFcn = GetGlbDataToken (&lpYYTmp->tkToken);
+            lpYYRes->TknCount = 1;
+            lpYYRes->tkToken.tkFlags.SysNSLvl = lpYYArg->tkToken.tkFlags.SysNSLvl;
 
-                // Lock the memory to get a ptr to it
-                lpFcnHdr = MyGlobalLock (hGlbFcn);
+            lpYYRes->tkToken.tkSynObj = TranslateNameTypeToSOType (fnNameType);
+        } else
+        {
+            //***********************************************************************
+            //********** Multiple Element Case **************************************
+            //***********************************************************************
 
-                // If the function array is a train,
-                //   or the arg is a train, ...
-                if (lpFcnHdr->fnNameType EQ NAMETYPE_TRN
-                 ||           fnNameType EQ NAMETYPE_TRN)
-                    // Copy the entire token w/o changing the RefCnt
-                    lpYYTmp = CopyPL_YYSTYPE_YY (lpYYTmp);
-                else
-                    // Copy the function array incrementing the RefCnt
-                    lpYYTmp = CopyPL_YYSTYPE_EM_YY (lpYYTmp, FALSE);
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
 
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbFcn); lpFcnHdr = NULL;
-            } else
-                // Copy the function array incrementing the RefCnt
-                lpYYTmp = CopyPL_YYSTYPE_EM_YY (&lpYYStrand[uCnt], FALSE);
+            // Calculate the # bytes we'll need for the header and data
+            ByteRes = CalcFcnSize (uIniLen);
 
-            // Save the result in memory
-            lpYYMemData[uCnt] = *lpYYTmp;
+            // Check for overflow
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
 
-            // Free the result as CopyPL_YYSTYPE_EM_YY
-            //   will allocate a result
-            YYFree (lpYYTmp); lpYYTmp = NULL;
-        } // End FOR
+            // Allocate global memory for the function array
+            hGlbStr = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+            if (hGlbStr EQ NULL)
+                goto WSFULL_EXIT;
 
-        // Find the earliest function base,
-        //   incrementing TknCount and lpYYMemData
-        for (TknCount = 0; TknCount < uIniLen; TknCount++, lpYYMemData++)
-            lpYYBase = min (lpYYBase, lpYYMemData->lpYYFcnBase);
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
+            lpYYRes->tkToken.tkSynObj          = TranslateNameTypeToSOType (fnNameType);
+            lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrStr = MyGlobalLock (hGlbStr);
+
+            // Fill in the header
+            lpMemHdrStr->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
+            lpMemHdrStr->fnNameType  = fnNameType;
+            lpMemHdrStr->RefCnt      = 1;
+            lpMemHdrStr->tknNELM     = uIniLen;
+
+            // Get the current system (UTC) time
+            GetSystemTime (&systemTime);
+
+            // Convert system time to file time and save as creation time
+            SystemTimeToFileTime (&systemTime, &lpMemHdrStr->ftCreation);
+
+            // Use the same time as the last modification time
+            lpMemHdrStr->ftLastMod = lpMemHdrStr->ftCreation;
+
+            // Skip over the header to the data (PL_YYSTYPEs)
+            lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemHdrStr);
+
+            // Initialize token count
+            TknCount = 0;
+
+            // If it's a Train, ...
+            if (fnNameType EQ NAMETYPE_TRN)
+                // Copy the PL_YYSTYPEs in the Train to the global memory
+                lpYYMemData = YYCopyFcnTrn (lpYYMemData, lpYYArg, &TknCount);
+            else
+                // Copy the PL_YYSTYPEs in the Function Strand to the global memory
+                lpYYMemData = YYCopyFcnStr (lpYYMemData, lpYYArg, &TknCount);
+
+           if (bSaveTxtLine)
+               // Make a function array text line
+               MakeTxtLine (lpMemHdrStr);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbStr); lpMemHdrStr = NULL;
+        } // End IF/ELSE
+
+        // If the old YYSTYPE is still inuse, ...
+        if ((*lp2YYArg)->YYInuse)
+        {
+            // YYFree the old value
+            YYFree (*lp2YYArg); *lp2YYArg = NULL;
+        } // End IF
+
+        // Copy the new value into the result
+        *lp2YYArg = lpYYRes;
+#ifdef DEBUG
     } else
     {
-        // Initialize token count
-        TknCount = 0;
-
-        // Copy the PL_YYSTYPEs to the global memory object
-        lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount);
+        nop ();
+#endif
     } // End IF/ELSE
 
-    // Calculate the actual length
-    lpHeader->tknNELM = uActLen = (UINT) (lpYYMemData - lpYYMemStart);
-#undef  lpHeader
-
-    Assert (TknCount EQ uIniLen);
-    Assert (uActLen  EQ uIniLen);
-
-    // Zap all occurrences of <lpYYFcnBase> as they are no longer valid
-    for (uCnt = 0; uCnt < uActLen; uCnt++)
-        lpYYMemStart[uCnt].lpYYFcnBase = NULL;
-
-    if (bSaveTxtLine)
-    {
-        LPFCNARRAY_HEADER lpHeader;         // Ptr to function array header
-
-        // Lock the memory to get a ptr to it
-        lpHeader = MyGlobalLock (hGlbStr);
-
-        // Make a function array text line
-        MakeTxtLine (lpHeader);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbStr); lpHeader = NULL;
-    } // End IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbStr); lpMemStr = lpYYMemData = lpYYMemStart = NULL;
-
-    Assert (YYCheckInuse (lpYYRes));
-
-    Assert (TknCount EQ uActLen);
-
-    // Save the token & function counts
-    lpYYRes->TknCount = TknCount;
-#ifdef DEBUG
-    if (hGlbStr)
-        // Display the function array
-        DisplayFcnArr (hGlbStr);
-#endif
-NORMAL_EXIT:
-    lpYYRes->lpYYStrandBase  = lpplLocalVars->lpYYStrArrBase[STRAND_FCN] = lpYYBase;
-
-    Assert (YYCheckInuse (lpYYRes));
-
-#ifdef DEBUG
-    // Display the strand stack
-    DisplayStrand (STRAND_FCN);
-#endif
-
-    // Strip the tokens on this portion of the strand stack
-    StripStrand (lpplLocalVars, lpYYRes, STRAND_FCN);
-
-    DBGLEAVE;
-
-    return lpYYRes;
+    return TRUE;
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -2138,13 +1919,11 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    // Free the entire function strand stack
-    FreeStrand (lpplLocalVars->lpYYStrArrNext[STRAND_FCN], lpplLocalVars->lpYYStrArrStart[STRAND_FCN]);
+    // YYFree the result
+    YYFree (lpYYRes); lpYYRes = NULL;
 
-    DBGLEAVE;
-
-    YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-} // End MakeFcnStrand_EM_YY
+    return FALSE;
+} // End UnFcnStrand_EM
 #undef  APPEND_NAME
 
 
@@ -2395,8 +2174,9 @@ LPPL_YYSTYPE MakeTrainOp_YY
 
     if (lpYYRes2)
     {
-        // Initialize the token count (TrainOp Arg1 Arg2)
-        lpYYRes2->TknCount = 3;
+        // Initialize the token count
+        //   The (TrainOp Arg1 Arg2) are curried in a linked list
+////////lpYYRes2->TknCount = 0;     // Already zero from <MakePrimOp123_YY>
 
         // Set the token type
         lpYYRes2->tkToken.tkSynObj = soF;
@@ -2844,7 +2624,7 @@ LPPL_YYSTYPE MakeList_EM_YY
             case TKT_VARARRAY:
                 // Set the new token type
                 lpYYRes->tkToken.tkFlags.TknType = TKT_LSTARRAY;
-                DbgIncrRefCntDir_PTB (lpYYRes->tkToken.tkData.tkGlbData);
+                DbgIncrRefCntDir_PTB (lpYYRes->tkToken.tkData.tkGlbData);   // EXAMPLE: f{each}[Y] A
 
                 break;
 
@@ -2860,7 +2640,6 @@ LPPL_YYSTYPE MakeList_EM_YY
 ////////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Set by lpYYRes->tkToken =
 ////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Set by lpYYRes->tkToken =
                     lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData);   // #1A
-////                lpYYRes->tkToken.tkData.tkGlbData  =                lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;    // #1B
 ////////////////////lpYYRes->tkToken.tkCharIndex       =                // Set by lpYYRes->tkToken =
                 } else
                 {
@@ -2937,7 +2716,6 @@ LPPL_YYSTYPE MakeList_EM_YY
 ////////////////lpMemLst->tkFlags.NoDisplay = FALSE;            // Already zero from GHND
                 // Use the following line for a[y;] so that when we free the list, we don't lose y
                 lpMemLst->tkData.tkGlbData  = CopySymGlbDir_PTB (lpSymEntry->stData.stGlbData);     // #2A
-////            lpMemLst->tkData.tkGlbData  =                lpSymEntry->stData.stGlbData;      // #2B
                 lpMemLst->tkCharIndex       = lpYYToken->tkToken.tkCharIndex;
             } // End IF/ELSE
 
@@ -2956,7 +2734,6 @@ LPPL_YYSTYPE MakeList_EM_YY
 ////////////lpMemLst->tkFlags.ImmType   = IMMTYPE_ERROR;        // Already zero from GHND
 ////////////lpMemLst->tkFlags.NoDisplay = FALSE;                // Already zero from GHND
             lpMemLst->tkData.tkGlbData  = CopySymGlbDir_PTB (lpYYToken->tkToken.tkData.tkGlbData);  // #3A
-////        lpMemLst->tkData.tkGlbData  =                lpYYToken->tkToken.tkData.tkGlbData;   // #3B
             lpMemLst->tkCharIndex       = lpYYToken->tkToken.tkCharIndex;
 
             break;
@@ -3089,6 +2866,11 @@ LPTOKEN CopyToken_EM
     switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:      // tkData is LPSYMENTRY
+        // This DEBUG stmt probably never is triggered because
+        //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+            DbgStop ();         // ***Probably never executed***
+#endif
             // Get the LPSYMENTRY
             lpSymEntry = lpToken->tkData.tkSym;
 
@@ -3102,7 +2884,7 @@ LPTOKEN CopyToken_EM
                 Assert (IsGlbTypeVarDir_PTB (lpSymEntry->stData.stGlbData));
 
                 // Increment the reference count in global memory
-                DbgIncrRefCntDir_PTB (lpSymEntry->stData.stGlbData);
+                DbgIncrRefCntDir_PTB (lpSymEntry->stData.stGlbData);    // EXAMPLE:  ***Probably never executed***
 
                 break;          // We're done
             } // End IF
@@ -3129,7 +2911,7 @@ LPTOKEN CopyToken_EM
                 // If it's not a direct function/operator, ...
                 if (!lpToken->tkData.tkSym->stFlags.FcnDir)
                     // Increment the reference count in global memory
-                    DbgIncrRefCntDir_PTB (lpToken->tkData.tkSym->stData.stGlbData);
+                    DbgIncrRefCntDir_PTB (lpToken->tkData.tkSym->stData.stGlbData); // EXAMPLE:  (g {righttack}) R
 
                 break;          // We're done
             } // End IF
@@ -3145,7 +2927,7 @@ LPTOKEN CopyToken_EM
             Assert (IsGlbTypeVarDir_PTB (lpToken->tkData.tkGlbData));
 
             // Increment the reference count in global memory
-            DbgIncrRefCntDir_PTB (lpToken->tkData.tkGlbData);
+            DbgIncrRefCntDir_PTB (lpToken->tkData.tkGlbData);   // EXAMPLE:  {execute}"'abc'"
 
             break;
 
@@ -3159,19 +2941,22 @@ LPTOKEN CopyToken_EM
             // tkData is a valid HGLOBAL UDFO
             Assert (IsGlbTypeDfnDir_PTB (hGlbData));
 
-            // If this function/operator is NOT named, ...
-            if (!IsTknNamedFcnOpr (lpToken))
-                // Increment the reference count in global memory
-                DbgIncrRefCntDir_PTB (hGlbData);
+            // Increment the reference count in global memory
+            DbgIncrRefCntDir_PTB (hGlbData);    // EXAMPLE:  {{omega}}3 4  OR  1{{alpha}+{omega}}3 4
 
             break;
 
         case TKT_FCNARRAY:      // tkData is HGLOBAL
+            // This DEBUG stmt probably never is triggered because
+            //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+            DbgStop ();         // ***Probably never executed***
+#endif
             // tkData is a valid HGLOBAL function array
             Assert (IsGlbTypeFcnDir_PTB (lpToken->tkData.tkGlbData));
 
             // Increment the reference count in global memory
-            DbgIncrRefCntDir_PTB (lpToken->tkData.tkGlbData);
+            DbgIncrRefCntDir_PTB (lpToken->tkData.tkGlbData);   // EXAMPLE:  ***Probably never executed***
 
             break;
 
@@ -3303,8 +3088,9 @@ void UnStrand
             // Set the correct token type
             lpplYYObj->tkToken.tkFlags.TknType = TKT_VARARRAY;
 
-            // Increment the refcnt
-            IncrRefCntTkn (&lpplYYObj->tkToken);
+            // Increment the refcnt (EXAMPLE: 1 2 3 4)
+            // The above token types are, by definition, unnamed
+            DbgIncrRefCntTkn (&lpplYYObj->tkToken);
 
             break;
 

@@ -2134,6 +2134,16 @@ UBOOL fnCtrlDone
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
+    // For :IN, mark the previous name as to be assigned into
+    if (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_IN)
+    {
+        Assert (lptkLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_VARNAMED);
+
+        if (lptkLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_VARNAMED)
+            // Mark the previous token as to be assigned into
+            lptkLocalVars->lptkNext[-1].tkFlags.bAssignName = TRUE;
+    } // End IF
+
     // For selected CS tokens, prepend an additional special token
     if (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_ELSEIF
      || lptkLocalVars->CtrlStrucTknType EQ TKT_CS_CASE

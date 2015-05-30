@@ -511,6 +511,7 @@ void GetNextValueTokenIntoToken
     // Fill in common values
     lptkRes->tkFlags.NoDisplay = FALSE;
     lptkRes->tkCharIndex       = lptkArg->tkCharIndex;
+    lptkRes->tkSynObj          = soA;
 
     // Split cases based upon the token type
     switch (lptkArg->tkFlags.TknType)

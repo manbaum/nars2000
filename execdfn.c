@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -233,6 +233,12 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
             // Free the right operand YYRes
             YYFree (lpYYFcnStrRht);
     } // End IF
+
+    // If the result is valid and not NoValue, ...
+    if (lpYYRes
+     && !IsTokenNoValue (&lpYYRes->tkToken))
+        // Change the SynObj
+        lpYYRes->tkToken.tkSynObj = soA;
 
     return lpYYRes;
 } // End ExecDfnGlb_EM_YY
@@ -513,9 +519,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // Setup the left arg STEs
     if (!InitVarSTEs (lptkLftTmp,
-                 lpMemDfnHdr->numLftArgSTE,
+                      lpMemDfnHdr->numLftArgSTE,
                       (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE)))
-        goto WSFULL_EXIT;
+        goto WSFULL_UNLOCALIZE_EXIT;
     // Setup the left operand STE
     if (lpYYFcnTmpLft
      && lpYYFcnTmpLft->tkToken.tkFlags.TknType NE TKT_FILLJOT)
@@ -524,9 +530,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         if (!IsTknFcnOpr (&lpYYFcnTmpLft->tkToken))
         {
             if (!InitVarSTEs (&lpYYFcnTmpLft->tkToken,
-                          lpMemDfnHdr->steLftOpr NE NULL,
+                               lpMemDfnHdr->steLftOpr NE NULL,
                               &lpMemDfnHdr->steLftOpr))
-                goto WSFULL_EXIT;
+                goto WSFULL_UNLOCALIZE_EXIT;
         } else
         if (!InitFcnSTEs (lpYYFcnTmpLft,
                           lpMemDfnHdr->steLftOpr NE NULL,
@@ -536,9 +542,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // Setup the axis operand STE
     if (!InitVarSTEs (lptkAxis,
-                 lpMemDfnHdr->steAxisOpr NE NULL,
+                      lpMemDfnHdr->steAxisOpr NE NULL,
                      &lpMemDfnHdr->steAxisOpr))
-        goto WSFULL_EXIT;
+        goto WSFULL_UNLOCALIZE_EXIT;
     // Setup the right operand STE
     if (lpYYFcnTmpRht
      && lpYYFcnTmpRht->tkToken.tkFlags.TknType NE TKT_FILLJOT)
@@ -547,9 +553,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         if (!IsTknFcnOpr (&lpYYFcnTmpRht->tkToken))
         {
             if (!InitVarSTEs (&lpYYFcnTmpRht->tkToken,
-                          lpMemDfnHdr->steRhtOpr NE NULL,
+                               lpMemDfnHdr->steRhtOpr NE NULL,
                               &lpMemDfnHdr->steRhtOpr))
-            goto WSFULL_EXIT;
+            goto WSFULL_UNLOCALIZE_EXIT;
         } else
         if (!InitFcnSTEs (lpYYFcnTmpRht,
                           lpMemDfnHdr->steRhtOpr NE NULL,
@@ -559,15 +565,26 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // Setup the right arg STEs
     if (!InitVarSTEs (lptkRhtTmp,
-                 lpMemDfnHdr->numRhtArgSTE,
+                      lpMemDfnHdr->numRhtArgSTE,
                       (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE)))
-        goto WSFULL_EXIT;
+        goto WSFULL_UNLOCALIZE_EXIT;
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-    // Execute the user-defined function/operator
-    lpYYRes =
-      ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
+    __try
+    {
+        // Execute the user-defined function/operator
+        lpYYRes =
+          ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
+    } __except (CheckException (GetExceptionInformation (), L"ExecDfnOprGlb_EM_YY"))
+    {
+        // Unlocalize the STEs on the innermost level
+        //   and strip off one level
+        UnlocalizeSTEs (hGlbDfnHdr);
+
+        // Pass on the exception
+        RaiseException (MyGetExceptionCode (), 0, 0, NULL);
+    } // End __try/__except
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -576,7 +593,7 @@ LEFT_UNLOCALIZE_EXIT:
 UNLOCALIZE_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    UnlocalizeSTEs ();
+    UnlocalizeSTEs (hGlbDfnHdr);
 
     goto NORMAL_EXIT;
 
@@ -624,7 +641,11 @@ RIGHT_SYNTAX_EXIT:
                               &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
 
-WSFULL_EXIT:
+WSFULL_UNLOCALIZE_EXIT:
+    // Unlocalize the STEs on the innermost level
+    //   and strip off one level
+    UnlocalizeSTEs (hGlbDfnHdr);
+
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                               &lpYYFcnStr->tkToken);
     goto ERROR_EXIT;
@@ -672,74 +693,89 @@ void LocalizeAll
     LPSYMENTRY lpSymEntryBeg,           // Ptr to start of SYMENTRYs on the SIS
                lpSymEntryNxt;           // Ptr to next     ...
 
-    // Point to the destination SYMENTRYs
-    lpSymEntryBeg =
-    lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
+    __try
+    {
+        // Point to the destination SYMENTRYs
+        lpSymEntryBeg =
+        lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
 
-    // Copy onto the SIS the current STEs for each local
-    //   and undefine all but the system vars
+        // Copy onto the SIS the current STEs for each local
+        //   and undefine all but the system vars
 
-    // Localize and clear the result STEs
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->numResultSTE,
-                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE),
+        // Localize and clear the result STEs
+        lpSymEntryNxt =
+          LocalizeSymEntries (lpSymEntryNxt,
+                              lpMemDfnHdr->numResultSTE,
+                              (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE),
+                              lpMemPTD);
+        // Localize and clear the left arg STEs
+        lpSymEntryNxt =
+          LocalizeSymEntries (lpSymEntryNxt,
+                              lpMemDfnHdr->numLftArgSTE,
+                              (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE),
+                              lpMemPTD);
+        // Localize and clear the left operand STE
+        lpSymEntryNxt =
+          LocalizeSymEntries (lpSymEntryNxt,
+                              lpMemDfnHdr->steLftOpr NE NULL,
+                             &lpMemDfnHdr->steLftOpr,
+                              lpMemPTD);
+        // Localize and clear the axis operand STE
+        lpSymEntryNxt =
+          LocalizeSymEntries (lpSymEntryNxt,
+                              lpMemDfnHdr->steAxisOpr NE NULL,
+                             &lpMemDfnHdr->steAxisOpr,
+                              lpMemPTD);
+        // Localize and clear the right operand STE
+        lpSymEntryNxt =
+          LocalizeSymEntries (lpSymEntryNxt,
+                              lpMemDfnHdr->steRhtOpr NE NULL,
+                             &lpMemDfnHdr->steRhtOpr,
+                              lpMemPTD);
+        // Localize and clear the right arg STEs
+        lpSymEntryNxt =
+          LocalizeSymEntries (lpSymEntryNxt,
+                              lpMemDfnHdr->numRhtArgSTE,
+                              (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE),
+                              lpMemPTD);
+        // Localize and clear the locals STEs
+        lpSymEntryNxt =
+          LocalizeSymEntries (lpSymEntryNxt,
+                              lpMemDfnHdr->numLocalsSTE,
+                              (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLocalsSTE),
+                              lpMemPTD);
+        // Search for line labels, localize and initialize them
+        lpSymEntryNxt =
+          LocalizeLabels (lpSymEntryNxt,
+                          lpMemDfnHdr,
                           lpMemPTD);
-    // Localize and clear the left arg STEs
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->numLftArgSTE,
-                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE),
-                          lpMemPTD);
-    // Localize and clear the left operand STE
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->steLftOpr NE NULL,
-                         &lpMemDfnHdr->steLftOpr,
-                          lpMemPTD);
-    // Localize and clear the axis operand STE
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->steAxisOpr NE NULL,
-                         &lpMemDfnHdr->steAxisOpr,
-                          lpMemPTD);
-    // Localize and clear the right operand STE
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->steRhtOpr NE NULL,
-                         &lpMemDfnHdr->steRhtOpr,
-                          lpMemPTD);
-    // Localize and clear the right arg STEs
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->numRhtArgSTE,
-                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE),
-                          lpMemPTD);
-    // Localize and clear the locals STEs
-    lpSymEntryNxt =
-      LocalizeSymEntries (lpSymEntryNxt,
-                          lpMemDfnHdr->numLocalsSTE,
-                          (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLocalsSTE),
-                          lpMemPTD);
-    // Search for line labels, localize and initialize them
-    lpSymEntryNxt =
-      LocalizeLabels (lpSymEntryNxt,
-                      lpMemDfnHdr,
-                      lpMemPTD);
-    // Save the # LPSYMENTRYs localized
-    lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
+        // Save the # LPSYMENTRYs localized
+        lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
 
-    Assert (lpMemPTD->lpSISNxt->numSymEntries EQ
-            (lpMemDfnHdr->numResultSTE
-           + lpMemDfnHdr->numLftArgSTE
-           + (lpMemDfnHdr->steLftOpr NE NULL)
-           + (lpMemDfnHdr->steAxisOpr NE NULL)
-           + (lpMemDfnHdr->steRhtOpr NE NULL)
-           + lpMemDfnHdr->numRhtArgSTE
-           + lpMemDfnHdr->numLocalsSTE
-           + lpMemDfnHdr->numLblLines));
-    // Save as new SISNxt ptr
-    lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
+        Assert (lpMemPTD->lpSISNxt->numSymEntries EQ
+                (lpMemDfnHdr->numResultSTE
+               + lpMemDfnHdr->numLftArgSTE
+               + (lpMemDfnHdr->steLftOpr NE NULL)
+               + (lpMemDfnHdr->steAxisOpr NE NULL)
+               + (lpMemDfnHdr->steRhtOpr NE NULL)
+               + lpMemDfnHdr->numRhtArgSTE
+               + lpMemDfnHdr->numLocalsSTE
+               + lpMemDfnHdr->numLblLines));
+        // Save as new SISNxt ptr
+        lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
+
+        Assert (lpMemPTD->lpSISNxt NE lpMemPTD->lpSISCur);
+    } __except (CheckException (GetExceptionInformation (), L"LocalizeAll"))
+    {
+        // Save the # LPSYMENTRYs localized
+        lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
+
+        // Save as new SISNxt ptr
+        lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
+
+        // Pass on the exception
+        RaiseException (MyGetExceptionCode (), 0, 0, NULL);
+    } // End __try/__except
 } // End LocalizeAll
 
 
@@ -1482,7 +1518,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void UnlocalizeSTEs
-    (void)
+    (HGLOBAL hGlbDfnHdr)            // UDFO/AFO global memory handle (may be NULL)
 
 {
     HGLOBAL      hGlbData;          // STE global memory handle
@@ -1497,6 +1533,40 @@ void UnlocalizeSTEs
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
+
+    // If the global memory handle is valid, ...
+    if (hGlbDfnHdr)
+    {
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+#define FreeZapSte(ste)                                                                                             \
+        if ( lpMemDfnHdr->ste NE NULL                                                                               \
+         && !lpMemDfnHdr->ste->stFlags.Imm                                                                          \
+         &&  lpMemDfnHdr->ste->stData.stGlbData NE NULL)                                                            \
+        {                                                                                                           \
+            /* Free and zap it */                                                                                   \
+            FreeResultGlobalDFLV (lpMemDfnHdr->ste->stData.stGlbData); lpMemDfnHdr->ste->stData.stGlbData = NULL;   \
+        } // End IF
+
+        // If there's a left operand,
+        //   and it's not immediate, ...
+        FreeZapSte (steLftOpr);
+
+        // If there's an axis operand,
+        //   and it's not immediate, ...
+        FreeZapSte (steAxisOpr);
+
+        // If there's a right operand,
+        //   and it's not immediate, ...
+        FreeZapSte (steRhtOpr);
+#undef  FreeZap
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
 
     // If the SI is non-empty, ...
     if (lpMemPTD->SILevel)
@@ -1558,6 +1628,8 @@ void UnlocalizeSTEs
                 // Get the global memory handle
                 hGlbData = lpSymEntryCur->stData.stGlbData;
 
+                // If it's a valid handle, ...
+                if (hGlbData NE NULL)
                 // Split cases based upon the nametype
                 switch (lpSymEntryCur->stFlags.stNameType)
                 {
@@ -1594,7 +1666,7 @@ void UnlocalizeSTEs
 
                     defstop
                         break;
-                } // End SWITCH
+                } // End IF/SWITCH
             } // End IF
 
             // Restore the previous STE
@@ -1603,7 +1675,7 @@ void UnlocalizeSTEs
             // If this var is []FPC, set the VFP constants and PTD vars
             if (lpSymEntryCur->stFlags.ObjName EQ OBJNAME_SYS
              && IsThisSysName (lpSymEntryCur, $QUAD_FPC))
-        {
+            {
                 // Initialize the precision-specific VFP constants
                 InitVfpPrecision (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);
 
@@ -2104,12 +2176,14 @@ WSFULL_EXIT:
 
 UBOOL InitFcnSTEs
     (LPPL_YYSTYPE lpYYArg,      // Ptr to arg PL_YYSTYPE
-     UINT         numArgSTE,    // # STEs to initialize
+     UBOOL        numArgSTE,    // # STEs to initialize
      LPSYMENTRY  *lplpSymEntry) // Ptr to LPSYMENTRYs
 
 {
     STFLAGS stFlagsClr = {0};   // Flags for clearing an STE
     UINT    TknCount;           // Token count
+
+    Assert (IsBooleanValue (numArgSTE));
 
     // Keep the Inuse flag
     stFlagsClr.Inuse = TRUE;
@@ -2117,10 +2191,10 @@ UBOOL InitFcnSTEs
     // If the token is defined, ...
     if (lpYYArg && numArgSTE)
     {
-        Assert (numArgSTE EQ 1);
-
         // Get the token count
         TknCount = lpYYArg->TknCount;
+
+        Assert (TknCount NE 0);
 
         // Split cases based upon the function count
         if (TknCount EQ 1)
@@ -2130,22 +2204,25 @@ UBOOL InitFcnSTEs
             {
                 case TKT_FCNIMMED:
                 case TKT_OP3IMMED:
-                // Clear the STE flags
-                *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
+                    // Clear the STE flags
+                    *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 
-                (*lplpSymEntry)->stFlags.Imm        = TRUE;
-                (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
-                (*lplpSymEntry)->stFlags.Value      = TRUE;
-                (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
-                (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
+                    (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                    (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
+                    (*lplpSymEntry)->stFlags.Value      = TRUE;
+                    (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                    (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
 ////////////////////(*lplpSymEntry)->stFlags.UsrDfn     = FALSE;            // Already zero from above
 ////////////////////(*lplpSymEntry)->stFlags.DfnAxis    = FALSE;            // Already zero from above
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
-                (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
+                    (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
 
                     break;
 
                 case TKT_FCNNAMED:
+                case TKT_OP1NAMED:
+                case TKT_OP2NAMED:
+                case TKT_OP3NAMED:
                     // Copy the flags
                     (*lplpSymEntry)->stFlags              = lpYYArg->tkToken.tkData.tkSym->stFlags;
 
@@ -2154,6 +2231,7 @@ UBOOL InitFcnSTEs
                         (*lplpSymEntry)->stData           = lpYYArg->tkToken.tkData.tkSym->stData;
                     else
                         (*lplpSymEntry)->stData.stGlbData = CopySymGlbDir_PTB (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
+
                     break;
 
                 case TKT_FCNARRAY:
@@ -2191,6 +2269,8 @@ UBOOL InitFcnSTEs
 
                 defstop
                     DbgStop ();     // We should never get here
+
+                    break;
             } // End SWITCH
         } else
         {
@@ -2259,8 +2339,11 @@ UBOOL InitFcnSTEs
                 case TKT_NUMSTRAND:
                 case TKT_NUMSCALAR:
                 case TKT_AXISARRAY:
+                case TKT_FCNAFO:
+                case TKT_OP1AFO:
+                case TKT_OP2AFO:
                     // Increment the RefCnt
-                    DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);
+                    DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);   // EXAMPLE:  UDFO[X] A
 
                     break;
 
@@ -2282,8 +2365,7 @@ UBOOL InitFcnSTEs
                     // If it's not an immediate, ...
                     if (!lpYYArg->tkToken.tkData.tkSym->stFlags.Imm)
                         // Increment the RefCnt
-                        DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData);
-
+                        DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkSym->stData.stGlbData); // EXAMPLE:  +.×op1 op1 23
                     break;
 
                 defstop
@@ -2348,7 +2430,7 @@ LPSYMENTRY LocalizeSymEntries
             if (!lpSymEntryNxt->stFlags.Imm)
                 // Increment the reference count in global memory
                 //   as we retain the value over localization
-                DbgIncrRefCntDir_PTB (lpSymEntryNxt->stData.stGlbData);
+                DbgIncrRefCntDir_PTB (lpSymEntryNxt->stData.stGlbData); // EXAMPLE:  Localize []DM
         } else
             // Erase the Symbol Table Entry
             //   unless it's a []var
@@ -2357,7 +2439,7 @@ LPSYMENTRY LocalizeSymEntries
         (*lplpSymEntrySrc)->stPrvEntry = lpSymEntryNxt;
 
         // Save the SI level for this SYMENTRY
-        Assert (lpMemPTD->SILevel);
+        Assert (lpMemPTD->SILevel NE 0);
         (*lplpSymEntrySrc)->stSILevel = lpMemPTD->SILevel - 1;
 
         // Skip to next entries

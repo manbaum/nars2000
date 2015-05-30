@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -89,7 +89,7 @@ LPPL_YYSTYPE WaitForInput
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    UnlocalizeSTEs ();
+    UnlocalizeSTEs (NULL);
 
     // If we're resetting, ...
     if (lpMemPTD->lpSISCur
@@ -146,6 +146,12 @@ void ArrExprCheckCaller
     // If it's []DM, ...
     if (IzitQuadDM (&lpYYArg->tkToken))
     {
+        // This DEBUG stmt probably never is triggered because
+        //    pl_yylex converts all unassigned named vars to temps
+        //    hence IzitQuadDM always returns FALSE.
+#ifdef DEBUG
+        DbgStop ();             // ***Probably never executed***
+#endif
         // Alloc a new YYRes
         lpYYRes = YYAlloc ();
 
@@ -157,7 +163,7 @@ void ArrExprCheckCaller
         lpYYRes->tkToken.tkData.tkGlbData = lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;
 
         // Increment the refcnt
-        IncrRefCntTkn (&lpYYRes->tkToken);
+        DbgIncrRefCntTkn (&lpYYRes->tkToken);   // EXAMPLE:  ***Probably never executed***
     } else
         // Copy the function array incrementing the RefCnt
         lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
@@ -167,7 +173,7 @@ void ArrExprCheckCaller
 
     // If the Execute/Quad result is present,
     //   and the token is not named or it has a value, ...
-    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType
+    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED
      && (!IsTknNamed (&lpMemPTD->YYResExec.tkToken)
       || !IsSymNoValue (lpMemPTD->YYResExec.tkToken.tkData.tkSym)))
     {

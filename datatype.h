@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -333,6 +333,8 @@ typedef union tagVFOHDRPTRS
     LPFCNARRAY_HEADER lpMemFcn;         // 00:  ...      function array
     struct tagDFN_HEADER *
                       lpMemDfn;         // 00:  ...      UDFO
+    LPLSTARRAY_HEADER lpMemLst;         // 00:  ...      list
+    LPVARNAMED_HEADER lpMemNam;         // 00:  ...      named strand
 } VFOHDRPTRS, *LPVFOHDRPTRS;
 
 #define SYSFN_HEADER_SIGNATURE      'FSYS'      // Pseudo-signature

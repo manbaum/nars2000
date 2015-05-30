@@ -315,7 +315,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_RIGHTTACK)
     {
         // Increment the right arg reference count so we can copy it
-        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbRht));
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbRht));    // EXAMPLE:  {righttack}\1 2 3
 
         // Copy the right arg
         hGlbRes = hGlbRht;

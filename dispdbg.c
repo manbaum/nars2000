@@ -749,10 +749,21 @@ void DisplayGlobals
                 // If not a Magic Function/Operator, ...
                 if (!lpHeader->bMFO || lpHeader->RefCnt NE 1)
                 {
+                    // If it's a valid ptr, ...
+                    if (IsValidPtr (lpHeader->steFcnName, sizeof (lpHeader->steFcnName)))
                         // Copy the user-defined function/operator name
                         CopySteName (lpMemPTD->lpwszTemp,       // Ptr to global memory
                                      lpHeader->steFcnName,      // Ptr to function symbol table entry
                                     &uNameLen);                 // Ptr to name length (may be NULL)
+                    else
+                    {
+                        // Copy a default name
+                        MySprintfW (lpMemPTD->lpwszTemp,
+                                    lpMemPTD->uTempMaxSize,
+                                   L"***BAD PTR***:  steFcnName (%p)",
+                                    lpHeader->steFcnName);
+                        DbgNop ();      // We should never get here
+                    } // End IF/ELSE
 
                     // If we're to display all globals or
                     //   this one is not a Magic Function/Operator, ...
@@ -1542,7 +1553,8 @@ LPWCHAR DisplayFcnGlb
 #ifdef DEBUG
     if (bDispHeader)
         lpaplChar += wsprintfW (lpaplChar,
-                                L"%sfnNameType=%s, NELM=%3d, RC=%2d, Fn:  ",
+                               L"%p = %sfnNameType=%s, NELM=%3d, RC=%2d, Fn:  ",
+                                hGlbFcnArr,
                                 (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                 lpwNameTypeStr[lpHeader->fnNameType],
                                 tknNELM,
@@ -1749,6 +1761,9 @@ LPWCHAR DisplayFcnSub
 
         case TKT_OP2IMMED:
             TknCount = 1 + lpYYMem[1].TknCount;
+
+            // If there's room for a left operand, ...
+            if (lpYYMem[0].TknCount > TknCount)
                 lpaplChar =
                   DisplayFcnSub (lpaplChar,                                                 // Lfcn
                                 &lpYYMem[TknCount],
@@ -1759,7 +1774,7 @@ LPWCHAR DisplayFcnSub
                                  lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
             // Translate from INDEX_xxx to UTF16_xxx
             *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);    // Op2
-            if (lpYYMem[TknCount].TknCount > 1)
+            if (lpYYMem[1].TknCount > 1)
                 *lpaplChar++ = L'(';
             lpaplChar =
               DisplayFcnSub (lpaplChar,                                                 // Rfcn
@@ -1769,7 +1784,7 @@ LPWCHAR DisplayFcnSub
                              lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
                              lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
-            if (lpYYMem[TknCount].TknCount > 1)
+            if (lpYYMem[1].TknCount > 1)
                 *lpaplChar++ = L')';
             break;
 

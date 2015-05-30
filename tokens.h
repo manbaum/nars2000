@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,7 +195,8 @@ typedef struct tagTKFLAGS
 
 // N.B.:  Whenever changing the above enum (TKFLAGS),
 //   be sure to make a corresponding change to
-//   the values assigned to <tkZero> and <tkBlank> in <externs.h>.
+//   the values assigned to <tkZero> and <tkBlank> in <externs.h>, and
+//   <plYYEOS>/<plYYSOS> in <parseline.c>.
 
 
 typedef struct tagLOCATION
@@ -229,8 +230,8 @@ typedef union tagTOKEN_DATA
               *tkSym;               // 00:  Data is an LPSYMENTRY
     HGLOBAL    tkGlbData;           // 00:  ...     an HGLOBAL
     struct {
-      UINT      tkIndex;            // 00:  ...     an index
-      DFN_TYPES tkDfnType;          // 04:  ...     a DFNTYPE_xxx
+      UINT         tkIndex;         // 00:  ...     an index
+      DFN_TYPES    tkDfnType;       // 04:  ...     a DFNTYPE_xxx
            };
     APLBOOL    tkBoolean;           // 00:  ...     an APLBOOL
     APLINT     tkInteger;           // 00:  ...     an APLINT
@@ -246,6 +247,11 @@ typedef union tagTOKEN_DATA
                                     // 10:  Length
 } TOKEN_DATA, *LPTOKEN_DATA;
 
+// N.B.:  Whenever changing the above enum (TOKEN_DATA),
+//   be sure to make a corresponding change to
+//   <plYYEOS>/<plYYSOS> in <parseline.c>.
+
+
 typedef struct tagTOKEN
 {
     TKFLAGS          tkFlags;       // 00:  The flags part
@@ -258,7 +264,7 @@ typedef struct tagTOKEN
 // N.B.:  Whenever changing the above struct (TOKEN),
 //   be sure to make a corresponding change to
 //   <tkZero> and <tkBlank> in <externs.h>,
-//   <plYYEOS> in <parseline.c>,
+//   <plYYEOS>/<plYYSOS> in <parseline.c>,
 //   <tkMinMaxAfo> in <po_dot.c>.
 
 #define TOKEN_HEADER_SIGNATURE      'NKOT'

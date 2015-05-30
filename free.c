@@ -41,13 +41,42 @@ void FreeResultName
     (LPTOKEN lptkRes)
 
 {
-    DBGENTER;
-
     FreeResultSub (lptkRes, TRUE, FALSE);
-
-    DBGLEAVE;
 } // End FreeResultName
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $FreeTopResult
+//
+//  Free just the top level of a result, not recursively
+//***************************************************************************
+
+void FreeTopResult
+    (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
+
+{
+    HGLOBAL *lphGlb;                    // Ptr to global memory handle
+    int     iRefCnt;                    // RefCnt
+
+    // Free just the top level, not recursively
+
+    // Get a ptr to the global memory handle
+    lphGlb = GetPtrGlbDataToken (&lpYYRes->tkToken);
+
+    if (lphGlb NE NULL
+     && *lphGlb NE NULL)
+    {
+        // Decrement the RefCnt
+        iRefCnt = ChangeRefCntDir_PTB (*lphGlb, -1);
+
+        if (iRefCnt EQ 0)
+        {
+            // Free and zap it
+            DbgGlobalFree (*lphGlb); *lphGlb = NULL;
+        } // End IF
+    } // End IF
+} // End FreeTopResult
 
 
 //***************************************************************************
@@ -63,21 +92,58 @@ void FreeResultName
 #endif
 
 void FreeResult
-    (LPPL_YYSTYPE lpYYRes)
+    (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
 
 {
-    DBGENTER;
+    if (lpYYRes)
+    {
+        // If there is a curried index, ...
+        if (lpYYRes->lpplYYIdxCurry)
+        {
+            // YYFree and Free it recursively
+            FreeResult (lpYYRes->lpplYYIdxCurry); YYFree (lpYYRes->lpplYYIdxCurry); lpYYRes->lpplYYIdxCurry = NULL;
+        } // End IF
 
-#ifdef DEBUG
-    // If the arg was YYCopyArray'ed, ...
-    if (lpYYRes->YYCopyArray)
-#endif
-        // Clear the flag
-        lpYYRes->YYCopyArray = FALSE;
+        // If there is a curried arg, ...
+        if (lpYYRes->lpplYYArgCurry)
+        {
+            // YYFree and Free it recursively
+            FreeResult (lpYYRes->lpplYYArgCurry); YYFree (lpYYRes->lpplYYArgCurry); lpYYRes->lpplYYArgCurry = NULL;
+        } // End IF
 
-    FreeResultSub (&lpYYRes->tkToken, FALSE, FALSE);
+        // If there is a curried fcn, ...
+        if (lpYYRes->lpplYYFcnCurry)
+        {
+            // If the curried function is not an AFO, ...
+            if (!IsTknAFO (&lpYYRes->lpplYYFcnCurry->tkToken))
+                // Free it recursively
+                FreeResult (lpYYRes->lpplYYFcnCurry);
 
-    DBGLEAVE;
+            // YYFree it
+            YYFree (lpYYRes->lpplYYFcnCurry); lpYYRes->lpplYYFcnCurry = NULL;
+        } // End IF
+
+        // If there is a curried right operand, ...
+        if (lpYYRes->lpplYYOpRCurry)
+        {
+            // If the curried right operand is not an AFO, ...
+            if (!IsTknAFO (&lpYYRes->lpplYYOpRCurry->tkToken))
+                // Free it recursively
+                FreeResult (lpYYRes->lpplYYOpRCurry);
+
+            // YYFree it
+            YYFree (lpYYRes->lpplYYOpRCurry); lpYYRes->lpplYYOpRCurry = NULL;
+        } // End IF
+
+        Assert (lpYYRes->TknCount <= 1);
+
+        // If the object is in use, ...
+        if (lpYYRes->YYInuse)
+            // Free it
+            FreeResultSub (&lpYYRes->tkToken, FALSE, FALSE);
+        else
+            Assert (YYCheckInuse (lpYYRes));
+    } // End IF
 } // End FreeResult
 #undef  APPEND_NAME
 
@@ -98,48 +164,8 @@ void FreeResultTkn
     (LPTOKEN lptkRes)
 
 {
-    DBGENTER;
-
     FreeResultSub (lptkRes, FALSE, FALSE);
-
-    DBGLEAVE;
 } // End FreeResultTkn
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $FreeResNNU
-//
-//  Free the HGLOBALs and LPSYMENTRYs in a result
-//    only if it's not a named UDFO and not an AFO
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResNNU"
-#else
-#define APPEND_NAME
-#endif
-
-void FreeResNNU
-    (LPPL_YYSTYPE lpYYRes)
-
-{
-    DBGENTER;
-
-    if (!IsTknNamedFcnOpr (&lpYYRes->tkToken)
-     && !IsTknAFO         (&lpYYRes->tkToken))
-    {
-#ifdef DEBUG
-        // If the arg was YYCopyArray'ed, ...
-        if (lpYYRes->YYCopyArray)
-#endif
-            // Clear the flag
-            lpYYRes->YYCopyArray = FALSE;
-        FreeResultSub (&lpYYRes->tkToken, FALSE, TRUE);
-    } // End IF
-
-    DBGLEAVE;
-} // End FreeResNNU
 #undef  APPEND_NAME
 
 
@@ -201,11 +227,7 @@ void FreeResultSub
                                  ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
                                  FNLN);
 #endif
-                    // If it's []DM, ...
-                    if (IzitQuadDM (lptkRes))
-                        *lphGlbData = MakePtrTypeGlb (hGlbV0Char);
-                    else
-                        *lphGlbData = NULL;
+                    *lphGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -263,11 +285,7 @@ void FreeResultSub
                                  ClrPtrTypeDir (*lphGlbData),
                                  FNLN);
 #endif
-                    // If it's []DM, ...
-                    if (IzitQuadDM (lptkRes))
-                        *lphGlbData = MakePtrTypeGlb (hGlbV0Char);
-                    else
-                        *lphGlbData = NULL;
+                    *lphGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -326,22 +344,20 @@ void FreeResultSub
                                  ClrPtrTypeDir (*lphGlbData),
                                  FNLN);
 #endif
-                    // If it's []DM, ...
-                    if (IzitQuadDM (lptkRes))
-                        *lphGlbData = MakePtrTypeGlb (hGlbV0Char);
-                    else
-                        *lphGlbData = NULL;
+                    *lphGlbData = NULL;
                 } // End IF
             } // End IF
 
             return;
 
-        case TKT_FCNIMMED:  // tkData is an immediate function
-        case TKT_OP1IMMED:  // ...                    monadic operator
-        case TKT_OP2IMMED:  // ...                    dyadic  ...
-        case TKT_OP3IMMED:  // ...                    ambiguous ...
-        case TKT_OPJOTDOT:  // ...                    {jot}{dot}
-        case TKT_FILLJOT:   // ...                    fill {jot}
+        case TKT_FCNIMMED:      // tkData is an immediate function
+        case TKT_OP1IMMED:      // ...                    monadic operator
+        case TKT_OP2IMMED:      // ...                    dyadic  ...
+        case TKT_OP3IMMED:      // ...                    ambiguous ...
+        case TKT_OPJOTDOT:      // ...                    {jot}{dot}
+        case TKT_FILLJOT:       // ...                    fill {jot}
+        case TKT_RIGHTBRACE:    // ...                    right brace in {}
+        case TKT_SYNTERR:       // ...                    SYNTAX ERROR
             return;
 
         case TKT_STRNAMED:  // tkData contains an HGLOBAL of a strand of names
@@ -407,8 +423,6 @@ UBOOL FreeResultGlobalLst
     APLNELM   aplNELM,          // List NELM
               uLst;             // Loop counter
 
-    DBGENTER;
-
     // Data is an valid HGLOBAL variable array
     Assert (IsGlbTypeLstDir_PTB (MakePtrTypeGlb (hGlbData)));
 
@@ -449,8 +463,6 @@ UBOOL FreeResultGlobalLst
 
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbData, lpMemLst);
-
-    DBGLEAVE;
 
     return TRUE;
 } // End FreeResultGlobalLst
@@ -509,8 +521,6 @@ UBOOL FreeResultGlobalVarSub
     UINT      u,                // Loop counter
               RefCnt;           // The array reference count
     UBOOL     bRet;             // TRUE iff the result is valid
-
-    DBGENTER;
 
     // Data is an valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (MakePtrTypeGlb (hGlbData)));
@@ -629,8 +639,6 @@ UBOOL FreeResultGlobalVarSub
         UnlFreeGlbName (hGlbData, lpMem);
     } // End IF
 
-    DBGLEAVE;
-
     return bRet;
 } // End FreeResultGlobalVarSub
 #undef  APPEND_NAME
@@ -661,15 +669,13 @@ UBOOL FreeResultGlobalFcn
     HGLOBAL          *lphGlbLcl,    // Ptr to global memory handle
                       hGlbTxtLine;  // Line text gobal memory handle
 
-    DBGENTER;
-
     // Data is an valid HGLOBAL function array
     Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
     lpMemHdr = MyGlobalLock (hGlbData);
 
-    // Get the Type, RefCnt, NELM, and line text handle
+    // Get the RefCnt, NELM, and line text handle
     RefCnt      = lpMemHdr->RefCnt;
     tknNELM     = lpMemHdr->tknNELM;
     hGlbTxtLine = lpMemHdr->hGlbTxtLine;
@@ -677,13 +683,13 @@ UBOOL FreeResultGlobalFcn
     // Ensure non-zero
     Assert (RefCnt > 0);
 
-    // Decrement
-    RefCnt =
-      DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
-
-    // If the RefCnt is zero, free the globals
-    if (RefCnt EQ 0)
+    // If the pre-decremented RefCnt is one, free the globals
+    if (RefCnt EQ 1)
     {
+        // Decrement
+        RefCnt =
+          ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbData), -1);
+
         // Free the line text
         if (hGlbTxtLine)
         {
@@ -695,130 +701,102 @@ UBOOL FreeResultGlobalFcn
 
         // Loop through the PL_YYSTYPEs
         for (u = 0; u < tknNELM; u++, lpYYToken++)
-        // Split cases based upon the token type
-        switch (lpYYToken->tkToken.tkFlags.TknType)
         {
-            case TKT_FCNIMMED:      // Nothing to do
-            case TKT_VARIMMED:      // ...
-            case TKT_OP1IMMED:      // ...
-            case TKT_OP2IMMED:      // ...
-            case TKT_OP3IMMED:      // ...
-            case TKT_AXISIMMED:     // ...
-            case TKT_OPJOTDOT:      // ...
-            case TKT_FILLJOT:       // ...
-                break;              // Ignore immediates
+            // N.B.:  As this is a function array, all curried FCN/OPR/ARGs have been resolved
+            //   and are no longer present in the items
+            Assert (lpYYToken->lpplYYIdxCurry EQ NULL);
+            Assert (lpYYToken->lpplYYArgCurry EQ NULL);
+            Assert (lpYYToken->lpplYYFcnCurry EQ NULL);
+            Assert (lpYYToken->lpplYYOpRCurry EQ NULL);
 
-            case TKT_FCNNAMED:      // Free the named function array
-            case TKT_OP1NAMED:      // ...
-            case TKT_OP2NAMED:      // ...
-            case TKT_OP3NAMED:      // ...
-                // tkData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+            // Split cases based upon the token type
+            switch (lpYYToken->tkToken.tkFlags.TknType)
+            {
+                case TKT_FCNIMMED:      // Nothing to do
+                case TKT_VARIMMED:      // ...
+                case TKT_OP1IMMED:      // ...
+                case TKT_OP2IMMED:      // ...
+                case TKT_OP3IMMED:      // ...
+                case TKT_AXISIMMED:     // ...
+                case TKT_OPJOTDOT:      // ...
+                case TKT_FILLJOT:       // ...
+                    break;              // Ignore immediates
 
-                // Check for internal functions
-                if (lpYYToken->tkToken.tkData.tkSym->stFlags.FcnDir)
-                    break;          // Ignore internal functions
+                case TKT_FCNNAMED:      // Free the named function array
+                case TKT_OP1NAMED:      // ...
+                case TKT_OP2NAMED:      // ...
+                case TKT_OP3NAMED:      // ...
+                    // tkData is an LPSYMENTRY
+                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-                // Get the global memory handle
-                lphGlbLcl = &lpYYToken->tkToken.tkData.tkSym->stData.stGlbData;
+                    // Check for internal functions
+                    if (lpYYToken->tkToken.tkData.tkSym->stFlags.FcnDir)
+                        break;          // Ignore internal functions
 
-                // tkData is a valid HGLOBAL function array
-                //   or user-defined function/operator
-                Assert (IsGlbTypeFcnDir_PTB (*lphGlbLcl)
-                     || IsGlbTypeDfnDir_PTB (*lphGlbLcl));
-
-                // Free the function array or user-defined function/operator
-                if (FreeResultGlobalDFLV (*lphGlbLcl))
-                {
-#ifdef DEBUG_ZAP
-                    dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
-                                 hGlbData,
-                                *lphGlbLcl,
-                                 FNLN);
-#endif
-                    // If it's []DM, ...
-                    if (IzitQuadDM (&lpYYToken->tkToken))
-                        *lphGlbLcl = MakePtrTypeGlb (hGlbV0Char);
-                    else
-                        *lphGlbLcl = NULL;
-                } // End IF
-
-                break;
-
-            case TKT_FCNARRAY:      // Free the function array
-            case TKT_FCNAFO:
-            case TKT_OP1AFO:
-            case TKT_OP2AFO:
-            case TKT_DELAFO:
-                // Get the global memory handle
-                lphGlbLcl = GetPtrGlbDataToken (&lpYYToken->tkToken);
-
-                // tkData is a valid HGLOBAL function array
-                //   or user-defined function/operator
-                Assert (IsGlbTypeFcnDir_PTB (*lphGlbLcl)
-                     || IsGlbTypeDfnDir_PTB (*lphGlbLcl));
-
-                // If it's a function array or not named, ...
-                // Free the function array or user-defined function/operator
-                if (((lpYYToken->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
-                  || !IsTknNamedFcnOpr (&lpYYToken->tkToken))
-                 && FreeResultGlobalDFLV (*lphGlbLcl))
-                {
-#ifdef DEBUG_ZAP
-                    dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
-                                 hGlbData,
-                                *lphGlbLcl,
-                                 FNLN);
-#endif
-                    // If it's []DM, ...
-                    if (IzitQuadDM (&lpYYToken->tkToken))
-                        *lphGlbLcl = MakePtrTypeGlb (hGlbV0Char);
-                    else
-                        *lphGlbLcl = NULL;
-                } // End IF
-
-                break;
-
-            case TKT_VARARRAY:      // Free the var array (strand arg to dyadic op)
-            case TKT_AXISARRAY:     // Free the axis array
-            case TKT_CHRSTRAND:     // Free the character strand
-            case TKT_NUMSTRAND:     // Free the numeric strand
-            case TKT_NUMSCALAR:     // Free the numeric scalar
-                // Get the global handle
-                lphGlbLcl = &lpYYToken->tkToken.tkData.tkGlbData;
-
-                // tkData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir_PTB (*lphGlbLcl));
-
-                // Free the global variable
-                if (FreeResultGlobalVar (*lphGlbLcl))
-                {
-#ifdef DEBUG_ZAP
-                    dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
-                                 hGlbData,
-                                *lphGlbLcl,
-                                 FNLN);
-#endif
-                    // If it's []DM, ...
-                    if (IzitQuadDM (&lpYYToken->tkToken))
-                        *lphGlbLcl = MakePtrTypeGlb (hGlbV0Char);
-                    else
-                        *lphGlbLcl = NULL;
-                } // End IF
-
-                break;
-
-            case TKT_VARNAMED:
-                // tkData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-                // If it's not an immediate, ...
-                if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
-                {
-                    // Get the global handle
+                    // Get the global memory handle
                     lphGlbLcl = &lpYYToken->tkToken.tkData.tkSym->stData.stGlbData;
 
-                    // stData is a valid HGLOBAL variable array
+                    Assert (*lphGlbLcl NE NULL);
+
+                    // tkData is a valid HGLOBAL function array
+                    //   or user-defined function/operator
+                    Assert (IsGlbTypeFcnDir_PTB (*lphGlbLcl)
+                         || IsGlbTypeDfnDir_PTB (*lphGlbLcl));
+
+                    // Free the function array or user-defined function/operator
+                    if (FreeResultGlobalDFLV (*lphGlbLcl))
+                    {
+#ifdef DEBUG_ZAP
+                        dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                                     hGlbData,
+                                    *lphGlbLcl,
+                                     FNLN);
+#endif
+                        *lphGlbLcl = NULL;
+                    } // End IF
+
+                    break;
+
+                case TKT_FCNARRAY:      // Free the function array
+                case TKT_FCNAFO:
+                case TKT_OP1AFO:
+                case TKT_OP2AFO:
+                case TKT_DELAFO:
+                    // Get the global memory handle
+                    lphGlbLcl = GetPtrGlbDataToken (&lpYYToken->tkToken);
+
+                    Assert (*lphGlbLcl NE NULL);
+
+                    // tkData is a valid HGLOBAL function array
+                    //   or user-defined function/operator
+                    Assert (IsGlbTypeFcnDir_PTB (*lphGlbLcl)
+                         || IsGlbTypeDfnDir_PTB (*lphGlbLcl));
+
+                    // Free the function array or user-defined function/operator
+                    if (FreeResultGlobalDFLV (*lphGlbLcl))
+                    {
+#ifdef DEBUG_ZAP
+                        dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                                     hGlbData,
+                                    *lphGlbLcl,
+                                     FNLN);
+#endif
+                        *lphGlbLcl = NULL;
+                    } // End IF
+
+                    break;
+
+                case TKT_VARARRAY:      // Free the var array (strand arg to dyadic op)
+                case TKT_AXISARRAY:     // Free the axis array
+                case TKT_CHRSTRAND:     // Free the character strand
+                case TKT_NUMSTRAND:     // Free the numeric strand
+                case TKT_NUMSCALAR:     // Free the numeric scalar
+                    // Get the global handle
+                    lphGlbLcl = &lpYYToken->tkToken.tkData.tkGlbData;
+
+                    Assert (*lphGlbLcl NE NULL);
+
+                    // tkData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir_PTB (*lphGlbLcl));
 
                     // Free the global variable
@@ -830,20 +808,49 @@ UBOOL FreeResultGlobalFcn
                                     *lphGlbLcl,
                                      FNLN);
 #endif
-                        // If it's []DM, ...
-                        if (IzitQuadDM (&lpYYToken->tkToken))
-                            *lphGlbLcl = MakePtrTypeGlb (hGlbV0Char);
-                        else
-                            *lphGlbLcl = NULL;
+                        *lphGlbLcl = NULL;
                     } // End IF
-                } // End IF
 
-                break;
+                    break;
 
-            defstop
-                break;
-        } // End FOR/SWITCH
-    } // End IF
+                case TKT_VARNAMED:
+                    // tkData is an LPSYMENTRY
+                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                    // If it's not an immediate, ...
+                    if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
+                    {
+                        // Get the global handle
+                        lphGlbLcl = &lpYYToken->tkToken.tkData.tkSym->stData.stGlbData;
+
+                        Assert (*lphGlbLcl NE NULL);
+
+                        // stData is a valid HGLOBAL variable array
+                        Assert (IsGlbTypeVarDir_PTB (*lphGlbLcl));
+
+                        // Free the global variable
+                        if (FreeResultGlobalVar (*lphGlbLcl))
+                        {
+#ifdef DEBUG_ZAP
+                            dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                                         hGlbData,
+                                        *lphGlbLcl,
+                                         FNLN);
+#endif
+                            *lphGlbLcl = NULL;
+                        } // End IF
+                    } // End IF
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End FOR
+    } else
+        // Decrement the RefCnt of all items
+        RefCnt =
+          DbgDecrRefCntFcnArray (hGlbData);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMemHdr = NULL;
@@ -856,8 +863,6 @@ UBOOL FreeResultGlobalFcn
         // We no longer need this storage
         DbgGlobalFree (hGlbData); hGlbData = NULL;
     } // End IF
-
-    DBGLEAVE;
 
     return bRet;
 } // End FreeResultGlobalFcn
@@ -884,8 +889,6 @@ UBOOL FreeResultGlobalDfn
     UINT         RefCnt;            // Reference count
     UBOOL        bRet;              // TRUE iff result is valid
 
-    DBGENTER;
-
     // Data is an valid HGLOBAL user-defined function/operator
     Assert (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbData)));
 
@@ -898,21 +901,27 @@ UBOOL FreeResultGlobalDfn
     // Ensure non-zero
     Assert (RefCnt > 0);
 
-    // Decrement
-    RefCnt =
-      DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
-
-    // If the RefCnt is zero, free the global
-    bRet = (RefCnt EQ 0);
-
-    if (bRet)
+    // If it's not a MFO, decrement the reference count
+    if (!lpMemDfnHdr->bMFO)
     {
-        // Free the globals in the struc
-        FreeResultGlobalDfnStruc (lpMemDfnHdr, TRUE);
+        // Decrement the reference count
+        RefCnt =
+          DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
 
-        // Free the HshTab & SymTab
-        FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
-    } // End IF
+        // If the RefCnt is zero, free the global
+        bRet = (RefCnt EQ 0);
+
+        if (bRet)
+        {
+            // Free the globals in the struc
+            FreeResultGlobalDfnStruc (lpMemDfnHdr, TRUE);
+
+            // Free the HshTab & SymTab
+            FreeHshSymTabs (&lpMemDfnHdr->htsDFN, FALSE);
+        } // End IF
+    } else
+        // Don't free the global storage
+        bRet = FALSE;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
@@ -927,8 +936,6 @@ UBOOL FreeResultGlobalDfn
         // We no longer need this storage
         DbgGlobalFree (hGlbData); hGlbData = NULL;
     } // End IF
-
-    DBGLEAVE;
 
     return bRet;
 } // End FreeResultGlobalDfn
@@ -1006,12 +1013,6 @@ void FreeResultGlobalDfnStruc
     // Loop through the lines
     while (numFcnLines--)
     {
-        if (lpFcnLines->hGlbTxtLine)
-        {
-            // We no longer need this storage
-            DbgGlobalFree (lpFcnLines->hGlbTxtLine); lpFcnLines->hGlbTxtLine = NULL;
-        } // End IF
-
         if (bUntokenize
          && lpFcnLines->offTknLine)
         {
@@ -1019,27 +1020,17 @@ void FreeResultGlobalDfnStruc
             Untokenize ((LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine)); lpFcnLines->offTknLine = 0;
         } //End IF
 
+        if (lpFcnLines->hGlbTxtLine)
+        {
+            // We no longer need this storage
+            DbgGlobalFree (lpFcnLines->hGlbTxtLine); lpFcnLines->hGlbTxtLine = NULL;
+        } // End IF
+
         // Skip to the next struct
         lpFcnLines++;
     } // End WHILE
 } // End FreeResultGlobalDfnStruc
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $FreeResNNU1
-//
-//  Free the HGLOBALs and LPSYMENTRYs in a result
-//    only if it's not a named UDFO and not an AFO
-//    and free the YYRes
-//***************************************************************************
-
-void FreeResNNU1
-    (LPPL_YYSTYPE lpYYFcn)
-
-{
-    FreeResNNU (lpYYFcn); YYFree (lpYYFcn);
-} // End FreeResNNU1
 
 
 //***************************************************************************
@@ -1092,13 +1083,15 @@ void FreeTempResult
     (LPPL_YYSTYPE lpYYRes)
 
 {
-    DBGENTER;
+    Assert (lpYYRes->TknCount <= 1);
 
     // If it's not named, ...
     if (!IsTknNamed (&lpYYRes->tkToken))
         FreeResultSub (&lpYYRes->tkToken, FALSE, FALSE);
-
-    DBGLEAVE;
+#ifdef DEBUG
+    else
+        nop ();
+#endif
 } // End FreeTempResult
 #undef  APPEND_NAME
 

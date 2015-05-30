@@ -3390,10 +3390,15 @@ UBOOL ArrayIndexSetSingLst_EM
         goto ERROR_EXIT;
 
     // If the types are different, we need to type promote the name
-    if (aplTypeNam NE aTypePromote[aplTypeNam][aplTypeRes]  // Type are different,
+    if (aplTypeNam NE aTypePromote[aplTypeNam][aplTypeRes]  // Types are different,
       && (!(bSysVar && IsEmpty (aplNELMSubLst))             // and not an empty []var
       && !TypePromoteGlb_EM (lphGlbRes, aplTypeRes, lptkFunc)))
           goto ERROR_EXIT;
+
+    // If it's not an empty []var, ...
+    if (!(bSysVar && IsEmpty (aplNELMSubLst)))
+        // Respecify the new result storage type
+        aplTypeNam = aTypePromote[aplTypeNam][aplTypeRes];
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -4524,7 +4529,7 @@ UBOOL ArrayIndexFcnSet_EM
 
     // Compute A[L]
     lpYYRes1 = ArrayIndexRef_EM_YY (lptkNamArg,         // Ptr to name arg token
-                                   lptkLstArg);         // Ptr to right arg token
+                                    lptkLstArg);        // Ptr to right arg token
     if (lpYYRes1 EQ NULL)
         return FALSE;
     // Compute A[L] fcn R

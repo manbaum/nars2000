@@ -294,7 +294,6 @@ typedef struct tagSTART_ADDRESSES
     "FreeResultName"            , (LPUCHAR) &FreeResultName             ,
     "FreeResult"                , (LPUCHAR) &FreeResult                 ,
     "FreeResultTkn"             , (LPUCHAR) &FreeResultTkn              ,
-    "FreeResNNU"                , (LPUCHAR) &FreeResNNU                 ,
     "FreeResultSub"             , (LPUCHAR) &FreeResultSub              ,
     "FreeResultGlobalDFLV"      , (LPUCHAR) &FreeResultGlobalDFLV       ,
     "FreeResultGlobalLst"       , (LPUCHAR) &FreeResultGlobalLst        ,
@@ -996,12 +995,11 @@ typedef struct tagSTART_ADDRESSES
     // strand.c
     "InitVarStrand"             , (LPUCHAR) &InitVarStrand              ,
     "PushVarStrand_YY"          , (LPUCHAR) &PushVarStrand_YY           ,
-    "PushFcnStrand_YY"          , (LPUCHAR) &PushFcnStrand_YY           ,
     "StripStrand"               , (LPUCHAR) &StripStrand                ,
     "FreeStrand "               , (LPUCHAR) &FreeStrand                 ,
     "MakeVarStrand_EM_YY"       , (LPUCHAR) &MakeVarStrand_EM_YY        ,
     "MakeGlbEntry_EM"           , (LPUCHAR) &MakeGlbEntry_EM            ,
-    "MakeFcnStrand_EM_YY"       , (LPUCHAR) &MakeFcnStrand_EM_YY        ,
+    "UnFcnStrand_EM"            , (LPUCHAR) &UnFcnStrand_EM             ,
     "MakeTxtLine"               , (LPUCHAR) &MakeTxtLine                ,
     "CopyString_EM_YY"          , (LPUCHAR) &CopyString_EM_YY           ,
     "MakeAxis_YY"               , (LPUCHAR) &MakeAxis_YY                ,
@@ -1123,16 +1121,16 @@ typedef struct tagSTART_ADDRESSES
     "_YYAlloc"                  , (LPUCHAR) &_YYAlloc                   ,
     "YYCopy"                    , (LPUCHAR) &YYCopy                     ,
     "YYCopyFreeDst"             , (LPUCHAR) &YYCopyFreeDst              ,
-    "YYFree"                    , (LPUCHAR) &YYFree                     ,
+    "_YYFree"                   , (LPUCHAR) &_YYFree                    ,
   #ifdef DEBUG
     "YYResIsEmpty"              , (LPUCHAR) YYResIsEmpty                ,
   #endif
+    "YYCopyFcnStr"              , (LPUCHAR) &YYCopyFcnStr               ,
+    "YYCopyFcnTrn"              , (LPUCHAR) &YYCopyFcnTrn               ,
     "YYCountFcnStr"             , (LPUCHAR) &YYCountFcnStr              ,
-    "YYCountFcnGlb"             , (LPUCHAR) &YYCountFcnGlb              ,
-    "YYCopyFcn"                 , (LPUCHAR) YYCopyFcn                   ,
-    "YYCopyGlbFcn_PTB"          , (LPUCHAR) YYCopyGlbFcn_PTB            ,
+    "YYCountFcnTrn"             , (LPUCHAR) &YYCountFcnTrn              ,
   #ifdef DEBUG
-    "YYCheckInuse"              , (LPUCHAR) YYCheckInuse                ,
+    "_YYCheckInuse"             , (LPUCHAR) _YYCheckInuse               ,
   #endif
 
     // C API routines

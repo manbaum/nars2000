@@ -237,7 +237,7 @@ NORMAL_EXIT:
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    UnlocalizeSTEs ();
+    UnlocalizeSTEs (NULL);
 
     return lpYYRes;
 } // End SysFnDydEA_EM_YY

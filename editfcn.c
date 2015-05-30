@@ -3806,32 +3806,47 @@ HGLOBAL CopyGlbMemory
     // Get the size of the global memory object
     dwSize = MyGlobalSize (hGlbSrc);
 
-    // Allocate space for the result
-
-    // Note we do not use MyGlobalAlloc or DbgGlobalAlloc here as the global memory handle
-    //   is to be placed onto the clipboard at which point the system
-    //   will own the handle
-
     if (bMyFns)
-        hGlbDst = DbgGlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
-    else
-        hGlbDst =    GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
-    if (hGlbDst)
     {
-        // We don't use MyGlobalLock/Unlock on the source
-        //   as we might not own the handle.
+        // Allocate space for the result
+        hGlbDst = DbgGlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
 
-        // Lock both memory blocks
-        lpMemDst = GlobalLock (hGlbDst);
-        lpMemSrc = GlobalLock (hGlbSrc);
+        if (hGlbDst)
+        {
+            // Lock both memory blocks
+            lpMemDst = MyGlobalLock (hGlbDst);
+            lpMemSrc = MyGlobalLock (hGlbSrc);
 
-        // Copy source to destin
-        CopyMemory (lpMemDst, lpMemSrc, dwSize);
+            // Copy source to destin
+            CopyMemory (lpMemDst, lpMemSrc, dwSize);
 
-        // We no longer need these ptrs
-        GlobalUnlock (hGlbDst); lpMemDst = NULL;
-        GlobalUnlock (hGlbSrc); lpMemSrc = NULL;
-    } // End IF
+            // We no longer need these ptrs
+            MyGlobalUnlock (hGlbDst); lpMemDst = NULL;
+            MyGlobalUnlock (hGlbSrc); lpMemSrc = NULL;
+        } // End IF
+    } else
+    {
+        // Note we do not use MyGlobalAlloc or DbgGlobalAlloc here as the global memory handle
+        //   is to be placed onto the clipboard at which point the system
+        //   will own the handle
+
+        // Allocate space for the result
+        hGlbDst =    GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+
+        if (hGlbDst)
+        {
+            // Lock both memory blocks
+            lpMemDst = GlobalLock (hGlbDst);
+            lpMemSrc = GlobalLock (hGlbSrc);
+
+            // Copy source to destin
+            CopyMemory (lpMemDst, lpMemSrc, dwSize);
+
+            // We no longer need these ptrs
+            GlobalUnlock (hGlbDst); lpMemDst = NULL;
+            GlobalUnlock (hGlbSrc); lpMemSrc = NULL;
+        } // End IF
+    } // End IF/ELSE
 
     return hGlbDst;
 } // End CopyGlbMemory

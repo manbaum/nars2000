@@ -39,7 +39,7 @@ NAME_TYPES TranslateSOTypeToNameType
     (SO_ENUM soType)            // SynObj type
 
 {
-    // Split cases based upon the user-defined function/operator type
+    // Split cases based upon the Syntax Object type
     switch (soType)
     {
         // Flavors of vars
@@ -103,7 +103,7 @@ SO_ENUM TranslateNameTypeToSOType
     (NAME_TYPES nameType)
 
 {
-    // Split cases based upon the user-defined function/operator type
+    // Split cases based upon the name type
     switch (nameType)
     {
         case NAMETYPE_VAR:

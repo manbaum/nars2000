@@ -5219,8 +5219,9 @@ HGLOBAL Tokenize_EM
 #ifdef DEBUG
     // Check for re-entrant
     if (gInUse)
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
     else
+        // Mark as now in use
         gInUse++;
 #endif
 
@@ -5594,7 +5595,7 @@ FREED_EXIT:
 #ifdef DEBUG
     // Ensure numeric length has been reset
     if (tkLocalVars.iNumLen NE 0)
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
     // Mark as no longer in use
     gInUse--;
 #endif

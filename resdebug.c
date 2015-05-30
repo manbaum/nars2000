@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -224,7 +224,7 @@ void _SaveObj
         // Increment the counter
         (*lpiCount)++;
     } else
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
 
     if (bCSO)
         LeaveCriticalSection (&CSORsrc);
@@ -264,7 +264,7 @@ void _DeleObj
 
     // If we didn't find it, ...
     if (i < 0)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     else
     {
         // Move down the saved values above this entry
@@ -286,9 +286,9 @@ void _DeleObj
         if (*lpiCount)
             (*lpiCount)--;
         else
-            DbgBrk ();
+            DbgBrk ();              // #ifdef DEBUG
     } else
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
 
     if (bCSO)
         LeaveCriticalSection (&CSORsrc);
@@ -351,7 +351,7 @@ void LastTouch
 
     // If we didn't find it, ...
     if (i < 0 || j < 0)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     else
     // If it's currently locked, ...
     if (bLocked)
@@ -400,7 +400,7 @@ UBOOL _MyCloseSemaphore
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _DeleObj (OBJ_SEMAPHORE, hSemaphore);
@@ -437,7 +437,7 @@ HBITMAP _MyCreateCompatibleBitmap
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
@@ -472,7 +472,7 @@ HDC _MyCreateCompatibleDC
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_MEMDC,    hMEMDC,  NULL,       uLine);
@@ -509,7 +509,7 @@ HPEN _MyCreatePen
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_PEN,      hPen,    NULL,       uLine);
@@ -544,7 +544,7 @@ HFONT _MyCreateFontIndirect
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_FONT,     hFont,   NULL,       uLine);
@@ -579,7 +579,7 @@ HFONT _MyCreateFontIndirectW
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_FONT,     hFont,   NULL,       uLine);
@@ -616,7 +616,7 @@ HRGN _MyCreatePolygonRgn
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_REGION,   hRgn,    NULL,       uLine);
@@ -651,7 +651,7 @@ HRGN _MyCreateRectRgnIndirect
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_REGION,   hRgn,    NULL,       uLine);
@@ -696,7 +696,7 @@ HANDLE _MyCreateSemaphoreW
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_SEMAPHORE, hSemaphore, lpFileName, uLine);
@@ -731,7 +731,7 @@ HBRUSH _MyCreateSolidBrush
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_BRUSH,    hBrush,  NULL,       uLine);
@@ -766,7 +766,7 @@ UBOOL _MyDeleteDC
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _DeleObj (OBJ_MEMDC, hMEMDC);
@@ -795,7 +795,7 @@ UBOOL _MyDeleteObject
 
     // Validate the object type
     if (!(OBJ_PEN <= dwType && dwType <= OBJ_COLORSPACE))
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
 
     // Delete the object
     bRet = DeleteObject (hObject);
@@ -811,7 +811,7 @@ UBOOL _MyDeleteObject
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _DeleObj (dwType, hObject);
@@ -846,7 +846,7 @@ HDC _MyGetDC
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_DC,       hDC,     NULL,       uLine);
@@ -881,7 +881,7 @@ HDC _MyGetWindowDC
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_DC,       hDC,     NULL,       uLine);
@@ -917,7 +917,7 @@ HBITMAP _MyLoadBitmap
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
@@ -957,7 +957,7 @@ HANDLE _MyLoadImage
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
@@ -993,7 +993,7 @@ UBOOL _MyReleaseDC
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _DeleObj (OBJ_DC, hDC);
@@ -1036,7 +1036,7 @@ UBOOL _MyReleaseSemaphore
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     return bRet;
@@ -1081,7 +1081,7 @@ LPVOID _MyGlobalAlloc
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_GLBALLOC, lpMem,   lpFileName, uLine);
@@ -1118,7 +1118,7 @@ HGLOBAL _MyGlobalHandle
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     return hGlb;
@@ -1192,7 +1192,7 @@ LPVOID _MyGlobalLockSub
                   " -- hMem = %p",
                   hMem);
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _SaveObj (OBJ_GLBLOCK,  hMem,    lpFileName, uLine);
@@ -1222,7 +1222,7 @@ UBOOL _MyGlobalUnlock
     {
         // Format a message about the last lock & alloc
         LastTouch (szTemp, hMem, FALSE);
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     bRet = GlobalUnlock (hMem);
@@ -1260,7 +1260,7 @@ SIZE_T _MyGlobalSize
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     return dwRet;
@@ -1294,7 +1294,7 @@ DWORD _MyGlobalFlags
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     return dwRet;
@@ -1332,14 +1332,14 @@ HGLOBAL _MyGlobalReAlloc
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
         // Format a message about the last lock & alloc
         LastTouch (szTemp, hMem, TRUE);
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     hGlb = GlobalReAlloc (hMem, dwBytes, uFlags);
@@ -1353,7 +1353,7 @@ HGLOBAL _MyGlobalReAlloc
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
     {
@@ -1388,7 +1388,7 @@ HGLOBAL _MyGlobalFree
     {
         // Format a message about the last lock & alloc
         LastTouch (szTemp, hMem, TRUE);
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } else
     if (gbResDebug)
         _DeleObj (OBJ_GLBALLOC, hMem);
@@ -1438,7 +1438,7 @@ LPVOID _MyHeapAlloc
             DisplayHeap ();
 #endif
         MBWC (MyGetExceptionStr (MyGetExceptionCode ()))
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End __try/__except
 
     if (lpMem)
@@ -1449,7 +1449,7 @@ LPVOID _MyHeapAlloc
     } else
     {
         DisplayHeap ();
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
 #endif
     } // End IF
 
@@ -1500,14 +1500,14 @@ HGLOBAL _MyHeapReAlloc
             DisplayHeap ();
 #endif
         MBWC (MyGetExceptionStr (MyGetExceptionCode ()))
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End __try/__except
 
 #ifdef DEBUG
     if (hGlb EQ NULL)
     {
         DisplayHeap ();
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 #endif
     // If the block moved, ...
@@ -1587,7 +1587,7 @@ LPVOID _MyVirtualAlloc
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     return lpRet;
@@ -1625,7 +1625,7 @@ UBOOL _MyVirtualFree
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
         MBC (szTemp)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
     return bRet;
@@ -1650,7 +1650,7 @@ HANDLE _MyQueryObject
     lpiCount = lpiaCount[dwType - 1];
 
     if (iCount NE *lpiCount)
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
 
     return &lpaah[dwType - 1][(*lpiCount) - 1];
 } // End _MyQueryObject
@@ -1809,11 +1809,11 @@ void _CheckMemStat
 ////GlobalMemoryStatus (&memStat);
 ////
 ////if (memStat.dwMemoryLoad EQ 100)
-////    DbgBrk ();
+////    DbgBrk ();              // #ifdef DEBUG
 ////
 #if defined (DEBUG) && defined (DEBUG_HEAP)
     if (!HeapValidate (GetProcessHeap (), 0, NULL))
-        DbgBrk ();
+        DbgBrk ();              // #ifdef DEBUG
 #endif
 } // End _CheckMemStat
 #endif

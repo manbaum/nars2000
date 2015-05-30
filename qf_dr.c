@@ -1360,10 +1360,11 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
             if (L'A' <= aplChar
               &&        aplChar <= L'Z')
                 aplChar -= L'A' - 10;
+#ifdef DEBUG
             else
                 // We should never get here
-                DbgStop ();
-
+                DbgStop ();         // #ifdef DEBUG
+#endif
             // Shift and accumulate
             aplLongestRht = (aplLongestRht << 4) | aplChar;
         } // End FOR

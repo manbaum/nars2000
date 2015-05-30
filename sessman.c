@@ -1792,7 +1792,7 @@ NORMAL_EXIT:
                     static WCHAR wFcn[32] = L"test";
                     extern HGLOBAL hGlbRC1,
                                    hGlbRC2;
-                    DbgBrk ();
+                    DbgBrk ();          // #ifdfef DEBUG
 
                     // Set the flags for what we're looking up
                     stFlags.Inuse   = TRUE;
@@ -1822,7 +1822,7 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F4:             // Display symbol table entries
                                         //   with non-zero reference counts
-                    DbgBrk ();
+                    DbgBrk ();          // #ifdef DEBUG
                     // If it's Shift-, then display all
                     if (GetKeyState (VK_SHIFT) & BIT15)
                         DisplaySymTab (lpMemPTD->lphtsPTD, TRUE);
@@ -1911,7 +1911,7 @@ NORMAL_EXIT:
                     lpMemPTD = GetMemPTD ();
 
                     // Signal a breakpoint to invoke the debugger
-                    DbgBrk ();
+                    DbgBrk ();      // #ifdef DEBUG
 
                     HeapCompact (GetProcessHeap (), 0);
 

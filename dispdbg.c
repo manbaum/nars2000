@@ -1399,13 +1399,11 @@ void DisplayFcnStrand
     {
         case TKT_VARNAMED:          // Because we don't distinguish between
                                     //   functions and variables in AssignName_EM
-            DbgBrk ();          // ***FINISHME*** -- TKT_VARNAMED in DisplayFcnStrand
-
-
-
-
-
-
+            // This DEBUG stmt probably never is triggered because
+            //    pl_yylex converts all unassigned named vars to temps
+#ifdef DEBUG
+            DbgStop ();         // ***Probably never executed***
+#endif
             break;
 
         case TKT_FCNIMMED:
@@ -2727,7 +2725,7 @@ void DisplayUndo
         *p = WC_CR;
 
     if (bShift)
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbEC); lpwsz = NULL;

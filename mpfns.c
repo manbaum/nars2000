@@ -251,7 +251,7 @@ mpir_ui mpz_invalid
         case MP_DIVISIBLE_P     :
         case MP_DIVISIBLE_UI_P  :
         case MP_DIVISIBLE_2EXP_P:
-            DbgBrk ();              // ***FIXME***
+            DbgStop ();             // ***FIXME***
 
             break;
 

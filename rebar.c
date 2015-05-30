@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -500,7 +500,7 @@ HWND MakeWorkspaceWindow
     {
         UINT uErr = GetLastError ();
 
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
     } // End IF/ELSE
 #endif
 
@@ -689,7 +689,7 @@ HWND MakeEditWindow
     {
         UINT uErr = GetLastError ();
 
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
     } // End IF/ELSE
 #endif
 
@@ -878,7 +878,7 @@ HWND MakeObjectsWindow
     {
         UINT uErr = GetLastError ();
 
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
     } // End IF/ELSE
 #endif
 
@@ -1379,7 +1379,7 @@ HWND MakeFontWindow
     {
         UINT uErr = GetLastError ();
 
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
     } // End IF/ELSE
 #endif
 
@@ -2384,7 +2384,7 @@ HWND MakeLanguageWindow
     {
         UINT uErr = GetLastError ();
 
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
     } // End IF/ELSE
 #endif
 

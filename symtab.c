@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,12 +34,12 @@
 #ifdef DEBUG_CS
   int gCSOHshTab = 0;
 
-  #define MyEnterCriticalSection(a)     {gCSOHshTab++;                                          \
-                                         dprintfWL0 (L"ECS:  %d (#%d)", gCSOHshTab, __LINE__);  \
+  #define MyEnterCriticalSection(a)     {gCSOHshTab++;                                              \
+                                         dprintfWL0 (L"ECS:  %d (#%d)", gCSOHshTab, __LINE__);      \
                                          EnterCriticalSection (a);}
-  #define MyLeaveCriticalSection(a)     {gCSOHshTab--;                                          \
-                                         if (gCSOHshTab < 0) DbgBrk ();                         \
-                                         dprintfWL0 (L"LCS:  %d (#%d)", gCSOHshTab, __LINE__);  \
+  #define MyLeaveCriticalSection(a)     {gCSOHshTab--;                                              \
+                                         if (gCSOHshTab < 0) DbgBrk ();     /* #ifdef DEBUG_CS */   \
+                                         dprintfWL0 (L"LCS:  %d (#%d)", gCSOHshTab, __LINE__);      \
                                          LeaveCriticalSection (a);}
 #else
   #define MyEnterCriticalSection(a)     EnterCriticalSection (a)

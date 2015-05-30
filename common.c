@@ -502,7 +502,7 @@ void DbgNop
     (void)
 
 {
-    DbgBrk ();
+    DbgBrk ();          // #ifdef DEBUG
 } // End DbgNop
 #endif
 
@@ -813,7 +813,7 @@ int MySprintfW
 #ifdef DEBUG
     // If it failed, ...
     if (FAILED (hResult))
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
 #endif
 
     return lstrlenW (lpwBuffer);

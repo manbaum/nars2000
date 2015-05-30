@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1457,7 +1457,7 @@ UBOOL FmtSpec_EM
     // We should never get here as we process the
     //   trailing zero in the input line which should
     //   exit from one of the actions with FSROW_EXIT.
-    DbgStop ();
+    DbgStop ();         // We should never get here
 
 ERROR_EXIT:
 NORMAL_EXIT:

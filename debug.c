@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1064,7 +1064,7 @@ int oprintfW
 
     // If it failed, ...
     if (FAILED (hResult))
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
 
     // Return the length of the formatted string
     return lstrlenW (wszTemp);
@@ -1104,7 +1104,7 @@ int dprintfWL0
 
     // If it failed, ...
     if (FAILED (hResult))
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
 
     // Return the length of the formatted string
     return lstrlenW (wszTemp);
@@ -1147,7 +1147,7 @@ int dprintfWL9
 
     // If it failed, ...
     if (FAILED (hResult))
-        DbgBrk ();
+        DbgBrk ();          // #ifdef DEBUG
 
     // Return the length of the formatted string
     return lstrlenW (wszTemp);

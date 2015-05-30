@@ -1259,7 +1259,7 @@ void pn_yyfprintf
 
     // If it failed, ...
     if (FAILED (hResult))
-        DbgBrk ();
+        DbgBrk ();                  // #ifdef DEBUG
 
     // Check last character.
     i1 = lstrlen (szTemp);

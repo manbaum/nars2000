@@ -381,7 +381,7 @@ void InitPrimFn
 
 {
     if (PrimFnsTab[PRIMTAB_MASK & wchFn])
-        DbgStop ();
+        DbgStop ();         // We should never get here
     else
         PrimFnsTab[PRIMTAB_MASK & wchFn] = lpPrimFn;
 } // End InitPrimFn
@@ -611,7 +611,7 @@ void InitPrimProtoFn
 
 {
     if (PrimProtoFnsTab[PRIMTAB_MASK & wchFn])
-        DbgStop ();
+        DbgStop ();         // We should never get here
     else
         PrimProtoFnsTab[PRIMTAB_MASK & wchFn] = lpPrimFn;
 } // End InitPrimProtoFn
@@ -629,7 +629,7 @@ void InitPrimProtoOp
 
 {
     if (PrimProtoOpsTab[PRIMTAB_MASK & wchFn])
-        DbgStop ();
+        DbgStop ();         // We should never get here
     else
         PrimProtoOpsTab[PRIMTAB_MASK & wchFn] = lpPrimOp;
 } // End InitPrimProtoOp
@@ -747,7 +747,7 @@ void Init1PrimSpec
 
 {
     if (PrimSpecTab[PRIMTAB_MASK & wchFn])
-        DbgStop ();
+        DbgStop ();         // We should never get here
     else
         PrimSpecTab[PRIMTAB_MASK & wchFn] = lpPrimSpec;
 } // End Init1PrimSpec

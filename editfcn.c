@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3331,9 +3331,10 @@ LRESULT WINAPI LclEditCtrlWndProc
             else
             if (IzitDialog (hWndParent))
                 fontEnum = FONTENUM_SM;
+#ifdef DEBUG
             else
-                DbgStop ();
-
+                DbgStop ();         // #ifdef DEBUG
+#endif
             // Get the caret width and height
             sizeChar = *GetFSIndAveCharSize (fontEnum);
 
@@ -3680,7 +3681,7 @@ void RespecifyNewQuadPW
                 lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
 #ifdef DEBUG
             else
-                DbgStop ();
+                DbgStop ();         // #ifdef DEBUG
 #endif
         } // End IF
     } // End IF

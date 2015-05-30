@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -995,9 +995,10 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 {
                     // stData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
-
+#ifdef DEBUG
                     // If we ever get here, we must have missed a type demotion
-                    DbgStop ();
+                    DbgStop ();             // #ifdef DEBUG
+#endif
                 } // End IF
 
                 // Handle the immediate case

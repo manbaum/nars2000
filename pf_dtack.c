@@ -499,24 +499,24 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     // Skip over the dimensions to the data
     lpMemRes = lpMemDimRes;
 
-#define INIT_REL(mpq,mpf)                       \
-    /* If either arg is global numeric, ... */  \
-    if (IsGlbNum (aplTypeLft)                   \
-     || IsGlbNum (aplTypeRht))                  \
-    {                                           \
-        if (IsRat (aplTypeLft)                  \
-         || IsRat (aplTypeRht))                 \
-        {                                       \
-            mpq (&atLft.aplRat);                \
-            mpq (&atRht.aplRat);                \
-        } else                                  \
-        if (IsVfp (aplTypeLft)                  \
-         || IsVfp (aplTypeRht))                 \
-        {                                       \
-            mpf (&atLft.aplVfp);                \
-            mpf (&atRht.aplVfp);                \
-        } else                                  \
-            DbgStop ();                         \
+#define INIT_REL(mpq,mpf)                               \
+    /* If either arg is global numeric, ... */          \
+    if (IsGlbNum (aplTypeLft)                           \
+     || IsGlbNum (aplTypeRht))                          \
+    {                                                   \
+        if (IsRat (aplTypeLft)                          \
+         || IsRat (aplTypeRht))                         \
+        {                                               \
+            mpq (&atLft.aplRat);                        \
+            mpq (&atRht.aplRat);                        \
+        } else                                          \
+        if (IsVfp (aplTypeLft)                          \
+         || IsVfp (aplTypeRht))                         \
+        {                                               \
+            mpf (&atLft.aplVfp);                        \
+            mpf (&atRht.aplVfp);                        \
+        } else                                          \
+            DbgStop (); /* We should never get here */  \
     } /* End IF */
 
     INIT_REL (mpq_init, mpfr_init0)

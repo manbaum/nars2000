@@ -403,9 +403,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 {
                     // stData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir_PTB (lptkRhtArg->tkData.tkSym->stData.stGlbData));
-
+#ifdef DEBUG
                     // If we ever get here, we must have missed a type demotion
-                    DbgStop ();
+                    DbgStop ();             // #ifdef DEBUG
+#endif
                 } // End IF
 
                 // Handle the immediate case

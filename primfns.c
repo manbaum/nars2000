@@ -3181,7 +3181,7 @@ LPPL_YYSTYPE MakeNoValue_YY
 //***************************************************************************
 //  $GetSISLayer
 //
-//  Peel back to the first non-Imm/Exec layer
+//  Peel back to the first non-Imm/Exec/ErrCtrl layer
 //***************************************************************************
 
 LPSIS_HEADER GetSISLayer
@@ -3190,7 +3190,8 @@ LPSIS_HEADER GetSISLayer
 {
     while (lpSISCur
         && (lpSISCur->DfnType EQ DFNTYPE_IMM
-         || lpSISCur->DfnType EQ DFNTYPE_EXEC))
+         || lpSISCur->DfnType EQ DFNTYPE_EXEC
+         || lpSISCur->DfnType EQ DFNTYPE_ERRCTRL))
         lpSISCur = lpSISCur->lpSISPrv;
 
     return lpSISCur;

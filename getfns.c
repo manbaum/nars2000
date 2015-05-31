@@ -2894,7 +2894,20 @@ LPPRIMFNS GetPrototypeFcnPtr
             // Get a ptr to the prototype function for the first symbol (an operator)
             return (LPPRIMFNS) PrimProtoOpsTab[SymTrans (lptkFunc)];
 
+        case TKT_FCNAFO:        // No prototypes
+        case TKT_OP1AFO:        // ...
+        case TKT_OP2AFO:        // ...
+            return NULL;
+
         case TKT_FCNNAMED:      // e.g. []VR{each}0{rho}{enclose}'abc'
+        case TKT_OP1NAMED:      // ...
+        case TKT_OP2NAMED:      // ...
+            // If it's an internal function, ...
+            if (lptkFunc->tkData.tkSym->stFlags.FcnDir)
+                return NULL;
+
+            // Fall through to unnamed behavior
+
         case TKT_FCNARRAY:
             // Get the function global memory handle
             hGlbFcn = GetGlbHandle (lptkFunc);

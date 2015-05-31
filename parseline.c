@@ -5477,17 +5477,14 @@ PL_YYLEX_FCNNAMED:
                                     // Lock the memory to get a ptr to it
                                     lpMemDfnHdr = MyGlobalLock (hGlbFcn);
 
-#if FALSE       // Enable this code when we have a TKT_FCNDFN
+#if FALSE       // Enable this code when we have a TKT_FCNDFN (unnamed FCN DFN)
                                     // Convert this to an unnamed global fcn array
                                     lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_FCNAFO : TKT_FCNDFN;
                                     lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-                                    lpplYYLval->tkToken.tkSynObj          = soF;
+////////////////////////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
 #endif
-                                    // Check the function valence
-                                    if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
-                                        lpplYYLval->tkToken.tkSynObj = soNF;
-                                    else
-                                        lpplYYLval->tkToken.tkSynObj = soF;
+                                    // Set the tkSynObj value from the UDFO header
+                                    lpplYYLval->tkToken.tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
 
                                     // We no longer need this ptr
                                     MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
@@ -5929,17 +5926,14 @@ PL_YYLEX_OP1NAMED:
                                 // Lock the memory to get a ptr to it
                                 lpMemDfnHdr = MyGlobalLock (hGlbFcn);
 
-#if FALSE       // Enable this code when we have a TKT_OP1DFN
+#if FALSE       // Enable this code when we have a TKT_OP1DFN (unnamed OP1 DFN)
                                 // Convert this to an unnamed global fcn array
                                 lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_OP1AFO : TKT_OP1DFN;
                                 lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
 ////////////////////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
 #endif
-                                // Check the function valence
-                                if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
-                                    lpplYYLval->tkToken.tkSynObj = soMOPN;
-                                else
-                                    lpplYYLval->tkToken.tkSynObj = soMOP;
+                                // Set the tkSynObj value from the UDFO header
+                                lpplYYLval->tkToken.tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
@@ -5952,9 +5946,6 @@ PL_YYLEX_OP1NAMED:
                             defstop
                                 break;
                         } // End SWITCH
-
-////                    // Increment the refcnt
-////                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  Any named OP1
                     } // End IF/ELSE/...
 
                     // If the SynObj is still the default, ...
@@ -6023,17 +6014,14 @@ PL_YYLEX_OP2NAMED:
                                 // Lock the memory to get a ptr to it
                                 lpMemDfnHdr = MyGlobalLock (hGlbFcn);
 
-#if FALSE       // Enable this code when we have a TKT_OP2DFN
+#if FALSE       // Enable this code when we have a TKT_OP2DFN (unnamed OP2 DFN)
                                 // Convert this to an unnamed global fcn array
                                 lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_OP2AFO : TKT_OP2DFN;
                                 lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
 ////////////////////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
 #endif
-                                // Check the function valence
-                                if (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL)
-                                    lpplYYLval->tkToken.tkSynObj = soDOPN;
-                                else
-                                    lpplYYLval->tkToken.tkSynObj = soDOP;
+                                // Set the tkSynObj value from the UDFO header
+                                lpplYYLval->tkToken.tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;

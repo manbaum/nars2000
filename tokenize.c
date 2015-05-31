@@ -2767,35 +2767,31 @@ UBOOL CheckConstantCopyLoad
             case DFN_HEADER_SIGNATURE:
             {
                 LPDFN_HEADER lpMemDfnHdr;
-                UBOOL        bNF;
 
                 // Lock the memory to get a ptr to it
                 lpMemDfnHdr = MyGlobalLock (hGlbObj);
 
-                // Izit niladic?
-                bNF = (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL);
+                // Set the tkSynObj value from the UDFO header
+                lptkPrv->tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
 
                 // Split cases based upon the Dfn type
                 switch (lpMemDfnHdr->DfnType)
                 {
                     case DFNTYPE_OP1:
                         // Fill in the result token
-                        lptkPrv->tkFlags.TknType   = TKT_OP1NAMED;
-                        lptkPrv->tkSynObj          = bNF ? soMOPN : soMOP;
+                        lptkPrv->tkFlags.TknType = TKT_OP1NAMED;
 
                         break;
 
                     case DFNTYPE_OP2:
                         // Fill in the result token
-                        lptkPrv->tkFlags.TknType   = TKT_OP2NAMED;
-                        lptkPrv->tkSynObj          = bNF ? soDOPN : soDOP;
+                        lptkPrv->tkFlags.TknType = TKT_OP2NAMED;
 
                         break;
 
                     case DFNTYPE_FCN:
                         // Fill in the result token
-                        lptkPrv->tkFlags.TknType   = TKT_FCNNAMED;
-                        lptkPrv->tkSynObj          = bNF ? soNF : soF;
+                        lptkPrv->tkFlags.TknType = TKT_FCNNAMED;
 
                         break;
 

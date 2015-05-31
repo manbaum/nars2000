@@ -358,6 +358,7 @@ void FreeResultSub
         case TKT_FILLJOT:       // ...                    fill {jot}
         case TKT_RIGHTBRACE:    // ...                    right brace in {}
         case TKT_SYNTERR:       // ...                    SYNTAX ERROR
+        case TKT_EOL:           // ...                    EOL EXAMPLE:  {{alpha}{alpha} {omega}}{each}{zilde}
             return;
 
         case TKT_STRNAMED:  // tkData contains an HGLOBAL of a strand of names

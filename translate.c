@@ -135,6 +135,38 @@ SO_ENUM TranslateNameTypeToSOType
 
 
 //***************************************************************************
+//  $TranslateDfnTypeToSOType
+//
+//  Translate a UDFO type (see FH_PARSE.H)
+//    to a SynObj type (see SO_ENUM)
+//***************************************************************************
+
+SO_ENUM TranslateDfnTypeToSOType
+    (LPDFN_HEADER lpMemDfnHdr)
+
+{
+    Assert (GetSignatureMem (lpMemDfnHdr) EQ DFN_HEADER_SIGNATURE);
+
+    // Split cases based upon the DfnType
+    switch (lpMemDfnHdr->DfnType)
+    {
+        case DFNTYPE_OP1:
+            return (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL) ? soMOPN : soMOP;
+
+        case DFNTYPE_OP2:
+            return (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL) ? soDOPN : soDOP;
+
+        case DFNTYPE_FCN:
+            return (lpMemDfnHdr->FcnValence EQ FCNVALENCE_NIL) ? soNF   : soF  ;
+
+        case DFNTYPE_UNK:
+        defstop
+            return soUNK;
+    } // End SWITCH
+} // End TranslateDfnTypeToSOType
+
+
+//***************************************************************************
 //  $TranslateTknTypeToTknTypeNamed
 //
 //  Translate a token type (see TOKEN_TYPES) to

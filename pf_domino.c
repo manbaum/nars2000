@@ -830,11 +830,16 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
+                    // Check for NaN
+                    if (!_isnan (lpGslVectorW->data[uCol]))
+                        lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
+                    else
+                        goto DOMAIN_EXIT;
                 } // End FOR
 
 #undef  lpMemData
             } // End FOR
+
             break;
 
         case ARRAY_RAT:

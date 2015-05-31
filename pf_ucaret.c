@@ -175,10 +175,8 @@ APLINT lcmAplInt
 
     // Calculate the GCD
     aplTmp = gcdAplInt (aplLft, aplRht, lpPrimSpec);
-    if (aplTmp EQ 0)
-        return aplTmp;
-
-    aplTmp = aplLft * (aplRht / aplTmp);
+    if (aplTmp NE 0)
+        aplTmp = aplLft * (aplRht / aplTmp);
 
     // The sign of the result is the sign of the left argument
     if (aplIntegerLft < 0)
@@ -208,10 +206,8 @@ APLFLOAT lcmAplFloat
 
     // Calculate the GCD
     aplTmp = gcdAplFloat (aplLft, aplRht, lpPrimSpec);
-    if (fabs (aplTmp) < SYS_CT)
-        return aplTmp;
-
-    aplTmp = aplLft * (aplRht / aplTmp);
+    if (aplTmp >= GCD_CT)
+        aplTmp = aplLft * (aplRht / aplTmp);
 
     // The sign of the result is the sign of the left argument
     if (SIGN_APLFLOAT (aplFloatLft))

@@ -65,7 +65,7 @@ PRIMSPEC PrimSpecStile = {
     NULL,   // &PrimFnDydStileIisFvF, -- Can't happen w/Stile
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydStileFisIvI, -- Can't happen w/Stile
+    &PrimFnDydStileFisIvI,
     &PrimFnDydStileFisFvF,
 
     NULL,   // &PrimFnDydStileBisRvR, -- Can't happen w/Stile
@@ -200,10 +200,7 @@ APLINT PrimFnMonStileIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    if (aplIntegerRht < 0)
-        return -aplIntegerRht;
-    else
-        return  aplIntegerRht;
+    return  abs64 (aplIntegerRht);
 } // End PrimFnMonStileIisI
 
 
@@ -318,28 +315,79 @@ APLINT PrimFnDydStileIisIvI
     // Handle zero modulus or argument
     if (aplIntegerLft EQ 0
      || aplIntegerRht EQ 0)
-        return aplIntegerRht;
+        // Return the right arg with the appropriate sign
+        aplTmp = aplIntegerRht;
+    else
+    {
+        // Ensure both arguments are non-negative
+        aplLft = PrimFnMonStileIisI (aplIntegerLft, lpPrimSpec);
+        aplRht = PrimFnMonStileIisI (aplIntegerRht, lpPrimSpec);
 
-    // Ensure both arguments are non-negative
-    aplLft = PrimFnMonStileIisI (aplIntegerLft, lpPrimSpec);
-    aplRht = PrimFnMonStileIisI (aplIntegerRht, lpPrimSpec);
+        aplTmp = aplRht % aplLft;
 
-    aplTmp = aplRht % aplLft;
-
-    // If the arguments are of opposite sign
-    //   and the result so far is non-zero,
-    //   replace the result with its complement
-    //   in the modulus.
-    if ((aplIntegerLft > 0) NE (aplIntegerRht > 0)
-     && aplTmp NE 0)
-        aplTmp = aplLft - aplTmp;
+        // If the arguments are of opposite sign
+        //   and the result so far is non-zero,
+        //   replace the result with its complement
+        //   in the modulus.
+        if ((aplIntegerLft > 0) NE (aplIntegerRht > 0)
+         && aplTmp NE 0)
+            aplTmp = aplLft - aplTmp;
+    } // End IF/ELSE
 
     // The sign of the result is the sign of the left arg
     if (aplIntegerLft < 0)
+    {
+        if (aplTmp EQ 0)
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
         return -aplTmp;
-    else
+    } else
         return  aplTmp;
 } // End PrimFnDydStileIisIvI
+
+
+//***************************************************************************
+//  $PrimFnDydStileFisIvI
+//
+//  Primitive scalar function dyadic Stile:  F {is} I fn I
+//***************************************************************************
+
+APLFLOAT PrimFnDydStileFisIvI
+    (APLINT     aplIntegerLft,
+     APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    APLINT aplTmp, aplLft, aplRht;
+
+    // Handle zero modulus or argument
+    if (aplIntegerLft EQ 0
+     || aplIntegerRht EQ 0)
+        // Return the right arg with the appropriate sign
+        aplTmp = aplIntegerRht;
+    else
+    {
+        // Ensure both arguments are non-negative
+        aplLft = PrimFnMonStileIisI (aplIntegerLft, lpPrimSpec);
+        aplRht = PrimFnMonStileIisI (aplIntegerRht, lpPrimSpec);
+
+        aplTmp = aplRht % aplLft;
+
+        // If the arguments are of opposite sign
+        //   and the result so far is non-zero,
+        //   replace the result with its complement
+        //   in the modulus.
+        if ((aplIntegerLft > 0) NE (aplIntegerRht > 0)
+         && aplTmp NE 0)
+            aplTmp = aplLft - aplTmp;
+        } // End IF/ELSE
+
+    // The sign of the result is the sign of the left arg
+    if (aplIntegerLft < 0)
+        return -(APLFLOAT) aplTmp;
+    else
+        return  (APLFLOAT) aplTmp;
+} // End PrimFnDydStileFisIvI
 
 
 //***************************************************************************
@@ -361,8 +409,8 @@ APLFLOAT PrimFnDydStileFisFvF
     // Handle zero modulus or argument
     if (aplFloatLft EQ 0
      || aplFloatRht EQ 0)
-        // Return the right arg
-        return aplFloatRht;
+        // Return the right arg with the appropriate sign
+        aplTmp = aplFloatRht;
     else
     // If the right arg is negative infinity, ...
     if (IsFltNegInfinity (aplFloatRht))
@@ -419,40 +467,41 @@ APLFLOAT PrimFnDydStileFisFvF
                                          FALSE);
         // Return the right arg
         return aplFloatRht;
-    } // End IF
+    } else
+    {
+        // Ensure both arguments are non-negative
+        aplLft = PrimFnMonStileFisF (aplFloatLft, lpPrimSpec);
+        aplRht = PrimFnMonStileFisF (aplFloatRht, lpPrimSpec);
 
-    // Ensure both arguments are non-negative
-    aplLft = PrimFnMonStileFisF (aplFloatLft, lpPrimSpec);
-    aplRht = PrimFnMonStileFisF (aplFloatRht, lpPrimSpec);
+        // Get the current value of []CT
+        fQuadCT = GetQuadCT ();
 
-    // Get the current value of []CT
-    fQuadCT = GetQuadCT ();
+        // Calculate right divided-by left
+        aplTmp = aplRht / aplLft;
 
-    // Calculate right divided-by left
-    aplTmp = aplRht / aplLft;
+        // If Rht divided-by Lft is near an integer within CT
+        //   return 0.
+        if (_CompareCT (aplTmp, floor (aplTmp), fQuadCT, NULL, TRUE))
+            return SIGN_APLFLOAT (aplFloatLft) ? -0.0 : 0.0;
 
-    // If Rht divided-by Lft is near an integer within CT
-    //   return 0.
-    if (_CompareCT (aplTmp, floor (aplTmp), fQuadCT, NULL, TRUE))
-        return 0;
+        if (_CompareCT (aplTmp, ceil  (aplTmp), fQuadCT, NULL, TRUE))
+            return SIGN_APLFLOAT (aplFloatLft) ? -0.0 : 0.0;
 
-    if (_CompareCT (aplTmp, ceil  (aplTmp), fQuadCT, NULL, TRUE))
-        return 0;
+        // Calculate the modulus
+        aplTmp = fmod (aplRht, aplLft);
 
-    // Calculate the modulus
-    aplTmp = fmod (aplRht, aplLft);
-
-    // Due to differences in fmod and APL's mod as to how they treat signed args, ...
-    // If the arguments are of opposite sign
-    //   and the result so far is non-zero,
-    //   replace the result with its complement
-    //   in the modulus.
-    if (SIGN_APLFLOAT (aplFloatLft) NE SIGN_APLFLOAT (aplFloatRht)
-     && aplTmp NE 0)
-        aplTmp = aplLft - aplTmp;
+        // Due to differences in fmod and APL's mod as to how they treat signed args, ...
+        // If the arguments are of opposite sign
+        //   and the result so far is non-zero,
+        //   replace the result with its complement
+        //   in the modulus.
+        if (SIGN_APLFLOAT (aplFloatLft) NE SIGN_APLFLOAT (aplFloatRht)
+         && aplTmp NE 0)
+            aplTmp = aplLft - aplTmp;
+    } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
-    if (aplFloatLft < 0)
+    if (SIGN_APLFLOAT (aplFloatLft))
         return -aplTmp;
     else
         return  aplTmp;
@@ -476,7 +525,7 @@ APLRAT PrimFnDydStileRisRvR
     // Handle zero modulus or argument
     if (IsMpq0 (&aplRatLft)
      || IsMpq0 (&aplRatRht))
-        // Return the right arg
+        // Return the right arg with the appropriate sign
         mpq_init_set (&mpqRes, &aplRatRht);
     else
     // If the right arg is negative infinity, ...
@@ -586,6 +635,14 @@ APLRAT PrimFnDydStileRisRvR
 #endif
     } // End IF/ELSE/...
 
+    // The sign of the result is the sign of the left arg
+    if (mpq_cmp_si (&aplRatLft, 0, 1) < 0)
+    {
+        if (IsMpq0 (&mpqRes))
+            RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+        mpq_neg (&mpqRes, &mpqRes);
+    } // End IF
+
     return mpqRes;
 } // End PrimFnDydStileRisRvR
 
@@ -607,7 +664,7 @@ APLVFP PrimFnDydStileVisVvV
     // Handle zero modulus or argument
     if (IsMpf0 (&aplVfpLft)
      || IsMpf0 (&aplVfpRht))
-        // Return the right arg
+        // Return the right arg with the appropriate sign
         mpfr_init_copy (&mpfRes, &aplVfpRht);
     else
     // If the right arg is negative infinity, ...
@@ -679,6 +736,10 @@ APLVFP PrimFnDydStileVisVvV
         // Calculate the residue
         mpfr_mod (&mpfRes, &aplVfpRht, &aplVfpLft);
     } // End IF/ELSE/...
+
+    // The sign of the result is the sign of the left arg
+    if (SIGN_APLVFP (&aplVfpLft))
+        mpfr_neg (&mpfRes, &mpfRes, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnDydStileVisVvV

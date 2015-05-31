@@ -202,10 +202,10 @@ APLFLOAT gcdAplFloat
     aplLft = PrimFnMonStileFisF (aplFloatLft, lpPrimSpec);
     aplRht = PrimFnMonStileFisF (aplFloatRht, lpPrimSpec);
 
-    while (aplLft >= SYS_CT)
+    while (aplLft >= GCD_CT)
     {
         aplTmp = aplLft;
-        aplLft = fmod (aplRht, aplLft);
+        aplLft = PrimFnDydStileFisFvF (aplLft, aplRht, lpPrimSpec);
         aplRht = aplTmp;
     } // End WHILE
 

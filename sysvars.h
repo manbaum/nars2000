@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -84,6 +84,9 @@
 
 // System Comparison Tolerance
 #define SYS_CT  3E-15
+
+// GCD/LCM Comparison Tolerance
+#define GCD_CT  1E-10
 
 // Various string constants for []SA
 #define V0Char      L""

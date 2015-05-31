@@ -1663,9 +1663,13 @@ int _mpfr_cmp_ct
     // Compare 'em without tolerance
     iRet = mpfr_cmp (lpaplVfpLft, lpaplVfpRht);
 
-    // Ensure args are unequal and []CT is non-zero
+    // If args are unequal,
+    //   and []CT is non-zero,
+    //   and neither arg is either infinity, ...
     if (iRet NE 0                               // Lft NE Rht
-     && fQuadCT NE 0)                           // []CT NE 0
+     && fQuadCT NE 0                            // []CT NE 0
+     && !IsMpfInfinity (lpaplVfpLft)
+     && !IsMpfInfinity (lpaplVfpRht))
     {
         APLVFP mpfLftAbs = {0},     // Absolute value of left arg
                mpfRhtAbs = {0};     // ...               right ...

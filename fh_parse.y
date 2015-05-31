@@ -301,6 +301,13 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // Mark as a niladic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
+
+                                 // Check for Axis Operator on niladic function
+                                 if (lpfhLocalVars->DfnAxis)
+                                 {
+                                     fh_yyerror (lpfhLocalVars, "syntax error");
+                                     YYERROR;
+                                 } // End IF
                                 }
     |         AxisOpr  RhtArg   {DbgMsgWP (L"%%NoResHdr:  AxisOpr RhtArg");         // Monadic function w/axis operator
                                  InitHdrStrand (&$1);
@@ -536,6 +543,19 @@ Locals:
                                  } // End IF
 
                                  $$ = *PushHdrStrand_YY (&$3);
+                                }
+    | Locals           NAMEUNK  {DbgMsgWP (L"%%Locals:  Locals ';' NAMEUNK");
+                                 $$ = *PushHdrStrand_YY (&$2);
+                                }
+    | Locals           NAMESYS  {DbgMsgWP (L"%%Locals:  Locals ';' NAMESYS");
+                                 if (!$2.tkToken.tkData.tkSym->stFlags.Value
+                                  && !lpfhLocalVars->ParseFcnName)
+                                 {
+                                     fh_yyerror (lpfhLocalVars, "value error");
+                                     YYERROR;
+                                 } // End IF
+
+                                 $$ = *PushHdrStrand_YY (&$2);
                                 }
     ;
 

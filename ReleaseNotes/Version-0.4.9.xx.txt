@@ -1,6 +1,17 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1358 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug In Replicate Reduction
+
+Directory trunk:
+
+PARSELINE.C:
+  Just before scanning, check for "HY HY" and convert it to "HY MOP".
+
+
 Build #1357 -- Version 0.4.9.xx
 -------------------------------
 

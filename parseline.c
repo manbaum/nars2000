@@ -3920,6 +3920,19 @@ PARSELINE_SCAN:
             curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
             rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
 
+            // Convert "HY HY" to "HY MOP"
+            if (lftSynObj EQ soHY
+             && curSynObj EQ soHY)
+            {
+                // Convert the righthand HY to a primitive operator
+                ConvertHY2PFO (lpplYYCurObj,
+                               TKT_OP1IMMED,
+                               IMMTYPE_PRIMOP1,
+                               soMOP);
+                // Reset the value as it has changed
+                curSynObj = CURSYNOBJ;
+            } // End IF
+
             TRACE (L"Scanning:", L"", CURSYNOBJ, RHTSYNOBJ);
 PARSELINE_SCAN1:
             // Get the left & right binding strengths

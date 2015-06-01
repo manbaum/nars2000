@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1792,7 +1792,7 @@ void CS_GetToken_COM
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-        Assert (lpLoc->uLineNum > 0);
+        Assert (((SHORT) lpLoc->uLineNum) > 0);
 
         // Save the offset to the tokenized line header
         offTknHdr = lpFcnLines[lpLoc->uLineNum - 1].offTknLine;

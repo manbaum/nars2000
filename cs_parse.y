@@ -1751,7 +1751,7 @@ CCListRec:
                                                                     } // End IF
 
                                                                     // If $2 has an unmatched CONTINUE, ...
-                                                                    if ($2.lptk1st)
+                                                                    if ($2.lptkCL1st)
                                                                     // Loop through $2's unmatched Continue
                                                                     for (lptk1st = $2.lptk1st; lptk1st <= $2.lptkCur; lptk1st++)
                                                                     // If it's in the same sequence, ...

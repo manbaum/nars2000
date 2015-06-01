@@ -829,6 +829,7 @@ UBOOL DisplayGlbArr_EM
         // If this is an empty vector, make sure it skips a line
         if (IsEmpty (lpFmtHeader->uFmtIntWid)
          && IsVector (aplRank)
+         && bEndingCR
          && !bRawOut)
             AppendLine (L"", FALSE, TRUE);// Display the empty line
     } __except (CheckVirtAlloc (GetExceptionInformation (),

@@ -293,17 +293,6 @@ UBOOL CreateEntireRebarCtrl
     } // End IF
 
     //***************************************************************
-    // Create the Objects Window in the Rebar Ctrl
-    //***************************************************************
-    hWndOW_RB =
-      MakeObjectsWindow (hWndParent);
-    if (hWndOW_RB EQ NULL)
-    {
-        MB (pszNoCreateOW_RBWnd);
-        return FALSE;
-    } // End IF
-
-    //***************************************************************
     // Create the Font Window in the Rebar Ctrl
     //***************************************************************
     hWndFW_RB =
@@ -311,6 +300,17 @@ UBOOL CreateEntireRebarCtrl
     if (hWndFW_RB EQ NULL)
     {
         MB (pszNoCreateFW_RBWnd);
+        return FALSE;
+    } // End IF
+
+    //***************************************************************
+    // Create the Objects Window in the Rebar Ctrl
+    //***************************************************************
+    hWndOW_RB =
+      MakeObjectsWindow (hWndParent);
+    if (hWndOW_RB EQ NULL)
+    {
+        MB (pszNoCreateOW_RBWnd);
         return FALSE;
     } // End IF
 
@@ -336,14 +336,14 @@ UBOOL CreateEntireRebarCtrl
     InitEditBand (-1);
 
     //***************************************************************
-    // Initialize the Objects Window band info
-    //***************************************************************
-    InitObjectsBand (-1);
-
-    //***************************************************************
     // Initialize the Font Window band info
     //***************************************************************
     InitFontBand (-1);
+
+    //***************************************************************
+    // Initialize the Objects Window band info
+    //***************************************************************
+    InitObjectsBand (-1);
 
     //***************************************************************
     // Initialize the Language Window band info

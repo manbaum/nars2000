@@ -993,8 +993,8 @@ REBARBANDS aRebarBands[1 + IDM_TB_LAST - IDM_TB_FIRST]
 //   Show?  SM?    FE?  WindowID
  = {{TRUE, TRUE , TRUE, IDWC_WS_RB},   // Workspace
     {TRUE, TRUE , TRUE, IDWC_ED_RB},   // Edit
-    {TRUE, FALSE, TRUE, IDWC_OW_RB},   // Objects
     {TRUE, TRUE , TRUE, IDWC_FW_RB},   // SM Font
+    {TRUE, FALSE, TRUE, IDWC_OW_RB},   // Objects
     {TRUE, TRUE , TRUE, IDWC_LW_RB},   // Language
    }
 #endif

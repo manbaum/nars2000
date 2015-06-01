@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,8 +116,8 @@
 #define IDM_TB_FIRST                             IDM_TB_WS
 #define IDM_TB_WS                                600
 #define IDM_TB_ED                                601
-#define IDM_TB_OW                                602
-#define IDM_TB_FW                                603
+#define IDM_TB_FW                                602
+#define IDM_TB_OW                                603
 #define IDM_TB_LW                                604
 #define IDM_TB_LAST                              IDM_TB_LW
 

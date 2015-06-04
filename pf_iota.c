@@ -2558,8 +2558,8 @@ UBOOL PrimFnDydIotaRvN_EM
             bUseCT = IsVfp (aplTypeRht) || IsSimpleFlt (aplTypeRht);
 
             // Split cases based upon the signum of the comparison
-            switch (signum (bUseCT ? mpq_cmp_ct ( aplRatLft,  aplRatRht, fQuadCT)
-                                   : mpq_cmp    (&aplRatLft, &aplRatRht         )))
+            switch (signumint (bUseCT ? mpq_cmp_ct ( aplRatLft,  aplRatRht, fQuadCT)
+                                      : mpq_cmp    (&aplRatLft, &aplRatRht         )))
             {
                 case  1:
                     iMax = iLft - 1;
@@ -2883,7 +2883,7 @@ UBOOL PrimFnDydIotaVvN_EM
             mpfr_copy (&aplVfpLft, &lpMemLft[lpMemGupLft[iLft]]);
 
             // Split cases based upon the signum of the comparison
-            switch (signum (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT)))
+            switch (signumint (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT)))
             {
                 case  1:
                     iMax = iLft - 1;

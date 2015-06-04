@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,8 +146,8 @@ APLBOOL _CompareCT
     } // End IF
 
     // If the signs differ, return FALSE
-    if (signumf (aplFloatLft)
-     NE signumf (aplFloatRht))
+    if (signumflt (aplFloatLft)
+     NE signumflt (aplFloatRht))
         return FALSE;
 
     // Calculate the low end of the left neighborhood of (|Rht)

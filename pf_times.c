@@ -183,7 +183,7 @@ APLINT PrimFnMonTimesIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return signum (aplIntegerRht);
+    return signumint (aplIntegerRht);
 } // End PrimFnMonTimesIisI
 
 
@@ -198,7 +198,7 @@ APLINT PrimFnMonTimesIisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return signumf (aplFloatRht);
+    return signumflt (aplFloatRht);
 } // End PrimFnMonTimesIisF
 
 

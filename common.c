@@ -658,20 +658,52 @@ int signum
 
 
 //***************************************************************************
-//  $signumf
+//  $signumint
+//
+//  Return -1, 0, +1 depending upon the sign of a given integer
+//***************************************************************************
+
+int signumint
+    (APLINT val)                // Source
+
+{
+    return (val < 0) ? -1 : (val > 0);
+} // End signumint
+
+
+//***************************************************************************
+//  $signumflt
 //
 //  Return -1, 0, +1 depending upon the sign of a given float
 //***************************************************************************
 
-int signumf
+int signumflt
     (APLFLOAT val)
 
 {
-    if (val < 0)
-        return -1;
-    else
-       return (val > 0);
-} // End signumf
+    return SIGN_APLFLOAT (val) ? -1 : (val > 0);
+} // End signumflt
+
+
+//***************************************************************************
+//  $signumrat
+//
+//  Is an alias for mpq_sgn which already returns -1, 0, or 1.
+//***************************************************************************
+
+
+//***************************************************************************
+//  $signumvfp
+//
+//  Return -1, 0, +1 depending upon the sign of a given VFP
+//***************************************************************************
+
+int signumvfp
+    (LPAPLVFP val)
+
+{
+    return (SIGN_APLVFP (val) ? -1 : mpfr_sgn (val) > 0);
+} // End signumvfp
 
 
 //***************************************************************************

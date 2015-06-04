@@ -209,6 +209,7 @@
 #define SIGN_APLFLOAT(a)    ((UBOOL) (((LPAPLFLOATSTR) &a)->bSign)) // ...            APLFLOAT
 #define SIGN_APLVFP(a)      (        ((a)->_mpfr_sign < 0))
 #define mpfr_sgn0(a)        (signumint ((a)->_mpfr_sign))
+#define signumrat            mpq_sgn
 
 // Define macros for detecting characters and their alternates
 #define IsAPLCharAlpha(a)           ((a) EQ UTF16_ALPHA              || (a) EQ UTF16_ALPHA2                                        )

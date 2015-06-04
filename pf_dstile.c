@@ -254,8 +254,8 @@ APLFLOAT PrimFnMonDownStileFisF
 
     // Split cases based upon the signum of the difference between
     //   (the number and its floor) and (the ceiling and the number)
-    switch (signumf ((aplFloatRht - aplFloor)
-                   - (aplCeil     - aplFloatRht)))
+    switch (signumflt ((aplFloatRht - aplFloor)
+                     - (aplCeil     - aplFloatRht)))
     {
         case  1:
             aplNear = aplCeil;
@@ -349,7 +349,7 @@ APLRAT PrimFnMonDownStileRisR
 
         // Split cases based upon the signum of the difference between
         //   (the number and its floor) and (the ceiling and the number)
-        switch (signum (mpq_cmp (&mpqTmp1, &mpqTmp2)))
+        switch (signumint (mpq_cmp (&mpqTmp1, &mpqTmp2)))
         {
             case  1:
                 mpq_set (&mpqNear, &mpqCeil);
@@ -465,7 +465,7 @@ APLVFP PrimFnMonDownStileVisV
 
         // Split cases based upon the signum of the difference between
         //   (the number and its floor) and (the ceiling and the number)
-        switch (signum (mpfr_cmp (&mpfTmp1, &mpfTmp2)))
+        switch (signumint (mpfr_cmp (&mpfTmp1, &mpfTmp2)))
         {
             case  1:
                 mpfr_set (&mpfNear, &mpfCeil, MPFR_RNDN);

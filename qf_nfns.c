@@ -4562,7 +4562,7 @@ int CmpAPLINT_DESC
 
 {
     // Compare the two numbers
-    return signum (aplIntRht - aplIntLft);
+    return signumint (aplIntRht - aplIntLft);
 } // End CmpAPLINT_DESC
 
 

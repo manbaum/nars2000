@@ -178,8 +178,8 @@ APLINT lcmAplInt
     if (aplTmp NE 0)
         aplTmp = aplLft * (aplRht / aplTmp);
 
-    // The sign of the result is the sign of the left argument
-    if (aplIntegerLft < 0)
+    // The sign of the result is the product of the signs of the arguments
+    if ((signumint (aplIntegerLft) * signumint (aplIntegerRht)) < 0)
         return -aplTmp;
     else
         return  aplTmp;
@@ -209,8 +209,8 @@ APLFLOAT lcmAplFloat
     if (aplTmp >= GCD_CT)
         aplTmp = aplLft * (aplRht / aplTmp);
 
-    // The sign of the result is the sign of the left argument
-    if (SIGN_APLFLOAT (aplFloatLft))
+    // The sign of the result is the product of the signs of the arguments
+    if ((signumflt (aplFloatLft) * signumflt (aplFloatRht)) < 0)
         return -aplTmp;
     else
         return  aplTmp;
@@ -245,11 +245,11 @@ APLRAT lcmAplRat
 
         mpq_div (&aplTmp, &aplRht, &aplTmp);
         mpq_mul (&aplTmp, &aplLft, &aplTmp);
-
-        // The sign of the result is the sign of the left argument
-        if (mpq_sgn (&aplRatLft) < 0)
-            mpq_neg (&aplTmp, &aplTmp);
     } // End IF
+
+    // The sign of the result is the product of the signs of the arguments
+    if ((signumrat (&aplRatLft) * signumrat (&aplRatRht)) < 0)
+        mpq_neg (&aplTmp, &aplTmp);
 
     return aplTmp;
 } // End lcmAplRat
@@ -283,11 +283,11 @@ APLVFP lcmAplVfp
 
         mpfr_div (&aplTmp, &aplRht, &aplTmp, MPFR_RNDN);
         mpfr_mul (&aplTmp, &aplLft, &aplTmp, MPFR_RNDN);
-
-        // The sign of the result is the sign of the left argument
-        if (SIGN_APLVFP (&aplVfpLft))
-            mpfr_neg (&aplTmp, &aplTmp, MPFR_RNDN);
     } // End IF
+
+    // The sign of the result is the product of the signs of the arguments
+    if ((signumvfp (&aplVfpLft) * signumvfp (&aplVfpRht)) < 0)
+        mpfr_neg (&aplTmp, &aplTmp, MPFR_RNDN);
 
     return aplTmp;
 } // End lcmAplVfp
@@ -473,8 +473,8 @@ APLRAT PrimFnDydUpCaretRisRvR
         mpz_lcm (mpq_numref (&mpqRes),
                  mpq_numref (&aplRatLft),
                  mpq_numref (&aplRatRht));
-        // The sign of the result is the sign of the left arg
-        if (mpz_sgn (mpq_numref (&aplRatLft)) EQ -1)
+        // The sign of the result is the product of the signs of the arguments
+        if ((signumrat (&aplRatLft) * signumrat (&aplRatRht)) < 0)
             mpz_neg (mpq_numref (&mpqRes), mpq_numref (&mpqRes));
         // Set the denominator to 1
         mpz_set_ui (mpq_denref (&mpqRes), 1);

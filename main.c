@@ -3879,9 +3879,9 @@ int PASCAL WinMain
 
         MySprintfW (wszTemp,                                // Ptr to buffer
                     sizeof (wszTemp),                       // Size of buffer (in bytes)
-                   L"The file <%s> was not found."
-                   L"  This file is part of the normal distribution of NARS2000, and should be in the same directory as the .exe file."
-                   L"  Without it, if the program encounters a problem, no record of the error will be created."
+                   L"The file <%s> or one of its dependencies was not found."
+                   L"  These files are part of the normal distribution of NARS2000, and should be in the same directory as the .exe file."
+                   L"  Without them, if the program encounters a problem, no record of the error will be created."
                    L"  Are you sure you want to continue?", // Ptr to format string
                     crsh_dll);                              // The variable list
         if (MessageBoxW (hWndMF, wszTemp, WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL)

@@ -383,6 +383,7 @@ typedef struct tagSTART_ADDRESSES
     "mp_set_invalid_functions"  , (LPUCHAR) &mp_set_invalid_functions   ,
     "signumint"                 , (LPUCHAR) &signumint                  ,
     "signumflt"                 , (LPUCHAR) &signumflt                  ,
+    "signumvfp"                 , (LPUCHAR) &signumvfp                  ,
     "mpz_exit"                  , (LPUCHAR) &mpz_exit                   ,
     "mpz_inf_p"                 , (LPUCHAR) &mpz_inf_p                  ,
     "IsMpzNULL"                 , (LPUCHAR) &IsMpzNULL                  ,

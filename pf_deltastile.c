@@ -1214,7 +1214,7 @@ APLINT PrimFnGradeCompare
                 aplBitRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitRht >> LOG2NBIB]) ? TRUE : FALSE;
 
                 // Split cases based upon the signum of the difference
-                switch (signum (aplBitLft - aplBitRht))
+                switch (signumint (aplBitLft - aplBitRht))
                 {
                     case 1:
                         return  1 * lpGradeData->iMul;
@@ -1231,14 +1231,14 @@ APLINT PrimFnGradeCompare
             } // End FOR
 
             // The hyper-planes are equal -- compare indices so the sort is stable
-            return signum (aplUIntLft - aplUIntRht);
+            return signumint (aplUIntLft - aplUIntRht);
 
         case ARRAY_INT:
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
             // Split cases based upon the signum of the difference
-            switch (signum (((LPAPLINT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]
-                          - ((LPAPLINT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
+            switch (signumint (((LPAPLINT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]
+                             - ((LPAPLINT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
             {
                 case 1:
                     return  1 * lpGradeData->iMul;
@@ -1254,14 +1254,14 @@ APLINT PrimFnGradeCompare
             } // End FOR/SWITCH
 
             // The hyper-planes are equal -- compare indices so the sort is stable
-            return signum (aplUIntLft - aplUIntRht);
+            return signumint (aplUIntLft - aplUIntRht);
 
         case ARRAY_FLOAT:
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
             // Split cases based upon the signum of the difference
-            switch (signumf (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]
-                           - ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
+            switch (signumflt (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]
+                             - ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
             {
                 case 1:
                     return  1 * lpGradeData->iMul;
@@ -1277,15 +1277,15 @@ APLINT PrimFnGradeCompare
             } // End FOR/SWITCH
 
             // The hyper-planes are equal -- compare indices so the sort is stable
-            return signum (aplUIntLft - aplUIntRht);
+            return signumint (aplUIntLft - aplUIntRht);
 
         case ARRAY_APA:
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
             // Split cases based upon the signum of the difference
-////////////switch (signum ((lpGradeData->apaOffRht + lpGradeData->apaMulRht * (aplUIntLft * aplNELMRest + uRest))
-////////////              - (lpGradeData->apaOffRht + lpGradeData->apaMulRht * (aplUIntRht * aplNELMRest + uRest)))
-            switch (signum (lpGradeData->apaMulRht * (aplUIntLft - aplUIntRht)))
+////////////switch (signumint ((lpGradeData->apaOffRht + lpGradeData->apaMulRht * (aplUIntLft * aplNELMRest + uRest))
+////////////                 - (lpGradeData->apaOffRht + lpGradeData->apaMulRht * (aplUIntRht * aplNELMRest + uRest)))
+            switch (signumint (lpGradeData->apaMulRht * (aplUIntLft - aplUIntRht)))
             {
                 case 1:
                     return  1 * lpGradeData->iMul;
@@ -1301,7 +1301,7 @@ APLINT PrimFnGradeCompare
             } // End FOR/SWITCH
 
             // The hyper-planes are equal -- compare indices so the sort is stable
-            return signum (aplUIntLft - aplUIntRht);
+            return signumint (aplUIntLft - aplUIntRht);
 
         case ARRAY_CHAR:
             // Get # dimensions in left arg (# TTs)
@@ -1349,7 +1349,7 @@ APLINT PrimFnGradeCompare
 
             if (bSame)
                 // The hyper-planes are equal -- compare indices so the sort is stable
-                return signum (aplUIntLft - aplUIntRht);
+                return signumint (aplUIntLft - aplUIntRht);
             else
                 return (bToggle ? -1 : 1) * lpGradeData->iMul;
 
@@ -1357,8 +1357,8 @@ APLINT PrimFnGradeCompare
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
             // Split cases based upon the comparison of the two values
-            switch (signum (mpq_cmp (&((LPAPLRAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
-                                     &((LPAPLRAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest])))
+            switch (signumint (mpq_cmp (&((LPAPLRAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                                        &((LPAPLRAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest])))
             {
                 case 1:
                     return  1 * lpGradeData->iMul;
@@ -1374,14 +1374,14 @@ APLINT PrimFnGradeCompare
             } // End FOR/SWITCH
 
             // The hyper-planes are equal -- compare indices so the sort is stable
-            return signum (aplUIntLft - aplUIntRht);
+            return signumint (aplUIntLft - aplUIntRht);
 
         case ARRAY_VFP:
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
             // Split cases based upon the comparison of the two values
-            switch (signum (mpfr_cmp (&((LPAPLVFP) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
-                                      &((LPAPLVFP) lpMemRht)[aplUIntRht * aplNELMRest + uRest])))
+            switch (signumint (mpfr_cmp (&((LPAPLVFP) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                                         &((LPAPLVFP) lpMemRht)[aplUIntRht * aplNELMRest + uRest])))
             {
                 case 1:
                     return  1 * lpGradeData->iMul;
@@ -1397,7 +1397,7 @@ APLINT PrimFnGradeCompare
             } // End FOR/SWITCH
 
             // The hyper-planes are equal -- compare indices so the sort is stable
-            return signum (aplUIntLft - aplUIntRht);
+            return signumint (aplUIntLft - aplUIntRht);
 
         defstop
             break;

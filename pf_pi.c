@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2290,7 +2290,7 @@ APLMPI PrimFnPiNumPrimes
             mpz_set_sx (&mpzRes, NthPrimeTab[iMid]);
 
             // Check for a match
-            switch (signum (mpz_cmp (&aplMPIArg, &mpzRes)))
+            switch (signumint (mpz_cmp (&aplMPIArg, &mpzRes)))
             {
                 case -1:
                     iMax = iMid - 1;

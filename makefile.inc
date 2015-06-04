@@ -146,14 +146,14 @@ ECM_LIB  = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
 
 !if "$(DEBUG)" == "1"
 CS_DLL=
-CS_LIB=
+CS_EXE=
 !else
 !if "$(WIN)" == "64"
 CS_DLL=$(CS_DIR)bin\x64\crashrpt.dll
-CS_LIB=$(CS_DIR)lib\x64\crashrpt.lib
+CS_EXE=$(CS_DIR)bin\x64\sendrpt.exe
 !else
 CS_DLL=$(CS_DIR)bin\crashrpt.dll
-CS_LIB=$(CS_DIR)lib\crashrpt.lib
+CS_EXE=$(CS_DIR)bin\sendrpt.exe
 !endif
 !endif
 
@@ -670,6 +670,7 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(ECM_LIB)          \
                         $(GSL_LIB)          \
                         $(CS_DLL)           \
+                        $(CS_EXE)           \
                         makefile.inc        \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.crf
@@ -696,10 +697,10 @@ $(LIBS_WEXE) $(LIBS_EXT)
         @del $(O)$(@B).lib
         @copy $(O)$(ENAME).map $(B) >NUL
 
-$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE* $(FONT) $(CS_DLL)
+$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE* $(FONT) $(CS_DLL) $(CS_EXE)
         @echo ---.zip File----
         @copy $(O)$(ENAME).exe $(ENAME).exe >NUL
-        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE* $(FONT) $(CS_DLL) >NUL
+        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE* $(FONT) $(CS_DLL) $(CS_EXE) >NUL
         @del $(ENAME).exe
         @dir /ON $(B)$(ENAME).zip|grep "$(ENAME)\."
 

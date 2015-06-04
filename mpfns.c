@@ -1377,7 +1377,7 @@ void mpfr_set_sx
     mpfr_add_ui (dest, dest, apliSplit.lo, MPFR_RNDN);
 
     // Adjust the sign
-    if (signum (val) < 0)
+    if (signumint (val) < 0)
         mpfr_neg (dest, dest, MPFR_RNDN);
 } // End mpfr_set_sx
 
@@ -1683,8 +1683,8 @@ int _mpfr_cmp_ct
         mpfr_init0 (&mpfRhtAbs);
 
         // Get the signs
-        sgnLft = signum (mpfr_sgn (lpaplVfpLft));
-        sgnRht = signum (mpfr_sgn (lpaplVfpRht));
+        sgnLft = signumvfp (lpaplVfpLft);
+        sgnRht = signumvfp (lpaplVfpRht);
 
         // Get the absolute values
         mpfr_abs (&mpfLftAbs, lpaplVfpLft, MPFR_RNDN);

@@ -294,7 +294,7 @@ APLVFP PrimFnMonStarVisV
     // Finally, convert the result back to normal
     //   by multiplying it by 2 ^ m.
     // Split cases based upon the signum of m
-    switch (signum (log2x))
+    switch (signumint (log2x))
     {
         case -1:
             mpfr_div_2exp (&mpfRes, &mpfRes, (int) -log2x);

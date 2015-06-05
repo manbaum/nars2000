@@ -49,6 +49,11 @@ extern TKACTSTR fsaActTableTK [][TKCOL_LENGTH];
 char szCloseMessage[] = "You have changed the body of this function;"
                         " save the changes?";
 
+// VK_CANCEL scan code for some keyboards
+// The initial value is unimportant as it is overridden
+//    by the first and all subsequent calls to VK_CANCEL.
+UINT uCancelCode = 0x46;
+
 // Define struct for passing parameters to WM_NCCREATE/WM_CREATE
 //   for the Function Edit window
 typedef struct tagFE_CREATESTRUCTW
@@ -1793,7 +1798,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // If not from MF, and
             //    this is an Edit Ctrl for SM, and
             //    we set the cursor, ...
-            if (lpMemPTD
+            if (lpMemPTD NE NULL
              && IzitSM (GetParent (hWnd))
              && LclSetCursor (hWnd,
                               lpMemPTD,
@@ -2168,7 +2173,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             hWndParent = GetParent (hWnd);
 
             // If our parent is not MF, ...
-            if (lpMemPTD)
+            if (lpMemPTD NE NULL)
                 // Save the key in the parent window's extra bytes
                 SetWindowLongW (hWndParent, GWLSF_LASTKEY, nVirtKey);
 
@@ -2220,14 +2225,14 @@ LRESULT WINAPI LclEditCtrlWndProc
                 case VK_F11:
                 case VK_F12:
                     // If our parent is not MF, ...
-                    if (lpMemPTD)
+                    if (lpMemPTD NE NULL)
                         PostMessageW (lpMemPTD->hWndSM, MYWM_KEYDOWN, wParam, lParam);
 
                     return FALSE;
 
                 case VK_F8:             // Display the Undo Buffer
                     // If our parent is not MF, ...
-                    if (lpMemPTD)
+                    if (lpMemPTD NE NULL)
                         DisplayUndo (hWnd); // Display the Undo Buffer
 
                     return FALSE;
@@ -2248,17 +2253,20 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     break;
 
-                case 'C':
-                    if (!ksCtrl)
-                        break;
-
-                    // Fall through to VK_CANCEL
-
                 case VK_CANCEL:
+                {
+                    KEYDATA lKeyData = *(LPKEYDATA) &lParam;
+
+                    // Save the VK_CANCEL scan code in memory
+                    //   for later use to distinuish from Ctrl-C
+                    //   so it doesn't also generate a WM_COPY
+                    uCancelCode = lKeyData.scanCode;
+
                     // If our parent is not MF, ...
-                    if (lpMemPTD)
+                    if (lpMemPTD NE NULL)
                         PostMessageW (hWndParent, MYWM_KEYDOWN, VK_CANCEL, 0);
-                    break;
+                    return FALSE;       // We handled the msg
+                } // End VK_CANCEL
 
                 case VK_INSERT:         // Insert
                     // Ins      toggles the key state
@@ -2751,8 +2759,12 @@ LRESULT WINAPI LclEditCtrlWndProc
              && ksCtrl
              && wchCharCode EQ 03)
             {
-                // Post to ourselves a request to Redo
-                PostMessageW (hWnd, WM_COPY, 0, 0);
+                KEYDATA lKeyData = *(LPKEYDATA) &lParam;
+
+                // If it's NOT from a VK_CANCEL key, ...
+                if (uCancelCode NE lKeyData.scanCode)
+                    // Post to ourselves a request to Copy
+                    PostMessageW (hWnd, WM_COPY, 0, 0);
 
                 return FALSE;       // We handled the msg
             } // End IF
@@ -2762,7 +2774,7 @@ LRESULT WINAPI LclEditCtrlWndProc
              && ksCtrl
              && wchCharCode EQ 24)
             {
-                // Post to ourselves a request to Redo
+                // Post to ourselves a request to Cut
                 PostMessageW (hWnd, WM_CUT, 0, 0);
 
                 return FALSE;       // We handled the msg
@@ -2773,7 +2785,7 @@ LRESULT WINAPI LclEditCtrlWndProc
              && ksCtrl
              && wchCharCode EQ 22)
             {
-                // Post to ourselves a request to Redo
+                // Post to ourselves a request to paste
                 PostMessageW (hWnd, WM_PASTE, 0, 0);
 
                 return FALSE;       // We handled the msg
@@ -2784,7 +2796,7 @@ LRESULT WINAPI LclEditCtrlWndProc
              && ksCtrl
              && wchCharCode EQ 26)
             {
-                // Post to ourselves a request to Redo
+                // Post to ourselves a request to Undo
                 PostMessageW (hWnd, WM_UNDO, 0, 0);
 
                 return FALSE;       // We handled the msg

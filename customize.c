@@ -2633,7 +2633,7 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Convert this text to a
                         //   using David Gay's routines
-                        fQuadCT_CWS = strtod (szTemp, NULL);
+                        fQuadCT_CWS = MyStrtod (szTemp, NULL);
 
                         //***************************************************************
                         // []DT

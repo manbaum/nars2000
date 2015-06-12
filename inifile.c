@@ -1487,12 +1487,12 @@ APLFLOAT GetPrivateProfileFloatW
     // If the new value is present, ...
     if (wszTemp[0])
     {
-        // Convert wide to single-byte so we can use strtod
+        // Convert wide to single-byte so we can use MyStrtod
         //   which has no wide counterpart
         W2A (szTemp, wszTemp, sizeof (wszTemp));
 
         // Use David Gay's routines
-        return strtod (szTemp, NULL);
+        return MyStrtod (szTemp, NULL);
     } else
         return fDefVal;
 } // End GetPrivateProfileFloatW

@@ -1255,7 +1255,7 @@ LPWCHAR ParseSavedWsVar_EM
                     // Save in the result and skip over it
                     aplFloat = fltNegInfinity;
                 else
-                    aplFloat = strtod ((LPCHAR) lpwszFormat, NULL);
+                    aplFloat = MyStrtod ((LPCHAR) lpwszFormat, NULL);
 
                 // If we're to save the SymTab, ...
                 if (bSymTab)
@@ -1604,7 +1604,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         else
                             // Use David Gay's routines
                             // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = strtod ((LPCHAR) lpwszFormat, NULL);
+                            *((LPAPLFLOAT) lpMemObj)++ = MyStrtod ((LPCHAR) lpwszFormat, NULL);
                         // Skip to the next field
                         lpwSrc = &lpwCharEnd[1];
                     } // End FOR

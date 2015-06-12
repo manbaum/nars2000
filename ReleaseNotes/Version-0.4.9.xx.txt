@@ -1,6 +1,25 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1363 -- Version 0.4.9.xx
+-------------------------------
+
+* Update David Gay's Floating Point Conversion Routines
+
+Directory trunk:
+
+CUSTOMIZE.C:
+INIFILE.C:
+PN_PROC.C:
+SC_LOAD.C:
+  Rename <strtod> to <MyStrtod> to avoid conflict with built-in version in VS2013.
+
+DTOA.C:
+DTOA.PROTO:
+  Rename <strtod> to <MyStrtod> to avoid conflict with built-in version in VS2013.
+  Update this file to the latest version.
+
+
 Build #1362 -- Version 0.4.9.xx
 -------------------------------
 

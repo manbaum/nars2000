@@ -152,7 +152,7 @@ void PN_NumCalc
             Assert (!bUseRat);
 
             // Use David Gay's routines
-            lpYYArg->at.aplFloat = strtod (&lppnLocalVars->lpszNumAccum[uNumAcc], NULL);
+            lpYYArg->at.aplFloat = MyStrtod (&lppnLocalVars->lpszNumAccum[uNumAcc], NULL);
 
             break;
 
@@ -806,7 +806,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
         case PN_NUMTYPE_FLT:
         case PN_NUMTYPE_INIT:
             // Use David Gay's routines
-            lpYYArg->at.aplFloat = strtod (&lppnLocalVars->lpszNumAccum[uNumAcc], NULL);
+            lpYYArg->at.aplFloat = MyStrtod (&lppnLocalVars->lpszNumAccum[uNumAcc], NULL);
 
             // Change the type to float
             lpYYArg->chType = PN_NUMTYPE_FLT;

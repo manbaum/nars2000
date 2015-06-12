@@ -17,6 +17,7 @@
  *
  ***************************************************************/
 
+#undef strtod
 #define LCL_STRTOD
 
 /* Please send bug reports to David M. Gay (dmg at acm dot org,

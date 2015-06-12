@@ -15,35 +15,6 @@ ifdef IS_32
 NDPSW   record  $BUSY:1,$C3:1,$ST0:1,$ST1:1,$ST2:1,$C2:1,$C1:1,$C0:1,$IR:1, \
                 $XRSV2:1,$XFPRC:1,$XFUNF:1,$XFOVF:1,$XFZDV:1,$XFDOP:1,$XFIOP:1
 
-        public  DbgBrk
-DbgBrk  proc    near            ; Start DbgBrk procedure
-
-COMMENT|
-
-Signal a debug breakpoint
-
-|
-
-DB_STR  struc
-
-        dd      ?               ; Caller's EBP
-DB_FL   dd      ?               ; ...      EFL
-
-DB_STR  ends
-
-        pushfd                  ; Save the flags
-        push    ebp             ; Prepare to address the stack
-        mov     ebp,esp         ; Hello, Mr. Stack
-        or      [ebp].DB_FL,mask $TF ; TF=1
-        pop     ebp             ; Restore
-        popfd                   ; Put TF into effect
-
-        ret                     ; Return to caller
-
-        assume  ds:nothing,es:nothing,fs:nothing,gs:nothing,ss:nothing
-
-DbgBrk  endp                    ; End DbgBrk procedure
-
         public  iAsmAdd64
 iAsmAdd64 proc                  ; Start iAsmAdd64 procedure
 
@@ -743,33 +714,6 @@ else
 
 ifdef IS_64
         .code
-
-        public  DbgBrk
-DbgBrk  proc                    ; Start DbgBrk procedure
-
-COMMENT|
-
-Signal a debug breakpoint
-
-|
-
-DB_STR  struct
-
-        dq      ?               ; Caller's RBP
-DB_FL   dq      ?               ; ...      RFL
-
-DB_STR  ends
-
-        pushf                   ; Save the flags
-        push    Rbp             ; Prepare to address the stack
-        mov     Rbp,Rsp         ; Hello, Mr. Stack
-        or      DB_STR.DB_FL[Rbp],mask $TF ; TF=1
-        pop     Rbp             ; Restore
-        popf                    ; Put TF into effect
-
-        ret                     ; Return to caller
-
-DbgBrk  endp                    ; End DbgBrk procedure
 
         public  iAsmAdd64
 iAsmAdd64 proc                  ; Start iAsmAdd64 procedure

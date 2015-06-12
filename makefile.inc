@@ -89,9 +89,10 @@ BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
 OLDPATH=$(PATH)                 # Save the current path
 GSL_INC=$(GSL_DIR)include\      # Directory of GSL includes
+SDK_INC=$(INCLUDE)              # Directories of SDK includes
 
 QDEBUG=$(NARSROOT)qdebug\       # Directory for QDEBUG files/libraries
-L98=$(L98);$(QDEBUG)
+LIB=$(LIB);$(QDEBUG)
 
 !if "$(LST)" == "1"
 LIST=/Fa$(O)$(@B).lst /FAsc
@@ -105,11 +106,13 @@ RESDEBUG=1
 CFLAGS_DEBUG=/Zi /D "DEBUG"
 BUILD_DIR=Debug
 DEBUG_LIBSUFFIX=d
+LFLAGS_NDEF=/NODEFAULTLIB:libcmt.lib
 !else
 RESDEBUG=0
 CFLAGS_DEBUG=/Zi
 BUILD_DIR=Release
 DEBUG_LIBSUFFIX=
+LFLAGS_NDEF=/NODEFAULTLIB:libcmtd.lib
 !endif
 
 GSL_LIB=$(GSL_DIR)libgsl$(WIN)$(DEBUG_LIBSUFFIX)-double.lib # GSL library
@@ -132,7 +135,7 @@ ECM_INC  = $(ECM_DIR)include^\
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK)INCLUDE;$(MSVC)INCLUDE;$(MS_INC);$(QDEBUG);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(GSL_INC);$(CS_DIR)include
+I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(GSL_INC);$(CS_DIR)include;$(QDEBUG)
 
 MV=makever
 
@@ -171,7 +174,8 @@ CFLAGS_WEXE = $(CFLAGS_WEXE) /GS- /D_AMD64_ /D_M_AMD64 /D_WIN64 /Gd
 LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64
 !endif
 
-LIBS_WEXE = gdi32.lib           \
+LIBS_WEXE =                     \
+            gdi32.lib           \
             kernel32.lib        \
             user32.lib          \
             version.lib         \
@@ -192,6 +196,7 @@ LIBS_WEXE = gdi32.lib           \
 !else
             libcmt.lib          \
 !endif
+##VS2015    legacy_stdio_definitions.lib \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
             $(ECM_LIB)          \
@@ -308,7 +313,7 @@ INITIAL_EXE:
         @$(CC) $(CFLAGS_WEXE) /Fo$@ $(LIST) %s
 
 {$(WS)}.c{$(O)}.obj:
-        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.;$(O);$(SDK)INCLUDE
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.;$(O);$(SDK_INC)
         @if exist $@ del $@
 !if "$(WIN)" == "64"
         @$(CC) $(CFLAGS_WEXE) /Fo$@ /D __x86_64__ /D "UNICODE" $(LIST) %s
@@ -680,13 +685,12 @@ $(OBJS)
 $(LIBS_WEXE) $(LIBS_EXT)
 /DEF:$(DEFFILE)
 /PDB:$(PDBFILE)
-/NODEFAULTLIB
+$(LFLAGS_NDEF)
 !if "$(LINKDEBUG)" == "1"
 /VERBOSE:LIB
 !endif
 <<KEEP
         @echo ---.exe File----
-        @Set LIB=$(L98)
         @if exist $@ del $@
 !if "$(LINKDEBUG)" == "1"
         @$(LD) $(LFLAGS_WEXE) @$(O)main.crf
@@ -720,9 +724,7 @@ $**
 /MAP:$(OC)$(MV).map
 kernel32.lib user32.lib version.lib libcmt.lib
 /DEF:$(MV).def
-/NODEFAULTLIB
 <<KEEP
-        @Set LIB=$(L98)
         @if exist $@ del $@
         @$(LD) $(LFLAGS_WEXE) @$(OC)$(MV).crf
         @del $(OC)$(@B).exp

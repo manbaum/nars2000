@@ -41,27 +41,34 @@ if not exist .\SImPL-Medium.ttf copy /Y ..\SImPL-Medium.ttf . >NUL
 
 if "%1" == "32" goto W32
 :W64
-if exist M:\*.* subst M: /d
+subst M: /d >NUL
 subst M: %MSVC%bin\amd64
-if exist N:\*.* subst N: /d
+subst N: /d >NUL
 subst N: %SDK%Bin\x64
 
 REM Path to mspdbNNN.dll
 Set MSPDB=%MSVC%bin\amd64\
 
+REM Path to library files (x64 uses the 64-bit libraries)
+Set LIB=%SDK%Lib\x64;%MSVC%lib\amd64
+
 goto START
 
 :W32
-if exist M:\*.* subst M: /d
+subst M: /d >NUL
 subst M: %MSVC%bin
-if exist N:\*.* subst N: /d
+subst N: /d >NUL
 subst N: %SDK%Bin
 
 REM Path to mspdbNNN.dll
 Set MSPDB=%MSVC%bin^\
 
+REM Path to library files (x86 uses the 32-bit libraries)
+Set LIB=%SDK%Lib;%MSVC%lib
+
 :START
-Set INCLUDE=%MSVC%include;%SDK%include;%NARSROOT%gsl\include
+Set _NT_SYMBOL_PATH=srv*C:\Symbols*http://msdl.microsoft.com/download/symbols
+Set INCLUDE=%MSVC%include;%SDK%include
 Set PATH=M:\;N:\;%MSPDB%;%NARSROOT%qdebug;%ORIGPATH%
 
 if /i "%2" == "start" start V:\Common7\IDE\VCExpress.exe NARS2000.%1.sln /useenv

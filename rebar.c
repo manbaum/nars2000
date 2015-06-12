@@ -102,7 +102,7 @@ HBITMAP hBitmapWS,                  // Handle to WS bitmap strip
 #define BUTTONSTYLE2    BTNS_DROPDOWN
 #define BUTTONSTYLE3    BTNS_CHECK
 
-typedef enum tagIMAGEINDEX_WS
+enum tagIMAGEINDEX_WS
 {
     IMAGEINDEX_WS_FILENEW = 0 ,     // 00:  Image index for FILENEW
     IMAGEINDEX_WS_FILEOPEN    ,     // 01:  ...             FILEOPEN
@@ -115,7 +115,7 @@ typedef enum tagIMAGEINDEX_WS
     IMAGEINDEX_WS_LENGTH            // 08:  Length
 };
 
-typedef enum tagIMAGEINDEX_WS0
+enum tagIMAGEINDEX_WS0
 {
     IMAGEINDEX_WS_ARROW1 = 0  ,     // 00:  ...             Drop Down Arrow #1
     IMAGEINDEX_WS_ARROW2      ,     // 01:  ...             Drop Down Arrow #2
@@ -152,7 +152,7 @@ TBBUTTON tbButtonsWS[IMAGEINDEX_WS_LENGTH + IMAGEINDEX_WS_LENGTH0] =
 // Edit Toolbar
 //***************************************************************
 
-typedef enum tagIMAGEINDEX_ED
+enum tagIMAGEINDEX_ED
 {
     IMAGEINDEX_ED_EDITCUT  = 0  ,   // 00:  Image index for EDITCUT
     IMAGEINDEX_ED_EDITCOPY      ,   // 01:  ...             EDITCOPY
@@ -165,7 +165,7 @@ typedef enum tagIMAGEINDEX_ED
     IMAGEINDEX_ED_LENGTH            // 08:  Length
 };
 
-typedef enum tagIMAGEINDEX_ED0
+enum tagIMAGEINDEX_ED0
 {
     IMAGEINDEX_ED_ARROW1 = 0    ,   // 00:  ...             Drop Down Arrow #1
     IMAGEINDEX_ED_ARROW2        ,   // 01:  ...             Drop Down Arrow #2
@@ -200,7 +200,7 @@ TBBUTTON tbButtonsED[IMAGEINDEX_ED_LENGTH + IMAGEINDEX_ED_LENGTH0] =
 // Objects Toolbar
 //***************************************************************
 
-typedef enum tagIMAGEINDEX_OW
+enum tagIMAGEINDEX_OW
 {
     IMAGEINDEX_OW_OBJCLOSE    = 0,  // 00:  Image index for OBJCLOSE
     IMAGEINDEX_OW_OBJSAVE        ,  // 01:  ...             OBJSAVE
@@ -210,7 +210,7 @@ typedef enum tagIMAGEINDEX_OW
     IMAGEINDEX_OW_LENGTH            // 05:  Length
 };
 
-typedef enum tagIMAGEINDEX_OW0
+enum tagIMAGEINDEX_OW0
 {
     IMAGEINDEX_OW_LENGTH0 = 0       // 00:  Length
 };

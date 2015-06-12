@@ -35,10 +35,10 @@
             <Tool
                 Name="VCPreBuildEventTool"
                 Description="Generate Prototypes"
-                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;call w64.bat&#x0D;&#x0A;"
+                CommandLine="call w64.bat&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro &quot;DEBUG=1&quot; O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse &quot;DEBUG=1&quot; O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
             />
             <Tool
-                Name="Bison Rule"
+                Name="Bison_Rule"
             />
             <Tool
                 Name="MASM64"
@@ -48,13 +48,10 @@
                 Name="VCCustomBuildTool"
             />
             <Tool
-                Name="Prototype Rule"
+                Name="Prototype_Rule"
             />
             <Tool
                 Name="VCXMLDataGeneratorTool"
-            />
-            <Tool
-                Name="VCWebServiceProxyGeneratorTool"
             />
             <Tool
                 Name="VCMIDLTool"
@@ -63,7 +60,7 @@
                 Name="VCCLCompilerTool"
                 Optimization="0"
                 FavorSizeOrSpeed="1"
-                AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MS_DIR)&quot;;&quot;$(MPIR_DIR)include&quot;;&quot;$(MPFR_DIR)include&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)include&quot;"
+                AdditionalIncludeDirectories=".\;&quot;$(OutDir)&quot;;&quot;$(MPIR_DIR)include&quot;;&quot;$(MPFR_DIR)include&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)include&quot;;&quot;$(MS_DIR)&quot;"
                 PreprocessorDefinitions="_WIN32;_WIN64;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_AMD64_;_M_AMD64;DEBUG;RESDEBUG=1;_STDINT_H"
                 StringPooling="false"
                 MinimalRebuild="false"
@@ -73,7 +70,6 @@
                 RuntimeTypeInfo="false"
                 BrowseInformation="0"
                 WarningLevel="3"
-                Detect64BitPortabilityProblems="false"
                 DebugInformationFormat="3"
                 CompileAs="1"
             />
@@ -90,9 +86,9 @@
                 Name="VCLinkerTool"
                 LinkLibraryDependencies="false"
                 UseLibraryDependencyInputs="false"
-                AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib Shlwapi.lib"
+                AdditionalOptions="/ignore:4099 /SAFESEH:NO comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib Shlwapi.lib"
                 AdditionalDependencies="mpir64d.lib mpfr64d.lib libgsl64d-double.lib ecm64d.lib"
-                AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;;&quot;$(CS_DIR)lib\x64&quot;"
+                AdditionalLibraryDirectories="&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;;&quot;$(CS_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;"
                 GenerateManifest="false"
                 AdditionalManifestDependencies="NARS2000.exe.manifest64"
                 IgnoreAllDefaultLibraries="true"
@@ -142,10 +138,10 @@
             <Tool
                 Name="VCPreBuildEventTool"
                 Description="Generate Prototypes"
-                CommandLine="&quot;$(MSVC)bin\nmake&quot; /f makefile.pro O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
+                CommandLine="call w64.bat&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro &quot;DEBUG=0&quot; O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;&quot;$(MSVC)bin\nmake&quot; /f makefile.pro.parse &quot;DEBUG=0&quot; O=&quot;$(OutDir)\\&quot;&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
             />
             <Tool
-                Name="Bison Rule"
+                Name="Bison_Rule"
             />
             <Tool
                 Name="MASM64"
@@ -155,13 +151,10 @@
                 Name="VCCustomBuildTool"
             />
             <Tool
-                Name="Prototype Rule"
+                Name="Prototype_Rule"
             />
             <Tool
                 Name="VCXMLDataGeneratorTool"
-            />
-            <Tool
-                Name="VCWebServiceProxyGeneratorTool"
             />
             <Tool
                 Name="VCMIDLTool"
@@ -180,7 +173,6 @@
                 RuntimeTypeInfo="false"
                 BrowseInformation="0"
                 WarningLevel="3"
-                Detect64BitPortabilityProblems="false"
                 DebugInformationFormat="3"
                 CompileAs="1"
             />
@@ -197,9 +189,9 @@
                 Name="VCLinkerTool"
                 LinkLibraryDependencies="false"
                 UseLibraryDependencyInputs="false"
-                AdditionalOptions="/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib dbghelp.lib Shlwapi.lib"
+                AdditionalOptions="/ignore:4099 /SAFESEH:NO comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib dbghelp.lib Shlwapi.lib"
                 AdditionalDependencies="mpir64.lib mpfr64.lib libgsl64-double.lib ecm64.lib"
-                AdditionalLibraryDirectories="V:\VC\lib\amd64;U:\Lib\x64;&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;;&quot;$(CS_DIR)lib\x64&quot;"
+                AdditionalLibraryDirectories="&quot;$(MPIR_DIR)lib&quot;;&quot;$(MPFR_DIR)lib&quot;;&quot;$(NARSROOT)qdebug&quot;;&quot;$(ECM_DIR)lib&quot;;&quot;$(CS_DIR)lib&quot;;&quot;$(GSL_DIR)&quot;"
                 GenerateManifest="false"
                 AdditionalManifestDependencies="NARS2000.exe.manifest64"
                 IgnoreAllDefaultLibraries="true"
@@ -235,7 +227,7 @@
             <Tool
                 Name="VCPostBuildEventTool"
                 Description="Copy default APL font"
-                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy $(NARSROOT)SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;"
+                CommandLine="if not exist &quot;$(OutDir)\SImPL-Medium.ttf&quot; copy $(NARSROOT)SImPL-Medium.ttf &quot;$(OutDir)\\&quot; &gt;NUL&#x0D;&#x0A;echo *****Solution directory is $(SolutionDir)&#x0D;&#x0A;call w32.bat&#x0D;&#x0A;"
             />
         </Configuration>
     </Configurations>
@@ -298,7 +290,7 @@
                 </FileConfiguration>
             </File>
             <File
-                RelativePath="&quot;$(OutDir)\cs_parse.c&quot;"
+                RelativePath=".\Debug64\cs_parse.c"
                 >
             </File>
             <File
@@ -308,7 +300,7 @@
                     Name="Debug64|Win32"
                     >
                     <Tool
-                        Name="Bison Rule"
+                        Name="Bison_Rule"
                         AdditionalOptions=""
                     />
                 </FileConfiguration>
@@ -316,7 +308,7 @@
                     Name="Release64|Win32"
                     >
                     <Tool
-                        Name="Bison Rule"
+                        Name="Bison_Rule"
                         AdditionalOptions=""
                     />
                 </FileConfiguration>
@@ -375,7 +367,7 @@
                     >
                     <Tool
                         Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt;U:\include"
+                        AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt;$(INCLUDE)"
                         PreprocessorDefinitions="__x86_64__"
                         IgnoreStandardIncludePath="true"
                     />
@@ -385,7 +377,7 @@
                     >
                     <Tool
                         Name="VCCLCompilerTool"
-                        AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt;U:\include"
+                        AdditionalIncludeDirectories=".\WineHQ\Include;.\WineHQ\Include\msvcrt;$(INCLUDE)"
                         PreprocessorDefinitions="__x86_64__"
                         IgnoreStandardIncludePath="true"
                     />
@@ -428,7 +420,7 @@
                 >
             </File>
             <File
-                RelativePath="&quot;$(OutDir)\fh_parse.c&quot;"
+                RelativePath=".\Debug64\fh_parse.c"
                 >
             </File>
             <File
@@ -438,7 +430,7 @@
                     Name="Debug64|Win32"
                     >
                     <Tool
-                        Name="Bison Rule"
+                        Name="Bison_Rule"
                         AdditionalOptions=""
                     />
                 </FileConfiguration>
@@ -446,7 +438,7 @@
                     Name="Release64|Win32"
                     >
                     <Tool
-                        Name="Bison Rule"
+                        Name="Bison_Rule"
                         AdditionalOptions=""
                     />
                 </FileConfiguration>
@@ -520,7 +512,7 @@
                 >
             </File>
             <File
-                RelativePath="$(MS_DIR)mp.c"
+                RelativePath="..\msieve\mp.c"
                 >
             </File>
             <File
@@ -546,6 +538,26 @@
             <File
                 RelativePath=".\pf_circle.c"
                 >
+                <FileConfiguration
+                    Name="Debug64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
+                <FileConfiguration
+                    Name="Release64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\pf_colonbar.c"
@@ -582,6 +594,26 @@
             <File
                 RelativePath=".\pf_domino.c"
                 >
+                <FileConfiguration
+                    Name="Debug64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
+                <FileConfiguration
+                    Name="Release64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\pf_dotdot.c"
@@ -674,10 +706,50 @@
             <File
                 RelativePath=".\pf_qdot.c"
                 >
+                <FileConfiguration
+                    Name="Debug64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
+                <FileConfiguration
+                    Name="Release64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\pf_query.c"
                 >
+                <FileConfiguration
+                    Name="Debug64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
+                <FileConfiguration
+                    Name="Release64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\pf_rcaret.c"
@@ -768,7 +840,7 @@
                 >
             </File>
             <File
-                RelativePath="&quot;$(OutDir)\pn_parse.c&quot;"
+                RelativePath=".\Debug64\pn_parse.c"
                 >
             </File>
             <File
@@ -778,7 +850,7 @@
                     Name="Debug64|Win32"
                     >
                     <Tool
-                        Name="Bison Rule"
+                        Name="Bison_Rule"
                         AdditionalOptions=""
                     />
                 </FileConfiguration>
@@ -786,7 +858,7 @@
                     Name="Release64|Win32"
                     >
                     <Tool
-                        Name="Bison Rule"
+                        Name="Bison_Rule"
                         AdditionalOptions=""
                     />
                 </FileConfiguration>
@@ -822,6 +894,26 @@
             <File
                 RelativePath=".\po_dot.c"
                 >
+                <FileConfiguration
+                    Name="Debug64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
+                <FileConfiguration
+                    Name="Release64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
             </File>
             <File
                 RelativePath=".\po_jot.c"
@@ -848,7 +940,7 @@
                 >
             </File>
             <File
-                RelativePath="$(MS_DIR)prime_delta.c"
+                RelativePath="..\msieve\prime_delta.c"
                 >
             </File>
             <File
@@ -1060,7 +1152,7 @@
                 >
             </File>
             <File
-                RelativePath="$(MS_DIR)smallfact.c"
+                RelativePath="..\msieve\smallfact.c"
                 >
             </File>
             <File
@@ -1068,7 +1160,7 @@
                 >
             </File>
             <File
-                RelativePath="$(MS_DIR)squfof.c"
+                RelativePath="..\msieve\squfof.c"
                 >
             </File>
             <File
@@ -1098,9 +1190,29 @@
             <File
                 RelativePath=".\tabctrl.c"
                 >
+                <FileConfiguration
+                    Name="Debug64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
+                <FileConfiguration
+                    Name="Release64|Win32"
+                    >
+                    <Tool
+                        Name="VCCLCompilerTool"
+                        AdditionalIncludeDirectories="$(INCLUDE);$(NARSROOT)gsl\include"
+                        PreprocessorDefinitions=""
+                        IgnoreStandardIncludePath="true"
+                    />
+                </FileConfiguration>
             </File>
             <File
-                RelativePath="$(MS_DIR)tinyqs.c"
+                RelativePath="..\msieve\tinyqs.c"
                 >
             </File>
             <File
@@ -1149,17 +1261,13 @@
                 RelativePath=".\compro.h"
                 >
                 <FileConfiguration
-                    Name="Debug32|Win32"
+                    Name="Debug64|Win32"
                     ExcludedFromBuild="true"
                     >
                     <Tool
                         Name="VCCustomBuildTool"
                     />
                 </FileConfiguration>
-            </File>
-            <File
-                RelativePath="$(CS_DIR)include\CrashRpt.h"
-                >
             </File>
             <File
                 RelativePath=".\cs_parse.h"

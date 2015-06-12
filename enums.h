@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 ***************************************************************************/
 
 
-typedef enum tagMENUPOS_SM      // Positions of items in SM menu
+enum tagMENUPOS_SM              // Positions of items in SM menu
 {
     IDMPOS_SM_FILE = 0,         // 00:  File menu item
     IDMPOS_SM_EDIT    ,         // 01:  Edit ...
@@ -30,7 +30,7 @@ typedef enum tagMENUPOS_SM      // Positions of items in SM menu
     IDMPOS_SM_HELP    ,         // 04:  Help ...
 };
 
-typedef enum tagMENUPOS_FE      // Positions of items in FE menu
+enum tagMENUPOS_FE              // Positions of items in FE menu
 {
     IDMPOS_FE_FILE = 0,         // 00:  File menu item
     IDMPOS_FE_EDIT    ,         // 01:  Edit ...
@@ -59,7 +59,7 @@ typedef enum tagALLMENUPOS      // All Menu Positions (the union of the above me
 typedef UINT (*GETIDMPOS_XX) (ALLMENUPOS);
 
 
-typedef enum tagWINDOWIDS       // Window IDs
+enum tagWINDOWIDS               // Window IDs
 {
     IDWC_DB_LB = 1,             // 01:  Window ID for ListBox       in DB window
     IDWC_FE_EC    ,             // 02:  ...           EditCtrl      in FE ...

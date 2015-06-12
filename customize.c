@@ -35,7 +35,7 @@
 #include <windowsx.h>
 #include <stdio.h>
 #include <uxtheme.h>                    // Theme specific stuff
-#include <tmschema.h>                   // ...
+#include <vssym32.h>                    // ...
 #include <shlobj.h>                     // For SHBrowseForFolder
 
 #include "headers.h"

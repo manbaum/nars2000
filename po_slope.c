@@ -238,7 +238,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
             // Otherwise, it's SlopeBar on the first dimension
             aplAxis = 0;
-    } // End IF/ELSE
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Get right arg's global ptr
@@ -247,11 +247,18 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     // The rank of the result is the same as that of the right arg
     aplRankRes = aplRankRht;
 
-    // Skip over the header to the dimensions
-    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+    // If the item is not immediate, ...
+    if (lpMemRht NE NULL)
+    {
+        // Skip over the header to the dimensions
+        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
-    // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayDataFmBase (lpMemRht);
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemRht);
+    } else
+        // Point to the immediate value
+        //   Note that <lpMemDimRht> is not referenced in this case.
+        lpMemRht = &aplLongestRht;
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (aplTypeRht))

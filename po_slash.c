@@ -850,6 +850,7 @@ RESTART_EXCEPTION_APA:
             case ARRAY_INT:
             case ARRAY_APA:
             case ARRAY_FLOAT:
+            case ARRAY_CHAR:
             case ARRAY_HETERO:
             case ARRAY_NESTED:
                 break;

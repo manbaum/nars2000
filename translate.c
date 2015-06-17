@@ -490,6 +490,49 @@ STRAND_TYPES TranslateArrayTypeToStrandType
 
 
 //***************************************************************************
+//  $TranslateArrayTypeToSizeof
+//
+//  Translate an array type (see ARRAY_TYPES) to
+//    a sizeof ().
+//***************************************************************************
+
+APLI3264 TranslateArrayTypeToSizeof
+    (ARRAY_TYPES arrayType)
+
+{
+    switch (arrayType)
+    {
+        case ARRAY_BOOL:
+            return sizeof (APLBOOL);
+
+        case ARRAY_INT:
+        case ARRAY_APA:
+            return sizeof (APLINT);
+
+        case ARRAY_FLOAT:
+            return sizeof (APLFLOAT);
+
+        case ARRAY_CHAR:
+            return sizeof (APLCHAR);
+
+        case ARRAY_RAT:
+            return sizeof (APLRAT);
+
+        case ARRAY_VFP:
+            return sizeof (APLVFP);
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+        case ARRAY_LIST:
+            return -1;
+
+        defstop
+            return -1;                     // To keep the compiler happy
+    } // End SWITCH
+} // End TranslateArrayTypeToSizeof
+
+
+//***************************************************************************
 //  $TranslateStrandTypeToArrayType
 //
 //  Translate a strand type (see STRAND_TYPES) to

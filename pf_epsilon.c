@@ -1856,15 +1856,15 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
             // Handle all other combinations
             // APLHETERO/APLNESTED vs. anything
             // anything            vs. APLHETERO/APLNESTED
-            if (!PrimFnDydEpsilonOther (lpMemRes,       // Ptr to result global memory data
-                                        aplTypeLft,     // Left arg storage type
-                                        aplNELMLft,     // Left arg NELM
-                                        lpMemLft,       // Ptr to left arg global memory data
-                                        aplTypeRht,     // Right arg storage type
-                                        aplNELMRht,     // Right arg NELM
-                                        lpMemRht,       // Ptr to right arg global memory data
-                                        lpbCtrlBreak,   // Ptr to Ctrl-Break flag
-                                        lptkFunc))      // Ptr to function token
+            if (!PrimFnDydEpsilonOther_EM (lpMemRes,        // Ptr to result global memory data
+                                           aplTypeLft,      // Left arg storage type
+                                           aplNELMLft,      // Left arg NELM
+                                           lpMemLft,        // Ptr to left arg global memory data
+                                           aplTypeRht,      // Right arg storage type
+                                           aplNELMRht,      // Right arg NELM
+                                           lpMemRht,        // Ptr to right arg global memory data
+                                           lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+                                           lptkFunc))       // Ptr to function token
                 goto ERROR_EXIT;
         } // End IF/ELSE/...
     } // End IF
@@ -3628,12 +3628,18 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnDydEpsilonOther
+//  $PrimFnDydEpsilonOther_EM
 //
 //  Dyadic epsilon between all other arg combinations
 //***************************************************************************
 
-UBOOL PrimFnDydEpsilonOther
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydEpsilonOther_EM"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL PrimFnDydEpsilonOther_EM
     (LPAPLBOOL lpMemRes,            // Ptr to result global memory data
      APLSTYPE  aplTypeLft,          // Left arg storage type
      APLNELM   aplNELMLft,          // Left arg NELM
@@ -3655,6 +3661,8 @@ UBOOL PrimFnDydEpsilonOther
     APLFLOAT     fQuadCT;           // []CT
     APLUINT      uLft,              // Loop counter
                  uRht;              // ...
+    APLUINT      ByteRes;           // # bytes in the result
+    LPVOID       lpMemTmp;
     LPPL_YYSTYPE lpYYTmp;           // Ptr to the temporary result
     UBOOL        bCmp;              // TRUE iff the comparison is TRUE
 
@@ -3825,6 +3833,193 @@ UBOOL PrimFnDydEpsilonOther
                             break;
                     } // End SWITCH
                 } // End IF/ELSE/...
+            } else
+            // If the left item is simple and the right is global, ...
+            if ((hGlbSubLft EQ NULL) && (hGlbSubRht NE NULL))
+            {
+                TOKEN   tkSubLft = {0},         // Left arg item token
+                        tkSubRht = {0};         // Right ...
+                HGLOBAL hGlbTmp = NULL;         // Temporary global memory handle
+
+                // Fill in the left arg item token
+                tkSubLft.tkFlags.TknType   = TKT_VARIMMED;
+                tkSubLft.tkFlags.ImmType   = immTypeSubLft;
+////////////////tkSubLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+                tkSubLft.tkData.tkLongest  = aplLongestSubLft;
+                tkSubLft.tkCharIndex       = lptkFunc->tkCharIndex;
+
+                // Fill in the right arg item token
+                tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
+////////////////tkSubRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////////////tkSubRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+////////////////tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);   // Filled in below
+                tkSubRht.tkCharIndex       = lptkFunc->tkCharIndex;
+
+                // If the immediate type is a global numeric, ...
+                if (IsImmGlbNum (immTypeSubRht))
+                {
+                    APLSTYPE aplTypeSubRht;         // Right sub arg storage type
+
+                    // Get the subarray storage type
+                    aplTypeSubRht = TranslateImmTypeToArrayType (immTypeSubRht);
+
+                    // Calculate space needed for the result (a scalar)
+                    ByteRes = CalcArraySize (aplTypeSubRht, 1, 0);
+
+                    // Check for overflow
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
+
+                    // Allocate space for the result
+                    hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                    if (hGlbTmp EQ NULL)
+                        goto WSFULL_EXIT;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemTmp = MyGlobalLock (hGlbTmp);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemTmp)
+                    // Fill in the header values
+                    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                    lpHeader->ArrType    = aplTypeSubRht;
+////////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+                    lpHeader->RefCnt     = 1;
+                    lpHeader->NELM       = 1;
+                    lpHeader->Rank       = 0;
+#undef  lpHeader
+                    // Skip over the header and dimension to the data
+                    lpMemTmp = VarArrayDataFmBase (lpMemTmp);
+
+                    // Copy the data from the right arg item to the temp
+                    CopyMemory (lpMemTmp, hGlbSubRht, 1 * TranslateArrayTypeToSizeof (aplTypeSubRht));
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+
+                    // Save in common var
+                    hGlbSubRht = hGlbTmp;
+                } // End IF
+
+                // Save in temp token
+                tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
+
+                // Use match to determine equality
+                lpYYTmp =
+                  PrimFnDydEqualUnderbar_EM_YY (&tkSubLft,      // Ptr to left arg token
+                                                 lptkFunc,      // Ptr to function token
+                                                &tkSubRht,      // Ptr to right arg token
+                                                 NULL);         // Ptr to axis token (may be NULL)
+                // Save the result of the comparison
+                bCmp = lpYYTmp->tkToken.tkData.tkBoolean;
+
+                // Free the temporary result
+                YYFree (lpYYTmp); lpYYTmp = NULL;
+
+                // Free the temp global memory handle
+                if (hGlbTmp NE NULL)
+                {
+                    // Free it
+                    // Note that we don't use <FreeResultGlobalVar> (or anything that calls that function)
+                    //   because the global numeric we copied into this var has not had its RefCnt incremented.
+                    MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
+                } // End IF
+
+                if (bCmp)
+                    goto SET_RESULT_BIT;
+            } else
+            // If the left item is global and the right is simple, ...
+            if ((hGlbSubLft NE NULL) && (hGlbSubRht EQ NULL))
+            {
+                TOKEN   tkSubLft = {0},         // Left arg item token
+                        tkSubRht = {0};         // Right ...
+                HGLOBAL hGlbTmp = NULL;         // Temporary global memory handle
+
+                // Fill in the right arg item token
+                tkSubRht.tkFlags.TknType   = TKT_VARIMMED;
+                tkSubRht.tkFlags.ImmType   = immTypeSubRht;
+////////////////tkSubRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+                tkSubRht.tkData.tkLongest  = aplLongestSubRht;
+                tkSubRht.tkCharIndex       = lptkFunc->tkCharIndex;
+
+                // Fill in the left arg item token
+                tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
+////////////////tkSubLft.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////////////tkSubLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+////////////////tkSubLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubLft);   // Filled in below
+                tkSubLft.tkCharIndex       = lptkFunc->tkCharIndex;
+
+                // If the immediate type is a global numeric, ...
+                if (IsImmGlbNum (immTypeSubLft))
+                {
+                    APLSTYPE aplTypeSubLft;         // Right sub arg storage type
+
+                    // Get the subarray storage type
+                    aplTypeSubLft = TranslateImmTypeToArrayType (immTypeSubLft);
+
+                    // Calculate space needed for the result (a scalar)
+                    ByteRes = CalcArraySize (aplTypeSubLft, 1, 0);
+
+                    // Check for overflow
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
+
+                    // Allocate space for the result
+                    hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                    if (hGlbTmp EQ NULL)
+                        goto WSFULL_EXIT;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemTmp = MyGlobalLock (hGlbTmp);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemTmp)
+                    // Fill in the header values
+                    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                    lpHeader->ArrType    = aplTypeSubLft;
+////////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+                    lpHeader->RefCnt     = 1;
+                    lpHeader->NELM       = 1;
+                    lpHeader->Rank       = 0;
+#undef  lpHeader
+                    // Skip over the header and dimension to the data
+                    lpMemTmp = VarArrayDataFmBase (lpMemTmp);
+
+                    // Copy the data from the right arg item to the temp
+                    CopyMemory (lpMemTmp, hGlbSubLft, 1 * TranslateArrayTypeToSizeof (aplTypeSubLft));
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+
+                    // Save in common var
+                    hGlbSubRht = hGlbTmp;
+                } // End IF
+
+                // Save in temp token
+                tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
+
+                // Use match to determine equality
+                lpYYTmp =
+                  PrimFnDydEqualUnderbar_EM_YY (&tkSubLft,      // Ptr to left arg token
+                                                 lptkFunc,      // Ptr to function token
+                                                &tkSubRht,      // Ptr to right arg token
+                                                 NULL);         // Ptr to axis token (may be NULL)
+                // Save the result of the comparison
+                bCmp = lpYYTmp->tkToken.tkData.tkBoolean;
+
+                // Free the temporary result
+                YYFree (lpYYTmp); lpYYTmp = NULL;
+
+                // Free the temp global memory handle
+                if (hGlbTmp NE NULL)
+                {
+                    // Note that we don't use <FreeResultGlobalVar> (or anything that calls that function)
+                    //   because the global numeric we copied into this var has not had its RefCnt incremented.
+                    MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
+                } // End IF
+
+                if (bCmp)
+                    goto SET_RESULT_BIT;
             } // End IF/ELSE/...
 
             continue;
@@ -3844,9 +4039,16 @@ SET_RESULT_BIT:
     } // End FOR
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     return FALSE;
-} // End PrimFnDydEpsilonOther
+} // End PrimFnDydEpsilonOther_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

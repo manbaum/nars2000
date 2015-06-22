@@ -26,6 +26,7 @@
 #define OEMRESOURCE         // To get OBM_CHECK define
 #include <windows.h>
 #include <windowsx.h>
+#include <versionhelpers.h>
 
 #define DEFINE_VARS
 #define DEFINE_VALUES
@@ -3866,7 +3867,6 @@ int PASCAL WinMain
     MSG                  Msg;           // Message for GetMessageW loop
     UINT                 uCnt;          // Loop counter
     INITCOMMONCONTROLSEX icex;          // Common control class struc
-    OSVERSIONINFO        osvi = {0};    // Version info
 
 #ifndef DEBUG
     // Instantiate the Crash Server
@@ -3889,15 +3889,10 @@ int PASCAL WinMain
     } // End IF/ELSE
 #endif
     // Ensure that the system meets our minimum requirements (WinXP = 5.1)
-    osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-    GetVersionEx (&osvi);
-
-    if (!((osvi.dwMajorVersion >  5)
-      || ((osvi.dwMajorVersion == 5)
-       && (osvi.dwMinorVersion >= 1))))
+    if (!IsWindowsXPSP3OrGreater ())
     {
         MessageBoxW (hWndMF,
-                    L"Sorry, but the minimum OS version for " WS_APPNAME L" is WinXP.",
+                    L"Sorry, but the minimum OS version for " WS_APPNAME L" is WinXP SP3.",
                      lpwszAppName,
                      MB_OK | MB_ICONERROR);
         return -1;

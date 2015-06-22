@@ -388,7 +388,7 @@ PRO:    DIR                     \
 
 ########################## UTILITY ROUTINES ##########################
 
-$(O)dbgbrk.obj:         dbgbrk.asm
+$(O)dbgbrk$(WIN).obj:   dbgbrk$(WIN).asm
         @if exist $@ del $@
         @$(ML) /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
 
@@ -665,7 +665,7 @@ $(WS)local.h:           defines.h       \
 # Build the Win32/Win64 version
 OBJS=   $(SRC:???=obj)                  \
         $(SRC_PARSE:???=obj)            \
-        $(O)dbgbrk.obj                  \
+        $(O)dbgbrk$(WIN).obj            \
         $(O)main.res
 
 $(O)$(ENAME).exe:       $(OBJS)             \

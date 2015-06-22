@@ -1,6 +1,17 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1367 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Bug In VS 2013 Solution File
+
+Directory trunk:
+
+NARS2000.SLN:
+  Load the .vcproj (not .vcxproj) file so as to go through the One-Time Upgrade.
+
+
 Build #1366 -- Version 0.4.9.xx
 -------------------------------
 

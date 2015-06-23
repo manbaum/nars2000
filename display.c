@@ -677,7 +677,22 @@ UBOOL DisplayGlbArr_EM
             *lpaplChar = WC_EOS;
 
             // Calculate the # of cols per row group
-            uColLim = (aplLastDim + uQuadPW - 1) / uQuadPW;
+            //   taking into account the six-space indent for the
+            //   second and subsequent lines.
+            // The calculation is to find the smallest N such that
+            //   aplLastDim <= []PW + (N - 1) x ([]PW - 6)
+            // The lefthand []PW is for the first row, and (N - 1)
+            //   counts the second and subsequent rows.
+            //   Simplifying the above inequality...
+            //   (aplLastDim - []PW) <= (N - 1) x ([]PW - 6)
+            //   (aplLastDim - []PW) / ([]PW - 6) <= N - 1
+            //   ceil ((aplLastDim - []PW) / ([]PW - 6)) == N - 1
+            //   N == 1 + (aplLastDim - []PW + []PW - 7) / ([]PW - 6)
+            //   N == 1 + (aplLastDim - 7) / ([]PW - 6)
+            // We also must take into account lines shorter than 7 chars
+            //   as the subtraction will go negative (or positive large
+            //   as aplLastDim is unsigned).
+            uColLim = 1 + (max (0, (int) aplLastDim - 7)) / (uQuadPW - 6);
 
             // Loop through the groups of cols
             for (uColGrp = 0; uColGrp < uColLim; uColGrp++, bLineCont = TRUE)

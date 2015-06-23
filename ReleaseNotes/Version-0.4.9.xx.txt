@@ -1,10 +1,21 @@
 Version 0.4.9.xx consists of the following Builds:
 
 
+Build #1368 -- Version 0.4.9.xx
+-------------------------------
+
+* Fix Another Bug In VS2013 Solution File
+
+Directory trunk:
+
+NARS2000.SLN:
+  I forgot that without an old header, VS2013 won't upgrade an old .sln to a new one.
+
+
 Build #1367 -- Version 0.4.9.xx
 -------------------------------
 
-* Fix Bug In VS 2013 Solution File
+* Fix Bug In VS2013 Solution File
 
 Directory trunk:
 

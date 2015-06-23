@@ -1,7 +1,7 @@
 Build #1367 -- Version 0.4.9.xx
 -------------------------------
 
-* Fix Bug In VS 2013 Solution File
+* Fix Bug In VS2013 Solution File
 
 Directory trunk:
 

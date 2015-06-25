@@ -2345,6 +2345,23 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;       // We handled the msg
 #undef  wszTemp
 
+                case IDM_DOCUMENTATION:
+                    // Fill in the URL
+#define wszTemp     L"http://wiki.nars2000.org/"
+
+                    // In case we need COM, ...
+                    CoInitializeEx (NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+                    // Ask the system to load the web page
+                    ShellExecuteW (hWnd,            // Parent window handle
+                                   NULL,            // Operation (NULL = use default verb)
+                                   wszTemp,         // The file to "open"
+                                   NULL,            // Parameters
+                                   NULL,            // Ptr to directory
+                                   SW_SHOWNORMAL);  // Show command
+                    return FALSE;       // We handled the msg
+#undef  wszTemp
+
                 case IDM_ABOUT:
                     DialogBoxW (_hInstance,
                                 MAKEINTRESOURCEW (IDD_ABOUT),

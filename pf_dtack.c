@@ -330,50 +330,53 @@ LPPL_YYSTYPE PrimFnMonDownTack_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                // Ptr to left arg token
+     LPTOKEN lptkFunc,                  // Ptr to function token
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeLft,       // Left arg storage type
-                  aplTypeRht,       // Right ...
-                  aplTypeRes;       // Result   ...
-    APLNELM       aplNELMLft,       // Left arg NELM
-                  aplNELMRht,       // Right ...
-                  aplNELMRes;       // Result   ...
-    APLRANK       aplRankLft,       // Left arg rank
-                  aplRankRht,       // Right ...
-                  aplRankRes;       // Result   ...
-    APLDIM        aplColsLft,       // Left arg # cols
-                  aplRowsLft,       // Left arg # rows
-                  aplRestLft;       // Left arg product of remaining dimensions
-    APLLONGEST    aplLongestLft,    // Left arg immediate value
-                  aplLongestRht;    // Right ...
-    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
-                  hGlbRht = NULL,   // Right ...
-                  hGlbRes = NULL;   // Result   ...
-    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
-                  lpMemRht = NULL,  // Ptr to right ...
-                  lpMemRes = NULL;  // Ptr to result   ...
-    LPAPLDIM      lpMemDimLft,      // Ptr to left arg dimensions
-                  lpMemDimRht,      // Ptr to right ...
-                  lpMemDimRes;      // Ptr to result   ...
-    APLUINT       ByteRes,          // # bytes in the result
-                  uLftCol,          // Loop counter
-                  uLftRst,          // Loop counter
-                  uRht;             // Loop counter
-    APLINT        iLftRow,          // Loop counter
-                  uLft,             // ...
-                  uRes,             // ...
-                  aplIntRht;        // Temporary integer
-    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
-    APLRAT        aplRatRes = {0};  // Result item as RAT
-    APLVFP        aplVfpRes = {0};  // ...            VFP
-    ALLTYPES      atLft = {0},      // Left arg as ALLTYPES
-                  atRht = {0};      // Right ...
+    APLSTYPE          aplTypeLft,       // Left arg storage type
+                      aplTypeRht,       // Right ...
+                      aplTypeRes;       // Result   ...
+    APLNELM           aplNELMLft,       // Left arg NELM
+                      aplNELMRht,       // Right ...
+                      aplNELMRes;       // Result   ...
+    APLRANK           aplRankLft,       // Left arg rank
+                      aplRankRht,       // Right ...
+                      aplRankRes;       // Result   ...
+    APLDIM            aplColsLft,       // Left arg # cols
+                      aplColsLft2,      // ...             , saved value
+                      aplRowsLft,       // Left arg # rows
+                      aplRestLft;       // Left arg product of remaining dimensions
+    APLLONGEST        aplLongestLft,    // Left arg immediate value
+                      aplLongestRht;    // Right ...
+    HGLOBAL           hGlbLft = NULL,   // Left arg global memory handle
+                      hGlbRht = NULL,   // Right ...
+                      hGlbRes = NULL;   // Result   ...
+    LPVOID            lpMemLft = NULL,  // Ptr to left arg global memory
+                      lpMemRht = NULL,  // Ptr to right ...
+                      lpMemRes = NULL;  // Ptr to result   ...
+    LPAPLDIM          lpMemDimLft,      // Ptr to left arg dimensions
+                      lpMemDimRht,      // Ptr to right ...
+                      lpMemDimRes;      // Ptr to result   ...
+    APLUINT           ByteRes,          // # bytes in the result
+                      uLftCol,          // Loop counter
+                      uLftRst,          // Loop counter
+                      uRht;             // Loop counter
+    APLINT            iLftRow,          // Loop counter
+                      uLft,             // ...
+                      uRes,             // ...
+                      aplIntRht;        // Temporary integer
+    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
+    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLRAT            aplRatRes = {0};  // Result item as RAT
+    APLVFP            aplVfpRes = {0};  // ...            VFP
+    ALLTYPES          atLft = {0},      // Left arg as ALLTYPES
+                      atRht = {0};      // Right ...
+    LPVARARRAY_HEADER lpMemHdrLft,      // Ptr to left arg var header
+                      lpMemHdrRht;      // ...    right ...
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -383,7 +386,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
 
     // Get the attributes (Type,NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, &aplColsLft);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, &aplColsLft2);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT & RIGHT DOMAIN ERRORs
@@ -392,8 +395,8 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
         goto DOMAIN_EXIT;
 
     // Get left & right arg global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Calc result NELM, Rank, & Type
     aplNELMRes = aplNELMLft * aplNELMRht;
@@ -408,11 +411,11 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     else
     {
         // Check for exceptions
-        if ((IsAll2s ((LPVARARRAY_HEADER) lpMemLft) && IsSimpleInt (aplTypeRht))
-         || (lpMemLft EQ NULL && aplLongestLft EQ 2 && !IsGlbNum (aplTypeRht)))
+        if ((IsAll2s (lpMemHdrLft) && IsSimpleInt (aplTypeRht))
+         || (lpMemHdrLft EQ NULL && aplLongestLft EQ 2 && !IsGlbNum (aplTypeRht)))
             aplTypeRes = ARRAY_BOOL;
     } // End IF/ELSE
-
+RESTART_EXCEPTION:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -443,9 +446,9 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
 
     // Skip over the header to the dimensions
     if (hGlbLft)
-        lpMemDimLft = VarArrayBaseToDim (lpMemLft);
+        lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
     if (hGlbRht)
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
     // Fill in the result's dimension
@@ -460,10 +463,12 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
 
         // Calc the # rows in the left arg
         if (IsMultiRank (aplRankLft))
-            aplRowsLft = (VarArrayBaseToDim (lpMemLft))[aplRankLft - 2];
-        else
         {
-            aplRowsLft = aplColsLft;
+            aplRowsLft = (VarArrayBaseToDim (lpMemHdrLft))[aplRankLft - 2];
+            aplColsLft = aplColsLft2;
+        } else
+        {
+            aplRowsLft = aplColsLft2;
             aplColsLft = 1;
         } // End IF/ELSE
 
@@ -473,11 +478,12 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
             aplRestLft = aplNELMLft / (aplRowsLft * aplColsLft);
 
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayDataFmBase (lpMemLft);
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
     } else
     {
         aplRowsLft = aplRestLft = 1;
-        lpMemLft = &aplLongestLft;
+        aplColsLft = aplColsLft2;
+        lpMemLft   = &aplLongestLft;
     } // End IF/ELSE
 
     if (hGlbRht)
@@ -488,7 +494,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
         lpMemDimRes += aplRankRht;
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     } else
         lpMemRht = &aplLongestRht;
 
@@ -501,17 +507,14 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
 
 #define INIT_REL(mpq,mpf)                               \
     /* If either arg is global numeric, ... */          \
-    if (IsGlbNum (aplTypeLft)                           \
-     || IsGlbNum (aplTypeRht))                          \
+    if (IsGlbNum (aplTypeRes))                          \
     {                                                   \
-        if (IsRat (aplTypeLft)                          \
-         || IsRat (aplTypeRht))                         \
+        if (IsRat (aplTypeRes))                         \
         {                                               \
             mpq (&atLft.aplRat);                        \
             mpq (&atRht.aplRat);                        \
         } else                                          \
-        if (IsVfp (aplTypeLft)                          \
-         || IsVfp (aplTypeRht))                         \
+        if (IsVfp (aplTypeRes))                         \
         {                                               \
             mpf (&atLft.aplVfp);                        \
             mpf (&atRht.aplVfp);                        \
@@ -601,81 +604,142 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                 // Promote the left arg to the result type
                 (*aTypeActPromote[aplTypeLft][aplTypeRes])(lpMemLft, (hGlbLft EQ NULL) ? 0 : uLft, &atLft);
 
-                // Split cases based upon the result arg storage type
-                switch (aplTypeRes)
+                __try
                 {
-////////////////////case ARRAY_BOOL:                // Res = BOOL   Can't happen w/DownTack
-                    case ARRAY_INT:                 // Res = INT
-////////////////////case ARRAY_APA:                 // Res = APA    Can't happen w/DownTack
-                        // Calculate the result item
-                        aplIntRes = AplModI (atLft.aplInteger, atRht.aplInteger);
+                    // Split cases based upon the result arg storage type
+                    switch (aplTypeRes)
+                    {
+////////////////////////case ARRAY_BOOL:                // Res = BOOL   Can't happen w/DownTack
+                        case ARRAY_INT:                 // Res = INT
+////////////////////////case ARRAY_APA:                 // Res = APA    Can't happen w/DownTack
+                            // Calculate the result item
+                            aplIntRes = AplModI (atLft.aplInteger, atRht.aplInteger);
 
-                        // Save in the result
-                        ((LPAPLINT)   lpMemRes)[uRes] = aplIntRes;
+                            // Save in the result
+                            ((LPAPLINT)   lpMemRes)[uRes] = aplIntRes;
 
-                        // If the modulus is zero, we're finished with this row
-                        if (atLft.aplInteger EQ 0)
-                            break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
-                        // Subtract from the right arg item and shift right
-                        atRht.aplInteger = (atRht.aplInteger - aplIntRes) / atLft.aplInteger;
+                            // If the modulus is zero, we're finished with this row
+                            if (atLft.aplInteger EQ 0)
+                                break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
+                            // Subtract from the right arg item and shift right
+                            atRht.aplInteger = (atRht.aplInteger - aplIntRes) / atLft.aplInteger;
 
-                        break;
+                            break;
 
-                    case ARRAY_FLOAT:               // Res = FLOAT
-                        // Calculate the result item
-                        aplFloatRes = AplModF (atLft.aplFloat, atRht.aplFloat);
+                        case ARRAY_FLOAT:               // Res = FLOAT
+                            // Calculate the result item
+                            aplFloatRes = AplModF (atLft.aplFloat, atRht.aplFloat);
 
-                        // Save in the result
-                        ((LPAPLFLOAT) lpMemRes)[uRes] = aplFloatRes;
+                            // Save in the result
+                            ((LPAPLFLOAT) lpMemRes)[uRes] = aplFloatRes;
 
-                        // If the modulus is zero, we're finished with this row
-                        if (atLft.aplFloat EQ 0)
-                            break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
-                        // Subtract from the right arg item
-                        atRht.aplFloat = (atRht.aplFloat - aplFloatRes) / atLft.aplFloat;
+                            // If the modulus is zero, we're finished with this row
+                            if (atLft.aplFloat EQ 0)
+                                break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
+                            // Subtract from the right arg item
+                            atRht.aplFloat = (atRht.aplFloat - aplFloatRes) / atLft.aplFloat;
 
-                        break;
+                            break;
 
-                    case ARRAY_RAT:                 // Res = RAT
-                        // Calculate the result item
-                        aplRatRes = AplModR (atLft.aplRat, atRht.aplRat);
+                        case ARRAY_RAT:                 // Res = RAT
+                            // Calculate the result item
+                            aplRatRes = AplModR (atLft.aplRat, atRht.aplRat);
 
-                        // Save in the result
-                        ((LPAPLRAT) lpMemRes)[uRes] = aplRatRes;
+                            // Save in the result
+                            ((LPAPLRAT) lpMemRes)[uRes] = aplRatRes;
 
-                        // If the modulus is zero, we're finished with this row
-                        if (IsMpq0 (&atLft.aplRat))
-                            break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
-                        // Subtract from the right arg item
-////////////////////////atRht.aplRat = (atRht.aplRat - aplRatRes) / atLft.aplRat;
-                        mpq_sub (&atRht.aplRat, &atRht.aplRat, &aplRatRes);
-                        mpq_div (&atRht.aplRat, &atRht.aplRat, &atLft.aplRat);
+                            // If the modulus is zero, we're finished with this row
+                            if (IsMpq0 (&atLft.aplRat))
+                                break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
+                            // Subtract from the right arg item
+////////////////////////////atRht.aplRat = (atRht.aplRat - aplRatRes) / atLft.aplRat;
+                            mpq_sub (&atRht.aplRat, &atRht.aplRat, &aplRatRes);
+                            mpq_div (&atRht.aplRat, &atRht.aplRat, &atLft.aplRat);
 
-                        break;
+                            break;
 
-                    case ARRAY_VFP:                 // Res = VFP
-                        // Calculate the result item
-                        aplVfpRes = AplModV (atLft.aplVfp, atRht.aplVfp);
+                        case ARRAY_VFP:                 // Res = VFP
+                            // Calculate the result item
+                            aplVfpRes = AplModV (atLft.aplVfp, atRht.aplVfp);
 
-                        // Save in the result
-                        ((LPAPLVFP) lpMemRes)[uRes] = aplVfpRes;
+                            // Save in the result
+                            ((LPAPLVFP) lpMemRes)[uRes] = aplVfpRes;
 
-                        // If the modulus is zero, we're finished with this row
-                        if (IsMpf0 (&atLft.aplVfp))
-                            break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
-                        // Subtract from the right arg item
-////////////////////////atRht.aplVfp = (atRht.aplVfp - aplVfpRes) / atLft.aplVfp;
-                        mpfr_sub (&atRht.aplVfp, &atRht.aplVfp, &aplVfpRes   , MPFR_RNDN);
-                        mpfr_div (&atRht.aplVfp, &atRht.aplVfp, &atLft.aplVfp, MPFR_RNDN);
+                            // If the modulus is zero, we're finished with this row
+                            if (IsMpf0 (&atLft.aplVfp))
+                                break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
+                            // Subtract from the right arg item
+////////////////////////////atRht.aplVfp = (atRht.aplVfp - aplVfpRes) / atLft.aplVfp;
+                            mpfr_sub (&atRht.aplVfp, &atRht.aplVfp, &aplVfpRes   , MPFR_RNDN);
+                            mpfr_div (&atRht.aplVfp, &atRht.aplVfp, &atLft.aplVfp, MPFR_RNDN);
 
-                        break;
+                            break;
 
-                    case ARRAY_CHAR:
-                    case ARRAY_HETERO:
-                    case ARRAY_NESTED:
-                    defstop
-                        break;
-                } // End SWITCH
+                        case ARRAY_CHAR:
+                        case ARRAY_HETERO:
+                        case ARRAY_NESTED:
+                        defstop
+                            break;
+                    } // End SWITCH
+                } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+                {
+                    switch (MyGetExceptionCode ())
+                    {
+                        case EXCEPTION_RESULT_FLOAT:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                            if (!IsSimpleFlt (aplTypeRes))
+                            {
+                                INIT_REL (Myq_clear, Myf_clear)
+
+                                aplTypeRes = ARRAY_FLOAT;
+
+                                dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+
+                                // We no longer need these ptrs
+                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                                // We no longer need this storage
+                                FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                                goto RESTART_EXCEPTION;
+                            } // End IF
+
+                            // Display message for unhandled exception
+                            DisplayException ();
+
+                            break;
+
+                        case EXCEPTION_RESULT_VFP:
+                            if (!IsVfp (aplTypeRes))
+                            {
+                                INIT_REL (Myq_clear, Myf_clear)
+
+                                aplTypeRes = ARRAY_VFP;
+
+                                dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+
+                                // We no longer need these ptrs
+                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                                // We no longer need this storage
+                                FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                                goto RESTART_EXCEPTION;
+                            } // End IF
+
+                            // Display message for unhandled exception
+                            DisplayException ();
+
+                            break;
+
+                        default:
+                            // Display message for unhandled exception
+                            DisplayException ();
+
+                            break;
+                    } // End SWITCH
+                } // End __try/__except
             } // End FOR
         } // End FOR/FOR
     } // End FOR

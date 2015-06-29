@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,6 +64,7 @@ extern MAGIC_FCNOPR MFO_DydScan1;
 extern MAGIC_FCNOPR MFO_RoS1L;
 extern MAGIC_FCNOPR MFO_RoS1R;
 extern MAGIC_FCNOPR MFO_RoS2;
+extern MAGIC_FCNOPR MFO_MDIU;
 
 
 //***************************************************************************
@@ -765,6 +766,7 @@ UBOOL InitMagicFunctions
     lpMemPTD->hGlbMFO[MFOE_RoS1L            ]  = Init1MagicFunction (MFON_RoS1L            , &MFO_RoS1L            , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_RoS1R            ]  = Init1MagicFunction (MFON_RoS1R            , &MFO_RoS1R            , lpMemPTD, hWndEC, NULL);
     lpMemPTD->hGlbMFO[MFOE_RoS2             ]  = Init1MagicFunction (MFON_RoS2             , &MFO_RoS2             , lpMemPTD, hWndEC, NULL);
+    lpMemPTD->hGlbMFO[MFOE_MDIU             ]  = Init1MagicFunction (MFON_MDIU             , &MFO_MDIU             , lpMemPTD, hWndEC, NULL);
 
     return TRUE;
 } // InitMagicFunctions

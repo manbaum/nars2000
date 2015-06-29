@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -362,7 +362,7 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
                     goto VALENCE_EXIT;
 
                 // Get the magic function/operator global memory handle
-                hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydIotaUnderbar];
+                hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MDIU];
 
                 break;
 

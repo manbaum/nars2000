@@ -1876,7 +1876,7 @@ YYFNS.C:
 Build #1292 -- Version 0.4.9.xx
 -------------------------------
 
-* Improve DEBUG Display of An APL Var
+* Handle Indexing Of Scalars
 
 Directory trunk:
 

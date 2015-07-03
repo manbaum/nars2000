@@ -423,15 +423,15 @@ APLFLOAT PrimFnDydCircleFisFvF
             return sinh (aplFloatRht);
 
         case  4:        // (1 + R * 2) * 0.5
-            // Get absolute value to avoid duplicate in comparison and result
-            aplFloatRht = fabs (aplFloatRht);
+            // Get absolute value to avoid duplication in comparison and result
+            aplFloatTmp = fabs (aplFloatRht);
 
             // Values at or above this limit when squared
             //   return infinity, so we return the arg unchanged.
             // Also, 2*26 = 67108864 is the smallest positive number such that
             //   a=sqrt (1 + a * 2)
-            if (aplFloatRht >= 1.3407807929942596E154)
-                return aplFloatRht;
+            if (aplFloatTmp >= 1.3407807929942596E154)
+                return aplFloatTmp;
             else
             {
                 // Call assembler function
@@ -448,8 +448,8 @@ APLFLOAT PrimFnDydCircleFisFvF
             iAsmCircle3Flt (&aplFloatTmp, &aplFloatRht);
 
             // Check for NaN
-            if (!_isnan (aplFloatRht))
-                return aplFloatRht;
+            if (!_isnan (aplFloatTmp))
+                return aplFloatTmp;
             else
                 break;
 
@@ -458,8 +458,8 @@ APLFLOAT PrimFnDydCircleFisFvF
             iAsmCircle2Flt (&aplFloatTmp, &aplFloatRht);
 
             // Check for NaN
-            if (!_isnan (aplFloatRht))
-                return aplFloatRht;
+            if (!_isnan (aplFloatTmp))
+                return aplFloatTmp;
             else
                 break;
 
@@ -468,8 +468,8 @@ APLFLOAT PrimFnDydCircleFisFvF
             iAsmCircle1Flt (&aplFloatTmp, &aplFloatRht);
 
             // Check for NaN
-            if (!_isnan (aplFloatRht))
-                return aplFloatRht;
+            if (!_isnan (aplFloatTmp))
+                return aplFloatTmp;
             else
                 break;
 
@@ -482,8 +482,8 @@ APLFLOAT PrimFnDydCircleFisFvF
             iAsmCircle0Flt (&aplFloatTmp, &aplFloatRht);
 
             // Check for NaN
-            if (!_isnan (aplFloatRht))
-                return aplFloatRht;
+            if (!_isnan (aplFloatTmp))
+                return aplFloatTmp;
             else
                 break;
 

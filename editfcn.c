@@ -2385,7 +2385,9 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     // Get the # spaces to insert
                     uCharPos = uCharPosBeg - uLinePos;
-                    uSpaces = (((uCharPos + 1) / DEF_TABS) * DEF_TABS + DEF_TABS) - uCharPos;
+                    uSpaces = ((uCharPos / DEF_TABS) * DEF_TABS + DEF_TABS) - uCharPos;
+
+                    Assert (uSpaces <= DEF_TABS);
 
                     for (uChar = 0; uChar < uSpaces; uChar++)
                         wChar[uChar] = L' ';

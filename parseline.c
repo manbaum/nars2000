@@ -221,6 +221,34 @@
 #define plRedNAM_FFR    plRedA_FFR
 #define plRedIO_FFR     plRedA_FFR
 
+#define plRedMOP_A      plRedPseudo
+#define plRedMOP_SA     plRedPseudo
+
+#define plRedHY_A       plRedPseudo
+#define plRedHY_SA      plRedPseudo
+
+#define plRedFR_MOP     plRedPseudo
+#define plRedFR_MOPN    plRedPseudo
+#define plRedFR_HY      plRedPseudo
+
+#define plRedFFR_MOP    plRedPseudo
+#define plRedFFR_MOPN   plRedPseudo
+#define plRedFFR_HY     plRedPseudo
+
+#define plRedAFR_MOP    plRedPseudo
+#define plRedAFR_MOPN   plRedPseudo
+#define plRedAFR_HY     plRedPseudo
+
+#define plRedMOP_MOP    plRedPseudo
+#define plRedMOP_MOPN   plRedPseudo
+#define plRedMOP_HY     plRedPseudo
+
+#define plRedMOPN_MOP   plRedPseudo
+#define plRedMOPN_MOPN  plRedPseudo
+#define plRedMOPN_HY    plRedPseudo
+
+#define plRedHY_HY      plRedPseudo
+
 
 #define STRICT
 #include <windows.h>
@@ -302,6 +330,35 @@ int _BIND
 #else
   #define   _BIND(lftSynObj,rhtSynObj)      plBndStr[lftSynObj][rhtSynObj]
 #endif
+
+
+//***************************************************************************
+//  $plRedPseudo
+//
+//  Reduce various pseudo-reductions
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- plRedPseudo"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE plRedPseudo
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+#ifdef DEBUG
+    DbgStop ();
+#endif
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpplYYLstRht->tkToken);
+    return NULL;
+} // End plRedPseudo
+#undef  APPEND_NAME
 
 
 //***************************************************************************

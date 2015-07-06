@@ -575,9 +575,6 @@ RESTART_EXCEPTION:
     // Trundle through the right arg
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
-        // Promote the right arg to the result type
-        (*aTypeActPromote[aplTypeRht][aplTypeRes])(lpMemRht, (hGlbRht EQ NULL) ? 0 : uRht, &atRht);
-
         // The left arg is treated as a three-dimensional array of shape
         //   aplRestLft aplRowsLft aplColsLft
 
@@ -587,6 +584,9 @@ RESTART_EXCEPTION:
         {
             APLFLOAT aplFloatRes;
             APLINT   aplIntRes;
+
+            // Promote the right arg to the result type
+            (*aTypeActPromote[aplTypeRht][aplTypeRes])(lpMemRht, (hGlbRht EQ NULL) ? 0 : uRht, &atRht);
 
             // Trundle through the left arg rows from back to front
             for (iLftRow = aplRowsLft - 1; iLftRow >= 0; iLftRow--)

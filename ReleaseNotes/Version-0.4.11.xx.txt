@@ -1,8 +1,20 @@
 Version 0.4.11.xx consists of the following Builds:
 
 
+Build #1377 -- Version 0.4.11.xx
+--------------------------------
+
+* Fix Bug In )LIB Producing Duplicate Values
+
+Directory trunk:
+
+SC_LIB.C:
+  Update copyright notice.
+  Fix bug in )LIB producing duplicate values due to not taking into account a leading double quote.
+
+
 Build #1376 -- Version 0.4.11.xx
--------------------------------
+--------------------------------
 
 * Fix Bug In Primitive Function Encode
 
@@ -13,7 +25,7 @@ PF_DTACK.C:
 
 
 Build #1375 -- Version 0.4.11.xx
--------------------------------
+--------------------------------
 
 * Fix Bug In Syntax Analyzer
 
@@ -26,7 +38,7 @@ PARSELINE.H:
 
 
 Build #1374 -- Version 0.4.11.xx
--------------------------------
+--------------------------------
 
 * Fix Bug Which Crashes When Editing A Function After Typing A Tab
 

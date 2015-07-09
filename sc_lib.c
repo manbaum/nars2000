@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,8 @@ UBOOL CmdLibCom_EM
     lpwszFormat = lpMemPTD->lpwszFormat;
 
     // Split out the drive and path from the module filename
-    _wsplitpath (lpwszTail, wszDrive, wszDir, NULL, NULL);
+    //   skipping over any leading double quote
+    _wsplitpath (&lpwszTail[lpwszTail[0] EQ WC_DQ], wszDrive, wszDir, NULL, NULL);
 
     // Lock the memory to get a ptr to it
     lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
@@ -118,7 +119,6 @@ UBOOL CmdLibCom_EM
     // If the command tail starts with a drive letter, or a backslash, ...
     if (wszDrive[0]
      || wszDir[0] EQ WC_SLOPE)
-    {
         // Process this directory
         CmdLibProcess (wszFileName,             // Ptr to canonical dir
                        lpwszFormat,             // Ptr to temp storage
@@ -129,10 +129,9 @@ UBOOL CmdLibCom_EM
                        NULL,                    // Ptr to LibDirs (may be NULL)
                        uArgCnt,                 // # args after the system command
                        bUniqWs);                // TRUE iff listing unique workspaces only
-    } else
+    else
     // Loop through the search dirs
     for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
-    {
         // Process this directory
         CmdLibProcess (wszFileName,             // Ptr to canonical dir
                        lpwszFormat,             // Ptr to temp storage
@@ -143,8 +142,6 @@ UBOOL CmdLibCom_EM
                       &lpwszLibDirs[uCnt],      // Ptr to LibDirs (may be NULL)
                        uArgCnt,                 // # args after the system command
                        bUniqWs);                // TRUE iff listing unique workspaces only
-    } // End FOR
-
     // Mark as successful
     bRet = TRUE;
 

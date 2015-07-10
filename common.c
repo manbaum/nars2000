@@ -249,7 +249,7 @@ LPWCHAR SkipBlackW
     (LPWCHAR lpw)
 
 {
-    // Skip over white space
+    // Skip over non-white space
     while (*lpw && !IsWhiteW (*lpw))
         lpw++;
 
@@ -349,6 +349,49 @@ LPWCHAR SkipPastCharW
 
     return lpw;
 } // End SkipPastCharW
+
+
+//***************************************************************************
+//  $StripDQ
+//
+//  Strip off leading/trailing DQs
+//***************************************************************************
+
+LPWCHAR StripDQ
+    (LPWCHAR lpwszTail)
+
+{
+    LPWCHAR lpwTemp;
+    UINT    uLen;
+
+    if (lpwszTail[0] EQ WC_DQ)
+    {
+        // Skip over it
+        lpwszTail++;
+
+        // Skip over leading blanks
+        lpwszTail = SkipWhiteW (lpwszTail);
+
+        // Find the matching DQ
+        lpwTemp = strchrW (lpwszTail, WC_DQ);
+
+        // If present, ...
+        if (lpwTemp)
+            // Zap it
+           *lpwTemp = WC_EOS;
+
+        // Get the string length
+        uLen = lstrlenW (lpwszTail);
+
+        // Skip back over trailing white space
+        while (uLen && IsWhiteW (lpwszTail[uLen - 1]))
+            uLen --;
+        // Zap the trailing white space
+        lpwszTail[uLen] = WC_EOS;
+    } // End IF
+
+    return lpwszTail;
+} // End StripDQ
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -89,19 +89,8 @@ UBOOL CmdIn_EM
     if (lpwszTail[0] EQ WC_EOS)
         goto INCORRECT_COMMAND_EXIT;
 
-    // Get the command tail length
-    uLen = lstrlenW (lpwszTail);
-
-    // Check for leading and trailing double quotes
-    if (lpwszTail[0       ] EQ WC_DQ
-     && lpwszTail[uLen - 1] EQ WC_DQ)
-    {
-        // Zap the trailing DQ
-        lpwszTail[--uLen] = WC_EOS;
-
-        // Move the string down over the leading DQ
-        CopyMemoryW (lpwszTail, &lpwszTail[1], uLen);
-    } // End IF
+    // If there's a leading double-quote, ...
+    lpwszTail = StripDQ (lpwszTail);
 
     // Split out the drive and path from the module filename
     _wsplitpath (lpwszTail, wszDrive, wszDir, wszFname, wszExt);

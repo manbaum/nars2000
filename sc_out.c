@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -124,6 +124,9 @@ UBOOL CmdOut_EM
 
         goto INCORRECT_COMMAND_SWITCH_EXIT;
     } // End WHILE
+
+    // Strip out leading/trailing DQs
+    lpwszTail = StripDQ (lpwszTail);
 
     // Split out the drive and path from the module filename
     _wsplitpath (lpwszTail, wszDrive, wszDir, wszFname, wszExt);

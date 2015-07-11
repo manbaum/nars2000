@@ -247,6 +247,14 @@
 #define plRedMOPN_MOPN  plRedPseudo
 #define plRedMOPN_HY    plRedPseudo
 
+#define plRedRBC_MOP    plRedPseudo
+#define plRedRBC_MOPN   plRedPseudo
+#define plRedRBC_HY     plRedPseudo
+
+#define plRedRBK_MOP    plRedPseudo
+#define plRedRBK_MOPN   plRedPseudo
+#define plRedRBK_HY     plRedPseudo
+
 #define plRedHY_HY      plRedPseudo
 
 
@@ -4363,6 +4371,8 @@ PARSELINE_REDUCE:
                     TRACE2 (L"Reducing:", EVENT, lpplCurStr->soType, lstSynObj);
                 }
 #endif
+                Assert (lpplCurStr->soType NE soUNK);
+
                 // Save the value of lstSynObj so we may check it at PARSELINE_DONE
                 oldLstSynObj = lstSynObj;
 

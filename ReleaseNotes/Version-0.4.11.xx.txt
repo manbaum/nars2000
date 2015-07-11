@@ -1,6 +1,18 @@
 Version 0.4.11.xx consists of the following Builds:
 
 
+Build #1383 -- Version 0.4.11.xx
+--------------------------------
+
+* Fix SYNTAX ERROR In '] MOP' And '} MOP'
+
+Directory trunk:
+
+PARSELINE.C:
+PARSELINE.H:
+  The cases '] MOP/MOPN/HY' and '} MOP/MOPN/HY' signal a SYNTAX ERROR and shouldn't.
+
+
 Build #1382 -- Version 0.4.11.xx
 --------------------------------
 

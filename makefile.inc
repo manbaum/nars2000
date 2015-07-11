@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2014 Sudley Place Software
+#     Copyright (C) 2006-2015 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -102,7 +102,6 @@ LIST=
 
 !if "$(DEBUG)" == "1"
 RESDEBUG=1
-###CFLAGS_DEBUG=/Z7 /D "DEBUG"
 CFLAGS_DEBUG=/Zi /D "DEBUG"
 BUILD_DIR=Debug
 DEBUG_LIBSUFFIX=d
@@ -148,15 +147,16 @@ MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
 ECM_LIB  = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
 
 !if "$(DEBUG)" == "1"
-CS_DLL=
-CS_EXE=
+CS_FILES=
 !else
 !if "$(WIN)" == "64"
-CS_DLL=$(CS_DIR)bin\x64\crashrpt.dll
-CS_EXE=$(CS_DIR)bin\x64\sendrpt.exe
+CS_FILES=$(CS_DIR)bin\x64\crashrpt.dll  \
+         $(CS_DIR)bin\x64\dbghelp.dll   \
+         $(CS_DIR)bin\x64\sendrpt.exe
 !else
-CS_DLL=$(CS_DIR)bin\crashrpt.dll
-CS_EXE=$(CS_DIR)bin\sendrpt.exe
+CS_FILES=$(CS_DIR)bin\crashrpt.dll      \
+         $(CS_DIR)bin\dbghelp.dll       \
+         $(CS_DIR)bin\sendrpt.exe
 !endif
 !endif
 
@@ -167,8 +167,8 @@ CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)" /D "_STDINT_H"
 
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
 CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
-CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS"
-LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG
+CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /GL /Qpar /O2
+LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG /LTCG
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /GS- /D_AMD64_ /D_M_AMD64 /D_WIN64 /Gd
 LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64
@@ -674,8 +674,7 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(MPFR_LIB)         \
                         $(ECM_LIB)          \
                         $(GSL_LIB)          \
-                        $(CS_DLL)           \
-                        $(CS_EXE)           \
+                        $(CS_FILES)         \
                         makefile.inc        \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.crf
@@ -701,10 +700,10 @@ $(LFLAGS_NDEF)
         @del $(O)$(@B).lib
         @copy $(O)$(ENAME).map $(B) >NUL
 
-$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE* $(FONT) $(CS_DLL) $(CS_EXE)
+$(B)$(ENAME).zip:       $(O)$(ENAME).exe LICENSE* $(FONT) $(CS_FILES)
         @echo ---.zip File----
         @copy $(O)$(ENAME).exe $(ENAME).exe >NUL
-        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE* $(FONT) $(CS_DLL) $(CS_EXE) >NUL
+        @$(ZIPPRG) a -tzip $(B)$(ENAME).zip $(ENAME).EXE LICENSE* $(FONT) $(CS_FILES) >NUL
         @del $(ENAME).exe
         @dir /ON $(B)$(ENAME).zip|grep "$(ENAME)\."
 

@@ -110,16 +110,17 @@ typedef struct tagDTHC8
 
 typedef union tagALLTYPES
 {
-    APLINT    aplInteger;           // 00:  Integer or real number as an integer ( 8 bytes)
-    APLFLOAT  aplFloat;             // 00:  Real number as a float               ( 8 bytes)
-    APLCHAR   aplChar;              // 00:  Character
-    DTHC2     aplHC2;               // 00:  Complex number                       (16 bytes)
-    DTHC4     aplHC4;               // 00:  Quaternion number                    (32 bytes)
-    DTHC8     aplHC8;               // 00:  Octonion number                      (64 bytes)
-    APLHETERO aplHetero;            // 00:  Heterogeneous array                  ( 4 bytes)
-    APLNESTED aplNested;            // 00:  Nested array                         ( 4 bytes)
-    APLRAT    aplRat;               // 00:  RAT number, num and denom parts      (24 bytes)
-    APLVFP    aplVfp;               // 00:  VFP number                           (16 bytes)
+    APLINT     aplInteger;          // 00:  Integer or real number as an integer ( 8 bytes)
+    APLFLOAT   aplFloat;            // 00:  Real number as a float               ( 8 bytes)
+    APLCHAR    aplChar;             // 00:  Character
+    DTHC2      aplHC2;              // 00:  Complex number                       (16 bytes)
+    DTHC4      aplHC4;              // 00:  Quaternion number                    (32 bytes)
+    DTHC8      aplHC8;              // 00:  Octonion number                      (64 bytes)
+    APLHETERO  aplHetero;           // 00:  Heterogeneous array                  ( 4 bytes)
+    APLNESTED  aplNested;           // 00:  Nested array                         ( 4 bytes)
+    APLRAT     aplRat;              // 00:  RAT number, num and denom parts      (24 bytes)
+    APLVFP     aplVfp;              // 00:  VFP number                           (16 bytes)
+    APLLONGEST aplLongest;          // 00:  tkLongest ot stLongest
 } ALLTYPES, *LPALLTYPES;
 
 // Array types -- used to identify array storage type in memory

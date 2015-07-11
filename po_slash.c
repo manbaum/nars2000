@@ -1839,7 +1839,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
             // Otherwise, it's SlashBar on the first dimension
             aplAxis = 0;
-    } // End IF/ELSE
+        } // End IF/ELSE
     } // End IF/ELSE
 
     //***************************************************************
@@ -2193,8 +2193,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // Get the magic function/operator global memory handle
         hGlbMFO = lpMemPTD->hGlbMFO[MFOE_RoS2];
 
-        // The result is {disclose} {each} LftOpr / {each}                  R  (R simple)
-        // The result is {disclose} {each} LftOpr / {each} {enclose} {each} R  (R nested)
+        // The result is {disclose} {each} LftOpr / {each}                  1/R  (R simple)
+        // The result is {disclose} {each} LftOpr / {each} {enclose} {each} 1/R  (R nested)
         lpYYRes =
           ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token
                                      &lpYYFcnStrOpr->tkToken,   // Ptr to function token

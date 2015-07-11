@@ -70,7 +70,7 @@ MAGIC_FCNOPR MFO_RoS1R =
 //***************************************************************************
 
 static LPAPLCHAR RoS2Body[] =
-{L"⎕PRO:Z←⊃¨LO/¨⊂¨R",
+{L"⎕PRO:Z←⊃¨LO/¨⊂¨1/R",
 };
 
 MAGIC_FCNOPR MFO_RoS2 =

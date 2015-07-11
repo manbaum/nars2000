@@ -1,6 +1,17 @@
 Version 0.4.11.xx consists of the following Builds:
 
 
+Build #1379 -- Version 0.4.11.xx
+--------------------------------
+
+* Fix Bug In Index Set With Type Promotion Of Immediate
+
+Directory trunk:
+
+PF_INDEX.C:
+  In <ArrayIndexSetSingLst_EM>, promote the right arg to result type before storing in result.
+
+
 Build #1378 -- Version 0.4.11.xx
 --------------------------------
 

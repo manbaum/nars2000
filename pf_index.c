@@ -3034,6 +3034,7 @@ UBOOL ArrayIndexSetSingLst_EM
     ASYSVARVALIDNDX  SysVarValidNdx;        // Ptr to the SysVar validation routine
     ASYSVARVALIDPOST SysVarValidPost;       // Ptr to the SysVar post-validation routine
     LPSYMENTRY       lpSymTmp;              // Ptr to temporary LPSYMENTRY
+    ALLTYPES         atSet = {0};           // Set arg as ALLTYPES
 
     // If this is indexed assignment into a SysVar, ...
     if (bSysVar)
@@ -3288,6 +3289,9 @@ UBOOL ArrayIndexSetSingLst_EM
             lpMemNam = VarArrayDataFmBase (lpMemNam);
         } // End IF
 
+        // Promote the right arg to the result type
+        (*aTypeActPromote[aplTypeRht][aplTypeRes]) (lpMemRht, 0, &atSet);
+
         // Split cases based upon the common storage type
         switch (aplTypeRes)
         {
@@ -3300,17 +3304,17 @@ UBOOL ArrayIndexSetSingLst_EM
                 break;
 
             case ARRAY_INT:
-                ((LPAPLINT)    lpMemNam)[aplLongestSubLst] = (APLINT) aplLongestRht;
+                ((LPAPLINT)    lpMemNam)[aplLongestSubLst] = atSet.aplInteger;
 
                 break;
 
             case ARRAY_FLOAT:
-                ((LPAPLFLOAT)  lpMemNam)[aplLongestSubLst] = *(LPAPLFLOAT) &aplLongestRht;
+                ((LPAPLFLOAT)  lpMemNam)[aplLongestSubLst] = atSet.aplFloat;
 
                 break;
 
             case ARRAY_CHAR:
-                ((LPAPLCHAR)   lpMemNam)[aplLongestSubLst] = (APLCHAR) aplLongestRht;
+                ((LPAPLCHAR)   lpMemNam)[aplLongestSubLst] = atSet.aplChar;
 
                 break;
 
@@ -3349,14 +3353,12 @@ UBOOL ArrayIndexSetSingLst_EM
                 break;
 
             case ARRAY_RAT:
-                // Convert the right arg to a RAT and save in the result
-                (*aTypeActPromote[aplTypeRht][aplTypeRes]) (lpMemRht, 0, (LPALLTYPES) &((LPAPLRAT) lpMemNam)[aplLongestSubLst]);
+                ((LPAPLRAT) lpMemNam)[aplLongestSubLst] = atSet.aplRat;
 
                 break;
 
             case ARRAY_VFP:
-                // Convert the right arg to a VFP and save in the result
-                (*aTypeActPromote[aplTypeRht][aplTypeRes]) (lpMemRht, 0, (LPALLTYPES) &((LPAPLVFP) lpMemNam)[aplLongestSubLst]);
+                ((LPAPLVFP) lpMemNam)[aplLongestSubLst] = atSet.aplVfp;
 
                 break;
 

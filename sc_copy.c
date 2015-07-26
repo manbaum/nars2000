@@ -416,7 +416,8 @@ int CopyWsVars
     STFLAGS      stFlags = {0};             // STE flags
 
     // In case <lpwNameInCmd> is that of a system var, ...
-    if (IsSysName (lpwNameInCmd))
+    if (lpwNameInCmd
+     && IsSysName (lpwNameInCmd))
         // Convert it to lowercase
         CharLowerBuffW (lpwNameInCmd, lstrlenW (lpwNameInCmd));
 

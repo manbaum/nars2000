@@ -297,11 +297,11 @@ EAX     =       clobbered
 
         mov     eax,[ebp].MULPI_RHT ; EAX => integer right arg
         fild    qword ptr [eax] ; Load the integer right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
-        fld1;                   ;   1       R*R
-        faddp   st(1),st(0);    ;   1+R*R
-        fsqrt;                  ;   (1+R*R)*0.5
+        fld     st(0)           ;   R       R
+        fmulp   st(1),st(0)     ;   R*R
+        fld1                    ;   1       R*R
+        faddp   st(1),st(0)     ;   1+R*R
+        fsqrt                   ;   (1+R*R)*0.5
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -335,11 +335,11 @@ EAX     =       clobbered
 
         mov     eax,[ebp].MULPI_RHT ; EAX => float right arg
         fld     qword ptr [eax] ; Load the float right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
-        fld1;                   ;   1       R*R
-        faddp   st(1),st(0);    ;   1+R*R
-        fsqrt;                  ;   (1+R*R)*0.5
+        fld     st(0)           ;   R       R
+        fmulp   st(1),st(0)     ;   R*R
+        fld1                    ;   1       R*R
+        faddp   st(1),st(0)     ;   1+R*R
+        fsqrt                   ;   (1+R*R)*0.5
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -579,11 +579,11 @@ EAX     =       clobbered
 
         mov     eax,[ebp].MULPI_RHT ; EAX => integer right arg
         fild    qword ptr [eax] ; Load the integer right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
+        fld     st(0)           ;   R       R
+        fmulp   st(1),st(0)     ;   R*R
         fchs                    ;   -R*R
         fld1                    ;   1       -R*R
-        faddp   st(1),st(0);    ;   1-R*R
+        faddp   st(1),st(0)     ;   1-R*R
         fsqrt                   ;   (1-R*R)*0.5
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
@@ -618,12 +618,12 @@ EAX     =       clobbered
 
         mov     eax,[ebp].MULPI_RHT ; EAX => float right arg
         fld     qword ptr [eax] ; Load the float right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
+        fld     st(0)           ;   R       R
+        fmulp   st(1),st(0)     ;   R*R
         fchs                    ;   -R*R
         fld1                    ;   1       -R*R
-        faddp   st(1),st(0);    ;   1-R*R
-        fsqrt;                  ;   (1-R*R)*0.5
+        faddp   st(1),st(0)     ;   1-R*R
+        fsqrt                   ;   (1-R*R)*0.5
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -638,7 +638,8 @@ iAsmCircleN4Int proc             ; Start iAsmCircleN4Int procedure
 
 COMMENT|
 
-Compute ((-1) + R * 2) * 0.5
+Compute (R + 1) × sqrt ((R - 1) / (R + 1))
+a.k.a.  ((-1) + R * 2) * 0.5
 
 On entry:
 
@@ -657,11 +658,17 @@ EAX     =       clobbered
 
         mov     eax,[ebp].MULPI_RHT ; EAX => integer right arg
         fild    qword ptr [eax] ; Load the integer right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
-        fld1                    ;   1       R*R
-        fsubp   st(1),st(0);    ;   (-1)+R*R
-        fsqrt;                  ;   ((-1)+R*R)*0.5
+
+        fld     st(0)           ;   R           R
+        fld1                    ;   1           R      R
+        faddp   st(1),st(0)     ; R+1           R
+        fld1                    ;   1           R+1    R
+        fsubp   st(2),st(0)     ; R-1           R+1
+        fld     st(1)           ; R+1           R-1    R+1
+        fdivp   st(1),st(0)     ; (R-1)/(R+1)   R+1
+        fsqrt                   ; sqrt(...)     R+1
+        fmulp   st(1),st(0)     ; sqrt(...) * (R+1)
+
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -676,7 +683,8 @@ iAsmCircleN4Flt proc             ; Start iAsmCircleN4Flt procedure
 
 COMMENT|
 
-Compute ((-1) + R * 2) * 0.5
+Compute (R + 1) × sqrt ((R - 1) / (R + 1))
+a.k.a.  ((-1) + R * 2) * 0.5
 
 On entry:
 
@@ -695,11 +703,17 @@ EAX     =       clobbered
 
         mov     eax,[ebp].MULPI_RHT ; EAX => float right arg
         fld     qword ptr [eax] ; Load the float right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
-        fld1                    ;   1       R*R
-        fsubp   st(1),st(0);    ;   (-1)+R*R
-        fsqrt;                  ;   ((-1)+R*R)*0.5
+
+        fld     st(0)           ;   R           R
+        fld1                    ;   1           R      R
+        faddp   st(1),st(0)     ; R+1           R
+        fld1                    ;   1           R+1    R
+        fsubp   st(2),st(0)     ; R-1           R+1
+        fld     st(1)           ; R+1           R-1    R+1
+        fdivp   st(1),st(0)     ; (R-1)/(R+1)   R+1
+        fsqrt                   ; sqrt(...)     R+1
+        fmulp   st(1),st(0)     ; sqrt(...) * (R+1)
+
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 

@@ -186,11 +186,11 @@ EAX     =       clobbered
         finit                   ; Initialize the FPU
 
         fild    qword ptr [Rdx] ; Load the integer right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
-        fld1;                   ;   1       R*R
-        faddp   st(1),st(0);    ;   1+R*R
-        fsqrt;                  ;   (1+R*R)*0.5
+        fld     st(0)           ;   R       R
+        fmulp   st(1),st(0)     ;   R*R
+        fld1                    ;   1       R*R
+        faddp   st(1),st(0)     ;   1+R*R
+        fsqrt                   ;   (1+R*R)*0.5
         fstp    qword ptr [Rcx] ; Save in result
 
         ret                     ; Return to caller
@@ -218,11 +218,11 @@ EAX     =       clobbered
         finit                   ; Initialize the FPU
 
         fld     qword ptr [Rdx] ; Load the float right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
-        fld1;                   ;   1       R*R
-        faddp   st(1),st(0);    ;   1+R*R
-        fsqrt;                  ;   (1+R*R)*0.5
+        fld     st(0)           ;   R       R
+        fmulp   st(1),st(0)     ;   R*R
+        fld1                    ;   1       R*R
+        faddp   st(1),st(0)     ;   1+R*R
+        fsqrt                   ;   (1+R*R)*0.5
         fstp    qword ptr [Rcx] ; Save in result
 
         ret                     ; Return to caller
@@ -420,12 +420,12 @@ EAX     =       clobbered
         finit                   ; Initialize the FPU
 
         fild    qword ptr [Rdx] ; Load the integer right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
+        fld     st(0)           ;   R       R
+        fmulp   st(1),st(0)     ;   R*R
         fchs                    ;   -R*R
-        fld1;                   ;   1       -R*R
-        faddp   st(1),st(0);    ;   1-R*R
-        fsqrt;                  ;   (1-R*R)*0.5
+        fld1                    ;   1       -R*R
+        faddp   st(1),st(0)     ;   1-R*R
+        fsqrt                   ;   (1-R*R)*0.5
         fstp    qword ptr [Rcx] ; Save in result
 
         ret                     ; Return to caller
@@ -453,12 +453,14 @@ EAX     =       clobbered
         finit                   ; Initialize the FPU
 
         fld     qword ptr [Rdx] ; Load the float right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
+
+        fld     st(0)           ;   R       R
+        fmulp   st(1),st(0)     ;   R*R
         fchs                    ;   -R*R
-        fld1;                   ;   1       -R*R
-        faddp   st(1),st(0);    ;   1-R*R
-        fsqrt;                  ;   (1-R*R)*0.5
+        fld1                    ;   1       -R*R
+        faddp   st(1),st(0)     ;   1-R*R
+        fsqrt                   ;   (1-R*R)*0.5
+
         fstp    qword ptr [Rcx] ; Save in result
 
         ret                     ; Return to caller
@@ -466,11 +468,12 @@ EAX     =       clobbered
 iAsmCircle0Flt endp             ; End iAsmCircle0Flt procedure
 
         public  iAsmCircleN4Int
-iAsmCircleN4Int proc             ; Start iAsmCircleN4Int procedure
+iAsmCircleN4Int proc            ; Start iAsmCircleN4Int procedure
 
 COMMENT|
 
-Compute ((-1) + R * 2) * 0.5
+Compute (R + 1) × sqrt ((R - 1) / (R + 1))
+a.k.a.  ((-1) + R * 2) * 0.5
 
 On entry:
 
@@ -486,23 +489,30 @@ EAX     =       clobbered
         finit                   ; Initialize the FPU
 
         fild    qword ptr [Rdx] ; Load the integer right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
-        fld1;                   ;   1       R*R
-        fsubp   st(1),st(0);    ;   (-1)+R*R
-        fsqrt;                  ;   ((-1)+R*R)*0.5
+
+        fld     st(0)           ;   R           R
+        fld1                    ;   1           R      R
+        faddp   st(1),st(0)     ; R+1           R
+        fld1                    ;   1           R+1    R
+        fsubp   st(2),st(0)     ; R-1           R+1
+        fld     st(1)           ; R+1           R-1    R+1
+        fdivp   st(1),st(0)     ; (R-1)/(R+1)   R+1
+        fsqrt                   ; sqrt(...)     R+1
+        fmulp   st(1),st(0)     ; sqrt(...) * (R+1)
+
         fstp    qword ptr [Rcx] ; Save in result
 
         ret                     ; Return to caller
 
-iAsmCircleN4Int endp             ; End iAsmCircleN4Int procedure
+iAsmCircleN4Int endp            ; End iAsmCircleN4Int procedure
 
         public  iAsmCircleN4Flt
-iAsmCircleN4Flt proc             ; Start iAsmCircleN4Flt procedure
+iAsmCircleN4Flt proc            ; Start iAsmCircleN4Flt procedure
 
 COMMENT|
 
-Compute ((-1) + R * 2) * 0.5
+Compute (R + 1) × sqrt ((R - 1) / (R + 1))
+a.k.a.  ((-1) + R * 2) * 0.5
 
 On entry:
 
@@ -518,15 +528,21 @@ EAX     =       clobbered
         finit                   ; Initialize the FPU
 
         fld     qword ptr [Rdx] ; Load the float right arg
-        fld     st(0);          ;   R       R
-        fmulp   st(1),st(0);    ;   R*R
-        fld1;                   ;   1       R*R
-        fsubp   st(1),st(0);    ;   (-1)+R*R
-        fsqrt;                  ;   ((-1)+R*R)*0.5
+
+        fld     st(0)           ;   R           R
+        fld1                    ;   1           R      R
+        faddp   st(1),st(0)     ; R+1           R
+        fld1                    ;   1           R+1    R
+        fsubp   st(2),st(0)     ; R-1           R+1
+        fld     st(1)           ; R+1           R-1    R+1
+        fdivp   st(1),st(0)     ; (R-1)/(R+1)   R+1
+        fsqrt                   ; sqrt(...)     R+1
+        fmulp   st(1),st(0)     ; sqrt(...) * (R+1)
+
         fstp    qword ptr [Rcx] ; Save in result
 
         ret                     ; Return to caller
 
-iAsmCircleN4Flt endp             ; End iAsmCircleN4Flt procedure
+iAsmCircleN4Flt endp            ; End iAsmCircleN4Flt procedure
 
         end

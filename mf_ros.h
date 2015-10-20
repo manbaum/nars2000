@@ -70,7 +70,7 @@ MAGIC_FCNOPR MFO_RoS1R =
 //***************************************************************************
 
 static LPAPLCHAR RoS2Body[] =
-{L"⎕PRO:Z←⊃¨LO/¨⊂¨1/R",
+{L"⎕PRO:Z←⊃¨LO/¨⊂¨R",
 };
 
 MAGIC_FCNOPR MFO_RoS2 =
@@ -80,7 +80,19 @@ MAGIC_FCNOPR MFO_RoS2 =
 };
 
 
+//***************************************************************************
+//  Magic function/operator for Reduction of Singletons, type #3
+//***************************************************************************
 
+static LPAPLCHAR RoS3Body[] =
+{L"⎕PRO:Z←⊃¨LO/¨⊂¨1/R",
+};
+
+MAGIC_FCNOPR MFO_RoS3 =
+{L"Z←(LO " MFON_RoS3 L") R",
+ RoS3Body,
+ countof (RoS3Body),
+};
 
 
 //***************************************************************************

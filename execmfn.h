@@ -66,8 +66,9 @@ typedef enum tagMFO
     MFOE_RoS1L           ,      // 28:  Reduction of Singletons, type #1, left identity element
     MFOE_RoS1R           ,      // 29:  ...                           #1, right ...
     MFOE_RoS2            ,      // 2A:  ...                           #2
-    MFOE_MDIU            ,      // 2B:  Multiset dyadic iota underbar
-    MFOE_LENGTH                 // 2C:  # entries in this enum
+    MFOE_RoS3            ,      // 2B:  ...                           #3
+    MFOE_MDIU            ,      // 2C:  Multiset dyadic iota underbar
+    MFOE_LENGTH                 // 2D:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -114,6 +115,7 @@ typedef enum tagMFO
 #define MFON_RoS1L              L"#RoS1L"
 #define MFON_RoS1R              L"#RoS1R"
 #define MFON_RoS2               L"#RoS2"
+#define MFON_RoS3               L"#RoS3"
 #define MFON_MDIU               L"#MDIU"
 
 // Magic Function/Operator Variables

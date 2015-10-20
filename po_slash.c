@@ -2191,7 +2191,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         lpMemPTD = GetMemPTD ();
 
         // Get the magic function/operator global memory handle
-        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_RoS2];
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_RoS3];
 
         // The result is {disclose} {each} LftOpr / {each}                  1/R  (R simple)
         // The result is {disclose} {each} LftOpr / {each} {enclose} {each} 1/R  (R nested)

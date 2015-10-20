@@ -224,6 +224,9 @@
 #define plRedMOP_A      plRedPseudo
 #define plRedMOP_SA     plRedPseudo
 
+#define plRedMOPN_A     plRedPseudo
+#define plRedMOPN_SA    plRedPseudo
+
 #define plRedHY_A       plRedPseudo
 #define plRedHY_SA      plRedPseudo
 

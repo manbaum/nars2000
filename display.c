@@ -737,7 +737,7 @@ UBOOL DisplayGlbArr_EM
 
                     if (uColGrp NE 0)
                     {
-                        lstrcpyW (lpwszTemp, wszIndent);                // Copy the indent
+                        strcpyW (lpwszTemp, wszIndent);                 // Copy the indent
                         uOutLen = uQuadPW - DEF_INDENT;                 // Maximum output length
                         uCurPos = DEF_INDENT;
                     } else
@@ -1226,7 +1226,7 @@ LPAPLCHAR FormatAplIntFC
         if (aplInt EQ MIN_APLINT)
         {
             // Copy the constant (skipping over the sign WCHAR) to the result
-            lstrcpyW (lpaplChar, &MIN_APLINT_STR[1]);
+            strcpyW (lpaplChar, &MIN_APLINT_STR[1]);
 
             // Skip over it
             lpaplChar += lstrlenW (lpaplChar);
@@ -2209,7 +2209,7 @@ LPAPLCHAR FormatAplVfpFC
             {
                 if (bSubstInf)
                 {
-                    lstrcpyW (&lpaplChar[bNeg], LTEXT_INFINITY);
+                    strcpyW (&lpaplChar[bNeg], LTEXT_INFINITY);
                     iLen = lstrlenW (lpaplChar);
                 } else
                     lpaplChar[bNeg] = UTF16_INFINITY;
@@ -2581,7 +2581,7 @@ LPWCHAR DisplayTransferGlb2
                                   UTF16_OVERBAR);       // Char to use as overbar
 #undef  lpAPA
                 // Append {times}[]IO-{iota}, zapping the trailing blank
-                lstrcpyW (&lpwszTemp[-1], WS_UTF16_TIMES $QUAD_IO L"-" WS_UTF16_IOTA);
+                strcpyW (&lpwszTemp[-1], WS_UTF16_TIMES $QUAD_IO L"-" WS_UTF16_IOTA);
                 lpwszTemp = &lpwszTemp[lstrlenW (lpwszTemp)];
 
                 // Format the length
@@ -2700,7 +2700,7 @@ LPWCHAR DisplayTransferFcn2
     if (lpSymEntry->stFlags.UsrDfn)
     {
         // Append "[]FX "
-        lstrcpyW (lpwszTemp, $QUAD_FX L" ");
+        strcpyW (lpwszTemp, $QUAD_FX L" ");
         lpwszTemp = &lpwszTemp[lstrlenW (lpwszTemp)];
 
         // Get the user-defined function/operator global memory handle

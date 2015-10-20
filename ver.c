@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ void LclFileVersionStrW
         goto ERROR_EXIT3;
 
     // Copy to local storage as we're about to free the memory
-    lstrcpyW (wszFileVer, lpwBuf);
+    strcpyW (wszFileVer, lpwBuf);
 
     goto NORMAL_EXIT;
 
@@ -161,38 +161,38 @@ APLU3264 CALLBACK AboutDlgProc
             SetDlgItemTextW (hDlg, IDC_VERSION, wszTemp);
 
             // Copy the MPIR prefix to the text
-            lstrcpyW (wszTemp, L"MPIR #");
+            strcpyW (wszTemp, L"MPIR #");
 
             // Append the MPIR version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", mpir_version);
 
             // Copy the GMP prefix to the text
-            lstrcatW (wszTemp, L"GMP #");
+            strcatW (wszTemp, L"GMP #");
 
             // Append the GMP version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", gmp_version);
 
             // Copy the MPFR prefix to the text
-            lstrcatW (wszTemp, L"MPFR #");
+            strcatW (wszTemp, L"MPFR #");
 
             // Append the MPFR version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", mpfr_get_version ());
 
             // Copy the ECM prefix to the text
-            lstrcatW (wszTemp, L"ECM #");
+            strcatW (wszTemp, L"ECM #");
 
             // Append the ECM version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", ecm_version);
 
             // Copy the COMCTL32.DLL prefix to the text
-            lstrcatW (wszTemp, L"COMCTL32.DLL #");
+            strcatW (wszTemp, L"COMCTL32.DLL #");
 
             // Append the COMCTL32.DLL version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", wszComctl32FileVer);
 
             // Copy the CRASHRPT.DLL prefix to the text
-            lstrcatW (wszTemp, crsh_dll);
-            lstrcatW (wszTemp, L" #");
+            strcatW (wszTemp, crsh_dll);
+            strcatW (wszTemp, L" #");
 
             // Append the CRASHRPT.DLL version #
             wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", crsh_version);
@@ -216,10 +216,10 @@ APLU3264 CALLBACK AboutDlgProc
             {
 #define TT_PREFIX   L"Loaded from:  "
                 // Copy the prefix to the text
-                lstrcpyW (wszLclAppDPFE, TT_PREFIX);
+                strcpyW (wszLclAppDPFE, TT_PREFIX);
 
                 // Append the source DPFE
-                lstrcatW (wszLclAppDPFE, wszAppDPFE);
+                strcatW (wszLclAppDPFE, wszAppDPFE);
 #undef  TT_PREFIX
             } // End IF
 

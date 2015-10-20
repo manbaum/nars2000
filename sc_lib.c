@@ -201,7 +201,7 @@ void CmdLibProcess
     if (uArgCnt > 0
      && lplpwszArgs[0][0] NE LIBCMD_SWITCH)
     {
-        lstrcpyW (lpwszFormat, lplpwszArgs[0]);
+        strcpyW (lpwszFormat, lplpwszArgs[0]);
 
         // Get the length to test for trailing backslash
         uExtLen = lstrlenW (lpwszFormat);
@@ -227,7 +227,7 @@ void CmdLibProcess
         // Convert the given workspace name into a canonical form (without WS_WKSEXT)
         MakeWorkspaceNameCanonical (wszFileName, lpwszFormat, (lpwszLibDirs NE NULL) ? *lpwszLibDirs : L"");
     } else
-        lstrcpyW (wszFileName, *lpwszLibDirs);
+        strcpyW (wszFileName, *lpwszLibDirs);
 
     // Get the length of the filename so far
     uExtLen = lstrlenW (wszFileName);
@@ -316,9 +316,9 @@ LPWCHAR CmdLibFiles
     bEndDQ = (wszFileName[uFileLen - 1] EQ WC_DQ);
 
     // Create the wildcard string to search for workspaces
-    lstrcpyW (&wszFileName[uFileLen - bEndDQ], L"*");
+    strcpyW (&wszFileName[uFileLen - bEndDQ], L"*");
     uFileLen++;
-    lstrcpyW (&wszFileName[uFileLen - bEndDQ], wszExt);
+    strcpyW (&wszFileName[uFileLen - bEndDQ], wszExt);
     uFileLen += lstrlenW (wszExt);
 
     // If it ended with a double quote, ...
@@ -416,7 +416,7 @@ LPWCHAR CmdLibCheckMatch
            && lstrcmpiW (WS_BAKEXT, &cFileName[uWsLen - WS_BAKEXT_LEN]) EQ 0))
         {
             // Accumulate the workspace name
-            lstrcpyW (lpwszSaveName, cFileName);
+            strcpyW (lpwszSaveName, cFileName);
 
             // Add in another name
             (*lpuCntNames)++;

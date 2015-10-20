@@ -1183,14 +1183,14 @@ void pn_yyerror                     // Called for Bison syntax error
 
     // Check for SYNTAX ERROR
 #define ERR     "syntax error"
-    if (lstrcpyn (szTemp, s, sizeof (ERR)),     // Note: Terminates the string, too
+    if (strcpyn (szTemp, s, sizeof (ERR)),      // Note: Terminates the string, too
         lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
         lpwszTemp = ERRMSG_SYNTAX_ERROR APPEND_NAME;
     else
     // Check for NONCE ERROR
 #define ERR     "nonce error"
-    if (lstrcpyn (szTemp, s, sizeof (ERR)),     // Note: Terminates the string, too
+    if (strcpyn (szTemp, s, sizeof (ERR)),      // Note: Terminates the string, too
         lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
     {
@@ -1201,7 +1201,7 @@ void pn_yyerror                     // Called for Bison syntax error
     } else
     // Check for WS FULL
 #define ERR     WSFULL
-    if (lstrcpyn (szTemp, s, sizeof (ERR)),     // Note: Terminates the string, too
+    if (strcpyn (szTemp, s, sizeof (ERR)),      // Note: Terminates the string, too
         lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
         lpwszTemp = ERRMSG_WS_FULL APPEND_NAME;

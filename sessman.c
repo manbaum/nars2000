@@ -1703,7 +1703,7 @@ NORMAL_EXIT:
                             SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwTmpLine);
 
                             // Append CRLF
-                            lstrcatW (lpwTmpLine, WS_CRLF);
+                            strcatW (lpwTmpLine, WS_CRLF);
 
                             // Move the text caret to the end of the buffer
                             MoveCaretEOB (hWndEC);

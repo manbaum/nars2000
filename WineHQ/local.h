@@ -24,7 +24,6 @@
 
 
 #define strlenW         (UINT_PTR) lstrlenW
-#define strcpyW         lstrcpyW
 
 #define WINAPI          __stdcall
 typedef int             BOOL,       *PBOOL,    *LPBOOL;
@@ -37,6 +36,9 @@ typedef CHAR           *PSTR,       *LPSTR,     *NPSTR;
 typedef const CHAR     *PCSTR,      *LPCSTR;
 typedef WCHAR          *PWSTR,      *LPWSTR,    *NWPSTR;
 typedef const WCHAR    *PCWSTR,     *LPCWSTR;
+
+LPWSTR strcpyW  (LPWSTR, LPWSTR);
+LPWSTR strcpynW (LPWSTR, LPWSTR, int);
 
 #define CP_ACP          0
 #define USE_IME         0

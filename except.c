@@ -1050,7 +1050,7 @@ void DoStackWalk
 ////        DbgBrk ();
 ////
 ////        // Copy to temporary storage
-////        lstrcpy (csEntry.name, pSym->Name);
+////        strcpy (csEntry.name, pSym->Name);
 ////
 ////        // Undecorate the symbol name
 ////        UnDecorateSymbolName (pSym->Name, csEntry.undName,     STACKWALK_MAX_NAMELEN, UNDNAME_NAME_ONLY);

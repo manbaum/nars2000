@@ -3652,7 +3652,7 @@ static INT EDIT_WM_GetText(const EDITSTATE *es, INT count, LPWSTR dst, BOOL unic
 
     if(unicode)
     {
-    lstrcpynW(dst, es->text, count);
+    strcpynW (dst, es->text, count);
     return lstrlenW(dst);
     }
     else

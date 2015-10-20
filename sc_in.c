@@ -130,7 +130,7 @@ UBOOL CmdIn_EM
                           NULL);                // Name of file-mapping object
     if (hAtfMap EQ NULL)
     {
-        lstrcpyW (wszTemp, L"Unable to create file mapping:  ");
+        strcpyW (wszTemp, L"Unable to create file mapping:  ");
         uLen = lstrlenW (wszTemp);
 
         FormatMessageW (FORMAT_MESSAGE_FROM_SYSTEM, // Source and processing options
@@ -154,7 +154,7 @@ UBOOL CmdIn_EM
                      dwAtfFileSize);            // Number of bytes to map
     if (hAtfView EQ NULL)
     {
-        lstrcpyW (wszTemp, L"Unable to map view of file:  ");
+        strcpyW (wszTemp, L"Unable to map view of file:  ");
         uLen = lstrlenW (wszTemp);
 
         FormatMessageW (FORMAT_MESSAGE_FROM_SYSTEM, // Source and processing options

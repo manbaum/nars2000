@@ -2832,7 +2832,7 @@ LPSYMENTRY SymTabHTSAppendNewName_EM
     lpwGlbName = MyGlobalLock (lpHshEntryDest->htGlbName);
 
     // Copy the name to the global memory
-    lstrcpyW (lpwGlbName, lpwszString);
+    strcpyW (lpwGlbName, lpwszString);
 
     // We no longer need this ptr
     MyGlobalUnlock (lpHshEntryDest->htGlbName); lpwGlbName = NULL;

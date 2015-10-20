@@ -1327,8 +1327,8 @@ INT_PTR CALLBACK CustomizeDlgProc
                         uLclKeybLayoutNumVis = uGlbKeybLayoutNumVis;
                         uLclKeybLayoutCount  = uGlbKeybLayoutCount ;
                         uLclKeybLayoutUser   = uGlbKeybLayoutUser  ;
-                        lstrcpyW (wszLclKeybLayoutAct, wszGlbKeybLayoutAct);
-                        lstrcpyW (wszLclKeybLayoutVis, wszGlbKeybLayoutVis);
+                        strcpyW (wszLclKeybLayoutAct, wszGlbKeybLayoutAct);
+                        strcpyW (wszLclKeybLayoutVis, wszGlbKeybLayoutVis);
 
                         // Loop through the Keyboard Layouts
                         for (uCnt = 0; uCnt < uLclKeybLayoutCount; uCnt++)
@@ -2392,15 +2392,15 @@ INT_PTR CALLBACK CustomizeDlgProc
                                        GetFontWeightW (lf.lfWeight));
                             // If the font is Italic, ...
                             if (lf.lfItalic)
-                                lstrcatW (TooltipText, L" Italic");
+                                strcatW (TooltipText, L" Italic");
 
                             // If the font is Underlined, ...
                             if (lf.lfUnderline)
-                                lstrcatW (TooltipText, L" Underline");
+                                strcatW (TooltipText, L" Underline");
 
                             // If the font is Strike Out, ...
                             if (lf.lfStrikeOut)
-                                lstrcatW (TooltipText, L" StrikeOut");
+                                strcatW (TooltipText, L" StrikeOut");
 
                             // If the font's height is negative, ...
                             if (lf.lfHeight < 0)
@@ -2894,8 +2894,8 @@ INT_PTR CALLBACK CustomizeDlgProc
                         uGlbKeybLayoutNumVis = uLclKeybLayoutNumVis;
                         uGlbKeybLayoutCount  = uLclKeybLayoutCount ;
                         uGlbKeybLayoutUser   = uLclKeybLayoutUser  ;
-                        lstrcpyW (wszGlbKeybLayoutAct, wszLclKeybLayoutAct);
-                        lstrcpyW (wszGlbKeybLayoutVis, wszLclKeybLayoutVis);
+                        strcpyW (wszGlbKeybLayoutAct, wszLclKeybLayoutAct);
+                        strcpyW (wszGlbKeybLayoutVis, wszLclKeybLayoutVis);
                     } // End IF
 
 
@@ -3057,7 +3057,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         guUpdFrq = (UINT) SendMessageW (hWndProp1, CB_GETCURSEL, 0, 0);
 
                         // Save the update frequency text string
-                        lstrcpyW (gszUpdFrq, updFrq[guUpdFrq].lpwsz);
+                        strcpyW (gszUpdFrq, updFrq[guUpdFrq].lpwsz);
                     } // End IF
 
                     // Disable the Apply button
@@ -3808,7 +3808,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         uLclKeybLayoutNumAct = uLclKeybLayoutNumVis;
 
                         // Save the layout name
-                        lstrcpyW (wszLclKeybLayoutAct, wszLclKeybLayoutVis);
+                        strcpyW (wszLclKeybLayoutAct, wszLclKeybLayoutVis);
 
                         // Save the active keyboard layout
                         aKeybLayoutAct = lpLclKeybLayouts[uLclKeybLayoutNumAct];
@@ -3880,7 +3880,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                                 lpLclKeybLayouts[uLclKeybLayoutNumVis].bReadOnly = FALSE;
 
                                 // Copy the new layout name
-                                lstrcpyW (lpLclKeybLayouts[uLclKeybLayoutNumVis].wszLayoutName, wszLclKeybLayoutVis);
+                                strcpyW (lpLclKeybLayouts[uLclKeybLayoutNumVis].wszLayoutName, wszLclKeybLayoutVis);
 
                                 // Add it to the ComboBox
                                 SendMessageW (hWndKeybComboBox, CB_ADDSTRING, 0, (LPARAM) wszLclKeybLayoutVis);
@@ -3952,7 +3952,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                             lpLclKeybLayouts = MyGlobalLock (hLclKeybLayouts);
 
                             // Set the visible keyb layout name
-                            lstrcpyW (wszLclKeybLayoutVis, lpLclKeybLayouts[uLclKeybLayoutNumVis].wszLayoutName);
+                            strcpyW (wszLclKeybLayoutVis, lpLclKeybLayouts[uLclKeybLayoutNumVis].wszLayoutName);
 
                             // Get the CB index of the visible layout name
                             uCnt = (UINT)
@@ -5341,7 +5341,7 @@ UBOOL CALLBACK NewKeybDlgProc
             newKeybDlg = *(LPNEWKEYBDLG) lParam;
 
             // Copy the name for later use
-            lstrcpyW (wszTmpKeybLayoutName, newKeybDlg.lpwKeybLayoutName);
+            strcpyW (wszTmpKeybLayoutName, newKeybDlg.lpwKeybLayoutName);
 
             // Limit the text in the Edit Ctrl
             SendMessageW (GetDlgItem (hDlg, IDC_NEWKEYB_EC), EM_SETLIMITTEXT, countof (wszTmpKeybLayoutName), 0);
@@ -5394,7 +5394,7 @@ UBOOL CALLBACK NewKeybDlgProc
                         if (uLen EQ CB_ERR)
                         {
                             // Copy the string to the caller's buffer
-                            lstrcpyW (newKeybDlg.lpwKeybLayoutName, lpwTemp);
+                            strcpyW (newKeybDlg.lpwKeybLayoutName, lpwTemp);
 
                             EndDialog (hDlg, TRUE);         // Quit this dialog
                         } else

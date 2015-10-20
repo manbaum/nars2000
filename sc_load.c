@@ -156,7 +156,7 @@ UBOOL CmdLoadCom_EM
             goto WSNOTFOUND_EXIT;
     } else
         // Copy the name to the expected var
-        lstrcpyW (wszTailDPFE, lpwszTail);
+        strcpyW (wszTailDPFE, lpwszTail);
 
     // Get the tab index from which this command was issued
     iTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
@@ -200,7 +200,7 @@ UBOOL CmdLoadProcess
     MakeWorkspaceNameCanonical (lpwszTailDPFE, lpwszTail, lpwszDir);
 
     // Append the common workspace extension
-    lstrcatW (lpwszTailDPFE, WS_WKSEXT);
+    strcatW (lpwszTailDPFE, WS_WKSEXT);
 
     // Handle WS NOT FOUND messages here
     // Attempt to open the workspace
@@ -337,7 +337,7 @@ UBOOL LoadWorkspace_EM
                         lpDict);            // Ptr to workspace dictionary
     // Copy the string to a save area ("+ 1" to include the trailing zero)
     // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-    CopyMemoryW (wszVersion, lpwszProf, lstrlenW (lpwszProf) + 1);
+    strcpyW (wszVersion, lpwszProf);
 
     // Compare the version #s
     if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
@@ -523,7 +523,7 @@ UBOOL LoadWorkspace_EM
                                     lpDict);        // Ptr to workspace dictionary
                 // Copy to save area ("+ 1" to include the trailing zero)
                 // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-                CopyMemoryW (lpwSrc, lpwszProf, lstrlenW (lpwszProf) + 1);
+                strcpyW (lpwSrc, lpwszProf);
 
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
@@ -703,7 +703,7 @@ UBOOL LoadWorkspace_EM
                                     lpDict);        // Ptr to workspace dictionary
                 // Copy to save area ("+ 1" to include the trailing zero)
                 // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-                CopyMemoryW (lpwSrc, lpwszProf, lstrlenW (lpwszProf) + 1);
+                strcpyW (lpwSrc, lpwszProf);
 
                 // Check for empty or missing counter
                 if (*lpwSrc EQ WC_EOS)
@@ -1372,7 +1372,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         lpDict);            // Ptr to workspace dictionary
     // Copy to the save area ("+ 1" to include trailing zero)
     // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-    CopyMemoryW (lpwSrc, lpwszProf, lstrlenW (lpwszProf) + 1);
+    strcpyW (lpwSrc, lpwszProf);
 
     // Parse the array attributes
     // The result in lpwSrc is
@@ -1837,7 +1837,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             lpwSrc = &lpwSectName[lstrlenW (lpwSectName) + 1];
 
             // Copy the function name past the end of the section name
-            lstrcpyW (lpwSrc, lpwFcnName);
+            strcpyW (lpwSrc, lpwFcnName);
 
             // Point to the function name
             lpwFcnName = lpwSrc;
@@ -2015,7 +2015,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 #endif
                 // Append the variable name and an assignment arrow to the output buffer
                 lpwLine = lpwSrc;
-                lstrcpyW (lpwLine, lpwFcnName);
+                strcpyW (lpwLine, lpwFcnName);
                 lpwSrc += lstrlenW (lpwSrc);
                 *lpwSrc++ = UTF16_LEFTARROW;
 
@@ -2027,7 +2027,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                     lpDict);        // Ptr to workspace dictionary
                 // Copy to the save area ("+ 1" to include the trailing zero)
                 // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-                CopyMemoryW (lpwSrc, lpwszProf, lstrlenW (lpwszProf) + 1);
+                strcpyW (lpwSrc, lpwszProf);
 
                 // Convert in place
                 lpwSrcStart = lpwSrc;

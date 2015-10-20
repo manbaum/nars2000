@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,16 +42,16 @@
 #endif
 
 void BreakMessage
-    (HWND         hWndSM,       // SM window handle
-     LPSIS_HEADER lpSISCur)     // Ptr to current SIS entry (may be NULL if none)
+    (HWND         hWndSM,                   // SM window handle
+     LPSIS_HEADER lpSISCur)                 // Ptr to current SIS entry (may be NULL if none)
 
 {
-    LPAPLCHAR    lpMemName;     // Ptr to function name global memory
-    APLNELM      aplNELMRes;    // Length of function name[line #]
-    APLUINT      ByteRes;       // # bytes in the result
-    LPAPLCHAR    lpMemRes;      // Ptr to result global memory
-    HGLOBAL      hGlbRes;       // Result global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPAPLCHAR         lpMemName;            // Ptr to function name global memory
+    APLNELM           aplNELMRes;           // Length of function name[line #]
+    APLUINT           ByteRes;              // # bytes in the result
+    LPAPLCHAR         lpMemRes;             // Ptr to result global memory
+    HGLOBAL           hGlbRes;              // Result global memory handle
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -65,26 +65,35 @@ void BreakMessage
         // Mark as suspended
         lpSISCur->Suspended = TRUE;
 
-        // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+        // While the SIS layer is valid
+        //   and the function name is invalid, ...
+        while (lpSISCur NE NULL
+            && lpSISCur->hGlbFcnName EQ NULL)
+            // Try the previous SIS layer
+            lpSISCur = lpSISCur->lpSISPrv;
+        if (lpSISCur NE NULL)
+        {
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 
-        // Copy the leading text
-        lstrcpyW (lpMemPTD->lpwszTemp, ERRMSG_ELLIPSIS WS_CR);
+            // Copy the leading text
+            strcpyW (lpMemPTD->lpwszTemp, ERRMSG_ELLIPSIS WS_CR);
 
-        // Calculate the length so far
-        aplNELMRes = lstrlenW (lpMemPTD->lpwszTemp);
+            // Calculate the length so far
+            aplNELMRes = lstrlenW (lpMemPTD->lpwszTemp);
 
-        // Format the name and line #
-        aplNELMRes +=
-          wsprintfW (&lpMemPTD->lpwszTemp[aplNELMRes],
-                      L"%s[%d]",
-                      lpMemName,
-                      lpSISCur->CurLineNum);
-        // We no longer need this ptr
-        MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
+            // Format the name and line #
+            aplNELMRes +=
+              wsprintfW (&lpMemPTD->lpwszTemp[aplNELMRes],
+                          L"%s[%d]",
+                          lpMemName,
+                          lpSISCur->CurLineNum);
+            // We no longer need this ptr
+            MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
 
-        // Save the ptr
-        lpMemPTD->lpwszErrorMessage = lpMemPTD->lpwszTemp;
+            // Save the ptr
+            lpMemPTD->lpwszErrorMessage = lpMemPTD->lpwszTemp;
+        } // End IF
     } else
     {
         // Prepend an ellipsis
@@ -269,25 +278,25 @@ void ErrorMessageDirect
      UINT    uCaret)            // Position of caret (origin-0)
 
 {
-    APLNELM        aplNELMRes;          // Result NELM
-    APLUINT        ByteRes;             // # bytes in the result
-    HGLOBAL        hGlbRes;             // Result global memory handle
-    LPAPLCHAR      lpMemRes;            // Ptr to result global memory
-    LPPERTABDATA   lpMemPTD;            // Ptr to PerTabData global memory
-    LPSIS_HEADER   lpSISCur,            // Ptr to current SIS header
-                   lpSISPrv;            // ...    previous ...
-    UINT           uErrMsgLen,          // Error message length
-                   uNameLen,            // Length of function name[line #]
-                   uErrLinLen,          // Error line length
-                   uCaretLen,           // Caret line length
-                   uTailLen,            // Length of line tail
-                   uMaxLen,             // Maximum length
-                   uExecCnt;            // # execute levels
-    HGLOBAL       *lphGlbQuadEM,        // Ptr to active hGlbQuadEM (in either lpSISCur or lpMemPTD)
-                   hGlbTxtLine = NULL;  // Text header/line global memory handle
-    LPMEMTXT_UNION lpMemTxtLine = NULL; // Ptr to text header/line global memory
-    LPWCHAR        lpwszLine2 = NULL;   // Ptr to the line which generated the error
-    UBOOL          bItsEC = FALSE;      // TRUE iff the current level is []EC
+    APLNELM           aplNELMRes;           // Result NELM
+    APLUINT           ByteRes;              // # bytes in the result
+    HGLOBAL           hGlbRes;              // Result global memory handle
+    LPAPLCHAR         lpMemRes;             // Ptr to result global memory
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    LPSIS_HEADER      lpSISCur,             // Ptr to current SIS header
+                      lpSISPrv;             // ...    previous ...
+    UINT              uErrMsgLen,           // Error message length
+                      uNameLen,             // Length of function name[line #]
+                      uErrLinLen,           // Error line length
+                      uCaretLen,            // Caret line length
+                      uTailLen,             // Length of line tail
+                      uMaxLen,              // Maximum length
+                      uExecCnt;             // # execute levels
+    HGLOBAL          *lphGlbQuadEM,         // Ptr to active hGlbQuadEM (in either lpSISCur or lpMemPTD)
+                      hGlbTxtLine = NULL;   // Text header/line global memory handle
+    LPMEMTXT_UNION    lpMemTxtLine = NULL;  // Ptr to text header/line global memory
+    LPWCHAR           lpwszLine2 = NULL;    // Ptr to the line which generated the error
+    UBOOL             bItsEC = FALSE;       // TRUE iff the current level is []EC
 
 #define ERROR_CARET     UTF16_UPCARET   // as opposed to UTF16_CIRCUMFLEX
 
@@ -389,9 +398,9 @@ void ErrorMessageDirect
 
                             // Include leading marker(s)
                             while (uExecCnt--)
-                                lstrcatW (lpMemPTD->lpwszTemp, WS_UTF16_UPTACKJOT);
+                                strcatW (lpMemPTD->lpwszTemp, WS_UTF16_UPTACKJOT);
                             // ...and a trailing blank
-                            lstrcatW (lpMemPTD->lpwszTemp, L" ");
+                            strcatW (lpMemPTD->lpwszTemp, L" ");
                         } else
                         // If it's valid, ...
                         if (lpwszLine2)
@@ -404,7 +413,7 @@ void ErrorMessageDirect
                     } else
                     {
                         // Include a leading marker
-                        lstrcpyW (lpMemPTD->lpwszTemp, WS_UTF16_UPTACKJOT L"     ");
+                        strcpyW (lpMemPTD->lpwszTemp, WS_UTF16_UPTACKJOT L"     ");
                         uNameLen = 6;
                     } // End IF/ELSE
 

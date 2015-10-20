@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -276,7 +276,7 @@ INT_PTR CALLBACK UpdatesDlgProc
             dnlThrStr.bThreadDone = TRUE;
 
             // Save the web version ptr for later use
-            lstrcpyW (wszWebVer, lpUpdatesDlgStr->lpWebVer);
+            strcpyW (wszWebVer, lpUpdatesDlgStr->lpWebVer);
 
             // Compare the two versions
             if (lpUpdatesDlgStr->bForceDownload
@@ -870,8 +870,8 @@ void CALLBACK WaitForDownload
     if (bSuccess)
     {
         // Copy the temp file name and rename it to an executable
-        lstrcpyW ( lpDnlThrStr->lpDnlDlgStr->lpwszTempPathBuffer, lpDnlThrStr->lpDnlDlgStr->lpwszTempFileName);
-        lstrcpyW (&lpDnlThrStr->lpDnlDlgStr->lpwszTempFileName[lstrlenW (lpDnlThrStr->lpDnlDlgStr->lpwszTempFileName) - 4], L".exe");
+        strcpyW ( lpDnlThrStr->lpDnlDlgStr->lpwszTempPathBuffer, lpDnlThrStr->lpDnlDlgStr->lpwszTempFileName);
+        strcpyW (&lpDnlThrStr->lpDnlDlgStr->lpwszTempFileName[lstrlenW (lpDnlThrStr->lpDnlDlgStr->lpwszTempFileName) - 4], L".exe");
 
         // Rename the file to an .exe so we can run it vis ShellExecuteEx
         if (!MoveFileExW (lpDnlThrStr->lpDnlDlgStr->lpwszTempPathBuffer,    // Source filename
@@ -1131,7 +1131,7 @@ void FormatNetErrorMessage
                     countof (wszTemp2),         // Maximum size of message buffer
                     NULL);                      // Address of array of message inserts
     // Copy the leading text
-    lstrcpyW (lpwszGlbTemp, lpwszFcnName);
+    strcpyW (lpwszGlbTemp, lpwszFcnName);
 
     // If there's a net error message, ...
     if (dwErr)
@@ -1177,7 +1177,7 @@ void FormatSystemErrorMessage
                     countof (wszTemp),          // Maximum size of message buffer
                     NULL);                      // Address of array of message inserts
     // Copy the leading text
-    lstrcpyW (lpwszGlbTemp, lpwszFcnName);
+    strcpyW (lpwszGlbTemp, lpwszFcnName);
 
     // Format the entire error message
     wsprintfW (&lpwszGlbTemp[lstrlenW (lpwszGlbTemp)],

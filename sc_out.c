@@ -227,7 +227,7 @@ UBOOL CmdOut_EM
                         lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 
                         // Copy the function name
-                        lstrcpyW (lpwTemp, lpwGlbName);
+                        strcpyW (lpwTemp, lpwGlbName);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;

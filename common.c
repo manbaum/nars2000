@@ -282,6 +282,30 @@ LPWCHAR SkipToCharW
 
 
 //************************************************************************
+//  $SkipToStrW
+//
+//  Skip to the first in a given set of WCHARs taking into account EOL
+//************************************************************************
+
+LPWCHAR SkipToStrW
+    (LPWCHAR lpwChar,
+     LPWCHAR lpwSet)
+
+{
+    LPWCHAR lpw;        // Temporary ptr
+
+    // Find the char
+    lpw = strpbrkW (lpwChar, lpwSet);
+
+    // If it's not found (EOL instead), ...
+    if (lpw EQ NULL)
+        lpw = &lpwChar[lstrlenW (lpwChar)];
+
+    return lpw;
+} // End SkipToStrW
+
+
+//************************************************************************
 //  $SkipToCharDQW
 //
 //  Skip to a given WCHAR taking into account Double Quotes and EOL
@@ -346,6 +370,64 @@ LPWCHAR SkipPastCharW
     else
         // Skip over the trailing char
         lpw++;
+
+    return lpw;
+} // End SkipPastCharW
+
+
+//************************************************************************
+//  $SkipPastStr
+//
+//  Skip past a given set of chars taking into account EOL
+//************************************************************************
+
+LPCHAR SkipPastStr
+    (LPCHAR lpChar,
+     LPCHAR lpStr)
+
+{
+    LPCHAR lp;          // Temporary ptr
+    size_t iSpn;
+
+    // Find the span of the set of chars
+    iSpn = strspn (lpChar, lpStr);
+
+    // If it's not found (EOL instead), ...
+    if (iSpn EQ 0)
+        // Point to the trailing zero
+        lp = &lpChar[lstrlen (lpChar)];
+    else
+        // Skip over the trailing chars
+        lp = &lpChar[iSpn];
+
+    return lp;
+} // End SkipPastChar
+
+
+//************************************************************************
+//  $SkipPastStrW
+//
+//  Skip past a given set of WCHARs taking into account EOL
+//************************************************************************
+
+LPWCHAR SkipPastStrW
+    (LPWCHAR lpwChar,
+     LPWCHAR lpwStr)
+
+{
+    LPWCHAR lpw;        // Temporary ptr
+    size_t  iSpn;
+
+    // Find the span of the set of WCHARs
+    iSpn = strspnW (lpwChar, lpwStr);
+
+    // If it's not found (EOL instead), ...
+    if (iSpn EQ 0)
+        // Point to the trailing zero
+        lpw = &lpwChar[lstrlenW (lpwChar)];
+    else
+        // Skip over the trailing chars
+        lpw = &lpwChar[iSpn];
 
     return lpw;
 } // End SkipPastCharW
@@ -752,7 +834,7 @@ int signumvfp
 //***************************************************************************
 //  $GetSystemDate
 //
-//  Fill in teh system date with the time set to zero
+//  Fill in the system date with the time set to zero
 //***************************************************************************
 
 void GetSystemDate
@@ -859,6 +941,43 @@ void CharFromPos
 
 
 //***************************************************************************
+//  $MySprintf
+//
+//  String safe version of <wsprintf>
+//***************************************************************************
+
+int MySprintf
+    (LPCHAR lpBuffer,       // Ptr to buffer
+     size_t iCount,         // Size of buffer (in bytes)
+     LPCHAR lpszFmt,        // Ptr to format string
+            ...)            // The variable list
+
+{
+    HRESULT  hResult;       // The result of <StringCbVPrintfW>
+    va_list  vl;            // Ptr to variable list
+
+    // Initialize the variable list
+    va_start (vl, lpszFmt);
+
+    // wsprintfW the list
+    hResult = StringCbVPrintf (lpBuffer,
+                               iCount,
+                               lpszFmt,
+                               vl);
+    // End the variable list
+    va_end (vl);
+
+#ifdef DEBUG
+    // If it failed, ...
+    if (FAILED (hResult))
+        DbgBrk ();          // #ifdef DEBUG
+#endif
+
+    return lstrlen (lpBuffer);
+} // End MySprintf
+
+
+//***************************************************************************
 //  $MySprintfW
 //
 //  String safe version of <wsprintfW>
@@ -893,6 +1012,155 @@ int MySprintfW
 
     return lstrlenW (lpwBuffer);
 } // End MySprintfW
+
+
+//***************************************************************************
+//  $strncmpWA
+//
+//  String compare at length between WCHAR and char
+//***************************************************************************
+
+int strncmpWA
+    (LPWCHAR lpwLft,        // Left arg as WCHAR
+     LPCHAR  lpRht,         // Right arg as CHAR
+     int     iLenLft)       // Length of left arg in WCHARs
+
+{
+    int i;
+
+    // Loop through all of the WCHARs
+    for (i = 0; i < iLenLft; i++)
+    if (lpwLft[i] NE lpRht[i])
+        return signumint (lpwLft[i] - lpRht[i]);
+
+    // The strings are equal
+    return 0;
+} // End strncmpWA
+
+
+//***************************************************************************
+//  $WriteFileWA
+//
+//  WriteFile of a WCHAR string to a char
+//***************************************************************************
+
+void WriteFileWA
+    (HANDLE  hFile,             // File handle
+     LPWCHAR lpwChar,           // Ptr to string to write out
+     int     iLen,              // # WCHARs in the above string
+     LPDWORD lpdwBytesOut,
+     LPVOID  lpVoid)
+
+{
+    WCHAR wszTemp[1024];
+    int   iChunkLen,            // Chunk length in WCHARs
+          i;
+    DWORD dwBytesOut = 0;
+
+    // Initialize the dwBytesOut
+    *lpdwBytesOut = 0;
+
+    // Loop through the file chunks
+    while (iLen)
+    {
+        // Calculate the chunk length in WCHARs
+        iChunkLen = min (countof (wszTemp), iLen);
+
+        // Move it down to strip out the high-order zeros
+        for (i = 0; i < iChunkLen; i++)
+            ((LPCHAR) wszTemp)[i] = ((LPCHAR) lpwChar)[2 * i];
+
+        // Write out the char string
+        WriteFile (hFile, wszTemp, iChunkLen, &dwBytesOut, lpVoid);
+
+        // Account for it
+        lpwChar += iChunkLen;
+        iLen -= iChunkLen;
+        *lpdwBytesOut += dwBytesOut;
+    } // End WHILE
+} // End WriteFileWA
+
+
+//***************************************************************************
+//  $strcpyW
+//
+//  Same as lstrcpyW but checks the return code and handles page faults
+//    however, unlike lstrcpyW, it has no return value.
+//***************************************************************************
+
+void strcpyW
+    (LPWSTR       lpwDst,       // Ptr to destination
+     const WCHAR *lpwSrc)       // Ptr to source
+
+{
+    if (FAILED (StringCchCopyW (lpwDst,
+                                lstrlenW (lpwSrc) + 1,
+                                lpwSrc)))
+        Assert (FALSE);
+} // End strcpyW
+
+
+//***************************************************************************
+//  $strcatW
+//
+//  Same as lstrcatW but checks the return code and handles page faults
+//    however, unlike lstrcatW, it has no return value.
+//***************************************************************************
+
+void strcatW
+    (LPWSTR       lpwDst,       // Ptr to destination
+     const WCHAR *lpwSrc)       // Ptr to source
+
+{
+    if (FAILED (StringCbCatW (lpwDst,
+                              (lstrlenW (lpwDst)
+                             + lstrlenW (lpwSrc)
+                             + 1) * sizeof (WCHAR),
+                              lpwSrc)))
+        Assert (FALSE);
+} // End strcatW
+
+
+//***************************************************************************
+//  $strcpyn
+//
+//  Same as lstrcpyn but checks the return code and handles page faults
+//    however, unlike lstrcpyn, it has no return value.
+//***************************************************************************
+
+void strcpyn
+    (LPSTR       lpDst,         // Ptr to destination
+     const char *lpSrc,         // Ptr to source
+     int         iMaxLength)    // Length in bytes including terminating EOS
+
+{
+    if (FAILED (StringCbCopyN (lpDst,
+                               lstrlen (lpSrc) + 1,
+                               lpSrc,
+                               iMaxLength)))
+        Assert (FALSE);
+} // End strcpyn
+
+
+//***************************************************************************
+//  $strcpynW
+//
+//  Same as lstrcpynW but checks the return code and handles page faults
+//    however, unlike lstrcpynW, it has no return value.
+//***************************************************************************
+
+void strcpynW
+    (LPWSTR       lpwDst,       // Ptr to destination
+     const WCHAR *lpwSrc,       // Ptr to source
+     int          iMaxLength)   // Length in WCHARs including terminating EOS
+
+{
+    if (FAILED (StringCbCopyNW (lpwDst,
+                                (lstrlenW (lpwSrc) + 1) * sizeof (WCHAR),
+                                lpwSrc,
+                                iMaxLength * sizeof (WCHAR))))
+        Assert (FALSE);
+} // End strcpynW
 
 
 //***************************************************************************

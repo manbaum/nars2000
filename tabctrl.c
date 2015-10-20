@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1545,7 +1545,7 @@ LPAPLCHAR PointToWsName
     lpMemPTD = GetPerTabPtr (iTabIndex); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Initialize with default value
-    lstrcpyW (lpwszGlbTemp, L"  CLEAR WS");
+    strcpyW (lpwszGlbTemp, L"  CLEAR WS");
 
     // If the []WSID STE has been setup, ...
     if (lpMemPTD->lphtsPTD
@@ -1584,7 +1584,7 @@ LPAPLCHAR PointToWsName
                     q = p + 1;
 
                 // Copy to global temporary storage
-                lstrcpynW (&lpwszGlbTemp[2], q, (UINT) ((lpMemWSID + aplNELMWSID + 1) - q));
+                strcpynW (&lpwszGlbTemp[2], q, (UINT) ((lpMemWSID + aplNELMWSID + 1) - q));
 
                 // Include the separator
                 lpwszGlbTemp[1] = L' ';

@@ -117,7 +117,7 @@ __try
                            lpwName,
                            scnMatch.lpwSCName);
             // Append common text
-            lstrcatW (wszTemp, WS_LF L" Click on a new color to replace and exit, or click on Cancel to exit without replacing.");
+            strcatW (wszTemp, WS_LF L" Click on a new color to replace and exit, or click on Cancel to exit without replacing.");
 
             // Insert the text about what color we're replacing
             SendDlgItemMessageW (hDlg,

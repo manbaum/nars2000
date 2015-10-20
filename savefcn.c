@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -344,17 +344,17 @@ void SF_ReadLineAN
         switch (lpLW_Params->lpYYRht->lptkRhtBrace->tkData.tkDfnType)
         {
             case DFNTYPE_FCN:
-                lstrcpyW (lpMemLine, lpLW_FcnHdr);
+                strcpyW (lpMemLine, lpLW_FcnHdr);
 
                 break;
 
             case DFNTYPE_OP1:
-                lstrcpyW (lpMemLine, lpLW_Op1Hdr);
+                strcpyW (lpMemLine, lpLW_Op1Hdr);
 
                 break;
 
             case DFNTYPE_OP2:
-                lstrcpyW (lpMemLine, lpLW_Op2Hdr);
+                strcpyW (lpMemLine, lpLW_Op2Hdr);
 
                 break;
 
@@ -367,10 +367,10 @@ void SF_ReadLineAN
         if (lpLW_Params->lpplLocalVars->lpwszLine)
             // Copy the line to the caller's memory
             //   with room for the trailing zero
-            lstrcpynW (lpMemLine,
-                      &lpLW_Params->lpplLocalVars->lpwszLine[lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
-                       lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
-                     - lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex);
+            strcpynW (lpMemLine,
+                     &lpLW_Params->lpplLocalVars->lpwszLine[lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
+                      lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
+                    - lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex);
         else
         {
             LPMEMTXT_UNION lpMemTxtLine;
@@ -380,10 +380,10 @@ void SF_ReadLineAN
 
             // Copy the line to the caller's memory
             //   with room for the trailing zero
-            lstrcpynW (lpMemLine,
-                      &(&lpMemTxtLine->C)[lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
-                       lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
-                     - lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex);
+            strcpynW (lpMemLine,
+                     &(&lpMemTxtLine->C)[lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1],
+                      lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
+                    - lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex);
             // We no longer need this ptr
             MyGlobalUnlock (lpLW_Params->lpplLocalVars->hGlbTxtLine); lpMemTxtLine = NULL;
         } // End IF/ELSE
@@ -437,7 +437,7 @@ void SF_ReadLineLW
                         lpLW_Params->lpDict);       // Ptr to workspace dictionary
     // Copy the line to a local buffer
     // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-    CopyMemoryW (lpLW_Params->lpwBuffer, lpwszProf, lstrlenW (lpwszProf) + 1);
+    strcpyW (lpLW_Params->lpwBuffer, lpwszProf);
 
     // Convert the {name}s and other chars to UTF16_xxx
     (void) ConvertNameInPlace (lpLW_Params->lpwBuffer);
@@ -1428,9 +1428,10 @@ UBOOL SaveFunctionCom
 
             // Check for already on the SI stack
             for (;
-                 lpSISCur;
+                 lpSISCur NE NULL;
                  lpSISCur = lpSISCur->lpSISPrv)
-            if (ClrPtrTypeDir (lpSISCur->hGlbDfnHdr) EQ ClrPtrTypeDir (hGlbOldDfn))
+            if (lpSISCur->hGlbDfnHdr NE NULL
+             && ClrPtrTypeDir (lpSISCur->hGlbDfnHdr) EQ ClrPtrTypeDir (hGlbOldDfn))
             {
                 if (hWndFE)
                 {
@@ -1912,7 +1913,7 @@ UBOOL SaveFunctionCom
     } else
     {
         // Copy the error message up the line
-        lstrcpyW (lpSF_Fcns->wszErrMsg, fhLocalVars.wszErrMsg);
+        strcpyW (lpSF_Fcns->wszErrMsg, fhLocalVars.wszErrMsg);
 
         // Copy the error line # up the line
         lpSF_Fcns->uErrLine = 0;
@@ -2155,8 +2156,10 @@ UINT SaveFunctionLine
     // If tokenization failed, ...
     if (hGlbTknHdr EQ NULL)
     {
-        // Mark the line in error
-        lpSF_Fcns->uErrLine = uLineNum + 1;
+        // If it's valid, ...
+        if (lpSF_Fcns NE NULL)
+            // Mark the line in error
+            lpSF_Fcns->uErrLine = uLineNum + 1;
 
         if (hWndFE)
         {

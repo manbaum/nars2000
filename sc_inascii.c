@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ UBOOL CmdInAscii_EM
     _wsplitpath (lpwszTail, wszDrive, wszDir, NULL, NULL);
 
     // Initialize success string
-    lstrcpyW (lpwszGlbTemp, LEADING_TEXT);
+    strcpyW (lpwszGlbTemp, LEADING_TEXT);
 
     // Call on first file
     hFile = FindFirstFileW (lpwszTail, &findData);
@@ -184,7 +184,7 @@ UBOOL InAsciiFile_EM
                           NULL);                    // Name of file-mapping object
     if (hA2AMap EQ NULL)
     {
-        lstrcpyW (wszTemp, L"Unable to create file mapping:  ");
+        strcpyW (wszTemp, L"Unable to create file mapping:  ");
         uLen = lstrlenW (wszTemp);
 
         FormatMessageW (FORMAT_MESSAGE_FROM_SYSTEM, // Source and processing options
@@ -208,7 +208,7 @@ UBOOL InAsciiFile_EM
                      dwA2AFileSize);                // Number of bytes to map
     if (hA2AView EQ NULL)
     {
-        lstrcpyW (wszTemp, L"Unable to map view of file:  ");
+        strcpyW (wszTemp, L"Unable to map view of file:  ");
         uLen = lstrlenW (wszTemp);
 
         FormatMessageW (FORMAT_MESSAGE_FROM_SYSTEM, // Source and processing options
@@ -371,8 +371,8 @@ UBOOL InAsciiFile_EM
         } // End IF
 
         // Append the separator and function name
-        lstrcatW (lpwszTemp, L"  ");
-        lstrcatW (lpwszTemp, lpMemName);
+        strcatW (lpwszTemp, L"  ");
+        strcatW (lpwszTemp, lpMemName);
 
         // We no longer need this ptr
         MyGlobalUnlock (htGlbName); lpMemName = NULL;
@@ -384,7 +384,7 @@ UBOOL InAsciiFile_EM
         ReplaceLastLineCRPmt (lpwszTemp);
 
         // Initialize success string
-        lstrcpyW (lpwszTemp, LEADING_TEXT);
+        strcpyW (lpwszTemp, LEADING_TEXT);
 
         // If the error line # is NEG1U, there is an error message, so display it
         if (SF_Fcns.uErrLine EQ NEG1U)

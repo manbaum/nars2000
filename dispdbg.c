@@ -134,7 +134,7 @@ void FormatHTE
          j < HT_FLAGNAMES_NROWS;
          j++)
     if (htFlags & ahtFlagNames[j].uMask)
-        lstrcatW (wszFlags, ahtFlagNames[j].lpwszName);
+        strcatW (wszFlags, ahtFlagNames[j].lpwszName);
 
     // In case we didn't find any matching flags,
     //   set the second byte to zero as well as
@@ -312,7 +312,7 @@ void FormatSTE
          j < ST_FLAGNAMES_NROWS;
          j++)
     if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
-        lstrcatW (wszFlags, astFlagNames[j].lpwszName);
+        strcatW (wszFlags, astFlagNames[j].lpwszName);
 
     if (IsNameTypeVar (stFlags.stNameType)
      && !stFlags.DfnSysLabel)
@@ -345,7 +345,7 @@ void FormatSTE
 
                 lpwGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpwGlbName NE NULL);
 
-                lstrcpynW (wszName, lpwGlbName, WSZNAME_LEN);
+                strcpynW (wszName, lpwGlbName, WSZNAME_LEN);
 
                 // We no longer need this ptr
                 GlobalUnlock (lpHshEntry->htGlbName); lpwGlbName = NULL;
@@ -588,7 +588,7 @@ void DisplayGlobals
                               FormatImmed (lpwsz,
                                            immType,
                                           &lpHeader->NELM);
-                            lstrcpyW (lpwsz, $QUAD_IO WS_UTF16_LEFTARROW L"0");
+                            strcpyW (lpwsz, $QUAD_IO WS_UTF16_LEFTARROW L"0");
 
                             break;
                         } // End ARRAY_APA
@@ -607,14 +607,14 @@ void DisplayGlobals
                                 aplArrChar[2] = WC_EOS;
                             } else
                             {
-                                lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (MAX_VAL_LEN, lpHeader->NELM));
+                                strcpynW (aplArrChar, lpData, 1 + (UINT) min (MAX_VAL_LEN, lpHeader->NELM));
                                 aplArrChar[min (MAX_VAL_LEN, lpHeader->NELM)] = WC_EOS;
                             } // End IF/ELSE
 
                             break;
 
                         case ARRAY_LIST:
-                            lstrcpyW (aplArrChar, L"[...]");
+                            strcpyW (aplArrChar, L"[...]");
 
                             break;
 
@@ -772,7 +772,7 @@ void DisplayGlobals
                       && !lpHeader->bMFO))
                     {
                         // Copy the name to local storage
-                        lstrcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
+                        strcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
                         aplArrChar[min (MAX_VAL_LEN, uNameLen)] = WC_EOS;
 
                         wsprintfW (wszTemp,
@@ -860,7 +860,7 @@ void DisplayGlbVar
     CHECK_TEMP_OPEN
 
     // Start with the label
-    lstrcpyW (lpwszTemp, lpwLabel);
+    strcpyW (lpwszTemp, lpwLabel);
 
     // Skip over it
     lpwszTemp += lstrlenW (lpwLabel);
@@ -2791,7 +2791,7 @@ void DisplayFnHdr
         return;
 
     // Initialize the output string
-    lstrcpyW (wszTemp, L"Saving function header:  " WS_UTF16_DEL L" ");
+    strcpyW (wszTemp, L"Saving function header:  " WS_UTF16_DEL L" ");
 
     // Check for result
     if (lpfhLocalVars->lpYYResult)
@@ -2801,7 +2801,7 @@ void DisplayFnHdr
 
         // Append a separator
         if (uLen > 1)
-            lstrcatW (wszTemp, L"(");
+            strcatW (wszTemp, L"(");
 
         for (uItm = 0; uItm < uLen; uItm++)
         {
@@ -2812,11 +2812,11 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            lstrcatW (wszTemp, lpMemName);
+            strcatW (wszTemp, lpMemName);
 
             // If we're not at the last item, separate with a space
             if (uItm < (uLen - 1))
-                lstrcatW (wszTemp, L" ");
+                strcatW (wszTemp, L" ");
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
@@ -2824,10 +2824,10 @@ void DisplayFnHdr
 
         // Append a separator
         if (uLen > 1)
-            lstrcatW (wszTemp, L")");
+            strcatW (wszTemp, L")");
 
         // Append a left arrow
-        lstrcatW (wszTemp, WS_UTF16_LEFTARROW);
+        strcatW (wszTemp, WS_UTF16_LEFTARROW);
     } // End IF
 
     //***************************************************************
@@ -2842,10 +2842,10 @@ void DisplayFnHdr
 
         // Append a separator
         if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
-            lstrcatW (wszTemp, L"{");
+            strcatW (wszTemp, L"{");
         else
         if (uLen > 1)
-            lstrcatW (wszTemp, L"(");
+            strcatW (wszTemp, L"(");
 
         for (uItm = 0; uItm < uLen; uItm++)
         {
@@ -2856,11 +2856,11 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            lstrcatW (wszTemp, lpMemName);
+            strcatW (wszTemp, lpMemName);
 
             // If we're not at the last item, separate with a space
             if (uItm < (uLen - 1))
-                lstrcatW (wszTemp, L" ");
+                strcatW (wszTemp, L" ");
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
@@ -2868,13 +2868,13 @@ void DisplayFnHdr
 
         // Append a separator
         if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
-            lstrcatW (wszTemp, L"}");
+            strcatW (wszTemp, L"}");
         else
         if (uLen > 1)
-            lstrcatW (wszTemp, L")");
+            strcatW (wszTemp, L")");
 
         // Append a separator
-        lstrcatW (wszTemp, L" ");
+        strcatW (wszTemp, L" ");
     } // End IF
 
     // Split cases based upon the user-defined function/operator type
@@ -2883,7 +2883,7 @@ void DisplayFnHdr
         case DFNTYPE_OP1:
         case DFNTYPE_OP2:
             // Append a separator
-            lstrcatW (wszTemp, L"(");
+            strcatW (wszTemp, L"(");
 
             //***************************************************************
             // Left Operand
@@ -2896,13 +2896,13 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            lstrcatW (wszTemp, lpMemName);
+            strcatW (wszTemp, lpMemName);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
             // Append a separator
-            lstrcatW (wszTemp, L" ");
+            strcatW (wszTemp, L" ");
 
             //***************************************************************
             // Operator Name
@@ -2915,7 +2915,7 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            lstrcatW (wszTemp, lpMemName);
+            strcatW (wszTemp, lpMemName);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
@@ -2928,7 +2928,7 @@ void DisplayFnHdr
             if (lpfhLocalVars->lpYYAxisOpr)
             {
                 // Append a separator
-                lstrcatW (wszTemp, L"[");
+                strcatW (wszTemp, L"[");
 
                 // Get the Name's global memory handle
                 hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
@@ -2937,13 +2937,13 @@ void DisplayFnHdr
                 lpMemName = MyGlobalLock (hGlbName);
 
                 // Copy the name
-                lstrcatW (wszTemp, lpMemName);
+                strcatW (wszTemp, lpMemName);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
                 // Append a separator
-                lstrcatW (wszTemp, L"]");
+                strcatW (wszTemp, L"]");
             } // End IF
 
             //***************************************************************
@@ -2954,7 +2954,7 @@ void DisplayFnHdr
             if (lpfhLocalVars->lpYYRhtOpr)
             {
                 // Append a separator
-                lstrcatW (wszTemp, L" ");
+                strcatW (wszTemp, L" ");
 
                 // Get the Name's global memory handle
                 hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
@@ -2963,14 +2963,14 @@ void DisplayFnHdr
                 lpMemName = MyGlobalLock (hGlbName);
 
                 // Copy the name
-                lstrcatW (wszTemp, lpMemName);
+                strcatW (wszTemp, lpMemName);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbName); lpMemName = NULL;
             } // End IF
 
             // Append a separator
-            lstrcatW (wszTemp, L")");
+            strcatW (wszTemp, L")");
 
             break;
 
@@ -2986,7 +2986,7 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            lstrcatW (wszTemp, lpMemName);
+            strcatW (wszTemp, lpMemName);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
@@ -2999,7 +2999,7 @@ void DisplayFnHdr
             if (lpfhLocalVars->lpYYAxisOpr)
             {
                 // Append a separator
-                lstrcatW (wszTemp, L"[");
+                strcatW (wszTemp, L"[");
 
                 // Get the Name's global memory handle
                 hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
@@ -3008,19 +3008,19 @@ void DisplayFnHdr
                 lpMemName = MyGlobalLock (hGlbName);
 
                 // Copy the name
-                lstrcatW (wszTemp, lpMemName);
+                strcatW (wszTemp, lpMemName);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
                 // Append a separator
-                lstrcatW (wszTemp, L"]");
+                strcatW (wszTemp, L"]");
             } // End IF
 
             break;
 
         case DFNTYPE_UNK:
-            lstrcatW (wszTemp, L"<empty>");
+            strcatW (wszTemp, L"<empty>");
 
             break;
 
@@ -3036,14 +3036,14 @@ void DisplayFnHdr
     if (lpfhLocalVars->lpYYRhtArg)
     {
         // Append a separator
-        lstrcatW (wszTemp, L" ");
+        strcatW (wszTemp, L" ");
 
         // Get the strand length
         uLen = lpfhLocalVars->lpYYRhtArg->uStrandLen;
 
         // Append a separator
         if (uLen > 1)
-            lstrcatW (wszTemp, L"(");
+            strcatW (wszTemp, L"(");
 
         for (uItm = 0; uItm < uLen; uItm++)
         {
@@ -3054,11 +3054,11 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            lstrcatW (wszTemp, lpMemName);
+            strcatW (wszTemp, lpMemName);
 
             // If we're not at the last item, separate with a space
             if (uItm < (uLen - 1))
-                lstrcatW (wszTemp, L" ");
+                strcatW (wszTemp, L" ");
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
@@ -3066,7 +3066,7 @@ void DisplayFnHdr
 
         // Append a separator
         if (uLen > 1)
-            lstrcatW (wszTemp, L")");
+            strcatW (wszTemp, L")");
     } // End IF
 
     // Display it in the debug window

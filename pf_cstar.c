@@ -642,15 +642,15 @@ APLVFP PrimFnDydCircleStarVisVvV
         //   such as 5{log}0  and  0.5{log}0
         mpfLft = PrimFnMonCircleStarVisV (aplVfpLft, lpPrimSpec);
 #ifdef DEBUG
-////    lstrcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+////    strcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLft, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
         mpfRht = PrimFnMonCircleStarVisV (aplVfpRht, lpPrimSpec);
 #ifdef DEBUG
-////    lstrcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+////    strcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRht, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
         mpfr_div (&mpfRes, &mpfRht, &mpfLft, MPFR_RNDN);
 #ifdef DEBUG
-////    lstrcpyW (wszTemp, L"Res: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRes, 0) = WC_EOS; DbgMsgW (wszTemp);
+////    strcpyW (wszTemp, L"Res: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRes, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
 
         // We no longer need this storage

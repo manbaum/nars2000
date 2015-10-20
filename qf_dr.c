@@ -786,33 +786,33 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     {
         if (!bInit)
         {
-            lstrcatW (wszTemp, L" --");
+            strcatW (wszTemp, L" --");
             bInit = TRUE;
         } // End IF
 
-        lstrcatW (wszTemp, L" " AP_PV0);
+        strcatW (wszTemp, L" " AP_PV0);
     } // End IF
 
     if (IsPermVector1 (lpHeader))
     {
         if (!bInit)
         {
-            lstrcatW (wszTemp, L" --");
+            strcatW (wszTemp, L" --");
             bInit = TRUE;
         } // End IF
 
-        lstrcatW (wszTemp, L" " AP_PV1);
+        strcatW (wszTemp, L" " AP_PV1);
     } // End IF
 
     if (IsAll2s (lpHeader))
     {
         if (!bInit)
         {
-            lstrcatW (wszTemp, L" --");
+            strcatW (wszTemp, L" --");
             bInit = TRUE;
         } // End IF
 
-        lstrcatW (wszTemp, L" " AP_ALL2S);
+        strcatW (wszTemp, L" " AP_ALL2S);
     } // End IF
 
     // If the array is VFP,
@@ -842,19 +842,19 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
         if (!bInit)
         {
-            lstrcatW (wszTemp, L" --");
+            strcatW (wszTemp, L" --");
             bInit = TRUE;
         } // End IF
 
         // If there's a common precision, ...
         if (uCommPrec NE 0)
         {
-            lstrcatW (wszTemp, L" " AP_FPC);
+            strcatW (wszTemp, L" " AP_FPC);
             wsprintfW (&wszTemp[lstrlenW (wszTemp)],
                         L"%I64u ",
                         uCommPrec);
         } else
-            lstrcatW (wszTemp, L" " AP_FPC L"-Mixed");
+            strcatW (wszTemp, L" " AP_FPC L"-Mixed");
     } // End IF
 
     // If the ptr is valid, ...

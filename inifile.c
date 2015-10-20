@@ -244,14 +244,14 @@ UBOOL CreateAppDataDirs
 #undef  WS_APPDATA
 
     // Append the "\\NARS2000" part
-    lstrcatW (wszAppData, WS_SLOPE WS_APPNAME);
+    strcatW (wszAppData, WS_SLOPE WS_APPNAME);
 
     // Ensure the "...\\Application Data\\NARS2000" directory is present
     if (!CreateDirectoryW (wszAppData, NULL)
      && GetLastError () NE ERROR_ALREADY_EXISTS)
     {
         // Start with leading text
-        lstrcpyW (wszTemp, L"CreateAppDataDirs (wszAppData):  ");
+        strcpyW (wszTemp, L"CreateAppDataDirs (wszAppData):  ");
         uNxt = lstrlenW (wszTemp);
 
         // Format the error message
@@ -274,7 +274,7 @@ UBOOL CreateAppDataDirs
     cchSize = lstrlenW (wszAppData);
 
     // Now append the .ini file name to get lpwszIniFile
-    lstrcpyW (&wszAppData[cchSize], WS_SLOPE WS_APPNAME L".ini");
+    strcpyW (&wszAppData[cchSize], WS_SLOPE WS_APPNAME L".ini");
     lpwszIniFile = wszAppData;
 
     // Get ptr to where the workspaces dir will be stored
@@ -282,18 +282,18 @@ UBOOL CreateAppDataDirs
     lpwszWorkDir = &wszAppData[lstrlenW (lpwszIniFile) + 1];
 
     // Append the AppData directory part so we can form the workspaces dir
-    // The "+ 1" is because lstrcpynW includes a terminating zero in the count
-    lstrcpynW (lpwszWorkDir, lpwszIniFile, cchSize + 1);
+    // The "+ 1" is because strcpynW includes a terminating zero in the count
+    strcpynW (lpwszWorkDir, lpwszIniFile, cchSize + 1);
 
     // Append the workspaces name
-    lstrcatW (lpwszWorkDir, WS_SLOPE WS_WKSNAME);
+    strcatW (lpwszWorkDir, WS_SLOPE WS_WKSNAME);
 
     // Ensure the workspaces dir is present
     if (!CreateDirectoryW (lpwszWorkDir, NULL)
      && GetLastError () NE ERROR_ALREADY_EXISTS)
     {
         // Start with leading text
-        lstrcpyW (wszTemp, L"CreateAppDataDirs (lpwszWorkDir):  ");
+        strcpyW (wszTemp, L"CreateAppDataDirs (lpwszWorkDir):  ");
         uNxt = lstrlenW (wszTemp);
 
         // Format the error message
@@ -314,7 +314,7 @@ UBOOL CreateAppDataDirs
     } // End IF
 
     // Ensure there's a trailing backslash
-    lstrcatW (lpwszWorkDir, WS_SLOPE);
+    strcatW (lpwszWorkDir, WS_SLOPE);
 
     return TRUE;
 } // End CreateAppDataDirs
@@ -518,8 +518,8 @@ UBOOL ReadIniFileGlb
         uNumLibDirs = 2;
 
         // Append the two default dirs
-        lstrcpyW (lpwszLibDirs[0], L".");
-        lstrcpyW (lpwszLibDirs[1], lpwszWorkDir);
+        strcpyW (lpwszLibDirs[0], L".");
+        strcpyW (lpwszLibDirs[1], lpwszWorkDir);
     } else
     // Loop through the LibDirs
     for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
@@ -1225,7 +1225,7 @@ UBOOL ReadIniFileGlb
                     aKeybLayoutsBI[uCnt].lpCharCodes,
                     aKeybLayoutsBI[uCnt].uCharCodesLen * sizeof (CHARCODE));
         lpKeybLayouts[uCnt].uCharCodesLen          = aKeybLayoutsBI[uCnt].uCharCodesLen;
-        lstrcpyW (lpKeybLayouts[uCnt].wszLayoutName, aKeybLayoutsBI[uCnt].wszLayoutName);
+        strcpyW (lpKeybLayouts[uCnt].wszLayoutName, aKeybLayoutsBI[uCnt].wszLayoutName);
         lpKeybLayouts[uCnt].uScanCode2B_RowNum     = aKeybLayoutsBI[uCnt].uScanCode2B_RowNum;
         lpKeybLayouts[uCnt].bReadOnly              = TRUE;
         lpKeybLayouts[uCnt].bExtraKeyRow3          = aKeybLayoutsBI[uCnt].bExtraKeyRow3;
@@ -1342,7 +1342,7 @@ UBOOL ReadIniFileGlb
     aKeybLayoutAct = lpKeybLayouts[uGlbKeybLayoutNumAct];
 
     // Make that the visible keyboard layout name
-    lstrcpyW (wszGlbKeybLayoutVis, wszGlbKeybLayoutAct);
+    strcpyW (wszGlbKeybLayoutVis, wszGlbKeybLayoutAct);
     uGlbKeybLayoutNumVis = uGlbKeybLayoutNumAct;
 
     // We no longer need this ptr
@@ -1455,7 +1455,7 @@ void GetPrivateProfileLogFontW
                 &lplfFont->lfFaceName);
         // If the facename contains an embedded blank, sscanfW misses
         //   the tail of the name so we do it over again here
-        lstrcpyW (lplfFont->lfFaceName, strchrW (wszTemp, WC_SQ) + 1);
+        strcpyW (lplfFont->lfFaceName, strchrW (wszTemp, WC_SQ) + 1);
         *(strchrW (lplfFont->lfFaceName, WC_SQ)) = WC_EOS;
     } // End IF
 } // End GetPrivateProfileLogFontW
@@ -1599,7 +1599,7 @@ HGLOBAL GetPrivateProfileGlbComW
          && (lstrcmpW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 1")   EQ 0
           || lstrcmpW (wszTemp, L"3 4 2 2 2 1 2 2 1 2 2 2 2 1") EQ 0))
             // Use the new default value
-            lstrcpyW (wszTemp, L"3 4 2 2 2 1 2 2 2 2 1 2 2 2 2 1");
+            strcpyW (wszTemp, L"3 4 2 2 2 1 2 2 2 2 1 2 2 2 2 1");
         // Use the given (or substituted value)
         lpMemInp = wszTemp;
     } else
@@ -1874,7 +1874,7 @@ void ReadIniFileWnd
     if (guUpdFrq EQ countof (updFrq))
     {
         // Use the defaults
-        lstrcpyW (gszUpdFrq, DEF_UPDFRQ_STR);
+        strcpyW (gszUpdFrq, DEF_UPDFRQ_STR);
         guUpdFrq = DEF_UPDFRQ_NDX;
     } // End IF
 

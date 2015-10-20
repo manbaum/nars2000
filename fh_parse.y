@@ -851,7 +851,7 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for SYNTAX ERROR
 #define ERR     "syntax error"
-    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         wsprintfW (wszTemp, L"SYNTAX ERROR in header position %d -- function NOT saved.", uCharIndex);
@@ -863,7 +863,7 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for VALUE ERROR
 #define ERR     "value error"
-    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         wsprintfW (wszTemp, L"VALUE ERROR in header position %d -- function NOT saved.", uCharIndex);
@@ -875,7 +875,7 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for LENGTH ERROR
 #define ERR     "length error"
-    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         wsprintfW (wszTemp, L"LENGTH ERROR in header position %d -- function NOT saved.", uCharIndex);
@@ -886,7 +886,7 @@ void fh_yyerror                         // Called for Bison syntax error
     } // End IF
 
 #define ERR     "memory exhausted"
-    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         wsprintfW (wszTemp, L"Insufficient memory to parse header -- function NOT saved.");
@@ -907,7 +907,7 @@ DISPLAYCAT:
     if (!lpfhLocalVars->DisplayErr)
     {
         // Pass the error message back to the caller
-        lstrcpyW (lpfhLocalVars->wszErrMsg, wszTemp);
+        strcpyW (lpfhLocalVars->wszErrMsg, wszTemp);
 
         return;
     } // End IF

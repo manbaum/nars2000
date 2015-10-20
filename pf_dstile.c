@@ -493,9 +493,9 @@ APLVFP PrimFnMonDownStileVisV
         } // End SWITCH
 
 #ifdef DEBUG
-////    lstrcpyW (wszTemp, L"Floor: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfFloor, 0) = WC_EOS; DbgMsgW (wszTemp);
-////    lstrcpyW (wszTemp, L"Near:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfNear , 0) = WC_EOS; DbgMsgW (wszTemp);
-////    lstrcpyW (wszTemp, L"Ceil:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfCeil , 0) = WC_EOS; DbgMsgW (wszTemp);
+////    strcpyW (wszTemp, L"Floor: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfFloor, 0) = WC_EOS; DbgMsgW (wszTemp);
+////    strcpyW (wszTemp, L"Near:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfNear , 0) = WC_EOS; DbgMsgW (wszTemp);
+////    strcpyW (wszTemp, L"Ceil:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfCeil , 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
 
         // If Near is < Rht, return Near

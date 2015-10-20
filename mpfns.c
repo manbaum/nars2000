@@ -1720,9 +1720,9 @@ int _mpfr_cmp_ct
             mpfr_mul (&mpfHoodLo, &mpfRhtAbs, &mpfCT    , MPFR_RNDN);
             mpfr_sub (&mpfHoodLo, &mpfRhtAbs, &mpfHoodLo, MPFR_RNDN);
 #if defined (DEBUG) && defined (CT_DEBUG)
-            lstrcpyW (wszTemp, L"Lo1: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
-            lstrcpyW (wszTemp, L"L1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
-            lstrcpyW (wszTemp, L"R1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"Lo1: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"L1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"R1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             // If (|Rht) is greater than (|Lft),
             // and (|Lft) is in the
@@ -1740,9 +1740,9 @@ int _mpfr_cmp_ct
                 mpfr_mul (&mpfHoodLo, &mpfLftAbs, &mpfCT    , MPFR_RNDN);
                 mpfr_sub (&mpfHoodLo, &mpfLftAbs, &mpfHoodLo, MPFR_RNDN);
 #if defined (DEBUG) && defined (CT_DEBUG)
-            lstrcpyW (wszTemp, L"Lo2: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
-            lstrcpyW (wszTemp, L"R2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
-            lstrcpyW (wszTemp, L"L2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"Lo2: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"R2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"L2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
                 // If (|Lft) is greater than (|Rht),
                 // and (|Rht) is in the

@@ -43,10 +43,10 @@ LPPL_YYSTYPE PrimFnSyntaxError_EM
     static WCHAR wszTemp[1024];
 
     // Copy the error message to the temp
-    lstrcpyW (wszTemp, ERRMSG_SYNTAX_ERROR);
+    strcpyW (wszTemp, ERRMSG_SYNTAX_ERROR);
 
     // Append the suffix to the temp
-    lstrcatW (wszTemp, APPEND_NAME);
+    strcatW (wszTemp, APPEND_NAME);
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
@@ -75,10 +75,10 @@ LPPL_YYSTYPE PrimFnValenceError_EM
     static WCHAR wszTemp[1024];
 
     // Copy the error message to the temp
-    lstrcpyW (wszTemp, ERRMSG_VALENCE_ERROR);
+    strcpyW (wszTemp, ERRMSG_VALENCE_ERROR);
 
     // Append the suffix to the temp
-    lstrcatW (wszTemp, APPEND_NAME);
+    strcatW (wszTemp, APPEND_NAME);
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
@@ -107,10 +107,10 @@ LPPL_YYSTYPE PrimFnNonceError_EM
     static WCHAR wszTemp[1024];
 
     // Copy the error message to the temp
-    lstrcpyW (wszTemp, ERRMSG_NONCE_ERROR);
+    strcpyW (wszTemp, ERRMSG_NONCE_ERROR);
 
     // Append the suffix to the temp
-    lstrcatW (wszTemp, APPEND_NAME);
+    strcatW (wszTemp, APPEND_NAME);
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
@@ -139,10 +139,10 @@ LPPL_YYSTYPE PrimFnDomainError_EM
     static WCHAR wszTemp[1024];
 
     // Copy the error message to the temp
-    lstrcpyW (wszTemp, ERRMSG_DOMAIN_ERROR);
+    strcpyW (wszTemp, ERRMSG_DOMAIN_ERROR);
 
     // Append the suffix to the temp
-    lstrcatW (wszTemp, APPEND_NAME);
+    strcatW (wszTemp, APPEND_NAME);
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
@@ -171,10 +171,10 @@ LPPL_YYSTYPE PrimFnValueError_EM
     static WCHAR wszTemp[1024];
 
     // Copy the error message to the temp
-    lstrcpyW (wszTemp, ERRMSG_VALUE_ERROR);
+    strcpyW (wszTemp, ERRMSG_VALUE_ERROR);
 
     // Append the suffix to the temp
-    lstrcatW (wszTemp, APPEND_NAME);
+    strcatW (wszTemp, APPEND_NAME);
 
     // If there's a name attached to this error, ...
     if ((IsTknNamed   (lptkFunc)
@@ -183,13 +183,13 @@ LPPL_YYSTYPE PrimFnValueError_EM
      && lptkFunc->tkData.tkSym->stHshEntry)
     {
         // Leading separator
-        lstrcatW (wszTemp, L" (");
+        strcatW (wszTemp, L" (");
 
         // Append the name
-        lstrcatW (wszTemp, lptkFunc->tkData.tkSym->stHshEntry->lpwCharName);
+        strcatW (wszTemp, lptkFunc->tkData.tkSym->stHshEntry->lpwCharName);
 
         // Trailing separator
-        lstrcatW (wszTemp, L")");
+        strcatW (wszTemp, L")");
     } // End IF
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);

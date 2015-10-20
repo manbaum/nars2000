@@ -2654,7 +2654,7 @@ void cs_yyerror                         // Called for Bison syntax error
     {
         // Check for SYNTAX ERROR
 #define ERR     "syntax error"
-        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+        strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
         if (lstrcmp (szTemp, ERR) EQ 0)
         {
             wsprintf (szTemp,
@@ -2669,7 +2669,7 @@ void cs_yyerror                         // Called for Bison syntax error
 
         // Check for VALUE ERROR
 #define ERR     "value error"
-        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+        strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
         if (lstrcmp (szTemp, ERR) EQ 0)
         {
             wsprintf (szTemp,
@@ -2684,7 +2684,7 @@ void cs_yyerror                         // Called for Bison syntax error
 
         // Check for LENGTH ERROR
 #define ERR     "length error"
-        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+        strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
         if (lstrcmp (szTemp, ERR) EQ 0)
         {
             wsprintf (szTemp,
@@ -2700,7 +2700,7 @@ void cs_yyerror                         // Called for Bison syntax error
         return;
 
 #define ERR     "memory exhausted"
-    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         wsprintf (szTemp,
@@ -2718,9 +2718,9 @@ void cs_yyerror                         // Called for Bison syntax error
 
 DISPLAYCAT:
 #ifdef DEBUG
-    lstrcat (szTemp, "(");
-    lstrcat (szTemp,  s );
-    lstrcat (szTemp, ")");
+    strcat (szTemp, "(");
+    strcat (szTemp,  s );
+    strcat (szTemp, ")");
 #endif
 DISPLAY:
     // Display a message box

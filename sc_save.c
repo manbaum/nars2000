@@ -101,8 +101,8 @@ UBOOL CmdSave_EM
     // Because the global memory doesn't have a zero terminator,
     //   we must copy the data to a temporary location and then
     //   append a zero terminator
-    lstrcpynW (wszTempDPFE, lpMemSaveWSID, (UINT) aplNELMWSID + 1);
-////wszTempDPFE[aplNELMWSID] = WC_EOS;  // Already done via "+ 1" in lstrcpynW
+    strcpynW (wszTempDPFE, lpMemSaveWSID, (UINT) aplNELMWSID + 1);
+////wszTempDPFE[aplNELMWSID] = WC_EOS;  // Already done via "+ 1" in strcpynW
 
     // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
     MakeWorkspaceNameCanonical (wszWsidDPFE, wszTempDPFE, lpwszWorkDir);
@@ -121,7 +121,7 @@ UBOOL CmdSave_EM
         iCmp = lstrcmpiW (wszWsidDPFE, wszTailDPFE);
 
         // Append the common workspace extension
-        lstrcatW (wszTailDPFE, WS_WKSEXT);
+        strcatW (wszTailDPFE, WS_WKSEXT);
 
         // If unequal and the given named ws already exists,
         //   display an error
@@ -140,14 +140,14 @@ UBOOL CmdSave_EM
 
                 // If []WSID is empty, it's a CLEAR WS
                 if (IsEmpty (aplNELMWSID))
-                    lstrcpyW (wszTemp, ERRMSG_NOT_SAVED_CLEAR_WS);
+                    strcpyW (wszTemp, ERRMSG_NOT_SAVED_CLEAR_WS);
                 else
                 {
                     // Copy the leading part of the message
-                    lstrcpyW (wszTemp, ERRMSG_NOT_SAVED);
+                    strcpyW (wszTemp, ERRMSG_NOT_SAVED);
 
                     // Followed by the old []WSID
-                    lstrcpynW (&wszTemp[lstrlenW (wszTemp)], lpMemSaveWSID, (UINT) aplNELMWSID + 1);
+                    strcpynW (&wszTemp[lstrlenW (wszTemp)], lpMemSaveWSID, (UINT) aplNELMWSID + 1);
                 } // End IF/ELSE
 
                 // Display the error message
@@ -173,7 +173,7 @@ UBOOL CmdSave_EM
             goto NOTSAVED_CLEAR_EXIT;
 
         // Append the common workspace extension
-        lstrcatW (wszWsidDPFE, WS_WKSEXT);
+        strcatW (wszWsidDPFE, WS_WKSEXT);
 
         // Save as the target WSID
         lpMemSaveWSID = wszWsidDPFE;
@@ -544,10 +544,10 @@ UBOOL CmdSave_EM
     CHECK_TEMP_OPEN         // Restore flag
 
     // Copy the (possibly shortened WSID)
-    lstrcpyW (lpwszTemp, ShortenWSID (lpMemSaveWSID));
+    strcpyW (lpwszTemp, ShortenWSID (lpMemSaveWSID));
 
     // Copy the " SAVED " text
-    lstrcatW (lpwszTemp, L" SAVED ");
+    strcatW (lpwszTemp, L" SAVED ");
 
     // Format the current date & time
     FormatCurDateTime (&lpwszTemp[lstrlenW (lpwszTemp)]);
@@ -866,7 +866,7 @@ LPAPLCHAR SavedWsFormGlbFcn
                 *p = WC_EOS;
 
                 // Append the function name
-                lstrcpyW (&lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)], lpwszFcnName);
+                strcpyW (&lpwszFcnTypeName[lstrlenW (lpwszFcnTypeName)], lpwszFcnName);
 
                 // Restore the zapped char
                 *p = '=';
@@ -1037,7 +1037,7 @@ LPAPLCHAR SavedWsFormGlbFcn
                     lpUndoOut[ 0] = WC_EOS;
             } else
                 // Ensure properly terminated
-                lstrcpyW (lpUndoIni, L"0");
+                strcpyW (lpUndoIni, L"0");
 
             // Write out the Undo Buffer contents
             WritePrivateProfileStringW (lpwszSectName,          // Ptr to the section name
@@ -1150,7 +1150,7 @@ LPAPLCHAR SavedWsFormGlbFcn
     lpaplChar = lpaplCharStart;
 
     // Copy the formatted GlbCnt to the start of the buffer as the result
-    lstrcpyW (lpaplChar, wszGlbCnt);
+    strcpyW (lpaplChar, wszGlbCnt);
 NORMAL_EXIT:
     if (hGlbObj && lpMemObj)
     {
@@ -1600,7 +1600,7 @@ LPAPLCHAR SavedWsFormGlbVar
     lpaplChar = lpaplCharStart;
 
     // Copy the formatted GlbCnt to the start of the buffer as the result
-    lstrcpyW (lpaplChar, wszGlbCnt);
+    strcpyW (lpaplChar, wszGlbCnt);
 NORMAL_EXIT:
     if (hGlbObj && lpMemObj)
     {
@@ -1669,7 +1669,7 @@ LPAPLCHAR AppendArrayHeader
         // Check for array property:  PV0
         if (lpHeader->PV0)
         {
-            lstrcpyW (lpaplChar, AP_PV0);           // Copy the prefix
+            strcpyW (lpaplChar, AP_PV0);            // Copy the prefix
             lpaplChar += strcountof (AP_PV0);       // Skip over it
             *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF
@@ -1677,7 +1677,7 @@ LPAPLCHAR AppendArrayHeader
         // Check for array property:  PV1
         if (lpHeader->PV1)
         {
-            lstrcpyW (lpaplChar, AP_PV1);           // Copy the prefix
+            strcpyW (lpaplChar, AP_PV1);            // Copy the prefix
             lpaplChar += strcountof (AP_PV1);       // Skip over it
             *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF
@@ -1685,7 +1685,7 @@ LPAPLCHAR AppendArrayHeader
         // Check for array property:  All2s
         if (lpHeader->All2s)
         {
-            lstrcpyW (lpaplChar, AP_ALL2S);         // Copy the prefix
+            strcpyW (lpaplChar, AP_ALL2S);          // Copy the prefix
             lpaplChar += strcountof (AP_ALL2S);     // Skip over it
             *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF
@@ -1716,7 +1716,7 @@ LPAPLCHAR AppendArrayHeader
             // If there's a common precision, ...
             if (*lpuCommPrec NE 0)
             {
-                lstrcpyW (lpaplChar, AP_FPC);       // Copy the prefix
+                strcpyW (lpaplChar, AP_FPC);        // Copy the prefix
                 lpaplChar += strcountof (AP_FPC);   // Skip over it
                 lpaplChar +=
                   wsprintfW (lpaplChar,             // Format the common precision

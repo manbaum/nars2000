@@ -2256,7 +2256,7 @@ void QFMT_CommonEFIR
     // Append with positive text (Q-modifier)
     if ((lpfsNxt->bN && aplFltItm <  0)
      || (lpfsNxt->bQ && aplFltItm >= 0))
-        lstrcatW (lpwszFormat, lpSurrText->lpTail);
+        strcatW (lpwszFormat, lpSurrText->lpTail);
 
     // Get the formatted item length
     iWid = lstrlenW (lpwszFormat);

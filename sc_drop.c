@@ -67,7 +67,7 @@ UBOOL CmdDrop_EM
         //   (This allows us to delete .atf files, for example)
         if (lstrcmpiW (wszExt, L".atf") NE 0)
             // Append the common workspace extension
-            lstrcatW (wszTailDPFE, WS_WKSEXT);
+            strcatW (wszTailDPFE, WS_WKSEXT);
 
         // Attempt to delete the workspace
         if (!_wremove (wszTailDPFE))

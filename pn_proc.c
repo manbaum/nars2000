@@ -658,18 +658,18 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             // Initialize the temp array
             mpfr_init0 (&aplVfpTmp);
 #ifdef DEBUG_FMT
-            lstrcpyW (wszTemp, L"Mul:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYMultiplier->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
-            lstrcpyW (wszTemp, L"Exp:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYExponent->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"Mul:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYMultiplier->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"Exp:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYExponent->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             // The result is Multiplier x (*1) * Exponent
             mpfr_pow (&aplVfpTmp, &GetMemPTD ()->mpfrE, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 #ifdef DEBUG_FMT
-            lstrcpyW (wszTemp, L"e *:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], aplVfpTmp, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"e *:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], aplVfpTmp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             // Accumulate in the multiplier
             mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
 #ifdef DEBUG_FMT
-            lstrcpyW (wszTemp, L"Res:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYMultiplier->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"Res:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYMultiplier->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             // We no longer need this storage
             Myf_clear (&aplVfpTmp);
@@ -770,14 +770,14 @@ LPPN_YYSTYPE PN_MakeExpPoint
                 } // End IF/ELSE
 
 #ifdef DEBUG_FMT
-                lstrcpyW (wszTemp, L"Res1: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
+                strcpyW (wszTemp, L"Res1: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
 #endif
                 // Multiply the multiplier by the 10 * exp
                 mpz_mul (mpq_numref (&lpYYArg->at.aplRat),
                          mpq_numref (&lpYYArg->at.aplRat),
                         &aplMpiMult);
 #ifdef DEBUG_FMT
-                lstrcpyW (wszTemp, L"Res2: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
+                strcpyW (wszTemp, L"Res2: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
 #endif
                 mpq_canonicalize (&lpYYArg->at.aplRat);
 
@@ -785,7 +785,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
                 Myz_clear (&aplMpiMult);
 
 #ifdef DEBUG_FMT
-                lstrcpyW (wszTemp, L"Res3: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
+                strcpyW (wszTemp, L"Res3: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             } // End IF/ELSE
 

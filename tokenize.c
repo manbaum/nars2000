@@ -842,7 +842,7 @@ UBOOL IsLocalName
     lpwszTemp[uLineLen] = WC_EOS;
 
     // Append a trailing marker
-    lstrcatW (lpwszTemp, WS_UTF16_LAMP);
+    strcatW (lpwszTemp, WS_UTF16_LAMP);
 
     // Copy the base of the line
     wp = lpwszTemp;

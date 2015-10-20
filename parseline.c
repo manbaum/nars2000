@@ -6398,7 +6398,7 @@ LPWCHAR LSTACK
         lpwszName = soNames[tkSynObj];
 
         // Append the next name
-        lstrcpyW (lpwszTemp, lpwszName);
+        strcpyW (lpwszTemp, lpwszName);
 
         // Pad the name with spaces to a multiple of SONAMES_MAXLEN
         PadMemoryW (lpwszTemp, lstrlenW (lpwszName));
@@ -6485,7 +6485,7 @@ LPWCHAR LSTACK
         lpwszName = soNames[tkSynObj];
 
         // Append the next name
-        lstrcpyW (lpwszTemp, lpwszName);
+        strcpyW (lpwszTemp, lpwszName);
 
         // Pad the name with spaces to a multiple of SONAMES_MAXLEN
         PadMemoryW (lpwszTemp, lstrlenW (lpwszName));
@@ -6546,7 +6546,7 @@ LPWCHAR RSTACK
         lpwszName = soNames[(*lplpYYNext)->tkToken.tkSynObj];
 
         // Append the next name
-        lstrcpyW (lpwszTemp, lpwszName);
+        strcpyW (lpwszTemp, lpwszName);
 
         // Pad the name with spaces to a multiple of SONAMES_MAXLEN
         PadMemoryW (lpwszTemp, lstrlenW (lpwszName));

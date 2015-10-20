@@ -135,7 +135,7 @@ UBOOL CmdCopy_EM
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
         // Append the common workspace extension
-        lstrcatW (wszTailDPFE, WS_WKSEXT);
+        strcatW (wszTailDPFE, WS_WKSEXT);
 
         // Attempt to open the workspace
         fStream = fopenW (wszTailDPFE, L"r");
@@ -160,7 +160,7 @@ UBOOL CmdCopy_EM
                             lpDict);            // Ptr to workspace dictionary
         // Copy the string to a save area
         // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-        CopyMemoryW (wszVersion, lpwszProf, lstrlenW (lpwszProf) + 1);
+        strcpyW (wszVersion, lpwszProf);
 
         // Compare the version #s
         if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
@@ -287,7 +287,7 @@ UBOOL CmdCopy_EM
                 } // End SWITCH
 
                 // We didn't find the name, so add it to the NOT FOUND: list
-                lstrcpyW (lpwNotFound, lpwNameInCmd);
+                strcpyW (lpwNotFound, lpwNameInCmd);
 
                 // Skip to the trailing zero
                 lpwNotFound += lstrlenW (lpwNotFound);
@@ -444,7 +444,7 @@ int CopyWsVars
                             lpDict);                // Ptr to workspace dictionary
         // Copy to save area
         // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-        CopyMemoryW (lpwNameInWrk, lpwszProf, lstrlenW (lpwszProf) + 1);
+        strcpyW (lpwNameInWrk, lpwszProf);
 
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
@@ -613,7 +613,7 @@ int CopyWsFcns
                             lpDict);              // Ptr to workspace dictionary
         // Copy to save area
         // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-        CopyMemoryW (lpwNameInWrk, lpwszProf, lstrlenW (lpwszProf) + 1);
+        strcpyW (lpwNameInWrk, lpwszProf);
 
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');

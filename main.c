@@ -855,7 +855,7 @@ void ApplyNewFontSM
     tmAlt = tmSM;
 
     // Change the font name
-    lstrcpyW (lfAlt.lfFaceName, DEF_ASFONTNAME);
+    strcpyW (lfAlt.lfFaceName, DEF_ASFONTNAME);
 
     // Re-specify the alternate SM font
     CreateNewFontCom (&hFontAlt,
@@ -1966,7 +1966,7 @@ LRESULT APIENTRY MFWndProc
                         lpMemPTD = GetPerTabPtr ((APLU3264) (HANDLE_PTR) lptdi->hdr.idFrom); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 #ifndef DEBUG
                         // Return a ptr to the stored tooltip text
-                        lstrcpyW (TooltipText, lpMemWSID);
+                        strcpyW (TooltipText, lpMemWSID);
 #else
                         // Return a ptr to the stored tooltip text
                         wsprintfW (TooltipText,
@@ -1979,7 +1979,7 @@ LRESULT APIENTRY MFWndProc
 #endif
                         // If the tab is still executing, say so
                         if (lpMemPTD->bExecuting)
-                            lstrcatW (TooltipText, L" (RUNNING)");
+                            strcatW (TooltipText, L" (RUNNING)");
 
                         // Return the ptr to the caller
                         lptdi->lpszText = TooltipText;
@@ -2428,7 +2428,7 @@ LRESULT APIENTRY MFWndProc
 
                     // If the initial directory is not set as yet, ...
                     if (lpwszInitDir[0] EQ WC_EOS)
-                        lstrcpyW (lpwszInitDir, lpwszWorkDir);
+                        strcpyW (lpwszInitDir, lpwszWorkDir);
 
                     // If there's a trailing DQ, zap it
                     *SkipToCharW (&lpwszOpenFile[1], WC_DQ) = WC_EOS;
@@ -2475,7 +2475,7 @@ LRESULT APIENTRY MFWndProc
                     if (GetOpenFileNameW (&ofn))
                     {
                         // Append a trailing DQ to match the leading one
-                        lstrcatW (lpwszOpenFile, WS_DQ);
+                        strcatW (lpwszOpenFile, WS_DQ);
 
                         // Split cases based upon the operation
                         switch (idCtl)
@@ -3567,7 +3567,7 @@ UBOOL InitInstance
 
             // Get the Windows directory (parent of the Fonts folder)
             GetWindowsDirectoryW (wszTemp, countof (wszTemp));
-            lstrcatW (wszTemp, WS_SLOPE L"Fonts" WS_SLOPE DEF_APLFONT_FILE);
+            strcatW (wszTemp, WS_SLOPE L"Fonts" WS_SLOPE DEF_APLFONT_FILE);
 
             // Copy the file to the Fonts folder without Overwrite
             if (!CopyFileW (wszFntDPFE, wszTemp, TRUE))
@@ -3589,7 +3589,7 @@ UBOOL InitInstance
                             CopyFileW (wszFntDPFE, wszTemp, FALSE);
 
                             // Respecify the DPFE of the file to install
-                            lstrcpyW  (wszFntDPFE, wszTemp);
+                            strcpyW  (wszFntDPFE, wszTemp);
                         } // End IF
 
                         break;
@@ -3620,7 +3620,7 @@ UBOOL InitInstance
                 } // End SWITCH
             } else
                 // Respecify the DPFE of the file to install
-                lstrcpyW  (wszFntDPFE, wszTemp);
+                strcpyW  (wszFntDPFE, wszTemp);
         } // End IF
 
         // Install the font
@@ -3857,7 +3857,7 @@ UBOOL ParseCommandLine
             MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
 
             // Append the common workspace extension
-            lstrcatW (wszLoadFile, WS_WKSEXT);
+            strcatW (wszLoadFile, WS_WKSEXT);
 
             // Mark as present
             bCommandLine = TRUE;

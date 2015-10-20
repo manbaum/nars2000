@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,15 +63,15 @@ void MakeWorkspaceNameCanonical
      && wszInp[0] NE WC_SLOPE   // and not root dir,
      && wszInp[1] NE L':')      // and no drive letter
     {
-        lstrcpyW (wszOut, wszDefDir);
+        strcpyW (wszOut, wszDefDir);
 
         // If the input doesn't already start with a backslash, ...
         if (wszInp[0] NE WC_SLOPE)
             AppendBackslash (wszOut);
 
-        lstrcatW (wszOut, wszInp);
+        strcatW (wszOut, wszInp);
     } else
-        lstrcpyW (wszOut, wszInp);
+        strcpyW (wszOut, wszInp);
 
     // Get the outgoing workspace name string length
     uLen = lstrlenW (wszOut);
@@ -102,7 +102,7 @@ void AppendBackslash
     // If there's no trailing backslash, ...
     if (uLen && lpwsz[uLen - 1] NE WC_SLOPE)
         // Append one
-        lstrcatW (lpwsz, WS_SLOPE);
+        strcatW (lpwsz, WS_SLOPE);
 } // End AppendBackslash
 
 
@@ -172,7 +172,7 @@ void DisplaySavedMsg
     // "+ 1" for the trailing zero
     WCHAR wszTemp[strcountof (TIMESTAMP_FMT) + 1];
 
-    lstrcpyW (wszTemp, L"SAVED ");
+    strcpyW (wszTemp, L"SAVED ");
 
     // Format it
     wsprintfW (wszTemp + lstrlenW (wszTemp),
@@ -247,13 +247,13 @@ void MakeWorkspaceBackup
     fclose (fStream); fStream = NULL;
 
     // Copy the original name
-    lstrcpyW (wszTemp, lpwszDPFE);
+    strcpyW (wszTemp, lpwszDPFE);
 
     // Get the entire length less WS_WKSEXT
     uLen = lstrlenW (wszTemp) - WS_WKSEXT_LEN;
 
     // Append new extensions
-    lstrcpyW (&wszTemp[uLen], lpwExtType);
+    strcpyW (&wszTemp[uLen], lpwExtType);
 
     // Copy the workspace to its backup
     if (!CopyFileW (lpwszDPFE,      // Source file (must exist)
@@ -428,7 +428,7 @@ void SaveRecentWSID
                              (*lpwszRecentFiles)[0],
                              uCnt * _MAX_PATH);
                 // Copy the new file to the top
-                lstrcpyW ((*lpwszRecentFiles)[0], lpMemWSID);
+                strcpyW ((*lpwszRecentFiles)[0], lpMemWSID);
             } // End IF
 
             break;
@@ -442,7 +442,7 @@ void SaveRecentWSID
         if (uNumRecentFiles < DEF_RECENTFILES)
             // Append it to the end and
             //   increase the # Recent Files
-            lstrcpyW ((*lpwszRecentFiles)[uNumRecentFiles++], lpMemWSID);
+            strcpyW ((*lpwszRecentFiles)[uNumRecentFiles++], lpMemWSID);
         else
         {
             // Move entries from [0, DEF_RECENTFILES - 2] to [1, DEF_RECENTFILES - 1]
@@ -450,7 +450,7 @@ void SaveRecentWSID
                          (*lpwszRecentFiles)[0],
                          (DEF_RECENTFILES - 1) * _MAX_PATH);
             // Copy the new file to the top
-            lstrcpyW ((*lpwszRecentFiles)[0], lpMemWSID);
+            strcpyW ((*lpwszRecentFiles)[0], lpMemWSID);
         } // End IF/ELSE
     } // End IF
 

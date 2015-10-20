@@ -1960,7 +1960,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         // Copy the name (and its trailing zero) to temporary storage
                         //   which won't go away when we unlock the name's global
                         //   memory handle
-                        lstrcpyW (lpwszFormat, lpMemName);
+                        strcpyW (lpwszFormat, lpMemName);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -109,7 +109,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
     lpw = lpMemData = VarArrayDataFmBase (lpMemRes);
 
     // Copy the application's File Version String
-    lstrcpyW (lpw, wszFileVer);
+    strcpyW (lpw, wszFileVer);
 
     // Skip to the trailing zero
     lpw += lstrlenW (lpw);

@@ -152,8 +152,13 @@ LRESULT APIENTRY CCWndProc
             return FALSE;           // We handled the msg
 
         case MYWM_DISPMB:
-            MBW (L"1.  Copy the data;  2.  When you press OK, the program will terminate.");
-
+////////////MBPW (L"1.  Copy the data;  2.  When you press OK, the program will terminate.", MB_SYSTEMMODAL);
+            // Avoid using an owning window handle as that prevents
+            //   the user from copying data from the session.
+            MessageBoxW (NULL,
+                        L"1.  Copy the data;  2.  When you press OK, the program will terminate.",
+                         WS_APPNAME,
+                         MB_OK | MB_SYSTEMMODAL);
             return FALSE;           // We handled the msg
 
         case WM_CLOSE:

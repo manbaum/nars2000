@@ -1,6 +1,17 @@
 Version 0.4.11.xx consists of the following Builds:
 
 
+Build #1391 -- Version 0.4.11.xx
+--------------------------------
+
+* Clean Up Code For []NL
+
+Directory trunk:
+
+QF_NL.C:
+  Clean up code for []NL.
+
+
 Build #1390 -- Version 0.4.11.xx
 --------------------------------
 

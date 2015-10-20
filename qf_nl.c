@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,32 +26,32 @@
 #include "nameclass.h"
 
 // List of valid nameclasses
-UCHAR ucNameClassValid [] =
-{0,             //  0 = Available name
- 1,             //  1 = User label
- 1,             //  2 = User variable
- 1,             //  3 = User-defined function   (any valence:  0, 1, or 2)
- 1,             //  4 = User-defined operator   (either valence:  1 or 2)
- 1,             //  5 = System variable
- 1,             //  6 = System function         (any valence:  0, 1, or 2)
- 0,             //  7 = (Unused)
- 0,             //  8 = (Unused)
- 0,             //  9 = (Unused)
- 0,             // 10 = (Unused)
- 0,             // 11 = (Unused)
- 0,             // 12 = (Unused)
- 0,             // 13 = (Unused)
- 0,             // 14 = (Unused)
- 0,             // 15 = (Unused)
- 0,             // 16 = (Unused)
- 0,             // 17 = (Unused)
- 0,             // 18 = (Unused)
- 0,             // 19 = (Unused)
- 0,             // 20 = (Unused)
- 1,             // 21 = System label
- 0,             // 22 = (Unused)
- 1,             // 23 = Magic function          (any valence:  0, 1, or 2)
- 1,             // 24 = Magic operator          (either valence:  1 or 2)
+UBOOL bNameClassValid [NAMECLASS_LENp1] =
+{FALSE ,        //  0 = Available name
+ TRUE  ,        //  1 = User label
+ TRUE  ,        //  2 = User variable
+ TRUE  ,        //  3 = User-defined function   (any # args:  0, 1, or 2)
+ TRUE  ,        //  4 = User-defined operator   (either # operands:  1 or 2)
+ TRUE  ,        //  5 = System variable
+ TRUE  ,        //  6 = System function         (any # args:  0, 1, or 2)
+ FALSE ,        //  7 = (Unused)
+ FALSE ,        //  8 = (Unused)
+ FALSE ,        //  9 = (Unused)
+ FALSE ,        // 10 = (Unused)
+ FALSE ,        // 11 = (Unused)
+ FALSE ,        // 12 = (Unused)
+ FALSE ,        // 13 = (Unused)
+ FALSE ,        // 14 = (Unused)
+ FALSE ,        // 15 = (Unused)
+ FALSE ,        // 16 = (Unused)
+ FALSE ,        // 17 = (Unused)
+ FALSE ,        // 18 = (Unused)
+ FALSE ,        // 19 = (Unused)
+ FALSE ,        // 20 = (Unused)
+ TRUE  ,        // 21 = System label
+ FALSE ,        // 22 = (Unused)
+ TRUE  ,        // 23 = Magic function          (any # args:  0, 1, or 2)
+ TRUE  ,        // 24 = Magic operator          (either # operands:  1 or 2)
 };
 
 
@@ -246,8 +246,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 // Get the next value as an integer
                 aplLongestRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
 
-                if (aplLongestRht >= NAMECLASS_LENp1
-                 || !ucNameClassValid[aplLongestRht])
+                if (aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
@@ -264,8 +264,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 // Attempt to convert the float to an integer using System []CT
                 aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
                 if (!bRet
-                 || aplLongestRht >= NAMECLASS_LENp1
-                 || !ucNameClassValid[aplLongestRht])
+                 || aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
@@ -282,8 +282,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 aplLongestRht = GetNextRatIntGlb (hGlbRht, uRht, &bRet);
 
                 if (!bRet
-                 || aplLongestRht >= NAMECLASS_LENp1
-                 || !ucNameClassValid[aplLongestRht])
+                 || aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
@@ -300,8 +300,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 aplLongestRht = GetNextVfpIntGlb (hGlbRht, uRht, &bRet);
 
                 if (!bRet
-                 || aplLongestRht >= NAMECLASS_LENp1
-                 || !ucNameClassValid[aplLongestRht])
+                 || aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht

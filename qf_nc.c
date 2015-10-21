@@ -88,26 +88,26 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht;        // Right arg storage type
-    APLNELM      aplNELMRht,        // Right arg NELM
-                 aplNELMRes,        // Result NELM
-                 aplNELMCol;        // Result column NELM
-    APLRANK      aplRankRht;        // Right arg Rank
-    APLLONGEST   aplLongestRht;     // Right arg longest if immediate
-    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
-                 hGlbRes = NULL;    // Result    ...
-    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
-                 lpMemRes = NULL;   // Ptr to result    ...
-    LPAPLCHAR    lpMemDataRht,      // Ptr to right arg char data
-                 lpMemDataStart;    // Ptr to start of identifier
-    LPAPLINT     lpMemDataRes;      // Ptr to result integer data
-    APLUINT      uRht,              // Loop counter
-                 uCol,              // ...
-                 ByteRes;           // # bytes in the result
-    LPSYMENTRY   lpSymEntry;        // Ptr to SYMENTRY
-    STFLAGS      stFlags;           // STE flags
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
+    APLSTYPE          aplTypeRht;           // Right arg storage type
+    APLNELM           aplNELMRht,           // Right arg NELM
+                      aplNELMRes,           // Result NELM
+                      aplNELMCol;           // Result column NELM
+    APLRANK           aplRankRht;           // Right arg Rank
+    APLLONGEST        aplLongestRht;        // Right arg longest if immediate
+    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
+                      hGlbRes = NULL;       // Result    ...
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPAPLCHAR         lpMemDataRht,         // Ptr to right arg char data
+                      lpMemDataStart;       // Ptr to start of identifier
+    LPAPLINT          lpMemDataRes;         // Ptr to result integer data
+    APLUINT           uRht,                 // Loop counter
+                      uCol,                 // ...
+                      ByteRes;              // # bytes in the result
+    LPSYMENTRY        lpSymEntry;           // Ptr to SYMENTRY
+    STFLAGS           stFlags;              // STE flags
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    UBOOL             bRet = TRUE;          // TRUE iff result is valid
 
     // The right arg may be of three forms:
     //   1.  a scalar    name  as in 'a'
@@ -129,7 +129,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
         goto DOMAIN_EXIT;
 
     // Get right arg's global ptrs
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Calculate the # identifiers in the argument
     //   allowing for vector and matrix with multiple names
@@ -138,7 +138,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                   aplRankRht,       // Right arg rank
                   aplLongestRht,    // Right arg longest
                   TRUE,             // TRUE iff we allow multiple names in a vector
-                  lpMemRht,         // Ptr to right arg global memory
+                  lpMemHdrRht,      // Ptr to right arg global memory header
                  &aplNELMRes,       // Ptr to # right arg IDs
                  &aplNELMCol);      // Ptr to # right arg cols (matrix only)
     // Note that if bRet EQ FALSE, aplNELMRes EQ 1
@@ -156,9 +156,9 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -170,10 +170,10 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 #undef  lpHeader
 
     // Fill in the dimension
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    *VarArrayBaseToDim (lpMemHdrRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemDataRes = VarArrayDataFmBase (lpMemRes);
+    lpMemDataRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // If we failed in CalcNumIDs, quit now
     if (!bRet)
@@ -206,7 +206,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
         case 1:
             // Skip over the header and dimensions to the data
-            lpMemDataRht = VarArrayDataFmBase (lpMemRht);
+            lpMemDataRht = VarArrayDataFmBase (lpMemHdrRht);
 
             // Loop through the right arg looking for identifiers
             uRht = 0;
@@ -244,7 +244,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
         case 2:
             // Skip over the header and dimensions to the data
-            lpMemDataRht = VarArrayDataFmBase (lpMemRht);
+            lpMemDataRht = VarArrayDataFmBase (lpMemHdrRht);
 
             for (uRht = 0; uRht < aplNELMRes; uRht++)
             {
@@ -278,7 +278,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     } // End SWITCH
 YYALLOC_EXIT:
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = lpMemDataRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -308,28 +308,28 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // We no longer need this ptr
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     return lpYYRes;
@@ -524,17 +524,18 @@ LPPL_YYSTYPE SysFnDydNC_EM_YY
 //***************************************************************************
 
 UBOOL CalcNumIDs
-    (APLNELM    aplNELMRht,         // Right arg NELM
-     APLRANK    aplRankRht,         // Right arg rank
-     APLLONGEST aplLongestRht,      // Right arg longest
-     UBOOL      bMultipleNames,     // TRUE iff we allow multiple names in
-                                    //   a vector (e.g., 'a b c') or a matrix
-     LPAPLCHAR  lpMemRht,           // Ptr to right arg global memory
-     LPAPLNELM  lpaplNELMRes,       // Ptr to # right arg IDs
-     LPAPLNELM  lpaplNELMCol)       // Ptr to # right arg cols (matrix only)
+    (APLNELM           aplNELMRht,      // Right arg NELM
+     APLRANK           aplRankRht,      // Right arg rank
+     APLLONGEST        aplLongestRht,   // Right arg longest
+     UBOOL             bMultipleNames,  // TRUE iff we allow multiple names in
+                                        //   a vector (e.g., 'a b c') or a matrix
+     LPVARARRAY_HEADER lpMemHdrRht,     // Ptr to right arg global memory
+     LPAPLNELM         lpaplNELMRes,    // Ptr to # right arg IDs
+     LPAPLNELM         lpaplNELMCol)    // Ptr to # right arg cols (matrix only)
 
 {
-    APLUINT uRht;               // Loop counter
+    APLUINT   uRht;                     // Loop counter
+    LPAPLCHAR lpMemRht;
 
     // Split cases based upon the right arg rank
     switch (aplRankRht)
@@ -548,7 +549,7 @@ UBOOL CalcNumIDs
             *lpaplNELMRes = 0;      // Initialize
 
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayDataFmBase (lpMemRht);
+            lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
             // Loop through the right arg looking for identifiers
             uRht = 0;
@@ -580,8 +581,8 @@ UBOOL CalcNumIDs
         case 2:
             if (!bMultipleNames)
                 return FALSE;
-            *lpaplNELMRes = (VarArrayBaseToDim (lpMemRht))[0];
-            *lpaplNELMCol = (VarArrayBaseToDim (lpMemRht))[1];
+            *lpaplNELMRes = (VarArrayBaseToDim (lpMemHdrRht))[0];
+            *lpaplNELMCol = (VarArrayBaseToDim (lpMemHdrRht))[1];
 
             break;
 

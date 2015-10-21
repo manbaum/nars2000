@@ -102,8 +102,10 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
                        hGlbMonInfo = NULL,      // MonInfo   ...
                        hGlbRes = NULL,          // Result    ...
                        lpSymGlbRht;             // Ptr to global immediate
-    LPAPLCHAR          lpMemRht = NULL;         // Ptr to right arg global memory
-    LPEXTMONINFO_UNION lpMemResUnion = NULL;    // Ptr to result    ...           as integers
+    LPVARARRAY_HEADER  lpMemHdrRht = NULL,      // ...    right arg header
+                       lpMemHdrResUnion = NULL; // Ptr to result union header
+    LPAPLCHAR          lpMemRht;                // Ptr to right arg global memory
+    LPEXTMONINFO_UNION lpMemResUnion;           // Ptr to result    ...           as integers
     LPDFN_HEADER       lpMemDfnHdr = NULL;      // Ptr to function header global memory
     LPINTMONINFO       lpMemMonInfo;            // Ptr to function line monitoring info
     STFLAGS            stFlags = {0};           // Symbol Table Flags used to limit the lookup
@@ -189,12 +191,12 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
         goto DOMAIN_EXIT;
 
     // Get right arg's global ptrs
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If the right arg is a global, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     else
         lpMemRht = (LPAPLCHAR) &aplLongestRht;
 
@@ -241,7 +243,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
             hGlbMonInfo = lpMemDfnHdr->hGlbMonInfo;
 
             // Get the # rows in the result
-            if (hGlbMonInfo)
+            if (hGlbMonInfo NE NULL)
                 aplRowsRes = lpMemDfnHdr->numFcnLines + 1;
             else
                 aplRowsRes = 0;
@@ -276,9 +278,9 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
     // Lock the memory to get a ptr to it
-    lpMemResUnion = MyGlobalLock (hGlbRes);
+    lpMemHdrResUnion = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemResUnion)
+#define lpHeader        lpMemHdrResUnion
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -290,14 +292,14 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
 #undef  lpHeader
 
     // Fill in the dimensions
-    (VarArrayBaseToDim (lpMemResUnion))[0] = aplRowsRes;
-    (VarArrayBaseToDim (lpMemResUnion))[1] = aplColsRes;
+    (VarArrayBaseToDim (lpMemHdrResUnion))[0] = aplRowsRes;
+    (VarArrayBaseToDim (lpMemHdrResUnion))[1] = aplColsRes;
 
     // If the result is non-empty, ...
     if (aplRowsRes NE 0)
     {
         // Skip over the header and dimensions to the data
-        lpMemResUnion = VarArrayDataFmBase (lpMemResUnion);
+        lpMemResUnion = VarArrayDataFmBase (lpMemHdrResUnion);
 
         // Lock the memory to get a ptr to it
         lpMemMonInfo = MyGlobalLock (hGlbMonInfo);
@@ -380,28 +382,28 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemResUnion)
+        if (lpMemHdrResUnion NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemResUnion = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrResUnion = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemResUnion)
+    if (hGlbRes NE NULL && lpMemHdrResUnion NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemResUnion = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrResUnion = NULL;
     } // End IF
 
     return lpYYRes;
@@ -539,31 +541,33 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,            // Left  arg storage type
-                 aplTypeRht;            // Right ...
-    APLNELM      aplNELMLft,            // Left  arg NELM
-                 aplNELMRht,            // Right ...
-                 aplNELMCol,            // ...       col NELM
-                 aplNELMRes;            // Result    ...
-    APLRANK      aplRankLft,            // Left  arg rank
-                 aplRankRht;            // Right ...
-    APLLONGEST   aplLongestLft,         // Left  arg as immediate
-                 aplLongestRht;         // Right ...
-    HGLOBAL      hGlbLft = NULL,        // Left  arg global memory handle
-                 hGlbRht = NULL,        // Right ...
-                 hGlbRes = NULL;        // Result    ...
-    LPAPLBOOL    lpMemLft = NULL;       // Ptr to left  arg global memory
-    LPAPLCHAR    lpMemRht = NULL,       // Ptr to right ...
-                 lpMemDataStart;        // Ptr to start of identifier
-    LPAPLBOOL    lpMemRes = NULL;       // Ptr to result    ...
-    APLUINT      ByteRes,               // # bytes in the result
-                 uRht,                  // Loop counter
-                 uCol;                  // Loop counter
-    LPSYMENTRY   lpSymEntry;            // Ptr to SYMENTRY
-    STFLAGS      stFlags;               // STE flags
-    UBOOL        bRet = TRUE;           // TRUE iff the result is valid
-    UINT         uBitIndex;             // Bit index for looping through Booleans
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
+    APLSTYPE          aplTypeLft,           // Left  arg storage type
+                      aplTypeRht;           // Right ...
+    APLNELM           aplNELMLft,           // Left  arg NELM
+                      aplNELMRht,           // Right ...
+                      aplNELMCol,           // ...       col NELM
+                      aplNELMRes;           // Result    ...
+    APLRANK           aplRankLft,           // Left  arg rank
+                      aplRankRht;           // Right ...
+    APLLONGEST        aplLongestLft,        // Left  arg as immediate
+                      aplLongestRht;        // Right ...
+    HGLOBAL           hGlbLft = NULL,       // Left  arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL;       // Result    ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result   ...
+    LPAPLCHAR         lpMemRht,             // Ptr to right ...
+                      lpMemDataStart;       // Ptr to start of identifier
+    LPAPLBOOL         lpMemRes;             // Ptr to result    ...
+    APLUINT           ByteRes,              // # bytes in the result
+                      uRht,                 // Loop counter
+                      uCol;                 // Loop counter
+    LPSYMENTRY        lpSymEntry;           // Ptr to SYMENTRY
+    STFLAGS           stFlags;              // STE flags
+    UBOOL             bRet = TRUE;          // TRUE iff the result is valid
+    UINT              uBitIndex;            // Bit index for looping through Booleans
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
 
     // The right arg may be of three forms:
     //   1.  a scalar    name  as in 'a'
@@ -598,8 +602,8 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
         goto RIGHT_DOMAIN_EXIT;
 
     // Get left & right arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Check the left arg
     // Split cases based upon the left arg storage type
@@ -646,7 +650,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                   aplRankRht,       // Right arg rank
                   aplLongestRht,    // Right arg longest
                   TRUE,             // TRUE iff we allow multiple names in a vector
-                  lpMemRht,         // Ptr to right arg global memory
+                  lpMemHdrRht,      // Ptr to right arg global memory header
                  &aplNELMRes,       // Ptr to # right arg IDs
                  &aplNELMCol);      // Ptr to # right arg cols (matrix only)
     if (!bRet)
@@ -664,9 +668,9 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
     if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
@@ -678,10 +682,10 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
 #undef  lpHeader
 
     // Fill in the dimension
-    (VarArrayBaseToDim (lpMemRes))[0] = aplNELMRes;
+    (VarArrayBaseToDim (lpMemHdrRes))[0] = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Initialize the bit index
     uBitIndex = 0;
@@ -714,7 +718,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
 
         case 1:
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayDataFmBase (lpMemRht);
+            lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
             // Loop through the right arg looking for identifiers
             uRht = 0;
@@ -758,7 +762,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
 
         case 2:
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayDataFmBase (lpMemRht);
+            lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
             for (uRht = 0; uRht < aplNELMRes; uRht++)
             {
@@ -840,34 +844,34 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     return lpYYRes;
@@ -926,7 +930,7 @@ UBOOL ToggleMonInfo
     //   or allocate new memory (if not already allocated)
     if (bMonOn)
     {
-        if (hGlbMonInfo)
+        if (hGlbMonInfo NE NULL)
         {
             // Lock the memory to get a ptr to it
             lpMemMonInfo = MyGlobalLock (hGlbMonInfo);
@@ -940,14 +944,14 @@ UBOOL ToggleMonInfo
         {
             // Allocate new memory
             hGlbMonInfo = DbgGlobalAlloc (GHND, uLineCnt * sizeof lpMemMonInfo[0]);
-            if (hGlbMonInfo)
+            if (hGlbMonInfo NE NULL)
                 lpMemDfnHdr->hGlbMonInfo = hGlbMonInfo;
             else
                 goto ERROR_EXIT;
         } // End IF/ELSE
     } else
     // If we're disabling monitoring, free the global memory handle
-    if (hGlbMonInfo)
+    if (hGlbMonInfo NE NULL)
     {
         DbgGlobalFree (hGlbMonInfo); lpMemDfnHdr->hGlbMonInfo = hGlbMonInfo = NULL;
     } // End IF/ELSE/...

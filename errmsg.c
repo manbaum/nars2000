@@ -49,6 +49,7 @@ void BreakMessage
     LPAPLCHAR         lpMemName;            // Ptr to function name global memory
     APLNELM           aplNELMRes;           // Length of function name[line #]
     APLUINT           ByteRes;              // # bytes in the result
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
     LPAPLCHAR         lpMemRes;             // Ptr to result global memory
     HGLOBAL           hGlbRes;              // Result global memory handle
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
@@ -116,9 +117,9 @@ void BreakMessage
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -130,16 +131,16 @@ void BreakMessage
 #undef  lpHeader
 
     // Fill in the dimension
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    *VarArrayBaseToDim (lpMemHdrRes) = aplNELMRes;
 
     // Skip over the header and dimension to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Copy the function name[line #] to the result
     CopyMemoryW (lpMemRes, lpMemPTD->lpwszErrorMessage, (APLU3264) aplNELMRes);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Free the old value
     FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
@@ -281,6 +282,7 @@ void ErrorMessageDirect
     APLNELM           aplNELMRes;           // Result NELM
     APLUINT           ByteRes;              // # bytes in the result
     HGLOBAL           hGlbRes;              // Result global memory handle
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
     LPAPLCHAR         lpMemRes;             // Ptr to result global memory
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
     LPSIS_HEADER      lpSISCur,             // Ptr to current SIS header
@@ -339,7 +341,7 @@ void ErrorMessageDirect
                       AppendFcnNameLineNum (lpMemPTD, lpSISCur, bItsEC, &uNameLen, &uCaret, &lpwszLine2);
 
                     // If the handle is valid, ...
-                    if (hGlbTxtLine)
+                    if (hGlbTxtLine NE NULL)
                     {
                         // Lock the memory to get a ptr to it
                         lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
@@ -384,7 +386,7 @@ void ErrorMessageDirect
                           AppendFcnNameLineNum (lpMemPTD, lpSISPrv, bItsEC, &uNameLen, &uCaret, &lpwszLine2);
 
                         // If the handle is valid, ...
-                        if (hGlbTxtLine)
+                        if (hGlbTxtLine NE NULL)
                         {
                             // Lock the memory to get a ptr to it
                             lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
@@ -462,9 +464,9 @@ void ErrorMessageDirect
         goto WSFULL_DM_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -476,10 +478,10 @@ void ErrorMessageDirect
 #undef  lpHeader
 
     // Fill in the dimension
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    *VarArrayBaseToDim (lpMemHdrRes) = aplNELMRes;
 
     // Skip over the header and dimension to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Copy the error message to the result
     CopyMemoryW (lpMemRes, lpwszMsg, uErrMsgLen);
@@ -516,7 +518,7 @@ void ErrorMessageDirect
     } // End IF
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Free the old value
     FreeResultGlobalVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData); lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData = NULL;
@@ -547,9 +549,9 @@ void ErrorMessageDirect
     if (hGlbRes EQ NULL)
         goto WSFULL_EM_EXIT;
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -561,7 +563,7 @@ void ErrorMessageDirect
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = (LPAPLCHAR) VarArrayBaseToDim (lpMemRes);
+    lpMemRes = (LPAPLCHAR) VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the result's dimensions
     *((LPAPLDIM) lpMemRes)++ = 3;
@@ -596,7 +598,7 @@ void ErrorMessageDirect
         lpMemRes = FillMemoryW (lpMemRes, uMaxLen, L' ');
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Free the old value of []EM
     FreeResultGlobalVar (*lphGlbQuadEM); *lphGlbQuadEM = NULL;
@@ -604,7 +606,7 @@ void ErrorMessageDirect
     // Save the global in the current SIS header
     *lphGlbQuadEM = MakePtrTypeGlb (hGlbRes);
 
-    if (lpMemTxtLine)
+    if (lpMemTxtLine NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (MyGlobalHandle (lpMemTxtLine));
@@ -631,7 +633,7 @@ WSFULL_EM_EXIT:
 
 NORMAL_EXIT:
     // If it's valid, ...
-    if (hGlbTxtLine && lpMemTxtLine)
+    if (hGlbTxtLine NE NULL && lpMemTxtLine NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;

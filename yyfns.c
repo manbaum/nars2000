@@ -32,6 +32,56 @@
 
 
 //***************************************************************************
+//  $YYAllocGlb
+//
+//  Allocate a global array via YYAlloc
+//***************************************************************************
+
+LPPL_YYSTYPE YYAllocGlb
+    (HGLOBAL tkGlbData,         // Global array handle
+     UINT    tkCharIndex)       // Character index
+
+{
+    LPPL_YYSTYPE lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = tkGlbData;
+    lpYYRes->tkToken.tkCharIndex       = tkCharIndex;
+
+    return lpYYRes;
+} // YYAllocGlb
+
+
+//***************************************************************************
+//  $YYAllocImm
+//
+//  Allocate an immediate value via YYAlloc
+//***************************************************************************
+
+LPPL_YYSTYPE YYAllocImm
+    (IMM_TYPES  immType,        // Immediate type
+     APLLONGEST tkLongest,      // Immediate value
+     UBOOL      bNoDisplay,     // NoDisplay value
+     UINT       tkCharIndex)    // Character index
+
+{
+    LPPL_YYSTYPE lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = immType;
+    lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
+    lpYYRes->tkToken.tkData.tkLongest  = tkLongest;
+    lpYYRes->tkToken.tkCharIndex       = tkCharIndex;
+
+    return lpYYRes;
+} // YYAllocImm
+
+
+//***************************************************************************
 //  $YYAlloc
 //
 //  Allocate a new YYRes entry
@@ -272,7 +322,7 @@ void _YYFree
 
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                  L"YYFree:  YYRes at %p index %04X is Perm and about to be YYFree'd.  YYAlloc'ed at %S#%d (%S#d)",
+                   L"YYFree:  YYRes at %p index %04X is Perm and about to be YYFree'd.  YYAlloc'ed at %S#%d (%S#d)",
                     lpYYRes,
                     lpYYRes->YYIndex,
                     lpYYRes->lpFileName,

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,10 +44,11 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLUINT      ByteRes;           // # bytes in the result
-    HGLOBAL      hGlbRes;           // Result global memory handle
-    LPVOID       lpMemRes;          // Ptr to result global memory
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    APLUINT           ByteRes;              // # bytes in the result
+    HGLOBAL           hGlbRes;              // Result global memory handle
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+    LPVOID            lpMemRes;             // Ptr to result global memory
+    LPPL_YYSTYPE      lpYYRes;              // Ptr to the result
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -75,9 +76,9 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -89,26 +90,19 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
 #undef  lpHeader
 
     // Fill in the dimension
-    *VarArrayBaseToDim (lpMemRes) = SYSID_NELM;
+    *VarArrayBaseToDim (lpMemHdrRes) = SYSID_NELM;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Copy the SYSID to the result
     CopyMemoryW (lpMemRes, SYSID, SYSID_NELM);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes = YYAllocGlb (hGlbRes, lptkFunc->tkCharIndex);
 
     return lpYYRes;
 

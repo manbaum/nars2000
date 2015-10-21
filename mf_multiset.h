@@ -269,7 +269,7 @@ static APLCHAR DydLineMM2[] =
   L"Z←∧/L∊⍦R ⋄ →0";
 
 static APLCHAR DydLineMM3[] = 
-  L"⎕RO:Z←⊤(⊤L) " MFON_MM L" ⊤R";
+  L"⎕PRO:Z←⊤(⊤L) " MFON_MM L" ⊤R";
 
 static LPAPLCHAR DydBodyMM[] =
 {DydLineMM1,

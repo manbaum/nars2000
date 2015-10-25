@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
+
+// Define this name in order to improve performance by avoiding garbage collection
+#define ALLOC_GPTR
 
 #if RESDEBUG
   #define MyCloseSemaphore(a)             _MyCloseSemaphore(a,FNLN)
@@ -35,14 +38,21 @@
   #define MyDeleteObject(a)               _MyDeleteObject(a,__LINE__)
   #define MyGetDC(a)                      _MyGetDC(a,__LINE__)
   #define MyGetWindowDC(a)                _MyGetWindowDC(a,__LINE__)
+#ifdef ALLOC_GPTR
   #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(GPTR,b,FNLN)           // _MyGlobalAlloc(a,b,FNLN)
   #define MyGlobalLock(a)                 ClrPtrTypeDir(a)                      // _MyGlobalLock(ClrPtrTypeDir(a),FNLN)
   #define MyGlobalHandle(a)               ClrPtrTypeDir(a)                      // _MyGlobalHandle(ClrPtrTypeDir(a))
   #define MyGlobalUnlock(a)               ClrPtrTypeDir(a)                      // _MyGlobalUnlock(ClrPtrTypeDir(a),__LINE__)
-  #define MyGlobalSize(a)                 _MyGlobalSize(ClrPtrTypeDir(a),__LINE__)
-  #define MyGlobalFlags(a)                _MyGlobalFlags(ClrPtrTypeDir(a),__LINE__)
+#else
+  #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(a,b,FNLN)
+  #define MyGlobalLock(a)                 _MyGlobalLock(ClrPtrTypeDir(a),FNLN)
+  #define MyGlobalHandle(a)               _MyGlobalHandle(ClrPtrTypeDir(a),FNLN)
+  #define MyGlobalUnlock(a)               _MyGlobalUnlock(ClrPtrTypeDir(a),FNLN)
+#endif
+  #define MyGlobalSize(a)                 _MyGlobalSize(ClrPtrTypeDir(a),FNLN)
+  #define MyGlobalFlags(a)                _MyGlobalFlags(ClrPtrTypeDir(a),FNLN)
   #define MyGlobalReAlloc(a,b,c)          _MyGlobalReAlloc(ClrPtrTypeDir(a),b,c,FNLN)
-  #define MyGlobalFree(a)                 _MyGlobalFree(ClrPtrTypeDir(a),__LINE__)
+  #define MyGlobalFree(a)                 _MyGlobalFree(ClrPtrTypeDir(a),FNLN)
   #define MyHeapAlloc(a,b,c)              _MyHeapAlloc(a,b,c,__LINE__)
   #define MyHeapReAlloc(a,b,c,d)          _MyHeapReAlloc(a,b,c,d,__LINE__)
   #define MyHeapFree(a,b,c)               _MyHeapFree(a,b,c,__LINE__)
@@ -74,10 +84,17 @@
   #define MyDeleteObject(a)               DeleteObject(a)
   #define MyGetDC(a)                      GetDC(a)
   #define MyGetWindowDC(a)                GetWindowDC(a)
-  #define MyGlobalAlloc(a,b)              GlobalAlloc(GPTR,b)
-  #define MyGlobalLock(a)                 ClrPtrTypeDir(a)  // GlobalLock(a)
-  #define MyGlobalHandle(a)               ClrPtrTypeDir(a)  // GlobalHandle(a)
-  #define MyGlobalUnlock(a)               /* empty */       // GlobalUnlock(a)
+#ifdef ALLOC_GPTR
+  #define MyGlobalAlloc(a,b)              GlobalAlloc(GPTR,b)   // GlobalAlloc(a,b)
+  #define MyGlobalLock(a)                 ClrPtrTypeDir(a)      // GlobalLock(a)
+  #define MyGlobalHandle(a)               ClrPtrTypeDir(a)      // GlobalHandle(a)
+  #define MyGlobalUnlock(a)               /* empty */           // GlobalUnlock(a)
+#else
+  #define MyGlobalAlloc(a,b)              GlobalAlloc(a,b)
+  #define MyGlobalLock(a)                 GlobalLock(a)
+  #define MyGlobalHandle(a)               GlobalHandle(a)
+  #define MyGlobalUnlock(a)               GlobalUnlock(a)
+#endif
   #define MyGlobalSize(a)                 GlobalSize(ClrPtrTypeDir(a))
   #define MyGlobalFlags(a)                GlobalFlags(ClrPtrTypeDir(a))
   #define MyGlobalReAlloc(a,b,c)          GlobalReAlloc(ClrPtrTypeDir(a),b,c)

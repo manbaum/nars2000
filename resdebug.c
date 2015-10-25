@@ -1059,6 +1059,8 @@ LPVOID _MyGlobalAlloc
     LPVOID lpMem;
     char   szTemp[1024];
 
+////dprintfWL0 (L"CheckMemStat:  %S(#%u)", lpFileName, uLine);
+
     CheckMemStat ();
 
     lpMem = GlobalAlloc (uFlags, dwBytes);
@@ -1097,11 +1099,15 @@ LPVOID _MyGlobalAlloc
 //***************************************************************************
 
 HGLOBAL _MyGlobalHandle
-    (LPVOID lpVoid)         // Address of the global memory object
+    (LPVOID lpVoid,         // Address of the global memory object
+     LPCHAR lpFileName,     // Ptr to filename
+     UINT   uLine)          // Line #
 
 {
     HGLOBAL hGlb;           // Handle of the global memory object
     char    szTemp[1024];
+
+////dprintfWL0 (L"CheckMemStat:  %S(#%u)", lpFileName, uLine);
 
     CheckMemStat ();
 
@@ -1175,6 +1181,8 @@ LPVOID _MyGlobalLockSub
 
     Assert (bSaveFileName);     // Unused as yet
 
+////dprintfWL0 (L"CheckMemStat:  %S(#%u)", lpFileName, uLine);
+
     CheckMemStat ();
 
     lpVoid = GlobalLock (hMem);
@@ -1208,17 +1216,20 @@ LPVOID _MyGlobalLockSub
 //***************************************************************************
 
 UBOOL _MyGlobalUnlock
-    (HGLOBAL hMem,      // Address of the global memory object
-     UINT    uLine)     // Line #
+    (HGLOBAL hMem,          // Address of the global memory object
+     LPCHAR  lpFileName,    // Ptr to filename
+     UINT    uLine)         // Line #
 
 {
     UBOOL bRet;
     char  szTemp[1024];
 
+////dprintfWL0 (L"CheckMemStat:  %S(#%u)", lpFileName, uLine);
+
     CheckMemStat ();
 
     // Ensure the lock count is non-zero
-    if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) EQ 0)
+    if ((_MyGlobalFlags (hMem, lpFileName, uLine) & GMEM_LOCKCOUNT) EQ 0)
     {
         // Format a message about the last lock & alloc
         LastTouch (szTemp, hMem, FALSE);
@@ -1240,12 +1251,15 @@ UBOOL _MyGlobalUnlock
 //***************************************************************************
 
 SIZE_T _MyGlobalSize
-    (HGLOBAL hMem,      // Address of the global memory object
-     UINT    uLine)     // Line #
+    (HGLOBAL hMem,          // Address of the global memory object
+     LPCHAR  lpFileName,    // Ptr to filename
+     UINT    uLine)         // Line #
 
 {
     SIZE_T dwRet;
     char   szTemp[1024];
+
+////dprintfWL0 (L"CheckMemStat:  %S(#%u)", lpFileName, uLine);
 
     CheckMemStat ();
 
@@ -1274,12 +1288,15 @@ SIZE_T _MyGlobalSize
 //***************************************************************************
 
 DWORD _MyGlobalFlags
-    (HGLOBAL hMem,      // Address of the global memory object
-     UINT    uLine)     // Line #
+    (HGLOBAL hMem,          // Address of the global memory object
+     LPCHAR  lpFileName,    // Ptr to filename
+     UINT    uLine)         // Line #
 
 {
     DWORD dwRet;
     char  szTemp[1024];
+
+////dprintfWL0 (L"CheckMemStat:  %S(#%u)", lpFileName, uLine);
 
     CheckMemStat ();
 
@@ -1319,6 +1336,8 @@ HGLOBAL _MyGlobalReAlloc
     HGLOBAL hGlb;
     char    szTemp[1024];
 
+////dprintfWL0 (L"CheckMemStat:  %S(#%u)", lpFileName, uLine);
+
     CheckMemStat ();
 
     dwRet = GlobalSize (hMem);
@@ -1335,7 +1354,7 @@ HGLOBAL _MyGlobalReAlloc
         DbgBrk ();              // #ifdef DEBUG
     } // End IF
 
-    if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
+    if ((_MyGlobalFlags (hMem, lpFileName, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
         // Format a message about the last lock & alloc
         LastTouch (szTemp, hMem, TRUE);
@@ -1375,16 +1394,19 @@ HGLOBAL _MyGlobalReAlloc
 //***************************************************************************
 
 HGLOBAL _MyGlobalFree
-    (HGLOBAL hMem,              // Handle
-     UINT    uLine)             // Line #
+    (HGLOBAL hMem,          // Handle
+     LPCHAR  lpFileName,    // Ptr to filename
+     UINT    uLine)         // Line #
 
 {
     char szTemp[1024];
 
+////dprintfWL0 (L"CheckMemStat:  %S(#%u)", lpFileName, uLine);
+
     CheckMemStat ();
 
     // GlobalFlags returns the lock count in the low-order byte
-    if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
+    if ((_MyGlobalFlags (hMem, lpFileName, uLine) & GMEM_LOCKCOUNT) NE 0)
     {
         // Format a message about the last lock & alloc
         LastTouch (szTemp, hMem, TRUE);

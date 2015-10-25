@@ -253,7 +253,7 @@
 #define IsSimpleAPA(ArrType)            ((ArrType) EQ ARRAY_APA)
 
 // Define macro for detecting Boolean APAs
-#define IsBooleanAPA(lpAPA)             (lpAPA && (lpAPA->Mul EQ 0) && IsBooleanValue (lpAPA->Off))
+#define IsBooleanAPA(lpAPA)             ((lpAPA) && ((lpAPA)->Mul EQ 0) && IsBooleanValue ((lpAPA)->Off))
 
 // Define macro for detecting simple float array type
 #define IsSimpleFlt(ArrType)            ((ArrType) EQ ARRAY_FLOAT)
@@ -517,7 +517,7 @@
         if (lpMem NE NULL)                          \
         {                                           \
             /* We no longer need this ptr */        \
-            MyGlobalUnlock (lpMem); (lpMem) = NULL; \
+            MyGlobalUnlock (hGlb); (lpMem) = NULL;  \
         } /* End IF */                              \
                                                     \
         /* We no longer need this storage */        \

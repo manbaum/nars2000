@@ -1,6 +1,19 @@
 Version 0.4.11.xx consists of the following Builds:
 
 
+Build #1398 -- Version 0.4.11.xx
+--------------------------------
+
+* More DEBUG Code
+
+Directory trunk:
+
+MACROS.H:
+RESDEBUG.C:
+RESDEBUG.H:
+  More DEBUG code.
+
+
 Build #1397 -- Version 0.4.11.xx
 --------------------------------
 

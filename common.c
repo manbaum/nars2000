@@ -1134,11 +1134,12 @@ void strcpyn
      int         iMaxLength)    // Length in bytes including terminating EOS
 
 {
-    if (FAILED (StringCbCopyN (lpDst,
-                               lstrlen (lpSrc) + 1,
-                               lpSrc,
-                               iMaxLength)))
-        Assert (FALSE);
+    // Copy source to destination
+    CopyMemory (lpDst,
+                lpSrc,
+                iMaxLength - 1);
+    // Ensure properly terminated
+    lpDst[iMaxLength - 1] = AC_EOS;
 } // End strcpyn
 
 
@@ -1155,11 +1156,12 @@ void strcpynW
      int          iMaxLength)   // Length in WCHARs including terminating EOS
 
 {
-    if (FAILED (StringCbCopyNW (lpwDst,
-                                (lstrlenW (lpwSrc) + 1) * sizeof (WCHAR),
-                                lpwSrc,
-                                iMaxLength * sizeof (WCHAR))))
-        Assert (FALSE);
+    // Copy source to destination
+    CopyMemoryW (lpwDst,
+                 lpwSrc,
+                 iMaxLength - 1);
+    // Ensure properly terminated
+    lpwDst[iMaxLength - 1] = WC_EOS;
 } // End strcpynW
 
 

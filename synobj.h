@@ -66,39 +66,40 @@ typedef enum tagSO_ENUM
 	soSPHR   , 			// 1D:  {is} HR                                                
 	soSPMN   , 			// 1E:  {is} MOPN                                              
 	soSPDN   , 			// 1F:  {is} DOPN                                              
-	soFR     , 			// 20:  F)    - Trains                                         
-	soMR     , 			// 21:  MOP)  - ...                                            
-	soDR     , 			// 22:  DOP)  - ...                                            
-	soHR     , 			// 23:  HY)   - ...                                            
-	soFFR    , 			// 24:  F F)  - ...                                            
-	soAFR    , 			// 25:  A F)  - ...                                            
-	soHFR    , 			// 26:  H F)  - ...                                            
-	soNAM    , 			// 27:  Name                                                   
-	soSA     , 			// 28:  Strand                                                 
-	soLBC    , 			// 29:  Left brace                                             
-	soRBC    , 			// 2A:  Right brace                                            
-	soCSF    , 			// 2B:  :FOR/:FORLCL                                           
-	soCSI    , 			// 2C:  :IN                                                    
-	soCSIA   , 			// 2D:  :IN A                                                  
-	soCSFN   , 			// 2E:  :FOR NAM/:FORLCL NAM                                   
-	soCSEF   , 			// 2F:  :ENDFOR/:ENDFORLCL                                     
-	soCS0    , 			// 30:  CS Niladic                                             
-	soCS1    , 			// 31:  CS Monadic                                             
-	soSOS    , 			// 32:  Start of stmt                                          
-	soAFOG   , 			// 33:  AFO Guard                                              
-	soAFOR   , 			// 34:  AFO Return                                             
-	soSYSN   , 			// 35:  System Namespace                                       
-	soARBK   , 			// 36:  A RBR                                                  
-	soSRBK   , 			// 37:  ; RBR/RBR2                                             
-	soIO     , 			// 38:  I/O                                                    
-	soNR     , 			// 39:  NAM)                                                   
-	soNNR    , 			// 3A:  NAM NAM)                                               
-	soLNR    , 			// 3B:  (NAM NAM)                                              
-	soISPA   , 			// 3C:  IDX SPA                                                
-	soSYNR   , 			// 3D:  SYNTAX ERROR                                           
-	soVALR   , 			// 3E:  VALUE ERROR                                            
-	soNVAL   , 			// 3F:  No Value                                               
-	soEOS    , 			// 40:  *MUST* be the highest numbered entry                   
+	soSPAK   , 			// 20:  {is} ARBK                                              
+	soFR     , 			// 21:  F)    - Trains                                         
+	soMR     , 			// 22:  MOP)  - ...                                            
+	soDR     , 			// 23:  DOP)  - ...                                            
+	soHR     , 			// 24:  HY)   - ...                                            
+	soFFR    , 			// 25:  F F)  - ...                                            
+	soAFR    , 			// 26:  A F)  - ...                                            
+	soHFR    , 			// 27:  H F)  - ...                                            
+	soNAM    , 			// 28:  Name                                                   
+	soSA     , 			// 29:  Strand                                                 
+	soLBC    , 			// 2A:  Left brace                                             
+	soRBC    , 			// 2B:  Right brace                                            
+	soCSF    , 			// 2C:  :FOR/:FORLCL                                           
+	soCSI    , 			// 2D:  :IN                                                    
+	soCSIA   , 			// 2E:  :IN A                                                  
+	soCSFN   , 			// 2F:  :FOR NAM/:FORLCL NAM                                   
+	soCSEF   , 			// 30:  :ENDFOR/:ENDFORLCL                                     
+	soCS0    , 			// 31:  CS Niladic                                             
+	soCS1    , 			// 32:  CS Monadic                                             
+	soSOS    , 			// 33:  Start of stmt                                          
+	soAFOG   , 			// 34:  AFO Guard                                              
+	soAFOR   , 			// 35:  AFO Return                                             
+	soSYSN   , 			// 36:  System Namespace                                       
+	soARBK   , 			// 37:  A RBR                                                  
+	soSRBK   , 			// 38:  ; RBR/RBR2                                             
+	soIO     , 			// 39:  I/O                                                    
+	soNR     , 			// 3A:  NAM)                                                   
+	soNNR    , 			// 3B:  NAM NAM)                                               
+	soLNR    , 			// 3C:  (NAM NAM)                                              
+	soISPA   , 			// 3D:  IDX SPA                                                
+	soSYNR   , 			// 3E:  SYNTAX ERROR                                           
+	soVALR   , 			// 3F:  VALUE ERROR                                            
+	soNVAL   , 			// 40:  No Value                                               
+	soEOS    , 			// 41:  *MUST* be the highest numbered entry                   
 	soNONE = 999,		//999:  Filler for no entry
 } SO_ENUM, *LPSO_ENUM;
 
@@ -142,39 +143,40 @@ LPWCHAR soNames[]
 	L"SPHR",			// 1D:  {is} HR                                                
 	L"SPMN",			// 1E:  {is} MOPN                                              
 	L"SPDN",			// 1F:  {is} DOPN                                              
-	L"FR"  ,			// 20:  F)    - Trains                                         
-	L"MR"  ,			// 21:  MOP)  - ...                                            
-	L"DR"  ,			// 22:  DOP)  - ...                                            
-	L"HR"  ,			// 23:  HY)   - ...                                            
-	L"FFR" ,			// 24:  F F)  - ...                                            
-	L"AFR" ,			// 25:  A F)  - ...                                            
-	L"HFR" ,			// 26:  H F)  - ...                                            
-	L"NAM" ,			// 27:  Name                                                   
-	L"SA"  ,			// 28:  Strand                                                 
-	L"{"   ,			// 29:  Left brace                                             
-	L"}"   ,			// 2A:  Right brace                                            
-	L"CSF" ,			// 2B:  :FOR/:FORLCL                                           
-	L"CSI" ,			// 2C:  :IN                                                    
-	L"CSIA",			// 2D:  :IN A                                                  
-	L"CSFN",			// 2E:  :FOR NAM/:FORLCL NAM                                   
-	L"CSEF",			// 2F:  :ENDFOR/:ENDFORLCL                                     
-	L"CS0" ,			// 30:  CS Niladic                                             
-	L"CS1" ,			// 31:  CS Monadic                                             
-	L"SOS" ,			// 32:  Start of stmt                                          
-	L"AFOG",			// 33:  AFO Guard                                              
-	L"AFOR",			// 34:  AFO Return                                             
-	L"SYSN",			// 35:  System Namespace                                       
-	L"ARBK",			// 36:  A RBR                                                  
-	L"SRBK",			// 37:  ; RBR/RBR2                                             
-	L"IO"  ,			// 38:  I/O                                                    
-	L"NR"  ,			// 39:  NAM)                                                   
-	L"NNR" ,			// 3A:  NAM NAM)                                               
-	L"LNR" ,			// 3B:  (NAM NAM)                                              
-	L"ISPA",			// 3C:  IDX SPA                                                
-	L"SYNR",			// 3D:  SYNTAX ERROR                                           
-	L"VALR",			// 3E:  VALUE ERROR                                            
-	L"NVAL",			// 3F:  No Value                                               
-	L"EOS" ,			// 40:  *MUST* be the highest numbered entry                   
+	L"SPAK",			// 20:  {is} ARBK                                              
+	L"FR"  ,			// 21:  F)    - Trains                                         
+	L"MR"  ,			// 22:  MOP)  - ...                                            
+	L"DR"  ,			// 23:  DOP)  - ...                                            
+	L"HR"  ,			// 24:  HY)   - ...                                            
+	L"FFR" ,			// 25:  F F)  - ...                                            
+	L"AFR" ,			// 26:  A F)  - ...                                            
+	L"HFR" ,			// 27:  H F)  - ...                                            
+	L"NAM" ,			// 28:  Name                                                   
+	L"SA"  ,			// 29:  Strand                                                 
+	L"{"   ,			// 2A:  Left brace                                             
+	L"}"   ,			// 2B:  Right brace                                            
+	L"CSF" ,			// 2C:  :FOR/:FORLCL                                           
+	L"CSI" ,			// 2D:  :IN                                                    
+	L"CSIA",			// 2E:  :IN A                                                  
+	L"CSFN",			// 2F:  :FOR NAM/:FORLCL NAM                                   
+	L"CSEF",			// 30:  :ENDFOR/:ENDFORLCL                                     
+	L"CS0" ,			// 31:  CS Niladic                                             
+	L"CS1" ,			// 32:  CS Monadic                                             
+	L"SOS" ,			// 33:  Start of stmt                                          
+	L"AFOG",			// 34:  AFO Guard                                              
+	L"AFOR",			// 35:  AFO Return                                             
+	L"SYSN",			// 36:  System Namespace                                       
+	L"ARBK",			// 37:  A RBR                                                  
+	L"SRBK",			// 38:  ; RBR/RBR2                                             
+	L"IO"  ,			// 39:  I/O                                                    
+	L"NR"  ,			// 3A:  NAM)                                                   
+	L"NNR" ,			// 3B:  NAM NAM)                                               
+	L"LNR" ,			// 3C:  (NAM NAM)                                              
+	L"ISPA",			// 3D:  IDX SPA                                                
+	L"SYNR",			// 3E:  SYNTAX ERROR                                           
+	L"VALR",			// 3F:  VALUE ERROR                                            
+	L"NVAL",			// 40:  No Value                                               
+	L"EOS" ,			// 41:  *MUST* be the highest numbered entry                   
   }
 #endif
 ;

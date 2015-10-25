@@ -150,6 +150,7 @@
 #define plRedDOP_RP     plRedCom_RP
 
 #define plRedSP_SA      plRedSP_A
+#define plRedSP_ARBK    plRedSP_A
 #define plRedMF_HY      plRedF_HY
 
 #define plRedMOPN_IDX   plRedMOP_IDX
@@ -175,6 +176,7 @@
 #define plRedSP_IO      plRedSP_Com
 
 #define plRedNAM_SPA    plRedNAM_SPCom
+#define plRedNAM_SPAK   plRedNAM_SPCom
 #define plRedNAM_SPF    plRedNAM_SPCom
 #define plRedNAM_SPM    plRedNAM_SPCom
 #define plRedNAM_SPMN   plRedNAM_SPCom
@@ -189,6 +191,8 @@
 #define plRedA_ISPA     plRedNAM_ISPA
 
 #define plRedNAM_NNR    plRedNAM_NR
+
+#define plRedLNR_SPNF   plRedLNR_SPA
 
 #define plRedLP_FR      plRedLP_Com
 #define plRedLP_MR      plRedLP_Com
@@ -221,35 +225,6 @@
 #define plRedNAM_FFR    plRedA_FFR
 #define plRedIO_FFR     plRedA_FFR
 
-#define plRedMOP_A      plRedPseudo
-#define plRedMOP_SA     plRedPseudo
-
-#define plRedMOPN_A     plRedPseudo
-#define plRedMOPN_SA    plRedPseudo
-
-#define plRedHY_A       plRedPseudo
-#define plRedHY_SA      plRedPseudo
-
-#define plRedFR_MOP     plRedPseudo
-#define plRedFR_MOPN    plRedPseudo
-#define plRedFR_HY      plRedPseudo
-
-#define plRedFFR_MOP    plRedPseudo
-#define plRedFFR_MOPN   plRedPseudo
-#define plRedFFR_HY     plRedPseudo
-
-#define plRedAFR_MOP    plRedPseudo
-#define plRedAFR_MOPN   plRedPseudo
-#define plRedAFR_HY     plRedPseudo
-
-#define plRedMOP_MOP    plRedPseudo
-#define plRedMOP_MOPN   plRedPseudo
-#define plRedMOP_HY     plRedPseudo
-
-#define plRedMOPN_MOP   plRedPseudo
-#define plRedMOPN_MOPN  plRedPseudo
-#define plRedMOPN_HY    plRedPseudo
-
 #define plRedRBC_MOP    plRedPseudo
 #define plRedRBC_MOPN   plRedPseudo
 #define plRedRBC_HY     plRedPseudo
@@ -257,8 +232,6 @@
 #define plRedRBK_MOP    plRedPseudo
 #define plRedRBK_MOPN   plRedPseudo
 #define plRedRBK_HY     plRedPseudo
-
-#define plRedHY_HY      plRedPseudo
 
 
 #define STRICT
@@ -363,7 +336,12 @@ LPPL_YYSTYPE plRedPseudo
 
 {
 #ifdef DEBUG
-    DbgStop ();
+    // I know about these cases, so don't bother me with them
+    if (!(soType EQ soUNK
+      && (lpplYYCurObj->tkToken.tkSynObj EQ soMOP || lpplYYCurObj->tkToken.tkSynObj EQ soMOPN || lpplYYCurObj->tkToken.tkSynObj EQ soHY)
+      && (lpplYYLstRht->tkToken.tkSynObj EQ soA   || lpplYYLstRht->tkToken.tkSynObj EQ soMOP  || lpplYYLstRht->tkToken.tkSynObj EQ soHY))
+       )
+        DbgStop ();
 #endif
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpplYYLstRht->tkToken);
@@ -519,6 +497,18 @@ LPPL_YYSTYPE plRedLNR_SPA
 
 {
     UBOOL bRet;                         // TRUE iff the result is valid
+
+    // If the last right object is a niladic function, ...
+    if (lpplYYLstRht->tkToken.tkSynObj EQ soSPNF)
+    {
+        // Execute the niladic function returning an array
+        lpplYYLstRht =
+          plExecuteFn0 (lpplYYLstRht);
+
+        // Check for error
+        if (!lpplYYLstRht)
+            goto ERROR_EXIT;
+    } // End IF
 
     // Assign the names
     bRet = AssignNamedVars_EM (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken);
@@ -2136,8 +2126,7 @@ LPPL_YYSTYPE plRedCS1_A
             lpplLocalVars->ExitType = EXITTYPE_ERROR;
 
             // No return value needed
-
-            break;
+            goto ERROR_EXIT;    // Not SYNTAX ERROR as CS_IF_Stmt_EM already set the error msg
 
         case TKT_CS_ASSERT:
             // Handle ASSERT statement
@@ -2199,7 +2188,7 @@ LPPL_YYSTYPE plRedCS1_A
             lpplLocalVars->ExitType = EXITTYPE_ERROR;
 
             // No return value needed
-            goto ERROR_EXIT;    // Not SYNTAX ERROR as CS_ASSERT_Stmt_EM already set the error msg
+            goto ERROR_EXIT;    // Not SYNTAX ERROR as CS_CONTINUEIF_Stmt_EM already set the error msg
 
         case TKT_CS_GOTO:
             // Check for Ctrl Strucs in AFO
@@ -2227,7 +2216,7 @@ LPPL_YYSTYPE plRedCS1_A
             lpplLocalVars->ExitType = EXITTYPE_ERROR;
 
             // No return value needed
-            goto ERROR_EXIT;    // Not SYNTAX ERROR as CS_ASSERT_Stmt_EM already set the error msg
+            goto ERROR_EXIT;    // Not SYNTAX ERROR as CS_LEAVEIF_Stmt_EM already set the error msg
 
         case TKT_CS_SELECT:
             // Check for Ctrl Strucs in AFO
@@ -2251,7 +2240,7 @@ LPPL_YYSTYPE plRedCS1_A
             lpplLocalVars->ExitType = EXITTYPE_ERROR;
 
             // No return value needed
-            goto ERROR_EXIT;    // Not SYNTAX ERROR as CS_ASSERT_Stmt_EM already set the error msg
+            goto ERROR_EXIT;    // Not SYNTAX ERROR as CS_SELECT_Stmt_EM already set the error msg
 
         defstop
             break;
@@ -4094,16 +4083,12 @@ PARSELINE_MP_PAREN:
                 lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
                 lpYYRes = NULL;
             } else
-            // If the current object is a numeric/character strand, ...
+            // If the current object is a numeric/character strand/scalar, ...
             if (lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_NUMSTRAND
-             || lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_CHRSTRAND)
-            {
+             || lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_CHRSTRAND
+             || lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_NUMSCALAR)
                 // Unstrand the current object
                 UnStrand (lpplYYCurObj);
-            } else
-            // If the current object is a numeric scalar, ...
-            if (lpplYYCurObj->tkToken.tkFlags.TknType EQ TKT_NUMSCALAR)
-                lpplYYCurObj->tkToken.tkFlags.TknType =  TKT_VARIMMED;
 
             // If we came from PARSELINE_MP_BRACKET, ...
             if (bPLBracket)
@@ -4373,9 +4358,14 @@ PARSELINE_REDUCE:
                                soNames[lpplCurStr->soType]);
                     TRACE2 (L"Reducing:", EVENT, lpplCurStr->soType, lstSynObj);
                 }
-#endif
-                Assert (lpplCurStr->soType NE soUNK);
 
+                // I know about these cases, so don't bother me with them
+                if (!(lpplCurStr->lpplRedFcn EQ plRedPseudo
+                  && (curSynObj EQ soMOP || curSynObj EQ soMOPN || curSynObj EQ soHY)
+                  && (lstSynObj EQ soA   || lstSynObj EQ soMOP  || lstSynObj EQ soHY))
+                   )
+                    Assert (lpplCurStr->soType NE soUNK);
+#endif
                 // Save the value of lstSynObj so we may check it at PARSELINE_DONE
                 oldLstSynObj = lstSynObj;
 
@@ -4388,14 +4378,14 @@ PARSELINE_REDUCE:
                                               lpplYYCurObj,
                                               lpplYYLstRht,
                                               lpplCurStr->soType);
-                // Check for YYFreed current & last right objects
-                if (!lpplYYCurObj->YYInuse)
+                // Check for YYFreed or returned as result current & last right objects
+                if (!lpplYYCurObj->YYInuse || lpYYRes EQ lpplYYCurObj)
                 {
                     // Zap it
                     lpplYYCurObj = NULL; curSynObj = soNONE;
                 } // End IF
 
-                if (!lpplYYLstRht->YYInuse)
+                if (!lpplYYLstRht->YYInuse || lpYYRes EQ lpplYYLstRht)
                 {
                     // Zap it
                     lpplYYLstRht = NULL; lstSynObj = soNONE;
@@ -4592,10 +4582,22 @@ PARSELINE_ERROR:
                 // If it's inuse, ...
                 if (lpplYYCurObj->YYInuse)
                 {
+                    // In rare cases, (e.g., "MOP A"), the curried right operand (soon to be freed)
+                    //  is <lpplYYLstRht>.
+                    if (lpplYYLstRht EQ lpplYYCurObj
+                     || lpplYYLstRht EQ lpplYYCurObj->lpplYYOpRCurry)
+                        // Zap it so we won't attempt to free it again just below
+                        lpplYYLstRht = NULL;
+
                     // Free the object and its curries
                     FreeResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
                 } else
-                    Assert (YYCheckInuse (lpplYYLstRht));
+                {
+                    // The following Assert is triggered on certain
+                    //   SYNTAX ERROR conditions (e.g. {del}{is}2)
+                    //   which can be ignored
+////////////////////Assert (YYCheckInuse (lpplYYCurObj));
+                } // End IF/ELSE
             } // End IF
 
             // If it's valid, ...

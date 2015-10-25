@@ -1,2 +1,2 @@
-#define VER_MODULE 1
-#define VER_MODULE_STR "1"
+#define VER_MODULE 10
+#define VER_MODULE_STR "10"

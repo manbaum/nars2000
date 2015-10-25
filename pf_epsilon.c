@@ -2883,10 +2883,12 @@ UBOOL PrimFnDydEpsilonNvR_EM
     mpq_init (&aplRatRht);
     mpfr_init0 (&aplVfpLft);
     mpfr_init0 (&aplVfpRht);
-
+#ifdef RAT_EXACT
     // Set the compare w.r.t. []CT flag
     bCompCT = IsVfp (aplTypeLft);
-
+#else
+    bCompCT = TRUE;
+#endif
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
 
@@ -3039,22 +3041,16 @@ UBOOL PrimFnDydEpsilonNvR_EM
             // Set the current index
             iRht = (iMin + iMax) / 2;
 
+            // Get the next rational from the right arg
+            mpq_set   (&aplRatRht, &lpMemRht[lpMemGupRht[iRht]]);
+
             // If we're comparing w.r.t. []CT, ...
             if (bCompCT)
-            {
-                // Get the next rational from the right arg
-                mpfr_set_q (&aplVfpRht, &lpMemRht[lpMemGupRht[iRht]], MPFR_RNDN);
-
                 // Compare 'em
-                iComp = mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT);
-            } else
-            {
-                // Get the next rational from the right arg
-                mpq_set   (&aplRatRht, &lpMemRht[lpMemGupRht[iRht]]);
-
+                iComp = mpq_cmp_ct ( aplRatLft,  aplRatRht, fQuadCT);
+            else
                 // Compare 'em
                 iComp = mpq_cmp    (&aplRatLft, &aplRatRht);
-            } // End IF/ELSE
 
             // Check for a match
             if (iComp EQ 0)

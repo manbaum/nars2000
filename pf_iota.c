@@ -1284,9 +1284,13 @@ UBOOL PrimFnDydIotaBvN_EM
                 break;
 
             case ARRAY_RAT:
-                // Exact vs. exact doesn't use []CT
                 // Attempt to convert the RAT to an APLINT
-                uTmp = mpq_get_sx (&((LPAPLRAT) lpMemRht)[uRht], &bRet);
+#ifdef RAT_EXACT
+                // Exact vs. exact doesn't use []CT
+                uTmp = mpq_get_sx   (&((LPAPLRAT) lpMemRht)[uRht],          &bRet);
+#else
+                uTmp = mpq_get_ctsx (&((LPAPLRAT) lpMemRht)[uRht], fQuadCT, &bRet);
+#endif
                 if (bRet && IsBooleanValue (uTmp))
                     // Save the appropriate value in the result
                     *lpMemRes++ = Index[uTmp];
@@ -1410,10 +1414,13 @@ UBOOL PrimFnDydIotaAvN_EM
                 break;
 
             case ARRAY_RAT:
-                // Exact vs. exact doesn't use []CT
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerRht = mpq_get_sx (((LPAPLRAT) lpMemRht)++, &bRet);
-
+#ifdef RAT_EXACT
+                // Exact vs. exact doesn't use []CT
+                aplIntegerRht = mpq_get_sx   (((LPAPLRAT) lpMemRht)++,          &bRet);
+#else
+                aplIntegerRht = mpq_get_ctsx (((LPAPLRAT) lpMemRht)++, fQuadCT, &bRet);
+#endif
                 break;
 
             case ARRAY_VFP:
@@ -1615,9 +1622,13 @@ UBOOL PrimFnDydIotaIvN_EM
                 break;
 
             case ARRAY_RAT:
-                // Exact vs. exact doesn't use []CT
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerRht = mpq_get_sx (&((LPAPLRAT) lpMemRht)[iRes], &bRet);
+#ifdef RAT_EXACT
+                // Exact vs. exact doesn't use []CT
+                aplIntegerRht = mpq_get_sx   (&((LPAPLRAT) lpMemRht)[iRes],          &bRet);
+#else
+                aplIntegerRht = mpq_get_ctsx (&((LPAPLRAT) lpMemRht)[iRes], fQuadCT, &bRet);
+#endif
                 if (!bRet)
                     goto NOMATCH;
                 break;
@@ -1664,9 +1675,13 @@ UBOOL PrimFnDydIotaIvN_EM
                 break;
 
             case ARRAY_RAT:
-                // Exact vs. exact doesn't use []CT
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerRht = mpq_get_sx (&((LPAPLRAT) lpMemRht)[iRht], &bRet);
+#ifdef RAT_EXACT
+                // Exact vs. exact doesn't use []CT
+                aplIntegerRht = mpq_get_sx   (&((LPAPLRAT) lpMemRht)[iRht],          &bRet);
+#else
+                aplIntegerRht = mpq_get_ctsx (&((LPAPLRAT) lpMemRht)[iRht], fQuadCT, &bRet);
+#endif
                 if (!bRet)
                     goto NOMATCH;
                 break;
@@ -2203,10 +2218,13 @@ UBOOL PrimFnDydIotaPvN_EM
                 break;
 
             case ARRAY_RAT:
-                // Exact vs. exact doesn't use []CT
                 // Attempt to convert the RAT to an APLINT
-                aplIntegerRht = mpq_get_sx (((LPAPLRAT) lpMemRht)++, &bRet);
-
+#ifdef RAT_EXACT
+                // Exact vs. exact doesn't use []CT
+                aplIntegerRht = mpq_get_sx   (((LPAPLRAT) lpMemRht)++,          &bRet);
+#else
+                aplIntegerRht = mpq_get_ctsx (((LPAPLRAT) lpMemRht)++, fQuadCT, &bRet);
+#endif
                 // If it succeeded, ...
                 if (bRet)
                     // Convert to same origin as the inverse indices
@@ -2407,6 +2425,12 @@ UBOOL PrimFnDydIotaRvN_EM
     APLRAT       aplRatLft = {0},       // Left arg item as rational
                  aplRatRht = {0};       // Right ...
 
+#ifdef RAT_EXACT
+    // Should we use []CT when comparing?
+    bUseCT = IsVfp (aplTypeRht) || IsSimpleFlt (aplTypeRht);
+#else
+    bUseCT = TRUE;
+#endif
     // Initialize the temps
     mpq_init (&aplRatLft);
     mpq_init (&aplRatRht);
@@ -2553,9 +2577,6 @@ UBOOL PrimFnDydIotaRvN_EM
 
             // Get the next rational from the left arg
             mpq_set (&aplRatLft, &lpMemLft[lpMemGupLft[iLft]]);
-
-            // Should we use []CT when comparing?
-            bUseCT = IsVfp (aplTypeRht) || IsSimpleFlt (aplTypeRht);
 
             // Split cases based upon the signum of the comparison
             switch (signumint (bUseCT ? mpq_cmp_ct ( aplRatLft,  aplRatRht, fQuadCT)

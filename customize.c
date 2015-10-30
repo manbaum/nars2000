@@ -1540,6 +1540,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_INSSTATE           , OptionFlags.bInsState           );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_REVDBLCLK          , OptionFlags.bRevDblClk          );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , OptionFlags.bDefDispFcnLineNums );
+                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_DISPMPSUF          , OptionFlags.bDispMPSuf          );
 
                         // ***FIXME*** -- Make these work so we don't have to gray out the choices
                         {
@@ -3041,6 +3042,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         OptionFlags.bInsState            = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_INSSTATE           );
                         OptionFlags.bRevDblClk           = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_REVDBLCLK          );
                         OptionFlags.bDefDispFcnLineNums  = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS );
+                        OptionFlags.bDispMPSuf           = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_DISPMPSUF          );
 
                         // Get the window handle for the Paste & Copy combo boxes
                         hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);
@@ -4668,6 +4670,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                 case IDC_USER_PREFS_XB_INSSTATE:
                 case IDC_USER_PREFS_XB_REVDBLCLK:
                 case IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS:
+                case IDC_USER_PREFS_XB_DISPMPSUF:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)
                         // Enable the Apply button

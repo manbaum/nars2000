@@ -109,6 +109,7 @@
 #define KEYNAME_REVDBLCLK               L"RevDblClk"
 #define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
 #define KEYNAME_DEFDISPFCNLINENUMS      L"DefDispFcnLineNums"
+#define KEYNAME_DISPMPSUF               L"DisplayMPSuffix"
 
 #define KEYNAME_SC_GLBNAME              L"GlbName"
 #define KEYNAME_SC_LCLNAME              L"LclName"
@@ -685,6 +686,12 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_DEFDISPFCNLINENUMS, // Ptr to the key name
                              DEF_DISPFCNLINENUMS,   // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bDispMPSuf
+    OptionFlags.bDispMPSuf =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_DISPMPSUF,     // Ptr to the key name
+                             DEF_DISPMPSUF,         // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     //***************************************************************
     // Read in the [SysVars] section -- default values for system
@@ -2285,6 +2292,17 @@ void SaveIniFile
     // Write out bDefDispFcnLineNums
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_DEFDISPFCNLINENUMS, // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+
+    //******************* bDispMPSuf **************************
+    // Format bDispMPSuf
+    wszTemp[0] = L'0' + OptionFlags.bDispMPSuf;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bDispMPSuf
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_DISPMPSUF,          // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
 

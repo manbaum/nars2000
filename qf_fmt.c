@@ -1959,7 +1959,8 @@ void QFMT_CommonEFIR
                               aplRatTmp,            // The value to format
                               UTF16_OVERBAR,        // Char to use as overbar
                               DEF_RATSEP,           // Char to use as rational separator
-                              FALSE);               // TRUE iff we're to substitute text for infinity
+                              FALSE,                // TRUE iff we're to substitute text for infinity
+                              FALSE);               // TRUE iff this RAT is inside a larger syntax
 
             // We no longer need this storage
             Myq_clear (&aplRatTmp);
@@ -2041,7 +2042,8 @@ void QFMT_CommonEFIR
                                       aplRatTmp,            // The value to format
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       DEF_RATSEP,           // Char to use as rational separator
-                                      FALSE);               // TRUE iff we're to substitute text for infinity
+                                      FALSE,                // TRUE iff we're to substitute text for infinity
+                                      FALSE);               // TRUE iff this RAT is inside a larger syntax
                     // We no longer need this storage
                     Myq_clear (&aplRatTmp);
 

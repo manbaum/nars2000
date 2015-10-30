@@ -178,6 +178,7 @@
 #define DEF_REVDBLCLK               FALSE
 #define DEF_VIEWSTATUSBAR           TRUE
 #define DEF_DISPFCNLINENUMS         TRUE
+#define DEF_DISPMPSUF               FALSE
 
 
 // Range limits for []vars

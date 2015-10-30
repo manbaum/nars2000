@@ -41,39 +41,40 @@
 #endif
 
 UBOOL CmdSave_EM
-    (LPWCHAR lpwszTail)                 // Ptr to command line tail
+    (LPWCHAR lpwszTail)                     // Ptr to command line tail
 
 {
-    HGLOBAL      hGlbName,              // STE name global memory handle
-                 hGlbCnt = NULL,        // Vars/Fcns/Oprs counters global memory handle
-                 stGlbData;             // SYMENTRY's stGlbData
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPVOID       lpMemOldWSID = NULL;   // Ptr to old []WSID global memory
-    LPUINT       lpMemCnt = NULL;       // Ptr to Vars/Fcns counters
-    WCHAR        wszTailDPFE[_MAX_PATH],// Save area for canonical form of given ws name
-                 wszWsidDPFE[_MAX_PATH],// ...           ...               []WSID
-                 wszTempDPFE[_MAX_PATH],// ...           temporary
-                 wszSectName[15],       // ...           section name (e.g., [Vars.sss])
-                 wszCount[8];           // ...           formatted uSymxxx counter
-    LPWCHAR      lpMemSaveWSID,         // Ptr to WSID to save to
-                 lpMemName,             // Ptr to STE name
-                 lpaplChar,             // Ptr to output save area
-                 lpw;                   // Temporary ptr
-    APLNELM      aplNELMWSID;           // []WSID NELM
-    APLRANK      aplRankWSID;           // ...    rank
-    APLUINT      ByteRes,               // # bytes in the result
-                 uQuadPP;               // []PP save area
-    UBOOL        bRet = FALSE;          // TRUE iff result is valid
-    APLU3264     uNameLen;              // Length of the object name in WCHARs
-    int          iCmp;                  // Comparison result
-    UINT         uGlbCnt=0;             // # entries in [Globals] section
-    FILE        *fStream;               // Ptr to file stream
-    LPSYMENTRY   lpSymEntry,            // Ptr to STE
-                 lpSymTabNext;          // ...
-    STFLAGS      stFlags;               // STE flags
-    LPWCHAR      lpwszFormat,           // Ptr to formatting save area
-                 lpwszOrigTemp,         // Original lpMemPTD->lpwszTemp
-                 lpwszTemp;             // Ptr to temporary storage
+    HGLOBAL      hGlbName,                  // STE name global memory handle
+                 hGlbCnt = NULL,            // Vars/Fcns/Oprs counters global memory handle
+                 stGlbData;                 // SYMENTRY's stGlbData
+    LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
+    LPVOID       lpMemOldWSID = NULL;       // Ptr to old []WSID global memory
+    LPUINT       lpMemCnt = NULL;           // Ptr to Vars/Fcns counters
+    WCHAR        wszTailDPFE[_MAX_PATH],    // Save area for canonical form of given ws name
+                 wszWsidDPFE[_MAX_PATH],    // ...           ...               []WSID
+                 wszTempDPFE[_MAX_PATH],    // ...           temporary
+                 wszSectName[15],           // ...           section name (e.g., [Vars.sss])
+                 wszCount[8];               // ...           formatted uSymxxx counter
+    LPWCHAR      lpMemSaveWSID,             // Ptr to WSID to save to
+                 lpMemName,                 // Ptr to STE name
+                 lpaplChar,                 // Ptr to output save area
+                 lpw;                       // Temporary ptr
+    APLNELM      aplNELMWSID;               // []WSID NELM
+    APLRANK      aplRankWSID;               // ...    rank
+    APLUINT      ByteRes,                   // # bytes in the result
+                 uQuadPP;                   // []PP save area
+    UBOOL        bRet = FALSE,              // TRUE iff result is valid
+                 bDispMPSuf;                // Save area for OptionFlags value
+    APLU3264     uNameLen;                  // Length of the object name in WCHARs
+    int          iCmp;                      // Comparison result
+    UINT         uGlbCnt=0;                 // # entries in [Globals] section
+    FILE        *fStream;                   // Ptr to file stream
+    LPSYMENTRY   lpSymEntry,                // Ptr to STE
+                 lpSymTabNext;              // ...
+    STFLAGS      stFlags;                   // STE flags
+    LPWCHAR      lpwszFormat,               // Ptr to formatting save area
+                 lpwszOrigTemp,             // Original lpMemPTD->lpwszTemp
+                 lpwszTemp;                 // Ptr to temporary storage
     VARS_TEMP_OPEN
 
     // Skip to the next blank
@@ -249,6 +250,10 @@ UBOOL CmdSave_EM
     fStream = fopenW (lpMemSaveWSID, L"wb");
     if (!fStream)
         goto NOTSAVED_FILE_EXIT;
+    // Save the current bDispMPSuf flag and set to FALSE
+    //  so we display values the same way every time
+    bDispMPSuf = OptionFlags.bDispMPSuf;
+    OptionFlags.bDispMPSuf = FALSE;
 
     // Close it after creating the file
     fclose (fStream); fStream = NULL;
@@ -546,6 +551,9 @@ UBOOL CmdSave_EM
     // Copy the (possibly shortened WSID)
     strcpyW (lpwszTemp, ShortenWSID (lpMemSaveWSID));
 
+    // Restore trailing WS_WKSEXT
+    lpMemSaveWSID[iCmp] = L'.';
+
     // Copy the " SAVED " text
     strcatW (lpwszTemp, L" SAVED ");
 
@@ -585,7 +593,7 @@ LIMIT_EXIT:
 
 NOTSAVED_CLEAR_EXIT:
     // Display the error message
-    ReplaceLastLineCRPmt (ERRMSG_NOT_SAVED_CLEAR_WS);
+    ReplaceLastLineCRPmt (ERRMSG_NOT_SAVED_CLEAR_WS APPEND_NAME);
 
     goto ERROR_EXIT;
 
@@ -607,6 +615,9 @@ NORMAL_EXIT:
     UnlFreeGlbName (hGlbCnt, lpMemCnt);
 
     EXIT_TEMP_OPEN
+
+    // Restore the OptionFlags values
+    OptionFlags.bDispMPSuf = bDispMPSuf;
 
     return bRet;
 } // End CmdSave_EM
@@ -1387,11 +1398,11 @@ LPAPLCHAR SavedWsFormGlbVar
                 break;
 
             case ARRAY_APA:
-    #define lpAPA       ((LPAPLAPA) lpMemObj)
+#define lpAPA       ((LPAPLAPA) lpMemObj)
                 // Get the APA parameters
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
-    #undef  lpAPA
+#undef  lpAPA
                 // Format as an APA
 
                 // Append the offset
@@ -1527,7 +1538,8 @@ LPAPLCHAR SavedWsFormGlbVar
                                      *(LPAPLRAT) lpMemObj,  // The value to format
                                       UTF16_BAR,            // Char to use as overbar
                                       L'/',                 // Char to use as rational separator
-                                      TRUE);                // TRUE iff we're to substitute text for infinity
+                                      TRUE,                 // TRUE iff we're to substitute text for infinity
+                                      FALSE);               // TRUE iff this RAT is inside a larger syntax
                 break;
 
             case ARRAY_VFP:
@@ -1669,7 +1681,7 @@ LPAPLCHAR AppendArrayHeader
         // Check for array property:  PV0
         if (lpHeader->PV0)
         {
-            strcpyW (lpaplChar, AP_PV0);            // Copy the prefix
+            strcpyW (lpaplChar, AP_PV0);           // Copy the prefix
             lpaplChar += strcountof (AP_PV0);       // Skip over it
             *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF
@@ -1677,7 +1689,7 @@ LPAPLCHAR AppendArrayHeader
         // Check for array property:  PV1
         if (lpHeader->PV1)
         {
-            strcpyW (lpaplChar, AP_PV1);            // Copy the prefix
+            strcpyW (lpaplChar, AP_PV1);           // Copy the prefix
             lpaplChar += strcountof (AP_PV1);       // Skip over it
             *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF
@@ -1685,7 +1697,7 @@ LPAPLCHAR AppendArrayHeader
         // Check for array property:  All2s
         if (lpHeader->All2s)
         {
-            strcpyW (lpaplChar, AP_ALL2S);          // Copy the prefix
+            strcpyW (lpaplChar, AP_ALL2S);         // Copy the prefix
             lpaplChar += strcountof (AP_ALL2S);     // Skip over it
             *lpaplChar++ = L' ';                    // Append a trailing blank
         } // End IF

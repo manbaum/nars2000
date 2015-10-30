@@ -1276,7 +1276,8 @@ LPAPLCHAR FormatAplRat
                            aplRat,          // The value to format
                            UTF16_OVERBAR,   // Char to use as overbar
                            DEF_RATSEP,      // Char to use as rational separator
-                           FALSE);          // TRUE iff we're to substitute text for infinity
+                           FALSE,           // TRUE iff we're to substitute text for infinity
+                           FALSE);          // TRUE iff this RAT is inside a larger syntax
 } // End FormatAplRat
 
 
@@ -1291,7 +1292,8 @@ LPAPLCHAR FormatAplRatFC
      APLRAT    aplRat,              // The value to format
      APLCHAR   aplCharOverbar,      // Char to use as overbar
      APLCHAR   aplCharRatSep,       // Char to use as rational separator
-     UBOOL     bSubstInf)           // TRUE iff we're to substitute text for infinity
+     UBOOL     bSubstInf,           // TRUE iff we're to substitute text for infinity
+     UBOOL     bInsideSep)          // TRUE iff this RAT is inside a larger syntax
 
 {
     APLINT    iLen,                 // String length
@@ -1365,6 +1367,16 @@ LPAPLCHAR FormatAplRatFC
         lpw = strchrW (lpaplChar, L'/');
         if (lpw)
             *lpw = aplCharRatSep;
+        else
+        if (OptionFlags.bDispMPSuf)
+        {
+            if (bInsideSep)
+            {
+                lpaplChar[iLen++] = aplCharRatSep;
+                lpaplChar[iLen++] = L'1';
+            } else
+                lpaplChar[iLen++] = L'x';
+        } // End IF/ELSE
 
         // Skip over the formatted number
         lpaplChar += iLen;
@@ -2305,6 +2317,10 @@ LPAPLCHAR FormatAplVfpFC
             lpaplChar += iLen;
         } // End IF/ELSE/...
     } // End IF/ELSE
+
+    if (OptionFlags.bDispMPSuf)
+        // Include the suffix
+        *lpaplChar++ = L'v';
 
     // Include a separator
     *lpaplChar++ = L' ';

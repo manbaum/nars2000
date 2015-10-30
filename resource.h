@@ -317,13 +317,14 @@
 #define IDC_USER_PREFS_XB_BACKUPONLOAD          1105
 #define IDC_USER_PREFS_XB_BACKUPONSAVE          1106
 #define IDC_USER_PREFS_XB_NOCOPYRIGHTMSG        1107
-#define IDC_USER_PREFS_CB_DEFAULTPASTE          1108
-#define IDC_USER_PREFS_CB_DEFAULTCOPY           1109
-#define IDC_USER_PREFS_XB_CHECKGROUP            1110
-#define IDC_USER_PREFS_XB_INSSTATE              1111
-#define IDC_USER_PREFS_XB_REVDBLCLK             1112
-#define IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS    1113
-#define IDC_USER_PREFS_CB_UPDFRQ                1114
+#define IDC_USER_PREFS_XB_CHECKGROUP            1108
+#define IDC_USER_PREFS_XB_INSSTATE              1109
+#define IDC_USER_PREFS_XB_REVDBLCLK             1110
+#define IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS    1111
+#define IDC_USER_PREFS_XB_DISPMPSUF             1112
+#define IDC_USER_PREFS_CB_DEFAULTPASTE          1113
+#define IDC_USER_PREFS_CB_DEFAULTCOPY           1114
+#define IDC_USER_PREFS_CB_UPDFRQ                1115
 
 #define IDC_SYNTCLR_LT1                         1400    // 00:  Global Name
 #define IDC_SYNTCLR_LT2                         1401    // 01:  Local  ...

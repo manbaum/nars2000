@@ -816,50 +816,50 @@ IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
 STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           ""              ,IDC_RESET_TEXT           , 5, 10,200,40
+    LTEXT           ""              ,IDC_RESET_TEXT           , 5, 26,200,40
 
-    LTEXT           "CLEAR WS"      ,IDC_STATIC               ,40, 55, 60,10
-    LTEXT           "System Default",IDC_STATIC               ,80, 55, 60,10
+    LTEXT           "CLEAR WS"      ,IDC_STATIC               ,40, 71, 60,10
+    LTEXT           "System Default",IDC_STATIC               ,80, 71, 60,10
 
-    LTEXT           "CT"            ,IDC_STATIC               , 5, 70, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO1      ,55, 70, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO2      ,95, 70, 16, 8
+    LTEXT           "CT"            ,IDC_STATIC               , 5, 86, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO1      ,55, 86, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO2      ,95, 86, 16, 8
 
-    LTEXT           "DT"            ,IDC_STATIC               , 5, 85, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO1      ,55, 85, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO2      ,95, 85, 16, 8
+    LTEXT           "DT"            ,IDC_STATIC               , 5,101, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO1      ,55,101, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO2      ,95,101, 16, 8
 
-    LTEXT           "FC"            ,IDC_STATIC               , 5,100, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO1      ,55,100, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO2      ,95,100, 16, 8
+    LTEXT           "FC"            ,IDC_STATIC               , 5,116, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO1      ,55,116, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO2      ,95,116, 16, 8
 
-    LTEXT           "FEATURE"       ,IDC_STATIC               , 5,115, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO1 ,55,115, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO2 ,95,115, 16, 8
+    LTEXT           "FEATURE"       ,IDC_STATIC               , 5,131, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO1 ,55,131, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO2 ,95,131, 16, 8
 
-    LTEXT           "FPC"           ,IDC_STATIC               , 5,130, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO1     ,55,130, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO2     ,95,130, 16, 8
+    LTEXT           "FPC"           ,IDC_STATIC               , 5,146, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO1     ,55,146, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO2     ,95,146, 16, 8
 
-    LTEXT           "IC"            ,IDC_STATIC               , 5,145, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1      ,55,145, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2      ,95,145, 16, 8
+    LTEXT           "IC"            ,IDC_STATIC               , 5,161, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1      ,55,161, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2      ,95,161, 16, 8
 
-    LTEXT           "IO"            ,IDC_STATIC               , 5,160, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1      ,55,160, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2      ,95,160, 16, 8
+    LTEXT           "IO"            ,IDC_STATIC               , 5,176, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1      ,55,176, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2      ,95,176, 16, 8
 
-    LTEXT           "PP"            ,IDC_STATIC               , 5,175, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1      ,55,175, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2      ,95,175, 16, 8
+    LTEXT           "PP"            ,IDC_STATIC               , 5,191, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1      ,55,191, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2      ,95,191, 16, 8
 
-    LTEXT           "PW"            ,IDC_STATIC               , 5,190, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1      ,55,190, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2      ,95,190, 16, 8
+    LTEXT           "PW"            ,IDC_STATIC               , 5,206, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1      ,55,206, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2      ,95,206, 16, 8
 
-    LTEXT           "RL"            ,IDC_STATIC               , 5,205, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1      ,55,205, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2      ,95,205, 16, 8
+    LTEXT           "RL"            ,IDC_STATIC               , 5,221, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1      ,55,221, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2      ,95,221, 16, 8
 END
 
 IDD_PROPPAGE_TAB_COLORS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -873,40 +873,42 @@ IDD_PROPPAGE_USER_PREFS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
 STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
-    AUTOCHECKBOX    "Adjust []PW on window resize",
-                    IDC_USER_PREFS_XB_ADJUSTPW           , 10, 26,160, 10
+    AUTOCHECKBOX    L"Adjust \x2395PW on window resize",
+                    IDC_USER_PREFS_XB_ADJUSTPW           , 10, 26,260, 10
     AUTOCHECKBOX    "Underbar alphabet converted to lowercase",
-                    IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE, 10, 39,160, 10
+                    IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE, 10, 39,260, 10
     AUTOCHECKBOX    "New tab on )CLEAR",
-                    IDC_USER_PREFS_XB_NEWTABONCLEAR      , 10, 52,160, 10
+                    IDC_USER_PREFS_XB_NEWTABONCLEAR      , 10, 52,260, 10
     AUTOCHECKBOX    "New tab on )LOAD",
-                    IDC_USER_PREFS_XB_NEWTABONLOAD       , 10, 65,160, 10
+                    IDC_USER_PREFS_XB_NEWTABONLOAD       , 10, 65,260, 10
     AUTOCHECKBOX    "Use local time (instead of GMT)",
-                    IDC_USER_PREFS_XB_USELOCALTIME       , 10, 78,160, 10
+                    IDC_USER_PREFS_XB_USELOCALTIME       , 10, 78,260, 10
     AUTOCHECKBOX    "Make backup of workspace on )LOAD",
-                    IDC_USER_PREFS_XB_BACKUPONLOAD       , 10, 91,160, 10
+                    IDC_USER_PREFS_XB_BACKUPONLOAD       , 10, 91,260, 10
     AUTOCHECKBOX    "Make backup of workspace on )SAVE",
-                    IDC_USER_PREFS_XB_BACKUPONSAVE       , 10,104,160, 10
+                    IDC_USER_PREFS_XB_BACKUPONSAVE       , 10,104,260, 10
     AUTOCHECKBOX    "Suppress copyright message at startup",
-                    IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , 10,117,160, 10
+                    IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , 10,117,260, 10
     AUTOCHECKBOX    "Check for unmatched or improperly nested grouping symbols",
-                    IDC_USER_PREFS_XB_CHECKGROUP         , 10,130,200, 10
+                    IDC_USER_PREFS_XB_CHECKGROUP         , 10,130,260, 10
     AUTOCHECKBOX    "Insert key ON at startup",
-                    IDC_USER_PREFS_XB_INSSTATE           , 10,143,200, 10
+                    IDC_USER_PREFS_XB_INSSTATE           , 10,143,260, 10
     AUTOCHECKBOX    "Reverse double-click:  left=edit, right=select",
-                    IDC_USER_PREFS_XB_REVDBLCLK          , 10,156,200, 10
+                    IDC_USER_PREFS_XB_REVDBLCLK          , 10,156,260, 10
     AUTOCHECKBOX    "Default is to display function line numbers",
-                    IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , 10,169,200, 10
+                    IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , 10,169,260, 10
+    AUTOCHECKBOX    "Display multi-precision numbers with suffix 'x' or 'v'",
+                    IDC_USER_PREFS_XB_DISPMPSUF          , 10,182,260, 10
 
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,182, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,195, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC                           ,100,182,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,198, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,195,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,211, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
-                    IDC_STATIC                           ,100,198,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,214, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,211,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,227, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Frequency of check for new updates",
-                    IDC_STATIC                           ,100,214,160, 10
+                    IDC_STATIC                           ,100,227,160, 10
 END
 
 
@@ -920,7 +922,6 @@ BEGIN
     DEFPUSHBUTTON   "OK"                    , IDOK                ,  5, 45, 50, 14
     PUSHBUTTON      "Cancel"                , IDCANCEL            , 65, 45, 50, 14
 END
-
 
 IDD_WEBCOLORS DIALOGEX DISCARDABLE  0, 0, 533, 320
 STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU

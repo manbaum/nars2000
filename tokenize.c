@@ -1446,7 +1446,19 @@ UBOOL fnAlpDone
                                          lptkLocalVars->lpHTS);     // Ptr to HshTab struc (may be NULL)
             // If it's not found, ...
             if (lpSymEntry EQ NULL)
-                lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
+            {
+                // If we're inside an MFO, ...
+                if (lptkLocalVars->bMFO)
+                {
+                    // Call it a more serious error so we can fix
+                    //   it right away
+                    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+
+                    goto ERROR_EXIT;
+                } else
+                    // Just call it NoValue
+                    lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
+            } // End IF
         } // End IF
     } else
     if (lptkLocalVars->lpSF_Fcns->bAFO)
@@ -1501,6 +1513,7 @@ UBOOL fnAlpDone
                                   NULL,                     // Ptr to incoming stFlags (may be NULL)
                                   FALSE,                    // TRUE iff the name is to be local to the given HTS
                                   lptkLocalVars->lpHTS);    // Ptr to HshTab struc (may be NULL)
+ERROR_EXIT:
     // If it's not found, ...
     if (lpSymEntry EQ NULL)
         bRet = FALSE;
@@ -4617,7 +4630,8 @@ UBOOL fnDiaDone
 
 {
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
-    TOKEN_DATA tkData = {0};            // Token data  ...
+    TOKEN_DATA tkData  = {0};           // Token data  ...
+    UINT       uChar;                   // Index to current char
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnDiaDone");
@@ -4629,29 +4643,43 @@ UBOOL fnDiaDone
     // Test for mismatched or improperly nested grouping symbols
     CheckGroupSymbols_EM (lptkLocalVars);
 
-    // Mark as an SOS
-    tkFlags.TknType = TKT_SOS;
+    // Get the index to the char after the diamond
+    uChar = lptkLocalVars->uChar + 1;
 
-    // Attempt to append as new token, check for TOKEN TABLE FULL,
-    //   and resize as necessary.
-    if (!AppendNewToken_EM (lptkLocalVars,
-                           &tkFlags,
-                           &tkData,
-                            0))
-        return FALSE;
+    // Skip over leading blanks and diamonds after the diamond
+    while (IsWhiteW (lptkLocalVars->lpwszOrig[uChar])
+        || lptkLocalVars->lpwszOrig[uChar] EQ UTF16_DIAMOND)
+        uChar++;
 
-    // Count in another stmt
-    lptkLocalVars->Orig.d.uStmtNum++;
+    // If we are not at the EOL, ...
+    if (lptkLocalVars->lpwszOrig[lptkLocalVars->uChar] NE UTF16_DIAMOND
+     || lptkLocalVars->lpwszOrig[uChar] NE WC_EOS)
+    {
+        // Mark as an SOS
+        tkFlags.TknType = TKT_SOS;
 
-    // Start the initial char over again
-    lptkLocalVars->uCharIni = lptkLocalVars->uChar + 1;
+        // Attempt to append as new token, check for TOKEN TABLE FULL,
+        //   and resize as necessary.
+        if (!AppendNewToken_EM (lptkLocalVars,
+                               &tkFlags,
+                               &tkData,
+                                0))
+            return FALSE;
 
-    // Skip over leading blanks
-    while (IsWhiteW (lptkLocalVars->lpwszOrig[lptkLocalVars->uCharIni]))
-        lptkLocalVars->uCharIni++;
+        // Count in another stmt
+        lptkLocalVars->Orig.d.uStmtNum++;
 
-    // Append the EOS token
-    return AppendEOSToken_EM (lptkLocalVars, TRUE);
+        // Start the initial char over again
+        lptkLocalVars->uCharIni = lptkLocalVars->uChar + 1;
+
+        // Skip over leading blanks
+        while (IsWhiteW (lptkLocalVars->lpwszOrig[lptkLocalVars->uCharIni]))
+            lptkLocalVars->uCharIni++;
+
+        // Append the EOS token
+        return AppendEOSToken_EM (lptkLocalVars, TRUE);
+    } else
+        return TRUE;
 } // End fnDiaDone
 
 
@@ -5712,7 +5740,7 @@ void Untokenize
         case TKT_LABELSEP:          // Label ...         (...     ':')
         case TKT_COLON:             // Colon             (...     ':')
         case TKT_VARIMMED:          // Immediate data (data is immediate)
-        case TKT_FCNIMMED:          // Immediate primitive function (any valence) (data is UTF16_***)
+        case TKT_FCNIMMED:          // Immediate primitive function (any # args) (data is UTF16_***)
         case TKT_OP1IMMED:          // ...       Monadic primitive operator (data is UTF16_***)
         case TKT_OP2IMMED:          // ...       Dyadic  ...
         case TKT_OP3IMMED:          // ...       Ambiguous  ...

@@ -3456,6 +3456,37 @@ LPPL_YYSTYPE plRedNAM_SPCom
         lpYYRes = NULL;
     } // End IF
 
+    // If the <lpplYYLstRht> is an intermediate list, ...
+    if (lpplYYLstRht->tkToken.tkFlags.TknType EQ TKT_LISTINT)
+    {
+        LPPL_YYSTYPE lpYYVar1,
+                     lpYYVar2;
+
+        // This case occurs with embedded assignment within an bracket
+        //    list such as z[F z{is}...].
+
+        // Pop the most recent item from the list
+        //   returning the item and shortening the list in <lpplYYLstRht>
+        lpYYVar1 =
+          PopList_YY (lpplYYLstRht);
+
+        // Assign this token to this name
+        // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+        if (!AssignName_EM (&lpplYYCurObj->tkToken, &lpYYVar1->tkToken))
+            goto ERROR_EXIT;
+
+        // Push the var back onto the list
+        lpYYVar2 =
+          PushList_YY (lpplYYLstRht, lpYYVar1, lpplYYLstRht);
+
+        YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
+
+        // Save back into the last right object
+        lpplYYLstRht = lpYYVar2;
+
+        // YYFree the temp
+        YYFree (lpYYVar1); lpYYVar1 = NULL;
+    } else
     // Assign this token to this name
     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
     if (!AssignName_EM (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken))

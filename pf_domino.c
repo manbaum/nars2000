@@ -585,7 +585,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
         //  Return the matrix of indices
         //  Use an internal magic function/operator.
-        return
+        lpYYRes =
           ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
                                       lptkFunc,     // Ptr to function token
                                       NULL,         // Ptr to function strand
@@ -594,6 +594,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                                       hGlbMFO,      // Magic function/operator global memory handle
                                       NULL,         // Ptr to HSHTAB struc (may be NULL)
                                       LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+        goto NORMAL_EXIT;
     } // End IF
 
     // The rank of the result is the same as

@@ -1545,7 +1545,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
                     {
                         // Scan in the next value
-                        sscanfW (lpwSrc, SCANFSTR_APLUINT, &aplInteger);
+////////////////////////sscanfW (lpwSrc, SCANFSTR_APLUINT, &aplInteger);
+                        aplInteger = _wtoi64 (lpwSrc);
 
                         // Skip to the next field
                         lpwSrc = SkipPastCharW (lpwSrc, L' ');
@@ -1568,7 +1569,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
                     {
                         // Scan in the next value and skip over it
-                        sscanfW (lpwSrc, SCANFSTR_APLINT, ((LPAPLINT) lpMemObj)++);
+////////////////////////sscanfW (lpwSrc, SCANFSTR_APLINT, ((LPAPLINT) lpMemObj)++);
+                        *((LPAPLINT) lpMemObj)++ = _wtoi64 (lpwSrc);
 
                         // Skip to the next field
                         lpwSrc = SkipPastCharW (lpwSrc, L' ');
@@ -1606,7 +1608,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             // Save in the result and skip over it
                             *((LPAPLFLOAT) lpMemObj)++ = MyStrtod ((LPCHAR) lpwszFormat, NULL);
                         // Skip to the next field
-                        lpwSrc = &lpwCharEnd[1];
+                        lpwSrc = SkipPastCharW (lpwSrc, L' ');
                     } // End FOR
 
                     break;
@@ -1690,13 +1692,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         LPWCHAR lpwWS,
                                 lpwStr;
                         LPCHAR  lpStr;
-                        WCHAR   wc;
 
                         // Skip to the next white space
                         lpwWS = SkipToCharW (lpwSrc, L' ');
 
                         // Convert it to a WC_EOS
-                        wc = *lpwWS; *lpwWS = WC_EOS;
+                        wcTmp = *lpwWS; *lpwWS = WC_EOS;
 
                         // Initialize the save area
                         mpq_init ((LPAPLRAT) lpMemObj);
@@ -1706,6 +1707,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         while (*lpwStr)
                             *lpStr++ = (char) *lpwStr++;
                         *lpStr = AC_EOS;
+
+                        // Restore the original value
+                        *lpwWS = wcTmp;
 
                         // Check for positive infinity
                         if (lstrcmp ((LPCHAR) lpwSrc, TEXT_INFINITY) EQ 0)
@@ -1719,7 +1723,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             mpq_set_str (((LPAPLRAT) lpMemObj)++, (LPCHAR) lpwSrc, 10);
 
                         // Skip to the next field
-                        lpwSrc = &lpwWS[wc EQ L' '];
+                        lpwSrc = SkipPastCharW (lpwSrc, L' ');
                     } // End FOR
 
                     break;
@@ -1734,15 +1738,14 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         LPWCHAR lpwWS,
                                 lpwStr;
                         LPCHAR  lpStr;
-                        WCHAR   wc;
 
                         // Skip to the next white space
                         lpwWS = SkipToCharW (lpwSrc, L' ');
 
                         // Convert it to a WC_EOS
-                        wc = *lpwWS; *lpwWS = WC_EOS;
+                        wcTmp = *lpwWS; *lpwWS = WC_EOS;
 
-                        // If there's a preceding (FPC), ...
+                        // If there's a preceding FPC as (nnn), ...
                         if (*lpwSrc EQ L'(')
                         {
                             // Skip over the leading paren
@@ -1769,6 +1772,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             *lpStr++ = (char) *lpwStr++;
                         *lpStr = AC_EOS;
 
+                        // Restore the original value
+                        *lpwWS = wcTmp;
+
                         // Check for positive infinity
                         if (lstrcmp ((LPCHAR) lpwSrc, TEXT_INFINITY) EQ 0)
                             mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
@@ -1781,7 +1787,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             mpfr_set_str (((LPAPLVFP) lpMemObj)++, (LPCHAR) lpwSrc, 10, MPFR_RNDN);
 
                         // Skip to the next field
-                        lpwSrc = &lpwWS[wc EQ L' '];
+                        lpwSrc = SkipPastCharW (lpwSrc, L' ');
                     } // End FOR
 
                     // Restore the default precision

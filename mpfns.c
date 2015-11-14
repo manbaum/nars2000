@@ -1657,8 +1657,8 @@ int _mpfr_cmp_ct
     WCHAR  wszTemp[1024];
     APLVFP mpfFmt = {0};
 
-////*FormatAplVfp (wszTemp, aplVfpLft, 0) = WC_EOS; DbgMsgW (wszTemp);
-////*FormatAplVfp (wszTemp, aplVfpRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+    strcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], *lpaplVfpLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+    strcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], *lpaplVfpRht, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
     // Compare 'em without tolerance
     iRet = mpfr_cmp (lpaplVfpLft, lpaplVfpRht);
@@ -1714,7 +1714,9 @@ int _mpfr_cmp_ct
 
             // Convert the comparison tolerance
             mpfr_set_d (&mpfCT, fQuadCT, MPFR_RNDN);
-
+#if defined (DEBUG) && defined (CT_DEBUG)
+            strcpyW (wszTemp, L"CT:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfCT, 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
             // Calculate the low end of the left neighborhood of (|Rht)
 ////////////aplHoodLo = aplRhtAbs - aplRhtAbs * fQuadCT;
             mpfr_mul (&mpfHoodLo, &mpfRhtAbs, &mpfCT    , MPFR_RNDN);
@@ -1755,15 +1757,6 @@ int _mpfr_cmp_ct
                     iRet = 0;
             } // End IF/ELSE
 
-#if defined (DEBUG) && defined (CT_DEBUG)
-////        mpfr_init0 (mpfFmt);
-////        *FormatAplVfp (wszTemp, mpfFmt, 0) = WC_EOS;
-////        DbgMsgW (wszTemp);
-////        mpfr_init_set_d (&mpfFmt, fQuadCT, MPFR_RNDN);
-////        *FormatAplVfp (wszTemp, mpfFmt, 0) = WC_EOS;
-////        DbgMsgW (wszTemp);
-////        Myf_clear (&mpfFmt);
-#endif
             // We no longer need this storage
             Myf_clear (&mpfHoodLo);
             Myf_clear (&mpfCT    );

@@ -248,7 +248,7 @@ HGLOBAL AppendFcnNameLineNum
         MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
     } else
     {
-        // Look in thie level's plLocalVars
+        // Look in this level's plLocalVars
         if (lpSISCur->lpplLocalVars->hGlbTxtLine)
             // Return this global memory handle
             hGlbTxtLine = lpSISCur->lpplLocalVars->hGlbTxtLine;

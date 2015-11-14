@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,8 +63,6 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, TRUE , SysFnLC_EM_YY       , 0              },    // Line Counter
     {WS_UTF16_QUAD L"nnames"   ,      0,      FALSE, FALSE, SysFnNNAMES_EM_YY   , 0              },    // Names of Open Native Files
     {WS_UTF16_QUAD L"nnums"    ,      0,      FALSE, FALSE, SysFnNNUMS_EM_YY    , 0              },    // Tie Numbers of Open Native Files
-////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, FALSE, SysFnSI_EM_YY       , 0              },    // State Indicator
-////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, FALSE, SysFnSINL_EM_YY     , 0              },    // State Indicator w/Name List
     {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, FALSE, SysFnSYSID_EM_YY    , 0              },    // System Identifier
     {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, FALSE, SysFnSYSVER_EM_YY   , 0              },    // System Version
     {WS_UTF16_QUAD L"t"        ,      0,      FALSE, FALSE, SysFnT_EM_YY        , 0              },    // High Resolution Time
@@ -90,7 +88,6 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"error"    ,      1,      FALSE, FALSE, SysFnERROR_EM_YY    , 0              },    // Signal Error
     {WS_UTF16_QUAD L"es"       ,      1,      FALSE, TRUE , SysFnES_EM_YY       , 0              },    // Event Simulate
     {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, TRUE , SysFnEX_EM_YY       , 0              },    // Expunge Names
-////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, FALSE, SysFnFI_EM_YY       , 0              },    // Format Items
     {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, FALSE, SysFnFMT_EM_YY      , 0              },    // Format
     {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, TRUE , SysFnFX_EM_YY       , 0              },    // Function Fix
     {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, FALSE, SysFnMF_EM_YY       , 0              },    // Monitor Function
@@ -107,11 +104,10 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"nsize"    ,      1,      FALSE, FALSE, SysFnNSIZE_EM_YY    , 0              },    // Get The Size Of An Open Native File
     {WS_UTF16_QUAD L"ntie"     ,      1,      FALSE, FALSE, SysFnNTIE_EM_YY     , 0              },    // Open A Native File
     {WS_UTF16_QUAD L"nuntie"   ,      1,      FALSE, FALSE, SysFnNUNTIE_EM_YY   , 0              },    // Close A Native File
-////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, TRUE , SysFnSTOP_EM_YY     , 0              },    // Manage Stop Points
+    {WS_UTF16_QUAD L"stop"     ,      1,      FALSE, TRUE , SysFnSTOP_EM_YY     , 0              },    // Manage Stop Points
     {WS_UTF16_QUAD L"tf"       ,      1,      FALSE, TRUE , SysFnTF_EM_YY       , 0              },    // Transfer Form
-////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, TRUE , SysFnTRACE_EM_YY    , 0              },    // Manage Trace Points
+    {WS_UTF16_QUAD L"trace"    ,      1,      FALSE, TRUE , SysFnTRACE_EM_YY    , 0              },    // Manage Trace Points
     {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, FALSE, SysFnUCS_EM_YY      , 0              },    // Universal Character Set
-////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, FALSE, SysFnVI_EM          , 0              },    // Verify Items
     {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, FALSE, SysFnVR_EM_YY       , 0              },    // Vector Representation of a Function
 };
 
@@ -2814,10 +2810,9 @@ UBOOL ValidSetFEATURE_EM
 
         // If the right arg is a global, ...
         if (hGlbRht)
-        {
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayDataFmBase (lpMemRht);
-        } else
+        else
             // Point to the data
             lpMemRht = &aplLongestRht;
 

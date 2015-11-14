@@ -1166,5 +1166,59 @@ void strcpynW
 
 
 //***************************************************************************
+//  $AllocateGlobalArray
+//
+//  Allocate a global array
+//***************************************************************************
+
+HGLOBAL AllocateGlobalArray
+    (APLSTYPE aplTypeRes,       // Result storage type
+     APLNELM  aplNELMRes,       // ...    NELM
+     APLRANK  aplRankRes,       // ...    Rank
+     LPAPLDIM lpaplDimRes)      // Ptr to result dimension(s) (may be NULL for scalar)
+
+{
+    APLUINT           ByteRes;              // # bytes in result
+    HGLOBAL           hGlbRes;              // Result global memory handle
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result global memory data
+
+    // Allocate space for this array
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    lpMemHdrRes
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
+
+    // Fill in the dimension(s)
+    CopyMemory (VarArrayBaseToDim (lpMemHdrRes),
+                lpaplDimRes,
+                (APLU3264) (aplRankRes * sizeof (lpaplDimRes[0])));
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+WSFULL_EXIT:
+    return hGlbRes;
+} // End AllocateGlobalArray
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

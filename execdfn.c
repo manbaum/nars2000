@@ -883,7 +883,10 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                    uTknNum;         // Next token # in the line
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
-    UBOOL          bRet;            // TRUE iff result is valid
+    UBOOL          bRet,            // TRUE iff result is valid
+                   bStopLine,       // TRUE iff we're stopping on this line
+                   bTraceLine,      // TRUE iff we're tracing the line
+                   bStopRestart;    // TRUE iff we're restarting a []STOPped line
     EXIT_TYPES     exitType;        // Return code from ParseLine
     LPTOKEN_HEADER lpMemTknLine;    // Ptr to tokenized line global memory
 
@@ -935,14 +938,22 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 #ifdef DEBUG
     DisplayFcnLine (lpMemDfnHdr->hGlbTxtHdr, lpMemPTD, 0);
 #endif
+    // Mark as not restarting a []STOPped line
+    bStopRestart = FALSE;
+
     // Loop through the function lines
-    while (0 < uLineNum && uLineNum <= lpMemPTD->lpSISCur->numFcnLines)
+    while (TRUE)
     {
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
+        // Get the stop & trace flags
+        bStopLine  = lpFcnLines[uLineNum - 1].bStop && !bStopRestart;
+        bTraceLine = lpFcnLines[uLineNum - 1].bTrace;
+
         // Check for empty line
-        if (lpFcnLines[uLineNum - 1].bEmpty)
+        if (lpFcnLines[uLineNum - 1].bEmpty
+         && !bTraceLine)
             goto NEXTLINE;
 
         // Get the starting line's token & text global memory handles
@@ -958,26 +969,36 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 #ifdef DEBUG
         DisplayFcnLine (hGlbTxtLine, lpMemPTD, uLineNum);
 #endif
-        // If line monitoring is enabled, start it for this line
-        if (lpMemDfnHdr->MonOn)
-            StartStopMonInfo (lpMemDfnHdr, uLineNum, TRUE);
+        // If we're to []STOP before executing this line, ...
+        if (bStopLine)
+        {
+            // Mark as suspended
+            lpMemPTD->lpSISCur->Suspended = TRUE;
+            exitType = EXITTYPE_NONE;
+        } else
+        {
+            // If line monitoring is enabled, start it for this line
+            if (lpMemDfnHdr->MonOn)
+                StartStopMonInfo (lpMemDfnHdr, uLineNum, TRUE);
 
-        // Execute the line
-        exitType =
-          ParseLine (hWndSM,                // Session Manager window handle
-                     lpMemTknLine,          // Ptr to tokenized line global memory
-                     hGlbTxtLine,           // Text of function line global memory ahndle
-                     NULL,                  // Ptr to line text global memory
-                     lpMemPTD,              // Ptr to PerTabData global memory
-                     uLineNum,              // Function line # (1 for execute or immexec)
-                     uTknNum,               // Starting token # in the above function line
-                     hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
-                     TRUE,                  // TRUE iff errors are acted upon
-                     FALSE,                 // TRUE iff executing only one stmt
-                     FALSE);                // TRUE iff we're to skip the depth check
-        // If line monitoring is enabled, stop it for this line
-        if (lpMemDfnHdr->MonOn)
-            StartStopMonInfo (lpMemDfnHdr, uLineNum, FALSE);
+            // Execute the line
+            exitType =
+              ParseLine (hWndSM,                // Session Manager window handle
+                         lpMemTknLine,          // Ptr to tokenized line global memory
+                         hGlbTxtLine,           // Text of function line global memory ahndle
+                         NULL,                  // Ptr to line text global memory
+                         lpMemPTD,              // Ptr to PerTabData global memory
+                         uLineNum,              // Function line # (1 for execute or immexec)
+                         uTknNum,               // Starting token # in the above function line
+                         bTraceLine,            // TRUE iff we're tracing this line
+                         hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
+                         TRUE,                  // TRUE iff errors are acted upon
+                         FALSE,                 // TRUE iff executing only one stmt
+                         FALSE);                // TRUE iff we're to skip the depth check
+            // If line monitoring is enabled, stop it for this line
+            if (lpMemDfnHdr->MonOn)
+                StartStopMonInfo (lpMemDfnHdr, uLineNum, FALSE);
+        } // End IF/ELSE
 RESTART_AFTER_ERROR:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -996,7 +1017,8 @@ RESTART_AFTER_ERROR:
 
             // If we're at a stop, display the error message
             //   along with the function name/line #
-            if (lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_STOP)
+            if (bStopLine
+             || lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_STOP)
             {
                 LPAPLCHAR    lpMemName;     // Ptr to function name global memory
                 LPSIS_HEADER lpSISCur;      // Ptr to current SIS entry
@@ -1004,8 +1026,10 @@ RESTART_AFTER_ERROR:
                 // Get a ptr to the current SIS
                 lpSISCur = lpMemPTD->lpSISCur;
 
-                // Display the error message
-                AppendLine (ERRMSG_ELLIPSIS APPEND_NAME, FALSE, TRUE);
+                // If we're not at a []STOP, ...
+                if (!bStopLine)
+                    // Display the error message
+                    AppendLine (ERRMSG_ELLIPSIS APPEND_NAME, FALSE, TRUE);
 
                 // Lock the memory to get a ptr to it
                 lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
@@ -1031,7 +1055,12 @@ RESTART_AFTER_ERROR:
                                L"ExecuteFunction_EM_YY");   // Ptr to caller identification
             // Get the exit type from the semaphore restart
             exitType = lpMemPTD->ImmExecExitType;
-        } // End IF
+
+            // Compare the old and new line numbers
+            bStopRestart = (lpMemPTD->lpSISCur->NxtLineNum EQ uLineNum);
+        } else
+            // Mark as not restarting from []STOP
+            bStopRestart = FALSE;
 
         // Get the user-defined function/operator header global memory handle
         //   in case it changed while waiting for the semaphore to trigger
@@ -1051,7 +1080,33 @@ NEXTLINE:
         uTknNum  = lpMemPTD->lpSISCur->NxtTknNum;
         lpMemPTD->lpSISCur->CurLineNum = uLineNum;
         lpMemPTD->lpSISCur->NxtTknNum = 0;
+
+        if (0 EQ uLineNum
+         ||      uLineNum > lpMemDfnHdr->numFcnLines)
+        {
+            // Transform {goto}N into {goto}0
+            if (uLineNum > lpMemDfnHdr->numFcnLines
+             && exitType EQ EXITTYPE_GOTO_LINE)
+                uLineNum = 0;
+            break;
+        } // End IF
     } // End WHILE
+
+    // If we're stopping on exit, ...
+    if (lpMemDfnHdr->bStopHdr
+     && uLineNum NE 0
+     && exitType NE EXITTYPE_STOP
+     && exitType NE EXITTYPE_RESET_ALL)
+    {
+        // Mark as suspended & stopping
+        lpMemPTD->lpSISCur->Suspended = TRUE;
+        bStopLine = TRUE;
+
+        // Mark as line #0
+        lpMemPTD->lpSISCur->CurLineNum = uLineNum = 0;
+
+        goto RESTART_AFTER_ERROR;
+    } // End IF
 
     // Split cases based upon the exit type
     switch (exitType)
@@ -1111,6 +1166,7 @@ NEXTLINE:
                              lpMemPTD,                  // Ptr to PerTabData global memory
                              1,                         // Function line # (1 for execute or immexec)
                              0,                         // Starting token # in the above function line
+                             FALSE,                     // TRUE iff we're tracing this line
                              hGlbDfnHdr,                // User-defined function/operator global memory handle (NULL = execute/immexec)
                              TRUE,                      // TRUE iff errors are acted upon
                              FALSE,                     // TRUE iff executing only one stmt
@@ -1292,6 +1348,12 @@ NEXTLINE:
         } // End default
     } // End SWITCH
 
+    // If we're tracing the exit value, ...
+    if (lpMemDfnHdr->bTraceHdr)
+        // Trace the exit value
+        TraceExit (lpYYRes,             // Ptr to the result
+                   lpMemDfnHdr,         // Ptr to user-defined function/operator header
+                   lpMemPTD);           // Ptr to PerTabData global memory
     goto NORMAL_EXIT;
 
 WSFULL_EXIT:

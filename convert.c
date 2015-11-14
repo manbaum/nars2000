@@ -348,5 +348,59 @@ LPWCHAR ConvertNameInPlace
 
 
 //***************************************************************************
+//  $ConvertToInteger_SCT
+//
+//  Convert a value to an integer (if possible) using System []CT
+//***************************************************************************
+
+APLINT ConvertToInteger_SCT
+    (APLSTYPE   aplTypeArg,             // Argument storage type
+     LPVOID     lpMemArg,               // ...      global memory ptr
+     APLUINT    uArg,                   // Index into <lpSymGlbArg>
+     LPUBOOL    lpbRet)                 // Ptr to TRUE iff the result is valid
+
+{
+//  ALLTYPES atArg = {0};
+
+    // Mark as using SYS_CT
+//  atArg.enumCT = ENUMCT_SYS;
+
+    // Attempt to convert the value in <lpSymGlbArg> to an INT using System []CT
+//  (*aTypeActConvert[aplTypeArg][ARRAY_INT]) (lpSymGlbArg, uArg, &atArg, lpbRet);
+
+    // Split cases based upon the arg storage type
+    switch (aplTypeArg)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            *lpbRet = TRUE;
+
+            return GetNextInteger (lpMemArg, aplTypeArg, uArg);
+
+        case ARRAY_FLOAT:
+            return FloatToAplint_SCT (((LPAPLFLOAT) lpMemArg)[uArg], lpbRet);
+
+        case ARRAY_RAT:
+            // Attempt to convert the RAT to an integer using System []CT
+            return mpq_get_sctsx  (&((LPAPLRAT) lpMemArg)[uArg], lpbRet);
+
+        case ARRAY_VFP:
+            // Attempt to convert the VFP to an integer using System []CT
+            return mpfr_get_sctsx (&((LPAPLVFP) lpMemArg)[uArg], lpbRet);
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            *lpbRet = FALSE;
+
+            return 0;
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End ConvertToInteger_SCT
+
+
+//***************************************************************************
 //  End of File: convert.c
 //***************************************************************************

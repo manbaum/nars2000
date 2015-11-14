@@ -1463,11 +1463,22 @@ LPPL_YYSTYPE plRedGO_A
         // Get ptr to PerTabData global memory
         lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-        // Make a PL_YYSTYPE NoValue entry
-        lpYYVar =
-          MakeNoValue_YY (&lpplYYLstRht->tkToken);
-        lpMemPTD->YYResExec = *lpYYVar;
-        YYFree (lpYYVar); lpYYVar = NULL;
+        // If we're tracing this line, ...
+        if (lpplLocalVars->bTraceLine)
+        {
+            // Save the last right object (GOTO target) for tracing
+            lpMemPTD->YYResExec = *lpplYYLstRht;
+
+            // Tell the caller to free the var after tracing
+            lpplLocalVars->bTraceFree = TRUE;
+        } else
+        {
+            // Make a PL_YYSTYPE NoValue entry
+            lpYYVar =
+              MakeNoValue_YY (&lpplYYLstRht->tkToken);
+            lpMemPTD->YYResExec = *lpYYVar;
+            YYFree (lpYYVar); lpYYVar = NULL;
+        } // End IF/ELSE
 
         // Split cases based upon the Exit Type
         switch (lpplLocalVars->ExitType)
@@ -1513,8 +1524,13 @@ ERROR_EXIT:
     // Mark as in error
     lpplLocalVars->ExitType = EXITTYPE_ERROR;
 NORMAL_EXIT:
-    // Free (unnamed) and YYFree the last right object
-    FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
+    // If we're NOT tracing this line, ...
+    if (!lpplLocalVars->bTraceLine)
+        // Free (unnamed) last right object
+        FreeTempResult (lpplYYLstRht);
+
+    // YYFree the last right object
+    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -3736,6 +3752,7 @@ EXIT_TYPES ParseLine
      LPPERTABDATA   lpMemPTD,               // Ptr to PerTabData global memory
      UINT           uLineNum,               // Function line #
      UINT           uTknNum,                // Starting token # in the above function line
+     UBOOL          bTraceLine,             // TRUE iff we're tracing this line
      HGLOBAL        hGlbDfnHdr,             // User-defined function/operator global memory handle (NULL = execute/immexec)
      UBOOL          bActOnErrors,           // TRUE iff errors are acted upon
      UBOOL          bExec1Stmt,             // TRUE iff executing only one stmt
@@ -3886,6 +3903,9 @@ EXIT_TYPES ParseLine
     plLocalVars.uLineNum       = uLineNum;
     plLocalVars.hGlbDfnHdr     = hGlbDfnHdr;
     plLocalVars.bExec1Stmt     = bExec1Stmt;
+    plLocalVars.bTraceLine     = bTraceLine;
+////plLocalVars.bTraceFree     = FALSE;         // Already zero from = {0}
+////plLocalVars.uStmtNum       = 0;             // ...
 
     // Get # tokens in the line
     plLocalVars.uTokenCnt = plLocalVars.lpMemTknHdr->TokenCnt;
@@ -4700,6 +4720,9 @@ PARSELINE_ERROR:
             goto PARSELINE_END;
 
 PARSELINE_DONE:
+            // Increment the stmt #
+            plLocalVars.uStmtNum++;
+
             // If the current object is defined, ...
             if (lpplYYCurObj NE NULL)
             // If the current object is NoValue and EOS, ...
@@ -4785,13 +4808,18 @@ PARSELINE_DONE:
                         UnStrand (lpplYYCurObj);
                 } // End IF
 
+                // Get ptr to current SI stack
+                lpSISCur = lpMemPTD->lpSISCur;
+
+                // If the function is being traced, ...
+                if (bTraceLine)
+                    TraceLine (lpMemPTD,            // Ptr to PerTabData global memory
+                              &plLocalVars,         // Ptr to ParseLine local vars
+                               lpplYYCurObj);       // Ptr to the current token object (may be NULL)
                 // If the current token is an array or from sink, ...
                 if (curSynObj EQ soA || bSink)
                 {
                     HGLOBAL hGlbDfnHdr = NULL;      // UDFO/AFO global memory handle
-
-                    // Get a ptr to the current SIS header
-                    lpSISCur = lpMemPTD->lpSISCur;
 
                     // Do not display if caller is Execute or Quad
                     //   and the current statement is the last one on the line

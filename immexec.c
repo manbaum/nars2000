@@ -489,6 +489,7 @@ DWORD WINAPI ImmExecStmtInThread
                      lpMemPTD,              // Ptr to PerTabData global memory
                      1,                     // Function line #  (1 for execute or immexec)
                      0,                     // Starting token # in the above function line
+                     FALSE,                 // TRUE iff we're tracing this line
                      NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
                      bActOnErrors,          // TRUE iff errors are acted upon
                      FALSE,                 // TRUE iff executing only one stmt

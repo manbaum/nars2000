@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -117,7 +117,9 @@ typedef struct tagDFN_HEADER            // Function header structure
                      bAfoCtrlStruc:1,   //      00008000:  TRUE iff Ctrl Strucs in AFO
                      bAfoNoDispRes:1,   //      00010000:  TRUE iff the AFO result is non-displayable
                      bMFO:1,            //      00020000:  TRUE iff this is an MFO
-                     :14;               //      FFFC0000:  Available bits
+                     bStopHdr:1,        //      00040000:  TRUE iff we're stopping on exit
+                     bTraceHdr:1,       //      00080000:  TRUE iff we're tracing on exit
+                     :12;               //      FFF00000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
                      nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
                      nSysLblId,         // 14:  Line # of the []INV label (0 if not present)

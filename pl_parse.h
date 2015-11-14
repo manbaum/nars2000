@@ -99,7 +99,9 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                    bAFO:1,              //      00010000   TRUE iff we're parsing an AFO
                    bAfoCtrlStruc:1,     //      00020000:  TRUE iff Ctrl Strucs in AFO
                    bMFO:1,              //      00040000:  TRUE iff this is an MFO
-                   :13;                 //      FFF80000:  Available bits
+                   bTraceLine:1,        //      00080000:  TRUE iff we're tracing this line
+                   bTraceFree:1,        //      00100000:  TRUE iff we're to free the var after tracing
+                   :11;                 //      FFE00000:  Available bits
     UBOOL          bCtrlBreak;          // 28:  TRUE iff Ctrl-Break pressed
     LPPL_YYSTYPE   lpYYStrArrStart[STRAND_LEN],   // 2C:  Strand stack start (static) (16 bytes)
                    lpYYStrArrBase [STRAND_LEN],   // 3C:  ...          base (dynamic) ...
@@ -109,11 +111,12 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                   *lpPLPrev;            // 60:  Ptr to previous PLLOCALVARS struct
                                         //      in thread creation order (NULL = none)
     UINT           uLineNum,            // 64:  Function line # (1 for execute or immexec)
-                   uTokenCnt;           // 68:  # tokens in the function line
-    HGLOBAL        hGlbDfnHdr;          // 6C:  User-defined function/operator global memory handle (NULL = execute/immexec)
-    TOKEN          tkSelSpec;           // 70:  TOKEN for Selective Specification (28 bytes)
-    struct tagPERTABDATA *lpMemPTD;     // 8C:  Ptr to PerTabData global memory
-                                        // 90:  Length
+                   uStmtNum,            // 68:  Function line stmt # (origin-1 if after PARSELINE_DONE)
+                   uTokenCnt;           // 6C:  # tokens in the function line
+    HGLOBAL        hGlbDfnHdr;          // 70:  User-defined function/operator global memory handle (NULL = execute/immexec)
+    TOKEN          tkSelSpec;           // 74:  TOKEN for Selective Specification (28 bytes)
+    struct tagPERTABDATA *lpMemPTD;     // 90:  Ptr to PerTabData global memory
+                                        // 94:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

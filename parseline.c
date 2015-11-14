@@ -233,6 +233,11 @@
 #define plRedRBK_MOPN   plRedPseudo
 #define plRedRBK_HY     plRedPseudo
 
+#define plRedSP_RP      plRedSYNR
+#define plRedSP_RBK     plRedSYNR
+#define plRedSP_RBC     plRedSYNR
+#define plRedSP_EOS     plRedSYNR
+
 
 #define STRICT
 #include <windows.h>
@@ -347,6 +352,32 @@ LPPL_YYSTYPE plRedPseudo
                               &lpplYYLstRht->tkToken);
     return NULL;
 } // End plRedPseudo
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $plRedSYNR
+//
+//  Reduce to a SYNTAX ERROR
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- plRedSYNR"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE plRedSYNR
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpplYYCurObj->tkToken);
+    return NULL;
+} // End plRedSYNR
 #undef  APPEND_NAME
 
 
@@ -4620,8 +4651,13 @@ PARSELINE_ERROR:
                         // Zap it so we won't attempt to free it again just below
                         lpplYYLstRht = NULL;
 
-                    // Free the object and its curries
-                    FreeResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
+                    // If the current object is a Fcn or Var, ...
+                    if (IsTknTypeFcnOpr (lpplYYCurObj->tkToken.tkFlags.TknType)
+                     || IsTknTypeVar    (lpplYYCurObj->tkToken.tkFlags.TknType))
+                        // Free the object and its curries
+                        FreeResult (lpplYYCurObj);
+                    // YYFree the current object
+                    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
                 } else
                 {
                     // The following Assert is triggered on certain
@@ -4664,13 +4700,13 @@ PARSELINE_ERROR:
             goto PARSELINE_END;
 
 PARSELINE_DONE:
+            // If the current object is defined, ...
+            if (lpplYYCurObj NE NULL)
             // If the current object is NoValue and EOS, ...
             if (IsTokenNoValue (&lpplYYCurObj->tkToken)
              && curSynObj EQ soEOS)
-            {
                 // YYFree the current object
                 YYFree (lpplYYCurObj);
-            } // End IF
 
             Assert (lpplOrgLftStk EQ &lpMemPTD->lpplLftStk[-1]);
             Assert (lpplOrgRhtStk EQ &lpMemPTD->lpplRhtStk[-1]);
@@ -4769,7 +4805,7 @@ PARSELINE_DONE:
                         // Handle ArrExpr if caller is Execute or quad
                         ArrExprCheckCaller (&plLocalVars, lpSISCur, lpplYYCurObj, FALSE);
                     else
-                    // Do not display if we're parsing an AFO, ...
+                    // If we're parsing an AFO, ...
                     if (hGlbDfnHdr = SISAfo (lpMemPTD))
                     {
                         // AFO display it

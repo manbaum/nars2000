@@ -1096,7 +1096,8 @@ NEXTLINE:
     if (lpMemDfnHdr->bStopHdr
      && uLineNum NE 0
      && exitType NE EXITTYPE_STOP
-     && exitType NE EXITTYPE_RESET_ALL)
+     && exitType NE EXITTYPE_RESET_ALL
+     && exitType NE EXITTYPE_RESET_ONE)
     {
         // Mark as suspended & stopping
         lpMemPTD->lpSISCur->Suspended = TRUE;
@@ -1351,7 +1352,7 @@ NEXTLINE:
     // If we're tracing the exit value, ...
     if (lpMemDfnHdr->bTraceHdr)
         // Trace the exit value
-        TraceExit (lpYYRes,             // Ptr to the result
+        TraceExit (lpYYRes,             // Ptr to the result (may be NoValue)
                    lpMemDfnHdr,         // Ptr to user-defined function/operator header
                    lpMemPTD);           // Ptr to PerTabData global memory
     goto NORMAL_EXIT;

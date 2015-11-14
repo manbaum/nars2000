@@ -658,79 +658,26 @@ void TraceLine
             if (lpYYCurObj->tkToken.tkFlags.NoDisplay)
                 strcatW (lpMemPTD->lpwszTemp, wcLeftArrow);
 
+            // Note that although we're not finished with TEMP_OPEN, we must
+            //   exit from it here as we can't carry the state across into
+            //   <DisplayTraceResult>
+            EXIT_TEMP_OPEN
+
             // If the arg is valid, ...
             if (lpYYCurObj->tkToken.tkFlags.TknType NE TKT_UNUSED)
             {
-                APLNELM           aplNELMItm,           // Item NELM
-                                  aplNELMRes;           // Result NELM
-                LPVARARRAY_HEADER lpMemHdrItm = NULL,   // Ptr to item global memory data
-                                  lpMemHdrRes = NULL;   // ...    result ...
-                LPAPLNESTED       lpMemRes;             // Ptr to global memory data
+                // Display the trace result
+                if (DisplayTraceResult (lpMemPTD->lpwszTemp,        // Ptr to function name/line #
+                                       &lpYYCurObj->tkToken,        // Ptr to result token (may be NoValue)
+                                        lpMemPTD,                   // Ptr to PerTabData global memory
+                                       &lpplLocalVars->bCtrlBreak)) // Ptr to Ctrl-Break flag
+                    goto NORMAL_EXIT;
+            } // End IF
 
-                // Calculate the item NELM ("+ 1" for the trailing zero
-                aplNELMItm = lstrlenW (lpMemPTD->lpwszTemp) + 1;
-
-                // Calculate the result NELM
-                aplNELMRes = 2;
-
-                // Allocate a character array for the function name and line #
-                hGlbItm = AllocateGlobalArray (ARRAY_CHAR, aplNELMItm, 1, &aplNELMItm);
-
-                // Allocate a character array for the function name and line #
-                hGlbRes = AllocateGlobalArray (ARRAY_NESTED, aplNELMRes, 1, &aplNELMRes);
-                if (hGlbItm EQ NULL
-                 || hGlbRes EQ NULL)
-                    goto WSFULL_EXIT;
-
-                // Lock the memory to get a ptr to it
-                lpMemHdrItm = MyGlobalLock (hGlbItm);
-
-                // Copy the item data to global memory
-                CopyMemory (VarArrayDataFmBase (lpMemHdrItm),
-                            lpMemPTD->lpwszTemp,
-                            (APLU3264) (aplNELMItm * sizeof (lpMemPTD->lpwszTemp[0])));
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbItm); lpMemHdrItm = NULL;
-
-                EXIT_TEMP_OPEN
-
-                // Lock the memory to get a ptr to it
-                lpMemHdrRes = MyGlobalLock (hGlbRes);
-
-                // Skip over the header and dimension to the data
-                lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
-
-                // Save the first item
-                lpMemRes[0] = MakePtrTypeGlb (hGlbItm);
-
-                // If it's immediate, ...
-                if (IsTknImmed (&lpYYCurObj->tkToken))
-                    // Save the second item
-                    lpMemRes[1] = MakeSymEntry_EM (lpYYCurObj->tkToken.tkFlags.ImmType,
-                                                  &lpYYCurObj->tkToken.tkData.tkLongest,
-                                                  &lpYYCurObj->tkToken);
-                else
-                    // Save the second item
-                    lpMemRes[1] = CopySymGlbDir_PTB (lpYYCurObj->tkToken.tkData.tkGlbData);
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
-
-                // Display the line
-                DisplayGlbArr_EM (hGlbRes, TRUE, &lpplLocalVars->bCtrlBreak, &lpYYCurObj->tkToken);
-            } else
-            {
-WSFULL_EXIT:
-                // Display the trace of the function name and line #
-                AppendLine (lpMemPTD->lpwszTemp, FALSE, FALSE);
-
-                EXIT_TEMP_OPEN
-            } // End IF/ELSE
+            // Display the trace of the function name and line #
+            AppendLine (lpMemPTD->lpwszTemp, FALSE, FALSE);
         } // End IF
     } // End IF
-
-    goto NORMAL_EXIT;
-
 NORMAL_EXIT:
     // If we're to free the YYResExec, ...
     if (lpplLocalVars->bTraceFree)
@@ -749,17 +696,6 @@ NORMAL_EXIT:
         // Clear the flag
         lpplLocalVars->bTraceFree = FALSE;
     } // End IF
-
-    if (hGlbRes NE NULL)
-    {
-        // We no longer need this storage
-        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
-    } else
-    if (hGlbItm NE NULL)
-    {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbItm); hGlbItm = NULL;
-    } // End IF
 } // End TraceLine
 
 
@@ -770,20 +706,13 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void TraceExit
-    (LPPL_YYSTYPE lpYYRes,          // Ptr to the result
+    (LPPL_YYSTYPE lpYYRes,          // Ptr to the result (may be NoValue)
      LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header
      LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
     LPAPLCHAR         lpMemName;            // Ptr to function name global memory
     static UBOOL      bCtrlBreak = FALSE;   // Ctrl-Break flag
-    HGLOBAL           hGlbItm = NULL,       // Item global memory handle
-                      hGlbRes = NULL;       // Result ...
-    APLNELM           aplNELMItm,           // Item NELM
-                      aplNELMRes;           // Result NELM
-    LPVARARRAY_HEADER lpMemHdrItm = NULL,   // Ptr to item global memory data
-                      lpMemHdrRes = NULL;   // ...    result ...
-    LPAPLNESTED       lpMemRes;             // Ptr to global memory data
     VARS_TEMP_OPEN
 
     // Lock the memory to get a ptr to it
@@ -798,18 +727,56 @@ void TraceExit
     // We no longer need this ptr
     MyGlobalUnlock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName); lpMemName = NULL;
 
-    // Calculate the item NELM ("+ 1" for the trailing zero)
-    aplNELMItm = lstrlenW (lpMemPTD->lpwszTemp) + 1;
+    // Note that although we're not finished with TEMP_OPEN, we must
+    //   exit from it here as we can't carry the state across into
+    //   <DisplayTraceResult>
+    EXIT_TEMP_OPEN
+
+    // Display the trace result
+    DisplayTraceResult (lpMemPTD->lpwszTemp,    // Ptr to function name/line #
+                       &lpYYRes->tkToken,       // Ptr to result token (may be NoValue)
+                        lpMemPTD,               // Ptr to PerTabData global memory
+                       &bCtrlBreak);            // Ptr to Ctrl-Break flag
+} // End TraceExit
+
+
+//***************************************************************************
+//  $DisplayTraceResult
+//
+//  Display a trace result whether from a line or exit trace
+//***************************************************************************
+
+UBOOL DisplayTraceResult
+    (LPWCHAR      lpwszFcnLine,     // Ptr to function name/line #
+     LPTOKEN      lptkRes,          // Ptr to result token (may be NoValue)
+     LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
+     LPUBOOL      lpbCtrlBreak)     // Ptr to Ctrl-Break flag
+
+{
+    HGLOBAL           hGlbItm = NULL,       // Item global memory handle
+                      hGlbRes = NULL;       // Result ...
+    APLNELM           aplNELMItm,           // Item NELM
+                      aplNELMRes;           // Result NELM
+    LPVARARRAY_HEADER lpMemHdrItm = NULL,   // Ptr to item global memory data
+                      lpMemHdrRes = NULL;   // ...    result ...
+    LPAPLNESTED       lpMemRes;             // Ptr to global memory data
+    UBOOL             bRet = FALSE;         // TRUE iff the result is valid
+    VARS_TEMP_OPEN
+
+    CHECK_TEMP_OPEN
+
+    // Calculate the item NELM ("+ 1" for the trailing zero
+    aplNELMItm = lstrlenW (lpwszFcnLine) + 1;
 
     // Calculate the result NELM
     aplNELMRes = 2;
 
-    // Allocate a character array for the function name/line #
+    // Allocate a character array for the function name and line #
     hGlbItm = AllocateGlobalArray (ARRAY_CHAR, aplNELMItm, 1, &aplNELMItm);
     if (hGlbItm EQ NULL)
         goto WSFULL_EXIT;
 
-    // Allocate a nested array for the function name/ine # and trace value
+    // Allocate a character array for the function name and line #
     hGlbRes = AllocateGlobalArray (ARRAY_NESTED, aplNELMRes, 1, &aplNELMRes);
     if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
@@ -819,8 +786,8 @@ void TraceExit
 
     // Copy the item data to global memory
     CopyMemory (VarArrayDataFmBase (lpMemHdrItm),
-                lpMemPTD->lpwszTemp,
-                (APLU3264) (aplNELMItm * sizeof (lpMemPTD->lpwszTemp[0])));
+                lpwszFcnLine,
+                (APLU3264) (aplNELMItm * sizeof (lpwszFcnLine[0])));
     // We no longer need this ptr
     MyGlobalUnlock (hGlbItm); lpMemHdrItm = NULL;
 
@@ -835,14 +802,29 @@ void TraceExit
     // Save the first item
     lpMemRes[0] = MakePtrTypeGlb (hGlbItm);
 
-    // Save the second item
-    lpMemRes[1] = CopySymGlbDir_PTB (lpYYRes->tkToken.tkData.tkVoid);
+    // If it's NoValue, ...
+    if (IsTokenNoValue (lptkRes))
+        // Save the second item
+        lpMemRes[1] = MakePtrTypeGlb (hGlbZilde);
+    else
+    // If it's immediate, ...
+    if (IsTknImmed (lptkRes))
+        // Save the second item
+        lpMemRes[1] = MakeSymEntry_EM (lptkRes->tkFlags.ImmType,
+                                      &lptkRes->tkData.tkLongest,
+                                       lptkRes);
+    else
+        // Save the second item
+        lpMemRes[1] = CopySymGlbDir_PTB (lptkRes->tkData.tkGlbData);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Display the line
-    DisplayGlbArr_EM (hGlbRes, TRUE, &bCtrlBreak, &lpYYRes->tkToken);
+    DisplayGlbArr_EM (hGlbRes, TRUE, lpbCtrlBreak, lptkRes);
+
+    // Mark as successful
+    bRet = TRUE;
 
     goto NORMAL_EXIT;
 
@@ -859,7 +841,9 @@ NORMAL_EXIT:
         // We no longer need this storage
         DbgGlobalFree (hGlbItm); hGlbItm = NULL;
     } // End IF
-} // End TraceExit
+
+    return bRet;
+} // End DisplayTraceResult
 
 
 //***************************************************************************

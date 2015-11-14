@@ -28,6 +28,7 @@
 !include makefile.src
 
 {}.y{$(O)}.c:
+        @echo $(@F) #2
         @$(PARGEN) -o$(O)$(@B).c -v -r all -l %s
 
 {}.c{$(O)}.pro:

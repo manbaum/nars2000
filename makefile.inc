@@ -26,6 +26,10 @@
 !error Macro WIN= not defined.
 !endif
 
+!ifndef XWIN
+!error Macro XWIN= not defined.
+!endif
+
 !ifndef DEBUG
 !error Macro DEBUG= not defined.
 !endif
@@ -80,18 +84,18 @@
 
 .SUFFIXES: .DEP .DEV .PRO .Y
 
-NAME=NARS2000                   # Directory name
-ENAME=NARS2000                  # Executable name
-BIN=binaries\                   # Binaries directory
+NAME=NARS2000                       # Directory name
+ENAME=NARS2000                      # Executable name
+BIN=binaries\                       # Binaries directory
 DEBUG=0
-A=Images\                       # Images & artwork
-BC=$(BIN)COM\                   # Directory for common binaries
-WS=WineHQ\                      # Wine source
-OLDPATH=$(PATH)                 # Save the current path
-GSL_INC=$(GSL_DIR)include\      # Directory of GSL includes
-SDK_INC=$(INCLUDE)              # Directories of SDK includes
+A=Images\                           # Images & artwork
+BC=$(BIN)COM\                       # Directory for common binaries
+WS=WineHQ\                          # Wine source
+OLDPATH=$(PATH)                     # Save the current path
+GSL_INC=$(GSL_DIR)$(XWIN)\include\  # Directory of GSL includes
+SDK_INC=$(INCLUDE)                  # Directories of SDK includes
 
-QDEBUG=$(NARSROOT)qdebug\       # Directory for QDEBUG files/libraries
+QDEBUG=$(NARSROOT)qdebug\           # Directory for QDEBUG files/libraries
 LIB=$(LIB);$(QDEBUG)
 
 !if "$(LST)" == "1"
@@ -114,7 +118,8 @@ DEBUG_LIBSUFFIX=
 LFLAGS_NDEF=/NODEFAULTLIB:libcmtd.lib
 !endif
 
-GSL_LIB=$(GSL_DIR)libgsl$(WIN)$(DEBUG_LIBSUFFIX)-double.lib # GSL library
+GSL1_LIB=$(GSL_DIR)$(XWIN)\lib\gsl.lib      # GSL library
+GSL2_LIB=$(GSL_DIR)$(XWIN)\lib\cblas.lib    # CBLAS library
 
 MS_INC   = $(MS_DIR)
 MPIR_INC = $(MPIR_DIR)include^\
@@ -166,11 +171,11 @@ CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)" /D "_STDINT_H"
 !include makefile.src
 
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
-CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D $(WDEF) /c /D _CRT_SECURE_NO_WARNINGS
+CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D "_WIN32" /c /D "_CRT_SECURE_NO_WARNINGS"
 CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /GL /Qpar /O2
 LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG /LTCG
 !if "$(WIN)" == "64"
-CFLAGS_WEXE = $(CFLAGS_WEXE) /GS- /D_AMD64_ /D_M_AMD64 /D_WIN64 /Gd
+CFLAGS_WEXE = $(CFLAGS_WEXE) /D "_AMD64_" /D "_M_AMD64" /D "_WIN64" /Gd
 LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64
 !endif
 
@@ -200,7 +205,8 @@ LIBS_WEXE =                     \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
             $(ECM_LIB)          \
-            $(GSL_LIB)
+            $(GSL1_LIB)         \
+            $(GSL2_LIB)
 
 RCFLAGS = /nologo $(VERSION_FLAGS)
 !if "$(DEBUG)" == "1"
@@ -674,7 +680,8 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(MPIR_LIB)         \
                         $(MPFR_LIB)         \
                         $(ECM_LIB)          \
-                        $(GSL_LIB)          \
+                        $(GSL1_LIB)         \
+                        $(GSL2_LIB)         \
                         $(CS_FILES)         \
                         makefile.inc        \
                         makefile.$(MFEXT)

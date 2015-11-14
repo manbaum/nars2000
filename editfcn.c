@@ -1003,7 +1003,7 @@ UBOOL SyntaxColor
      HWND      hWndEC)              // Window handle of Edit Ctrl (parent is SM or FE)
 
 {
-    UBOOL        bRet = TRUE;       // TRUE iff the result is valid
+    UBOOL        bRet = FALSE;      // TRUE iff the result is valid
     UINT         uChar,             // Loop counter
                  uCharIni;          // Initial counter
     TK_ACTION    scAction1_EM,      // Ptr to 1st action
@@ -1158,12 +1158,12 @@ UBOOL SyntaxColor
     //   message such that the line-to-be-colored changes.  I think.
     goto NORMAL_EXIT;
 
+NORMAL_EXIT:
+    // Mark as successful
+    bRet = TRUE;
 FREEGLB_EXIT:
-    // Tell the caller to free the global
-    bRet = FALSE;
 NONCE_EXIT:
 ERROR_EXIT:
-NORMAL_EXIT:
     // Ensure numeric length has been reset
     Assert (tkLocalVars.iNumLen EQ 0);
     Assert ((uChar - uCharIni) EQ (UINT) (tkLocalVars.lpMemClrNxt - lpMemClr));
@@ -1238,38 +1238,46 @@ int LclECPaintHook
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 #endif
-    // Syntax Color the line
-    if (!rev
-     && ((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
-      || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns)))
+    // If we're not displaying in reverse color, ...
+    if (!rev)
     {
-        // If we're printing a session, ...
-        if (!((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
-           && (lFlags & PRF_PRINTCLIENT)
-           && !OptionFlags.bSyntClrPrnt))
+        // If we're to Syntax Color the line, ...
+         if ((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
+          || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns))
         {
-            // To do this, we use a FSA to parse the line from the start
-            //   through the last char to display
-
-            // Allocate space for the colors
-            hGlbClr = DbgGlobalAlloc (GHND, (uCol + uLen) * sizeof (lpMemClrIni[0]));
-            if (hGlbClr)
+            // If we're printing a session, ...
+            if (!((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
+               && (lFlags & PRF_PRINTCLIENT)
+               && !OptionFlags.bSyntClrPrnt))
             {
-                // Lock the memory to get a ptr to it
-                lpMemClrIni = MyGlobalLock (hGlbClr);
+                // To do this, we use a FSA to parse the line from the start
+                //   through the last char to display
 
-                // Syntax color the line
-                if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
+                // Allocate space for the colors
+                hGlbClr = DbgGlobalAlloc (GHND, (uCol + uLen) * sizeof (lpMemClrIni[0]));
+                if (hGlbClr)
                 {
-                    // Unlock and free (and set to NULL) a global name and ptr
-                    UnlFreeGlbName (hGlbClr, lpMemClrIni);
-                } // End IF
+                    // Lock the memory to get a ptr to it
+                    lpMemClrIni = MyGlobalLock (hGlbClr);
 
-                // Set the Window text colors
-                SetTextColor (hDC, gSyntaxColorText.crFore);
-                SetBkColor   (hDC, gSyntaxColorText.crBack);
+                    // Syntax color the line
+                    if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
+                    {
+                        // Unlock and free (and set to NULL) a global name and ptr
+                        UnlFreeGlbName (hGlbClr, lpMemClrIni);
+                    } // End IF
+
+                    // Set the Window text colors
+                    SetTextColor (hDC, gSyntaxColorText.crFore);
+                    SetBkColor   (hDC, gSyntaxColorText.crBack);
+                } // End IF
             } // End IF
-        } // End IF
+        } else
+        {
+            // Set the Window text colors
+            SetTextColor (hDC, gSyntaxColorText.crFore);
+            SetBkColor   (hDC, gSyntaxColorText.crBack);
+        } // End IF/ELSE
     } // End IF
 
     // Set the coordinates

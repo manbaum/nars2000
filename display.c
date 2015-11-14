@@ -2060,6 +2060,16 @@ LPAPLCHAR FormatAplVfpFC
                       0,                    // # significant digits (0 = all)
                      &aplVfp,               // Ptr to VFP number
                       MPFR_RNDN);           // Rounding mode
+        // If we're not already displaying in E-format, ...
+        if (nDigits > 0)
+        {
+            // If the number is too large or too small, ...
+            if (expptr > abs64 (nDigits)
+             || expptr < -5)
+                // Switch to E-format
+                nDigits = -nDigits;
+        } // End IF
+
         // Get the char length
         iDiff = lstrlen (lpRawFmt);
 

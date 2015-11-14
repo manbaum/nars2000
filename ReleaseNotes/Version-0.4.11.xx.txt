@@ -1,6 +1,17 @@
 Version 0.4.11.xx consists of the following Builds:
 
 
+Build #1406 -- Version 0.4.11.xx
+--------------------------------
+
+* Display VFP Numbers In E-Format If Too Small Or Too Large
+
+Directory trunk:
+
+DISPLAY.C:
+  In <FormatAplVfpFC>, display VFP numbers in E-format if too small or too large.
+
+
 Build #1405 -- Version 0.4.11.xx
 --------------------------------
 

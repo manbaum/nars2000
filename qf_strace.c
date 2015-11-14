@@ -216,12 +216,9 @@ LPPL_YYSTYPE SysFnMonSTRACE_EM_YY
     if (lpSymEntry EQ NULL)
         goto DOMAIN_EXIT;
 
-    // If it's not a user-defined or (if DEBBUG) MFO function, ...
+    // If it's not a user-defined function or MFO, ...
     if ((stFlags.ObjName NE OBJNAME_USR
-#ifdef DEBUG
-      && stFlags.ObjName NE OBJNAME_MFO
-#endif
-        )
+      && stFlags.ObjName NE OBJNAME_MFO)
      || stFlags.stNameType EQ NAMETYPE_VAR)
         goto DOMAIN_EXIT;
 
@@ -496,12 +493,9 @@ LPPL_YYSTYPE SysFnDydSTRACE_EM_YY
     if (lpSymEntry EQ NULL)
         goto RIGHT_DOMAIN_EXIT;
 
-    // If it's not a user-defined or (if DEBBUG) MFO function, ...
+    // If it's not a user-defined function or MFO, ...
     if ((stFlags.ObjName NE OBJNAME_USR
-#ifdef DEBUG
-      && stFlags.ObjName NE OBJNAME_MFO
-#endif
-        )
+      && stFlags.ObjName NE OBJNAME_MFO)
      || stFlags.stNameType EQ NAMETYPE_VAR)
         goto RIGHT_DOMAIN_EXIT;
 

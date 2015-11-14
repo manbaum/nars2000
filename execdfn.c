@@ -866,7 +866,7 @@ void _CheckSymEntries
 
 LPPL_YYSTYPE ExecuteFunction_EM_YY
     (UINT         uLineNum,         // Starting line # (origin-1)
-     LPTOKEN      lptkFunc)         // Ptr to function token
+     LPTOKEN      lptkFunc)         // Ptr to function token (may be NULL)
 
 {
     LPPL_YYSTYPE   lpYYRes = NULL;  // Ptr to the result

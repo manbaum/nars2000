@@ -3154,7 +3154,7 @@ APLUINT CalcFcnSize
 //***************************************************************************
 
 LPPL_YYSTYPE MakeNoValue_YY
-    (LPTOKEN lptkFunc)
+    (LPTOKEN lptkFunc)          // Ptr to function token (may be NULL)
 
 {
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -3171,7 +3171,8 @@ LPPL_YYSTYPE MakeNoValue_YY
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
     lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
     lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->lphtsPTD->steNoValue;
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkCharIndex       = (lptkFunc NE NULL) ? lptkFunc->tkCharIndex
+                                                            : -1;
     lpYYRes->tkToken.tkSynObj          = soNVAL;
 
     return lpYYRes;
@@ -3503,8 +3504,10 @@ UBOOL IsTknTrain
     // Get the global memory handle
     hGlbFcn = GetGlbHandle (lpToken);
 
-    // If there is a global handle, ...
-    if (hGlbFcn)
+    // If there is a global handle,
+    //   and it's a function array, ...
+    if (hGlbFcn NE NULL
+     && IsTknFcnArray (lpToken))
     {
         // Lock the memory to get a ptr to it
         lpMemFcn = MyGlobalLock (hGlbFcn);

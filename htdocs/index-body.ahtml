@@ -266,13 +266,13 @@ Welcome to NARS2000</h1>
     <li>Optional Facilities Included
       <ul>
         <li>Statement Separator (<span class="APL">{diamond}</span>)</li>
+        <li>Trace and Stop Control</li>
       </ul>
     </li>
 
     <li>Optional Facilities Not Included (as yet)
       <ul>
         <li>Shared Variables</li>
-        <li>Trace and Stop Control</li>
         <li>Complex Arithmetic</li>
       </ul>
     </li>

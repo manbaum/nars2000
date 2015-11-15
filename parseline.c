@@ -3754,6 +3754,7 @@ EXIT_TYPES ParseLine
      UINT           uTknNum,                // Starting token # in the above function line
      UBOOL          bTraceLine,             // TRUE iff we're tracing this line
      HGLOBAL        hGlbDfnHdr,             // User-defined function/operator global memory handle (NULL = execute/immexec)
+     LPTOKEN        lptkFunc,               // Ptr to function token used for AFO function name
      UBOOL          bActOnErrors,           // TRUE iff errors are acted upon
      UBOOL          bExec1Stmt,             // TRUE iff executing only one stmt
      UBOOL          bNoDepthCheck)          // TRUE iff we're to skip the depth check
@@ -4815,6 +4816,7 @@ PARSELINE_DONE:
                 if (bTraceLine)
                     TraceLine (lpMemPTD,            // Ptr to PerTabData global memory
                               &plLocalVars,         // Ptr to ParseLine local vars
+                               lptkFunc,            // Ptr to function token used for AFO function name
                                lpplYYCurObj);       // Ptr to the current token object (may be NULL)
                 // If the current token is an array or from sink, ...
                 if (curSynObj EQ soA || bSink)

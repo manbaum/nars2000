@@ -594,6 +594,7 @@ NORMAL_EXIT:
 void TraceLine
     (LPPERTABDATA  lpMemPTD,                // Ptr to PerTabData global memory
      LPPLLOCALVARS lpplLocalVars,           // Ptr to ParseLine local vars
+     LPTOKEN       lptkFunc,                // Ptr to function token used for AFO function name
      LPPL_YYSTYPE  lpplYYCurObj)            // Ptr to the current token object (may be NULL)
 
 {
@@ -627,14 +628,26 @@ void TraceLine
         // If the function name ptr is valid, ...
         if (lpSISCur->hGlbFcnName)
         {
+            HGLOBAL      htGlbName;     // Function name global memory handle
             LPAPLCHAR    lpMemName;     // Ptr to function name global memory
             LPPL_YYSTYPE lpYYCurObj;    // Ptr to value to display
             VARS_TEMP_OPEN
 
-            CHECK_TEMP_OPEN
+            // If the function is an AFO, ...
+            if (lpSISCur->bAFO && lptkFunc NE NULL)
+            {
+                Assert (!IsTknImmed (lptkFunc) && GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                // Get the function name global memory handle
+                htGlbName = lptkFunc->tkData.tkSym->stHshEntry->htGlbName;
+            } else
+                // Get the function name global memory handle
+                htGlbName = lpSISCur->hGlbFcnName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+            lpMemName = MyGlobalLock (htGlbName);
+
+            CHECK_TEMP_OPEN
 
             // Format the name and line #
 ////////////*lpuNameLen =
@@ -643,7 +656,7 @@ void TraceLine
                          lpMemName,
                          lpSISCur->CurLineNum);
             // We no longer need this ptr
-            MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
+            MyGlobalUnlock (htGlbName); lpMemName = NULL;
 
             if (lpplYYCurObj EQ NULL)
                 lpYYCurObj = &lpMemPTD->YYResExec;
@@ -706,17 +719,30 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void TraceExit
-    (LPPL_YYSTYPE lpYYRes,          // Ptr to the result (may be NoValue)
-     LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header
-     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+    (LPPL_YYSTYPE lpYYRes,              // Ptr to the result (may be NoValue)
+     LPDFN_HEADER lpMemDfnHdr,          // Ptr to user-defined function/operator header
+     LPTOKEN      lptkFunc,             // Ptr to function token used for AFO function name
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    LPAPLCHAR         lpMemName;            // Ptr to function name global memory
-    static UBOOL      bCtrlBreak = FALSE;   // Ctrl-Break flag
+    LPAPLCHAR    lpMemName;             // Ptr to function name global memory
+    static UBOOL bCtrlBreak = FALSE;    // Ctrl-Break flag
+    HGLOBAL      htGlbName;             // Function name global memory handle
     VARS_TEMP_OPEN
 
+    // If the function is an AFO, ...
+    if (lpMemDfnHdr->bAFO && lptkFunc NE NULL)
+    {
+        Assert (!IsTknImmed (lptkFunc) && GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+        // Get the function name global memory handle
+        htGlbName = lptkFunc->tkData.tkSym->stHshEntry->htGlbName;
+    } else
+        // Get the function name global memory handle
+        htGlbName = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
+
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName);
+    lpMemName = MyGlobalLock (htGlbName);
 
     CHECK_TEMP_OPEN
 
@@ -725,7 +751,7 @@ void TraceExit
     strcatW (lpMemPTD->lpwszTemp, L"[0] ");
 
     // We no longer need this ptr
-    MyGlobalUnlock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName); lpMemName = NULL;
+    MyGlobalUnlock (htGlbName); lpMemName = NULL;
 
     // Note that although we're not finished with TEMP_OPEN, we must
     //   exit from it here as we can't carry the state across into

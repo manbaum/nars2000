@@ -491,6 +491,7 @@ DWORD WINAPI ImmExecStmtInThread
                      0,                     // Starting token # in the above function line
                      FALSE,                 // TRUE iff we're tracing this line
                      NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
+                     NULL,                  // Ptr to function token used for AFO function name
                      bActOnErrors,          // TRUE iff errors are acted upon
                      FALSE,                 // TRUE iff executing only one stmt
                      FALSE);                // TRUE iff we're to skip the depth check

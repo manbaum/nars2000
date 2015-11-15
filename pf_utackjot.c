@@ -602,6 +602,7 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
                  uTknNum,               // Starting token # in the above function line
                  FALSE,                 // TRUE iff we're tracing this line
                  NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
+                 NULL,                  // Ptr to function token used for AFO function name
                  bActOnErrors,          // TRUE iff errors are acted upon
                  bExec1Stmt,            // TRUE iff executing only one stmt
                  bNoDepthCheck);        // TRUE iff we're to skip the depth check

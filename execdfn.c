@@ -992,6 +992,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                          uTknNum,               // Starting token # in the above function line
                          bTraceLine,            // TRUE iff we're tracing this line
                          hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
+                         lptkFunc,              // Ptr to function token used for AFO function name
                          TRUE,                  // TRUE iff errors are acted upon
                          FALSE,                 // TRUE iff executing only one stmt
                          FALSE);                // TRUE iff we're to skip the depth check
@@ -1020,6 +1021,7 @@ RESTART_AFTER_ERROR:
             if (bStopLine
              || lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_STOP)
             {
+                HGLOBAL      htGlbName;     // Function name global memory handle
                 LPAPLCHAR    lpMemName;     // Ptr to function name global memory
                 LPSIS_HEADER lpSISCur;      // Ptr to current SIS entry
 
@@ -1031,8 +1033,19 @@ RESTART_AFTER_ERROR:
                     // Display the error message
                     AppendLine (ERRMSG_ELLIPSIS APPEND_NAME, FALSE, TRUE);
 
+                // If the function is an AFO, ...
+                if (lpSISCur->bAFO && lptkFunc NE NULL)
+                {
+                    Assert (!IsTknImmed (lptkFunc) && GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                    // Get the function name global memory handle
+                    htGlbName = lptkFunc->tkData.tkSym->stHshEntry->htGlbName;
+                } else
+                    // Get the function name global memory handle
+                    htGlbName = lpSISCur->hGlbFcnName;
+
                 // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+                lpMemName = MyGlobalLock (htGlbName);
 
                 // Format the name and line #
                 wsprintfW (lpMemPTD->lpwszTemp,
@@ -1040,7 +1053,7 @@ RESTART_AFTER_ERROR:
                            lpMemName,
                            lpSISCur->CurLineNum);
                 // We no longer need this ptr
-                MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
+                MyGlobalUnlock (htGlbName); lpMemName = NULL;
 
                 // Display the function name and line #
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
@@ -1169,6 +1182,7 @@ NEXTLINE:
                              0,                         // Starting token # in the above function line
                              FALSE,                     // TRUE iff we're tracing this line
                              hGlbDfnHdr,                // User-defined function/operator global memory handle (NULL = execute/immexec)
+                             lptkFunc,                  // Ptr to function token used for AFO function name
                              TRUE,                      // TRUE iff errors are acted upon
                              FALSE,                     // TRUE iff executing only one stmt
                              FALSE);                    // TRUE iff we're to skip the depth check
@@ -1226,8 +1240,8 @@ NEXTLINE:
             // If it's not already NoValue, ...
             if (lpYYRes EQ NULL
              || !IsTokenNoValue (&lpYYRes->tkToken))
-            // Make a PL_YYSTYPE NoValue entry
-            lpYYRes = MakeNoValue_YY (lptkFunc);
+                // Make a PL_YYSTYPE NoValue entry
+                lpYYRes = MakeNoValue_YY (lptkFunc);
 
             break;
 
@@ -1354,6 +1368,7 @@ NEXTLINE:
         // Trace the exit value
         TraceExit (lpYYRes,             // Ptr to the result (may be NoValue)
                    lpMemDfnHdr,         // Ptr to user-defined function/operator header
+                   lptkFunc,            // Ptr to function token used for AFO function name
                    lpMemPTD);           // Ptr to PerTabData global memory
     goto NORMAL_EXIT;
 

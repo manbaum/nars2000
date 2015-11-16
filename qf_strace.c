@@ -508,6 +508,23 @@ LPPL_YYSTYPE SysFnDydSTRACE_EM_YY
     // Get # function lines
     iNumLines = lpMemDfnHdr->numFcnLines;
 
+    // Clear all previous STOP or TRACE flags
+    if (bTrace)
+        // Clear the header flag
+        lpMemDfnHdr->bTraceHdr = FALSE;
+    else
+        // Clear the header flag
+        lpMemDfnHdr->bStopHdr  = FALSE;
+
+    // Loop through all of the function lines
+    for (iLine = 0; iLine < iNumLines; iLine++)
+    if (bTrace)
+        // Clear the line flag
+        lpFcnLines[iLine].bTrace = FALSE;
+    else
+        // Clear the line flag
+        lpFcnLines[iLine].bStop  = FALSE;
+
     // Loop through the left arg
     for (uLft = 0; uLft < aplNELMLft; uLft++)
     {
@@ -687,8 +704,11 @@ void TraceLine
                     goto NORMAL_EXIT;
             } // End IF
 
+            // Prepend a blank so as to line up with other traces
+            AppendLine (L" ", FALSE, FALSE);
+
             // Display the trace of the function name and line #
-            AppendLine (lpMemPTD->lpwszTemp, FALSE, FALSE);
+            AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
         } // End IF
     } // End IF
 NORMAL_EXIT:
@@ -697,14 +717,14 @@ NORMAL_EXIT:
     {
         LPPL_YYSTYPE lpYYVar;           // Ptr to a temp
 
+        // Free (unnamed) the current object -- not allocated by YYAlloc so not to be YYFreed
+        FreeTempResult (&lpMemPTD->YYResExec);
+
         // Make a PL_YYSTYPE NoValue entry
         lpYYVar =
           MakeNoValue_YY (&lpMemPTD->YYResExec.tkToken);
         lpMemPTD->YYResExec = *lpYYVar;
         YYFree (lpYYVar); lpYYVar = NULL;
-
-        // Free (unnamed) and YYFree the current object -- not allocated by YYAlloc so not to be freed
-        FreeTempResult (&lpMemPTD->YYResExec);
 
         // Clear the flag
         lpplLocalVars->bTraceFree = FALSE;

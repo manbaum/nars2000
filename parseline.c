@@ -3555,7 +3555,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
     return lpplYYLstRht;
 
 ERROR_EXIT:
-    // YYFree the current & lasy right objects
+    // YYFree the current & last right objects
     if (lpplYYCurObj NE NULL)
     {
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -3563,10 +3563,11 @@ ERROR_EXIT:
 
     if (lpplYYLstRht NE NULL)
     {
-        YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+        // Free (unnamed) and YYFree the last right object
+        FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;  // lstSynObj = soNONE;
     } // End IF
 
-    return lpplYYLstRht;
+    return NULL;
 } // End plRedNAM_SPCom
 
 

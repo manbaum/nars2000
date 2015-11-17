@@ -427,8 +427,10 @@ void SF_ReadLineLW
     LPWCHAR lpwszProf;              // Ptr to profile string
 
     // Format the line #
-    wsprintfW (wszLineNum, L"%d", uLineNum);
-
+    MySprintfW (wszLineNum,
+                sizeof (wszLineNum),
+               L"%d",
+                uLineNum);
     // Get the one (and only) line
     lpwszProf =
       ProfileGetString (lpLW_Params->lpwSectName,   // Ptr to the section name
@@ -1326,9 +1328,10 @@ UBOOL SaveFunctionCom
         if (hWndFE)
         {
             // Format the error message
-            wsprintfW (wszTemp,
-                       ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
-                       lpMemPTD->uCaret);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                        ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
+                        lpMemPTD->uCaret);
             // Display the error message
             MessageBoxW (hWndEC,
                         wszTemp,
@@ -1463,9 +1466,10 @@ UBOOL SaveFunctionCom
                 if (hWndFE)
                 {
                     // Format the error message
-                    wsprintfW (wszTemp,
+                    MySprintfW (wszTemp,
+                                sizeof (wszTemp),
                                L"New object name is <%s>, not a user-defined function/operator:  changes to this function NOT saved",
-                               lpwNameTypeStr[lpSymName->stFlags.stNameType]);
+                                lpwNameTypeStr[lpSymName->stFlags.stNameType]);
                     // Display the error message
                     MessageBoxW (hWndEC,
                                  wszTemp,
@@ -1717,10 +1721,11 @@ UBOOL SaveFunctionCom
                 if (hWndFE)
                 {
                     // Format the error message
-                    wsprintfW (wszTemp,
+                    MySprintfW (wszTemp,
+                                sizeof (wszTemp),
                                L"SYNTAX ERROR on line # %d, position %d -- function not saved",
-                               uLineNum + 1,
-                               lpMemPTD->uCaret);
+                                uLineNum + 1,
+                                lpMemPTD->uCaret);
                     // Display the error message
                     MessageBoxW (hWndEC,
                                  wszTemp,
@@ -1757,12 +1762,13 @@ UBOOL SaveFunctionCom
             if (hWndFE)
             {
                 // Format the error message
-                wsprintfW (wszTemp,
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
                            L"%s on line # %d, statement #%d, position %d -- function not saved",
-                           csLocalVars.lpwszErrMsg,
-                           csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
-                           csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1,
-                           lpMemPTD->uCaret);
+                            csLocalVars.lpwszErrMsg,
+                            csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
+                            csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1,
+                            lpMemPTD->uCaret);
                 // Display the error message
                 MessageBoxW (hWndEC,
                              wszTemp,
@@ -2164,10 +2170,11 @@ UINT SaveFunctionLine
         if (hWndFE)
         {
             // Format the error message
-            wsprintfW (wszTemp,
-                       ERRMSG_SYNTAX_ERROR_IN_FUNCTION_LINE APPEND_NAME,
-                       uLineNum + 1,
-                       lpMemPTD->uCaret);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                        ERRMSG_SYNTAX_ERROR_IN_FUNCTION_LINE APPEND_NAME,
+                        uLineNum + 1,
+                        lpMemPTD->uCaret);
             // Display the error message
             MessageBoxW (hWndEC,
                         wszTemp,
@@ -2526,11 +2533,12 @@ void ErrLabelNums
     lpMemName = MyGlobalLock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName);
 
         // Format the error message
-        wsprintfW (wszTemp,
-               L"Duplicate label <%s> in <%s> on line # %d",
-               lpMem,
-               lpMemName,
-               uLineNum1);
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"Duplicate label <%s> in <%s> on line # %d",
+                    lpMem,
+                    lpMemName,
+                    uLineNum1);
     // We no longer need these ptrs
     MyGlobalUnlock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName); lpMemName = NULL;
     MyGlobalUnlock (hGlbName); lpMem = NULL;

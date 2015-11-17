@@ -214,9 +214,10 @@ LPWSTR MyGetExceptionStr
             return L"STATUS_UNWIND_CONSOLIDATE";
 
         default:
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"*** Unknown Exception Code:  %u",
-                       gExceptionCode);
+                        gExceptionCode);
             return wszTemp;
     } // End SWITCH
 } // End MyGetExceptionStr
@@ -648,9 +649,10 @@ void DisplayException
     NewMsg (L"----------------- Copy Below Here ------------------"  );
 
     // Display the version # of the executable
-    wsprintfW (wszTemp,
-               WS_APPNAME L" -- Version %s (%s)" WS_APPEND_DEBUG,
-               wszFileVer,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+                WS_APPNAME L" -- Version %s (%s)" WS_APPEND_DEBUG,
+                wszFileVer,
 #ifdef _WIN64
                L"Win64"
 #elif defined (_WIN32)
@@ -662,69 +664,75 @@ void DisplayException
     NewMsg (wszTemp);
 
     // Display the exception code and string
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"Exception code = %08X (%s)",
-               exceptCode,
-               MyGetExceptionStr (exceptCode));
+                exceptCode,
+                MyGetExceptionStr (exceptCode));
     NewMsg (L"");
     NewMsg (wszTemp);
 
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"   at %p (%S + %p)",
-               exceptAddr,
-               StartAddresses[nearIndex].StartAddressName,
-               nearAddress);
+                exceptAddr,
+                StartAddresses[nearIndex].StartAddressName,
+                nearAddress);
     NewMsg (wszTemp);
 
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"   from %s",
-               exceptText);
+                exceptText);
     NewMsg (wszTemp);
 
     // Display the registers
     NewMsg (L"");
     NewMsg (L"== REGISTERS ==");
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
 #ifdef _WIN64
                L"RAX = %p RBX = %p RCX = %p RDX = %p RIP = %p",
-               gContextRecord.Rax,
-               gContextRecord.Rbx,
-               gContextRecord.Rcx,
-               gContextRecord.Rdx,
-               gContextRecord.Rip
+                gContextRecord.Rax,
+                gContextRecord.Rbx,
+                gContextRecord.Rcx,
+                gContextRecord.Rdx,
+                gContextRecord.Rip
 #elif defined (_WIN32)
                L"EAX = %p EBX = %p ECX = %p EDX = %p EIP = %p",
-               gContextRecord.Eax,
-               gContextRecord.Ebx,
-               gContextRecord.Ecx,
-               gContextRecord.Edx,
-               gContextRecord.Eip
+                gContextRecord.Eax,
+                gContextRecord.Ebx,
+                gContextRecord.Ecx,
+                gContextRecord.Edx,
+                gContextRecord.Eip
 #else
   #error Need code for this architecture.
 #endif
                );
     NewMsg (wszTemp);
 
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
 #ifdef _WIN64
                L"RSI = %p RDI = %p RBP = %p RSP = %p EFL = %08X",
-               gContextRecord.Rsi,
-               gContextRecord.Rdi,
-               gContextRecord.Rbp,
-               gContextRecord.Rsp,
+                gContextRecord.Rsi,
+                gContextRecord.Rdi,
+                gContextRecord.Rbp,
+                gContextRecord.Rsp,
 #elif defined (_WIN32)
                L"ESI = %p EDI = %p EBP = %p ESP = %p EFL = %08X",
-               gContextRecord.Esi,
-               gContextRecord.Edi,
-               gContextRecord.Ebp,
-               gContextRecord.Esp,
+                gContextRecord.Esi,
+                gContextRecord.Edi,
+                gContextRecord.Ebp,
+                gContextRecord.Esp,
 #else
   #error Need code for this architecture.
 #endif
                gContextRecord.EFlags);
     NewMsg (wszTemp);
 
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
 #ifdef _WIN64
                L"CS = %04X DS = %04X ES = %04X FS = %04X GS = %04X SS = %04X CR2 = %p",
 #elif defined (_WIN32)
@@ -732,13 +740,13 @@ void DisplayException
 #else
   #error Need code for this architecture.
 #endif
-               gContextRecord.SegCs,
-               gContextRecord.SegDs,
-               gContextRecord.SegEs,
-               gContextRecord.SegFs,
-               gContextRecord.SegGs,
-               gContextRecord.SegSs,
-               gExceptionRecord.ExceptionInformation[1]);
+                gContextRecord.SegCs,
+                gContextRecord.SegDs,
+                gContextRecord.SegEs,
+                gContextRecord.SegFs,
+                gContextRecord.SegGs,
+                gContextRecord.SegSs,
+                gExceptionRecord.ExceptionInformation[1]);
     NewMsg (wszTemp);
 
     // Display the instruction stream
@@ -761,13 +769,15 @@ void DisplayException
     {
         for (uCnt = 0; uCnt < 7; uCnt++, regEIP += 16)
         {
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"%p: ",
-                       regEIP);
+                        regEIP);
             for (uMem = 0; uMem < 16; uMem++)
-                wsprintfW (&wszTemp[lstrlenW (wszTemp)],
-                           L" %02X",
-                           *(LPBYTE) (regEIP + uMem));
+                MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                             sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                            L" %02X",
+                            *(LPBYTE) (regEIP + uMem));
             NewMsg (wszTemp);
         } // End FOR
     } // End IF
@@ -793,14 +803,15 @@ void DisplayException
     // Check for global VirtualAlloc memory that needs to be expanded
     for (uMem = 0; uMem < uMemVirtCnt; uMem++)
     {
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"%p %08X %08X %p %S",
-                   memVirtStr[uMem].IniAddr,
-                   memVirtStr[uMem].IncrSize,
-                   memVirtStr[uMem].MaxSize,
-                   memVirtStr[uMem].IniAddr + memVirtStr[uMem].MaxSize,
-                   memVirtStr[uMem].lpText
-                  );
+                    memVirtStr[uMem].IniAddr,
+                    memVirtStr[uMem].IncrSize,
+                    memVirtStr[uMem].MaxSize,
+                    memVirtStr[uMem].IniAddr + memVirtStr[uMem].MaxSize,
+                    memVirtStr[uMem].lpText
+                   );
         NewMsg (wszTemp);
     } // End FOR
 
@@ -817,14 +828,15 @@ void DisplayException
 
     while (lpLstMVS)
     {
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"%p %08X %08X %p %S",
-                   lpLstMVS->IniAddr,
-                   lpLstMVS->IncrSize,
-                   lpLstMVS->MaxSize,
-                   lpLstMVS->IniAddr + lpLstMVS->MaxSize,
-                   lpLstMVS->lpText
-                  );
+                    lpLstMVS->IniAddr,
+                    lpLstMVS->IncrSize,
+                    lpLstMVS->MaxSize,
+                    lpLstMVS->IniAddr + lpLstMVS->MaxSize,
+                    lpLstMVS->lpText
+                   );
         NewMsg (wszTemp);
 
         // Get the previous ptr in the chain
@@ -858,11 +870,12 @@ void DisplayException
                 lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 
                 // Format the Name, Line #, and Suspension marker
-                wsprintfW (wszTemp,
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
                            L"%s[%d] %c",
-                           lpMemName,
-                           lpSISCur->CurLineNum,
-                           " *"[lpSISCur->Suspended]);
+                            lpMemName,
+                            lpSISCur->CurLineNum,
+                           L" *"[lpSISCur->Suspended]);
                 // We no longer need this ptr
                 MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
 
@@ -1077,18 +1090,20 @@ void DoStackWalk
         // If the address is out of bounds, just display the address
         if (nearAddress > 0x00100000)
             // Format the addresses
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"%p -- EBP = %p",
-                       caller,
-                       stackFrame.AddrFrame.Offset);
+                        caller,
+                        stackFrame.AddrFrame.Offset);
         else
             // Format the addresses
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"%p (%S + %p) -- EBP = %p",
-                       caller,
-                       StartAddresses[nearIndex].StartAddressName,
-                       nearAddress,
-                       stackFrame.AddrFrame.Offset);
+                        caller,
+                        StartAddresses[nearIndex].StartAddressName,
+                        nearAddress,
+                        stackFrame.AddrFrame.Offset);
 #define NewMsg(a)   SendMessageW (hWndCC_LB, LB_ADDSTRING, 0, (LPARAM) (a)); UpdateWindow (hWndCC_LB)
         NewMsg (wszTemp);
 #undef  NewMsg

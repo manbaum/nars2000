@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,17 +63,17 @@ UBOOL CmdSinl_EM
 //***************************************************************************
 
 UBOOL CmdSiSinlCom_EM
-    (LPWCHAR   lpwszTail,       // Ptr to command line tail
-     UBOOL     bSINL,           // TRUE iff )SINL
-     LPAPLCHAR lpMemSaveWSID)   // Ptr to the file name (NULL = not called from CmdSave_EM)
+    (LPWCHAR   lpwszTail,           // Ptr to command line tail
+     UBOOL     bSINL,               // TRUE iff )SINL
+     LPAPLCHAR lpMemSaveWSID)       // Ptr to the file name (NULL = not called from CmdSave_EM)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPSIS_HEADER lpSISCur;      // Ptr to current SIS_HEADER srtuc
-    UINT         SILevel;       // SI level (for CmdSave_EM)
-    APLCHAR      szSILevel[10]; // Formatted SI level
-    LPWCHAR      lpwszFormat,   // Ptr to formatting save area
-                 lpwszTemp;     // Ptr to temporary storage
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS_HEADER srtuc
+    UINT         SILevel;           // SI level (for CmdSave_EM)
+    WCHAR        wszSILevel[10];    // Formatted SI level
+    LPWCHAR      lpwszFormat,       // Ptr to formatting save area
+                 lpwszTemp;         // Ptr to temporary storage
     VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
@@ -99,9 +99,10 @@ UBOOL CmdSiSinlCom_EM
         LPAPLCHAR lpMemName;            // Ptr to function name global memory
 
         // Format the SI level
-        wsprintfW (szSILevel,
+        MySprintfW (wszSILevel,
+                    sizeof (wszSILevel),
                    L"%d",
-                   SILevel);
+                    SILevel);
         // Split cases based upon the caller's function type
         switch (lpSISCur->DfnType)
         {
@@ -148,7 +149,7 @@ UBOOL CmdSiSinlCom_EM
                     AppendLine (lpwszTemp, FALSE, !bSINL);
                 else
                     WritePrivateProfileStringW (SECTNAME_SI,    // Ptr to the section name
-                                                szSILevel,      // Ptr to the key name
+                                                wszSILevel,     // Ptr to the key name
                                                 lpwszTemp,      // Ptr to the key value
                                                 lpMemSaveWSID); // Ptr to the file name
                 // If it's )SINL, display the namelist
@@ -217,8 +218,8 @@ UBOOL CmdSiSinlCom_EM
                     AppendLine (WS_UTF16_UPTACKJOT, FALSE, TRUE);
                 else
                     WritePrivateProfileStringW (SECTNAME_SI,        // Ptr to the section name
-                                                szSILevel,          // Ptr to the key name
-                                                L"{uptackjot}",     // Ptr to the key value
+                                                wszSILevel,         // Ptr to the key name
+                                               L"{uptackjot}",      // Ptr to the key value
                                                 lpMemSaveWSID);     // Ptr to the file name
                 break;
 
@@ -228,8 +229,8 @@ UBOOL CmdSiSinlCom_EM
                     AppendLine (WS_UTF16_QUAD, FALSE, TRUE);
                 else
                     WritePrivateProfileStringW (SECTNAME_SI,        // Ptr to the section name
-                                                szSILevel,          // Ptr to the key name
-                                                L"{quad}",          // Ptr to the key value
+                                                wszSILevel,         // Ptr to the key name
+                                               L"{quad}",           // Ptr to the key value
                                                 lpMemSaveWSID);     // Ptr to the file name
                 break;
 

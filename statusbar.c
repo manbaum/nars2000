@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -321,7 +321,7 @@ void SetStatusPos
                                     //   of buffer then eventually from the start of the line
              uLineNum,              // Line # (origin-0)
              uLinePos;              // Line position from start of buffer
-    WCHAR    szTemp[32];            // Temp format save area
+    WCHAR    wszTemp[32];           // Temp format save area
 
     // Get the indices of the selected text (if any)
     SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
@@ -336,16 +336,18 @@ void SetStatusPos
     uCharPos -= uLinePos;
 
     // Format the line #
-    wsprintfW (szTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%u",
-               uLineNum);
-    SendStatusMsg (SB_SETTEXTW, SP_LINEPOS, (LPARAM) szTemp);
+                uLineNum);
+    SendStatusMsg (SB_SETTEXTW, SP_LINEPOS, (LPARAM) wszTemp);
 
     // Format the char #
-    wsprintfW (szTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%u",
-               uCharPos);
-    SendStatusMsg (SB_SETTEXTW, SP_CHARPOS, (LPARAM) szTemp);
+                uCharPos);
+    SendStatusMsg (SB_SETTEXTW, SP_CHARPOS, (LPARAM) wszTemp);
 } // End SetStatusPos
 
 
@@ -373,24 +375,28 @@ void SetStatusTimer
 
     // Format the number
     if (hrs)
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                 //   00:00:99:999 ms
                    L"%u:%02u:%02u:%03u ms",
-                   hrs, mins, secs, ms);
+                    hrs, mins, secs, ms);
     else
     if (mins)
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                 //   00:00:99:999 ms
                    L"   %2u:%02u:%03u ms",
                         mins, secs, ms);
     else
     if (secs)
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                 //   00:00:99:999 ms
                    L"      %2u:%03u ms",
                               secs, ms);
     else
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                 //   00:00:00:999 ms
                    L"         %3u ms",
                                     ms);

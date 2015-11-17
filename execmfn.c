@@ -362,9 +362,10 @@ HGLOBAL Init1MagicFunction
         WCHAR wszTemp[1024];
 
         // Format the error message
-        wsprintfW (wszTemp,
-                   ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER,
-                   lpMemPTD->uCaret);
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                    ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER,
+                    lpMemPTD->uCaret);
         // Display the error message
         MessageBoxW (hWndEC,
                     wszTemp,
@@ -623,13 +624,14 @@ HGLOBAL Init1MagicFunction
             WCHAR wszTemp[1024];
 
             // Format the error message
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"%s in %s -- Line %d statement %d position %d",
-                       csLocalVars.lpwszErrMsg,
-                       lpwszName,
-                       csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
-                       csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1,
-                       csLocalVars.tkCSErr.tkCharIndex);
+                        csLocalVars.lpwszErrMsg,
+                        lpwszName,
+                        csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
+                        csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1,
+                        csLocalVars.tkCSErr.tkCharIndex);
             MBW (wszTemp);
 
             goto ERROR_EXIT;

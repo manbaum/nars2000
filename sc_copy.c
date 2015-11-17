@@ -135,7 +135,7 @@ UBOOL CmdCopy_EM
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
 
         // Append the common workspace extension
-        strcatW (wszTailDPFE, WS_WKSEXT);
+        MyStrcatW (wszTailDPFE, sizeof (wszTailDPFE), WS_WKSEXT);
 
         // Attempt to open the workspace
         fStream = fopenW (wszTailDPFE, L"r");
@@ -431,8 +431,10 @@ int CopyWsVars
     for (uCnt = 0; uCnt < uSymVar; uCnt++)
     {
         // Format the counter
-        wsprintfW (wszCount, L"%d", uCnt);
-
+        MySprintfW (wszCount,
+                    sizeof (wszCount),
+                   L"%d",
+                    uCnt);
         // Point to the name in the workspace
         lpwNameInWrk = lpMemPTD->lpwszTemp;
 
@@ -599,8 +601,10 @@ int CopyWsFcns
         NAME_TYPES nameType;
 
         // Format the counter
-        wsprintfW (wszCount, L"%d", uCnt);
-
+        MySprintfW (wszCount,
+                    sizeof (wszCount),
+                   L"%d",
+                    uCnt);
         // Point to the name in the workspace
         lpwNameInWrk = lpMemPTD->lpwszTemp;
         CHECK_TEMP_OPEN

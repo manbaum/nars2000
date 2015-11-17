@@ -67,12 +67,12 @@ UBOOL _CheckCtrlBreak
 ////{
 ////    char szTemp[1024];
 ////
-////    wsprintf (szTemp,
-////              "ASSERTION FAILURE:  Expression <%s> failed in file <%s> line #%d, continuing anyway...",
-////              lpExp,
-////              lpFileName,
-////              uLineNum);
-////
+////    MySprintf (szTemp,
+////               sizeof (szTemp),
+////               "ASSERTION FAILURE:  Expression <%s> failed in file <%s> line #%d, continuing anyway...",
+////               lpExp,
+////               lpFileName,
+////               uLineNum);
 ////    MB (szTemp);
 ////} // End AssertPrint
 ////#endif
@@ -532,10 +532,11 @@ LRESULT APIENTRY DBWndProc
             iLineNum = HandleToUlong (GetPropW (hWnd, PROP_LINENUM));
 
             // Format the string with a preceding line #
-            wsprintfA (szTemp,
+            MySprintf (szTemp,
+                       sizeof (szTemp),
                        "%2d:  %s",
                        ++iLineNum,
-                       *(LPCHAR *) &lParam);
+                      *(LPCHAR *) &lParam);
             // Convert the string from A to W
             A2W (wszTemp, szTemp, sizeof (wszTemp) - 1);
 
@@ -556,12 +557,12 @@ LRESULT APIENTRY DBWndProc
             iIndex = (UTF16_REFCNT_NE1 EQ (*(LPWCHAR *) &lParam)[0]);
 
             // Format the string with a preceding line #
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"%s%2d:  %s",
-                       iIndex ? WS_UTF16_REFCNT_NE1 : L"",
-                       ++iLineNum,
+                        iIndex ? WS_UTF16_REFCNT_NE1 : L"",
+                        ++iLineNum,
                        &(*(LPWCHAR *) &lParam)[iIndex]);
-
             SetPropW (hWnd, PROP_LINENUM, ULongToHandle (iLineNum));
 
             // Add the string to the ListBox
@@ -1053,9 +1054,9 @@ int oprintfW
 
     // wsprintfW the list
     hResult = StringCbVPrintfW (wszTemp,
-                                sizeof (wszTemp),
-                                lpwszFmt,
-                                vl);
+                  sizeof (wszTemp),
+                  lpwszFmt,
+                  vl);
     // End the variable list
     va_end (vl);
 
@@ -1093,9 +1094,9 @@ int dprintfWL0
 
     // wsprintfW the list
     hResult = StringCbVPrintfW (wszTemp,
-                                sizeof (wszTemp),
-                                lpwszFmt,
-                                vl);
+                  sizeof (wszTemp),
+                  lpwszFmt,
+                  vl);
     // End the variable list
     va_end (vl);
 
@@ -1136,9 +1137,9 @@ int dprintfWL9
 
     // wsprintfW the list
     hResult = StringCbVPrintfW (wszTemp,
-                                sizeof (wszTemp),
-                                lpwszFmt,
-                                vl);
+                  sizeof (wszTemp),
+                  lpwszFmt,
+                  vl);
     // End the variable list
     va_end (vl);
 

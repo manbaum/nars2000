@@ -2127,9 +2127,9 @@ LPAPLCHAR FormatAplVfpFC
 
             // Ask for no more digits than are in the precision
             iSigDigs = min (iSigDigs, iPrcDigs);
-        } else
-        {
-            Assert (!bFractDigs);
+////////} else
+////////{
+////////    Assert (!bFractDigs);
         } // End IF/ELSE
 
         // If # significant digits NE # precision digits, ...

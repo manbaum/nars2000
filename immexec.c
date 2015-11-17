@@ -457,11 +457,12 @@ DWORD WINAPI ImmExecStmtInThread
             WCHAR wszTemp[1024];
 
             // Format the error message
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"%s -- Line %d statement %d",
-                       csLocalVars.lpwszErrMsg,
-                       csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
-                       csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1);
+                        csLocalVars.lpwszErrMsg,
+                        csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
+                        csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1);
             // Create []DM & []EM
             ErrorMessageDirect (wszTemp,                            // Ptr to error message text
                                 lpwszCompLine,                      // Ptr to the line which generated the error

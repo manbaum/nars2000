@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -419,8 +419,10 @@ LRESULT APIENTRY PBWndProc
                 uCurPos = (100 * uCurPos + 50) / lpMemWD->uMaxVal;
 
                 // Format the precentage
-                wsprintfW (wszTemp, L"%u%%", uCurPos);
-
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
+                           L"%u%%",
+                            uCurPos);
                 // Send the new percentage to the buddy window
                 SetWindowTextW (lpMemWD->hBuddy, wszTemp);
             } // End IF

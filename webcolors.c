@@ -106,18 +106,20 @@ __try
 
             // If we didn't match the name (some non-Web Color), ...
             if (lpwName EQ NULL)
-                wsprintfW (wszTemp,
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
                            L" The color you are replacing is %u, %u, %u (#%02X%02X%02X) for category \"%s\".",
-                           GetRValue (scnMatch.syntClr.crFore), GetGValue (scnMatch.syntClr.crFore), GetBValue (scnMatch.syntClr.crFore),
-                           GetRValue (scnMatch.syntClr.crFore), GetGValue (scnMatch.syntClr.crFore), GetBValue (scnMatch.syntClr.crFore),
-                           scnMatch.lpwSCName);
+                            GetRValue (scnMatch.syntClr.crFore), GetGValue (scnMatch.syntClr.crFore), GetBValue (scnMatch.syntClr.crFore),
+                            GetRValue (scnMatch.syntClr.crFore), GetGValue (scnMatch.syntClr.crFore), GetBValue (scnMatch.syntClr.crFore),
+                            scnMatch.lpwSCName);
             else
-                wsprintfW (wszTemp,
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
                            L" The color you are replacing is \"%s\" for category \"%s\".",
-                           lpwName,
-                           scnMatch.lpwSCName);
+                            lpwName,
+                            scnMatch.lpwSCName);
             // Append common text
-            strcatW (wszTemp, WS_LF L" Click on a new color to replace and exit, or click on Cancel to exit without replacing.");
+            MyStrcatW (wszTemp, sizeof (wszTemp), WS_LF L" Click on a new color to replace and exit, or click on Cancel to exit without replacing.");
 
             // Insert the text about what color we're replacing
             SendDlgItemMessageW (hDlg,
@@ -193,11 +195,12 @@ __try
                         clrRef = aColorNames[idCtl].clrRef;
 
                         // Format the tooltip text
-                        wsprintfW (TooltipText,
+                        MySprintfW (TooltipText,
+                                    sizeof (TooltipText),
                                    L"%s %u, %u, %u (#%02X%02X%02X)",
-                                   aColorNames[idCtl].lpwName,
-                                   GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef),
-                                   GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef));
+                                    aColorNames[idCtl].lpwName,
+                                    GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef),
+                                    GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef));
                         // Return the ptr to the caller
                         lpttt->lpszText = TooltipText;
 #undef  lpttt

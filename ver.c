@@ -46,8 +46,9 @@ extern WCHAR crsh_version[];
 //***************************************************************************
 
 void LclFileVersionStrW
-    (LPWSTR lpwszFileName,
-     LPWSTR wszFileVer)
+    (LPWSTR lpwszFileName,      // Ptr to file name to check
+     LPWSTR lpwszFileVer,       // Ptr to dest buffer
+     size_t cbDest)             // Size of dest buffer in bytes
 
 {
     DWORD  dwVerHandle;     // Version file handle
@@ -86,14 +87,15 @@ void LclFileVersionStrW
 
     // Extract the translation value (with the swapped words)
     dwTrans = *(DWORD FAR *)lpwBuf;
-    wsprintfW (wszTemp,
-               WS_SLOPE L"StringFileInfo" WS_SLOPE L"%08lX" WS_SLOPE L"FileVersion",
-               MAKELONG (HIWORD (dwTrans), LOWORD (dwTrans)));
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+                WS_SLOPE L"StringFileInfo" WS_SLOPE L"%08lX" WS_SLOPE L"FileVersion",
+                MAKELONG (HIWORD (dwTrans), LOWORD (dwTrans)));
     if (!VerQueryValueW (lpwVer, wszTemp, &lpwBuf, &cb))
         goto ERROR_EXIT3;
 
     // Copy to local storage as we're about to free the memory
-    strcpyW (wszFileVer, lpwBuf);
+    MyStrcpyW (lpwszFileVer, cbDest, lpwBuf);
 
     goto NORMAL_EXIT;
 
@@ -155,48 +157,63 @@ APLU3264 CALLBACK AboutDlgProc
             SendMessageW (hDlg, WM_SETICON, ICON_BIG, (LPARAM) (HANDLE_PTR) hIconAbout);
 
             // Format the version #
-            wsprintfW (wszTemp, lpwszVersion, wszFileVer);
-
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                        lpwszVersion,
+                        wszFileVer);
             // Write out the version string
             SetDlgItemTextW (hDlg, IDC_VERSION, wszTemp);
 
             // Copy the MPIR prefix to the text
-            strcpyW (wszTemp, L"MPIR #");
+            MyStrcpyW (wszTemp, sizeof (wszTemp), L"MPIR #");
 
             // Append the MPIR version #
-            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", mpir_version);
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                        L"%S\n",
+                         mpir_version);
 
             // Copy the GMP prefix to the text
-            strcatW (wszTemp, L"GMP #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"GMP #");
 
             // Append the GMP version #
-            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", gmp_version);
-
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                        L"%S\n",
+                         gmp_version);
             // Copy the MPFR prefix to the text
-            strcatW (wszTemp, L"MPFR #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"MPFR #");
 
             // Append the MPFR version #
-            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", mpfr_get_version ());
-
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                        L"%S\n",
+                         mpfr_get_version ());
             // Copy the ECM prefix to the text
-            strcatW (wszTemp, L"ECM #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"ECM #");
 
             // Append the ECM version #
-            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%S\n", ecm_version);
-
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                        L"%S\n",
+                         ecm_version);
             // Copy the COMCTL32.DLL prefix to the text
-            strcatW (wszTemp, L"COMCTL32.DLL #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"COMCTL32.DLL #");
 
             // Append the COMCTL32.DLL version #
-            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", wszComctl32FileVer);
-
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                        L"%s\n",
+                         wszComctl32FileVer);
             // Copy the CRASHRPT.DLL prefix to the text
-            strcatW (wszTemp, crsh_dll);
-            strcatW (wszTemp, L" #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), crsh_dll);
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" #");
 
             // Append the CRASHRPT.DLL version #
-            wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"%s\n", crsh_version);
-
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                        L"%s\n",
+                        crsh_version);
             // Write out the secondary version string
             SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);
 
@@ -216,10 +233,10 @@ APLU3264 CALLBACK AboutDlgProc
             {
 #define TT_PREFIX   L"Loaded from:  "
                 // Copy the prefix to the text
-                strcpyW (wszLclAppDPFE, TT_PREFIX);
+                MyStrcpyW (wszLclAppDPFE, sizeof (wszLclAppDPFE), TT_PREFIX);
 
                 // Append the source DPFE
-                strcatW (wszLclAppDPFE, wszAppDPFE);
+                MyStrcatW (wszLclAppDPFE, sizeof (wszLclAppDPFE), wszAppDPFE);
 #undef  TT_PREFIX
             } // End IF
 

@@ -721,57 +721,66 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:
-            wsprintfW (wszTemp,
-                      L"Boolean (%d):  1 bit per element",
-                       DR_BOOL);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Boolean (%d):  1 bit per element",
+                        DR_BOOL);
             break;
 
         case ARRAY_INT:
-            wsprintfW (wszTemp,
-                      L"Integer (%d):  64 bits per element",
-                       DR_INT64);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Integer (%d):  64 bits per element",
+                        DR_INT64);
             break;
 
         case ARRAY_FLOAT:
-            wsprintfW (wszTemp,
-                      L"Floating Point (%d):  64 bits per element",
-                       DR_FLOAT);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Floating Point (%d):  64 bits per element",
+                        DR_FLOAT);
             break;
 
         case ARRAY_CHAR:
-            wsprintfW (wszTemp,
-                      L"Character (%d):  16 bits per element",
-                       DR_CHAR16);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Character (%d):  16 bits per element",
+                        DR_CHAR16);
             break;
 
         case ARRAY_APA:
-            wsprintfW (wszTemp,
-                      L"Arithmetic Progression Array (%d):  64 bit offset + 64 bit multiplier",
-                      DR_APA);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Arithmetic Progression Array (%d):  64 bit offset + 64 bit multiplier",
+                        DR_APA);
             break;
 
         case ARRAY_NESTED:
-            wsprintfW (wszTemp,
-                      L"Nested Array (%d):  PTR bits per element",
-                      DR_NESTED);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Nested Array (%d):  PTR bits per element",
+                        DR_NESTED);
             break;
 
         case ARRAY_HETERO:
-            wsprintfW (wszTemp,
-                      L"Heterogeneous Array (%d):  PTR bits per element",
-                      DR_HETERO);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Heterogeneous Array (%d):  PTR bits per element",
+                        DR_HETERO);
             break;
 
         case ARRAY_RAT:
-            wsprintfW (wszTemp,
-                      L"Rational (%d):  arbitrary precision numerator and denominator",
-                      DR_RAT);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Rational (%d):  arbitrary precision numerator and denominator",
+                        DR_RAT);
             break;
 
         case ARRAY_VFP:
-            wsprintfW (wszTemp,
-                      L"VFP (%d):  variable precision mantissa, 32-bit exponent",
-                      DR_VFP);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"VFP (%d):  variable precision mantissa, 32-bit exponent",
+                        DR_VFP);
             break;
 
         defstop
@@ -786,33 +795,33 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     {
         if (!bInit)
         {
-            strcatW (wszTemp, L" --");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" --");
             bInit = TRUE;
         } // End IF
 
-        strcatW (wszTemp, L" " AP_PV0);
+        MyStrcatW (wszTemp, sizeof (wszTemp), L" " AP_PV0);
     } // End IF
 
     if (IsPermVector1 (lpHeader))
     {
         if (!bInit)
         {
-            strcatW (wszTemp, L" --");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" --");
             bInit = TRUE;
         } // End IF
 
-        strcatW (wszTemp, L" " AP_PV1);
+        MyStrcatW (wszTemp, sizeof (wszTemp), L" " AP_PV1);
     } // End IF
 
     if (IsAll2s (lpHeader))
     {
         if (!bInit)
         {
-            strcatW (wszTemp, L" --");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" --");
             bInit = TRUE;
         } // End IF
 
-        strcatW (wszTemp, L" " AP_ALL2S);
+        MyStrcatW (wszTemp, sizeof (wszTemp), L" " AP_ALL2S);
     } // End IF
 
     // If the array is VFP,
@@ -842,19 +851,20 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
         if (!bInit)
         {
-            strcatW (wszTemp, L" --");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" --");
             bInit = TRUE;
         } // End IF
 
         // If there's a common precision, ...
         if (uCommPrec NE 0)
         {
-            strcatW (wszTemp, L" " AP_FPC);
-            wsprintfW (&wszTemp[lstrlenW (wszTemp)],
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" " AP_FPC);
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
                         L"%I64u ",
-                        uCommPrec);
+                         uCommPrec);
         } else
-            strcatW (wszTemp, L" " AP_FPC L"-Mixed");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" " AP_FPC L"-Mixed");
     } // End IF
 
     // If the ptr is valid, ...

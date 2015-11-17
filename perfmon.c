@@ -124,13 +124,13 @@ void PerfMonShow
         liCurrent.QuadPart = PerfMonData[uCnt].liPerf.QuadPart - liLast.QuadPart;
 
         // Format the string
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"%-13S[%5d]: %s %s",
-                   PerfMonData[uCnt].lpFileName,
-                   PerfMonData[uCnt].uLine,
-                   FormatWithSep ((1000000 * liCurrent.QuadPart) / liTicksPerSec.QuadPart, 13),
-                   lpwszMicro);
-
+                    PerfMonData[uCnt].lpFileName,
+                    PerfMonData[uCnt].uLine,
+                    FormatWithSep ((1000000 * liCurrent.QuadPart) / liTicksPerSec.QuadPart, 13),
+                    lpwszMicro);
         // Zap for the next time
         lpwszMicro = L"";
 
@@ -144,12 +144,13 @@ void PerfMonShow
     liCurrent.QuadPart = PerfMonData[uPerfMonData - 1].liPerf.QuadPart;
 
     // Format the string
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%-13S %5s   %s %s",
                L"",
                L"",
-               FormatWithSep ((1000000 * liCurrent.QuadPart) / liTicksPerSec.QuadPart, 13),
-               lpwszMicro);
+                FormatWithSep ((1000000 * liCurrent.QuadPart) / liTicksPerSec.QuadPart, 13),
+                lpwszMicro);
     // Append the string
     SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
 } // End PerfMonShow

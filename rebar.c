@@ -3084,10 +3084,11 @@ typedef struct tagLANGCHARS
                                UINT  uLen;
 
                         // Create the tooltip title
-                        wsprintfW (wszText,
+                        MySprintfW (wszText,
+                                    sizeof (wszText),
                                    L"%s (%s)\n",
-                                   langChars[uLastCnt].lpwszTitle,
-                                   langChars[uLastCnt].lpwc);
+                                    langChars[uLastCnt].lpwszTitle,
+                                    langChars[uLastCnt].lpwc);
                         // Get the title length
                         uLen = lstrlenW (wszText);
 
@@ -3096,9 +3097,10 @@ typedef struct tagLANGCHARS
                         FillMemoryW (&wszText[uLen], uLen - 1, UTF16_LDC_DB_HORZ);
 
                         // Append the tooltip text
-                        wsprintfW (&wszText[uLen + uLen - 1],
-                                   L"\n%s",
-                                   langChars[uLastCnt].lpwszTipText);
+                        MySprintfW (&wszText[uLen + uLen - 1],
+                                     sizeof (wszText) - (lstrlenW (wszText) * sizeof (wszText[0])),
+                                    L"\n%s",
+                                     langChars[uLastCnt].lpwszTipText);
                         // Display the tooltip for the last outlined char
                         lpnmtdi->lpszText = wszText;
                     } // End IF

@@ -5433,16 +5433,17 @@ __try
         tkLocalVars.colIndex = colIndex;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
-                   wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
-                   wchOrig,
-                   GetColName (colIndex),
-                   colIndex,
-                   tkLocalVars.State[0],
-                   fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState,
-                   fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
-                   fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
+                    wchOrig ? wchOrig : UTF16_HORIZELLIPSIS,
+                    wchOrig,
+                    GetColName (colIndex),
+                    colIndex,
+                    tkLocalVars.State[0],
+                    fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState,
+                    fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
+                    fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
         DbgMsgW (wszTemp);
 #endif
 
@@ -5816,9 +5817,10 @@ void Untokenize
         {
             WCHAR wszTemp[1024];    // Ptr to temporary output area
 
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"Untokenize:  *** Unknown Token Value:  %d",
-                       lpToken->tkFlags.TknType);
+                        lpToken->tkFlags.TknType);
             DbgMsgW (wszTemp);
         }
 #endif
@@ -6709,10 +6711,11 @@ TKCOLINDICES CharTransTK
         {
             WCHAR wszTemp[64];
 
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"CharTransTK:  Unknown char: %c (%d)",
-                       wchOrig,
-                       wchOrig);
+                        wchOrig,
+                        wchOrig);
             DbgMsgW (wszTemp);
         }
 #endif
@@ -6819,9 +6822,10 @@ static COLNAMES colNames[] =
     {
         static WCHAR wszTemp[64];
 
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"GetColName:  *** Unknown Column Number:  %d",
-                   colIndex);
+                    colIndex);
         return wszTemp;
     } // End IF/ELSE
 } // End GetColName

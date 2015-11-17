@@ -276,7 +276,7 @@ INT_PTR CALLBACK UpdatesDlgProc
             dnlThrStr.bThreadDone = TRUE;
 
             // Save the web version ptr for later use
-            strcpyW (wszWebVer, lpUpdatesDlgStr->lpWebVer);
+            MyStrcpyW (wszWebVer, sizeof (wszWebVer), lpUpdatesDlgStr->lpWebVer);
 
             // Compare the two versions
             if (lpUpdatesDlgStr->bForceDownload
@@ -291,10 +291,11 @@ INT_PTR CALLBACK UpdatesDlgProc
                 lpwStr = L"The version you are running (%s) is newer than the most current version (%s) on the website -- there is no need to update your version.";
 
             // Format the text
-            wsprintfW (wszTemp,
-                       lpwStr,
-                       lpUpdatesDlgStr->lpFilVer,
-                       lpUpdatesDlgStr->lpWebVer);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                        lpwStr,
+                        lpUpdatesDlgStr->lpFilVer,
+                        lpUpdatesDlgStr->lpWebVer);
 #undef  lpUpdatesDlgStr
 
             // Write out the file & web version strings
@@ -614,13 +615,14 @@ void DownloadRun
     } // End IF
 
     // Fill in the URL
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
 #ifdef _WIN64
                L"http://www.nars2000.org/download/binaries/w64/" WS_APPNAME L"-%s.exe",
 #else
                L"http://www.nars2000.org/download/binaries/w32/" WS_APPNAME L"-%s.exe",
 #endif
-               lpWebVer);
+                lpWebVer);
     // Open the URL
     lpDnlThrStr->lpDnlDlgStr->hNetOpenUrl =
       InternetOpenUrlW (lpDnlThrStr->lpDnlDlgStr->hNetOpen, // Net handle

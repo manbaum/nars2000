@@ -34,53 +34,53 @@
 //***************************************************************************
 
 void MakeWorkspaceNameCanonical
-    (LPWCHAR wszOut,            // Output workspace name
-     LPWCHAR wszInp,            // Input  ...
-     LPWCHAR wszDefDir)         // Default drive and directory if no drive letter (may be NULL)
+    (LPWCHAR lpwszOut,          // Output workspace name
+     LPWCHAR lpwszInp,          // Input  ...
+     LPWCHAR lpwszDefDir)       // Default drive and directory if no drive letter (may be NULL)
 
 {
     UINT uLen;
 
     // If the incoming workspace name begins with a double-quote, skip over it
-    if (wszInp[0] EQ WC_DQ)
-        wszInp++;
+    if (lpwszInp[0] EQ WC_DQ)
+        lpwszInp++;
 
     // Get the incoming workspace name string length
-    uLen = lstrlenW (wszInp);
+    uLen = lstrlenW (lpwszInp);
 
     // If the incoming workspace name ends with a double-quote, delete it
-    if (uLen && wszInp[uLen - 1] EQ WC_DQ)
-        wszInp[uLen - 1] = WC_EOS;
+    if (uLen && lpwszInp[uLen - 1] EQ WC_DQ)
+        lpwszInp[uLen - 1] = WC_EOS;
 
     // If the name doesn't begin with a drive letter and
     //   doesn't start at the root or a dot, prepend the
     //   default dir
-    if (wszDefDir               // Not NULL
-     && wszInp[0] NE WC_EOS     // Non-empty,
-     && ((wszInp[0] EQ L'.'
-       && wszInp[1] EQ L'.')    // and up one dir
-      || wszInp[0] NE L'.')     // or not current dir,
-     && wszInp[0] NE WC_SLOPE   // and not root dir,
-     && wszInp[1] NE L':')      // and no drive letter
+    if (lpwszDefDir                 // Not NULL
+     && lpwszInp[0] NE WC_EOS       // Non-empty,
+     && ((lpwszInp[0] EQ L'.'
+       && lpwszInp[1] EQ L'.')      // and up one dir
+      || lpwszInp[0] NE L'.')       // or not current dir,
+     && lpwszInp[0] NE WC_SLOPE     // and not root dir,
+     && lpwszInp[1] NE L':')        // and no drive letter
     {
-        strcpyW (wszOut, wszDefDir);
+        strcpyW (lpwszOut, lpwszDefDir);
 
         // If the input doesn't already start with a backslash, ...
-        if (wszInp[0] NE WC_SLOPE)
-            AppendBackslash (wszOut);
+        if (lpwszInp[0] NE WC_SLOPE)
+            AppendBackslash (lpwszOut);
 
-        strcatW (wszOut, wszInp);
+        strcatW (lpwszOut, lpwszInp);
     } else
-        strcpyW (wszOut, wszInp);
+        strcpyW (lpwszOut, lpwszInp);
 
     // Get the outgoing workspace name string length
-    uLen = lstrlenW (wszOut);
+    uLen = lstrlenW (lpwszOut);
 
     // If the workspace name is long enough and
     //   ends with WSKEXT
     if (uLen >= WS_WKSEXT_LEN
-     && lstrcmpiW (&wszOut[uLen - WS_WKSEXT_LEN], WS_WKSEXT) EQ 0)
-        wszOut[uLen - WS_WKSEXT_LEN] = WC_EOS;
+     && lstrcmpiW (&lpwszOut[uLen - WS_WKSEXT_LEN], WS_WKSEXT) EQ 0)
+        lpwszOut[uLen - WS_WKSEXT_LEN] = WC_EOS;
 } // End MakeWorkspaceNameCanonical
 
 
@@ -129,10 +129,11 @@ void DisplayWorkspaceStamp
     SystemTimeToFileTime (&systemTime, &ftCreation);
 
     // Format the creation time
-    wsprintfW (wszTimeStamp,
-               FMTSTR_DATETIME,
-               ftCreation.dwHighDateTime,
-               ftCreation.dwLowDateTime);
+    MySprintfW (wszTimeStamp,
+                sizeof (wszTimeStamp),
+                FMTSTR_DATETIME,
+                ftCreation.dwHighDateTime,
+                ftCreation.dwLowDateTime);
     // Read the creation time
     lpwszProf =
       ProfileGetString (SECTNAME_GENERAL,       // Ptr to the section name
@@ -175,15 +176,16 @@ void DisplaySavedMsg
     strcpyW (wszTemp, L"SAVED ");
 
     // Format it
-    wsprintfW (wszTemp + lstrlenW (wszTemp),
-               DATETIME_FMT L"%s",
-               systemTime.wMonth,
-               systemTime.wDay,
-               systemTime.wYear,
-               systemTime.wHour,
-               systemTime.wMinute,
-               systemTime.wSecond,
-               bUseLocalTime ? L"" : L" (GMT)");
+    MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                 sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                 DATETIME_FMT L"%s",
+                 systemTime.wMonth,
+                 systemTime.wDay,
+                 systemTime.wYear,
+                 systemTime.wHour,
+                 systemTime.wMinute,
+                 systemTime.wSecond,
+                 bUseLocalTime ? L"" : L" (GMT)");
     // Display it
     AppendLine (wszTemp, FALSE, TRUE);
 } // End DisplaySavedMsg

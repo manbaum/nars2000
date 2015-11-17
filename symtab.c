@@ -670,13 +670,14 @@ UBOOL SymTabResize_EM
                           MEM_COMMIT,
                           PAGE_READWRITE);
 ////// ***DEBUG***
-////wsprintfW (wszTemp,
+////MySprintfW (wszTemp,
+////            sizeof (wszTemp),
 ////           L"SYMBOL TABLE REALLOCATE (%p to %p):  GlbHshSymTabs (%d) from %u to %u",
-////           lpHTS->lpSymTab,
-////                  lpSymTabNew,
-////           lpHTS->bGlbHshSymTabs,
-////           lpHTS->iSymTabTotalNelm,
-////           lpHTS->iSymTabTotalNelm + iResize);
+////            lpHTS->lpSymTab,
+////                   lpSymTabNew,
+////            lpHTS->bGlbHshSymTabs,
+////            lpHTS->iSymTabTotalNelm,
+////            lpHTS->iSymTabTotalNelm + iResize);
 ////MBW (wszTemp);
 
     // If it didn't succeed, ...
@@ -825,12 +826,13 @@ UBOOL HshTabSplitNextEntry_EM
 ////        {
 ////            WCHAR wszTemp[1024];    // Ptr to temporary output area
 ////
-////            wsprintfW (wszTemp,
+////            MySprintfW (wszTemp,
+////                        sizeof (wszTemp),
 ////                       L"HshTabSplitNextEntry:  Entry %p <-- %p (%04X) (%04X)",
-////                       lpHshEntryDest,
-////                       lpHshEntrySrc,
-////                       lpHshEntrySrc->uHashAndMask,
-////                       uHashMask);
+////                        lpHshEntryDest,
+////                        lpHshEntrySrc,
+////                        lpHshEntrySrc->uHashAndMask,
+////                        uHashMask);
 ////            MBC (wszTemp)
 ////            lp = lpHshEntryDest;
 ////        } // End IF
@@ -929,10 +931,11 @@ UBOOL HshTabSplitNextEntry_EM
 ////{
 ////    WCHAR wszTemp[1024];    // Ptr to temporary output area
 ////
-////    wsprintfW (wszTemp,
+////   MySprintfW (wszTemp,
+////               sizeof (wszTemp),
 ////               L"@@@@ %d hash table entr%s moved by HshTabSplitNextEntry",
-////               iCntMoved,
-////               (iCntMoved EQ 1) ? L"y" : L"ies");
+////                iCntMoved,
+////                (iCntMoved EQ 1) ? L"y" : L"ies");
 ////    DbgMsgW (wszTemp);
 ////}
 #endif
@@ -3051,13 +3054,14 @@ UBOOL AllocSymTab
     } // End IF/ELSE
 
 ////// ***DEBUG***
-////wsprintfW (wszTemp,
+////MySprintfW (wszTemp,
+////            sizeof (wszTemp),
 ////           L"NEW SYMBOL TABLE (%p):  GlbHshSymTabs (%d) Init (%u) Incr (%u) Max (%u)",
-////           lpHTS->lpSymTab,
-////           lpHTS->bGlbHshSymTabs,
-////                  uSymTabInitNelm,
-////                  uSymTabIncrNelm,
-////                  uSymTabMaxNelm);
+////            lpHTS->lpSymTab,
+////            lpHTS->bGlbHshSymTabs,
+////                   uSymTabInitNelm,
+////                   uSymTabIncrNelm,
+////                   uSymTabMaxNelm);
 ////MBW (wszTemp);
 
     // Initialize next available entry

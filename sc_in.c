@@ -1312,12 +1312,12 @@ LPUCHAR CmdInCopyAndTranslate_EM
             {
                 WCHAR wszTemp[80];
 
-                wsprintfW (wszTemp,
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
                            L"Invalid record in .atf file, lines %u-%u (origin-1) starting with %.20s.",
-                           uOldRecNo,
-                           1 + *lpuRecNo,
-                           lpAtfView);
-
+                            uOldRecNo,
+                            1 + *lpuRecNo,
+                            lpAtfView);
                 // Display the error message
                 AppendLine (wszTemp, FALSE, TRUE);
 

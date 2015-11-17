@@ -245,7 +245,7 @@ UBOOL CreateAppDataDirs
 #undef  WS_APPDATA
 
     // Append the "\\NARS2000" part
-    strcatW (wszAppData, WS_SLOPE WS_APPNAME);
+    MyStrcatW (wszAppData, sizeof (wszAppData), WS_SLOPE WS_APPNAME);
 
     // Ensure the "...\\Application Data\\NARS2000" directory is present
     if (!CreateDirectoryW (wszAppData, NULL)
@@ -357,8 +357,10 @@ void ReadAplFontNames
     for (iCnt = 0; iCnt < iNumFonts; iCnt++)
     {
         // Format the counter
-        wsprintfW (wszCount, L"%d", iCnt);
-
+        MySprintfW (wszCount,
+                    sizeof (wszCount),
+                   L"%d",
+                    iCnt);
         // Read in the Font Name
         GetPrivateProfileStringW (SECTNAME_APLFONTS,    // Ptr to the section name
                                   wszCount,             // Ptr to the key name
@@ -439,8 +441,10 @@ void WriteAplFontNames
         SendMessageW (hWndCB, CB_GETLBTEXT, uCnt, (LPARAM) wszTemp);
 
         // Format the counter
-        wsprintfW (wszCount, L"%d", uCnt);
-
+        MySprintfW (wszCount,
+                    sizeof (wszCount),
+                   L"%d",
+                    uCnt);
         // Write out the Font Name
         WritePrivateProfileStringW (SECTNAME_APLFONTS,  // Ptr to the section name
                                     wszCount,           // Ptr to the key name
@@ -449,8 +453,10 @@ void WriteAplFontNames
     } // End FOR
 
     // Format the counter
-    wsprintfW (wszCount, L"%d", uNumFonts);
-
+    MySprintfW (wszCount,
+                sizeof (wszCount),
+               L"%d",
+                uNumFonts);
     // Write out the count
     WritePrivateProfileStringW (SECTNAME_APLFONTS,  // Ptr to the section name
                                 KEYNAME_COUNT,      // Ptr to the key name
@@ -526,9 +532,10 @@ UBOOL ReadIniFileGlb
     for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
     {
         // Format the keyname
-        wsprintfW (wszKey,
+        MySprintfW (wszKey,
+                    sizeof (wszKey),
                    L"%u",
-                   uCnt);
+                    uCnt);
         // Read in the next LibDir
         GetPrivateProfileStringW (SECTNAME_LIBDIRS,     // Ptr to the section name
                                   wszKey,               // Ptr to the key name
@@ -561,9 +568,10 @@ UBOOL ReadIniFileGlb
     for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
     {
         // Format the keyname
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"%u",
-                   uCnt);
+                    uCnt);
         // Read in the glbSameFontAs value
         glbSameFontAs[uCnt] =
           GetPrivateProfileIntW (SECTNAME_SAMEFONTAS,   // Ptr to the section name
@@ -1099,9 +1107,10 @@ UBOOL ReadIniFileGlb
     for (uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
     {
         // Format the keyname
-        wsprintfW (wszKey,
+        MySprintfW (wszKey,
+                    sizeof (wszKey),
                    L"%u",
-                   uCnt);
+                    uCnt);
         // Read in the next Recent File
         GetPrivateProfileStringW (SECTNAME_RECENTFILES,         // Ptr to the section name
                                   wszKey,                       // Ptr to the key name
@@ -1251,9 +1260,10 @@ UBOOL ReadIniFileGlb
              uLen;                                      // Length value
 
         // Format the section name
-        wsprintfW (wszSectName,
-                   SECTNAME_KEYBPREFIX L"%u",
-                   uCnt);
+        MySprintfW (wszSectName,
+                    sizeof (wszSectName),
+                    SECTNAME_KEYBPREFIX L"%u",
+                    uCnt);
         // Read in the layout name
         GetPrivateProfileStringW (wszSectName,              // Ptr to the section name
                                   KEYNAME_KEYBLAYOUTNAME,   // Ptr to the key name
@@ -1301,9 +1311,10 @@ UBOOL ReadIniFileGlb
         for (uCol = 0; uCol < uLen; uCol++)
         {
             // Format the keyname
-            wsprintfW (wszKeyName,
-                       KEYNAME_KEYBSCANCODE L"%02X",
-                       uCol);
+            MySprintfW (wszKeyName,
+                        sizeof (wszKeyName),
+                        KEYNAME_KEYBSCANCODE L"%02X",
+                        uCol);
             // Read in the keyboard chars for this scancode
             GetPrivateProfileStringW (wszSectName,              // Ptr to the section name
                                       wszKeyName,               // Ptr to the key name
@@ -1930,9 +1941,10 @@ void SaveIniFile
     //*********************************************************
 
     // Format the # LibDirs
-    wsprintfW (wszKey,
+    MySprintfW (wszKey,
+                sizeof (wszKey),
                L"%u",
-               uNumLibDirs);
+                uNumLibDirs);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_LIBDIRS,           // Ptr to the section name
                                 KEYNAME_COUNT,              // Ptr to the key name
@@ -1945,9 +1957,10 @@ void SaveIniFile
     for (uCnt = 0; uCnt < uNumLibDirs; uCnt++)
     {
         // Format the keyname
-        wsprintfW (wszKey,
+        MySprintfW (wszKey,
+                    sizeof (wszKey),
                    L"%u",
-                   uCnt);
+                    uCnt);
         // Write it out
         WritePrivateProfileStringW (SECTNAME_LIBDIRS,       // Ptr to the section name
                                     wszKey,                 // Ptr to the key name
@@ -1968,54 +1981,60 @@ void SaveIniFile
                                 L"0.01",                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the x-position
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%d",
-               MFPosCtr.x);
+                MFPosCtr.x);
     // Write out the x-position
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_XPOS,               // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the x-size
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%d",
-               MFSize.cx);
+                MFSize.cx);
     // Write out the x-size
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_XSIZE,              // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the y-position
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%d",
-               MFPosCtr.y);
+                MFPosCtr.y);
     // Write out the y-position
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_YPOS,               // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the y-size
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%d",
-               MFSize.cy);
+                MFSize.cy);
     // Write out the y-size
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_YSIZE,              // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the size state
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%d",
-               MFSizeState);
+                MFSizeState);
     // Write out the size state
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_SIZESTATE,          // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the initial category
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%d",
-               gInitCustomizeCategory);
+                gInitCustomizeCategory);
     // Write out the initial category
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_INITIALCAT,         // Ptr to the key name
@@ -2027,11 +2046,12 @@ void SaveIniFile
                                 gszUpdFrq,                  // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the update check date
-    wsprintfW (wszTemp,
-               FMTSTR_UPDCHK,
-               gstUpdChk.wYear,
-               gstUpdChk.wMonth,
-               gstUpdChk.wDay);
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+                FMTSTR_UPDCHK,
+                gstUpdChk.wYear,
+                gstUpdChk.wMonth,
+                gstUpdChk.wDay);
     // Write out the update check date
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_UPDCHK,             // Ptr to the key name
@@ -2094,13 +2114,15 @@ void SaveIniFile
     for (uCnt = 0; uCnt < FONTENUM_LENGTH; uCnt++)
     {
         // Format the keyname
-        wsprintfW (wszKey,
+        MySprintfW (wszKey,
+                    sizeof (wszKey),
                    L"%u",
-                   uCnt);
+                    uCnt);
         // Format the glbSameFontAs value
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"%u",
-                   glbSameFontAs[uCnt]);
+                    glbSameFontAs[uCnt]);
         WritePrivateProfileStringW (SECTNAME_SAMEFONTAS,    // Ptr to the section name
                                     wszKey,                 // Ptr to the key name
                                     wszTemp,                // Ptr to the SameFontAs value
@@ -2193,9 +2215,10 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* uDefaultPaste ***********************
     // Format uDefaultPaste
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%u",
-               OptionFlags.uDefaultPaste);
+                OptionFlags.uDefaultPaste);
     // Write out uDefaultPaste
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_DEFAULTPASTE,       // Ptr to the key name
@@ -2203,9 +2226,10 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //******************* uDefaultCopy ************************
     // Format uDefaultCopy
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"%u",
-               OptionFlags.uDefaultCopy);
+                OptionFlags.uDefaultCopy);
     // Write out uDefaultCopy
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_DEFAULTCOPY,        // Ptr to the key name
@@ -2736,11 +2760,12 @@ void SaveIniFile
     for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)
     {
         // Format the color name value
-         wsprintfW (wszTemp,
-                    FMTSTR_SYNTAXCOLOR,
-                    gSyntaxColorName[uCnt].syntClr.crFore,
-                    gSyntaxColorName[uCnt].syntClr.crBack,
-                    gSyntClrBGTrans [uCnt]);
+         MySprintfW (wszTemp,
+                     sizeof (wszTemp),
+                     FMTSTR_SYNTAXCOLOR,
+                     gSyntaxColorName[uCnt].syntClr.crFore,
+                     gSyntaxColorName[uCnt].syntClr.crBack,
+                     gSyntClrBGTrans [uCnt]);
         // Write out the entry
         WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
                                     aColorKeyNames[uCnt],       // Ptr to the key name
@@ -2749,12 +2774,13 @@ void SaveIniFile
     } // End FOR
 
     // Write out the CustomColors
-     wsprintfW (wszTemp,
-                FMTSTR_CUSTOMCOLORS,
-                aCustomColors[ 0], aCustomColors[ 1], aCustomColors[ 2], aCustomColors[ 3],
-                aCustomColors[ 4], aCustomColors[ 5], aCustomColors[ 6], aCustomColors[ 7],
-                aCustomColors[ 8], aCustomColors[ 9], aCustomColors[10], aCustomColors[11],
-                aCustomColors[12], aCustomColors[13], aCustomColors[14], aCustomColors[15]);
+     MySprintfW (wszTemp,
+                 sizeof (wszTemp),
+                 FMTSTR_CUSTOMCOLORS,
+                 aCustomColors[ 0], aCustomColors[ 1], aCustomColors[ 2], aCustomColors[ 3],
+                 aCustomColors[ 4], aCustomColors[ 5], aCustomColors[ 6], aCustomColors[ 7],
+                 aCustomColors[ 8], aCustomColors[ 9], aCustomColors[10], aCustomColors[11],
+                 aCustomColors[12], aCustomColors[13], aCustomColors[14], aCustomColors[15]);
     // Write out the entry
     WritePrivateProfileStringW (SECTNAME_COLORS,            // Ptr to the section name
                                 KEYNAME_CUSTOMCOLORS,       // Ptr to the key name
@@ -2793,9 +2819,10 @@ void SaveIniFile
         uTmp++;
 
         // Format the keyname
-        wsprintfW (wszKey,
+        MySprintfW (wszKey,
+                    sizeof (wszKey),
                    L"%u",
-                   uCnt);
+                    uCnt);
         // Write out the current Recent File
         WritePrivateProfileStringW (SECTNAME_RECENTFILES,       // Ptr to the section name
                                     wszKey,                     // Ptr to the key name
@@ -2807,9 +2834,10 @@ void SaveIniFile
     MyGlobalUnlock (hGlbRecentFiles); lpwszRecentFiles = NULL;
 
     // Format the # valid Recent Files
-    wsprintfW (wszKey,
+    MySprintfW (wszKey,
+                sizeof (wszKey),
                L"%u",
-               uTmp);
+                uTmp);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_RECENTFILES,       // Ptr to the section name
                                 KEYNAME_COUNT,              // Ptr to the key name
@@ -2820,36 +2848,40 @@ void SaveIniFile
     //*********************************************************
 
     // Format the # user-defined keyboards
-    wsprintfW (wszKey,
+    MySprintfW (wszKey,
+                sizeof (wszKey),
                L"%u",
-               uGlbKeybLayoutUser);
+                uGlbKeybLayoutUser);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
                                 KEYNAME_COUNT,              // Ptr to the key name
                                 wszKey,                     // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the keyboard Unicode base
-    wsprintfW (wszKey,
+    MySprintfW (wszKey,
+                sizeof (wszKey),
                L"%u",
-               uKeybUnibase);
+                uKeybUnibase);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
                                 KEYNAME_KEYBUNIBASE,        // Ptr to the key name
                                 wszKey,                     // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the keyboard TabCtrl tab index
-    wsprintfW (wszKey,
+    MySprintfW (wszKey,
+                sizeof (wszKey),
                L"%u",
-               uKeybTCNum);
+                uKeybTCNum);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
                                 KEYNAME_KEYBTCNUM,          // Ptr to the key name
                                 wszKey,                     // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the keyboard state
-    wsprintfW (wszKey,
+    MySprintfW (wszKey,
+                sizeof (wszKey),
                L"%u",
-               uKeybState);
+                uKeybState);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
                                 KEYNAME_KEYBSTATE,          // Ptr to the key name
@@ -2877,9 +2909,10 @@ void SaveIniFile
               wszCount[8 + 1];                          // Scancode count
 
         // Format the section name
-        wsprintfW (wszSectName,
-                   SECTNAME_KEYBPREFIX L"%u",
-                   uCnt);
+        MySprintfW (wszSectName,
+                    sizeof (wszSectName),
+                    SECTNAME_KEYBPREFIX L"%u",
+                    uCnt);
         // Write out the layout name
         WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
                                     KEYNAME_KEYBLAYOUTNAME,     // Ptr to the key name
@@ -2934,9 +2967,10 @@ void SaveIniFile
         uLen = lpKeybLayouts[uCnt2].uCharCodesLen;
 
         // Format the # scancodes in this layout
-        wsprintfW (wszCount,
+        MySprintfW (wszCount,
+                    sizeof (wszCount),
                    L"%u",
-                   uLen);
+                    uLen);
         // Write out the # scancodes in this layout
         WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
                                     KEYNAME_COUNT,              // Ptr to the key name
@@ -2946,20 +2980,22 @@ void SaveIniFile
         for (uCol = 0; uCol < uLen; uCol++)
         {
             // Format the keyname
-            wsprintfW (wszKeyName,
-                       KEYNAME_KEYBSCANCODE L"%02X",
-                       uCol);
+            MySprintfW (wszKeyName,
+                        sizeof (wszKeyName),
+                        KEYNAME_KEYBSCANCODE L"%02X",
+                        uCol);
             // Format the keyboard chars for this scancode
-            wsprintfW (wszKeybChars,
-                       FMTSTR_KEYBCHARS,
-                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[0],
-                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[1],
-                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[2],
-                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[3],
-                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[4],
-                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[5],
-                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[6],
-                       lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[7]);
+            MySprintfW (wszKeybChars,
+                        sizeof (wszKeybChars),
+                        FMTSTR_KEYBCHARS,
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[0],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[1],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[2],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[3],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[4],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[5],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[6],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[7]);
             // Write out the keyb chars for this scancode
             WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
                                         wszKeyName,                 // Ptr to the key name
@@ -2975,9 +3011,10 @@ void SaveIniFile
         WCHAR wszLayoutName[KBLEN];                         // Space for a temporary layout name
 
         // Format the section name
-        wsprintfW (wszSectName,
-                   SECTNAME_KEYBPREFIX L"%u",
-                   uCnt);
+        MySprintfW (wszSectName,
+                    sizeof (wszSectName),
+                    SECTNAME_KEYBPREFIX L"%u",
+                    uCnt);
         // Read in the layout name
         GetPrivateProfileStringW (wszSectName,              // Ptr to the section name
                                   KEYNAME_KEYBLAYOUTNAME,   // Ptr to the key name
@@ -3019,22 +3056,23 @@ void WritePrivateProfileLogfontW
     WCHAR wszTemp[1024];                            // Temporary storage
 
     // Format the LOGFONTW struc entries
-    wsprintfW (wszTemp,
-               FMTSTR_LOGFONT_OUT,
-               lplfFont->lfHeight,
-               lplfFont->lfWidth,
-               lplfFont->lfEscapement,
-               lplfFont->lfOrientation,
-               lplfFont->lfWeight,
-               lplfFont->lfItalic,
-               lplfFont->lfUnderline,
-               lplfFont->lfStrikeOut,
-               lplfFont->lfCharSet,
-               lplfFont->lfOutPrecision,
-               lplfFont->lfClipPrecision,
-               lplfFont->lfQuality,
-               lplfFont->lfPitchAndFamily,
-              &lplfFont->lfFaceName);
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+                FMTSTR_LOGFONT_OUT,
+                lplfFont->lfHeight,
+                lplfFont->lfWidth,
+                lplfFont->lfEscapement,
+                lplfFont->lfOrientation,
+                lplfFont->lfWeight,
+                lplfFont->lfItalic,
+                lplfFont->lfUnderline,
+                lplfFont->lfStrikeOut,
+                lplfFont->lfCharSet,
+                lplfFont->lfOutPrecision,
+                lplfFont->lfClipPrecision,
+                lplfFont->lfQuality,
+                lplfFont->lfPitchAndFamily,
+               &lplfFont->lfFaceName);
     // Write out the LOGFONTW struc
     WritePrivateProfileStringW (lpwSectName,        // Ptr to the section name
                                 lpwKeyName,         // Ptr to the key name
@@ -3204,8 +3242,11 @@ LPWSTR ProfileGetString
     WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
 
     // Merge the section and key names
-    wsprintfW (wszTemp, L"%s" SECTION_SEP_STR L"%s", lpwAppName, lpwKeyName);
-
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%s" SECTION_SEP_STR L"%s",
+                lpwAppName,
+                lpwKeyName);
     return iniparser_getstring (lpDict, wszTemp, lpwDefault);
 } // End ProfileGetString
 
@@ -3226,8 +3267,11 @@ int ProfileGetInt
     WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
 
     // Merge the section and key names
-    wsprintfW (wszTemp, L"%s" SECTION_SEP_STR L"%s", lpwAppName, lpwKeyName);
-
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%s" SECTION_SEP_STR L"%s",
+                lpwAppName,
+                lpwKeyName);
     // Get the integer
     return iniparser_getint (lpDict, wszTemp, iDefault);
 } // End ProfileGetInt
@@ -3249,8 +3293,11 @@ UBOOL ProfileGetBoolean
     WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
 
     // Merge the section and key names
-    wsprintfW (wszTemp, L"%s" SECTION_SEP_STR L"%s", lpwAppName, lpwKeyName);
-
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%s" SECTION_SEP_STR L"%s",
+                lpwAppName,
+                lpwKeyName);
     // Get the integer
     return iniparser_getboolean (lpDict, wszTemp, bDefault);
 } // End ProfileGetBoolean
@@ -3272,8 +3319,11 @@ APLFLOAT ProfileGetDouble
     WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
 
     // Merge the section and key names
-    wsprintfW (wszTemp, L"%s" SECTION_SEP_STR L"%s", lpwAppName, lpwKeyName);
-
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%s" SECTION_SEP_STR L"%s",
+                lpwAppName,
+                lpwKeyName);
     // Get the integer
     return iniparser_getdouble (lpDict, wszTemp, fDefault);
 } // End ProfileGetDouble

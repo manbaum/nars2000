@@ -60,11 +60,12 @@ void DisplayHshTab
 
     DbgMsgW (L"********** Start Hash Table ****************************");
 
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"lpHshTab = %p, SplitNext = %p, Last = %p",
-               lpHTS->lpHshTab,
-               lpHTS->lpHshTabSplitNext,
-              &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm]);
+                lpHTS->lpHshTab,
+                lpHTS->lpHshTabSplitNext,
+               &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm]);
     DbgMsgW (wszTemp);
 
     // Display the hash table
@@ -122,9 +123,10 @@ void FormatHTE
     // Check for invalid HshEntry
     if (lpHshEntry EQ NULL)
     {
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"HT:%3d ***INVALID HSHENTRY (NULL)***",
-                   i);
+                    i);
         return;
     } // End IF
 
@@ -134,8 +136,9 @@ void FormatHTE
          j < HT_FLAGNAMES_NROWS;
          j++)
     if (htFlags & ahtFlagNames[j].uMask)
-        strcatW (wszFlags, ahtFlagNames[j].lpwszName);
-
+        MyStrcatW (wszFlags,
+                   sizeof (wszFlags),
+                   ahtFlagNames[j].lpwszName);
     // In case we didn't find any matching flags,
     //   set the second byte to zero as well as
     //   when we do find flags, we skip over the
@@ -150,14 +153,15 @@ void FormatHTE
 
         lpSymEntry = lpHshEntry->htSymEntry;
         if (lpSymEntry->stFlags.Imm)
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p",
-                       i,
-                       lpHshEntry->uHash,
-                       lpHshEntry->uHashAndMask,
-                      &wszFlags[1],
-                       lpSymEntry->stData.stInteger,
-                       lpSymEntry);
+                        i,
+                        lpHshEntry->uHash,
+                        lpHshEntry->uHashAndMask,
+                       &wszFlags[1],
+                        lpSymEntry->stData.stInteger,
+                        lpSymEntry);
         else
         if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
         {
@@ -166,27 +170,29 @@ void FormatHTE
             // Lock the memory to get a ptr to it
             lpwGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpwGlbName NE NULL);
 
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
-                       i,
-                       lpHshEntry->uHash,
-                       lpHshEntry->uHashAndMask,
-                      &wszFlags[1],
-                       lpwGlbName,
-                       lpSymEntry,
-                       lpHshEntry->NextSameHash,
-                       lpHshEntry->PrevSameHash);
+                        i,
+                        lpHshEntry->uHash,
+                        lpHshEntry->uHashAndMask,
+                       &wszFlags[1],
+                        lpwGlbName,
+                        lpSymEntry,
+                        lpHshEntry->NextSameHash,
+                        lpHshEntry->PrevSameHash);
             // We no longer need this ptr
             GlobalUnlock (lpHshEntry->htGlbName); lpwGlbName = NULL;
         } // End IF/ELSE/IF
     } else
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>",
-                   i,
-                  &wszFlags[1],
-                   lpHshEntry->htSymEntry,
-                   lpHshEntry->NextSameHash,
-                   lpHshEntry->PrevSameHash);
+                    i,
+                   &wszFlags[1],
+                    lpHshEntry->htSymEntry,
+                    lpHshEntry->NextSameHash,
+                    lpHshEntry->PrevSameHash);
 } // End FormatHTE
 
 
@@ -222,10 +228,11 @@ void DisplaySymTab
     } // End IF/ELSE -- DO NOT REMOVE as the DbgMsgW macro needs
     //                  this because of the trailing semicolon
 
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"lpSymTab = %p, Last = %p",
-               lpHTS->lpSymTab,
-              &lpHTS->lpSymTab[lpHTS->iSymTabTotalNelm]);
+                lpHTS->lpSymTab,
+               &lpHTS->lpSymTab[lpHTS->iSymTabTotalNelm]);
     DbgMsgW (wszTemp);
 
     // Display the symbol table
@@ -296,30 +303,33 @@ void FormatSTE
     // Format the flags
     stFlags = lpSymEntry->stFlags;
     if (stFlags.Imm)
-        wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+        MySprintfW (&wszFlags[lstrlenW (wszFlags)],
+                     sizeof (wszFlags) - (lstrlenW (wszFlags) * sizeof (wszFlags[0])),
                     L" Imm/Type=%d",
-                    stFlags.ImmType);
+                     stFlags.ImmType);
     if (stFlags.ObjName NE OBJNAME_NONE)
-        wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+        MySprintfW (&wszFlags[lstrlenW (wszFlags)],
+                     sizeof (wszFlags) - (lstrlenW (wszFlags) * sizeof (wszFlags[0])),
                     L" ObjName=%s",
-                    lpwObjNameStr[stFlags.ObjName]);
+                     lpwObjNameStr[stFlags.ObjName]);
     if (stFlags.stNameType NE NAMETYPE_UNK)
-        wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+        MySprintfW (&wszFlags[lstrlenW (wszFlags)],
+                     sizeof (wszFlags) - (lstrlenW (wszFlags) * sizeof (wszFlags[0])),
                     L" stNameType=%s",
-                    lpwNameTypeStr[stFlags.stNameType]);
-
+                     lpwNameTypeStr[stFlags.stNameType]);
     for (j = 0;
          j < ST_FLAGNAMES_NROWS;
          j++)
     if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
-        strcatW (wszFlags, astFlagNames[j].lpwszName);
-
+        MyStrcatW (wszFlags,
+                   sizeof (wszFlags),
+                   astFlagNames[j].lpwszName);
     if (IsNameTypeVar (stFlags.stNameType)
      && !stFlags.DfnSysLabel)
-        wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+        MySprintfW (&wszFlags[lstrlenW (wszFlags)],
+                     sizeof (wszFlags) - (lstrlenW (wszFlags) * sizeof (wszFlags[0])),
                     L" SysVarValid=%d",
-                    stFlags.SysVarValid);
-
+                     stFlags.SysVarValid);
     // In case we didn't find any matching flags,
     //   set the second WCHAR to zero as well --
     //   when we do find flags, we skip over the
@@ -357,14 +367,15 @@ void FormatSTE
 
         if (lpSymEntry->stFlags.Imm)
         {
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p, Prv=%p",
-                       lpSymEntry,
-                       wszName,
-                      &wszFlags[1],
-                       lpSymEntry->stData.stInteger,
-                       lpSymEntry->stHshEntry,
-                       lpPrvEntry);
+                        lpSymEntry,
+                        wszName,
+                       &wszFlags[1],
+                        lpSymEntry->stData.stInteger,
+                        lpSymEntry->stHshEntry,
+                        lpPrvEntry);
         } else
         if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
         {
@@ -374,28 +385,31 @@ void FormatSTE
 
             if (lpHshEntry)
             {
-                wsprintfW (wszTemp,
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
                            L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p, Prv=%p",
-                           lpSymEntry,
-                           wszName,
-                          &wszFlags[1],
-                           lpSymEntry->stData.stVoid,
-                           lpHshEntry,
-                           lpPrvEntry);
+                            lpSymEntry,
+                            wszName,
+                           &wszFlags[1],
+                            lpSymEntry->stData.stVoid,
+                            lpHshEntry,
+                            lpPrvEntry);
             } else
-                wsprintfW (wszTemp,
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
                            L"ST:%p <******>, <%s>, Hsh=0, Prv=%p",
-                           lpSymEntry,
-                          &wszFlags[1],
-                           lpPrvEntry);
+                            lpSymEntry,
+                           &wszFlags[1],
+                            lpPrvEntry);
         } // End IF/ELSE/IF
     } else
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"ST:%p (EMPTY) <%s>, Hsh=%p, Prv=%p",
-                   lpSymEntry,
-                  &wszFlags[1],
-                   lpSymEntry->stHshEntry,
-                   lpSymEntry->stPrvEntry);
+                    lpSymEntry,
+                   &wszFlags[1],
+                    lpSymEntry->stHshEntry,
+                    lpSymEntry->stPrvEntry);
 } // End FormatSTE
 
 
@@ -462,9 +476,10 @@ void DisplayGlobals
         lpMem = GlobalLock (hGlb);
         if (lpMem EQ NULL)
         {
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"hGlb=%p *** INVALID ***",
-                       hGlb);
+                        hGlb);
             DbgMsgW (wszTemp);
 
             continue;
@@ -664,20 +679,33 @@ void DisplayGlobals
                      || ((lpHeader->PermNdx EQ PERMNDX_NONE)
                   && (lpHeader->bMFOvar EQ FALSE)))
                     {
-                        wsprintfW (wszTemp,
-                                   L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
-                                   (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
-                                   hGlb,
-                                   ArrayTypeAsChar[lpHeader->ArrType],
+                        WCHAR   wszDim[16];
+                        LPWCHAR lpwszDim;
+
+                        // If it's a scalar, skip the Dim1=
+                        if (LODWORD (lpHeader->Rank) EQ 0)
+                            lpwszDim = L"        ";
+                        else
+                            MySprintfW (lpwszDim = &wszDim[0],
+                                        sizeof (wszDim),
+                                       L"Dim1=%3d",
+                                        LODWORD (aplDim));
+                        MySprintfW (wszTemp,
+                                    sizeof (wszTemp),
+///////////////////////////////////L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
+                                   L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d %s Lck=%d (%S#%d) (%s)",
+                                    (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
+                                    hGlb,
+                                    TranslateArrayTypeToChar (lpHeader->ArrType),
                                    L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
-                                   LODWORD (lpHeader->NELM),
-                                   lpHeader->RefCnt,
-                                   LODWORD (lpHeader->Rank),
-                                   LODWORD (aplDim),
-                                   (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                                   lpaFileNameGLBALLOC[i],
-                                   auLinNumGLBALLOC[i],
-                                   aplArrChar);
+                                    LODWORD (lpHeader->NELM),
+                                    lpHeader->RefCnt,
+                                    LODWORD (lpHeader->Rank),
+                                    lpwszDim,               // LODWORD (aplDim),
+                                    (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                                    lpaFileNameGLBALLOC[i],
+                                    auLinNumGLBALLOC[i],
+                                    aplArrChar);
                         DbgMsgW (wszTemp);
                     } // End IF
                 } // End IF
@@ -722,17 +750,18 @@ void DisplayGlobals
                     // Point to leading left paren
                     lpaplChar = &aplArrChar[1];
 
-                wsprintfW (wszTemp,
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
                            L"%shGlb=%p NType=%sNELM=%3d RC=%2d                 Lck=%d (%S#%4d) %s",
-                           (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
-                           hGlb,
-                           lpwNameTypeStr[lpHeader->fnNameType],
-                           lpHeader->tknNELM,
-                           lpHeader->RefCnt,
-                           (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                           lpaFileNameGLBALLOC[i],
-                           auLinNumGLBALLOC[i],
-                           lpaplChar);
+                            (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
+                            hGlb,
+                            lpwNameTypeStr[lpHeader->fnNameType],
+                            lpHeader->tknNELM,
+                            lpHeader->RefCnt,
+                            (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                            lpaFileNameGLBALLOC[i],
+                            auLinNumGLBALLOC[i],
+                            lpaplChar);
                 DbgMsgW (wszTemp);
 
                 break;
@@ -775,17 +804,18 @@ void DisplayGlobals
                         strcpynW (aplArrChar, lpMemPTD->lpwszTemp, 1 + (UINT) min (MAX_VAL_LEN, uNameLen));
                         aplArrChar[min (MAX_VAL_LEN, uNameLen)] = WC_EOS;
 
-                        wsprintfW (wszTemp,
+                        MySprintfW (wszTemp,
+                                    sizeof (wszTemp),
                                    L"%shGlb=%p DType=%c  NELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
-                                   (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
-                                   hGlb,
-                                   cDfnTypeStr[lpHeader->DfnType],
-                                   lpHeader->numFcnLines,
-                                   lpHeader->RefCnt,
-                                   (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
-                                   lpaFileNameGLBALLOC[i],
-                                   auLinNumGLBALLOC[i],
-                                   aplArrChar);
+                                    (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
+                                    hGlb,
+                                    cDfnTypeStr[lpHeader->DfnType],
+                                    lpHeader->numFcnLines,
+                                    lpHeader->RefCnt,
+                                    (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
+                                    lpaFileNameGLBALLOC[i],
+                                    auLinNumGLBALLOC[i],
+                                    aplArrChar);
                         DbgMsgW (wszTemp);
                     } // End IF
                 } // End IF
@@ -796,10 +826,11 @@ void DisplayGlobals
             default:
                 if (uDispGlb EQ 2)
                 {
-                    wsprintfW (wszTemp,
+                    MySprintfW (wszTemp,
+                                sizeof (wszTemp),
                                L"hGlb=%p -- No NARS/FCNS Signature (%u bytes)",
-                               hGlb,
-                               MyGlobalSize (hGlb));
+                                hGlb,
+                                MyGlobalSize (hGlb));
                     DbgMsgW (wszTemp);
                 } // End IF/ELSE
 
@@ -818,11 +849,12 @@ void DisplayGlobals
     for (uValid = FALSE, i = 0; i < MAXOBJ; i++)
     if (hGlb = ahSEMAPHORE[i])
     {
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"hGlb=%p                                               (%S#%4d)",
-                   hGlb,
-                   lpaFileNameSEMAPHORE[i],
-                   auLinNumSEMAPHORE[i]);
+                    hGlb,
+                    lpaFileNameSEMAPHORE[i],
+                    auLinNumSEMAPHORE[i]);
         DbgMsgW (wszTemp);
 
         // Mark as valid
@@ -921,7 +953,7 @@ LPWCHAR DisplayGlbVarSub
         // Lock the memory to get a ptr to it
         lpHdrGlb = MyGlobalLock (hGlb);
 
-        // Skip over the header & dimensions to the data
+        // Skip over the header and dimensions to the data
         lpMemGlb = VarArrayDataFmBase (lpHdrGlb);
 
         immType = TranslateArrayTypeToImmType (lpHdrGlb->ArrType);
@@ -1166,12 +1198,13 @@ void DisplayHeap
 ////////aplSize = HeapSize (GetProcessHeap (), 0, hGlb);
         aplSize = dlmalloc_usable_size (hGlb);
 
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"hGlb=%p, size=%I64u (%S#%d)",
-                   hGlb,
-                   aplSize,
-                   "",      // lpaFileNameHEAPALLOC[i],
-                   auLinNumHEAPALLOC[i]);
+                    hGlb,
+                    aplSize,
+                    "",      // lpaFileNameHEAPALLOC[i],
+                    auLinNumHEAPALLOC[i]);
         DbgMsgW (wszTemp);
     } // End FOR/IF
 
@@ -1213,12 +1246,13 @@ void DisplayTokens
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"lpMemTknLine = %p, Version # = %d, TokenCnt = %d, PrevGroup = %d",
-               lpMemTknHdr,
-               lpMemTknHdr->Version,
-               lpMemTknHdr->TokenCnt,
-               lpMemTknHdr->PrevGroup);
+                lpMemTknHdr,
+                lpMemTknHdr->Version,
+                lpMemTknHdr->TokenCnt,
+                lpMemTknHdr->PrevGroup);
     DbgMsgW (wszTemp);
 
     iLen = lpMemTknHdr->TokenCnt;
@@ -1227,14 +1261,15 @@ void DisplayTokens
 
     for (i = 0; i < iLen; i++, lpMemTknLine++)
     {
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S, so=<%s>",
-                   i,
-                   *(LPAPLINT) &lpMemTknLine->tkData.tkFloat,
-                   lpMemTknLine->tkCharIndex,
-                   GetTokenTypeName (lpMemTknLine->tkFlags.TknType),
-                   (lpMemTknLine->tkSynObj EQ soNONE) ? L"NONE"
-                                                      : soNames[lpMemTknLine->tkSynObj]);
+                    i,
+                    *(LPAPLINT) &lpMemTknLine->tkData.tkFloat,
+                    lpMemTknLine->tkCharIndex,
+                    GetTokenTypeName (lpMemTknLine->tkFlags.TknType),
+                    (lpMemTknLine->tkSynObj EQ soNONE) ? L"NONE"
+                                                       : soNames[lpMemTknLine->tkSynObj]);
         DbgMsgW (wszTemp);
     } // End FOR
 
@@ -1365,9 +1400,10 @@ static TOKENNAMES tokenNames[] =
     {
         static char szTemp[64];
 
-        wsprintf (szTemp,
-                  "***Unknown Token Type:  %d***",
-                  uType);
+        MySprintf (szTemp,
+                   sizeof (szTemp),
+                   "***Unknown Token Type:  %d***",
+                   uType);
         return szTemp;
     } // End IF/ELSE
 } // End GetTokenTypeName
@@ -2606,11 +2642,12 @@ void DisplayStrand
             break;
     } // End SWITCH
 
-    wsprintfW (wszTemp,
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
                L"Start=%p Base=%p Next=%p",
-               lpplLocalVars->lpYYStrArrStart[strType],
-               lpplLocalVars->lpYYStrArrBase[strType],
-               lpplLocalVars->lpYYStrArrNext[strType]);
+                lpplLocalVars->lpYYStrArrStart[strType],
+                lpplLocalVars->lpYYStrArrBase[strType],
+                lpplLocalVars->lpYYStrArrNext[strType]);
     DbgMsgW (wszTemp);
 
     for (lp = lpplLocalVars->lpYYStrArrStart[strType], lpLast = NULL;
@@ -2628,18 +2665,19 @@ void DisplayStrand
 
         // Get the function array
 
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"Strand (%p): %-9.9S D=%8I64X CI=%2d TC=%1d IN=%1d F=%p B=%p",
-                   lp,
-                   GetTokenTypeName (lp->tkToken.tkFlags.TknType),
-                   bIsTknImmed
-                 ?           lp->tkToken.tkData.tkInteger
-                 : (APLUINT) lp->tkToken.tkData.tkGlbData,
-                   lp->tkToken.tkCharIndex,
-                   lp->TknCount,
-                   lp->YYIndirect,
-                   lp->lpYYFcnBase,
-                   lpLast);
+                    lp,
+                    GetTokenTypeName (lp->tkToken.tkFlags.TknType),
+                    bIsTknImmed
+                  ?           lp->tkToken.tkData.tkInteger
+                  : (APLUINT) lp->tkToken.tkData.tkGlbData,
+                    lp->tkToken.tkCharIndex,
+                    lp->TknCount,
+                    lp->YYIndirect,
+                    lp->lpYYFcnBase,
+                    lpLast);
         DbgMsgW (wszTemp);
     } // End FOR
 
@@ -2755,13 +2793,14 @@ void DisplayUndo
     // Loop through the undo buffer entries
     for (; lpUndoBeg < lpUndoNxt; lpUndoBeg++)
     {
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"Act = %9s, %2d-%2d, Group = %3d, Char = 0x%04X",
-                   Actions[lpUndoBeg->Action],
-                   lpUndoBeg->CharPosBeg,
-                   lpUndoBeg->CharPosEnd,
-                   lpUndoBeg->Group,
-                   lpUndoBeg->Char);
+                    Actions[lpUndoBeg->Action],
+                    lpUndoBeg->CharPosBeg,
+                    lpUndoBeg->CharPosEnd,
+                    lpUndoBeg->Group,
+                    lpUndoBeg->Char);
         DbgMsgW (wszTemp);
     } // End FOR
 
@@ -2801,8 +2840,9 @@ void DisplayFnHdr
 
         // Append a separator
         if (uLen > 1)
-            strcatW (wszTemp, L"(");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"(");
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
@@ -2812,22 +2852,27 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            strcatW (wszTemp, lpMemName);
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                       lpMemName);
             // If we're not at the last item, separate with a space
             if (uItm < (uLen - 1))
-                strcatW (wszTemp, L" ");
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L" ");
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
         } // End FOR
 
         // Append a separator
         if (uLen > 1)
-            strcatW (wszTemp, L")");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L")");
         // Append a left arrow
-        strcatW (wszTemp, WS_UTF16_LEFTARROW);
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                   WS_UTF16_LEFTARROW);
     } // End IF
 
     //***************************************************************
@@ -2842,11 +2887,14 @@ void DisplayFnHdr
 
         // Append a separator
         if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
-            strcatW (wszTemp, L"{");
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"{");
         else
         if (uLen > 1)
-            strcatW (wszTemp, L"(");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"(");
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
@@ -2856,25 +2904,32 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            strcatW (wszTemp, lpMemName);
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                       lpMemName);
             // If we're not at the last item, separate with a space
             if (uItm < (uLen - 1))
-                strcatW (wszTemp, L" ");
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L" ");
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
         } // End FOR
 
         // Append a separator
         if (lpfhLocalVars->FcnValence EQ FCNVALENCE_AMB)
-            strcatW (wszTemp, L"}");
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"}");
         else
         if (uLen > 1)
-            strcatW (wszTemp, L")");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L")");
         // Append a separator
-        strcatW (wszTemp, L" ");
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                  L" ");
     } // End IF
 
     // Split cases based upon the user-defined function/operator type
@@ -2883,8 +2938,9 @@ void DisplayFnHdr
         case DFNTYPE_OP1:
         case DFNTYPE_OP2:
             // Append a separator
-            strcatW (wszTemp, L"(");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"(");
             //***************************************************************
             // Left Operand
             //***************************************************************
@@ -2896,14 +2952,16 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            strcatW (wszTemp, lpMemName);
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                       lpMemName);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
             // Append a separator
-            strcatW (wszTemp, L" ");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L" ");
             //***************************************************************
             // Operator Name
             //***************************************************************
@@ -2915,8 +2973,9 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            strcatW (wszTemp, lpMemName);
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                       lpMemName);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
@@ -2928,8 +2987,9 @@ void DisplayFnHdr
             if (lpfhLocalVars->lpYYAxisOpr)
             {
                 // Append a separator
-                strcatW (wszTemp, L"[");
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"[");
                 // Get the Name's global memory handle
                 hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
@@ -2937,13 +2997,16 @@ void DisplayFnHdr
                 lpMemName = MyGlobalLock (hGlbName);
 
                 // Copy the name
-                strcatW (wszTemp, lpMemName);
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                           lpMemName);
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
                 // Append a separator
-                strcatW (wszTemp, L"]");
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"]");
             } // End IF
 
             //***************************************************************
@@ -2954,8 +3017,9 @@ void DisplayFnHdr
             if (lpfhLocalVars->lpYYRhtOpr)
             {
                 // Append a separator
-                strcatW (wszTemp, L" ");
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L" ");
                 // Get the Name's global memory handle
                 hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
@@ -2963,15 +3027,17 @@ void DisplayFnHdr
                 lpMemName = MyGlobalLock (hGlbName);
 
                 // Copy the name
-                strcatW (wszTemp, lpMemName);
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                           lpMemName);
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbName); lpMemName = NULL;
             } // End IF
 
             // Append a separator
-            strcatW (wszTemp, L")");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L")");
             break;
 
         case DFNTYPE_FCN:
@@ -2986,8 +3052,9 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            strcatW (wszTemp, lpMemName);
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                       lpMemName);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
@@ -2999,8 +3066,9 @@ void DisplayFnHdr
             if (lpfhLocalVars->lpYYAxisOpr)
             {
                 // Append a separator
-                strcatW (wszTemp, L"[");
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"[");
                 // Get the Name's global memory handle
                 hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
@@ -3008,20 +3076,24 @@ void DisplayFnHdr
                 lpMemName = MyGlobalLock (hGlbName);
 
                 // Copy the name
-                strcatW (wszTemp, lpMemName);
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                           lpMemName);
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
                 // Append a separator
-                strcatW (wszTemp, L"]");
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L"]");
             } // End IF
 
             break;
 
         case DFNTYPE_UNK:
-            strcatW (wszTemp, L"<empty>");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"<empty>");
             break;
 
         defstop
@@ -3036,15 +3108,17 @@ void DisplayFnHdr
     if (lpfhLocalVars->lpYYRhtArg)
     {
         // Append a separator
-        strcatW (wszTemp, L" ");
-
+        MyStrcatW (wszTemp,
+                   sizeof (wszTemp),
+                  L" ");
         // Get the strand length
         uLen = lpfhLocalVars->lpYYRhtArg->uStrandLen;
 
         // Append a separator
         if (uLen > 1)
-            strcatW (wszTemp, L"(");
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L"(");
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
@@ -3054,19 +3128,23 @@ void DisplayFnHdr
             lpMemName = MyGlobalLock (hGlbName);
 
             // Copy the name
-            strcatW (wszTemp, lpMemName);
-
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                       lpMemName);
             // If we're not at the last item, separate with a space
             if (uItm < (uLen - 1))
-                strcatW (wszTemp, L" ");
-
+                MyStrcatW (wszTemp,
+                           sizeof (wszTemp),
+                          L" ");
             // We no longer need this ptr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
         } // End FOR
 
         // Append a separator
         if (uLen > 1)
-            strcatW (wszTemp, L")");
+            MyStrcatW (wszTemp,
+                       sizeof (wszTemp),
+                      L")");
     } // End IF
 
     // Display it in the debug window

@@ -851,10 +851,13 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for SYNTAX ERROR
 #define ERR     "syntax error"
-    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
+    MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
-        wsprintfW (wszTemp, L"SYNTAX ERROR in header position %d -- function NOT saved.", uCharIndex);
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"SYNTAX ERROR in header position %d -- function NOT saved.",
+                    uCharIndex);
         wp = wszTemp;
 
         goto DISPLAYCAT;
@@ -863,10 +866,13 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for VALUE ERROR
 #define ERR     "value error"
-    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
+    MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
-        wsprintfW (wszTemp, L"VALUE ERROR in header position %d -- function NOT saved.", uCharIndex);
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"VALUE ERROR in header position %d -- function NOT saved.",
+                    uCharIndex);
         wp = wszTemp;
 
         goto DISPLAYCAT;
@@ -875,10 +881,13 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for LENGTH ERROR
 #define ERR     "length error"
-    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
+    MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
-        wsprintfW (wszTemp, L"LENGTH ERROR in header position %d -- function NOT saved.", uCharIndex);
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"LENGTH ERROR in header position %d -- function NOT saved.",
+                    uCharIndex);
         wp = wszTemp;
 
         goto DISPLAYCAT;
@@ -886,10 +895,12 @@ void fh_yyerror                         // Called for Bison syntax error
     } // End IF
 
 #define ERR     "memory exhausted"
-    strcpyn (szTemp, s, sizeof (ERR));      // Note: Terminates the string, too
+    MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR));      // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
-        wsprintfW (wszTemp, L"Insufficient memory to parse header -- function NOT saved.");
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"Insufficient memory to parse header -- function NOT saved.");
         wp = wszTemp;
 
         goto DISPLAYCAT;
@@ -897,7 +908,10 @@ void fh_yyerror                         // Called for Bison syntax error
     } // End IF
 
     // Use the error message as given
-    wsprintfW (wszTemp, L"%S", s);
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%S",
+                s);
     wp = wszTemp;
 
     goto DISPLAY;
@@ -907,14 +921,17 @@ DISPLAYCAT:
     if (!lpfhLocalVars->DisplayErr)
     {
         // Pass the error message back to the caller
-        strcpyW (lpfhLocalVars->wszErrMsg, wszTemp);
+        MyStrcpyW (lpfhLocalVars->wszErrMsg, sizeof (lpfhLocalVars->wszErrMsg), wszTemp);
 
         return;
     } // End IF
 
 #ifdef DEBUG
     // Append the original error message
-    wsprintfW (&wszTemp[lstrlenW (wszTemp)], L"(%S)", s);
+    MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                 sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                L"(%S)",
+                 s);
 #endif
 DISPLAY:
     // Display a message box

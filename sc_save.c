@@ -52,7 +52,6 @@ UBOOL CmdSave_EM
     LPUINT       lpMemCnt = NULL;           // Ptr to Vars/Fcns counters
     WCHAR        wszTailDPFE[_MAX_PATH],    // Save area for canonical form of given ws name
                  wszWsidDPFE[_MAX_PATH],    // ...           ...               []WSID
-                 wszTempDPFE[_MAX_PATH],    // ...           temporary
                  wszSectName[15],           // ...           section name (e.g., [Vars.sss])
                  wszCount[8];               // ...           formatted uSymxxx counter
     LPWCHAR      lpMemSaveWSID,             // Ptr to WSID to save to
@@ -99,14 +98,8 @@ UBOOL CmdSave_EM
     // Skip over the header and dimensions to the data
     lpMemSaveWSID = VarArrayDataFmBase (lpMemOldWSID);
 
-    // Because the global memory doesn't have a zero terminator,
-    //   we must copy the data to a temporary location and then
-    //   append a zero terminator
-    strcpynW (wszTempDPFE, lpMemSaveWSID, (UINT) aplNELMWSID + 1);
-////wszTempDPFE[aplNELMWSID] = WC_EOS;  // Already done via "+ 1" in strcpynW
-
     // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
-    MakeWorkspaceNameCanonical (wszWsidDPFE, wszTempDPFE, lpwszWorkDir);
+    MakeWorkspaceNameCanonical (wszWsidDPFE, lpMemSaveWSID, lpwszWorkDir);
 
     // If there is a specified WS Name,
     //   and the current []WSID is different from the specified WS Name,
@@ -122,7 +115,7 @@ UBOOL CmdSave_EM
         iCmp = lstrcmpiW (wszWsidDPFE, wszTailDPFE);
 
         // Append the common workspace extension
-        strcatW (wszTailDPFE, WS_WKSEXT);
+        MyStrcatW (wszTailDPFE, sizeof (wszTailDPFE), WS_WKSEXT);
 
         // If unequal and the given named ws already exists,
         //   display an error
@@ -174,7 +167,7 @@ UBOOL CmdSave_EM
             goto NOTSAVED_CLEAR_EXIT;
 
         // Append the common workspace extension
-        strcatW (wszWsidDPFE, WS_WKSEXT);
+        MyStrcatW (wszWsidDPFE, sizeof (wszWsidDPFE), WS_WKSEXT);
 
         // Save as the target WSID
         lpMemSaveWSID = wszWsidDPFE;
@@ -411,11 +404,15 @@ UBOOL CmdSave_EM
                                                 &uGlbCnt,
                                                  lpSymEntry);
                         // Format the counter
-                        wsprintfW (wszCount, L"%d", lpMemCnt[0 + 2 * lpSymEntry->stSILevel]++);
-
+                        MySprintfW (wszCount,
+                                    sizeof (wszCount),
+                                   L"%d",
+                                    lpMemCnt[0 + 2 * lpSymEntry->stSILevel]++);
                         // Format the section name as [Vars.sss] where sss is the SI level
-                        wsprintfW (wszSectName, SECTNAME_VARS L".%d", lpSymEntry->stSILevel);
-
+                        MySprintfW (wszSectName,
+                                    sizeof (wszSectName),
+                                    SECTNAME_VARS L".%d",
+                                    lpSymEntry->stSILevel);
                         // Write out the entry (nnn=Name=value)
                         //   in the [Vars.sss] section
                         WritePrivateProfileStringW (wszSectName,            // Ptr to the section name
@@ -470,11 +467,15 @@ UBOOL CmdSave_EM
                                                 &uGlbCnt,                       // Ptr to [Globals] count
                                                  lpSymEntry);                   // Ptr to this global's SYMENTRY
                         // Format the counter
-                        wsprintfW (wszCount, L"%d", lpMemCnt[1 + 2 * lpSymEntry->stSILevel]++);
-
+                        MySprintfW (wszCount,
+                                    sizeof (wszCount),
+                                   L"%d",
+                                    lpMemCnt[1 + 2 * lpSymEntry->stSILevel]++);
                         // Format the section name as [Fcns.sss] where sss is the SI level
-                        wsprintfW (wszSectName, SECTNAME_FCNS L".%d", lpSymEntry->stSILevel);
-
+                        MySprintfW (wszSectName,
+                                    sizeof (wszSectName),
+                                    SECTNAME_FCNS L".%d",
+                                    lpSymEntry->stSILevel);
                         // Write out the entry (nnn=Name=Type=Value)
                         //   in the [Fcns.sss] section
                         WritePrivateProfileStringW (wszSectName,            // Ptr to the section name
@@ -490,8 +491,10 @@ UBOOL CmdSave_EM
             if (lpSymEntry->stSILevel)      // Must be suspended
             {
                 // Format the section name
-                wsprintfW (wszSectName, SECTNAME_VARS L".%d", lpSymEntry->stSILevel);
-
+                MySprintfW (wszSectName,
+                            sizeof (wszSectName),
+                            SECTNAME_VARS L".%d",
+                            lpSymEntry->stSILevel);
                 // Write out the entry (nnn = Name = value)
                 //   in the [Vars.sss] section
                 WritePrivateProfileStringW (wszSectName,            // Ptr to the section name
@@ -648,24 +651,30 @@ void CleanupAfterSave
     for (uCnt = 0; uCnt < (lpMemPTD->SILevel + 1); uCnt++)
     {
         // Format the section name as [Vars.sss] where sss is the SI level
-        wsprintfW (wszSectName, SECTNAME_VARS L".%d", uCnt);
-
+        MySprintfW (wszSectName,
+                    sizeof (wszSectName),
+                    SECTNAME_VARS L".%d",
+                    uCnt);
         // Format the Var count
-        wsprintfW (wszCount,
+        MySprintfW (wszCount,
+                    sizeof (wszCount),
                    L"%d",
-                   lpMemCnt[0 + 2 * uCnt]);
+                    lpMemCnt[0 + 2 * uCnt]);
         // Write out the Var count to the [Vars.sss] section where sss is the SI level
         WritePrivateProfileStringW (wszSectName,                    // Ptr to the section name
                                     KEYNAME_COUNT,                  // Ptr to the key name
                                     wszCount,                       // Ptr to the key value
                                     lpMemSaveWSID);                 // Ptr to the file name
         // Format the section name as [Fcns.sss] where sss is the SI level
-        wsprintfW (wszSectName, SECTNAME_FCNS L".%d", uCnt);
-
+        MySprintfW (wszSectName,
+                    sizeof (wszSectName),
+                    SECTNAME_FCNS L".%d",
+                    uCnt);
         // Format the Fcn/Opr count
-        wsprintfW (wszCount,
+        MySprintfW (wszCount,
+                    sizeof (wszCount),
                    L"%d",
-                   lpMemCnt[1 + 2 * uCnt]);
+                    lpMemCnt[1 + 2 * uCnt]);
         // Write out the Fcn count to the [Fcns.sss] section where sss is the SI level
         WritePrivateProfileStringW (wszSectName,                    // Ptr to the section name
                                     KEYNAME_COUNT,                  // Ptr to the key name
@@ -674,27 +683,30 @@ void CleanupAfterSave
     } // End FOR
 
     // Format the SI level
-    wsprintfW (wszCount,
+    MySprintfW (wszCount,
+                sizeof (wszCount),
                L"%d",
-               lpMemPTD->SILevel);
+                lpMemPTD->SILevel);
     // Write out the SI level to the [General] section
     WritePrivateProfileStringW (SECTNAME_GENERAL,               // Ptr to the section name
                                 KEYNAME_SILEVEL,                // Ptr to the key name
                                 wszCount,                       // Ptr to the key value
                                 lpMemSaveWSID);                 // Ptr to the file name
     // Format to []MF timer #
-    wsprintfW (wszCount,
+    MySprintfW (wszCount,
+                sizeof (wszCount),
                L"%d",
-               lpMemPTD->uQuadMF);
+                lpMemPTD->uQuadMF);
     // Write out the []MF timer # to the [General] section
     WritePrivateProfileStringW (SECTNAME_GENERAL,               // Ptr to the section name
                                 KEYNAME_MFTIMER,                // Ptr to the key name
                                 wszCount,                       // Ptr to the key value
                                 lpMemSaveWSID);                 // Ptr to the file name
     // Format the [Globals] count
-    wsprintfW (wszCount,
+    MySprintfW (wszCount,
+                sizeof (wszCount),
                L"%d",
-               uGlbCnt);
+                uGlbCnt);
     // Write out the count to the [Globals] section
     WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
                                 KEYNAME_COUNT,                  // Ptr to the key name
@@ -711,10 +723,11 @@ void CleanupAfterSave
     SystemTimeToFileTime (&systemTime, &ftCreation);
 
     // Format the creation time
-    wsprintfW (wszTimeStamp,
-               FMTSTR_DATETIME,
-               ftCreation.dwHighDateTime,
-               ftCreation.dwLowDateTime);
+    MySprintfW (wszTimeStamp,
+                sizeof (wszTimeStamp),
+                FMTSTR_DATETIME,
+                ftCreation.dwHighDateTime,
+                ftCreation.dwLowDateTime);
     // Write out the creation time to the [General] section
     WritePrivateProfileStringW (SECTNAME_GENERAL,               // Ptr to the section name
                                 KEYNAME_CREATIONTIME,           // Ptr to the key name
@@ -763,9 +776,10 @@ LPAPLCHAR SavedWsFormGlbFcn
     lpaplCharStart = lpaplChar;
 
     // Format the hGlbObj
-    wsprintfW (wszGlbObj,
-               FMTSTR_GLBOBJ,
-               hGlbObj);
+    MySprintfW (wszGlbObj,
+                sizeof (wszGlbObj),
+                FMTSTR_GLBOBJ,
+                hGlbObj);
     // Save as ptr to the profile keyname
     lpMemProKeyName = lpaplChar;
 
@@ -1144,9 +1158,10 @@ LPAPLCHAR SavedWsFormGlbFcn
                                 lpaplChar,              // Ptr to the key value
                                 lpMemSaveWSID);         // Ptr to the file name
     // Format the global count
-    wsprintfW (wszGlbCnt,
-               FMTSTR_GLBCNT,
-               uGlbCnt);
+    MySprintfW (wszGlbCnt,
+                sizeof (wszGlbCnt),
+                FMTSTR_GLBCNT,
+                uGlbCnt);
     // Write out the entry in the [Globals] section
     WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
                                 wszGlbCnt,                      // Ptr to the key value
@@ -1192,9 +1207,10 @@ void WriteFunctionLine
     WCHAR          wszCount[10];
 
     // Format the line number
-    wsprintfW (wszCount,
+    MySprintfW (wszCount,
+                sizeof (wszCount),
                L"%d",
-               uLineNum);
+                uLineNum);
     // Lock the memory to get a ptr to it
     lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
@@ -1264,9 +1280,10 @@ LPAPLCHAR SavedWsFormGlbVar
     lpMemObj = MyGlobalLock (hGlbObj);
 
     // Format the hGlbObj
-    wsprintfW (wszGlbObj,
-               FMTSTR_GLBOBJ,
-               hGlbObj);
+    MySprintfW (wszGlbObj,
+                sizeof (wszGlbObj),
+                FMTSTR_GLBOBJ,
+                hGlbObj);
     // Check to see if this global has already been saved
     //   in the [Globals] section
     if (GetPrivateProfileStringW (SECTNAME_TEMPGLOBALS,         // Ptr to the section name
@@ -1592,9 +1609,10 @@ LPAPLCHAR SavedWsFormGlbVar
         *lpaplChar = WC_EOS;
 
     // Format the global count
-    wsprintfW (wszGlbCnt,
-               FMTSTR_GLBCNT,
-              *lpuGlbCnt);
+    MySprintfW (wszGlbCnt,
+                sizeof (wszGlbCnt),
+                FMTSTR_GLBCNT,
+               *lpuGlbCnt);
     // Count in another entry
     (*lpuGlbCnt)++;
 

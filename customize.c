@@ -1327,8 +1327,8 @@ INT_PTR CALLBACK CustomizeDlgProc
                         uLclKeybLayoutNumVis = uGlbKeybLayoutNumVis;
                         uLclKeybLayoutCount  = uGlbKeybLayoutCount ;
                         uLclKeybLayoutUser   = uGlbKeybLayoutUser  ;
-                        strcpyW (wszLclKeybLayoutAct, wszGlbKeybLayoutAct);
-                        strcpyW (wszLclKeybLayoutVis, wszGlbKeybLayoutVis);
+                        MyStrcpyW (wszLclKeybLayoutAct, sizeof (wszLclKeybLayoutAct), wszGlbKeybLayoutAct);
+                        MyStrcpyW (wszLclKeybLayoutVis, sizeof (wszLclKeybLayoutVis), wszGlbKeybLayoutVis);
 
                         // Loop through the Keyboard Layouts
                         for (uCnt = 0; uCnt < uLclKeybLayoutCount; uCnt++)
@@ -2342,7 +2342,10 @@ INT_PTR CALLBACK CustomizeDlgProc
                             for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
                             if (lpttt->lParam EQ uCol)
                             {
-                                wsprintfW (TooltipText, L"Scan code 0x%02X", aKKC_SC[uCnt].aSC[uCol - aKKC_IDC_BEG[uCnt]]);
+                                MySprintfW (TooltipText,
+                                            sizeof (TooltipText),
+                                           L"Scan code 0x%02X",
+                                            aKKC_SC[uCnt].aSC[uCol - aKKC_IDC_BEG[uCnt]]);
                                 lpttt->lpszText = TooltipText;
 
                                 // Return dialog result
@@ -2387,27 +2390,29 @@ INT_PTR CALLBACK CustomizeDlgProc
                             iLogPixelsY = GetLogPixelsY (NULL);
 
                             // Format the relevant data
-                            wsprintfW (TooltipText,
-                                       strchrW (lf.lfFaceName, L' ') ? L"\"%s\"%s" : L"%s%s",
-                                       lf.lfFaceName,
-                                       GetFontWeightW (lf.lfWeight));
+                            MySprintfW (TooltipText,
+                                        sizeof (TooltipText),
+                                        strchrW (lf.lfFaceName, L' ') ? L"\"%s\"%s" : L"%s%s",
+                                        lf.lfFaceName,
+                                        GetFontWeightW (lf.lfWeight));
                             // If the font is Italic, ...
                             if (lf.lfItalic)
-                                strcatW (TooltipText, L" Italic");
+                                MyStrcatW (TooltipText, sizeof (TooltipText), L" Italic");
 
                             // If the font is Underlined, ...
                             if (lf.lfUnderline)
-                                strcatW (TooltipText, L" Underline");
+                                MyStrcatW (TooltipText, sizeof (TooltipText), L" Underline");
 
                             // If the font is Strike Out, ...
                             if (lf.lfStrikeOut)
-                                strcatW (TooltipText, L" StrikeOut");
+                                MyStrcatW (TooltipText, sizeof (TooltipText), L" StrikeOut");
 
                             // If the font's height is negative, ...
                             if (lf.lfHeight < 0)
-                                wsprintfW (&TooltipText[lstrlenW (TooltipText)],
+                                MySprintfW (&TooltipText[lstrlenW (TooltipText)],
+                                             sizeof (TooltipText) - (lstrlenW (TooltipText) * sizeof (TooltipText[0])),
                                             L" %u point",
-                                            -MulDiv (lf.lfHeight, 72, iLogPixelsY));
+                                             -MulDiv (lf.lfHeight, 72, iLogPixelsY));
                             // Return the ptr to the caller
                             lpttt->lpszText = TooltipText;
                         } else
@@ -2444,17 +2449,19 @@ INT_PTR CALLBACK CustomizeDlgProc
                             for (uCnt = 0; uCnt < uColorNames; uCnt++)
                             if (clrRef EQ aColorNames[uCnt].clrRef)
                             {
-                                wsprintfW (TooltipText,
+                                MySprintfW (TooltipText,
+                                            sizeof (TooltipText),
                                            L"%s: ",
-                                           aColorNames[uCnt].lpwName);
+                                            aColorNames[uCnt].lpwName);
                                 break;
                             } // End FOR/IF
 
                             // Return a ptr to the stored tooltip text
-                            wsprintfW (&TooltipText[lstrlenW (TooltipText)],
+                            MySprintfW (&TooltipText[lstrlenW (TooltipText)],
+                                         sizeof (TooltipText) - (lstrlenW (TooltipText) * sizeof (TooltipText[0])),
                                         L"%u, %u, %u (#%02X%02X%02X)",
-                                        GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef),
-                                        GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef));
+                                         GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef),
+                                         GetRValue (clrRef), GetGValue (clrRef), GetBValue (clrRef));
                             // Return the ptr to the caller
                             lpttt->lpszText = TooltipText;
                         } // End IF/ELSE
@@ -2895,8 +2902,8 @@ INT_PTR CALLBACK CustomizeDlgProc
                         uGlbKeybLayoutNumVis = uLclKeybLayoutNumVis;
                         uGlbKeybLayoutCount  = uLclKeybLayoutCount ;
                         uGlbKeybLayoutUser   = uLclKeybLayoutUser  ;
-                        strcpyW (wszGlbKeybLayoutAct, wszLclKeybLayoutAct);
-                        strcpyW (wszGlbKeybLayoutVis, wszLclKeybLayoutVis);
+                        MyStrcpyW (wszGlbKeybLayoutAct, sizeof (wszGlbKeybLayoutAct), wszLclKeybLayoutAct);
+                        MyStrcpyW (wszGlbKeybLayoutVis, sizeof (wszGlbKeybLayoutVis), wszLclKeybLayoutVis);
                     } // End IF
 
 
@@ -3059,7 +3066,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         guUpdFrq = (UINT) SendMessageW (hWndProp1, CB_GETCURSEL, 0, 0);
 
                         // Save the update frequency text string
-                        strcpyW (gszUpdFrq, updFrq[guUpdFrq].lpwsz);
+                        MyStrcpyW (gszUpdFrq, sizeof (gszUpdFrq), updFrq[guUpdFrq].lpwsz);
                     } // End IF
 
                     // Disable the Apply button
@@ -3182,9 +3189,10 @@ INT_PTR CALLBACK CustomizeDlgProc
                         bFC = ((uID_EC EQ IDC_CLEARWS_FC_EC) && (uSel NE DEF_QUADFC_CWS_LEN));
 
                         // Format the text length
-                        wsprintfW (wszTemp,
+                        MySprintfW (wszTemp,
+                                    sizeof (wszTemp),
                                    L"Character Vector (%u)",
-                                   uSel);
+                                    uSel);
                         // Tell the Static Text control about the new font
                         SendMessageW (hWnd_ST,
                                       WM_SETFONT,
@@ -3810,7 +3818,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         uLclKeybLayoutNumAct = uLclKeybLayoutNumVis;
 
                         // Save the layout name
-                        strcpyW (wszLclKeybLayoutAct, wszLclKeybLayoutVis);
+                        MyStrcpyW (wszLclKeybLayoutAct, sizeof (wszLclKeybLayoutAct), wszLclKeybLayoutVis);
 
                         // Save the active keyboard layout
                         aKeybLayoutAct = lpLclKeybLayouts[uLclKeybLayoutNumAct];
@@ -3954,7 +3962,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                             lpLclKeybLayouts = MyGlobalLock (hLclKeybLayouts);
 
                             // Set the visible keyb layout name
-                            strcpyW (wszLclKeybLayoutVis, lpLclKeybLayouts[uLclKeybLayoutNumVis].wszLayoutName);
+                            MyStrcpyW (wszLclKeybLayoutVis, sizeof (wszLclKeybLayoutVis), lpLclKeybLayouts[uLclKeybLayoutNumVis].wszLayoutName);
 
                             // Get the CB index of the visible layout name
                             uCnt = (UINT)
@@ -5344,7 +5352,7 @@ UBOOL CALLBACK NewKeybDlgProc
             newKeybDlg = *(LPNEWKEYBDLG) lParam;
 
             // Copy the name for later use
-            strcpyW (wszTmpKeybLayoutName, newKeybDlg.lpwKeybLayoutName);
+            MyStrcpyW (wszTmpKeybLayoutName, sizeof (wszTmpKeybLayoutName), newKeybDlg.lpwKeybLayoutName);
 
             // Limit the text in the Edit Ctrl
             SendMessageW (GetDlgItem (hDlg, IDC_NEWKEYB_EC), EM_SETLIMITTEXT, countof (wszTmpKeybLayoutName), 0);
@@ -5919,9 +5927,10 @@ int CALLBACK DirsBrowseCallbackProc
 
         case BFFM_VALIDATEFAILEDW:  // lParam = ptr to string containing the invalid name
             // Construct the error message
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"The directory \"%s\" is not present.  Use \"Make New Folder\" to create it.",
-                       lParam);
+                        lParam);
             MessageBoxW (hWndProp, wszTemp, lpwszAppName, MB_OK | MB_ICONERROR);
 
             return TRUE;            // Keep the dialog up

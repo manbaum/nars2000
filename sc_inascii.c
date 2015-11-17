@@ -388,16 +388,18 @@ UBOOL InAsciiFile_EM
 
         // If the error line # is NEG1U, there is an error message, so display it
         if (SF_Fcns.uErrLine EQ NEG1U)
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"FUNCTION IN <%s> NOT DEFINED:  %s",
-                       lpwszFileName,
-                       SF_Fcns.wszErrMsg);
+                        lpwszFileName,
+                        SF_Fcns.wszErrMsg);
         else
             // Otherwise, display the error line # as an integer scalar (origin-sensitive)
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"FUNCTION IN <%s> NOT DEFINED:  ERROR ON LINE %u",
-                       lpwszFileName,
-                       SF_Fcns.uErrLine);
+                        lpwszFileName,
+                        SF_Fcns.uErrLine);
         // Display the line
         ReplaceLastLineCRPmt (wszTemp);
 

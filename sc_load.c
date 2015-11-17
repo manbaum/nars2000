@@ -156,7 +156,7 @@ UBOOL CmdLoadCom_EM
             goto WSNOTFOUND_EXIT;
     } else
         // Copy the name to the expected var
-        strcpyW (wszTailDPFE, lpwszTail);
+        MyStrcpyW (wszTailDPFE, sizeof (wszTailDPFE), lpwszTail);
 
     // Get the tab index from which this command was issued
     iTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
@@ -337,7 +337,7 @@ UBOOL LoadWorkspace_EM
                         lpDict);            // Ptr to workspace dictionary
     // Copy the string to a save area ("+ 1" to include the trailing zero)
     // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
-    strcpyW (wszVersion, lpwszProf);
+    MyStrcpyW (wszVersion, sizeof (wszVersion), lpwszProf);
 
     // Compare the version #s
     if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
@@ -391,7 +391,10 @@ UBOOL LoadWorkspace_EM
                                 FALSE,                  // Restartable
                                 TRUE);                  // LinkIntoChain
                 // Format the counter
-                wsprintfW (wszCount, L"%d", uSID - 1);
+                MySprintfW (wszCount,
+                            sizeof (wszCount),
+                           L"%d",
+                            uSID - 1);
 
                 // Read in the SI line
                 lpwFcnName =
@@ -489,8 +492,10 @@ UBOOL LoadWorkspace_EM
             //***************************************************************
 
             // Format the section name
-            wsprintfW (wszSectName, SECTNAME_VARS L".%d", uSID);
-
+            MySprintfW (wszSectName,
+                        sizeof (wszSectName),
+                        SECTNAME_VARS L".%d",
+                        uSID);
             // Get the [Vars.nnn] count
             uSymVar =
               ProfileGetInt (wszSectName,   // Ptr to the section name
@@ -513,8 +518,10 @@ UBOOL LoadWorkspace_EM
                 lpwSrcStart = lpwSrc;
 
                 // Format the counter
-                wsprintfW (wszCount, L"%d", uCnt);
-
+                MySprintfW (wszCount,
+                            sizeof (wszCount),
+                           L"%d",
+                            uCnt);
                 // Read the next string
                 lpwszProf =
                   ProfileGetString (wszSectName,    // Ptr to the section name
@@ -668,8 +675,10 @@ UBOOL LoadWorkspace_EM
             //***************************************************************
 
             // Format the section name
-            wsprintfW (wszSectName, SECTNAME_FCNS L".%d", uSID);
-
+            MySprintfW (wszSectName,
+                        sizeof (wszSectName),
+                        SECTNAME_FCNS L".%d",
+                        uSID);
             // Get the [Fcns.nnn] count
             uSymFcn =
               ProfileGetInt (wszSectName,   // Ptr to the section name
@@ -693,8 +702,10 @@ UBOOL LoadWorkspace_EM
                 lpwSrcStart = lpwSrc;
 
                 // Format the counter
-                wsprintfW (wszCount, L"%d", uCnt);
-
+                MySprintfW (wszCount,
+                            sizeof (wszCount),
+                           L"%d",
+                            uCnt);
                 // Read the next string
                 lpwszProf =
                   ProfileGetString (wszSectName,    // Ptr to the section name
@@ -1881,10 +1892,11 @@ HGLOBAL LoadWorkspaceGlobal_EM
             SystemTimeToFileTime (&systemTime, &ftCreation);
 
             // Format the CreationTime/LastModTime
-            wsprintfW (wszTimeStamp,
-                       FMTSTR_DATETIME,
-                       ftCreation.dwHighDateTime,
-                       ftCreation.dwLowDateTime);
+            MySprintfW (wszTimeStamp,
+                        sizeof (wszTimeStamp),
+                        FMTSTR_DATETIME,
+                        ftCreation.dwHighDateTime,
+                        ftCreation.dwLowDateTime);
             // Get the CreationTime string
             lpwszProf =
               ProfileGetString (lpwSectName,            // Ptr to the section name
@@ -2348,9 +2360,10 @@ HGLOBAL LoadWsGlbVarConv
     stFlags.ObjName = OBJNAME_LOD;
 
     // Format the global count
-    wsprintfW (wszGlbCnt,
-               FMTSTR_GLBCNT,
-               uGlbCnt);
+    MySprintfW (wszGlbCnt,
+                sizeof (wszGlbCnt),
+                FMTSTR_GLBCNT,
+                uGlbCnt);
     // Get the matching HGLOBAL
     lpSymEntry =
       SymTabLookupName (wszGlbCnt, &stFlags);

@@ -180,7 +180,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void CmdLibProcess
-    (LPWCHAR      wszFileName,          // Ptr to canonical dir
+    (LPWCHAR      lpwszFileName,        // Ptr to canonical dir
      LPWCHAR      lpwszFormat,          // Ptr to temp storage
      LPWCHAR      lpwszSaveBase,        // Ptr to base of Saved Names
      LPWCHAR      lpwszLeadRange,       // Ptr to leading range
@@ -225,12 +225,12 @@ void CmdLibProcess
         } // End IF
 
         // Convert the given workspace name into a canonical form (without WS_WKSEXT)
-        MakeWorkspaceNameCanonical (wszFileName, lpwszFormat, (lpwszLibDirs NE NULL) ? *lpwszLibDirs : L"");
+        MakeWorkspaceNameCanonical (lpwszFileName, lpwszFormat, (lpwszLibDirs NE NULL) ? *lpwszLibDirs : L"");
     } else
-        strcpyW (wszFileName, *lpwszLibDirs);
+        strcpyW (lpwszFileName, *lpwszLibDirs);
 
     // Get the length of the filename so far
-    uExtLen = lstrlenW (wszFileName);
+    uExtLen = lstrlenW (lpwszFileName);
 
     // Initialize the name counter and name ptr
     uNameCnt = 0;
@@ -239,7 +239,7 @@ void CmdLibProcess
 
     // Accumulate the workspaces (*.ws.nars)
     lpwszSaveName =
-      CmdLibFiles (wszFileName,             // Ptr to file name root
+      CmdLibFiles (lpwszFileName,           // Ptr to file name root
                    WS_WKSEXT,               // Extension to use
                    FALSE,                   // TRUE iff we should show the extension
                    lpwszLeadRange,          // Ptr to leading range
@@ -249,11 +249,11 @@ void CmdLibProcess
                   &uNameCnt,                // Ptr to name counter
                    bUniqWs);                // TRUE iff listing unique workspaces only
     // Zap so we start off at the same place
-    wszFileName[uExtLen] = WC_EOS;
+    lpwszFileName[uExtLen] = WC_EOS;
 
     // Accumulate the atf files (*.atf)
     lpwszSaveName =
-      CmdLibFiles (wszFileName,             // Ptr to file name root
+      CmdLibFiles (lpwszFileName,           // Ptr to file name root
                    WS_ATFEXT,               // Extension to use
                    TRUE,                    // TRUE iff we should show the extension
                    lpwszLeadRange,          // Ptr to leading range
@@ -263,14 +263,14 @@ void CmdLibProcess
                   &uNameCnt,                // Ptr to name counter
                    bUniqWs);                // TRUE iff listing unique workspaces only
     // Zap so we start off at the same place
-    wszFileName[uExtLen] = WC_EOS;
+    lpwszFileName[uExtLen] = WC_EOS;
 
     // If there are any files, ...
     if (uNameCnt)
     {
         // Display the current search dir
         AppendLine (L"\"", FALSE, FALSE);
-        AppendLine (wszFileName, FALSE, FALSE);
+        AppendLine (lpwszFileName, FALSE, FALSE);
         AppendLine (L"\"", FALSE, TRUE);
 
         // Sort the names
@@ -289,8 +289,8 @@ void CmdLibProcess
 //***************************************************************************
 
 LPWCHAR CmdLibFiles
-    (LPWCHAR  wszFileName,              // Ptr to file name root
-     LPWCHAR  wszExt,                   // Extension to use
+    (LPWCHAR  lpwszFileName,            // Ptr to file name root
+     LPWCHAR  lpwszExt,                 // Extension to use
      UBOOL    bShowExt,                 // TRUE iff we should show the extension
      LPWCHAR  lpwszLeadRange,           // Ptr to leading range
      LPWCHAR  lpwszTailRange,           // ...    trailing ...  (may be NULL if no separator)
@@ -307,33 +307,33 @@ LPWCHAR CmdLibFiles
     UBOOL            bEndDQ;            // TRUE iff the string ends with a Double Quote
 
     // Append a backslash to the incoming filename if not already there
-    AppendBackslash (wszFileName);
+    AppendBackslash (lpwszFileName);
 
-    // Get the length to append trailing extension (wszExt)
-    uFileLen = lstrlenW (wszFileName);
+    // Get the length to append trailing extension (lpwszExt)
+    uFileLen = lstrlenW (lpwszFileName);
 
     // If it ends in a double quote, ...
-    bEndDQ = (wszFileName[uFileLen - 1] EQ WC_DQ);
+    bEndDQ = (lpwszFileName[uFileLen - 1] EQ WC_DQ);
 
     // Create the wildcard string to search for workspaces
-    strcpyW (&wszFileName[uFileLen - bEndDQ], L"*");
+    strcpyW (&lpwszFileName[uFileLen - bEndDQ], L"*");
     uFileLen++;
-    strcpyW (&wszFileName[uFileLen - bEndDQ], wszExt);
-    uFileLen += lstrlenW (wszExt);
+    strcpyW (&lpwszFileName[uFileLen - bEndDQ], lpwszExt);
+    uFileLen += lstrlenW (lpwszExt);
 
     // If it ended with a double quote, ...
     if (bEndDQ)
     {
         // Append it again
-        wszFileName[uFileLen + 0] = WC_DQ;
-        wszFileName[uFileLen + 1] = WC_EOS;
+        lpwszFileName[uFileLen + 0] = WC_DQ;
+        lpwszFileName[uFileLen + 1] = WC_EOS;
     } // End IF
 
     // Get length of workspace extension
-    uExtLen = lstrlenW (wszExt);
+    uExtLen = lstrlenW (lpwszExt);
 
     // Find the first (if any) workspace
-    hFind = FindFirstFileW (wszFileName, &FindData);
+    hFind = FindFirstFileW (lpwszFileName, &FindData);
 
     if (hFind NE INVALID_HANDLE_VALUE)
     {

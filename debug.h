@@ -32,7 +32,10 @@
     else                                            \
     {                                               \
         lpwszOldName = lpMemPTD->lpwszTempName;     \
-        wsprintfW (wszTempName, L"%S#%d", FNLN);    \
+        MySprintfW (wszTempName,                    \
+                    sizeof (wszTempName),           \
+                   L"%S#%d",                        \
+                    FNLN);                          \
         lpMemPTD->lpwszTempName = wszTempName;      \
         lpMemPTD->bTempOpen = TRUE;                 \
     } /* End IF */

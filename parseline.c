@@ -4435,11 +4435,12 @@ PARSELINE_REDUCE:
                 {
                     WCHAR EVENT[64];
 
-                    wsprintfW (EVENT,
+                    MySprintfW (EVENT,
+                                sizeof (EVENT),
                                L"- \"%s %s\" " WS_UTF16_RIGHTARROW L" %s",
-                               soNames[curSynObj],
-                               soNames[lstSynObj],
-                               soNames[lpplCurStr->soType]);
+                                soNames[curSynObj],
+                                soNames[lstSynObj],
+                                soNames[lpplCurStr->soType]);
                     TRACE2 (L"Reducing:", EVENT, lpplCurStr->soType, lstSynObj);
                 }
 

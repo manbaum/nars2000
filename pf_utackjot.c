@@ -507,11 +507,12 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
         static WCHAR wszTemp[1024];
 
         // Format the error message
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"%s -- Line %d statement %d",
-                   csLocalVars.lpwszErrMsg,
-                   csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
-                   csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1);
+                    csLocalVars.lpwszErrMsg,
+                    csLocalVars.tkCSErr.tkData.Orig.c.uLineNum,
+                    csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1);
         // Save the error message
         ErrorMessageIndirectToken (wszTemp, lptkFunc);
 

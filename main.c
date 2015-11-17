@@ -1969,17 +1969,18 @@ LRESULT APIENTRY MFWndProc
                         strcpyW (TooltipText, lpMemWSID);
 #else
                         // Return a ptr to the stored tooltip text
-                        wsprintfW (TooltipText,
+                        MySprintfW (TooltipText,
+                                    sizeof (TooltipText),
                                    L"hWndMC=%p  hWndSM=%p  TabID=%u  TabIndex=%d: %s",
-                                   lpMemPTD->hWndMC,
-                                   lpMemPTD->hWndSM,
-                                   TranslateTabIndexToID ((int) lptdi->hdr.idFrom),
-                                   lptdi->hdr.idFrom,
-                                   lpMemWSID);
+                                    lpMemPTD->hWndMC,
+                                    lpMemPTD->hWndSM,
+                                    TranslateTabIndexToID ((int) lptdi->hdr.idFrom),
+                                    lptdi->hdr.idFrom,
+                                    lpMemWSID);
 #endif
                         // If the tab is still executing, say so
                         if (lpMemPTD->bExecuting)
-                            strcatW (TooltipText, L" (RUNNING)");
+                            MyStrcatW (TooltipText, sizeof (TooltipText), L" (RUNNING)");
 
                         // Return the ptr to the caller
                         lptdi->lpszText = TooltipText;
@@ -3567,7 +3568,7 @@ UBOOL InitInstance
 
             // Get the Windows directory (parent of the Fonts folder)
             GetWindowsDirectoryW (wszTemp, countof (wszTemp));
-            strcatW (wszTemp, WS_SLOPE L"Fonts" WS_SLOPE DEF_APLFONT_FILE);
+            MyStrcatW (wszTemp, sizeof (wszTemp), WS_SLOPE L"Fonts" WS_SLOPE DEF_APLFONT_FILE);
 
             // Copy the file to the Fonts folder without Overwrite
             if (!CopyFileW (wszFntDPFE, wszTemp, TRUE))
@@ -3857,7 +3858,7 @@ UBOOL ParseCommandLine
             MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
 
             // Append the common workspace extension
-            strcatW (wszLoadFile, WS_WKSEXT);
+            MyStrcatW (wszLoadFile, sizeof (wszLoadFile), WS_WKSEXT);
 
             // Mark as present
             bCommandLine = TRUE;
@@ -3889,7 +3890,7 @@ int PASCAL WinMain
     // Instantiate the Crash Server
     if (CrashServer ())
         // Set the CRASHRPT.DLL version #
-        LclFileVersionStrW (crsh_dll, crsh_version);
+        LclFileVersionStrW (crsh_dll, crsh_version, sizeof (crsh_version));
     else
     {
         WCHAR wszTemp[512];

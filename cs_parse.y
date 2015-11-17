@@ -2718,9 +2718,9 @@ void cs_yyerror                         // Called for Bison syntax error
 
 DISPLAYCAT:
 #ifdef DEBUG
-    strcat (szTemp, "(");
-    strcat (szTemp,  s );
-    strcat (szTemp, ")");
+    MyStrcat (szTemp, sizeof (szTemp), "(");
+    MyStrcat (szTemp, sizeof (szTemp),  s );
+    MyStrcat (szTemp, sizeof (szTemp), ")");
 #endif
 DISPLAY:
     // Display a message box

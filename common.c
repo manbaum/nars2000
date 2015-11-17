@@ -503,10 +503,10 @@ void GetModuleFileNames
         _wmakepath  (wszFntDPFE, wszDrive, wszDir, DEF_APLFONT_EXTNAME, DEF_APLFONT_EXT);
 
         // Read in the application's File Version String
-        LclFileVersionStrW (wszAppDPFE, wszFileVer);
+        LclFileVersionStrW (wszAppDPFE, wszFileVer, sizeof (wszFileVer));
 
         // Read in the COMCTL32.DLL File Version String
-        LclFileVersionStrW (L"comctl32.dll", wszComctl32FileVer);
+        LclFileVersionStrW (L"comctl32.dll", wszComctl32FileVer, sizeof (wszComctl32FileVer));
 
         // Get the Comctl32.dll major and minor file version #s
         sscanfW (wszComctl32FileVer,
@@ -1163,6 +1163,115 @@ void strcpynW
     // Ensure properly terminated
     lpwDst[iMaxLength - 1] = WC_EOS;
 } // End strcpynW
+
+
+//***************************************************************************
+//  $MyStrcpyW
+//
+//  Same as lstrcpyW but checks the return code and handles page faults
+//    however, unlike lstrcpyW, it has no return value.
+//***************************************************************************
+
+void MyStrcpyW
+    (LPWSTR       lpwDst,       // Ptr to dest buffer
+     size_t       cbDest,       // Size of dest buffer in bytes
+     const WCHAR *lpwSrc)       // Ptr to source
+
+{
+    // Copy source to destination
+    if (FAILED (StringCbCopyW (lpwDst,      // Ptr to dest buffer
+                               cbDest,      // Size of dest buffer in bytes
+                               lpwSrc)))    // Ptr to source
+        Assert (FALSE);
+} // End MyStrcpyW
+
+
+//***************************************************************************
+//  $MyStrcat
+//
+//  Same as lstrcat but checks the return code and handles page faults
+//    however, unlike lstrcat, it has no return value.
+//***************************************************************************
+
+void MyStrcat
+    (LPSTR       lpDst,         // Ptr to dest buffer
+     size_t      cbDest,        // Size of dest buffer in bytes
+     const char *lpSrc)         // Ptr to source
+
+{
+    // Catenate source to destination
+    if (FAILED (StringCbCat (lpDst,         // Ptr to dest buffer
+                             cbDest,        // Size of dest buffer in bytes
+                             lpSrc)))       // Ptr to source
+        Assert (FALSE);
+} // End MyStrcat
+
+
+//***************************************************************************
+//  $MyStrcatW
+//
+//  Same as lstrcatW but checks the return code and handles page faults
+//    however, unlike lstrcatW, it has no return value.
+//***************************************************************************
+
+void MyStrcatW
+    (LPWSTR       lpwDst,       // Ptr to dest buffer
+     size_t       cbDest,       // Size of dest buffer in bytes
+     const WCHAR *lpwSrc)       // Ptr to source
+
+{
+    // Catenate source to destination
+    if (FAILED (StringCbCatW (lpwDst,       // Ptr to dest buffer
+                               cbDest,      // Size of dest buffer in bytes
+                              lpwSrc)))     // Ptr to source
+        Assert (FALSE);
+} // End MyStrcatW
+
+
+//***************************************************************************
+//  $MyStrcpyn
+//
+//  Same as lstrcpyn but checks the return code and handles page faults
+//    however, unlike lstrcpyn, it has no return value.
+//***************************************************************************
+
+void MyStrcpyn
+    (LPSTR       lpDst,         // Ptr to destination
+     size_t      cbDest,        // Size of dest buffer in bytes including terminating NULL
+     const char *lpSrc,         // Ptr to source (must be NULL-terminated)
+     size_t      cbSrc)         // Maximum # bytes to be copied from source
+
+{
+    // Copy source to destination
+    if (FAILED (StringCbCopyN (lpDst,
+                               cbDest,
+                               lpSrc,
+                               cbSrc)))
+        Assert (FALSE);
+} // End MyStrcpyn
+
+
+//***************************************************************************
+//  $MyStrcpynW
+//
+//  Same as lstrcpynW but checks the return code and handles page faults
+//    however, unlike lstrcpynW, it has no return value.
+//***************************************************************************
+
+void MyStrcpynW
+    (LPWSTR       lpwDst,       // Ptr to destination
+     size_t       cbDest,       // Size of dest buffer in bytes including terminating NULL
+     const WCHAR *lpwSrc,       // Ptr to source (must be NULL-terminated)
+     size_t       cbSrc)        // Maximum # bytes to be copied from source
+
+{
+    // Copy source to destination
+    if (FAILED (StringCbCopyNW (lpwDst,
+                                cbDest,
+                                lpwSrc,
+                                cbSrc)))
+        Assert (FALSE);
+} // End MyStrcpynW
 
 
 //***************************************************************************

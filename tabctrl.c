@@ -436,8 +436,10 @@ UBOOL WINAPI CreateNewTabInThread
     nThreads = 1 + HandleToULong (GetPropW (lpMemPTD->hWndSM, PROP_NTHREADS));
 
     // Format the next property name
-    wsprintfW (wszTemp, L"Thread%d", hThread);
-
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"Thread%d",
+                hThread);
     // Set the property to the current thread handle
     SetPropW (hWndParent, wszTemp, hThread);
 
@@ -1383,9 +1385,10 @@ void DrawTab
     tabNum = 1 + lpMemWSID[0] - TABNUMBER_START;
 
     // Format the tab # as text
-    wsprintfW (wszTabNum,
+    MySprintfW (wszTabNum,
+                sizeof (wszTabNum),
                L"%d",
-               tabNum);
+                tabNum);
     // Create the bounding rectangle for the tab #
     rcTabNum.top    = lpRect->top + 1;
     rcTabNum.left   = lpRect->left;

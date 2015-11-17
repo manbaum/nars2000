@@ -355,19 +355,21 @@ void LastTouch
     else
     // If it's currently locked, ...
     if (bLocked)
-        wsprintf (szTemp,
-                  "The global (%p) was last locked in (%s#%d) and allocated in (%s#%d).",
-                  hMem,
-                  lpaaFileName[OBJ_GLBLOCK  - 1][i],
-                  lpaauLinNum [OBJ_GLBLOCK  - 1][i],
-                  lpaaFileName[OBJ_GLBALLOC - 1][j],
-                  lpaauLinNum [OBJ_GLBALLOC - 1][j]);
+        MySprintf (szTemp,
+                   sizeof (szTemp),
+                   "The global (%p) was last locked in (%s#%d) and allocated in (%s#%d).",
+                   hMem,
+                   lpaaFileName[OBJ_GLBLOCK  - 1][i],
+                   lpaauLinNum [OBJ_GLBLOCK  - 1][i],
+                   lpaaFileName[OBJ_GLBALLOC - 1][j],
+                   lpaauLinNum [OBJ_GLBALLOC - 1][j]);
     else
-        wsprintf (szTemp,
-                  "The global (%p) was last allocated in (%s#%d).",
-                  hMem,
-                  lpaaFileName[OBJ_GLBALLOC - 1][j],
-                  lpaauLinNum [OBJ_GLBALLOC - 1][j]);
+        MySprintf (szTemp,
+                   sizeof (szTemp),
+                   "The global (%p) was last allocated in (%s#%d).",
+                   hMem,
+                   lpaaFileName[OBJ_GLBALLOC - 1][j],
+                   lpaauLinNum [OBJ_GLBALLOC - 1][j]);
 } // End LastTouch
 
 
@@ -1196,9 +1198,10 @@ LPVOID _MyGlobalLockSub
                        szTemp,                      // Pointer to message buffer
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
-        wsprintf (&szTemp[lstrlen (szTemp)],
-                  " -- hMem = %p",
-                  hMem);
+        MySprintf (&szTemp[lstrlen (szTemp)],
+                    sizeof (szTemp) - lstrlen (szTemp),
+                    " -- hMem = %p",
+                    hMem);
         MBC (szTemp)
         DbgBrk ();              // #ifdef DEBUG
     } else
@@ -1730,9 +1733,10 @@ DWORD _MyWaitForSemaphore
             break;
 
         default:
-            wsprintfW (wszTemp,
-                      L"***Unknown Wait Reason (%08X)***",
-                       dwWaitRes);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"***Unknown Wait Reason (%08X)***",
+                        dwWaitRes);
             lpwszWaitRes = wszTemp;
 
             break;
@@ -1797,9 +1801,10 @@ DWORD _MyWaitForThread
             break;
 
         default:
-            wsprintfW (wszTemp,
-                      L"***Unknown Wait Reason (%08X)***",
-                       dwWaitRes);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"***Unknown Wait Reason (%08X)***",
+                        dwWaitRes);
             lpwszWaitRes = wszTemp;
 
             break;

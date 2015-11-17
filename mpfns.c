@@ -66,10 +66,11 @@ LPVOID mp_alloc
         {
             WCHAR wszTemp[256];
 
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"MPFNS(Alloc):    %p (%u)",
-                       lpMemRes,
-                       size);
+                        lpMemRes,
+                        size);
             DbgMsgW (wszTemp);
         } // End IF
 #endif
@@ -122,12 +123,13 @@ LPVOID mp_realloc
         {
             WCHAR wszTemp[256];
 
-            wsprintfW (wszTemp,
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
                        L"MPFNS(ReAlloc):  %p (%u) to %p (%u)",
-                       lpMem,
-                       old_size,
-                       lpMemRes,
-                       new_size);
+                        lpMem,
+                        old_size,
+                        lpMemRes,
+                        new_size);
             DbgMsgW (wszTemp);
         } // End IF
 #endif
@@ -160,10 +162,11 @@ void mp_free
     {
         WCHAR wszTemp[256];
 
-        wsprintfW (wszTemp,
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
                    L"MPFNS(Free):     %p (%u)",
-                   lpMem,
-                   size);
+                    lpMem,
+                    size);
         DbgMsgW (wszTemp);
     } // End IF
 #endif

@@ -524,6 +524,10 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     {
                         TOKEN tkLstArg = {0};
 
+                        // If the result is empty, we've validated all we need
+                        if (IsEmpty (aplNELMSub))
+                            goto YYALLOC_EXIT;
+
                         // Fill in the list arg token
                         tkLstArg.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////tkLstArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}

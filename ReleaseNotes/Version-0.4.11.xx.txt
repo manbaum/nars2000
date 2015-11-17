@@ -1,6 +1,18 @@
 Version 0.4.11.xx consists of the following Builds:
 
 
+Build #1415 -- Version 0.4.11.xx
+--------------------------------
+
+* Fix Bug In Empty Indexing
+
+Directory trunk:
+
+PF_INDEX.C:
+  In <ArrayIndexRef_EM_YY>, (1 1{rho}2)[0{rho}{enclose}0 0] is mishandled by not
+    exiting after the index is validated vs. the array to be indexed.
+
+
 Build #1414 -- Version 0.4.11.xx
 --------------------------------
 
@@ -9,7 +21,7 @@ Build #1414 -- Version 0.4.11.xx
 Directory trunk:
 
 COMMON.C:
-  Pass string length to <LclFileVesionStrW> so it an use it in a string safe function.
+  Pass string length to <LclFileVersionStrW> so it can use it in a string safe function.
   Define local versions of string functions as wrappers which call string safe functions.
 
 CS_PARSE.Y:

@@ -6,7 +6,7 @@ Build #1414 -- Version 0.4.11.xx
 Directory trunk:
 
 COMMON.C:
-  Pass string length to <LclFileVesionStrW> so it an use it in a string safe function.
+  Pass string length to <LclFileVersionStrW> so it can use it in a string safe function.
   Define local versions of string functions as wrappers which call string safe functions.
 
 CS_PARSE.Y:

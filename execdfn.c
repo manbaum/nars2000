@@ -1055,6 +1055,11 @@ RESTART_AFTER_ERROR:
                 // We no longer need this ptr
                 MyGlobalUnlock (htGlbName); lpMemName = NULL;
 
+                // If we're []STOPping, ...
+                if (bStopLine)
+                    // Append an asterisk to mark it as a []STOP
+                    strcatW (lpMemPTD->lpwszTemp, L" *");
+
                 // Display the function name and line #
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
             } // End IF

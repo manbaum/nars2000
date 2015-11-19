@@ -1803,8 +1803,9 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         if (bPrototyping)
             goto LEFT_OPERAND_NONCE_EXIT;
 
-        // If the reduction function is primitive scalar dyadic, ...
-        if (lpPrimFlagsLft->DydScalar)
+        // If both functions are primitive scalar dyadic, ...
+        if (lpPrimFlagsLft->DydScalar
+         && lpPrimFlagsRht->DydScalar)
         {
             // If it's not an immediate primitive function,
             //   or it is, but is without an identity element,

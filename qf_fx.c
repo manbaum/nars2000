@@ -330,7 +330,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+        lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
@@ -349,7 +349,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkInteger  = GetQuadIO () + SF_Fcns.uErrLine;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

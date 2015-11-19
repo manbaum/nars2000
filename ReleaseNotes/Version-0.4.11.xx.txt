@@ -1,6 +1,17 @@
 Version 0.4.11.xx consists of the following Builds:
 
 
+Build #1420 -- Version 0.4.11.xx
+--------------------------------
+
+* Mark The Non-Error Result Of []FX As NoDisplay
+
+Directory trunk:
+
+QF_FX.C:
+  If the result of []FX is not an error, mark the result as NoDisplay.
+
+
 Build #1419 -- Version 0.4.11.xx
 --------------------------------
 

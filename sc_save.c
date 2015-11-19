@@ -562,7 +562,12 @@ UBOOL CmdSave_EM
 
     // Format the current date & time
     FormatCurDateTime (&lpwszTemp[lstrlenW (lpwszTemp)]);
-
+#ifdef DEBUG
+    // Append the workspace version
+    wsprintfW (&lpwszTemp[lstrlenW (lpwszTemp)],
+               L" (ver %s)",
+                WS_VERSTR);
+#endif
     // Protect the text
     lpwszOrigTemp = lpMemPTD->lpwszTemp;
     lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);

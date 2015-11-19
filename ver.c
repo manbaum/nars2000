@@ -213,7 +213,12 @@ APLU3264 CALLBACK AboutDlgProc
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
                          sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
                         L"%s\n",
-                        crsh_version);
+                         crsh_version);
+            // Append the workspace version #
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                        L"Workspace version #%s\n",
+                         WS_VERSTR);
             // Write out the secondary version string
             SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);
 

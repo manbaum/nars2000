@@ -43,7 +43,7 @@
 GLBSYM GetIdentityElement_EM
     (LPPL_YYSTYPE lpYYFcnStrLft,    // Ptr to left operand function strand
      LPTOKEN      lptkLftArg,       // Ptr to left arg token
-     LPPL_YYSTYPE lpYYFcnStrRht,    // Ptr to right operand function strand
+     LPPL_YYSTYPE lpYYFcnStrRht,    // Ptr to right operand function strand (may be NULL if Scan)
      LPTOKEN      lptkRhtArg)       // Ptr to right arg token
 
 {
@@ -62,8 +62,8 @@ GLBSYM GetIdentityElement_EM
     Assert (lpYYFcnStrLft NE NULL);
     Assert (lptkRhtArg    NE NULL);
 
-    // If the right operand is defined, ...
-    if (lpYYFcnStrRht)
+    // If the right operand is defined (thus, it's Inner Product), ...
+    if (lpYYFcnStrRht NE NULL)
     {
         LPPRIMFNS lpPrimProtoRht;               // Ptr to right operand prototype function
         TOKEN     tkLft = tkZero;               // Boolean zero token
@@ -278,7 +278,7 @@ UBOOL FillIdentityElement_EM
      APLSTYPE     aplTypeRes,                   // Result storage type
      LPPL_YYSTYPE lpYYFcnStrLft,                // Ptr to left operand function strand
      LPTOKEN      lptkLftArg,                   // Ptr to left arg token
-     LPPL_YYSTYPE lpYYFcnStrRht,                // Ptr to right operand function strand
+     LPPL_YYSTYPE lpYYFcnStrRht,                // Ptr to right operand function strand (may be NULL if Scan)
      LPTOKEN      lptkRhtArg)                   // Ptr to right arg token
 
 {
@@ -289,7 +289,7 @@ UBOOL FillIdentityElement_EM
     hGlbSym =
       GetIdentityElement_EM (lpYYFcnStrLft,     // Ptr to left operand function strand
                              lptkLftArg,        // Ptr to left arg token
-                             lpYYFcnStrRht,     // Ptr to right operand function strand
+                             lpYYFcnStrRht,     // Ptr to right operand function strand (may be NULL if Scan)
                              lptkRhtArg);       // Ptr to right arg token
     // Check for errors
     if (hGlbSym.hGlb EQ NULL)

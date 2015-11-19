@@ -544,7 +544,7 @@ RESTART_ALLOC:
                                      aplTypeRes,            // Result storage type
                                      lpYYFcnStrLft,         // Ptr to left operand function strand
                                      NULL,                  // Ptr to left arg token
-                                     NULL,                  // Ptr to right operand function strand
+                                     NULL,                  // Ptr to right operand function strand (may be NULL if Scan)
                                      lptkRhtArg))           // Ptr to right arg token
             goto ERROR_EXIT;
     } else
@@ -2019,7 +2019,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                                          aplTypeRes,            // Result storage type
                                          lpYYFcnStrLft,         // Ptr to left operand function strand
                                          lptkLftArg,            // Ptr to left arg token
-                                         NULL,                  // Ptr to right operand function strand
+                                         NULL,                  // Ptr to right operand function strand (may be NULL if Scan)
                                          lptkRhtArg))           // Ptr to right arg token
                 goto ERROR_EXIT;
         } else

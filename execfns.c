@@ -120,8 +120,6 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
     DBGENTER;
 
-    Assert (lpYYFcnStr->YYInuse || lpYYFcnStr->tkToken.tkFlags.TknType EQ TKT_FCNIMMED);
-
     // Get the left and right arg global memory handle
     if (lptkLftArg)
         hGlbLft = GetGlbHandle (lptkLftArg);

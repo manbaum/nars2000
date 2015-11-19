@@ -2279,7 +2279,7 @@ RESTART_INNERPROD_RES:
                                      aplTypeRes,            // Result storage type
                                      lpYYFcnStrLft,         // Ptr to left operand function strand
                                      lptkLftArg,            // Ptr to left arg token
-                                     lpYYFcnStrRht,         // Ptr to right operand function strand
+                                     lpYYFcnStrRht,         // Ptr to right operand function strand (may be NULL if Scan)
                                      lptkRhtArg))           // Ptr to right arg token
             goto ERROR_EXIT;
     } else

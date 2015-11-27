@@ -335,7 +335,7 @@ UBOOL LoadWorkspace_EM
                         KEYNAME_VERSION,    // Ptr to the key name
                         L"",                // Ptr to the default value
                         lpDict);            // Ptr to workspace dictionary
-    // Copy the string to a save area ("+ 1" to include the trailing zero)
+    // Copy the string to a save area
     // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
     MyStrcpyW (wszVersion, sizeof (wszVersion), lpwszProf);
 
@@ -1130,21 +1130,21 @@ LPWCHAR ParseSavedWsVar_EM
         // If the caller wants the storage type, ...
         if (lpaplTypeObj)
         {
-            LPVOID  lpMemObj;           // Ptr to object global memory
+            LPVARARRAY_HEADER lpMemHdrObj = NULL;   // Ptr to object header
 
             // stData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (hGlbObj));
 
             // Lock the memory to get a ptr to it
-            lpMemObj = MyGlobalLock (hGlbObj);
+            lpMemHdrObj = MyGlobalLock (hGlbObj);
 
             // Save the storage type
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
+#define lpHeader        lpMemHdrObj
             *lpaplTypeObj = lpHeader->ArrType;
 #undef  lpHeader
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
+            MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
         } // End IF
 
         // If the caller wants the immediate flag, ...
@@ -1734,7 +1734,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             mpq_set_str (((LPAPLRAT) lpMemObj)++, (LPCHAR) lpwSrc, 10);
 
                         // Skip to the next field
-                        lpwSrc = SkipPastCharW (lpwSrc, L' ');
+                        lpwSrc = SkipPastCharW (lpwWS, L' ');
                     } // End FOR
 
                     break;
@@ -1798,7 +1798,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             mpfr_set_str (((LPAPLVFP) lpMemObj)++, (LPCHAR) lpwSrc, 10, MPFR_RNDN);
 
                         // Skip to the next field
-                        lpwSrc = SkipPastCharW (lpwSrc, L' ');
+                        lpwSrc = SkipPastCharW (lpwWS, L' ');
                     } // End FOR
 
                     // Restore the default precision
@@ -2237,8 +2237,10 @@ UBOOL CompareGlobals
 
 {
     UBOOL             bRet = FALSE;     // TRUE iff the result is valid
-    LPVARARRAY_HEADER lpMemGlb1,        // Ptr to global memory #1
-                      lpMemGlb2;        // ...                   2
+    LPVARARRAY_HEADER lpMemHdrGlb1,     // Ptr to global memory #1 header
+                      lpMemHdrGlb2;     // ...                   2 ...
+    LPAPLDIM          lpMemGlb1,        // ...                  #1 dimensions
+                      lpMemGlb2;        //                      #2 ...
     APLSTYPE          aplType;          // Common storage type
     APLNELM           aplNELM;          // ...    NELM
     APLRANK           aplRank;          // ...    rank
@@ -2249,37 +2251,37 @@ UBOOL CompareGlobals
         return FALSE;
 
     // Lock the memory to get a ptr to it
-    lpMemGlb1 = MyGlobalLock (hGlb1);
-    lpMemGlb2 = MyGlobalLock (hGlb2);
+    lpMemHdrGlb1 = MyGlobalLock (hGlb1);
+    lpMemHdrGlb2 = MyGlobalLock (hGlb2);
 
     // Get the storage type and NELM
-    aplType = lpMemGlb1->ArrType;
-    aplNELM = lpMemGlb1->NELM;
-    aplRank = lpMemGlb1->Rank;
+    aplType = lpMemHdrGlb1->ArrType;
+    aplNELM = lpMemHdrGlb1->NELM;
+    aplRank = lpMemHdrGlb1->Rank;
 
     // Check the signature
-    if (lpMemGlb1->Sig.nature NE lpMemGlb2->Sig.nature)
+    if (lpMemHdrGlb1->Sig.nature NE lpMemHdrGlb2->Sig.nature)
         goto ERROR_EXIT;
 
     // Check the storage type
-    if (aplType NE lpMemGlb2->ArrType)
+    if (aplType NE lpMemHdrGlb2->ArrType)
         goto ERROR_EXIT;
 
     // Check the NELM
-    if (aplNELM NE lpMemGlb2->NELM   )
+    if (aplNELM NE lpMemHdrGlb2->NELM   )
         goto ERROR_EXIT;
 
     // Check the rank
-    if (aplRank NE lpMemGlb2->Rank   )
+    if (aplRank NE lpMemHdrGlb2->Rank   )
         goto ERROR_EXIT;
 
     // Skip over the header to the dimensions
-    (LPVOID) lpMemGlb1 = VarArrayBaseToDim (lpMemGlb1);
-    (LPVOID) lpMemGlb2 = VarArrayBaseToDim (lpMemGlb2);
+    lpMemGlb1 = VarArrayBaseToDim (lpMemHdrGlb1);
+    lpMemGlb2 = VarArrayBaseToDim (lpMemHdrGlb2);
 
     // Check the dimensions
     for (uCnt = 0; uCnt < aplRank; uCnt++)
-    if (*((LPAPLDIM) lpMemGlb1)++ NE *((LPAPLDIM) lpMemGlb2)++)
+    if (*lpMemGlb1++ NE *lpMemGlb2++)
         goto ERROR_EXIT;
 
     // At this point, both lpMemGlb1 & lpMemGlb2 point to
@@ -2289,8 +2291,8 @@ UBOOL CompareGlobals
                           CalcArraySize (aplType, aplNELM, aplRank) - CalcHeaderSize (aplRank));
 ERROR_EXIT:
     // We no longer need these ptrs
-    MyGlobalUnlock (hGlb2); lpMemGlb2 = NULL;
-    MyGlobalUnlock (hGlb1); lpMemGlb1 = NULL;
+    MyGlobalUnlock (hGlb2); lpMemHdrGlb2 = NULL;
+    MyGlobalUnlock (hGlb1); lpMemHdrGlb1 = NULL;
 
     return bRet;
 } // End CompareGlobals

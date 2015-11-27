@@ -1458,7 +1458,8 @@ YYALLOC_EXIT:
     lpYYRes = YYAlloc ();
 
     // Fill in the result token
-    if (IsScalar (aplRankRes))
+    if (IsScalar (aplRankRes)
+     && !IsGlbNum (aplTypeRes))
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;

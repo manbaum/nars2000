@@ -263,6 +263,7 @@
 #define RHTSYNOBJ                    lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj
 #define RHT2SYNOBJ                  ((RSTACKLEN > 1) ? lpMemPTD->lpplRhtStk[-2]->tkToken.tkSynObj : soNONE)
 #define LSTSYNOBJ                    lpplYYLstRht->tkToken.tkSynObj
+#define LSTACKLEN                   (lpMemPTD->lpplLftStk - lpplOrgLftStk)
 #define RSTACKLEN                   (lpMemPTD->lpplRhtStk - lpplOrgRhtStk)
 
 #ifdef DEBUG
@@ -4628,6 +4629,38 @@ PARSELINE_ERROR:
                 // YYFree the temp
                 YYFree (lpYYRes); lpYYRes = NULL;
             } // End IF
+
+            // Loop through the left stack freeing temps
+            while (LSTACKLEN > 1)
+            {
+                LPPL_YYSTYPE lpYYRes;
+
+                // Get the next item from the left stack
+                lpYYRes = POPLEFT;
+
+                // If it's a function/operator, ...
+                if (IsTknFcnOpr (&lpYYRes->tkToken))
+                {
+                    // Unstrand the function if appropriate
+                    UnFcnStrand_EM (&lpYYRes, NAMETYPE_FN12, FALSE);
+
+                    // Free the function (including YYFree)
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+                } else
+                // If it's a var, ...
+                if (IsTknTypeVar (lpYYRes->tkToken.tkFlags.TknType))
+                {
+                    // Unstrand the temp if necessary
+                    UnStrand (lpYYRes);
+
+                    // Free & YYFree the temp
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+                } else
+                {
+                    // YYFree the temp
+                    YYFree (lpYYRes); lpYYRes = NULL;
+                } // End IF/ELSE/...
+            } // End WHILE
 
             // Loop through the right stack freeing temps
             while (RSTACKLEN > 1)

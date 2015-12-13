@@ -1132,7 +1132,7 @@ int pn_yylex
 {
     // Check for EOL
     if (lppnLocalVars->uNumCur EQ lppnLocalVars->uNumLen)
-        lpYYLval->chCur = '\0';
+        lpYYLval->chCur = AC_EOS;
     else
     {
         // Get the next char
@@ -1182,15 +1182,15 @@ void pn_yyerror                     // Called for Bison syntax error
     DbgMsg ((char *) s);
 
     // Check for SYNTAX ERROR
-#define ERR     "syntax error"
-    if (MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR)),      // Note: Terminates the string, too
+#define ERR     PN_SYNTAX
+    if (MyStrcpyn (szTemp, sizeof (szTemp), s, strsizeof (ERR)),    // Note: Terminates the string, too
         lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
         lpwszTemp = ERRMSG_SYNTAX_ERROR APPEND_NAME;
     else
     // Check for NONCE ERROR
-#define ERR     "nonce error"
-    if (MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR)),      // Note: Terminates the string, too
+#define ERR     PN_NONCE
+    if (MyStrcpyn (szTemp, sizeof (szTemp), s, strsizeof (ERR)),    // Note: Terminates the string, too
         lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
     {
@@ -1200,11 +1200,18 @@ void pn_yyerror                     // Called for Bison syntax error
         lppnLocalVars->uNumCur--;
     } else
     // Check for WS FULL
-#define ERR     WSFULL
-    if (MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR)),      // Note: Terminates the string, too
+#define ERR     PN_WSFULL
+    if (MyStrcpyn (szTemp, sizeof (szTemp), s, strsizeof (ERR)),    // Note: Terminates the string, too
         lstrcmp (szTemp, ERR) EQ 0)
 #undef  ERR
         lpwszTemp = ERRMSG_WS_FULL APPEND_NAME;
+    else
+    // Check for DOMAIN ERROR
+#define ERR     PN_DOMAIN
+    if (MyStrcpyn (szTemp, sizeof (szTemp), s, strsizeof (ERR)),    // Note: Terminates the string, too
+        lstrcmp (szTemp, ERR) EQ 0)
+#undef  ERR
+        lpwszTemp = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     else
         lpwszTemp = ERRMSG_PN_PARSE APPEND_NAME;
 

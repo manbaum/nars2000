@@ -851,7 +851,7 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for SYNTAX ERROR
 #define ERR     "syntax error"
-    MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR));      // Note: Terminates the string, too
+    MyStrcpyn (szTemp, sizeof (szTemp), s, strsizeof (ERR));    // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         MySprintfW (wszTemp,
@@ -866,7 +866,7 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for VALUE ERROR
 #define ERR     "value error"
-    MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR));      // Note: Terminates the string, too
+    MyStrcpyn (szTemp, sizeof (szTemp), s, strsizeof (ERR));    // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         MySprintfW (wszTemp,
@@ -881,7 +881,7 @@ void fh_yyerror                         // Called for Bison syntax error
 
     // Check for LENGTH ERROR
 #define ERR     "length error"
-    MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR));      // Note: Terminates the string, too
+    MyStrcpyn (szTemp, sizeof (szTemp), s, strsizeof (ERR));    // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         MySprintfW (wszTemp,
@@ -895,7 +895,7 @@ void fh_yyerror                         // Called for Bison syntax error
     } // End IF
 
 #define ERR     "memory exhausted"
-    MyStrcpyn (szTemp, sizeof (szTemp), s, sizeof (ERR));      // Note: Terminates the string, too
+    MyStrcpyn (szTemp, sizeof (szTemp), s, strsizeof (ERR));    // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
     {
         MySprintfW (wszTemp,

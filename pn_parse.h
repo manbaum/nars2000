@@ -101,6 +101,12 @@ typedef struct tagPNLOCALVARS       // Point Notation Local Vars
                                     // 88:  Length
 } PNLOCALVARS, *LPPNLOCALVARS;
 
+// Error messages
+#define PN_SYNTAX       "syntax error"
+#define PN_NONCE        "nonce error"
+#define PN_WSFULL       "memory exhausted"
+#define PN_DOMAIN       "domain error"
+
 
 //***************************************************************************
 //  End of File: pn_parse.h

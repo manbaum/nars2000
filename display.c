@@ -2023,8 +2023,20 @@ LPAPLCHAR FormatAplVfpFC
               iFrcDigs,             // # fractional digits (may be > iPrcDigs) (excluding 'Enn')
               iPrcDigs;             // # significant digits in the precision
     LPCHAR    lpRawFmt;             // Ptr to raw formatted #
+    int       nDigFPC;              // # significant digits based on the precision
 
-    Assert (!IsMpfNULL (&aplVfp));
+    // Convert this number's precision to the # digits it represents
+    //   via the formula  1 + floor (log10 (2^P))
+    //                  = 1 + floor (P x log10 (2))
+    //   where log10 (2) = (ln (2)) / (ln (10))
+    //                   = M_LN2 / M_LN10
+    nDigFPC = 1 + (int) floor (mpfr_get_prec (&aplVfp) * M_LN2 / M_LN10);
+
+    // Display no more than this # digits
+    if (nDigits < 0)
+        nDigits = max (nDigits, -nDigFPC);
+    else
+        nDigits = min (nDigits,  nDigFPC);
 
     // If we're to precede the display with (FPCnnn), ...
     if (bPrecFPC)
@@ -2161,17 +2173,8 @@ LPAPLCHAR FormatAplVfpFC
         // If displaying fractional digits, ...
         if (bFractDigs)
         {
-            UINT uDig;                  // # significant digits based on the precision
-
-            // Convert the precision to the # digits it represents
-            //   via the formula  1 + floor (log10 (2^P))
-            //                  = 1 + floor (P x log10 (2))
-            //   where log10 (2) = (ln (2)) / (ln (10))
-            //                   = M_LN2 / M_LN10
-            uDig = 1 + (UINT) floor (mpfr_get_prec (&aplVfp) * M_LN2 / M_LN10);
-
             // Calculate the # trailing underflow digits
-            iUnderflow = abs64 (nDigits) + max (expptr, 0) - max (uDig, (APLUINT) iLen);
+            iUnderflow = abs64 (nDigits) + max (expptr, 0) - max (nDigFPC, (APLUINT) iLen);
             iUnderflow = max (iUnderflow, 0);
         } else
             iUnderflow = 0;
@@ -2214,7 +2217,7 @@ LPAPLCHAR FormatAplVfpFC
             // Format the number with exactly nDigits significant digits
             lpaplChar =
               FormatExpFmt (lpaplChar,          // Ptr to output save area
-                      (int) nDigits,            // # significant digits
+                     (int) -nDigits,            // # significant digits
                             lpRawFmt,           // Ptr to raw formatted number
                             expptr,             // Exponent
                             DEF_MAX_QUADPPVFP,  // Maximum # significant digits
